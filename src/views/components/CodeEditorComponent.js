@@ -1,6 +1,6 @@
 import React from "react";
 import CodeMirror from "react-codemirror";
-
+require("../../mode/csound/csound.js");
 require("codemirror/addon/comment/comment.js");
 require("codemirror/addon/edit/matchbrackets.js");
 require("codemirror/addon/edit/closebrackets.js");
@@ -10,7 +10,7 @@ require("codemirror/keymap/emacs.js");
 require("codemirror/lib/codemirror.css");
 require("codemirror/theme/monokai.css");
 
-class CodeEditor extends React.Component {
+class CodeEditorComponent extends React.Component {
     render() {
         let options = {
             lineNumbers: true,
@@ -23,4 +23,4 @@ class CodeEditor extends React.Component {
     }
 }
 
-export default CodeEditor;
+export default CodeEditorComponent;
