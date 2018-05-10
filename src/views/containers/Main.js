@@ -1,39 +1,33 @@
 import React from "react";
-import CodeMirror from "react-codemirror"
 import { connect } from "react-redux";
 import { Card, CardHeader, CardBody, Row, Col } from "reactstrap";
 import { getAll } from "../../selectors/FirebaseSelectors";
-
-// this didn't quite work...
-//import * as csmode from '../../mode/csound/csound.js';
-
-require('codemirror/addon/comment/comment.js');
-require('codemirror/addon/edit/matchbrackets.js');
-require('codemirror/addon/edit/closebrackets.js');
-require('codemirror/keymap/vim.js');
-require('codemirror/keymap/emacs.js');
-
-
-require('codemirror/lib/codemirror.css');
-require('codemirror/theme/monokai.css');
+import { Redirect, Route, Switch } from "react-router-dom";
+import Editor from "../pages/Editor/Editor";
+import Profile from "../pages/Profile/Profile";
 
 class Main extends React.Component {
-
-    constructor() {
-        super()
-        this.state = { code: ";; Csound code"}
-    }
-
     render() {
-        let options = { 
-            lineNumbers: true,
-            matchBrackets: true,
-            autoCloseBrackets: true,
-            theme: 'monokai',
-            mode: 'csound',
-        }
+        const { classes, ...rest } = this.props;
+
         return (
-            <CodeMirror value={this.state.code}  options={options}/>
+            <div>
+                <div>
+                    <Switch>
+                        <Route
+                            path="/editor"
+                            name="Editor"
+                            component={Editor}
+                        />
+                        <Route
+                            path="/profile"
+                            name="Profile"
+                            component={Profile}
+                        />
+                        <Redirect from="/" to="/editor" />
+                    </Switch>
+                </div>
+            </div>
         );
     }
 }
