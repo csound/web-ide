@@ -259,4 +259,7 @@ module.exports = {
   performance: {
     hints: false,
   },
+  externals: {
+    CsoundObj: 'CsoundObj',
+  }
 };
