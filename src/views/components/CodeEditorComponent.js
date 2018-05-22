@@ -25,7 +25,6 @@ class CodeEditorComponent extends React.Component {
 
     toggleComment() { 
         let editor = this.cm.current.getCodeMirror(); 
-        console.log(editor);
         editor.toggleComment(); 
     }
     
