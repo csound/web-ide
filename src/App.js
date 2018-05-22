@@ -9,6 +9,7 @@ import Router from "./router/Router";
 import createHistory from "history/createBrowserHistory";
 import config from "./config.json";
 import "./App.css";
+import CsoundComponent from "./components/CsoundComponent";
 
 import { getAllData } from "./actions";
 
@@ -31,9 +32,11 @@ const App = () => {
 
     store.dispatch(getAllData());
     return (
-        <Provider store={store}>
-            <Router history={browserHistory} />
-        </Provider>
+        <CsoundComponent>
+            <Provider store={store}>
+                <Router history={browserHistory} />
+            </Provider>
+        </CsoundComponent>
     );
 };
 

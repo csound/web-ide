@@ -1,22 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Card, CardHeader, CardBody, Row, Col } from "reactstrap";
-import CodeEditorComponent from "../../components/CodeEditorComponent";
-
-import { loadCsoundObj } from "../../../actions/AppActions";
-import CsoundObj from 'CsoundObj';
-
+import CodeEditor from "./interfaces/CodeEditor";
+import { CsoundContext } from "../../../components/CsoundComponent";
 
 class Editor extends React.Component {
-
-    constructor(props) {
-        super(props);
-
-        props.loadCsoundObj();
-    }
-
     render() {
-        console.log(this.props.csoundLoadingState);
         return (
             <div>
                 <Row>
@@ -24,7 +13,14 @@ class Editor extends React.Component {
                         <Card>
                             <CardHeader>Editor</CardHeader>
                             <CardBody>
-                                <CodeEditorComponent />
+                                <CsoundContext.Consumer>
+                                    {val => (
+                                        <CodeEditor
+                                            {...this.props}
+                                            csound={val}
+                                        />
+                                    )}
+                                </CsoundContext.Consumer>
                             </CardBody>
                         </Card>
                     </Col>
@@ -34,8 +30,4 @@ class Editor extends React.Component {
     }
 }
 
-const mapStateToProps = store => {
-    return { csoundLoadingState: store.APP.loadCsound };
-};
-
-export default connect(mapStateToProps, { loadCsoundObj })(Editor);
+export default Editor;
