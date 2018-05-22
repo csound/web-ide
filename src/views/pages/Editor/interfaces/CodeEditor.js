@@ -19,6 +19,19 @@ class CodeEditor extends React.Component {
         let editor = this.cm.current.getCodeMirror();
         console.log("Eval code: " + editor.getSelection());
         // TODO - hook this into global CsoundObj instance?
+
+        let cs = this.props.csound;
+
+        if (cs != null) {
+            cs.audioContext.resume();
+            cs.compileOrc(
+                "sr=48000\nksmps=128\n0dbfs=1\nnchnls=2\nnchnls_i=1\n"
+            );
+            cs.setOption("-odac");
+            cs.setOption("-m0");
+            cs.start();
+            cs.compileOrc(editor.getSelection());
+        }
     }
 
     toggleComment() {
