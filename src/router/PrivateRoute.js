@@ -1,19 +1,15 @@
 import { Route, Redirect } from "react-router-dom";
-import { ThreeBounce } from "better-react-spinkit";
 import React from "react";
-// import { getLogin, getUser, getAuth } from "../selectors";
+import { getAuthState, getAuthRequesting } from "./selectors";
 import { connect } from "react-redux";
+import LinearProgress from "@material-ui/core/LinearProgress";
 
-const PrivateRoute = ({ component: Component, user, auth, login, ...rest }) => {
+const PrivateRoute = ({ component: Component, auth, requesting, ...rest }) => {
     const render = props => {
-        if (user !== false) {
+        if (auth === true) {
             return <Component {...props} />;
-        } else if (auth.requesting === true || login.requesting === true) {
-            return (
-                <div style={{ position: "absolute", top: "50%", left: "50%" }}>
-                    <ThreeBounce />
-                </div>
-            );
+        } else if (requesting === true) {
+            return <LinearProgress />;
         } else {
             return <Redirect to={{ pathname: "/login" }} />;
         }
@@ -24,10 +20,12 @@ const PrivateRoute = ({ component: Component, user, auth, login, ...rest }) => {
 
 const mapStateToProps = store => {
     return {
-        // user: getUser(store),
-        // auth: getAuth(store),
-        // login: getLogin(store)
+        auth: getAuthState(store),
+        requesting: getAuthRequesting(store)
     };
 };
 
-export default connect(mapStateToProps, null)(PrivateRoute);
+export default connect(
+    mapStateToProps,
+    {}
+)(PrivateRoute);
