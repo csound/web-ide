@@ -42,7 +42,6 @@ class Login extends Component {
                         error={this.props.fail}
                     />
                     <TextField
-                        autoFocus
                         margin="dense"
                         id="password"
                         label="Password"
