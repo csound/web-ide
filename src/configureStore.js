@@ -8,7 +8,7 @@ const configureStore = () => {
     const history = createBrowserHistory();
 
     const store = createStore(
-        connectRouter(history)(rootReducer),
+        rootReducer(history),
         applyMiddleware(routerMiddleware(history), thunk)
     );
 
