@@ -12,6 +12,7 @@ import {
 import { connect } from "react-redux";
 import { login } from "./actions";
 import { getLoginRequesting, getLoginFail } from "./selectors";
+
 class Login extends Component {
     constructor(props) {
         super(props);
@@ -36,7 +37,7 @@ class Login extends Component {
                         type="email"
                         value={this.state.email}
                         onChange={e => {
-                            this.setState({ email: e.target.value });
+                                this.setState({ email: e.target.value });
                         }}
                         fullWidth
                         error={this.props.fail}
@@ -48,7 +49,7 @@ class Login extends Component {
                         type="password"
                         value={this.state.password}
                         onChange={e => {
-                            this.setState({ password: e.target.value });
+                                this.setState({ password: e.target.value });
                         }}
                         fullWidth
                         error={this.props.fail}
@@ -81,12 +82,17 @@ class Login extends Component {
     }
 }
 
-export default connect(
-    store => {
-        return {
-            requesting: getLoginRequesting(store),
-            fail: getLoginFail(store)
-        };
-    },
-    { login }
-)(Login);
+
+const mapStateToProps = (store, ownProp) => {
+    return {
+        requesting: getLoginRequesting(store),
+        fail: getLoginFail(store)
+    };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+    login,
+});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

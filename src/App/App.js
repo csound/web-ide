@@ -3,6 +3,7 @@ import Router from "../Router/Router";
 import "./App.css";
 import firebase from "firebase";
 import Csound from "./components/CsoundComponent";
+
 const App = props => {
     firebase.initializeApp({
         apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",

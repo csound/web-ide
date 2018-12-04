@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Login from "../containers/Login/Login";
 import Main from "../containers/Main/Main";
-import { Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { ConnectedRouter } from "connected-react-router";
 import PrivateRoute from "./PrivateRoute";
 import { checkAuth } from "./actions";

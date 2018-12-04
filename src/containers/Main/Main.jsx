@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { Switch, Route } from "react-router-dom";
@@ -92,4 +93,11 @@ class Main extends React.Component {
     }
 }
 
-export default withStyles(styles)(Main);
+const mapStateToProps = (store, ownProp) => {
+    return {};
+};
+
+const mapDispatchToProps = (dispatch) => ({});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Main));
