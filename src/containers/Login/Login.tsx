@@ -11,17 +11,23 @@ import {
 } from "@material-ui/core";
 import { connect } from "react-redux";
 import { login } from "./actions";
-import { selectLoginRequesting, selectLoginFail } from "./selectors";
+import { IStore } from "../../db/interfaces";
+import { getLoginRequesting, getLoginFail } from "./selectors";
 
-class Login extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            email: "",
-            password: ""
-        };
+interface ILoginLocalState {
+    email: string;
+    password: string;
+}
+
+
+class Login extends Component<any, ILoginLocalState> {
+
+    public readonly state: ILoginLocalState = {
+        email: "",
+        password: "",
     }
-    render() {
+
+    public render() {
         return (
             <Dialog open>
                 <DialogTitle>Login</DialogTitle>
@@ -86,19 +92,11 @@ class Login extends Component {
     }
 }
 
-const mapStateToProps = (store, ownProp) => {
+const mapStateToProps = (store: IStore, ownProp: any) => {
     return {
         requesting: getLoginRequesting(store),
         fail: getLoginFail(store)
     };
 };
 
-export default connect(
-    store => {
-        return {
-            requesting: selectLoginRequesting(store),
-            fail: selectLoginFail(store)
-        };
-    },
-    { login }
-)(Login);
+export default connect(mapStateToProps, { login } )(Login);

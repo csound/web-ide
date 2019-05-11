@@ -8,11 +8,17 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import classNames from "classnames";
 import React from "react";
 import { styles } from "../styles";
-import { withStyles } from "@material-ui/core/styles";
+import { WithStyles, withStyles, createStyles } from "@material-ui/core/styles";
 import { mailFolderListItems, otherMailFolderListItems } from "./tileData";
 
-class Drawer extends React.Component {
-    state = {};
+interface IDrawer {
+    classes: any;
+    handleDrawerClose: any;
+    open: boolean;
+}
+
+
+class Drawer extends React.Component<WithStyles & IDrawer, any> {
     render() {
         const { classes, open } = this.props;
         return (
@@ -40,4 +46,4 @@ class Drawer extends React.Component {
     }
 }
 
-export default withStyles(styles)(Drawer);
+export default withStyles(createStyles(styles))(Drawer);

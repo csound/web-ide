@@ -1,6 +1,6 @@
 const drawerWidth = 240;
 
-export const styles = theme => ({
+export const styles = (theme: any) => ({
     root: {
         flexGrow: 1,
         height: "100%",

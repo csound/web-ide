@@ -1,19 +1,25 @@
 import React, { Component } from "react";
 import Login from "../containers/Login/Login";
 import Main from "../containers/Main/Main";
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import { ConnectedRouter } from "connected-react-router";
 import PrivateRoute from "./PrivateRoute";
 import { checkAuth } from "./actions";
 import { connect } from "react-redux";
+import { History } from "history";
 
-class RouterComponent extends Component {
-    constructor(props) {
-        super(props);
+interface IRouterComponent {
+    checkAuth: () => void;
+    history: History;
+}
 
-        props.checkAuth();
+class RouterComponent extends Component<IRouterComponent, any> {
+
+    public componentDidMount() {
+        this.props.checkAuth();
     }
-    render() {
+
+    public render() {
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
@@ -32,7 +38,4 @@ class RouterComponent extends Component {
     }
 }
 
-export default connect(
-    null,
-    { checkAuth }
-)(RouterComponent);
+export default connect( null, { checkAuth })(RouterComponent);

@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import PropTypes from "prop-types";
-import classNames from "classnames";
+// import classNames from "classnames";
 import { Switch, Route } from "react-router-dom";
 import {
     AppBar,
@@ -16,22 +15,38 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import Editor from "../../pages/Editor/Editor";
 import { styles } from "./styles";
-import { withStyles } from "@material-ui/core/styles";
+import { withStyles, createStyles } from "@material-ui/core/styles";
+import { IStore } from "../../db/interfaces";
 
-class Main extends React.Component {
-    state = {
-        anchorEl: null
-    };
+interface IMainProps {
+    classes: any;
+}
 
-    handleMenu = event => {
+interface IMainLocalState {
+    anchorEl: any;
+}
+
+class Main extends React.Component<IMainProps, IMainLocalState> {
+
+    public readonly state: IMainLocalState = {
+        anchorEl: null,
+    }
+
+    constructor(props: IMainProps) {
+        super(props);
+        this.handleMenu = this.handleMenu.bind(this);
+        this.handleClose = this.handleClose.bind(this);
+    }
+
+    handleMenu(event: any) {
         this.setState({ anchorEl: event.currentTarget });
-    };
+    }
 
-    handleClose = () => {
+    handleClose() {
         this.setState({ anchorEl: null });
-    };
+    }
 
-    logout = () => {
+    logout() {
         firebase.auth().signOut();
     };
 
@@ -54,7 +69,7 @@ class Main extends React.Component {
                         </Typography>
                         <div>
                             <IconButton
-                                aria-owns={open ? "menu-appbar" : null}
+                                aria-owns={open ? "menu-appbar" : undefined}
                                 aria-haspopup="true"
                                 onClick={this.handleMenu}
                                 color="inherit"
@@ -94,13 +109,10 @@ class Main extends React.Component {
     }
 }
 
-const mapStateToProps = (store, ownProp) => {
-    return {};
+const mapStateToProps = (store: IStore, ownProp: any): IMainProps => {
+    return {
+        classes: ownProp.classes,
+    };
 };
 
-const mapDispatchToProps = dispatch => ({});
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(withStyles(styles)(Main));
+export default connect( mapStateToProps, {})(withStyles(createStyles(styles))(Main));

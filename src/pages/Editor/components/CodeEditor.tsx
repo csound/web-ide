@@ -9,8 +9,16 @@ require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 require("codemirror/theme/monokai.css");
 
-class CodeEditor extends React.Component {
-    constructor(props) {
+interface ICodeEditor {
+    code: string;
+    csound: any;
+}
+
+class CodeEditor extends React.Component<ICodeEditor, any> {
+
+    protected cm: any;
+
+    constructor(props: ICodeEditor) {
         super(props);
         this.cm = React.createRef();
     }

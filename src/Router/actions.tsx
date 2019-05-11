@@ -4,7 +4,7 @@ import "firebase/auth";
 import { push } from "connected-react-router";
 
 export const checkAuth = () => {
-    return async dispatch => {
+    return async (dispatch: any) => {
         dispatch({
             type: AUTH_REQUEST
         });

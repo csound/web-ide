@@ -3,8 +3,8 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import { push } from "connected-react-router";
 
-export const login = (email, password) => {
-    return async dispatch => {
+export const login = (email: string, password: string) => {
+    return async (dispatch: any) => {
         dispatch({
             type: SIGNIN_REQUEST
         });
@@ -14,7 +14,7 @@ export const login = (email, password) => {
             dispatch({
                 type: SIGNIN_SUCCESS
             });
-            dispatch(push("/"));
+            dispatch(push("/dashboard"));
         } catch (e) {
             dispatch({
                 type: SIGNIN_FAIL

@@ -3,8 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/plugin-transform-typescript": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
     "@material-ui/core": "^3.9.3",
     "@material-ui/icons": "^3.0.2",
+    "@types/classnames": "^2.2.7",
+    "@types/history": "^4.7.2",
+    "@types/jest": "^24.0.12",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.8.17",
+    "@types/react-codemirror": "^1.0.2",
+    "@types/react-dom": "^16.8.4",
+    "@types/react-redux": "^7.0.8",
+    "@types/react-router-dom": "^4.3.3",
     "autoprefixer": "9.5.1",
     "babel-core": "6.26.3",
     "babel-eslint": "10.0.1",
@@ -31,7 +42,7 @@
     "firebase": "^6.0.2",
     "fs-extra": "7.0.1",
     "html-webpack-plugin": "3.2.0",
-    "jest": "24.8.0",
+    "jest": "24.7.1",
     "node-sass": "^4.12.0",
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "4.1.0",
@@ -45,22 +56,26 @@
     "react-hot-loader": "^4.8.4",
     "react-redux": "^7.0.3",
     "react-router-dom": "^5.0.0",
+    "react-scripts": "3.0.1",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "resolve": "1.10.1",
     "sass-loader": "^7.1.0",
     "style-loader": "0.23.1",
     "sw-precache-webpack-plugin": "0.11.5",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.4.5",
     "url-loader": "1.1.2",
-    "webpack": "4.31.0",
-    "webpack-dev-server": "3.3.1",
+    "webpack": "4.29.6",
+    "webpack-dev-server": "3.2.1",
     "webpack-manifest-plugin": "2.0.4",
     "whatwg-fetch": "3.0.0"
   },
   "scripts": {
-    "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -76,9 +91,9 @@
     "testEnvironment": "node",
     "testURL": "http://localhost",
     "transform": {
-      "^.+\\.(js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
+      "^.+\\.(ts|tsx|js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+      "^(?!.*\\.(ts|tsx|js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
@@ -98,10 +113,24 @@
   },
   "babel": {
     "presets": [
-      "react-app"
+      "react-app",
+      "@babel/preset-env",
+      "@babel/preset-typescript"
     ]
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

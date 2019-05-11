@@ -15,8 +15,8 @@ ReactDOM.render(
     document.getElementById("root")
 );
 
-if (module.hot) {
-    module.hot.accept("./App/App", () => {
+if ((module as any).hot) {
+    (module as any).hot.accept("./App/App", () => {
         ReactDOM.render(
             <Provider store={store}>
                 <App history={history} />

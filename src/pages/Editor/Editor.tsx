@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import {
-    Typography,
     Card,
     CardActions,
     CardContent,
@@ -10,7 +9,11 @@ import { connect } from "react-redux";
 import CodeEditor from "./components/CodeEditor";
 import { CsoundContext } from "../../App/components/CsoundComponent";
 
-class Editor extends Component {
+interface IEditor {
+    code: string;
+}
+
+class Editor extends Component<IEditor, any> {
     render() {
         return (
             <Card>
@@ -27,9 +30,4 @@ class Editor extends Component {
     }
 }
 
-export default connect(
-    store => {
-        return {};
-    },
-    {}
-)(Editor);
+export default connect(store => { return {}; }, {})(Editor);
