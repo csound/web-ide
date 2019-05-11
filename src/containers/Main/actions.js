@@ -3,8 +3,8 @@ import {
     USER_PROFILE_SUCCESS,
     USER_PROFILE_REQUEST
 } from "./types";
-import * as firebase from "firebase";
-import "firebase/auth/dist/index.cjs";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 export const checkAuth = () => {
     return dispatch => {

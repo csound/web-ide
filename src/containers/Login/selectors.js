@@ -1,9 +1,9 @@
 // import { createSelector } from "reselect";
 
-export const getLoginRequesting = ({ LoginReducer }) => {
+export const selectLoginRequesting = ({ LoginReducer }) => {
     return LoginReducer.requesting;
 };
 
-export const getLoginFail = ({ LoginReducer }) => {
+export const selectLoginFail = ({ LoginReducer }) => {
     return LoginReducer.failed;
 };
