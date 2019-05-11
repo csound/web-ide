@@ -12,7 +12,8 @@ import {
     Menu
 } from "@material-ui/core";
 import { AccountCircle } from "@material-ui/icons";
-import firebase from "firebase";
+import firebase from "firebase/app";
+import "firebase/auth";
 import Editor from "../../pages/Editor/Editor";
 import { styles } from "./styles";
 import { withStyles } from "@material-ui/core/styles";
@@ -97,7 +98,9 @@ const mapStateToProps = (store, ownProp) => {
     return {};
 };
 
-const mapDispatchToProps = (dispatch) => ({});
+const mapDispatchToProps = dispatch => ({});
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Main));
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(withStyles(styles)(Main));

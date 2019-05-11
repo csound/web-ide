@@ -13,8 +13,6 @@ export default class CsoundComponent extends React.Component {
         });
     }
     render() {
-        console.log(this.state.csound);
-
         return (
             <CsoundContext.Provider value={this.state.csound}>
                 {this.props.children}

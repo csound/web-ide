@@ -40,7 +40,6 @@ class CodeEditor extends React.Component {
     }
 
     render() {
-        console.log(this.props);
         let options = {
             lineNumbers: true,
             matchBrackets: true,

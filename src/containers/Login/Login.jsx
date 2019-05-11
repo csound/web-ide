@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 import { connect } from "react-redux";
 import { login } from "./actions";
-import { getLoginRequesting, getLoginFail } from "./selectors";
+import { selectLoginRequesting, selectLoginFail } from "./selectors";
 
 class Login extends Component {
     constructor(props) {
@@ -29,31 +29,35 @@ class Login extends Component {
                     <DialogContentText>
                         Please enter your email address and password
                     </DialogContentText>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="email"
-                        label="Email Address"
-                        type="email"
-                        value={this.state.email}
-                        onChange={e => {
+                    <form>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            id="email"
+                            label="Email Address"
+                            type="email"
+                            value={this.state.email}
+                            onChange={e => {
                                 this.setState({ email: e.target.value });
-                        }}
-                        fullWidth
-                        error={this.props.fail}
-                    />
-                    <TextField
-                        margin="dense"
-                        id="password"
-                        label="Password"
-                        type="password"
-                        value={this.state.password}
-                        onChange={e => {
+                            }}
+                            fullWidth
+                            error={this.props.fail}
+                            autoComplete="current-email"
+                        />
+                        <TextField
+                            margin="dense"
+                            id="password"
+                            label="Password"
+                            type="password"
+                            value={this.state.password}
+                            onChange={e => {
                                 this.setState({ password: e.target.value });
-                        }}
-                        fullWidth
-                        error={this.props.fail}
-                    />
+                            }}
+                            fullWidth
+                            error={this.props.fail}
+                            autoComplete="current-password"
+                        />
+                    </form>
 
                     <div
                         style={{
@@ -66,12 +70,12 @@ class Login extends Component {
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={() =>
+                        onClick={() => {
                             this.props.login(
                                 this.state.email,
                                 this.state.password
-                            )
-                        }
+                            );
+                        }}
                         color="primary"
                     >
                         Submit
@@ -82,7 +86,6 @@ class Login extends Component {
     }
 }
 
-
 const mapStateToProps = (store, ownProp) => {
     return {
         requesting: getLoginRequesting(store),
@@ -90,9 +93,12 @@ const mapStateToProps = (store, ownProp) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-    login,
-});
-
-
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default connect(
+    store => {
+        return {
+            requesting: selectLoginRequesting(store),
+            fail: selectLoginFail(store)
+        };
+    },
+    { login }
+)(Login);
