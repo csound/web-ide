@@ -66,6 +66,7 @@ class Main extends React.Component<IMain, IMainLocalState> {
 
     logout() {
         firebase.auth().signOut();
+        this.setState({ isProfileMenuOpen: false });
     };
 
     render() {
@@ -113,12 +114,16 @@ class Main extends React.Component<IMain, IMainLocalState> {
         const loginButton = () => (
             <Button
                 color="inherit"
-                onClick={() => openLoginDialog()}
-            >Login</Button>
+                onClick={() => {
+                        this.setState({ isProfileMenuOpen: false });
+                        openLoginDialog();
+                }}
+            >Login
+            </Button>
         );
 
-        return (
-            <div className={classes.root}>
+                    return (
+                        <div className={classes.root}>
                 {isLoginDialogOpen && <Login />}
                 <AppBar position="absolute">
                     <Toolbar disableGutters={false}>
