@@ -10,7 +10,7 @@ import {
     LinearProgress
 } from "@material-ui/core";
 import { connect } from "react-redux";
-import { login } from "./actions";
+import { login, closeLoginDialog } from "./actions";
 import { IStore } from "../../db/interfaces";
 import { getLoginRequesting, getLoginFail } from "./selectors";
 
@@ -19,8 +19,19 @@ interface ILoginLocalState {
     password: string;
 }
 
+interface ILoginProps {
+    fail: boolean;
+    requesting: boolean;
+}
 
-class Login extends Component<any, ILoginLocalState> {
+interface ILoginDispatchProperties {
+    closeLoginDialog: () => void;
+    login: (email: string, password: string) => void;
+}
+
+type ILogin = ILoginProps & ILoginDispatchProperties;
+
+class Login extends Component<ILogin, ILoginLocalState> {
 
     public readonly state: ILoginLocalState = {
         email: "",
@@ -28,8 +39,9 @@ class Login extends Component<any, ILoginLocalState> {
     }
 
     public render() {
+        const { closeLoginDialog } = this.props;
         return (
-            <Dialog open>
+            <Dialog onClose={() => closeLoginDialog() } open>
                 <DialogTitle>Login</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -44,7 +56,7 @@ class Login extends Component<any, ILoginLocalState> {
                             type="email"
                             value={this.state.email}
                             onChange={e => {
-                                this.setState({ email: e.target.value });
+                                    this.setState({ email: e.target.value });
                             }}
                             fullWidth
                             error={this.props.fail}
@@ -57,7 +69,7 @@ class Login extends Component<any, ILoginLocalState> {
                             type="password"
                             value={this.state.password}
                             onChange={e => {
-                                this.setState({ password: e.target.value });
+                                    this.setState({ password: e.target.value });
                             }}
                             fullWidth
                             error={this.props.fail}
@@ -77,26 +89,33 @@ class Login extends Component<any, ILoginLocalState> {
                 <DialogActions>
                     <Button
                         onClick={() => {
-                            this.props.login(
-                                this.state.email,
-                                this.state.password
-                            );
+                                this.props.login(
+                                    this.state.email,
+                                    this.state.password
+                                );
                         }}
                         color="primary"
                     >
                         Submit
                     </Button>
                 </DialogActions>
-            </Dialog>
-        );
+                </Dialog>
+            );
+        }
     }
-}
 
-const mapStateToProps = (store: IStore, ownProp: any) => {
+const mapStateToProps = (store: IStore, ownProp: any): ILoginProps => {
     return {
         requesting: getLoginRequesting(store),
         fail: getLoginFail(store)
     };
 };
 
-export default connect(mapStateToProps, { login } )(Login);
+const mapDispatchToProps = (dispatch: any): ILoginDispatchProperties => ({
+    closeLoginDialog: () => dispatch(closeLoginDialog()),
+    login: (email, password) => dispatch(
+        login(email, password)
+    )
+});
+
+export default connect(mapStateToProps, mapDispatchToProps )(Login);

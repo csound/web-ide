@@ -1,6 +1,9 @@
+import { Theme } from '@material-ui/core';
+import { makeStyles, createStyles, withStyles } from "@material-ui/styles";
+
 const drawerWidth = 240;
 
-export const styles = (theme: any) => ({
+const mainStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
         height: "100%",
@@ -67,3 +70,6 @@ export const styles = (theme: any) => ({
         padding: 0,
     }
 });
+
+export const mainStylesHook = makeStyles(mainStyles);
+export const mainStylesHOC = (ClassComponent: any) => withStyles(mainStyles)(ClassComponent);

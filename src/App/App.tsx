@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import Router from "../Router/Router";
 import { ThemeProvider } from '@material-ui/styles';
 import { resolveTheme } from "../Templates/themes";
+import CssBaseline from '@material-ui/core/CssBaseline';
 import { IStore } from "../db/interfaces";
 import "./App.css";
 import firebase from "firebase/app";
@@ -30,6 +31,7 @@ class App extends React.Component<IAppProps, any> {
     public render() {
         return (
             <Csound>
+                <CssBaseline />
                 <ThemeProvider theme={resolveTheme(this.props.theme)}>
                     <Router history={this.props.history} />
                 </ThemeProvider>

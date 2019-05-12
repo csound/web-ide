@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import Login from "../containers/Login/Login";
+// import Login from "../containers/Login/Login";
 import Main from "../containers/Main/Main";
 import { Route, Switch } from 'react-router-dom';
 import { ConnectedRouter } from "connected-react-router";
@@ -23,10 +23,8 @@ class RouterComponent extends Component<IRouterComponent, any> {
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
-                    <Route path="/login" component={Login} />
-                    <Route path="/logout" component={Login} />
-                    <PrivateRoute {...this.props} path="/" component={Main} />
-                    <PrivateRoute {...this.props} path="" component={Main} />
+                    <Route {...this.props} path="/" component={Main} />
+                    <Route {...this.props} path="" component={Main} />
                     <PrivateRoute
                         {...this.props}
                         path="/dashboard"
