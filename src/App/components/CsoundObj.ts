@@ -23,9 +23,18 @@
 
 /* eslint-disable */
 
+
+declare global {
+    interface Window { 
+      CsoundNodeFactory: any; 
+      CsoundScriptProcessorNodeFactory: any;
+      CSOUND_AUDIO_CONTEXT:AudioContext;
+    }
+}
+
 /** Csound global AudioContext
  */
-var CSOUND_AUDIO_CONTEXT =
+let CSOUND_AUDIO_CONTEXT =
     (window as any).CSOUND_AUDIO_CONTEXT ||
     (function() {
 
@@ -39,22 +48,24 @@ var CSOUND_AUDIO_CONTEXT =
         }
         return null;
     }());
-
+window.CSOUND_AUDIO_CONTEXT = CSOUND_AUDIO_CONTEXT; 
 
 // Global singleton variables
 var AudioWorkletGlobalScope = (window as any).AudioWorkletGlobalScope || {};
 var CSOUND_NODE_SCRIPT: any;
+let CS_HAS_AUDIO_WORKLET: boolean;
+let CS_NODE_FACTORY: any;
 
 /* SETUP NODE TYPE */
 if(typeof AudioWorkletNode !== 'undefined' &&
    CSOUND_AUDIO_CONTEXT.audioWorklet !== undefined) {
     console.log("Using WASM + AudioWorklet Csound implementation");
     CSOUND_NODE_SCRIPT = 'CsoundNode.js';
-    CSOUND_AUDIO_CONTEXT.hasAudioWorklet = true;
+    CS_HAS_AUDIO_WORKLET = true;
 } else {
     console.log("Using WASM + ScriptProcessorNode Csound implementation");
     CSOUND_NODE_SCRIPT = 'CsoundScriptProcessorNode.js';
-    CSOUND_AUDIO_CONTEXT.hasAudioWorklet = false;
+    CS_HAS_AUDIO_WORKLET = false;
 }
 
 
@@ -379,10 +390,11 @@ class CsoundObj {
     static importScripts(script_base='./') {
         return new Promise((resolve) => {
             csound_load_script(script_base + CSOUND_NODE_SCRIPT, () => {
-                if(CSOUND_AUDIO_CONTEXT.hasAudioWorklet) CSOUND_AUDIO_CONTEXT.factory = (window as any).CsoundNodeFactory;
-                else CSOUND_AUDIO_CONTEXT.factory = (window as any).CsoundScriptProcessorNodeFactory;
+                CS_NODE_FACTORY = CS_HAS_AUDIO_WORKLET ? 
+                                   window.CsoundNodeFactory :
+                                   window.CsoundScriptProcessorNodeFactory;
                 // FIXME
-                CSOUND_AUDIO_CONTEXT.factory && CSOUND_AUDIO_CONTEXT.factory.importScripts(script_base).then(() => {
+                CS_NODE_FACTORY.importScripts(script_base).then(() => {
                     resolve();
                 })
             })
@@ -399,7 +411,7 @@ class CsoundObj {
      *  @return A new Csound Engine Node (CsoundNode or CsoundScriptProcessorNode)
      */
     static createNode(inputChannelCount=1, outputChannelCount=2) {
-        return CSOUND_AUDIO_CONTEXT.factory.createNode(inputChannelCount,outputChannelCount);
+        return CS_NODE_FACTORY.createNode(inputChannelCount,outputChannelCount);
     }
 
 }

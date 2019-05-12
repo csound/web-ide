@@ -21,7 +21,7 @@ export default class CsoundComponent extends React.Component<ICsoundComponent, I
     }
 
     public componentDidMount() {
-        CsoundObj.importScripts("https://waaw.csound.com/js/").then(() => {
+        CsoundObj.importScripts("./csound/").then(() => {
             this.setState({ csound: new CsoundObj() });
         });
     }
