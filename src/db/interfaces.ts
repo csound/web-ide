@@ -28,8 +28,9 @@ export interface ICollection {
 export interface IUserProfile {
     name: string;
     email: string;
-    collections: ICollection[];
-    userid: number;
+    collections?: ICollection[];
+    userid?: number;
+    photoUrl?: string;
 }
 
 export interface ITemplate {

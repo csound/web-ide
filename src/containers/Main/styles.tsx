@@ -57,6 +57,9 @@ const mainStyles = (theme: Theme) => createStyles({
     flex: {
         flex: 1
     },
+    profileName: {
+        textAlign: "right",
+    },
     toolbar: {
         display: "flex",
         alignItems: "center",

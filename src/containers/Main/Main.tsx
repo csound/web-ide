@@ -13,48 +13,55 @@ import {
     Menu
 } from "@material-ui/core";
 import { AccountCircle } from "@material-ui/icons";
+import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
 import "firebase/auth";
 import Editor from "../../pages/Editor/Editor";
 import { mainStylesHOC } from "./styles";
 import { IStore } from "../../db/interfaces";
-// import { merge } from "lodash";
+import { isEmpty } from "lodash";
 
 interface IMainProps {
     authenticated: boolean;
     classes: any;
     isLoginDialogOpen: boolean;
+    userDisplayName: string | null;
+    avatarUrl: string | null | undefined;
 }
 
 interface IMainDispatchProperties {
+    logOut: () => void;
     openLoginDialog: () => void;
 }
 
 interface IMainLocalState {
-    anchorEl: any;
+    isProfileMenuOpen: boolean;
 }
 
 type IMain = IMainProps & IMainDispatchProperties;
 
 class Main extends React.Component<IMain, IMainLocalState> {
 
+    protected anchorEl: any;
+
     public readonly state: IMainLocalState = {
-        anchorEl: null,
+        isProfileMenuOpen: false,
     }
 
     constructor(props: IMain) {
         super(props);
-        this.handleMenu = this.handleMenu.bind(this);
-        this.handleClose = this.handleClose.bind(this);
+        this.handleProfileMenuOpen = this.handleProfileMenuOpen.bind(this);
+        this.handleProfileMenuClose = this.handleProfileMenuClose.bind(this);
+        this.anchorEl = React.createRef();
     }
 
-    handleMenu(event: any) {
-        this.setState({ anchorEl: event.currentTarget });
+    handleProfileMenuOpen(event: any) {
+        this.setState({ isProfileMenuOpen: true });
     }
 
-    handleClose() {
-        this.setState({ anchorEl: null });
+    handleProfileMenuClose() {
+        this.setState({ isProfileMenuOpen: false });
     }
 
     logout() {
@@ -62,23 +69,29 @@ class Main extends React.Component<IMain, IMainLocalState> {
     };
 
     render() {
-        const { anchorEl } = this.state;
+        const { isProfileMenuOpen } = this.state;
         const { authenticated, classes, isLoginDialogOpen,
-                openLoginDialog } = this.props;
-        const open = Boolean(anchorEl);
+                openLoginDialog, avatarUrl } = this.props;
+
+        const avatar = isEmpty(avatarUrl) ? (
+            <AccountCircle />
+        ) : (
+            <Avatar src={avatarUrl || ""} />
+        );
         const userMenu = () => (
             <div>
                 <IconButton
-                    aria-owns={open ? "menu-appbar" : undefined}
+                    aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
                     aria-haspopup="true"
-                    onClick={this.handleMenu}
                     color="inherit"
+                    onClick={this.handleProfileMenuOpen}
+                    ref={this.anchorEl}
                 >
-                    <AccountCircle />
+                    {avatar}
                 </IconButton>
                 <Menu
                     id="menu-appbar"
-                    anchorEl={anchorEl}
+                    anchorEl={this.anchorEl.current}
                     anchorOrigin={{
                         vertical: "top",
                         horizontal: "right"
@@ -87,10 +100,10 @@ class Main extends React.Component<IMain, IMainLocalState> {
                         vertical: "top",
                         horizontal: "right"
                     }}
-                    open={open}
-                    onClose={this.handleClose}
+                    open={isProfileMenuOpen}
+                    onClose={this.handleProfileMenuClose}
                 >
-                    <MenuItem onClick={this.logout}>
+                    <MenuItem onClick={this.props.logOut}>
                         Logout
                     </MenuItem>
                 </Menu>
@@ -117,6 +130,14 @@ class Main extends React.Component<IMain, IMainLocalState> {
                         >
                             {"Csound Web-IDE"}
                         </Typography>
+                        <Typography
+                            variant="subtitle2"
+                            color="inherit"
+                            className={classes.flex + " " + classes.profileName}
+                            noWrap
+                        >
+                            {this.props.userDisplayName}
+                        </Typography>
                         {authenticated ? userMenu() : loginButton()}
                     </Toolbar>
                 </AppBar>
@@ -136,11 +157,14 @@ const mapStateToProps = (store: IStore, ownProp: any): IMainProps => {
         authenticated: store.LoginReducer.authenticated,
         classes: ownProp.classes,
         isLoginDialogOpen: store.LoginReducer.isLoginDialogOpen,
+        userDisplayName: store.userProfile && store.userProfile.name,
+        avatarUrl: store.userProfile && store.userProfile.photoUrl,
     };
 };
 
 const mapDispatchToProps = (dispatch: any): IMainDispatchProperties => ({
-    openLoginDialog: () => dispatch(loginActions.openLoginDialog())
+    openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
+    logOut: () => dispatch(loginActions.logOut()),
 });
 
 export default connect( mapStateToProps, mapDispatchToProps)(mainStylesHOC(Main));
