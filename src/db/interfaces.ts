@@ -32,9 +32,16 @@ export interface IUserProfile {
     userid: number;
 }
 
+export interface ITemplate {
+    fontFamily: string;
+    fontSize: number;
+    theme: string;
+}
+
 export interface IStore {
     router: any;
     LoginReducer: any;
     RouterReducer: any;
     userProfile: IUserProfile | null;
+    template: ITemplate;
 }

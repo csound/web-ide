@@ -1,5 +1,9 @@
 import React from "react";
+import { connect } from "react-redux";
 import Router from "../Router/Router";
+import { ThemeProvider } from '@material-ui/styles';
+import { resolveTheme } from "../Templates/themes";
+import { IStore } from "../db/interfaces";
 import "./App.css";
 import firebase from "firebase/app";
 import Csound from "./components/CsoundComponent";
@@ -7,8 +11,8 @@ import { History } from "history";
 
 interface IAppProps {
     history: History;
+    theme: string;
 }
-
 
 class App extends React.Component<IAppProps, any> {
 
@@ -26,10 +30,19 @@ class App extends React.Component<IAppProps, any> {
     public render() {
         return (
             <Csound>
-                <Router history={this.props.history} />
+                <ThemeProvider theme={resolveTheme(this.props.theme)}>
+                    <Router history={this.props.history} />
+                </ThemeProvider>
             </Csound>
         );
     }
 }
 
-export default App;
+const mapStateToProps = (store: IStore, ownProp: any) => {
+    return {
+        history: ownProp.history,
+        theme: store.template.theme,
+    };
+};
+
+export default connect(mapStateToProps, {})(App);

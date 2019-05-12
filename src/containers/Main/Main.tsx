@@ -60,7 +60,7 @@ class Main extends React.Component<IMainProps, IMainLocalState> {
                 <AppBar position="absolute">
                     <Toolbar disableGutters={false}>
                         <Typography
-                            variant="title"
+                            variant="h5"
                             color="inherit"
                             className={classes.flex}
                             noWrap

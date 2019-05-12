@@ -1,4 +1,5 @@
 import { SIGNIN_FAIL, SIGNIN_SUCCESS, SIGNIN_REQUEST } from "./types";
+
 const INITIAL_STATE = {
     authenticated: false,
     requesting: false,
