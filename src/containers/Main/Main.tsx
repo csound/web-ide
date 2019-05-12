@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
 // import classNames from "classnames";
-import { Switch, Route } from "react-router-dom";
+// import { Switch, Route } from "react-router-dom";
 import {
     AppBar,
     Toolbar,
@@ -12,7 +12,7 @@ import {
     MenuItem,
     Menu
 } from "@material-ui/core";
-import { AccountCircle } from "@material-ui/icons";
+import { AccountCircle, MoreVert } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
@@ -21,6 +21,7 @@ import Editor from "../../pages/Editor/Editor";
 import { mainStylesHOC } from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
+import * as burgerMenuActions from "../BurgerMenu/actions";
 
 interface IMainProps {
     authenticated: boolean;
@@ -33,6 +34,7 @@ interface IMainProps {
 interface IMainDispatchProperties {
     logOut: () => void;
     openLoginDialog: () => void;
+    toggleBurgerMenu: () => void;
 }
 
 interface IMainLocalState {
@@ -122,19 +124,17 @@ class Main extends React.Component<IMain, IMainLocalState> {
             </Button>
         );
 
-                    return (
-                        <div className={classes.root}>
+        return (
+            <div className={classes.root}>
                 {isLoginDialogOpen && <Login />}
                 <AppBar position="absolute">
-                    <Toolbar disableGutters={false}>
-                        <Typography
-                            variant="h5"
-                            color="inherit"
-                            className={classes.flex}
-                            noWrap
+                    <Toolbar disableGutters={true}>
+                        <Button
+                            className={classes.burgerToggler}
+                            onClick={this.props.toggleBurgerMenu}
                         >
-                            {"Csound Web-IDE"}
-                        </Typography>
+                            <MoreVert/>
+                        </Button>
                         <Typography
                             variant="subtitle2"
                             color="inherit"
@@ -148,9 +148,7 @@ class Main extends React.Component<IMain, IMainLocalState> {
                 </AppBar>
                 <main className={classes.content}>
                     <div className={classes.toolbar} />
-                    <Switch>
-                        <Route path="/" component={Editor} />
-                    </Switch>
+                    <Editor />
                 </main>
             </div>
         );
@@ -170,6 +168,7 @@ const mapStateToProps = (store: IStore, ownProp: any): IMainProps => {
 const mapDispatchToProps = (dispatch: any): IMainDispatchProperties => ({
     openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
     logOut: () => dispatch(loginActions.logOut()),
+    toggleBurgerMenu: () => dispatch(burgerMenuActions.toggleBurgerMenu()),
 });
 
 export default connect( mapStateToProps, mapDispatchToProps)(mainStylesHOC(Main));

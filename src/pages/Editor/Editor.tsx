@@ -1,20 +1,28 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { IStore } from "../../db/interfaces";
 import CodeEditor from "./components/CodeEditor";
 import { CsoundContext } from "../../App/components/CsoundComponent";
 
-interface IEditor {
-    code: string;
+interface IEditorProps {
+    currentCollection: string;
+    currentProject: string;
+    currentDocumentName: string;
 }
 
-class Editor extends Component<IEditor, any> {
+class Editor extends Component<IEditorProps, any> {
+
     render() {
         return (
             <CsoundContext.Consumer>
-                {val => <CodeEditor {...this.props} csound={val} />}
+                {val => <CodeEditor csound={val} />}
             </CsoundContext.Consumer>
         );
     }
 }
 
-export default connect(store => { return {}; }, {})(Editor);
+const mapStateToProps = (store: IStore, ownProp: any) => {
+    return {}
+}
+
+export default connect(mapStateToProps, {})(Editor);

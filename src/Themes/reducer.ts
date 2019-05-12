@@ -1,10 +1,10 @@
-import { ITemplate } from "../db/interfaces";
+import { ITheme } from "../db/interfaces";
 import { merge } from "lodash";
 
-const INITIAL_STATE: ITemplate = {
+const INITIAL_STATE: ITheme = {
     fontFamily: "Roboto",
     fontSize: 0,
-    theme: "dark",
+    name: "dark",
 };
 
 export default (state = INITIAL_STATE, action: any) => {

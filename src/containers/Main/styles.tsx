@@ -27,6 +27,10 @@ const mainStyles = (theme: Theme) => createStyles({
             duration: theme.transitions.duration.enteringScreen
         })
     },
+    burgerToggler: {
+        margin: "0 12px",
+        color: theme.palette.primary.contrastText,
+    },
     menuButton: {
         marginLeft: 12,
         marginRight: 36

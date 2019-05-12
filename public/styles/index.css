@@ -5,4 +5,9 @@ html,body {
 
 main {
     padding: 0;
+    min-height: 100vh;
+}
+
+.ReactCodeMirror {
+    height: 100%
 }

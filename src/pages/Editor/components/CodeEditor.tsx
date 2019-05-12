@@ -1,5 +1,7 @@
 import React from "react";
+import { connect } from "react-redux";
 import CodeMirror from "react-codemirror";
+import { IStore } from "../../../db/interfaces";
 require("./mode/csound/csound.js");
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
@@ -9,16 +11,23 @@ require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 require("codemirror/theme/monokai.css");
 
-interface ICodeEditor {
-    code: string;
+interface ICodeEditorProps {
     csound: any;
 }
 
-class CodeEditor extends React.Component<ICodeEditor, any> {
+interface ICodeEditorLocalState {
+    currentEditorValue: string;
+}
+
+class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState> {
 
     protected cm: any;
 
-    constructor(props: ICodeEditor) {
+    public readonly state: ICodeEditorLocalState = {
+        currentEditorValue: "",
+    }
+
+    constructor(props: ICodeEditorProps) {
         super(props);
         this.cm = React.createRef();
     }
@@ -47,6 +56,12 @@ class CodeEditor extends React.Component<ICodeEditor, any> {
         editor.toggleComment();
     }
 
+    componentDidMount() {
+        const CodeMirror = this.cm.current.getCodeMirror();
+        // console.log(CodeMirror);
+        CodeMirror.setSize("100%", "100%");
+    }
+
     render() {
         let options = {
             lineNumbers: true,
@@ -63,7 +78,7 @@ class CodeEditor extends React.Component<ICodeEditor, any> {
         };
         return (
             <CodeMirror
-                value={this.props.code}
+                value={this.state.currentEditorValue}
                 options={options}
                 ref={this.cm}
             />
@@ -71,4 +86,10 @@ class CodeEditor extends React.Component<ICodeEditor, any> {
     }
 }
 
-export default CodeEditor;
+const mapStateToProps = (store: IStore, ownProp: any) => {
+    return {
+        csound: ownProp.csound,
+    }
+}
+
+export default connect(mapStateToProps, {})(CodeEditor);

@@ -33,10 +33,14 @@ export interface IUserProfile {
     photoUrl?: string;
 }
 
-export interface ITemplate {
+export interface ITheme {
     fontFamily: string;
     fontSize: number;
-    theme: string;
+    name: string;
+}
+
+export interface IBurgerMenu {
+    isOpen: boolean;
 }
 
 export interface IStore {
@@ -44,5 +48,6 @@ export interface IStore {
     LoginReducer: any;
     RouterReducer: any;
     userProfile: IUserProfile | null;
-    template: ITemplate;
+    theme: ITheme;
+    burgerMenu: IBurgerMenu;
 }
