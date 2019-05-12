@@ -17,14 +17,22 @@
 * Files may be textual: CSD, ORC, TXT, MD (, HTML, JS)
 * Resources: OGG, MP3, WAV
 
+Firestore DB layout
+
+/users/username
+/projects/projectname -- collection file refs which have name and URI (FirebaseStorage URI)
+/collections/collectionname         
+
+project files as binary - stored in Firebase Storage
 
 
 ### URL Structure
 
-* /[user-id]/[project-name]
-* /[user-id]/[project-name]/edit
-* /[user-id]/[project-name]/[file-name]  
-* /[user-id]/[collections]/[project-name]
+* /[user-name]                    
+* /[user-name]/[project-name]
+* /[user-name]/[project-name]/edit
+* /[user-name]/[project-name]/[file-name]  
+* /[user-name]/[collections]
 
 
 
