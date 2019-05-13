@@ -12,7 +12,7 @@ import {
     MenuItem,
     Menu
 } from "@material-ui/core";
-import { AccountCircle, MoreVert } from "@material-ui/icons";
+import { AccountCircle, ViewHeadline } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
@@ -133,10 +133,10 @@ class Main extends React.Component<IMain, IMainLocalState> {
                             className={classes.burgerToggler}
                             onClick={this.props.toggleBurgerMenu}
                         >
-                            <MoreVert/>
+                            <ViewHeadline />
                         </Button>
                         <Typography
-                            variant="subtitle2"
+                            variant="subtitle1"
                             color="inherit"
                             className={classes.flex + " " + classes.profileName}
                             noWrap

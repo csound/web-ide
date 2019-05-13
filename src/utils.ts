@@ -19,3 +19,10 @@ export function validateEmail(emailAddress: string) {
 
     return reValidEmail.test(emailAddress);
 }
+
+const dirtyWindow: any = (window as any);
+
+export const isElectron: boolean =
+    ((typeof dirtyWindow.process !== 'undefined') &&
+     (typeof dirtyWindow.process.versions !== 'undefined') &&
+     (typeof dirtyWindow.process.versions["electron"] !== 'undefined'));

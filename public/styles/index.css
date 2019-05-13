@@ -11,3 +11,7 @@ main {
 .ReactCodeMirror {
     height: 100%
 }
+
+nav,button {
+    outline: none;
+}

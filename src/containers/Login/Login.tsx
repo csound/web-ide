@@ -19,11 +19,12 @@ import { validateEmail } from "../../utils";
 import { loginStylesHOC } from "./styles";
 import { isEmpty, merge } from "lodash";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
-import * as firebase from 'firebase/app';
+import * as firebase from "firebase/app";
+import { isElectron } from "../../utils";
 
 // Configure FirebaseUI.
 const uiConfig = {
-    signInFlow: 'popup',
+    signInFlow: isElectron ? "redirect" : "popup",
     signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.FacebookAuthProvider.PROVIDER_ID

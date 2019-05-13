@@ -2,9 +2,13 @@
   "name": "web-ide",
   "version": "0.1.0",
   "private": true,
+  "main": "public/electron.js",
   "dependencies": {
     "@babel/plugin-transform-typescript": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
+    "@fortawesome/fontawesome-svg-core": "^1.2.18",
+    "@fortawesome/free-brands-svg-icons": "^5.8.2",
+    "@fortawesome/react-fontawesome": "^0.1.4",
     "@material-ui/core": "^4.0.0-beta.1",
     "@material-ui/icons": "^4.0.0-beta.0",
     "@material-ui/styles": "^4.0.0-beta.1",
@@ -33,6 +37,7 @@
     "css-loader": "2.1.1",
     "dotenv": "8.0.0",
     "dotenv-expand": "5.1.0",
+    "electron-is-dev": "^1.1.0",
     "eslint": "5.16.0",
     "eslint-config-react-app": "^4.0.1",
     "eslint-loader": "2.1.2",
@@ -65,7 +70,6 @@
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.1",
     "redux": "^4.0.1",
-    "redux-burger-menu": "^0.2.8",
     "redux-thunk": "^2.3.0",
     "resolve": "1.10.1",
     "sass-loader": "^7.1.0",
@@ -83,40 +87,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\""
   },
   "jest": {
     "collectCoverageFrom": [
-      "src/**/*.{js,jsx,mjs}"
-    ],
-    "setupFiles": [
-      "<rootDir>/config/polyfills.js"
-    ],
-    "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.{js,jsx,mjs}",
-      "<rootDir>/src/**/?(*.)(spec|test).{js,jsx,mjs}"
-    ],
-    "testEnvironment": "node",
-    "testURL": "http://localhost",
-    "transform": {
-      "^.+\\.(ts|tsx|js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
-      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(ts|tsx|js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
-    ],
-    "moduleNameMapper": {
-      "^react-native$": "react-native-web"
-    },
-    "moduleFileExtensions": [
-      "web.js",
-      "js",
-      "json",
-      "web.jsx",
-      "jsx",
-      "node",
-      "mjs"
+      "src/**/*.{js,jsx,mjs,ts,tsx}"
     ]
   },
   "babel": {
@@ -140,5 +116,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "electron": "^5.0.1",
+    "electron-builder": "^20.40.2",
+    "wait-on": "^3.2.0"
   }
 }

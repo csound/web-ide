@@ -15,6 +15,10 @@ const burgerMenuStyles = (theme: Theme) => {
         doubleNested: {
             paddingLeft: theme.spacing(8),
         },
+        inlineButtons: {
+            width: 24,
+            minWidth: "unset!important",
+        }
 
     })};
 
