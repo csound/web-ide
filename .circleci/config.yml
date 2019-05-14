@@ -1,0 +1,57 @@
+defaults: &defaults #working_directory: ./circleci
+    docker:
+        - image: circleci/node:8
+    working_directory: ~/repo
+
+version: 2
+jobs:
+    prepare:
+        <<: *defaults
+        steps:
+            - checkout
+            # Download and cache dependencies
+            - restore_cache:
+                  keys:
+                      - v1-dependencies-{{ checksum "package.json" }}
+            - run: yarn
+            - save_cache:
+                  paths:
+                      - node_modules
+                  key: v1-dependencies-{{ checksum "package.json" }}
+            - persist_to_workspace:
+                  root: .
+                  paths:
+                      - node_modules
+    build:
+        <<: *defaults
+        steps:
+            - checkout
+            - attach_workspace:
+                  at: .
+            - run: yarn build
+            - persist_to_workspace:
+                  root: .
+                  paths:
+                      - build
+    deploy:
+        <<: *defaults
+        steps:
+            - checkout
+            - attach_workspace:
+                  at: .
+            - run: yarn deploy
+            - persist_to_workspace:
+                  root: .
+                  paths:
+                      - build
+workflows:
+    version: 2
+    build_accept_deploy:
+        jobs:
+            - prepare
+            - build:
+                  requires:
+                      - prepare
+            - deploy:
+                  requires:
+                      - build
