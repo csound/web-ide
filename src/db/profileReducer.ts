@@ -1,4 +1,4 @@
-import { SIGNIN_SUCCESS, LOG_OUT } from "../containers/Login/types";
+import { SIGNIN_SUCCESS, LOG_OUT } from "../components/Login/types";
 import { IUserProfile } from "./interfaces";
 
 export default (state = {}, action: any): IUserProfile => {

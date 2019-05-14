@@ -17,8 +17,8 @@ import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
 import "firebase/auth";
-import Editor from "../../pages/Editor/Editor";
-import { mainStylesHOC } from "./styles";
+// import Editor from "../Editor/Editor";
+import { headerStylesHOC } from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
 import * as burgerMenuActions from "../BurgerMenu/actions";
@@ -127,7 +127,7 @@ class Main extends React.Component<IMain, IMainLocalState> {
         return (
             <div className={classes.root}>
                 {isLoginDialogOpen && <Login />}
-                <AppBar position="absolute">
+                <AppBar position={"relative"}>
                     <Toolbar disableGutters={true}>
                         <Button
                             className={classes.burgerToggler}
@@ -140,16 +140,12 @@ class Main extends React.Component<IMain, IMainLocalState> {
                             color="inherit"
                             className={classes.flex + " " + classes.profileName}
                             noWrap
-                        >
-                            {this.props.userDisplayName}
-                        </Typography>
-                        {authenticated ? userMenu() : loginButton()}
+                            >
+                                {this.props.userDisplayName}
+                            </Typography>
+                            {authenticated ? userMenu() : loginButton()}
                     </Toolbar>
                 </AppBar>
-                <main className={classes.content}>
-                    <div className={classes.toolbar} />
-                    <Editor />
-                </main>
             </div>
         );
     }
@@ -171,4 +167,4 @@ const mapDispatchToProps = (dispatch: any): IMainDispatchProperties => ({
     toggleBurgerMenu: () => dispatch(burgerMenuActions.toggleBurgerMenu()),
 });
 
-export default connect( mapStateToProps, mapDispatchToProps)(mainStylesHOC(Main));
+export default connect( mapStateToProps, mapDispatchToProps)(headerStylesHOC(Main));

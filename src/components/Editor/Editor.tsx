@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { IStore } from "../../db/interfaces";
-import CodeEditor from "./components/CodeEditor";
-import { CsoundContext } from "../../App/components/CsoundComponent";
+import CodeEditor from "./CodeEditor";
+import { CsoundContext } from "../Csound/CsoundComponent";
 
 interface IEditorProps {
     currentCollection: string;

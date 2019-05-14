@@ -1,4 +1,4 @@
-import { IStore } from "../db/interfaces";
+import { IStore } from "../../db/interfaces";
 
 export const getAuthRequesting = ({ RouterReducer }: IStore) => {
     return RouterReducer.requesting;

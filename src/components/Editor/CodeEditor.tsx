@@ -1,8 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
-import CodeMirror from "react-codemirror";
-import { IStore } from "../../../db/interfaces";
-require("./mode/csound/csound.js");
+import {UnControlled as CodeMirror} from "react-codemirror2";
+import { IStore } from "../../db/interfaces";
+import "./modes/csound/csound"; // "./modes/csound/csound.js";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -11,9 +11,10 @@ require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 require("codemirror/theme/monokai.css");
 
+
 interface ICodeEditorProps {
-    csound: any;
-}
+        csound: any;
+    }
 
 interface ICodeEditorLocalState {
     currentEditorValue: string;
@@ -33,7 +34,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
     }
 
     evalCode() {
-        let editor = this.cm.current.getCodeMirror();
+        let editor = this.cm.current.editor;
         console.log("Eval code: " + editor.getSelection());
         // TODO - hook this into global CsoundObj instance?
 
@@ -52,14 +53,14 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
     }
 
     toggleComment() {
-        let editor = this.cm.current.getCodeMirror();
-        editor.toggleComment();
+        // let editor = this.cm.current.getCodeMirror();
+        // editor.toggleComment();
     }
 
     componentDidMount() {
-        const CodeMirror = this.cm.current.getCodeMirror();
-        // console.log(CodeMirror);
-        CodeMirror.setSize("100%", "100%");
+        // console.log(this.cm.current);
+        // const CodeMirror = this.cm.current.getCodeMirror();
+        // CodeMirror.setSize("100%", "100%");
     }
 
     render() {

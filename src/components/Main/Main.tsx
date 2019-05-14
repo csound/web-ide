@@ -4,37 +4,28 @@ import Router from "../Router/Router";
 import { ThemeProvider } from '@material-ui/styles';
 import { resolveTheme } from "../Themes/themes";
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { IStore } from "../db/interfaces";
-import "./App.css";
-import firebase from "firebase/app";
-import Csound from "./components/CsoundComponent";
-import BurgerMenu from "../containers/BurgerMenu/BurgerMenu";
+import { IStore } from "../../db/interfaces";
+import Csound from "../Csound/CsoundComponent";
+import BurgerMenu from "../BurgerMenu/BurgerMenu";
 import { History } from "history";
+import { mainStylesHOC } from "./styles";
+import Header from "../Header/Header";
 
-interface IAppProps {
+interface IMainProps {
+    classes: any;
     history: History;
     theme: string;
 }
 
-class App extends React.Component<IAppProps, any> {
-
-    public componentWillMount() {
-        firebase.initializeApp({
-            apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
-            authDomain: "csound-ide.firebaseapp.com",
-            databaseURL: "https://csound-ide.firebaseio.com",
-            projectId: "csound-ide",
-            storageBucket: "csound-ide.appspot.com",
-            messagingSenderId: "1089526309602"
-        });
-    }
+class Main extends React.Component<IMainProps, any> {
 
     public render() {
         return (
             <Csound>
-                <CssBaseline />
                 <ThemeProvider theme={resolveTheme(this.props.theme)}>
+                    <CssBaseline />
                     <BurgerMenu />
+                    <Header />
                     <Router history={this.props.history} />
                 </ThemeProvider>
             </Csound>
@@ -49,4 +40,4 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     }
 }
 
-export default connect(mapStateToProps, {})(App);
+export default connect(mapStateToProps, {})(mainStylesHOC(Main));

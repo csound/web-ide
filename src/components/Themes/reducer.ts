@@ -1,4 +1,4 @@
-import { ITheme } from "../db/interfaces";
+import { ITheme } from "../../db/interfaces";
 import { merge } from "lodash";
 
 const INITIAL_STATE: ITheme = {

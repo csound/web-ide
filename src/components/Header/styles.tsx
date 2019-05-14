@@ -3,14 +3,15 @@ import { makeStyles, createStyles, withStyles } from "@material-ui/styles";
 
 const drawerWidth = 240;
 
-const mainStyles = (theme: Theme) => createStyles({
+const headerStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
-        height: "100%",
+        height: "66px",
         zIndex: 1,
         overflow: "hidden",
         position: "relative",
-        display: "flex"
+        display: "flex",
+        marginBottom: "-2px",
     },
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
@@ -30,6 +31,7 @@ const mainStyles = (theme: Theme) => createStyles({
     burgerToggler: {
         margin: "0 12px",
         color: theme.palette.primary.contrastText,
+        width: "48px"
     },
     menuButton: {
         marginLeft: 12,
@@ -64,19 +66,7 @@ const mainStyles = (theme: Theme) => createStyles({
     profileName: {
         textAlign: "right",
     },
-    toolbar: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        padding: "0 8px",
-        ...theme.mixins.toolbar
-    },
-    content: {
-        flexGrow: 1,
-        backgroundColor: theme.palette.background.default,
-        padding: 0,
-    }
 });
 
-export const mainStylesHook = makeStyles(mainStyles);
-export const mainStylesHOC = (ClassComponent: any) => withStyles(mainStyles)(ClassComponent);
+export const headerStylesHook = makeStyles(headerStyles);
+export const headerStylesHOC = (ClassComponent: any) => withStyles(headerStyles)(ClassComponent);

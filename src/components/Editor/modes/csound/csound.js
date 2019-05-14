@@ -2,7 +2,9 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
-import CodeMirror from "codemirror";
+
+import * as CodeMirror from "codemirror";
+
 /* eslint-disable */
 CodeMirror.defineMode("csound", function(config) {
     function wordObj(words) {
@@ -275,25 +277,25 @@ CodeMirror.defineMode("csound", function(config) {
             curPunc = null;
             if (stream.sol()) state.indented = stream.indentation();
             var style = state.tokenize[state.tokenize.length - 1](
-                    stream,
-                    state
-                ),
+                stream,
+                state
+            ),
                 kwtype;
             var thisTok = curPunc;
             if (style == "ident") {
                 var word = stream.current();
                 style =
                     state.lastTok == "."
-                        ? "property"
-                        : keywords.propertyIsEnumerable(stream.current())
-                            ? "keyword"
-                            : /^[A-Z]/.test(word)
-                                ? "tag"
-                                : state.lastTok == "def" ||
-                                  state.lastTok == "class" ||
-                                  state.varList
-                                    ? "def"
-                                    : "variable";
+                    ? "property"
+                    : keywords.propertyIsEnumerable(stream.current())
+                    ? "keyword"
+                    : /^[A-Z]/.test(word)
+                    ? "tag"
+                    : state.lastTok == "def" ||
+                    state.lastTok == "class" ||
+                    state.varList
+                    ? "def"
+                    : "variable";
                 if (style == "keyword") {
                     thisTok = word;
                     if (indentWords.propertyIsEnumerable(word))
@@ -341,11 +343,11 @@ CodeMirror.defineMode("csound", function(config) {
             var closing =
                 ct.type == matching[firstChar] ||
                 (ct.type == "keyword" &&
-                    /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter));
+                 /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter));
             return (
                 ct.indented +
-                (closing ? 0 : config.indentUnit) +
-                (state.continuedLine ? config.indentUnit : 0)
+                      (closing ? 0 : config.indentUnit) +
+                      (state.continuedLine ? config.indentUnit : 0)
             );
         },
 

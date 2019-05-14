@@ -19,6 +19,7 @@ import { IStore } from "../../db/interfaces";
 import { burgerMenuStylesHOC } from "./styles";
 import * as burgerMenuActions from "./actions";
 
+
 interface IBurgerMenuProps {
     classes: any;
     isOpen: boolean;
