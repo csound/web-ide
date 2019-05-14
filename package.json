@@ -89,7 +89,7 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
-        "deploy": "./node_modules/.bin/firebase deploy --token=$FIREBASE_DEPLOY_TOKEN"
+        "deploy": "./node_modules/.bin/firebase deploy --token=$FIREBASE_TOKEN"
     },
     "jest": {
         "collectCoverageFrom": [
