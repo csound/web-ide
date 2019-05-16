@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
-import configureStore from "../configureStore";
+import Main from './Main';
+import configureStore from "../../configureStore";
 import { Provider } from "react-redux";
 import { JSDOM } from "jsdom";
 
@@ -33,7 +33,7 @@ it('renders without crashing', () => {
     const div = global.document.createElement('div');
     ReactDOM.render(
         <Provider store={store}>
-            <App history={history} />
+            <Main history={history} />
         </Provider>, div);
     ReactDOM.unmountComponentAtNode(div);
 });
