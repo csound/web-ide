@@ -1,0 +1,49 @@
+#csound-menu-bar {
+    --background: #fff;
+    --button-border: rgba(0, 0, 0, 0.1);
+    --button: transparent;
+    --button-text: #333;
+    --button-cta: #09f;
+    --button-cta-text: #fff;
+    --corner-radius: 3px;
+    --hover-background: rgba(0, 0, 0, 0.05);
+    --icon-button-opacity: 0.3;
+    --list-border: #ddd;
+    /* --menu-active: #09f; */
+    --menu-active-text: #fff;
+    --menu-background: rgba(255, 255, 255, 0.97);
+    --menu-border: rgba(0, 0, 0, 0.1);
+    --menu-border-width: 0.5px;
+    --menu-highlight: rgba(255, 255, 255, 0.5);
+    --menu-separator: rgba(0, 0, 0, 0.1);
+    --menu-shadow: rgba(0, 0, 0, 0.1);
+    --panel-border: #ddd;
+    --text: #ccc;
+    --text-header: #fff;
+    --text-link: #fff;
+    --text-menu: #fff;
+    --text-subtle: rgba(255, 255, 255, 0.3);
+
+    /* background: var(--background); */
+    box-sizing: border-box;
+    color: var(--text);
+    /* font-family: sans-serif; */
+    /* height: 100vh; */
+    margin: 0;
+    padding: 20px;
+}
+
+/* #csound-menu-bar { */
+/*     --background: #111; */
+/*     --button-border: rgba(255, 255, 255, 0.1); */
+/*     --button-text: #fff; */
+/*     --hover-background: rgba(255, 255, 255, 0.08); */
+/*     --icon-button-opacity: 0.6; */
+/*     --list-border: #242424; */
+/*     --menu-background: rgba(0, 0, 0, 0.93); */
+/*     --menu-border: rgba(0, 0, 0, 0.3); */
+/*     --menu-highlight: rgba(255, 255, 255, 0.3); */
+/*     --menu-separator: rgba(255, 255, 255, 0.1); */
+/*     --menu-shadow: rgba(0, 0, 0, 0.3); */
+/*     --panel-border: #000; */
+/* } */

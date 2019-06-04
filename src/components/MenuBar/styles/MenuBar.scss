@@ -1,0 +1,30 @@
+.menu-bar {
+    color: var(--text-link);
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+
+    &.active {
+        position: relative;
+        z-index: 1;
+    }
+
+    & > li {
+        border-radius: var(--corner-radius);
+        cursor: default;
+        display: block;
+        padding: 5px 9px;
+        user-select: none;
+
+        &:hover {
+            background-color: var(--hover-background);
+        }
+
+        &.open {
+            background-color: var(--menu-active);
+            border-radius: var(--corner-radius) var(--corner-radius) 0 0;
+            color: var(--menu-active-text);
+        }
+    }
+}

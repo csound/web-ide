@@ -8,12 +8,13 @@ main {
     padding: 0;
 }
 
-.ReactCodeMirror {
+.react-codemirror2 {
+    margin-top: 12px;
     width: 100%;
     height: 100%;
 }
 
-.ReactCodeMirror > div{
+.react-codemirror2 > div{
     width: 100%;
     height: 100%;
 }
@@ -29,6 +30,11 @@ nav,button {
     outline: none;
 }
 
+
+.MuiToolbar-root {
+    max-height: 48px!important;
+    min-height: 32px!important;
+}
 
 /* BURGER MENU */
 /* Position and sizing of burger button */

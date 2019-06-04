@@ -1,0 +1,169 @@
+// This is used to track hover across frame boundary.
+@keyframes menu-active-item {
+}
+
+@keyframes menu-disappearing {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes menu-picked {
+    from {
+        background-color: transparent;
+        color: var(--text);
+    }
+    to {
+        background-color: var(--menu-active);
+        color: var(--menu-active-text);
+    }
+}
+
+#menu {
+    // Don't include the Apple Emoji Font since it would show emojis for shortcuts.
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+                 "Segoe UI Emoji", "Segoe UI Symbol";
+
+    &,
+    & ul {
+        background-color: var(--menu-background);
+        border: var(--menu-border) solid var(--menu-border-width);
+        border-radius: var(--corner-radius);
+        box-shadow: 0 2px 10px var(--menu-shadow);
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        font-size: 12px;
+        line-height: 17px;
+        margin: 0;
+        padding: 4px 0;
+        position: absolute;
+        user-select: none;
+        z-index: 1;
+    }
+
+    &::after,
+    & ul::after {
+        border-radius: var(--corner-radius);
+        bottom: var(--menu-border-width);
+        box-shadow: inset 0 0 1px var(--menu-highlight);
+        content: "";
+        left: var(--menu-border-width);
+        pointer-events: none;
+        position: absolute;
+        right: var(--menu-border-width);
+        top: var(--menu-border-width);
+        z-index: 4;
+    }
+
+    &.disappearing {
+        animation: 230ms ease-out 90ms menu-disappearing;
+    }
+
+    &.disappearing-immediate {
+        animation: 230ms ease-out menu-disappearing;
+    }
+
+    &.from-menu-bar {
+        border-top-left-radius: 0;
+    }
+
+    & li {
+        color: var(--text-link);
+        cursor: default;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 2px 10px 2px 15px;
+        position: relative;
+        white-space: pre;
+
+        &:not(.disabled):not(.picked):not(.separator) {
+            &:hover {
+                // Hack to track hover events across frames.
+                animation: 0s menu-active-item;
+            }
+            &:hover,
+            &.hover {
+                background-color: var(--menu-active);
+                color: var(--menu-active-text);
+                z-index: 2;
+
+                & > ul {
+                    opacity: 1;
+                    pointer-events: auto;
+                }
+            }
+        }
+
+        &.disabled {
+            opacity: 0.4;
+        }
+
+        &.picked {
+            animation: 60ms step-end menu-picked;
+            background-color: var(--menu-active);
+            color: var(--menu-active-text);
+            z-index: 3;
+        }
+
+        &.separator {
+            background-color: var(--menu-separator);
+            height: 1px;
+            margin: 5px 0;
+            padding: 0;
+        }
+
+        &.submenu::after {
+            content: "►";
+            font-size: 75%;
+            padding-left: 8px;
+        }
+
+        & span {
+            pointer-events: none;
+        }
+
+        & .accelerator {
+            display: flex;
+            flex-direction: row;
+            padding-left: 15px;
+
+            & span:last-child {
+                padding-left: 1px;
+                width: 12px;
+            }
+        }
+
+        & .label {
+            padding-right: 5px;
+        }
+    }
+
+    & ul {
+        color: var(--text);
+        left: 100%;
+        top: calc(-4px - var(--menu-border-width));
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 150ms ease-out;
+
+        &.expand-up {
+            bottom: calc(-4px - var(--menu-border-width));
+            top: auto;
+        }
+    }
+
+    &.expand-left ul {
+        left: auto;
+        right: 100%;
+    }
+}
+
+#menu-blocker:hover {
+    // Hack to track hover events across frames.
+    animation: 0s menu-active-item;
+}

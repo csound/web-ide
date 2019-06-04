@@ -6,7 +6,7 @@ const drawerWidth = 240;
 const headerStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
-        height: "66px",
+        height: "48px",
         zIndex: 1,
         overflow: "hidden",
         position: "relative",
@@ -14,6 +14,11 @@ const headerStyles = (theme: Theme) => createStyles({
         marginBottom: "-2px",
     },
     appBar: {
+        root: {
+            height: "40px",
+        },
+        marginBottom: "4px",
+        borderBottom: "1px solid rgb(17, 21, 24)",
         zIndex: theme.zIndex.drawer + 1,
         transition: theme.transitions.create(["width", "margin"], {
             easing: theme.transitions.easing.sharp,

@@ -12,7 +12,7 @@ import {
     MenuItem,
     Menu
 } from "@material-ui/core";
-import { AccountCircle, ViewHeadline } from "@material-ui/icons";
+import { AccountCircle } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
@@ -21,9 +21,9 @@ import "firebase/auth";
 import { headerStylesHOC } from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
-import * as burgerMenuActions from "../BurgerMenu/actions";
+import MenuBar from "../MenuBar/MenuBarIndex";
 
-interface IMainProps {
+interface IHeaderProps {
     authenticated: boolean;
     classes: any;
     isLoginDialogOpen: boolean;
@@ -31,27 +31,26 @@ interface IMainProps {
     avatarUrl: string | null | undefined;
 }
 
-interface IMainDispatchProperties {
+interface IHeaderDispatchProperties {
     logOut: () => void;
     openLoginDialog: () => void;
-    toggleBurgerMenu: () => void;
 }
 
-interface IMainLocalState {
+interface IHeaderLocalState {
     isProfileMenuOpen: boolean;
 }
 
-type IMain = IMainProps & IMainDispatchProperties;
+type IHeader = IHeaderProps & IHeaderDispatchProperties;
 
-class Main extends React.Component<IMain, IMainLocalState> {
+class Header extends React.Component<IHeader, IHeaderLocalState> {
 
     protected anchorEl: any;
 
-    public readonly state: IMainLocalState = {
+    public readonly state: IHeaderLocalState = {
         isProfileMenuOpen: false,
     }
 
-    constructor(props: IMain) {
+    constructor(props: IHeader) {
         super(props);
         this.handleProfileMenuOpen = this.handleProfileMenuOpen.bind(this);
         this.handleProfileMenuClose = this.handleProfileMenuClose.bind(this);
@@ -79,7 +78,10 @@ class Main extends React.Component<IMain, IMainLocalState> {
         const avatar = isEmpty(avatarUrl) ? (
             <AccountCircle />
         ) : (
-            <Avatar src={avatarUrl || ""} />
+            <Avatar
+                src={avatarUrl || ""}
+                style={{maxHeight: "32px", maxWidth: "32px"}}
+            />
         );
         const userMenu = () => (
             <div>
@@ -117,8 +119,8 @@ class Main extends React.Component<IMain, IMainLocalState> {
             <Button
                 color="inherit"
                 onClick={() => {
-                        this.setState({ isProfileMenuOpen: false });
-                        openLoginDialog();
+                    this.setState({ isProfileMenuOpen: false });
+                    openLoginDialog();
                 }}
             >Login
             </Button>
@@ -127,23 +129,18 @@ class Main extends React.Component<IMain, IMainLocalState> {
         return (
             <div className={classes.root}>
                 {isLoginDialogOpen && <Login />}
-                <AppBar position={"relative"}>
+                <AppBar className={classes.appBar}>
                     <Toolbar disableGutters={true}>
-                        <Button
-                            className={classes.burgerToggler}
-                            onClick={this.props.toggleBurgerMenu}
-                        >
-                            <ViewHeadline />
-                        </Button>
+                        <MenuBar />
                         <Typography
                             variant="subtitle1"
                             color="inherit"
                             className={classes.flex + " " + classes.profileName}
                             noWrap
-                            >
-                                {this.props.userDisplayName}
-                            </Typography>
-                            {authenticated ? userMenu() : loginButton()}
+                        >
+                            {this.props.userDisplayName}
+                        </Typography>
+                        {authenticated ? userMenu() : loginButton()}
                     </Toolbar>
                 </AppBar>
             </div>
@@ -151,7 +148,7 @@ class Main extends React.Component<IMain, IMainLocalState> {
     }
 }
 
-const mapStateToProps = (store: IStore, ownProp: any): IMainProps => {
+const mapStateToProps = (store: IStore, ownProp: any): IHeaderProps => {
     return {
         authenticated: store.LoginReducer.authenticated,
         classes: ownProp.classes,
@@ -161,10 +158,9 @@ const mapStateToProps = (store: IStore, ownProp: any): IMainProps => {
     };
 };
 
-const mapDispatchToProps = (dispatch: any): IMainDispatchProperties => ({
+const mapDispatchToProps = (dispatch: any): IHeaderDispatchProperties => ({
     openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
     logOut: () => dispatch(loginActions.logOut()),
-    toggleBurgerMenu: () => dispatch(burgerMenuActions.toggleBurgerMenu()),
 });
 
-export default connect( mapStateToProps, mapDispatchToProps)(headerStylesHOC(Main));
+export default connect( mapStateToProps, mapDispatchToProps)(headerStylesHOC(Header));
