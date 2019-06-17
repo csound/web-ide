@@ -7,7 +7,7 @@ const headerStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
         height: "48px",
-        zIndex: 1,
+        zIndex: 100,
         overflow: "hidden",
         position: "relative",
         display: "flex",

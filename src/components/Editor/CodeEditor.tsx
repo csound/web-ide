@@ -66,6 +66,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
     render() {
         let options = {
             lineNumbers: true,
+            lineWrapping: true,
             matchBrackets: true,
             autoCloseBrackets: true,
             theme: "monokai",
