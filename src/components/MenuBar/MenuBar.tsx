@@ -44,7 +44,7 @@ export function MenuBar({ items, onPick }: Props) {
 
     const onClickOutside = React.useCallback((e) => {
         setOpen(false);
-        // sharedMenu.close();
+        sharedMenu.close();
     }, [setOpen]);
 
     const clickOutsideRef: any = useClickOutside(onClickOutside);
@@ -53,6 +53,10 @@ export function MenuBar({ items, onPick }: Props) {
         e.preventDefault();
         e.stopPropagation();
         if (open && (open === i)) {
+            if (e.type === "mousedown") {
+                setOpen((o: any) => false);
+                sharedMenu.close();
+            }
             return;
         }
         sharedMenu.close();
@@ -74,7 +78,7 @@ export function MenuBar({ items, onPick }: Props) {
                 onPick(selection.role);
             }
         } catch (e) {
-            console.log("ERROR", e)
+            // console.log("ERROR", e)
         } finally {
             // setOpen((o: any) => false);
         }
