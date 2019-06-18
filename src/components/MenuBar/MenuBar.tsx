@@ -3,51 +3,25 @@ import * as React from "react";
 import { useState } from "react";
 import { sharedMenu } from "./Menu";
 import { MenuItem } from "./MenuItem";
-// import enhanceWithClickOutside from "react-click-outside";
+import onClickOutside from "react-onclickoutside";
 
 import "./styles/MenuBar.scss";
 
 const className = "from-menu-bar";
-
-function useClickOutside(onClickOutside: (e: Event) => void) {
-    const [domNode, setDomNode] = React.useState(null);
-
-    React.useEffect(
-        () => {
-            const onClick = (e: Event) => {
-                if ((!domNode || !(domNode as any)!.contains(e.target)) && onClickOutside)
-                    onClickOutside(e);
-            };
-
-            document.addEventListener('click', onClick, true);
-            return () => {
-                document.removeEventListener('click', onClick, true);
-            };
-        },
-        [domNode, onClickOutside]
-    );
-
-    const refCallback = React.useCallback(setDomNode, [onClickOutside]);
-
-    return refCallback;
-}
-
 
 interface Props {
     onPick(role: string): void;
     items: MenuItem[];
 }
 
-export function MenuBar({ items, onPick }: Props) {
+function MenuBar({ items, onPick }: Props) {
     // This is a bitmask since menus can currently open/close out of sync.
     const [open, setOpen] = useState(false) as any;
 
-    const onClickOutside = React.useCallback((e) => {
+    (MenuBar as any).handleClickOutside = () => {
         setOpen(false);
         sharedMenu.close();
-    }, [setOpen]);
-
-    const clickOutsideRef: any = useClickOutside(onClickOutside);
+    }
 
     const openMenu = async (e: React.MouseEvent, i: number) => {
         e.preventDefault();
@@ -88,7 +62,6 @@ export function MenuBar({ items, onPick }: Props) {
     return (
         <ul
             id="csound-menu-bar"
-            ref={clickOutsideRef}
             className={open ? "active menu-bar" : "menu-bar"}
             onMouseDown={() => sharedMenu.close()}
         >
@@ -105,3 +78,9 @@ export function MenuBar({ items, onPick }: Props) {
         </ul>
     );
 }
+
+const clickOutsideConfig = {
+    handleClickOutside: () => (MenuBar as any).handleClickOutside
+};
+
+export default onClickOutside(MenuBar, clickOutsideConfig);

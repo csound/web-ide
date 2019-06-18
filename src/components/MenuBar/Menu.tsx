@@ -81,14 +81,10 @@ export const sharedMenu = new Menu();
 
 class MenuInstance implements EventListenerObject {
     items: MenuItem[];
-
-    blocker: HTMLDivElement;
     root: HTMLUListElement;
 
     constructor(items: MenuItem[], { className }: MenuInstanceOptions) {
         this.items = items;
-
-        this.blocker = createBlocker();
         this.root = createRoot(items, className);
     }
 
@@ -111,19 +107,9 @@ class MenuInstance implements EventListenerObject {
                     this.setActiveLI(e.target instanceof HTMLLIElement ? e.target : null);
                 }
                 break;
-            case "contextmenu":
-                e.preventDefault();
-                e.stopPropagation();
-                // TODO: Replicate the right click in Vekter.
-                if (e.target === this.blocker && Date.now() - this.showTime > closeOnReleaseThreshold) {
-                    this.close(CloseBehavior.Immediate);
-                }
-                break;
             case "mousedown":
                 this.mouseDownTime = Date.now();
-                if (e.target === this.blocker) {
-                    this.close(CloseBehavior.Immediate);
-                }
+                this.close(CloseBehavior.Immediate);
                 break;
             case "mouseout":
                 if (e.currentTarget === this.root) {
@@ -136,11 +122,9 @@ class MenuInstance implements EventListenerObject {
                 }
                 break;
             case "mouseup":
-                if (e.target === this.blocker) {
-                    // Only close if the menu wasn"t just opened.
-                    if (Date.now() - this.showTime > closeOnReleaseThreshold) {
-                        this.close(CloseBehavior.Immediate);
-                    }
+                // Only close if the menu wasn"t just opened.
+                if (Date.now() - this.showTime > closeOnReleaseThreshold) {
+                    this.close(CloseBehavior.Immediate);
                 } else {
                     this.pick();
                 }
@@ -186,16 +170,10 @@ class MenuInstance implements EventListenerObject {
         }
 
         this.state = MenuState.Open;
-        const { blocker, root } = this;
-
-        document.body.appendChild(blocker);
-        blocker.addEventListener("click", this);
-        blocker.addEventListener("mouseup", this);
-        blocker.addEventListener("contextmenu", this);
+        const { root } = this;
 
         document.body.appendChild(root);
         root.addEventListener("animationend", this);
-        root.addEventListener("contextmenu", this);
         root.addEventListener("click", this);
         root.addEventListener("mouseout", this);
         root.addEventListener("mouseover", this);
@@ -273,17 +251,6 @@ async function animateWithClass(element: HTMLElement, { className, animationName
     });
     element.classList.add(className);
     return promise;
-}
-
-function createBlocker() {
-    const div = document.createElement("div");
-    div.id = "menu-blocker";
-    div.style.position = "absolute";
-    div.style.bottom = "0";
-    div.style.left = "0";
-    div.style.right = "0";
-    div.style.top = "0";
-    return div;
 }
 
 function createItem(path: number[], item: MenuItem) {

@@ -1,6 +1,6 @@
 // MenuBar: https://codesandbox.io/s/94or0kq1o4
 import * as React from 'react';
-import { MenuBar } from './MenuBar';
+import MenuBar from './MenuBar';
 import { MenuItem, MenuItemDef } from './MenuItem';
 
 import "./styles/index.css";
