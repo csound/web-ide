@@ -80,7 +80,9 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
         ) : (
             <Avatar
                 src={avatarUrl || ""}
-                style={{maxHeight: "32px", maxWidth: "32px"}}
+                style={{maxHeight: "24px",
+                        maxWidth: "24px",
+                        padding: "0!important"}}
             />
         );
         const userMenu = () => (

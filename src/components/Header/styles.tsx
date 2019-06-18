@@ -6,7 +6,7 @@ const drawerWidth = 240;
 const headerStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
-        height: "48px",
+        height: "32px",
         zIndex: 100,
         overflow: "hidden",
         position: "relative",

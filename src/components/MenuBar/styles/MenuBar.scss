@@ -18,11 +18,12 @@
         user-select: none;
 
         &:hover {
+            cursor: pointer;
             background-color: var(--hover-background);
         }
 
         &.open {
-            background-color: var(--menu-active);
+            background-color: var(--menu-background); // var(--menu-active);
             border-radius: var(--corner-radius) var(--corner-radius) 0 0;
             color: var(--menu-active-text);
         }

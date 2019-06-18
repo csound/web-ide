@@ -41,7 +41,9 @@ export class Menu {
 
     async close(behavior = CloseBehavior.Immediate) {
         if (!this.active) return;
-        return this.active.close(behavior);
+        this.active.close(behavior);
+        this.active = undefined;
+        this.activePromise = undefined;
     }
 
     async show(
@@ -91,28 +93,12 @@ class MenuInstance implements EventListenerObject {
     }
 
     async close(behavior: CloseBehavior, selection?: Selection) {
-        if (!this.blocker.parentNode || !this.root.parentNode) {
-            throw Error("Elements not in DOM");
+        let menuEl = (document.getElementById("menu-dropdown") as any);
+        if (menuEl) {
+            this.setActiveLI(null);
+            menuEl.remove()
         }
-        if (this.state !== MenuState.Open) {
-            throw Error(`Menu not in Open state (${this.state})`);
-        }
-        const { resolve, reject } = this;
-        if (!resolve || !reject) throw Error("Invalid internal state");
-        this.state = MenuState.Closing;
-        // TODO: Ensure only one close is happening.
-        // TODO: Immediately resolve/reject promise if behavior is NoAnimation.
-        document.body.removeChild(this.blocker);
-        if (behavior === CloseBehavior.Immediate || behavior === CloseBehavior.Delayed) {
-            await this.fadeOut(behavior !== CloseBehavior.Delayed);
-        }
-        this.state = MenuState.Closed;
-        document.body.removeChild(this.root);
-        if (selection) {
-            resolve(selection);
-        } else {
-            reject();
-        }
+        return;
     }
 
     handleEvent(e: Event) {
@@ -165,7 +151,9 @@ class MenuInstance implements EventListenerObject {
     position({ location: { x, y }, within: { bottom, top, left, right } }: PositionOptions) {
         if (!this.root.parentNode) throw Error("Menu not in DOM");
         if (this.state !== MenuState.Open) {
-            throw Error(`Menu not in Open state (${this.state})`);
+            this.close(CloseBehavior.Immediate);
+            // throw Error(`Menu not in Open state (${this.state})`);
+            return;
         }
         // TODO: Early exit if values did not change.
         const { root } = this;
@@ -201,14 +189,14 @@ class MenuInstance implements EventListenerObject {
         const { blocker, root } = this;
 
         document.body.appendChild(blocker);
-        blocker.addEventListener("mousedown", this);
+        blocker.addEventListener("click", this);
         blocker.addEventListener("mouseup", this);
         blocker.addEventListener("contextmenu", this);
 
         document.body.appendChild(root);
         root.addEventListener("animationend", this);
         root.addEventListener("contextmenu", this);
-        root.addEventListener("mousedown", this);
+        root.addEventListener("click", this);
         root.addEventListener("mouseout", this);
         root.addEventListener("mouseover", this);
         root.addEventListener("mouseup", this);
@@ -346,7 +334,7 @@ function createItem(path: number[], item: MenuItem) {
 
 function createRoot(items: MenuItem[], className?: string) {
     const ul = document.createElement("ul");
-    ul.id = "menu";
+    ul.id = "menu-dropdown";
     if (className) {
         ul.classList.add(className);
     }

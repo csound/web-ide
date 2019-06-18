@@ -8,6 +8,10 @@ main {
     padding: 0;
 }
 
+header {
+    height: 38px!important;
+}
+
 .react-codemirror2 {
     font-size: 16px;
     margin-top: 12px;

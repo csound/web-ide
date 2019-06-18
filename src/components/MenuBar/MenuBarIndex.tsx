@@ -13,8 +13,10 @@ const menuBarDef: MenuItemDef[] = [
             { label: 'New Project…', accelerator: 'CommandOrControl+Shift+N', role: 'createNewProject' },
         ],
     },
-    { label: 'Edit', submenu: [{ label: 'Copy', role: 'copySelection' }] },
-    { label: 'Selection', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
+
+    { label: 'Selection1', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
+    { label: 'Selection2', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
+    { label: 'Selection3', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
 ];
 
 const menuBarItems = MenuItem.tree(menuBarDef);
@@ -25,7 +27,7 @@ export default class CsoundMenuBar extends React.Component<{}, {}> {
         return (
             <MenuBar
                 items={menuBarItems}
-                onPick={role => alert(`You picked ${role}!`)}
+                onPick={role => console.log(`You picked ${role}!`)}
             />
         )
     }

@@ -22,14 +22,15 @@
     }
 }
 
-#menu {
+#menu-dropdown {
     // Don't include the Apple Emoji Font since it would show emojis for shortcuts.
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
                  "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: red;
 
     &,
     & ul {
-        background-color: var(--menu-background);
+        background-color: #565656;
         border: var(--menu-border) solid var(--menu-border-width);
         border-radius: var(--corner-radius);
         box-shadow: 0 2px 10px var(--menu-shadow);
@@ -39,10 +40,11 @@
         font-size: 12px;
         line-height: 17px;
         margin: 0;
-        padding: 4px 0;
+        margin-top: 6px;
+        padding: 0;
         position: absolute;
         user-select: none;
-        z-index: 1;
+        z-index: 20;
     }
 
     &::after,
@@ -72,7 +74,8 @@
     }
 
     & li {
-        color: var(--text-link);
+        color: white;
+        background-color: var(--menu-background);
         cursor: default;
         display: flex;
         flex-direction: row;
@@ -88,10 +91,10 @@
             }
             &:hover,
             &.hover {
-                background-color: var(--menu-active);
+                cursor: pointer;
+                background-color: var(--menu-highlight);
                 color: var(--menu-active-text);
                 z-index: 2;
-
                 & > ul {
                     opacity: 1;
                     pointer-events: auto;

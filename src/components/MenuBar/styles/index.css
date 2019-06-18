@@ -11,7 +11,7 @@
     --list-border: #ddd;
     /* --menu-active: #09f; */
     --menu-active-text: #fff;
-    --menu-background: rgba(255, 255, 255, 0.97);
+    --menu-background: #343434;
     --menu-border: rgba(0, 0, 0, 0.1);
     --menu-border-width: 0.5px;
     --menu-highlight: rgba(255, 255, 255, 0.5);
@@ -20,7 +20,7 @@
     --panel-border: #ddd;
     --text: #ccc;
     --text-header: #fff;
-    --text-link: #fff;
+    --text-link: #efefefef;
     --text-menu: #fff;
     --text-subtle: rgba(255, 255, 255, 0.3);
 
@@ -30,7 +30,7 @@
     /* font-family: sans-serif; */
     /* height: 100vh; */
     margin: 0;
-    padding: 20px;
+    padding: 0px;
 }
 
 /* #csound-menu-bar { */
