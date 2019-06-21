@@ -14,13 +14,16 @@ header {
 
 .react-codemirror2 {
     font-size: 16px;
-    margin-top: 12px;
+    margin-top: 8px;
     width: 100%;
+    min-height: calc(100vh - 38px);
+    position: relative;
 }
 
 .react-codemirror2 > div{
     width: 100%;
-    min-height: 90vh;
+    height: 100%;
+    position: absolute;
 }
 
 .CodeMirror-fullscreen {
@@ -31,8 +34,8 @@ header {
 }
 
 .CodeMirror-scroll {
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow-x: auto!important;
+    overflow-y: hidden!important;
 }
 
 nav,button {
@@ -112,4 +115,44 @@ Note: Beware of modifying this element as it can break the animations - you shou
 /* Styling of overlay */
 .bm-overlay {
     background: rgba(0, 0, 0, 0.3);
+}
+
+
+/* Golden Layout */
+
+.lm_root {
+    margin-top: 8px;
+}
+
+.lm_content {
+    overflow: visible!important;
+}
+
+.lm_content > .react-codemirror2 {
+    margin-top: 0px;
+    margin-left: -1px;
+    width: calc(100% + 2px)!important;
+}
+
+.lm_header {
+    background: rgba(0, 0, 0, 0.3);
+    height: 26px!important;
+}
+
+.lm_title {
+    font-size: 16px;
+}
+
+.lm_controls {
+    zoom: 120%;
+}
+
+.lm_tab {
+    height: 20px!important;
+}
+
+.lm_close_tab {
+    zoom: 120%;
+    top: 5px!important;
+    right: 4px!important;
 }

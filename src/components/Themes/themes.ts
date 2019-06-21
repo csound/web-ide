@@ -15,7 +15,7 @@ const darkTheme = createMuiTheme({
             contrastText: "#854442",
         },
         background: {
-            default: "#272822",
+            default: "#efefef",
         }
     },
 });

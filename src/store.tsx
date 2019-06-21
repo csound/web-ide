@@ -18,4 +18,5 @@ const configureStore = () => {
     return { store, history };
 };
 
-export default configureStore;
+
+export const { store, history } = configureStore();

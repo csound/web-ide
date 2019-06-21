@@ -25,7 +25,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
     protected cm: any;
 
     public readonly state: ICodeEditorLocalState = {
-        currentEditorValue: "",
+        currentEditorValue: "HVAREREG",
     }
 
     constructor(props: ICodeEditorProps) {

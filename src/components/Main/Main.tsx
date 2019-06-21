@@ -5,8 +5,6 @@ import { ThemeProvider } from '@material-ui/styles';
 import { resolveTheme } from "../Themes/themes";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { IStore } from "../../db/interfaces";
-import Csound from "../Csound/CsoundComponent";
-import BurgerMenu from "../BurgerMenu/BurgerMenu";
 import { History } from "history";
 import { mainStylesHOC } from "./styles";
 import Header from "../Header/Header";
@@ -14,29 +12,29 @@ import Header from "../Header/Header";
 interface IMainProps {
     classes: any;
     history: History;
-    theme: string;
+    theme: string,
 }
 
-class Main extends React.Component<IMainProps, any> {
+
+class Main extends React.Component<IMainProps, {}> {
 
     public render() {
+
         return (
-            <Csound>
-                <ThemeProvider theme={resolveTheme(this.props.theme)}>
-                    <CssBaseline />
-                    <BurgerMenu />
-                    <Header />
-                    <Router history={this.props.history} />
-                </ThemeProvider>
-            </Csound>
+            <ThemeProvider theme={resolveTheme(this.props.theme)}>
+                <CssBaseline />
+                <Header />
+                <Router history={this.props.history} />
+            </ThemeProvider>
         );
     }
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
     return {
+        classes: ownProp.classes,
         history: ownProp.history,
-        theme: store.theme && store.theme.name,
+        theme: store.theme.name,
     }
 }
 

@@ -6655,6 +6655,12 @@ globule@^1.0.0:
     lodash "~4.17.10"
     minimatch "~3.0.2"
 
+golden-layout@^1.5.9:
+  version "1.5.9"
+  resolved "https://registry.yarnpkg.com/golden-layout/-/golden-layout-1.5.9.tgz#a39bc1f6a67e6f886b797c016dd924e9426ba77f"
+  dependencies:
+    jquery "*"
+
 google-auth-library@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-0.10.0.tgz#6e15babee85fd1dd14d8d128a295b6838d52136e"
@@ -8127,6 +8133,10 @@ join-path@^1.1.1:
     url-join "0.0.1"
     valid-url "^1"
 
+jquery@*, jquery@^3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
+
 js-base64@^2.1.8:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.5.1.tgz#1efa39ef2c5f7980bb1784ade4a8af2de3291121"
@@ -8834,6 +8844,18 @@ map-visit@^1.0.0:
   resolved "https://registry.yarnpkg.com/map-visit/-/map-visit-1.0.0.tgz#ecdca8f13144e660f1b5bd41f12f3479d98dfb8f"
   dependencies:
     object-visit "^1.0.0"
+
+material-ui-tree@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/material-ui-tree/-/material-ui-tree-2.0.1.tgz#7b882de52f8fbb602d747ebab2305251ec3228a1"
+  dependencies:
+    "@material-ui/core" "^4.0.2"
+    "@material-ui/icons" "^4.0.1"
+    "@material-ui/styles" "^4.0.2"
+    classnames "^2.2.6"
+    prop-types "^15.7.2"
+    react "^16.8.6"
+    react-dom "^16.8.6"
 
 math-random@^1.0.1:
   version "1.0.4"
@@ -11010,7 +11032,7 @@ react-dev-utils@^9.0.1:
     strip-ansi "5.2.0"
     text-table "0.2.0"
 
-react-dom@^16.8.6:
+react-dom@^16.3.0, react-dom@^16.8.6:
   version "16.8.6"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.8.6.tgz#71d6303f631e8b0097f56165ef608f051ff6e10f"
   dependencies:
@@ -11036,6 +11058,14 @@ react-firebaseui@^3.1.2:
   resolved "https://registry.yarnpkg.com/react-firebaseui/-/react-firebaseui-3.1.2.tgz#a1651713a3dae989b2fb7ccb0c288afd8ae28f30"
   dependencies:
     firebaseui "^3.2.0"
+
+react-golden-layout@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/react-golden-layout/-/react-golden-layout-1.0.6.tgz#a5f2548bd02615e103809d0b99e40d6824124079"
+  dependencies:
+    golden-layout "^1.5.9"
+    react "^16.3.0"
+    react-dom "^16.3.0"
 
 react-hot-loader@^4.9.0:
   version "4.9.0"
@@ -11189,7 +11219,7 @@ react@15.6.1:
     object-assign "^4.1.0"
     prop-types "^15.5.10"
 
-react@^16.8.6:
+react@^16.3.0, react@^16.8.6:
   version "16.8.6"
   resolved "https://registry.yarnpkg.com/react/-/react-16.8.6.tgz#ad6c3a9614fd3a4e9ef51117f54d888da01f2bbe"
   dependencies:

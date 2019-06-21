@@ -1,11 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Main from "./components/Main/Main";
-import registerServiceWorker from "./registerServiceWorker";
-import configureStore from "./configureStore";
 import { Provider } from "react-redux";
+import { store, history } from "./store";
+import registerServiceWorker from "./registerServiceWorker";
+import Main from "./components/Main/Main";
+import "./css/filemenu.css"
+import "./css/index.css";
 
-const { store, history } = configureStore();
+(window as any).React = React;
+(window as any).ReactDOM = ReactDOM;
+(window as any).$ = require("jquery");
 
 ReactDOM.render(
     <Provider store={store}>

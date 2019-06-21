@@ -17,7 +17,6 @@ import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
 import "firebase/auth";
-// import Editor from "../Editor/Editor";
 import { headerStylesHOC } from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
@@ -25,10 +24,11 @@ import MenuBar from "../MenuBar/MenuBarIndex";
 
 interface IHeaderProps {
     authenticated: boolean;
+    avatarUrl: string | null | undefined;
     classes: any;
     isLoginDialogOpen: boolean;
+    // theme: Theme;
     userDisplayName: string | null;
-    avatarUrl: string | null | undefined;
 }
 
 interface IHeaderDispatchProperties {
@@ -153,16 +153,16 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
 const mapStateToProps = (store: IStore, ownProp: any): IHeaderProps => {
     return {
         authenticated: store.LoginReducer.authenticated,
+        avatarUrl: store.userProfile && store.userProfile.photoUrl,
         classes: ownProp.classes,
         isLoginDialogOpen: store.LoginReducer.isLoginDialogOpen,
         userDisplayName: store.userProfile && store.userProfile.name,
-        avatarUrl: store.userProfile && store.userProfile.photoUrl,
     };
 };
 
 const mapDispatchToProps = (dispatch: any): IHeaderDispatchProperties => ({
-    openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
     logOut: () => dispatch(loginActions.logOut()),
+    openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
 });
 
 export default connect( mapStateToProps, mapDispatchToProps)(headerStylesHOC(Header));
