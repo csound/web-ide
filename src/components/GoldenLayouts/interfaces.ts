@@ -1,6 +1,7 @@
 export interface IPanel {
     type: string;
     component: string;
+    content?: IPanel[];
     id?: string;
     props?: any;
     panelTitle?: string;

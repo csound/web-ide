@@ -11,12 +11,13 @@ const menuBarDef: MenuItemDef[] = [
         submenu: [
             { label: 'New File…', accelerator: 'CommandOrControl+N', role: 'createNewFile' },
             { label: 'New Project…', accelerator: 'CommandOrControl+Shift+N', role: 'createNewProject' },
+            { label: "Save", accelerator: 'CommandOrControl+N', role: "saveFile" },
         ],
     },
 
-    { label: 'Selection1', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
-    { label: 'Selection2', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
-    { label: 'Selection3', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
+    { label: 'Edit', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
+    { label: 'View', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
+    // { label: 'Selection3', submenu: [{ label: 'Do Stuff :)', role: 'doStuff' }] },
 ];
 
 const menuBarItems = MenuItem.tree(menuBarDef);

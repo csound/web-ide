@@ -6,17 +6,13 @@ const drawerWidth = 240;
 const headerStyles = (theme: Theme) => createStyles({
     root: {
         flexGrow: 1,
-        height: "32px",
+        // height: "32px",
         zIndex: 100,
         overflow: "hidden",
         position: "relative",
         display: "flex",
-        marginBottom: "-2px",
     },
     appBar: {
-        root: {
-            height: "40px",
-        },
         marginBottom: "4px",
         borderBottom: "1px solid rgb(17, 21, 24)",
         zIndex: theme.zIndex.drawer + 1,

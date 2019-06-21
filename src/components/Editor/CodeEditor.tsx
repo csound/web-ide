@@ -25,7 +25,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
     protected cm: any;
 
     public readonly state: ICodeEditorLocalState = {
-        currentEditorValue: "HVAREREG",
+        currentEditorValue: "",
     }
 
     constructor(props: ICodeEditorProps) {
@@ -58,7 +58,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
     }
 
     componentDidMount() {
-        // console.log(this.cm.current);
+        // console.log("MOUNT!!");
         // const CodeMirror = this.cm.current.getCodeMirror();
         // CodeMirror.setSize("100%", "100%");
     }

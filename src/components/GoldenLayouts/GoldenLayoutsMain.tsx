@@ -52,7 +52,7 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
             component: "Editor",
             type: "react-component",
             panelTitle: "editor",
-            title: "untitled.orc"
+            title: "untitled.orc",
         };
 
         const fileTreePanel: IPanel =  {
@@ -60,22 +60,22 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
             type: "react-component",
             panelTitle: "FileTree",
             title: "FileTree",
-            width: 18
+            isClosable: false,
         };
 
         const config = {
-            // settings:{
-            //     hasHeaders: true,
-            //     constrainDragToContainer: true,
-            //     reorderEnabled: true,
-            //     selectionEnabled: false,
-            //     popoutWholeStack: false,
-            //     blockedPopoutsThrowError: true,
-            //     closePopoutsOnUnload: true,
-            //     showPopoutIcon: true,
-            //     showMaximiseIcon: true,
-            //     showCloseIcon: true
-            // },
+            settings:{
+                // hasHeaders: false,
+                // constrainDragToContainer: true,
+                reorderEnabled: false,
+                // selectionEnabled: false,
+                // popoutWholeStack: true,
+                // blockedPopoutsThrowError: true,
+                // closePopoutsOnUnload: true,
+                // showPopoutIcon: true,
+                // showMaximiseIcon: true,
+                // showCloseIcon: true
+                },
             // dimensions: {
             //     borderWidth: 5,
             //     headerHeight: 25,
@@ -85,14 +85,20 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
             content: [{
                 type: "row",
                 content: [
-                    fileTreePanel,
                     {
-                        type: "column",
+                        id: "left",
+                        type: "stack",
+                        content: [fileTreePanel],
+                        width: 18
+                    },
+                    {
+                        id: "center",
+                        type: "stack",
                         content: [panel],
                     }
                 ]
             }]
-        };
+            };
 
         const goldenLayout = new GoldenLayout(config, this.layoutParentRef.current);
 
@@ -103,13 +109,29 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
             wrapLayoutComponent(FileTree, store)
         );
 
-
         goldenLayout.registerComponent(
             "Editor",
             wrapLayoutComponent(Editor, store)
         );
 
         window.addEventListener("resize", this.updateDimensions);
+
+        // goldenLayout.on("tabCreated", (tab) => {
+        //     tab._dragListener.on('drag', () => {
+        //         //Drag Event
+        //         console.log("TAB", tab);
+        //     })
+        // })
+
+        // goldenLayout.on( 'initialised', function(){
+        //     var noDropStack = goldenLayout.root.getItemsById( 'left' )[ 0 ];
+        //     var originalGetArea = (noDropStack as any)._$getArea;
+        //     (noDropStack as any)._$getArea = function() {
+        //         var area = originalGetArea.call( noDropStack );
+        //         delete (noDropStack as any)._contentAreaDimensions.header;
+        //         return area;
+        //     };
+        // });
 
         setTimeout(() => goldenLayout.init(), 0);
         setTimeout(() => this.updateDimensions(null), 1);

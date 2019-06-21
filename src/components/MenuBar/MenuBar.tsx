@@ -26,7 +26,8 @@ function MenuBar({ items, onPick }: Props) {
     const openMenu = async (e: React.MouseEvent, i: number) => {
         e.preventDefault();
         e.stopPropagation();
-        if (open && (open === i)) {
+
+        if (open === i) {
             if (e.type === "mousedown") {
                 setOpen((o: any) => false);
                 sharedMenu.close();
