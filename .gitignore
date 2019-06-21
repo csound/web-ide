@@ -21,3 +21,6 @@ yarn-debug.log*
 yarn-error.log*
 .vscode
 .dir-locals.el
+
+# Tmp files
+*#

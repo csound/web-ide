@@ -10,7 +10,7 @@ const layoutStyles = (theme: Theme) => createStyles({
         ...theme.mixins.toolbar
     },
     content: {
-        flexGrow: 1,
+        // flexGrow: 1,
         backgroundColor: theme.palette.background.default,
         padding: 0,
     },

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import Switch from "@material-ui/core/Switch";
+// import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -123,33 +123,25 @@ const FileTree = () => {
     );
 
     return (
-        <div>
-            <Switch
-                checked={state.alignRight}
-                onChange={() => setState({ ...state, alignRight: !state.alignRight })}
-            />
-            Tree Action Buttons Align Right
-            <Tree
-                className={classes.container}
-                title="Material UI Tree"
-                data={state.data}
-                labelKey="path"
-                valueKey="sha"
-                childrenKey="tree"
-                foldIcon={<ArrowDropDownIcon />}
-                unfoldIcon={<ArrowDropUpIcon />}
-                loadMoreIcon={<MoreHorizIcon />}
-                renderLabel={renderLabel}
-                renderLoadMoreText={(page: number, pageSize: number, total: number) =>
-                    `Loaded: ${(page + 2) *
+        <Tree
+            className={classes.container}
+            data={state.data}
+            labelKey="path"
+            valueKey="sha"
+            childrenKey="tree"
+            foldIcon={<ArrowDropDownIcon />}
+            unfoldIcon={<ArrowDropUpIcon />}
+            loadMoreIcon={<MoreHorizIcon />}
+            renderLabel={renderLabel}
+            renderLoadMoreText={(page: number, pageSize: number, total: number) =>
+                `Loaded: ${(page + 2) *
             pageSize} / Total: ${total}. Click here to load more...`
-                }
-                pageSize={10}
-                actionsAlignRight={state.alignRight}
-                getActionsData={getActionsData}
-                requestChildrenData={requestChildrenData}
-            />
-        </div>
+            }
+            pageSize={10}
+            actionsAlignRight={false}
+            getActionsData={getActionsData}
+            requestChildrenData={requestChildrenData}
+        />
     );
 };
 

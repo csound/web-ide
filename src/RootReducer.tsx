@@ -10,7 +10,7 @@ import { History } from "history";
 export default (history: History) => combineReducers({
     router: connectRouter(history),
     LoginReducer,
-    GoldenLayoutReducer,
+    layout: GoldenLayoutReducer,
     userProfile: ProfileReducer,
     theme: TemplateReducer,
     burgerMenu: BurgerMenuReducer,

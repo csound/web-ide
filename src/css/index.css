@@ -5,11 +5,19 @@ html,body {
 }
 
 main {
+    position: relative;
     padding: 0;
+    min-height: calc(100vh - 36px);  /* minus the header height! */
 }
 
 header {
     height: 38px!important;
+}
+
+#golden-layout-top {
+    position: absolute;
+    height: 100%;
+    width: 100%;
 }
 
 .react-codemirror2 {
@@ -125,13 +133,13 @@ Note: Beware of modifying this element as it can break the animations - you shou
 }
 
 .lm_content {
-    overflow: visible!important;
+    /* overflow: visible!important; */
 }
 
 .lm_content > .react-codemirror2 {
     margin-top: 0px;
     margin-left: -1px;
-    width: calc(100% + 2px)!important;
+    /* width: calc(100% + 2px)!important; */
 }
 
 .lm_header {
@@ -155,4 +163,10 @@ Note: Beware of modifying this element as it can break the animations - you shou
     zoom: 120%;
     top: 5px!important;
     right: 4px!important;
+}
+
+
+/* This removes the open-in-new-window functionality */
+.lm_popout {
+    display: none;
 }

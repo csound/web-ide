@@ -49,7 +49,7 @@ export interface IStore {
     router: any;
     LoginReducer: any;
     RouterReducer: any;
-    GoldenLayoutReducer: IGoldenLayoutReducer;
+    layout: IGoldenLayoutReducer;
     userProfile: IUserProfile | null;
     theme: ITheme;
     burgerMenu: IBurgerMenu;

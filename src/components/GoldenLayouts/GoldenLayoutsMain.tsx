@@ -7,10 +7,10 @@ import { IPanel } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { store } from "../../store";
 import Editor from "../Editor/Editor";
-import Csound from "../Csound/CsoundComponent";
+// import Csound from "../Csound/CsoundComponent";
 import FileTree from "../FileTree";
 import "golden-layout/src/css/goldenlayout-base.css";
-import "golden-layout/src/css/goldenlayout-light-theme.css";
+import "golden-layout/src/css/goldenlayout-dark-theme.css";
 
 // <Csound> </Csound>
 
@@ -37,10 +37,13 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
         this.updateDimensions = this.updateDimensions.bind(this);
     }
 
-    public updateDimensions (event: Event) {
+    public updateDimensions (event: Event | null) {
         const { goldenLayout } = this.props;
         if (goldenLayout) {
-            goldenLayout.updateSize(document.body.clientWidth, 0);
+            goldenLayout.updateSize(
+                document.body.clientWidth,
+                document.body.clientHeight
+            );
         }
     }
 
@@ -52,36 +55,54 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
             title: "untitled.orc"
         };
 
+        const fileTreePanel: IPanel =  {
+            component: "FileTree",
+            type: "react-component",
+            panelTitle: "FileTree",
+            title: "FileTree",
+            width: 18
+        };
+
         const config = {
-            settings:{
-                hasHeaders: true,
-                constrainDragToContainer: true,
-                reorderEnabled: true,
-                selectionEnabled: false,
-                popoutWholeStack: false,
-                blockedPopoutsThrowError: true,
-                closePopoutsOnUnload: true,
-                showPopoutIcon: true,
-                showMaximiseIcon: true,
-                showCloseIcon: true
-            },
-            dimensions: {
-                borderWidth: 5,
-                headerHeight: 25,
-                minItemHeight: 800,
-                minItemWidth: 1024
-            },
-            content: [
-                {
-                    type: "column",
-                    content: [panel]
-                }
-            ]
+            // settings:{
+            //     hasHeaders: true,
+            //     constrainDragToContainer: true,
+            //     reorderEnabled: true,
+            //     selectionEnabled: false,
+            //     popoutWholeStack: false,
+            //     blockedPopoutsThrowError: true,
+            //     closePopoutsOnUnload: true,
+            //     showPopoutIcon: true,
+            //     showMaximiseIcon: true,
+            //     showCloseIcon: true
+            // },
+            // dimensions: {
+            //     borderWidth: 5,
+            //     headerHeight: 25,
+            //     minItemHeight: 800,
+            //     minItemWidth: 1024
+            // },
+            content: [{
+                type: "row",
+                content: [
+                    fileTreePanel,
+                    {
+                        type: "column",
+                        content: [panel],
+                    }
+                ]
+            }]
         };
 
         const goldenLayout = new GoldenLayout(config, this.layoutParentRef.current);
 
         this.props.createGoldenLayoutInstance(goldenLayout);
+
+        goldenLayout.registerComponent(
+            "FileTree",
+            wrapLayoutComponent(FileTree, store)
+        );
+
 
         goldenLayout.registerComponent(
             "Editor",
@@ -90,8 +111,8 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
 
         window.addEventListener("resize", this.updateDimensions);
 
-        setTimeout(() => goldenLayout.init());
-        // this.setState({ goldenLayout });
+        setTimeout(() => goldenLayout.init(), 0);
+        setTimeout(() => this.updateDimensions(null), 1);
 
     }
 
@@ -101,14 +122,14 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
 
     public render() {
         return (
-            <div ref={this.layoutParentRef}></div>
+            <div id="golden-layout-top" ref={this.layoutParentRef}></div>
         );
     }
 }
 
 const mapStateToProps = (store: IStore, ownProp: any): any => {
     return {
-        goldenLayout: store.GoldenLayoutReducer.goldenLayout,
+        goldenLayout: store.layout.goldenLayout,
     };
 };
 
