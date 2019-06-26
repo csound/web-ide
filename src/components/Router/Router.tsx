@@ -3,6 +3,8 @@ import { connect, Provider } from "react-redux";
 import { ITheme } from "../../db/interfaces";
 import { IStore } from "../../db/interfaces";
 import Editor from "../Editor/Editor";
+import Header from "../Header/Header";
+import Home from "../Home/Home";
 import { Route, Switch } from 'react-router-dom';
 import { ConnectedRouter } from "connected-react-router";
 import { store } from "../../store";
@@ -17,22 +19,20 @@ interface IRouterComponent {
     theme: ITheme;
 }
 
-const DefaultLayout = (args: any) => {
+const EditorLayout = (args: any) => {
     const classes = layoutStylesHook(args.theme);
-    const isAuthenticated = args.isAuthenticated;
-    const renderMeth = (matchProps) => isAuthenticated ? (
-        <main className={classes.content}>
-            <GoldenLayoutsMain />
-        </main>
-    ) : (
-        <main className={classes.content}>
-            <Editor {...matchProps} />
-        </main>
+    const renderMeth = (matchProps) => (
+        <div>
+            <Header />
+            <main className={classes.content} {... matchProps}>
+                <GoldenLayoutsMain />
+            </main>
+        </div>
     );
 
     return (
         <Provider store={store}>
-            <Route {... args} render={renderMeth} />
+            <Route render={renderMeth} />
         </Provider>
     )
 };
@@ -46,12 +46,13 @@ class RouterComponent extends Component<IRouterComponent, any> {
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
-                    <DefaultLayout {...this.props} path="/" />
+                    <EditorLayout path="/editor" {...this.props} />
                     <PrivateRoute
                         {...this.props}
                         path="/dashboard"
                         component={Editor}
                     />
+                    <Route path="/" render={ (matchProps) => <Home {... matchProps} />} />
                 </Switch>
             </ConnectedRouter>
         );

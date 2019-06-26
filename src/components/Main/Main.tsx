@@ -7,7 +7,6 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { IStore } from "../../db/interfaces";
 import { History } from "history";
 import { mainStylesHOC } from "./styles";
-import Header from "../Header/Header";
 
 interface IMainProps {
     classes: any;
@@ -23,7 +22,6 @@ class Main extends React.Component<IMainProps, {}> {
         return (
             <ThemeProvider theme={resolveTheme(this.props.theme)}>
                 <CssBaseline />
-                <Header />
                 <Router history={this.props.history} />
             </ThemeProvider>
         );

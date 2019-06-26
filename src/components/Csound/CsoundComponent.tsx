@@ -1,16 +1,16 @@
 import React from "react";
 import CsoundObj from "./CsoundObj";
+import { ICsoundObj } from "./interfaces";
+import { isEmpty } from "lodash";
 
-export const CsoundContext = React.createContext({ csound: null });
-
-// const CsoundObj = (window as any).CsoundObj;
+export const CsoundContext = React.createContext({} as any);
 
 interface ICsoundComponent {
     children: JSX.Element[] | JSX.Element
 }
 
 interface ICsoundComponentLocalState {
-    csound: any;
+    csound: ICsoundObj;
 }
 
 
@@ -22,15 +22,24 @@ export default class CsoundComponent extends React.Component<ICsoundComponent, I
 
     public componentDidMount() {
         CsoundObj.importScripts("./csound/").then(() => {
-            this.setState({ csound: new CsoundObj() });
+            const csoundObj = new CsoundObj();
+            this.setState({ csound:  csoundObj });
+            console.log("ÞESSI?", csoundObj, this.state.csound);
         });
     }
 
     public render() {
-        return (
-            <CsoundContext.Provider value={this.state.csound}>
-                {this.props.children}
-            </CsoundContext.Provider>
-        );
+        if (!this.state.csound || isEmpty(this.state.csound)) {
+            return (
+                <h5>Loading...</h5>
+            )
+        } else {
+            return (
+                <CsoundContext.Provider value={{csound: this.state.csound}}>
+                    {this.props.children}
+                </CsoundContext.Provider>
+            )
+        }
+
     }
 }

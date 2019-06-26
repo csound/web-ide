@@ -7,7 +7,6 @@ import { IPanel } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { store } from "../../store";
 import Editor from "../Editor/Editor";
-// import Csound from "../Csound/CsoundComponent";
 import FileTree from "../FileTree";
 import "golden-layout/src/css/goldenlayout-base.css";
 import "golden-layout/src/css/goldenlayout-dark-theme.css";

@@ -22,9 +22,18 @@ const FileTree = () => {
     const [state, setState] = useState({
         alignRight: false,
         data: {
-            path: "material-ui-tree",
+            path: "example-collection",
             type: "tree",
-        }
+        },
+
+
+        // [
+        //     {
+        //         path: "ScratchPad",
+        //         type: "blob",
+        //     },
+        //
+        // ]
     });
 
     const renderLabel = useCallback(

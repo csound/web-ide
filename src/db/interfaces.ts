@@ -1,14 +1,17 @@
 import { IGoldenLayoutReducer } from "../components/GoldenLayouts/reducer";
+import { IDocumentsReducer } from "../components/Documents/reducer";
 
 export interface IAssetFile {
     name: string;
     isBinary: boolean;
     lastEdit: Date;
+    type: "binary" | "txt";
 }
 
 export interface ICsoundFile {
     name: string;
     lastEdit: Date;
+    type: "csd" | "orc" | "sco" | "udo";
 }
 
 export interface IProject {
@@ -46,6 +49,7 @@ export interface IBurgerMenu {
 }
 
 export interface IStore {
+    documents: IDocumentsReducer;
     router: any;
     LoginReducer: any;
     RouterReducer: any;
