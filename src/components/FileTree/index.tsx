@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { connect, useSelector } from "react-redux";
 // import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -12,18 +13,24 @@ import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
+import { IProject } from "../Projects/interfaces";
+import { IStore } from "../../db/interfaces";
 
 // Use import if/when they add type declerations
 const getNodeDataByPath = require("material-ui-tree/lib/util").default;
 const Tree = require("material-ui-tree").default;
 
-const FileTree = () => {
+interface IFileTreeProps {
+    projects: IProject[];
+}
+
+const FileTree = (project: IProject) => {
     const classes = useStyles({});
     const [state, setState] = useState({
         alignRight: false,
         unfoldFirst: true,
         data: {
-            path: "project1",
+            path: project.name,
             type: "tree",
         },
     });
@@ -111,6 +118,17 @@ const FileTree = () => {
     const requestChildrenData = useCallback(
         (data, path, toggleFoldStatus) => {
             const { type } = data;
+            console.log(data);
+            if (type === "blob") {
+                setState({
+                    ...state,
+                    data: {
+                        path: project.name,
+                        type: "tree",
+                    },
+                });
+                toggleFoldStatus();
+            }
             if (type === "tree") {
                 setState({
                     ...state,
@@ -120,9 +138,7 @@ const FileTree = () => {
                         // sha: Math.random()
                     }
                 })
-                // GET DATA HERE
-                // state;
-                // setState;
+                toggleFoldStatus();
             } else {
                 toggleFoldStatus();
             }
@@ -142,10 +158,6 @@ const FileTree = () => {
             unfoldIcon={<ArrowDropUpIcon />}
             loadMoreIcon={<MoreHorizIcon />}
             renderLabel={renderLabel}
-            renderLoadMoreText={(page: number, pageSize: number, total: number) =>
-                `Loaded: ${(page + 2) *
-            pageSize} / Total: ${total}. Click here to load more...`
-            }
             pageSize={10}
             actionsAlignRight={false}
             getActionsData={getActionsData}
@@ -154,4 +166,18 @@ const FileTree = () => {
     );
 };
 
-export default FileTree;
+const ProjectsFileTree = () => {
+
+    const projects = useSelector((store: IStore) => store.ProjectsReducer.projects);
+
+    const projectTrees = projects.map((project: IProject) => {
+        return FileTree(project)
+    });
+
+    return (
+        <div>{projectTrees}</div>
+    )
+}
+
+
+export default connect(null, {})(ProjectsFileTree);

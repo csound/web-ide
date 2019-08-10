@@ -40,7 +40,7 @@ export interface IBurgerMenu {
 }
 
 export interface IStore {
-    projects: IProjectsReducer;
+    ProjectsReducer: any;
     router: any;
     LoginReducer: any;
     RouterReducer: any;

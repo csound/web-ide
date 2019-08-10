@@ -9,7 +9,7 @@ import GoldenLayoutReducer from "./components/GoldenLayouts/reducer";
 import { History } from "history";
 
 export default (history: History) => combineReducers({
-    projects: ProjectsReducer,
+    ProjectsReducer,
     router: connectRouter(history),
     LoginReducer,
     layout: GoldenLayoutReducer,
