@@ -5,6 +5,7 @@ import * as goldenLayoutActions from "./actions";
 import wrapLayoutComponent from "./wrapperLayoutComponent"
 import { IPanel } from "./interfaces";
 import { IStore } from "../../db/interfaces";
+import { IDocument, IProject } from "../Projects/interfaces";
 import { store } from "../../store";
 import Editor from "../Editor/Editor";
 import FileTree from "../FileTree";
@@ -12,8 +13,11 @@ import "golden-layout/src/css/goldenlayout-base.css";
 import "golden-layout/src/css/goldenlayout-dark-theme.css";
 
 interface IGoldenLayoutProps {
+    activeProject: number,
+    activeDocument: number,
     createGoldenLayoutInstance: (goldenLayout: GoldenLayout) => void;
     goldenLayout: GoldenLayout;
+    projects: IProject[],
 }
 
 interface IGoldenLayoutMainLocalState {
@@ -45,12 +49,18 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
     }
 
     public componentDidMount() {
-        const panel: IPanel =  {
-            component: "Editor",
-            type: "react-component",
-            panelTitle: "editor",
-            title: "untitled.orc",
-        };
+
+        const { activeProject, projects } = this.props;
+
+        const panels: IPanel[] = projects[activeProject].documents.map((document: IDocument) => {
+            return {
+                component: "Editor",
+                type: "react-component",
+                panelTitle: document.name,
+                title: document.name,
+                props: {savedValue: document.savedValue},
+            }
+        });
 
         const fileTreePanel: IPanel =  {
             component: "FileTree",
@@ -91,7 +101,7 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
                     {
                         id: "center",
                         type: "stack",
-                        content: [panel],
+                        content: panels,
                     }
                 ]
             }]
@@ -148,7 +158,10 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
 
 const mapStateToProps = (store: IStore, ownProp: any): any => {
     return {
+        activeProject: store.ProjectsReducer.activeProject,
+        activeDocument: store.ProjectsReducer.activeDocument,
         goldenLayout: store.layout.goldenLayout,
+        projects: store.ProjectsReducer.projects,
     };
 };
 

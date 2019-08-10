@@ -2,6 +2,8 @@ import { IDocument, IProject } from "./interfaces";
 //import { merge } from "lodash";
 
 export interface IProjectsReducer {
+    activeProject: number,
+    activeDocument: number,
     projects: IProject[];
 };
 
@@ -59,6 +61,8 @@ i1 0 2 8.00 -12
 }
 
 const initialProjectsState: IProjectsReducer = {
+    activeProject: 0,
+    activeDocument: 0,
     projects:[
         {
             name: "Untitled Project",

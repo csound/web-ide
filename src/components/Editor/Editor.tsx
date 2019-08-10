@@ -18,6 +18,7 @@ require("codemirror/theme/monokai.css");
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
+    savedValue: string;
 }
 
 interface ICodeEditorLocalState {
@@ -61,7 +62,8 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
         // editor.toggleComment();
     }
 
-    public componentDidMount() {
+    public componentDidMount(this) {
+        this.setState({currentEditorValue: this.props.savedValue || ""});
         CsoundObj.importScripts("./csound/").then(() => {
             // const csoundObj = new CsoundObj();
 
@@ -104,9 +106,9 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
-
     return {
         csound: null,
+        savedValue: ownProp.savedValue,
     }
 }
 
