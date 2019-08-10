@@ -24,7 +24,6 @@ export default class CsoundComponent extends React.Component<ICsoundComponent, I
         CsoundObj.importScripts("./csound/").then(() => {
             const csoundObj = new CsoundObj();
             this.setState({ csound:  csoundObj });
-            console.log("ÞESSI?", csoundObj, this.state.csound);
         });
     }
 

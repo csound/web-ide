@@ -18,7 +18,6 @@ require("codemirror/theme/monokai.css");
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
-    isScratchPad: boolean;
 }
 
 interface ICodeEditorLocalState {
@@ -106,11 +105,8 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
 
-    const isScratchPad = ownProp.csound;
-
     return {
-        csound: isScratchPad ? store.documents.scratchPad.csoundInstance : null,
-        isScratchPad,
+        csound: null,
     }
 }
 

@@ -21,19 +21,11 @@ const FileTree = () => {
     const classes = useStyles({});
     const [state, setState] = useState({
         alignRight: false,
+        unfoldFirst: true,
         data: {
-            path: "example-collection",
+            path: "project1",
             type: "tree",
         },
-
-
-        // [
-        //     {
-        //         path: "ScratchPad",
-        //         type: "blob",
-        //     },
-        //
-        // ]
     });
 
     const renderLabel = useCallback(
@@ -120,6 +112,14 @@ const FileTree = () => {
         (data, path, toggleFoldStatus) => {
             const { type } = data;
             if (type === "tree") {
+                setState({
+                    ...state,
+                    data: {
+                        path: "untitled.orc",
+                        type: "blob",
+                        // sha: Math.random()
+                    }
+                })
                 // GET DATA HERE
                 // state;
                 // setState;
@@ -127,7 +127,7 @@ const FileTree = () => {
                 toggleFoldStatus();
             }
         },
-        []
+        [state, setState]
         // [state, setState]
     );
 
