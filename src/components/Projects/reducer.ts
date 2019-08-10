@@ -44,7 +44,6 @@ instr 1
 
   out(al, ar)
 endin
-
     `,
     type: "orc",
 }
