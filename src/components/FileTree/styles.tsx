@@ -6,14 +6,15 @@ const useStyles = makeStyles({
         width: "100%",
         height: "100%",
         background: "#222",
+        padding: "0!important",
     },
-    // TODO - SYY - This doesn't work, not sure how to get the treeIcon color styled...
     treeIcon: {
-        color: "rgb(222,222,222)",
+        color: "red",
     },
     icon: {
-        fontSize: 20,
-        color: "rgb(222,222,222)",
+        fontSize: 24,
+        marginRight: 6,
+        color: "white",
     },
     node: {
         display: "flex",

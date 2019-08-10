@@ -255,3 +255,7 @@ Note: Beware of modifying this element as it can break the animations - you shou
 .Resizer.disabled:hover {
     border-color: transparent;
 }
+
+#project-trees-container .MuiList-padding {
+    padding: 0!important;
+}

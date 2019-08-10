@@ -37,10 +37,10 @@ instr 1
   iamp = ampdbfs(p5)
   ipch = cps2pch(p4,12)
   ipan = 0.5
-  
+
   asig = vco2(iamp, ipch)
 
-  al, ar pan2 asig, ipan 
+  al, ar pan2 asig, ipan
 
   out(al, ar)
 endin
@@ -66,7 +66,21 @@ const initialProjectsState: IProjectsReducer = {
             documents: [defaultCsd, defaultOrc, defaultSco],
             projectId: 0,
             assets: [],
-        }
+        },
+        // {
+        //     name: "Untitled Project2",
+        //     isPublic: false,
+        //     documents: [defaultCsd, defaultOrc, defaultSco],
+        //     projectId: 0,
+        //     assets: [],
+        // },
+        // {
+        //     name: "Untitled Project3",
+        //     isPublic: false,
+        //     documents: [defaultCsd, defaultOrc, defaultSco],
+        //     projectId: 0,
+        //     assets: [],
+        // }
     ]
 }
 

@@ -13,7 +13,7 @@ import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
-import { IProject } from "../Projects/interfaces";
+import { IDocument, IProject } from "../Projects/interfaces";
 import { IStore } from "../../db/interfaces";
 
 // Use import if/when they add type declerations
@@ -24,14 +24,24 @@ interface IFileTreeProps {
     projects: IProject[];
 }
 
-const FileTree = (project: IProject) => {
+const FileTree = (project: IProject, index: number) => {
     const classes = useStyles({});
+    const documents = project.documents.map((document: IDocument, index: number) => {
+        return {
+            path: document.name,
+            type: "blob",
+            sha: Math.random(),
+        }
+    });
     const [state, setState] = useState({
+        project,
         alignRight: false,
         unfoldFirst: true,
         data: {
             path: project.name,
             type: "tree",
+            tree: documents,
+            sha: index,
         },
     });
 
@@ -66,97 +76,84 @@ const FileTree = (project: IProject) => {
     );
 
     const getActionsData = useCallback(
-        (data, path, unfoldStatus) => {
-            const { type } = data;
-            if (type === "tree") {
-                if (!unfoldStatus) {
-                    return null;
-                }
-                return {
-                    icon: <AddIcon className={classes.icon} />,
-                    label: "new",
-                    hint: "Insert file",
-                    onClick: () => {
-                        const treeData = Object.assign({}, state.data);
-                        const nodeData = getNodeDataByPath(treeData, path, "tree");
-                        if (
-                            !Reflect.has(nodeData, "tree") ||
-                            !Reflect.has(nodeData.tree, "length")
-                        ) {
-                            nodeData.tree = [];
+            (data, path, unfoldStatus) => {
+                const { type } = data;
+                if (type === "tree") {
+                    if (!unfoldStatus) {
+                        return null;
+                    }
+                    return {
+                        icon: <AddIcon style={{color: "white", zoom: "150%",}} />,
+                        label: "new",
+                        hint: "Insert file",
+                        onClick: () => {
+                            const treeData = Object.assign({}, state.data);
+                            const nodeData = getNodeDataByPath(treeData, path, "tree");
+                            if (
+                                !Reflect.has(nodeData, "tree") ||
+                                !Reflect.has(nodeData.tree, "length")
+                            ) {
+                                nodeData.tree = [];
+                            }
+                            nodeData.tree.push({
+                                path: "new file",
+                                type: "blob",
+                                sha: Math.random()
+                            });
+                            setState({ ...state, data: treeData });
                         }
-                        nodeData.tree.push({
-                            path: "new file",
-                            type: "blob",
-                            sha: Math.random()
-                        });
-                        setState({ ...state, data: treeData });
+                        };
                     }
-                };
-            }
-            return [
-                {
-                    icon: <DeleteIcon color="secondary" className={classes.icon} />,
-                    hint: "Delete file",
-                    onClick: () => {
-                        const treeData = Object.assign({}, state.data);
-                        const parentData = getNodeDataByPath(
-                            treeData,
-                            path.slice(0, path.length - 1),
-                            "tree"
-                        );
-                        const lastIndex = path[path.length - 1];
-                        parentData.tree.splice(lastIndex, 1);
-                        setState({ ...state, data: treeData });
+                return [
+                    {
+                        icon: <DeleteIcon color="secondary" className={classes.icon} />,
+                        hint: "Delete file",
+                        onClick: () => {
+                            const treeData = Object.assign({}, state.data);
+                            const parentData = getNodeDataByPath(
+                                treeData,
+                                path.slice(0, path.length - 1),
+                                "tree"
+                            );
+                            const lastIndex = path[path.length - 1];
+                            parentData.tree.splice(lastIndex, 1);
+                            setState({ ...state, data: treeData });
+                        }
                     }
-                }
-            ];
-        },
-        [classes, state, setState]
+                ];
+            },
+        [classes , state //, setState
+        ]
     );
 
     const requestChildrenData = useCallback(
         (data, path, toggleFoldStatus) => {
             const { type } = data;
-            console.log(data);
+            // console.log(data);
             if (type === "blob") {
-                setState({
-                    ...state,
-                    data: {
-                        path: project.name,
-                        type: "tree",
-                    },
-                });
                 toggleFoldStatus();
             }
             if (type === "tree") {
-                setState({
-                    ...state,
-                    data: {
-                        path: "untitled.orc",
-                        type: "blob",
-                        // sha: Math.random()
-                    }
-                })
                 toggleFoldStatus();
             } else {
                 toggleFoldStatus();
             }
         },
-        [state, setState]
+        []
         // [state, setState]
     );
 
     return (
         <Tree
+            key={index}
             className={classes.container}
             data={state.data}
             labelKey="path"
             valueKey="sha"
             childrenKey="tree"
-            foldIcon={<ArrowDropDownIcon />}
-            unfoldIcon={<ArrowDropUpIcon />}
-            loadMoreIcon={<MoreHorizIcon />}
+            foldIcon={<ArrowDropDownIcon style={{color: "white"}} fontSize="large" />}
+            unfoldIcon={<ArrowDropUpIcon style={{color: "white"}} fontSize="large" />}
+            loadMoreIcon={<MoreHorizIcon style={{color: "white"}} fontSize="large" />}
             renderLabel={renderLabel}
             pageSize={10}
             actionsAlignRight={false}
@@ -170,12 +167,12 @@ const ProjectsFileTree = () => {
 
     const projects = useSelector((store: IStore) => store.ProjectsReducer.projects);
 
-    const projectTrees = projects.map((project: IProject) => {
-        return FileTree(project)
+    const projectTrees = projects.map((project: IProject, index: number) => {
+        return FileTree(project, index)
     });
 
     return (
-        <div>{projectTrees}</div>
+        <div id="project-trees-container">{projectTrees}</div>
     )
 }
 
