@@ -517,4 +517,4 @@ CsoundScriptProcessorNode  = function(context, options) {
     return Object.assign(spn,CsoundMixin);
 }
 
-window.CsoundScriptProcessorNode = CsoundScriptProcessorNode;
+window.CsoundScriptProcessorNodeFactory = CsoundScriptProcessorNodeFactory;
