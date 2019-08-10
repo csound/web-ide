@@ -1,5 +1,5 @@
 import { IDocument, IProject } from "./interfaces";
-import { merge } from "lodash";
+//import { merge } from "lodash";
 
 export interface IProjectsReducer {
     projects: IProject[];

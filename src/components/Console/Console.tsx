@@ -27,7 +27,7 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
     }
 
     public componentDidMount() {
-        const {csound} = this.props;
+        //const {csound} = this.props;
         // csound.setMessageCallback(this.messageCallback);
     }
 
