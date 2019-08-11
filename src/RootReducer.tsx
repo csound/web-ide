@@ -12,7 +12,7 @@ export default (history: History) => combineReducers({
     ProjectsReducer,
     router: connectRouter(history),
     LoginReducer,
-    layout: GoldenLayoutReducer,
+    GoldenLayoutReducer,
     userProfile: ProfileReducer,
     theme: TemplateReducer,
     burgerMenu: BurgerMenuReducer,

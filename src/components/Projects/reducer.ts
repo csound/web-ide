@@ -71,27 +71,17 @@ const initialProjectsState: IProjectsReducer = {
             projectId: 0,
             assets: [],
         },
-        // {
-        //     name: "Untitled Project2",
-        //     isPublic: false,
-        //     documents: [defaultCsd, defaultOrc, defaultSco],
-        //     projectId: 0,
-        //     assets: [],
-        // },
-        // {
-        //     name: "Untitled Project3",
-        //     isPublic: false,
-        //     documents: [defaultCsd, defaultOrc, defaultSco],
-        //     projectId: 0,
-        //     assets: [],
-        // }
     ]
 }
 
 export default (state: IProjectsReducer, action: any) => {
     switch (action.type) {
+        case "DOCUMENT_UPDATE_VALUE": {
+            state.projects[action.projectIndex].documents[action.documentIndex].currentValue = action.val;
+            return {...state};
+        }
         default: {
-            return initialProjectsState;
+            return state || initialProjectsState;
         }
     }
 }

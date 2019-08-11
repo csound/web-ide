@@ -44,7 +44,7 @@ export interface IStore {
     router: any;
     LoginReducer: any;
     RouterReducer: any;
-    layout: IGoldenLayoutReducer;
+    GoldenLayoutReducer: IGoldenLayoutReducer;
     userProfile: IUserProfile | null;
     theme: ITheme;
     burgerMenu: IBurgerMenu;

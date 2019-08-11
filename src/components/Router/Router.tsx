@@ -21,21 +21,24 @@ interface IRouterComponent {
 
 const EditorLayout = (args: any) => {
     const classes = layoutStylesHook(args.theme);
-    const renderMeth = (matchProps) => (
-        <div>
-            <Header />
-            <main className={classes.content} {... matchProps}>
-                <GoldenLayoutsMain />
-            </main>
-        </div>
-    );
+    const renderMeth = (matchProps) => {
+        const { to, staticContext, ...rest } = matchProps;
+        return (
+            <div>
+                <Header />
+                <main className={classes.content} {... rest}>
+                    <GoldenLayoutsMain />
+                </main>
+            </div>
+        );
+    }
 
     return (
         <Provider store={store}>
             <Route render={renderMeth} />
         </Provider>
     )
-};
+    };
 
 
 class RouterComponent extends Component<IRouterComponent, any> {

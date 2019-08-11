@@ -18,6 +18,7 @@ interface IGoldenLayoutProps {
     createGoldenLayoutInstance: (goldenLayout: GoldenLayout) => void;
     goldenLayout: GoldenLayout;
     projects: IProject[],
+    storeGoldenLayoutPanels: (panels: IPanel[]) => void;
 }
 
 interface IGoldenLayoutMainLocalState {
@@ -50,15 +51,20 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
 
     public componentDidMount() {
 
-        const { activeProject, projects } = this.props;
+        const { activeDocument, activeProject, projects } = this.props;
 
-        const panels: IPanel[] = projects[activeProject].documents.map((document: IDocument) => {
+        const panels: IPanel[] = projects[activeProject].documents.map((document: IDocument, index: number) => {
             return {
                 component: "Editor",
                 type: "react-component",
                 panelTitle: document.name,
                 title: document.name,
-                props: {savedValue: document.savedValue},
+                id: document.name,
+                props: {
+                    savedValue: document.savedValue,
+                    documentIndex: index,
+                    projectIndex: activeProject,
+                },
             }
         });
 
@@ -75,14 +81,14 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
                 // hasHeaders: false,
                 // constrainDragToContainer: true,
                 reorderEnabled: false,
-                // selectionEnabled: false,
+                selectionEnabled: true,
                 // popoutWholeStack: true,
                 // blockedPopoutsThrowError: true,
                 // closePopoutsOnUnload: true,
                 // showPopoutIcon: true,
                 // showMaximiseIcon: true,
                 // showCloseIcon: true
-                },
+            },
             // dimensions: {
             //     borderWidth: 5,
             //     headerHeight: 25,
@@ -99,9 +105,10 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
                         width: 18
                     },
                     {
-                        id: "center",
+                        id: "tabstack",
                         type: "stack",
                         content: panels,
+                        activeItemIndex: activeDocument,
                     }
                 ]
             }]
@@ -110,6 +117,8 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
         const goldenLayout = new GoldenLayout(config, this.layoutParentRef.current);
 
         this.props.createGoldenLayoutInstance(goldenLayout);
+
+        this.props.storeGoldenLayoutPanels(panels);
 
         goldenLayout.registerComponent(
             "FileTree",
@@ -122,7 +131,11 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
         );
 
         window.addEventListener("resize", this.updateDimensions);
+        window.addEventListener("show", (e) => console.log(e, "EEE"));
 
+        goldenLayout.on("show", (ugg) => {
+            console.log(ugg, "??");
+        })
         // goldenLayout.on("tabCreated", (tab) => {
         //     tab._dragListener.on('drag', () => {
         //         //Drag Event
@@ -142,7 +155,27 @@ class GoldenLayoutMain extends Component<IGoldenLayoutProps, IGoldenLayoutMainLo
 
         setTimeout(() => goldenLayout.init(), 0);
         setTimeout(() => this.updateDimensions(null), 1);
+        // HACK fix, click on all editors
+        setTimeout(() => {
+            projects[activeProject].documents.forEach((document: IDocument, index: number) => {
+                const tabItem = goldenLayout.root.getItemsById(document.name);
+                if (tabItem.length > 0) {
+                    tabItem[0].on("show", () => console.log("SHOW", document.name))
 
+                    // tabItem[0].parent.setActiveContentItem(tabItem[0]);
+                    // const codemirrorScrollElement = tabItem[0].element[0].getElementsByClassName("CodeMirror-scroll");
+                    // if (codemirrorScrollElement.length > 0) {
+                    //     codemirrorScrollElement[0].focus();
+                    //     codemirrorScrollElement[0].click();
+                    //     setTimeout(() => codemirrorScrollElement[0].click(), 100);
+                    //     var event = new MouseEvent('click', {bubbles: true});
+                    //     codemirrorScrollElement[0].dispatchEvent(event);
+                    // }
+
+
+                }
+            })
+        }, 10)
     }
 
     public componentWillUnmount() {
@@ -160,7 +193,7 @@ const mapStateToProps = (store: IStore, ownProp: any): any => {
     return {
         activeProject: store.ProjectsReducer.activeProject,
         activeDocument: store.ProjectsReducer.activeDocument,
-        goldenLayout: store.layout.goldenLayout,
+        goldenLayout: store.GoldenLayoutReducer.goldenLayout,
         projects: store.ProjectsReducer.projects,
     };
 };
@@ -168,6 +201,8 @@ const mapStateToProps = (store: IStore, ownProp: any): any => {
 const mapDispatchToProps = (dispatch: any): any => ({
     createGoldenLayoutInstance: (goldenLayout: GoldenLayout) =>
         dispatch(goldenLayoutActions.createGoldenLayoutInstance(goldenLayout)),
+    storeGoldenLayoutPanels: (panels: IPanel[]) =>
+        dispatch(goldenLayoutActions.storeGoldenLayoutPanels(panels)),
 });
 
 

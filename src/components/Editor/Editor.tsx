@@ -1,11 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
-import {UnControlled as CodeMirror} from "react-codemirror2";
+import {Controlled as CodeMirror} from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
 import CsoundObj from "../Csound/CsoundObj";
 import { ICsoundObj } from "../Csound/interfaces";
 import SplitPane from "react-split-pane";
 import Console from "../Console/Console";
+import * as projectActions from "../Projects/actions";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
@@ -18,20 +19,24 @@ require("codemirror/theme/monokai.css");
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
+    currentDocumentValue: string;
+    documentIndex: number;
+    projectIndex: number;
     savedValue: string;
+    updateDocumentValue: any;
 }
 
-interface ICodeEditorLocalState {
-    currentEditorValue: string;
-}
+// interface ICodeEditorLocalState {
+//     currentEditorValue: string;
+// }
 
-class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState> {
+class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
     protected cm: any;
 
-    public readonly state: ICodeEditorLocalState = {
-        currentEditorValue: "",
-    }
+    // public readonly state: ICodeEditorLocalState = {
+    //     currentEditorValue: "",
+    // }
 
     constructor(props: ICodeEditorProps) {
         super(props);
@@ -62,11 +67,22 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
         // editor.toggleComment();
     }
 
+
+    public componentWillUpdate() {} // dummy component
+
     public componentDidMount(this) {
-        this.setState({currentEditorValue: this.props.savedValue || ""});
+        const { updateDocumentValue, documentIndex, projectIndex } = this.props;
+        updateDocumentValue(this.props.savedValue, projectIndex, documentIndex);
+        // const hackInterval = setInterval(() => {
+        //     this.cm.current.mirror.focus();
+        //     this.cm.current.mirror.refresh();
+        // })
+        // setTimeout(() => {
+        //     console.log("REFRESH!", this.cm.current);
+        //     this.cm.current.ref.click();
+        // }, 3000);
         CsoundObj.importScripts("./csound/").then(() => {
             // const csoundObj = new CsoundObj();
-
             // this.setState({ csound:  csoundObj });
         });
     }
@@ -79,6 +95,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
 
     render() {
         let options = {
+            autoFocus: true,
             lineNumbers: true,
             lineWrapping: true,
             matchBrackets: true,
@@ -92,10 +109,19 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
                 "Ctrl-;": () => this.toggleComment()
             }
         };
+
+        const { updateDocumentValue, documentIndex, projectIndex } = this.props;
+
+        const onBeforeChange = (editor, data, value) => {
+            updateDocumentValue(value, projectIndex, documentIndex);
+        }
+
+
         return (
             <SplitPane split="horizontal" minSize="95%" defaultSize="80%">
                 <CodeMirror
-                    value={this.state.currentEditorValue}
+                    value={this.props.currentDocumentValue}
+                    onBeforeChange={onBeforeChange}
                     options={options}
                     ref={this.cm}
                 />
@@ -106,10 +132,21 @@ class CodeEditor extends React.Component<ICodeEditorProps, ICodeEditorLocalState
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
+
+    const currentDocumentValue = store.ProjectsReducer.projects[ownProp.projectIndex].documents[ownProp.documentIndex].currentValue;
+
     return {
         csound: null,
+        currentDocumentValue,
+        documentIndex: ownProp.documentIndex,
+        projectIndex: ownProp.projectIndex,
         savedValue: ownProp.savedValue,
     }
 }
 
-export default connect(mapStateToProps, {})(CodeEditor);
+const mapDispatchToProps = (dispatch: any): any => ({
+    updateDocumentValue: (val: string, projectIndex: number, documentIndex: number) =>
+        dispatch(projectActions.updateDocumentValue(val, projectIndex, documentIndex))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CodeEditor);

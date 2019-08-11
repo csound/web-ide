@@ -15,6 +15,7 @@ import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/interfaces";
 import { IStore } from "../../db/interfaces";
+import * as goldenLayoutActions from "../GoldenLayouts/actions";
 
 // Use import if/when they add type declerations
 const getNodeDataByPath = require("material-ui-tree/lib/util").default;
@@ -24,7 +25,11 @@ interface IFileTreeProps {
     projects: IProject[];
 }
 
-const FileTree = (project: IProject, index: number) => {
+const FileTree = () => {
+
+    const activeProject: number = useSelector((store: IStore) => store.ProjectsReducer.activeProject);
+    const project: IProject = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProject]);
+
     const classes = useStyles({});
     const documents = project.documents.map((document: IDocument, index: number) => {
         return {
@@ -35,13 +40,17 @@ const FileTree = (project: IProject, index: number) => {
     });
     const [state, setState] = useState({
         project,
+        expandAll: true,
         alignRight: false,
+        unfoldAll: true,
         unfoldFirst: true,
         data: {
+            unfoldFirst: true,
+            unfoldAll: true,
             path: project.name,
             type: "tree",
             tree: documents,
-            sha: index,
+            sha: Math.random(),
         },
     });
 
@@ -75,69 +84,78 @@ const FileTree = (project: IProject, index: number) => {
         [classes]
     );
 
+    const GoldenLayout = useSelector((store: IStore) => store.GoldenLayoutReducer.goldenLayout);
+
     const getActionsData = useCallback(
-            (data, path, unfoldStatus) => {
-                const { type } = data;
-                if (type === "tree") {
-                    if (!unfoldStatus) {
-                        return null;
-                    }
-                    return {
-                        icon: <AddIcon style={{color: "white", zoom: "150%",}} />,
-                        label: "new",
-                        hint: "Insert file",
-                        onClick: () => {
-                            const treeData = Object.assign({}, state.data);
-                            const nodeData = getNodeDataByPath(treeData, path, "tree");
-                            if (
-                                !Reflect.has(nodeData, "tree") ||
-                                !Reflect.has(nodeData.tree, "length")
-                            ) {
-                                nodeData.tree = [];
-                            }
-                            nodeData.tree.push({
-                                path: "new file",
-                                type: "blob",
-                                sha: Math.random()
-                            });
-                            setState({ ...state, data: treeData });
+        (data, path, unfoldStatus, toggleFoldStatus) => {
+
+            const { type } = data;
+
+            if (type === "blob") {
+                goldenLayoutActions.openTab(GoldenLayout, data.path);
+            }
+
+            if (type === "tree") {
+                if (!unfoldStatus) {
+                    toggleFoldStatus();
+                    return null;
+                }
+                return {
+                    icon: <AddIcon style={{color: "white", zoom: "150%",}} />,
+                    label: "new",
+                    hint: "Insert file",
+                    onClick: () => {
+                        const treeData = Object.assign({}, state.data);
+                        const nodeData = getNodeDataByPath(treeData, path, "tree");
+                        if (
+                            !Reflect.has(nodeData, "tree") ||
+                            !Reflect.has(nodeData.tree, "length")
+                        ) {
+                            nodeData.tree = [];
                         }
-                        };
+                        nodeData.tree.push({
+                            path: "new file",
+                            type: "blob",
+                            sha: Math.random()
+                        });
+                        setState({ ...state, data: treeData });
                     }
-                return [
-                    {
-                        icon: <DeleteIcon color="secondary" className={classes.icon} />,
-                        hint: "Delete file",
-                        onClick: () => {
-                            const treeData = Object.assign({}, state.data);
-                            const parentData = getNodeDataByPath(
-                                treeData,
-                                path.slice(0, path.length - 1),
-                                "tree"
-                            );
-                            const lastIndex = path[path.length - 1];
-                            parentData.tree.splice(lastIndex, 1);
-                            setState({ ...state, data: treeData });
-                        }
+                };
+            }
+            return [
+                {
+                    icon: <DeleteIcon color="secondary" className={classes.icon} />,
+                    hint: "Delete file",
+                    onClick: () => {
+                        const treeData = Object.assign({}, state.data);
+                        const parentData = getNodeDataByPath(
+                            treeData,
+                            path.slice(0, path.length - 1),
+                            "tree"
+                        );
+                        const lastIndex = path[path.length - 1];
+                        parentData.tree.splice(lastIndex, 1);
+                        setState({ ...state, data: treeData });
                     }
-                ];
-            },
-        [classes , state //, setState
-        ]
+                }
+            ];
+        },
+        [classes , state, GoldenLayout, setState]
     );
 
     const requestChildrenData = useCallback(
         (data, path, toggleFoldStatus) => {
+
             const { type } = data;
-            // console.log(data);
+
             if (type === "blob") {
                 toggleFoldStatus();
             }
-            if (type === "tree") {
-                toggleFoldStatus();
-            } else {
-                toggleFoldStatus();
-            }
+            // if (type === "tree") {
+            //     toggleFoldStatus();
+            // } else {
+            //     toggleFoldStatus();
+            // }
         },
         []
         // [state, setState]
@@ -145,7 +163,6 @@ const FileTree = (project: IProject, index: number) => {
 
     return (
         <Tree
-            key={index}
             className={classes.container}
             data={state.data}
             labelKey="path"
@@ -163,18 +180,18 @@ const FileTree = (project: IProject, index: number) => {
     );
 };
 
-const ProjectsFileTree = () => {
+// const ProjectsFileTree = () => {
+//
+//     const projects = useSelector((store: IStore) => store.ProjectsReducer.projects);
+//
+//     const projectTrees = projects.map((project: IProject, index: number) => {
+//         return FileTree(project, index)
+//     });
+//
+//     return (
+//         <div id="project-trees-container">{projectTrees}</div>
+//     )
+// }
 
-    const projects = useSelector((store: IStore) => store.ProjectsReducer.projects);
 
-    const projectTrees = projects.map((project: IProject, index: number) => {
-        return FileTree(project, index)
-    });
-
-    return (
-        <div id="project-trees-container">{projectTrees}</div>
-    )
-}
-
-
-export default connect(null, {})(ProjectsFileTree);
+export default connect(null, {})(FileTree);
