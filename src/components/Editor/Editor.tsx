@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import {Controlled as CodeMirror} from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
-import CsoundObj from "../Csound/CsoundObj";
+//import CsoundObj from "../Csound/CsoundObj";
 import { ICsoundObj } from "../Csound/interfaces";
 import SplitPane from "react-split-pane";
 import Console from "../Console/Console";
@@ -81,10 +81,10 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         //     console.log("REFRESH!", this.cm.current);
         //     this.cm.current.ref.click();
         // }, 3000);
-        CsoundObj.importScripts("./csound/").then(() => {
+        //CsoundObj.importScripts("./csound/").then(() => {
             // const csoundObj = new CsoundObj();
             // this.setState({ csound:  csoundObj });
-        });
+        //});
     }
 
     // componentDidMount() {

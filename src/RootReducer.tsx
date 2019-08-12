@@ -6,6 +6,7 @@ import TemplateReducer from "./components/Themes/reducer";
 import ProfileReducer from "./db/profileReducer";
 import BurgerMenuReducer from "./components/BurgerMenu/reducer";
 import GoldenLayoutReducer from "./components/GoldenLayouts/reducer";
+import CsoundReducer from "./components/Csound/reducer";
 import { History } from "history";
 
 export default (history: History) => combineReducers({
@@ -16,4 +17,5 @@ export default (history: History) => combineReducers({
     userProfile: ProfileReducer,
     theme: TemplateReducer,
     burgerMenu: BurgerMenuReducer,
+    csound: CsoundReducer,
 });
