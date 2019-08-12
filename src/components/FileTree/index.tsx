@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { connect, useSelector } from "react-redux";
+import { connect, useSelector, useDispatch } from "react-redux";
 // import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -14,6 +14,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/interfaces";
+import { newDocument } from "../Projects/actions";
 import { IStore } from "../../db/interfaces";
 import * as goldenLayoutActions from "../GoldenLayouts/actions";
 
@@ -29,6 +30,7 @@ const FileTree = () => {
 
     const activeProject: number = useSelector((store: IStore) => store.ProjectsReducer.activeProject);
     const project: IProject = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProject]);
+    const dispatch = useDispatch();
 
     const classes = useStyles({});
     const documents = project.documents.map((document: IDocument, index: number) => {
@@ -105,20 +107,21 @@ const FileTree = () => {
                     label: "new",
                     hint: "Insert file",
                     onClick: () => {
-                        const treeData = Object.assign({}, state.data);
-                        const nodeData = getNodeDataByPath(treeData, path, "tree");
-                        if (
-                            !Reflect.has(nodeData, "tree") ||
-                            !Reflect.has(nodeData.tree, "length")
-                        ) {
-                            nodeData.tree = [];
-                        }
-                        nodeData.tree.push({
-                            path: "new file",
-                            type: "blob",
-                            sha: Math.random()
-                        });
-                        setState({ ...state, data: treeData });
+                        dispatch(newDocument(activeProject, "untitled.txt", ""))
+                        // const treeData = Object.assign({}, state.data);
+                        // const nodeData = getNodeDataByPath(treeData, path, "tree");
+                        // if (
+                        //     !Reflect.has(nodeData, "tree") ||
+                        //     !Reflect.has(nodeData.tree, "length")
+                        // ) {
+                        //     nodeData.tree = [];
+                        // }
+                        // nodeData.tree.push({
+                        //     path: "new file",
+                        //     type: "blob",
+                        //     sha: Math.random()
+                        // });
+                        // setState({ ...state, data: treeData });
                     }
                 };
             }
@@ -140,7 +143,7 @@ const FileTree = () => {
                 }
             ];
         },
-        [classes , state, GoldenLayout, setState]
+        [classes , state, GoldenLayout, setState, activeProject, dispatch]
     );
 
     const requestChildrenData = useCallback(

@@ -80,6 +80,17 @@ export default (state: IProjectsReducer, action: any) => {
             state.projects[action.projectIndex].documents[action.documentIndex].currentValue = action.val;
             return {...state};
         }
+        case "DOCUMENT_NEW": {
+            console.log("what.")
+            state.projects[action.projectIndex].documents.push({
+                currentValue: action.val,
+                lastEdit: null,
+                name: action.name,
+                savedValue: action.val,
+                type: "orc",
+            });
+            return {...state};
+        }
         default: {
             return state || initialProjectsState;
         }
