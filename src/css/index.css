@@ -50,6 +50,18 @@ div .react-tabs {
     color: #f8f8f2;
 }
 
+.react-resizable-handle {
+    z-index: 20;
+    color: #f8f8f2;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+}
+
 .react-codemirror2 {
     font-size: 16px;
     /* margin-top: 8px; */
@@ -79,6 +91,10 @@ div .react-tabs {
     overflow-x: auto!important;
     overflow-y: hidden!important;
     margin: 0!important;
+}
+
+.CodeMirror-simplescroll-vertical {
+    background: #373a47;
 }
 
 nav,button {

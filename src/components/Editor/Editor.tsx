@@ -16,7 +16,8 @@ require("codemirror/keymap/vim");
 require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 require("codemirror/theme/monokai.css");
-
+require("codemirror/addon/scroll/simplescrollbars")
+require("codemirror/addon/scroll/simplescrollbars.css")
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
@@ -89,6 +90,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             lineWrapping: true,
             matchBrackets: true,
             autoCloseBrackets: true,
+            scrollbarStyle: "simple",
             theme: "monokai",
             mode: "csound",
             extraKeys: {
