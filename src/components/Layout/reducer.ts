@@ -11,7 +11,7 @@ const initialLayoutState: ILayoutReducer = {
         projectUid: initialProjectUid,
         tabDock: {
             tabIndex: 0,
-            openDocumentUids: initialDocumentUids,
+            openDocuments: initialDocumentUids.map(uid => ({uid, editorInstance: null})),
         }
     }]
 }
@@ -21,6 +21,13 @@ export default (state: ILayoutReducer, action: any) => {
         case "TAB_DOCK_SWITCH_TAB": {
             const sessionIndex = findIndex(state.sessions, s => s.projectUid === action.projectUid);
             state.sessions[sessionIndex].tabDock.tabIndex = action.tabIndex;
+            return {...state};
+        }
+        case "STORE_EDITOR_INSTANCE": {
+            const sessionIndex = findIndex(state.sessions, s => s.projectUid === action.projectUid);
+            const openDocumentIndex = findIndex(state.sessions[sessionIndex].tabDock.openDocuments,
+                                                od => od.uid === action.documentUid);
+            state.sessions[sessionIndex].tabDock.openDocuments[openDocumentIndex].editorInstance = action.editorInstance;
             return {...state};
         }
         default: {

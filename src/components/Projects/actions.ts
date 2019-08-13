@@ -21,3 +21,14 @@ export const newDocument = (projectUid: string, name: string, val: string) => {
         })
     }
 }
+
+export const storeEditorInstance = (editorInstance: any, projectUid: string, documentUid: string) => {
+    return async (dispatch: any) => {
+        dispatch({
+            type: "STORE_EDITOR_INSTANCE",
+            editorInstance,
+            projectUid,
+            documentUid,
+        })
+    }
+}

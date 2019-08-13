@@ -1,6 +1,11 @@
+interface IOpenDocument {
+    editorInstance: any;
+    uid: string;
+}
+
 export interface ITabDock {
     tabIndex: number;
-    openDocumentUids: string[];
+    openDocuments: IOpenDocument[];
 }
 
 export interface ISession {

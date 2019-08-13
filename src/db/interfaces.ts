@@ -47,5 +47,4 @@ export interface IStore {
     LayoutReducer: ILayoutReducer;
     userProfile: IUserProfile | null;
     theme: ITheme;
-    burgerMenu: IBurgerMenu;
 }

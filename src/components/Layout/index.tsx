@@ -9,12 +9,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes, faExpand, faWindowRestore } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "../../db/interfaces";
 import Editor from "../Editor/Editor";
+import { toggleEditorFullScreen } from "../Editor/actions"
 import FileTree from "../FileTree";
 import { Responsive as ResponsiveGridLayout } from "react-grid-layout";
 import { find } from "lodash";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "react-tabs/style/react-tabs.css";
+
 
 const Layout = () => {
 
@@ -46,8 +48,8 @@ const Layout = () => {
 
     const session: ISession = useSelector((store: IStore) => find(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid));
 
-    const openDocuments: IDocument[] = session.tabDock.openDocumentUids.map((documentUid: string) =>
-        find(project.documents, d => d.documentUid === documentUid));
+    const openDocuments: IDocument[] = session.tabDock.openDocuments.map(openDocument =>
+        find(project.documents, d => d.documentUid === openDocument.uid));
 
     const tabIndex: number = useSelector((store: IStore) => find(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid).tabDock.tabIndex);
 
@@ -83,7 +85,7 @@ const Layout = () => {
                 </IconButton>
             </Tooltip>
             <Tooltip title="FullScreen" placement="right-end">
-                <IconButton size="small">
+                <IconButton size="small" onClick={toggleEditorFullScreen}>
                     <FontAwesomeIcon icon={faExpand} size="sm" color="#f8f8f2" />
                 </IconButton>
             </Tooltip>

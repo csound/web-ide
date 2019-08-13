@@ -71,28 +71,30 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
     public componentDidMount(this) {
 
-        const { updateDocumentValue, projectUid, documentUid } = this.props;
+        const { updateDocumentValue, projectUid, documentUid,
+                storeEditorInstance } = this.props;
 
         updateDocumentValue(this.props.savedValue, projectUid, documentUid);
+        storeEditorInstance(this.cm.current.editor, projectUid, documentUid);
         setTimeout(() => this.cm.current.editor.focus(), 100);
     }
 
-    // componentDidMount() {
-    //     // console.log("MOUNT!!");
-    //     // const CodeMirror = this.cm.current.getCodeMirror();
-    //     // CodeMirror.setSize("100%", "100%");
-    // }
+    public componentWillUnmount(this) {
+        const { projectUid, documentUid, storeEditorInstance } = this.props;
+        storeEditorInstance(null, projectUid, documentUid);
+    }
 
     render() {
         let options = {
             // autoFocus: true,
+            autoCloseBrackets: true,
+            fullScreen: true,
             lineNumbers: true,
             lineWrapping: true,
             matchBrackets: true,
-            autoCloseBrackets: true,
+            mode: "csound",
             scrollbarStyle: "simple",
             theme: "monokai",
-            mode: "csound",
             extraKeys: {
                 "Ctrl-E": () => this.evalCode(),
                 // "Ctrl-H": insertHexplay,
@@ -123,13 +125,11 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     const project = find(store.ProjectsReducer.projects, p => p.projectUid === ownProp.projectUid);
     const document = project && find(project.documents, d => d.documentUid === ownProp.documentUid);
     const currentDocumentValue = !isEmpty(document) ? document.currentValue : "";
-    // const savedValue = !isEmpty(document) ? document.savedValue : "";
-    // console.log(ownProp);
+
     return {
         csound: null,
         documentUid: ownProp.documentUid,
         currentDocumentValue,
-        // currentDocumentValue: ownProp.currentDocumentValue,
         projectUid: ownProp.projectUid,
         savedValue: ownProp.savedValue,
     }
@@ -137,7 +137,9 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
 
 const mapDispatchToProps = (dispatch: any): any => ({
     updateDocumentValue: (val: string, projectUid: string, documentUid: string) =>
-        dispatch(projectActions.updateDocumentValue(val, projectUid, documentUid))
+        dispatch(projectActions.updateDocumentValue(val, projectUid, documentUid)),
+    storeEditorInstance: (editorInstance: any, projectUid: string, documentUid: string) =>
+        dispatch(projectActions.storeEditorInstance(editorInstance, projectUid, documentUid))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CodeEditor);
