@@ -28,9 +28,10 @@ export const isElectron: boolean =
      (typeof dirtyWindow.process.versions !== 'undefined') &&
      (typeof dirtyWindow.process.versions["electron"] !== 'undefined'));
 
-export const generateUid = (): string => {
+export const generateUid = (filename: string): string => {
     let shaObj = new jsSHA("SHA-256", "TEXT");
     shaObj.update(new Date().getTime());
+    shaObj.update(filename);
     shaObj.update(Math.round(Math.random() * 1000));
     return shaObj.getHash("HEX");
 }

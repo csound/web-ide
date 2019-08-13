@@ -16,6 +16,7 @@ import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/interfaces";
 import { newDocument } from "../Projects/actions";
 import { IStore } from "../../db/interfaces";
+import { find } from "lodash";
 
 // Use import if/when they add type declerations
 const getNodeDataByPath = require("material-ui-tree/lib/util").default;
@@ -27,8 +28,9 @@ interface IFileTreeProps {
 
 const FileTree = () => {
 
-    const activeProject: number = useSelector((store: IStore) => store.ProjectsReducer.activeProject);
-    const project: IProject = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProject]);
+    const activeProjectUid: string = useSelector((store: IStore) => store.ProjectsReducer.activeProjectUid);
+    const project: IProject = useSelector((store: IStore) => find(store.ProjectsReducer.projects, p => p.projectUid === activeProjectUid));
+
     const dispatch = useDispatch();
 
     const classes = useStyles({});
@@ -106,7 +108,7 @@ const FileTree = () => {
                     label: "new",
                     hint: "Insert file",
                     onClick: () => {
-                        dispatch(newDocument(activeProject, "untitled.txt", ""))
+                        dispatch(newDocument(activeProjectUid, "untitled.txt", ""))
                         // const treeData = Object.assign({}, state.data);
                         // const nodeData = getNodeDataByPath(treeData, path, "tree");
                         // if (
@@ -142,7 +144,7 @@ const FileTree = () => {
                 }
             ];
         },
-        [classes , state, setState, activeProject, dispatch]
+        [classes , state, setState, activeProjectUid, dispatch]
     );
 
     const requestChildrenData = useCallback(

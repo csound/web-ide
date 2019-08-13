@@ -78,6 +78,7 @@ div .react-tabs {
 .CodeMirror-scroll {
     overflow-x: auto!important;
     overflow-y: hidden!important;
+    margin: 0!important;
 }
 
 nav,button {

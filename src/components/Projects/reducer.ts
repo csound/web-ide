@@ -3,14 +3,13 @@ import { generateUid } from "../../utils";
 import { findIndex } from "lodash";
 
 export interface IProjectsReducer {
-    activeProject: number,
-    activeDocument: number,
+    activeProjectUid: string,
     projects: IProject[];
 };
 
 const defaultCsd: IDocument = {
     currentValue: "",
-    documentUid: generateUid(),
+    documentUid: generateUid("project.csd"),
     lastEdit: null,
     name: "project.csd",
     savedValue: `<CsoundSynthesizer>
@@ -30,7 +29,7 @@ const defaultCsd: IDocument = {
 
 const defaultOrc: IDocument = {
     currentValue: "",
-    documentUid: generateUid(),
+    documentUid: generateUid("project.orc"),
     lastEdit: null,
     name: "project.orc",
     savedValue: `
@@ -55,7 +54,7 @@ endin
 
 const defaultSco: IDocument = {
     currentValue: "",
-    documentUid: generateUid(),
+    documentUid: generateUid("project.sco"),
     lastEdit: null,
     name: "project.sco",
     savedValue: `
@@ -64,15 +63,20 @@ i1 0 2 8.00 -12
     type: "sco",
 }
 
+export const initialProjectUid: string = generateUid("defaultproject");
+
+export const initialDocumentUids: string[] = [
+    defaultCsd.documentUid, defaultOrc.documentUid, defaultSco.documentUid
+];
+
 const initialProjectsState: IProjectsReducer = {
-    activeProject: 0,
-    activeDocument: 0,
+    activeProjectUid: initialProjectUid,
     projects:[
         {
             name: "Untitled Project",
             isPublic: false,
             documents: [defaultCsd, defaultOrc, defaultSco],
-            projectUid: generateUid(),
+            projectUid: initialProjectUid,
             assets: [],
         },
     ]
@@ -88,10 +92,10 @@ export default (state: IProjectsReducer, action: any) => {
             return {...state};
         }
         case "DOCUMENT_NEW": {
-            console.log("what.")
-            state.projects[action.projectIndex].documents.push({
+            const projectIndex = findIndex(state.projects, p => p.projectUid === action.projectUid);
+            state.projects[projectIndex].documents.push({
                 currentValue: action.val,
-                documentUid: generateUid(),
+                documentUid: generateUid(action.name),
                 lastEdit: null,
                 name: action.name,
                 savedValue: action.val,

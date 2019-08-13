@@ -1,4 +1,5 @@
 import { IProjectsReducer } from "../components/Projects/reducer";
+import { ILayoutReducer } from "../components/Layout/reducer";
 
 export interface IAssetFile {
     name: string;
@@ -43,7 +44,7 @@ export interface IStore {
     router: any;
     LoginReducer: any;
     RouterReducer: any;
-    // GoldenLayoutReducer: IGoldenLayoutReducer;
+    LayoutReducer: ILayoutReducer;
     userProfile: IUserProfile | null;
     theme: ITheme;
     burgerMenu: IBurgerMenu;

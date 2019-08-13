@@ -11,11 +11,11 @@ export const updateDocumentValue = (val: string, projectUid: string, documentUid
     }
 }
 
-export const newDocument = (projectIndex: number, name: string, val: string) => {
+export const newDocument = (projectUid: string, name: string, val: string) => {
     return async (dispatch: any) => {
         dispatch({
             type: "DOCUMENT_NEW",
-            projectIndex,
+            projectUid,
             name,
             val,
         })
