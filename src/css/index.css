@@ -301,3 +301,7 @@ Note: Beware of modifying this element as it can break the animations - you shou
 .tab-panel-controller svg:hover {
     color: #f8f8f2;
 }
+
+.react-tabs__tab {
+    z-index: initial;
+}

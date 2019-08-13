@@ -5,7 +5,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument, IProject } from "../Projects/interfaces";
 // import { writeDocumentToEMFS } from "../Csound/actions";
-import { ISession } from "./interfaces";
+// import { ISession } from "./interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes, faExpand, faWindowRestore } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "../../db/interfaces";
@@ -13,7 +13,7 @@ import Editor from "../Editor/Editor";
 import { toggleEditorFullScreen } from "../Editor/actions"
 import FileTree from "../FileTree";
 import { Responsive as ResponsiveGridLayout } from "react-grid-layout";
-import { find } from "lodash";
+import { find, findIndex, isEmpty } from "lodash";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "react-tabs/style/react-tabs.css";
@@ -48,19 +48,30 @@ const Layout = () => {
 
     const project: IProject = useSelector((store: IStore) => find(store.ProjectsReducer.projects, p => p.projectUid === activeProjectUid));
 
-    const session: ISession = useSelector((store: IStore) => find(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid));
+    const sessionIndex: number = useSelector((store: IStore) => findIndex(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid));
 
-    const openDocuments: IDocument[] = session.tabDock.openDocuments.map(openDocument =>
+    const tabDockDocuments = useSelector((store: IStore) => store.LayoutReducer.sessions[sessionIndex].tabDock.openDocuments);
+
+    const openDocuments: IDocument[] = tabDockDocuments.map(openDocument =>
         find(project.documents, d => d.documentUid === openDocument.uid));
 
     const tabIndex: number = useSelector((store: IStore) => find(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid).tabDock.tabIndex);
+
+    const closeTab = (documentUid, projectUid) => {
+        dispatch({
+            type: "TAB_CLOSE",
+            documentUid,
+            projectUid,
+        })
+    }
 
     const openTabList = openDocuments.map((document: IDocument, index: number) => {
         const isActive: boolean = (index === tabIndex);
         return (
             <Tab key={index}>{document.name}
                 <Tooltip title="close" placement="right-end">
-                    <IconButton size="small" style={{marginLeft: 6, marginBottom: 2}}>
+                    <IconButton size="small" style={{marginLeft: 6, marginBottom: 2}}
+                                onClick={(e) => {e.stopPropagation(); closeTab(document.documentUid, activeProjectUid)}}>
                         <FontAwesomeIcon icon={faTimes} size="sm" color={isActive ? "black" : "#f8f8f2"} />
                     </IconButton>
                 </Tooltip>
@@ -94,6 +105,26 @@ const Layout = () => {
         </div>
     )
 
+    const switchTab = (index: number, lastIndex: number, event: Event) => {
+        dispatch({
+            type: "TAB_DOCK_SWITCH_TAB",
+            projectUid: activeProjectUid,
+            tabIndex: index
+        })
+    }
+
+    const tabDock = isEmpty(openDocuments) ? (<div />) : (
+        <div key="b" data-grid={{x: 3, y: 0, w: 9, h: 18}}>
+            {tabPanelController}
+            <Tabs defaultIndex={tabIndex} onSelect={switchTab}>
+                <TabList className="react-tabs__tab-list draggable">
+                    {openTabList}
+                </TabList>
+                {openTabPanels}
+            </Tabs>
+        </div>
+    );
+
     return (
         <ResponsiveGridLayout
             className="layout"
@@ -108,19 +139,7 @@ const Layout = () => {
             <div key="a" data-grid={{x: 0, y: 0, w: 3, h: 24, minW: 3}}>
                 <FileTree  />
             </div>
-            <div key="b" data-grid={{x: 3, y: 0, w: 9, h: 18}}>
-                {tabPanelController}
-                <Tabs defaultIndex={tabIndex} onSelect={(index: number) => dispatch({
-                    type: "TAB_DOCK_SWITCH_TAB",
-                    projectUid: activeProjectUid,
-                    tabIndex: index
-                })}>
-                    <TabList className="react-tabs__tab-list draggable">
-                        {openTabList}
-                    </TabList>
-                    {openTabPanels}
-                </Tabs>
-            </div>
+            {tabDock}
         </ResponsiveGridLayout>
     )
 }
