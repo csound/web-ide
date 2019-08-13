@@ -6,7 +6,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { IDocument, IProject } from "../Projects/interfaces";
 import { ISession } from "./interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faExpand, faWindowRestore } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "../../db/interfaces";
 import Editor from "../Editor/Editor";
 import FileTree from "../FileTree";
@@ -57,7 +57,7 @@ const Layout = () => {
             <Tab key={index}>{document.name}
                 <Tooltip title="close" placement="right-end">
                     <IconButton size="small" style={{marginLeft: 6, marginBottom: 2}}>
-                        <FontAwesomeIcon icon={faTimes} size="sm" color={isActive ? "black" : "white"} />
+                        <FontAwesomeIcon icon={faTimes} size="sm" color={isActive ? "black" : "#f8f8f2"} />
                     </IconButton>
                 </Tooltip>
             </Tab>
@@ -75,6 +75,20 @@ const Layout = () => {
         </TabPanel>
     ));
 
+    const tabPanelController = (
+        <div className="tab-panel-controller">
+            <Tooltip title="Undock" placement="right-end">
+                <IconButton size="small">
+                    <FontAwesomeIcon icon={faWindowRestore} size="sm" color="#f8f8f2" />
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="FullScreen" placement="right-end">
+                <IconButton size="small">
+                    <FontAwesomeIcon icon={faExpand} size="sm" color="#f8f8f2" />
+                </IconButton>
+            </Tooltip>
+        </div>
+    )
 
     return (
         <ResponsiveGridLayout
@@ -91,6 +105,7 @@ const Layout = () => {
                 <FileTree  />
             </div>
             <div key="b" data-grid={{x: 3, y: 0, w: 9, h: 18}}>
+                {tabPanelController}
                 <Tabs defaultIndex={tabIndex} onSelect={(index: number) => dispatch({
                     type: "TAB_DOCK_SWITCH_TAB",
                     projectUid: activeProjectUid,

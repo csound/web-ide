@@ -284,3 +284,20 @@ Note: Beware of modifying this element as it can break the animations - you shou
 #project-trees-container .MuiList-padding {
     padding: 0!important;
 }
+
+.tab-panel-controller {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+}
+
+.tab-panel-controller button {
+    margin-left: 8px;
+}
+.tab-panel-controller svg {
+    color: #373a47;
+}
+
+.tab-panel-controller svg:hover {
+    color: #f8f8f2;
+}
