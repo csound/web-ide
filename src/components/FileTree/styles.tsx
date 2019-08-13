@@ -8,6 +8,7 @@ const useStyles = makeStyles({
         background: "#272822",
         padding: "0!important",
         color: "#f8f8f2",
+        overflow: "hidden",
     },
     treeIcon: {
         color: "red",

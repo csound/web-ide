@@ -1,44 +1,48 @@
 import React from "react";
-import CsoundObj from "./CsoundObj";
+import { connect } from "react-redux";
 import { ICsoundObj } from "./interfaces";
-import { isEmpty } from "lodash";
+import { IDocument, IProject } from "../Projects/interfaces";
+import { IStore } from "../../db/interfaces";
+import { find } from "lodash";
 
-export const CsoundContext = React.createContext({} as any);
-
-interface ICsoundComponent {
-    children: JSX.Element[] | JSX.Element
-}
-
-interface ICsoundComponentLocalState {
+interface ICsoundComponentProps {
+    activeProjectUid: string;
     csound: ICsoundObj;
+    children: JSX.Element[] | JSX.Element
+    project: IProject;
 }
 
-
-export default class CsoundComponent extends React.Component<ICsoundComponent, ICsoundComponentLocalState> {
-
-    public readonly state: ICsoundComponentLocalState = {
-        csound: null,
-    }
+class CsoundComponent extends React.Component<ICsoundComponentProps, {}> {
 
     public componentDidMount() {
-        CsoundObj.importScripts("./csound/").then(() => {
-            const csoundObj = new CsoundObj();
-            this.setState({ csound:  csoundObj });
-        });
+
+        const initProjectInterval = setInterval(() => {
+            if (this.props.csound) {
+                clearInterval(initProjectInterval);
+                this.props.project.documents.forEach((document: IDocument) => {
+                    this.props.csound.writeToFS(document.name, document.savedValue);
+                });
+            }
+        }, 50);
     }
 
     public render() {
-        if (!this.state.csound || isEmpty(this.state.csound)) {
-            return (
-                <h5>Loading...</h5>
-            )
-        } else {
-            return (
-                <CsoundContext.Provider value={{csound: this.state.csound}}>
-                    {this.props.children}
-                </CsoundContext.Provider>
-            )
-        }
-
+        return (
+            <div>{this.props.children}</div>
+        )
     }
 }
+
+const mapStateToProps = (store: IStore, ownProp: any) => {
+
+    const activeProjectUid = store.ProjectsReducer.activeProjectUid;
+    const project = find(store.ProjectsReducer.projects, p => p.projectUid === activeProjectUid);
+
+    return {
+        activeProjectUid,
+        csound: store.csound.csound,
+        project,
+    }
+}
+
+export default connect(mapStateToProps, {})(CsoundComponent);

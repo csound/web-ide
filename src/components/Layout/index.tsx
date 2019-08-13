@@ -4,6 +4,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument, IProject } from "../Projects/interfaces";
+// import { writeDocumentToEMFS } from "../Csound/actions";
 import { ISession } from "./interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes, faExpand, faWindowRestore } from "@fortawesome/free-solid-svg-icons";
@@ -26,6 +27,7 @@ const Layout = () => {
     });
 
     useEffect(() => {
+
         const onWindowResize = () => {
             setDimensions({
                 innerWidth: window.innerWidth,

@@ -1,5 +1,6 @@
 import { IProjectsReducer } from "../components/Projects/reducer";
 import { ILayoutReducer } from "../components/Layout/reducer";
+import { ICsoundReducer } from "../components/Csound/reducer";
 
 export interface IAssetFile {
     name: string;
@@ -41,6 +42,7 @@ export interface IBurgerMenu {
 
 export interface IStore {
     ProjectsReducer: any;
+    csound: ICsoundReducer;
     router: any;
     LoginReducer: any;
     RouterReducer: any;
