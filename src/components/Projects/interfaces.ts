@@ -3,11 +3,12 @@ import { IAssetFile, ICsoundFile } from "../../db/interfaces";
 
 export interface IDocument extends ICsoundFile {
     currentValue: string;
+    documentUid: string;
     savedValue: string;
 }
 
 export interface IProject {
-    projectId: number;
+    projectUid: string;
     assets: IAssetFile[];
     name: string;
     isPublic: boolean;

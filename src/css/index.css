@@ -45,13 +45,21 @@ header {
     width: 100%;
 }
 
+div .react-tabs {
+    background-color: #222;
+    color: #f8f8f2;
+}
+
 .react-codemirror2 {
     font-size: 16px;
     /* margin-top: 8px; */
     width: 100%;
-    height: 100%;
-    /* min-height: calc(100vh - 38px); */
+    /* height: 100%; */
+    height: calc(100% - 34px);
+    top: 34px;
+    /* min-height: 33vh; */
     position: absolute;
+    bottom: 0;
 }
 
 .react-codemirror2 > div{

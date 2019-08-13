@@ -11,7 +11,7 @@ import { store } from "../../store";
 import PrivateRoute from "./PrivateRoute";
 import { History } from "history";
 import { layoutStylesHook } from "./styles";
-import GoldenLayoutsMain from "../GoldenLayouts/GoldenLayoutsMain";
+import Layout from "../Layout";
 
 interface IRouterComponent {
     isAuthenticated: boolean;
@@ -27,7 +27,7 @@ const EditorLayout = (args: any) => {
             <div>
                 <Header />
                 <main className={classes.content} {... rest}>
-                    <GoldenLayoutsMain />
+                    <Layout />
                 </main>
             </div>
         );

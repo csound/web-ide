@@ -16,7 +16,6 @@ import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/interfaces";
 import { newDocument } from "../Projects/actions";
 import { IStore } from "../../db/interfaces";
-import * as goldenLayoutActions from "../GoldenLayouts/actions";
 
 // Use import if/when they add type declerations
 const getNodeDataByPath = require("material-ui-tree/lib/util").default;
@@ -86,7 +85,7 @@ const FileTree = () => {
         [classes]
     );
 
-    const GoldenLayout = useSelector((store: IStore) => store.GoldenLayoutReducer.goldenLayout);
+    // const GoldenLayout = useSelector((store: IStore) => store.GoldenLayoutReducer.goldenLayout);
 
     const getActionsData = useCallback(
         (data, path, unfoldStatus, toggleFoldStatus) => {
@@ -94,7 +93,7 @@ const FileTree = () => {
             const { type } = data;
 
             if (type === "blob") {
-                goldenLayoutActions.openTab(GoldenLayout, data.path);
+                // goldenLayoutActions.openTab(GoldenLayout, data.path);
             }
 
             if (type === "tree") {
@@ -143,7 +142,7 @@ const FileTree = () => {
                 }
             ];
         },
-        [classes , state, GoldenLayout, setState, activeProject, dispatch]
+        [classes , state, setState, activeProject, dispatch]
     );
 
     const requestChildrenData = useCallback(
@@ -166,7 +165,7 @@ const FileTree = () => {
 
     return (
         <Tree
-            className={classes.container}
+            className={classes.container + " draggable"}
             data={state.data}
             labelKey="path"
             valueKey="sha"

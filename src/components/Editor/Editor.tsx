@@ -1,12 +1,13 @@
 import React from "react";
 import { connect } from "react-redux";
-import {Controlled as CodeMirror} from "react-codemirror2";
+import { Controlled as CodeMirror} from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
 //import CsoundObj from "../Csound/CsoundObj";
 import { ICsoundObj } from "../Csound/interfaces";
-import SplitPane from "react-split-pane";
-import Console from "../Console/Console";
+// import SplitPane from "react-split-pane";
+// import Console from "../Console/Console";
 import * as projectActions from "../Projects/actions";
+import { find, isEmpty } from "lodash";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
@@ -20,8 +21,8 @@ require("codemirror/theme/monokai.css");
 interface ICodeEditorProps {
     csound: ICsoundObj;
     currentDocumentValue: string;
-    documentIndex: number;
-    projectIndex: number;
+    documentUid: string;
+    projectUid: string;
     savedValue: string;
     updateDocumentValue: any;
 }
@@ -67,24 +68,12 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         // editor.toggleComment();
     }
 
-
-    public componentWillUpdate() {} // dummy component
-
     public componentDidMount(this) {
-        const { updateDocumentValue, documentIndex, projectIndex } = this.props;
-        updateDocumentValue(this.props.savedValue, projectIndex, documentIndex);
-        // const hackInterval = setInterval(() => {
-        //     this.cm.current.mirror.focus();
-        //     this.cm.current.mirror.refresh();
-        // })
-        // setTimeout(() => {
-        //     console.log("REFRESH!", this.cm.current);
-        //     this.cm.current.ref.click();
-        // }, 3000);
-        //CsoundObj.importScripts("./csound/").then(() => {
-            // const csoundObj = new CsoundObj();
-            // this.setState({ csound:  csoundObj });
-        //});
+
+        const { updateDocumentValue, projectUid, documentUid } = this.props;
+
+        updateDocumentValue(this.props.savedValue, projectUid, documentUid);
+        setTimeout(() => this.cm.current.editor.focus(), 100);
     }
 
     // componentDidMount() {
@@ -95,7 +84,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
     render() {
         let options = {
-            autoFocus: true,
+            // autoFocus: true,
             lineNumbers: true,
             lineWrapping: true,
             matchBrackets: true,
@@ -110,43 +99,43 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             }
         };
 
-        const { updateDocumentValue, documentIndex, projectIndex } = this.props;
+        const { updateDocumentValue, documentUid, projectUid } = this.props;
 
         const onBeforeChange = (editor, data, value) => {
-            updateDocumentValue(value, projectIndex, documentIndex);
+            updateDocumentValue(value, projectUid, documentUid);
         }
 
-
         return (
-            <SplitPane split="horizontal" minSize="95%" defaultSize="80%">
-                <CodeMirror
-                    value={this.props.currentDocumentValue}
-                    onBeforeChange={onBeforeChange}
-                    options={options}
-                    ref={this.cm}
-                />
-                <Console csound={this.props.csound} />
-            </SplitPane>
+            <CodeMirror
+                value={this.props.currentDocumentValue}
+                onBeforeChange={onBeforeChange}
+                options={options}
+                ref={this.cm}
+            />
         );
     }
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
 
-    const currentDocumentValue = store.ProjectsReducer.projects[ownProp.projectIndex].documents[ownProp.documentIndex].currentValue;
-
+    const project = find(store.ProjectsReducer.projects, p => p.projectUid === ownProp.projectUid);
+    const document = project && find(project.documents, d => d.documentUid === ownProp.documentUid);
+    const currentDocumentValue = !isEmpty(document) ? document.currentValue : "";
+    // const savedValue = !isEmpty(document) ? document.savedValue : "";
+    // console.log(ownProp);
     return {
         csound: null,
+        documentUid: ownProp.documentUid,
         currentDocumentValue,
-        documentIndex: ownProp.documentIndex,
-        projectIndex: ownProp.projectIndex,
+        // currentDocumentValue: ownProp.currentDocumentValue,
+        projectUid: ownProp.projectUid,
         savedValue: ownProp.savedValue,
     }
 }
 
 const mapDispatchToProps = (dispatch: any): any => ({
-    updateDocumentValue: (val: string, projectIndex: number, documentIndex: number) =>
-        dispatch(projectActions.updateDocumentValue(val, projectIndex, documentIndex))
+    updateDocumentValue: (val: string, projectUid: string, documentUid: string) =>
+        dispatch(projectActions.updateDocumentValue(val, projectUid, documentUid))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CodeEditor);

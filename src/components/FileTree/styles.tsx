@@ -5,8 +5,9 @@ const useStyles = makeStyles({
     container: {
         width: "100%",
         height: "100%",
-        background: "#222",
+        background: "#272822",
         padding: "0!important",
+        color: "#f8f8f2",
     },
     treeIcon: {
         color: "red",

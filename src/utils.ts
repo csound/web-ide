@@ -1,3 +1,4 @@
+import * as jsSHA from "jssha";
 
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
@@ -26,3 +27,10 @@ export const isElectron: boolean =
     ((typeof dirtyWindow.process !== 'undefined') &&
      (typeof dirtyWindow.process.versions !== 'undefined') &&
      (typeof dirtyWindow.process.versions["electron"] !== 'undefined'));
+
+export const generateUid = (): string => {
+    let shaObj = new jsSHA("SHA-256", "TEXT");
+    shaObj.update(new Date().getTime());
+    shaObj.update(Math.round(Math.random() * 1000));
+    return shaObj.getHash("HEX");
+}
