@@ -13,9 +13,10 @@ export function registerCsoundStoreListener(csound:ICsoundObj) {
         let removes = _.difference(last, current);
         let adds = _.difference(current, last);
 
-        if(last != current) {
+        if(removes.length > 0 || adds.length > 0) {
 
             for(let i of adds) {
+              console.log("Added: " + i);
    //             csound.writeToFS()
             }
             //console.log("Adds " + adds)
