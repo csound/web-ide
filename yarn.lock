@@ -10847,7 +10847,7 @@ react-dom@^16.3.0, react-dom@^16.8.6:
     prop-types "^15.6.2"
     scheduler "^0.15.0"
 
-react-draggable@3.x, react-draggable@^3.0.3, react-draggable@^3.3.1:
+react-draggable@3.x, react-draggable@^3.0.3:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/react-draggable/-/react-draggable-3.3.1.tgz#661b191d2b5be554e774ea68a5b7484568447b8b"
   integrity sha512-JeKyuO5f1jnVwMHdNkFpmaQoYn/6CyIiCDGSKbTgRisEtekjeUCeKmlNaNTLlpKOEu0SaKcBA1HlypSqWN/8Tw==
