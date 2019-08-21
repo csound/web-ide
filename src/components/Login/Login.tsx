@@ -82,19 +82,6 @@ class Login extends Component<ILogin, ILoginLocalState> {
         this.switchToLogin = this.switchToLogin.bind(this);
     }
 
-    public componentWillMount() {
-        if (!firebase.apps.length) {
-            firebase.initializeApp({
-                apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
-                authDomain: "csound-ide.firebaseapp.com",
-                databaseURL: "https://csound-ide.firebaseio.com",
-                projectId: "csound-ide",
-                storageBucket: "csound-ide.appspot.com",
-                messagingSenderId: "1089526309602"
-            });
-        }
-    }
-
     componentDidMount() {
         this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
             (user) => !!user && this.props.thirdPartyAuthSuccess(user)
