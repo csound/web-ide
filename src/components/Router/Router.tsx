@@ -2,14 +2,15 @@ import React, { Component } from "react";
 import { connect, Provider } from "react-redux";
 import { ITheme } from "../../db/interfaces";
 import { IStore } from "../../db/interfaces";
-import Editor from "../Editor/Editor";
+// import Editor from "../Editor/Editor";
 import Header from "../Header/Header";
 import Home from "../Home/Home";
 import CsoundComponent from "../Csound/CsoundComponent";
+import Profile from "../Profile/Profile";
 import { Route, Switch } from 'react-router-dom';
 import { ConnectedRouter } from "connected-react-router";
 import { store } from "../../store";
-import PrivateRoute from "./PrivateRoute";
+// import PrivateRoute from "./PrivateRoute";
 import { History } from "history";
 import { layoutStylesHook } from "./styles";
 import Layout from "../Layout";
@@ -51,11 +52,12 @@ class RouterComponent extends Component<IRouterComponent, any> {
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
                     <EditorLayout path="/editor" {...this.props} />
-                    <PrivateRoute
+                    {/* <PrivateRoute
                         {...this.props}
                         path="/dashboard"
                         component={Editor}
-                    />
+                    /> */}
+                    <Profile path="/profile" {...this.props} />
                     <Route path="/" render={ (matchProps) => <Home {... matchProps} />} />
                 </Switch>
             </ConnectedRouter>
