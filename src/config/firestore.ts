@@ -2,6 +2,7 @@ import * as firebase from "firebase/app";
 import 'firebase/firestore';
 
 // ENVIRONMENT SETTINGS
+/*
 const DEV = {
     apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
     authDomain: "csound-ide.firebaseapp.com",
@@ -9,7 +10,7 @@ const DEV = {
     projectId: "csound-ide",
     storageBucket: "csound-ide.appspot.com",
     messagingSenderId: "1089526309602"
-};
+}; */
 
 const PROD = {
     apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
