@@ -23,7 +23,7 @@ class Profile extends Component<any, {}> {
         });
 
         let projectLinks = fakeProjects.map(p => 
-            <li><Link to={"/editor/username/" + p.projectUid}>{p.name}</Link></li>
+            <li key={p.projectUid}><Link to={"/editor/username/" + p.projectUid}>{p.name}</Link></li>
         );
 
         const { classes } = this.props;
