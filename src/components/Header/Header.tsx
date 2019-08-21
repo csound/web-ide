@@ -29,6 +29,7 @@ interface IHeaderProps {
     isLoginDialogOpen: boolean;
     // theme: Theme;
     userDisplayName: string | null;
+    showMenuBar: boolean;
 }
 
 interface IHeaderDispatchProperties {
@@ -43,6 +44,10 @@ interface IHeaderLocalState {
 type IHeader = IHeaderProps & IHeaderDispatchProperties;
 
 class Header extends React.Component<IHeader, IHeaderLocalState> {
+
+    static defaultProps = {
+        showMenuBar: true,
+    }
 
     protected anchorEl: any;
 
@@ -133,7 +138,7 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
                 {isLoginDialogOpen && <Login />}
                 <AppBar className={classes.appBar}>
                     <Toolbar disableGutters={true}>
-                        <MenuBar />
+                        {this.props.showMenuBar && <MenuBar />}
                         <Typography
                             variant="subtitle1"
                             color="inherit"
@@ -150,13 +155,14 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
     }
 }
 
-const mapStateToProps = (store: IStore, ownProp: any): IHeaderProps => {
+const mapStateToProps = (store: IStore, ownProps: any): IHeaderProps => {
     return {
         authenticated: store.LoginReducer.authenticated,
         avatarUrl: store.userProfile && store.userProfile.photoUrl,
-        classes: ownProp.classes,
+        classes: ownProps.classes,
         isLoginDialogOpen: store.LoginReducer.isLoginDialogOpen,
         userDisplayName: store.userProfile && store.userProfile.name,
+        showMenuBar: ownProps.showMenuBar,
     };
 };
 
