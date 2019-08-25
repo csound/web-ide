@@ -4,6 +4,7 @@ import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
 // import classNames from "classnames";
 // import { Switch, Route } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
     AppBar,
     Toolbar,
@@ -115,6 +116,11 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
                     open={isProfileMenuOpen}
                     onClose={this.handleProfileMenuClose}
                 >
+                    <MenuItem>
+                      <Link to="/profile" className={classes.menuItemLink}>
+                          View Profile
+                      </Link>
+                    </MenuItem>
                     <MenuItem onClick={this.props.logOut}>
                         Logout
                     </MenuItem>

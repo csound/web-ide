@@ -67,6 +67,10 @@ const headerStyles = (theme: Theme) => createStyles({
     profileName: {
         textAlign: "right",
     },
+    menuItemLink: {
+        textDecoration: 'none',
+        color: 'black',
+    },
 });
 
 export const headerStylesHook = makeStyles(headerStyles);
