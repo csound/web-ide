@@ -12,6 +12,7 @@ import { IStore } from "../../db/interfaces";
 import Editor from "../Editor/Editor";
 import { toggleEditorFullScreen } from "../Editor/actions"
 import FileTree from "../FileTree";
+import Console from "../Console/Console";
 import { Responsive as ResponsiveGridLayout } from "react-grid-layout";
 import { find, isEmpty } from "lodash";
 import "react-grid-layout/css/styles.css";
@@ -137,6 +138,9 @@ const Layout = () => {
                 <FileTree  />
             </div>
             {tabDock}
+            <div key="c" data-grid={{x: 3, y: 18, w: 9, h: 6, minW: 2}}>
+                <Console  />
+            </div>
         </ResponsiveGridLayout>
     )
 }

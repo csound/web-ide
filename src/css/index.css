@@ -1,6 +1,6 @@
 html {
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 body {
     min-height: 100%;
@@ -29,7 +29,7 @@ html,body {
 main {
     position: relative;
     padding: 0;
-    min-height: calc(100vh + 36px);  /* minus the header height! */
+    min-height: calc(100vh - 40px);  /* minus the header height! */
     bottom: 0;
     top: 38px;
 }
@@ -148,4 +148,18 @@ nav,button {
 
 .react-tabs__tab {
     z-index: initial;
+}
+
+.console-log-container {
+    background: #272822;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 100%;
+    width: 100%;
+}
+
+.console-log-container pre {
+    color: #f8f8f2;
+    white-space: pre-wrap;
+    padding-left: 6px;
 }
