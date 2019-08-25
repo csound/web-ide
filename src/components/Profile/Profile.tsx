@@ -53,8 +53,9 @@ class Profile extends Component<any, IProfileState> {
             projectLinks = [<li key="0">No Projects found for user.</li>];
 
             if (projects != null && projects.length > 0) {
-                projectLinks = projects.map(doc =>
-                    <li key={doc.projectUid}><Link to={"/editor/" + doc.projectUid}>{doc.name}</Link></li>
+                projectLinks = projects.map(doc => 
+                    <li key={doc.projectUid}>
+                        <Link to={"/editor/" + doc.projectUid}>{doc.name}</Link> - <Link to="" onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.deleteProject(doc) }}>Delete</Link></li>
                 );
             }
         }
@@ -109,6 +110,14 @@ class Profile extends Component<any, IProfileState> {
 
         }
     }
+
+    deleteProject(doc) {
+        projects.doc(doc.projectUid).delete()
+        .then((d) => console.log("Project deleted"))
+        .catch(e => console.log("Deletion error"))
+    }
+
+
 }
 
 export default withStyles(Profile);
