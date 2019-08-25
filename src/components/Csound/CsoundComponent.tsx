@@ -19,7 +19,7 @@ class CsoundComponent extends React.Component<ICsoundComponentProps, {}> {
         const initProjectInterval = setInterval(() => {
             if (this.props.csound) {
                 clearInterval(initProjectInterval);
-                this.props.project.documents.forEach((document: IDocument) => {
+                Object.values(this.props.project.documents).forEach((document: IDocument) => {
                     this.props.csound.writeToFS(document.name, document.savedValue);
                 });
             }

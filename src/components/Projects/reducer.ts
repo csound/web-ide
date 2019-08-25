@@ -1,10 +1,9 @@
 import { IDocument, IProject } from "./interfaces";
 import { generateUid } from "../../utils";
-import { findIndex } from "lodash";
 
 export interface IProjectsReducer {
-    activeProjectUid: string,
-    projects: IProject[];
+    activeProjectUid: string;
+    projects: {[projectUid: string]: IProject};
 };
 
 const defaultCsd: IDocument = {
@@ -71,36 +70,40 @@ export const initialDocumentUids: string[] = [
 
 const initialProjectsState: IProjectsReducer = {
     activeProjectUid: initialProjectUid,
-    projects:[
-        {
+    projects: {
+        [initialProjectUid]: {
             name: "Untitled Project",
             isPublic: false,
-            documents: [defaultCsd, defaultOrc, defaultSco],
+            documents: {
+                [defaultCsd.documentUid]: defaultCsd,
+                [defaultOrc.documentUid]: defaultOrc,
+                [defaultSco.documentUid]: defaultSco,
+            },
             projectUid: initialProjectUid,
             assets: [],
         },
-    ]
+    }
 }
 
 export default (state: IProjectsReducer, action: any) => {
     switch (action.type) {
         case "DOCUMENT_UPDATE_VALUE": {
             if (!action.documentUid || !action.projectUid) {return state;}
-            const projectIndex = findIndex(state.projects, p => p.projectUid === action.projectUid);
-            const documentIndex = findIndex(state.projects[projectIndex].documents, d => d.documentUid === action.documentUid);
-            state.projects[projectIndex].documents[documentIndex].currentValue = action.val;
+            state.projects[action.projectUid].documents[action.documentUid].currentValue = action.val;
             return {...state};
         }
         case "DOCUMENT_NEW": {
-            const projectIndex = findIndex(state.projects, p => p.projectUid === action.projectUid);
-            state.projects[projectIndex].documents.push({
-                currentValue: action.val,
-                documentUid: generateUid(action.name),
-                lastEdit: null,
-                name: action.name,
-                savedValue: action.val,
-                type: "orc",
-            });
+            const newDocUid = generateUid(action.name);
+            state.projects[action.projectUid].documents =
+                {...state.projects[action.projectUid].documents,
+                 [newDocUid]: {
+                     currentValue: action.val,
+                     documentUid: newDocUid,
+                     lastEdit: null,
+                     name: action.name,
+                     savedValue: action.val,
+                     type: "orc",
+                 }} ;
             return {...state};
         }
         default: {

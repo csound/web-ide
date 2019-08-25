@@ -12,17 +12,17 @@ class Profile extends Component<any, {}> {
         let userProjects = projects.where("uid", "==", "0");
         console.log("userProjects:", userProjects);
 
-        let fakeProjects:IProject[] = [1,2,3].map((d) => {
+        let fakeProjects: IProject[] = [1,2,3].map((d) => {
             return {
-              projectUid: d + "",
-              assets:[],
-              name: "Project " + d,
-              isPublic: true,
-              documents: [],
+                projectUid: d + "",
+                assets:[],
+                name: "Project " + d,
+                isPublic: true,
+                documents: {},
             }
         });
 
-        let projectLinks = fakeProjects.map(p => 
+        let projectLinks = fakeProjects.map(p =>
             <li key={p.projectUid}><Link to={"/editor/username/" + p.projectUid}>{p.name}</Link></li>
         );
 
@@ -34,12 +34,12 @@ class Profile extends Component<any, {}> {
                     <h1>Profile</h1>
                     <p> </p>
                     <p>
-                    <Link to="/editor">
-                        + New Project 
+                        <Link to="/editor">
+                            + New Project
                         </Link>
                     </p>
                     <ul>
-                      { projectLinks }
+                        { projectLinks }
                     </ul>
                 </main>
             </div>

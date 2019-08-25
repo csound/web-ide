@@ -16,7 +16,7 @@ import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/interfaces";
 import { newDocument } from "../Projects/actions";
 import { IStore } from "../../db/interfaces";
-import { find } from "lodash";
+// import { find, findIndex } from "lodash";
 
 // Use import if/when they add type declerations
 const getNodeDataByPath = require("material-ui-tree/lib/util").default;
@@ -26,39 +26,50 @@ interface IFileTreeProps {
     projects: IProject[];
 }
 
+const initialSelectBlock: any = {};
+
 const FileTree = () => {
 
     const activeProjectUid: string = useSelector((store: IStore) => store.ProjectsReducer.activeProjectUid);
-    const project: IProject = useSelector((store: IStore) => find(store.ProjectsReducer.projects, p => p.projectUid === activeProjectUid));
+    const project: IProject = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProjectUid]);
+    const documents: {[documentUid: string]: IDocument} = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProjectUid].documents);
 
     const dispatch = useDispatch();
 
     const classes = useStyles({});
-    const documents = project.documents.map((document: IDocument, index: number) => {
+
+    const fileTreeDocs = Object.values(documents).map((document: IDocument, index: number) => {
         return {
             path: document.name,
             type: "blob",
-            sha: Math.random(),
+            sha: document.documentUid,
         }
     });
+
     const [state, setState] = useState({
         project,
-        expandAll: true,
+        expandAll: false,
         alignRight: false,
-        unfoldAll: true,
-        unfoldFirst: true,
+        unfoldAll: false,
+        unfoldFirst: false,
         data: {
-            unfoldFirst: true,
-            unfoldAll: true,
+            unfoldFirst: false,
+            unfoldAll: false,
             path: project.name,
             type: "tree",
-            tree: documents,
+            tree: fileTreeDocs,
             sha: Math.random(),
         },
     });
 
+    if (fileTreeDocs.length !== state.data.tree.length) {
+        state.data.tree = fileTreeDocs;
+        setState(state);
+    }
+
     const renderLabel = useCallback(
         (data, unfoldStatus) => {
+
             const { path, type } = data;
             let variant: "body1" | "body2" = "body1";
             let iconComp = null;
@@ -69,7 +80,7 @@ const FileTree = () => {
                 variant = "body2";
                 if (path.startsWith(".") || path.includes("config")) {
                     iconComp = <SettingsIcon />;
-                } else if (path.endsWith(".js")) {
+                } else if (path.endsWith(".csd") || path.endsWith(".sco") || path.endsWith(".orc") || path.endsWith(".udo")) {
                     iconComp = <DescriptionIcon />;
                 } else {
                     iconComp = <InsertDriveFileIcon />;
@@ -85,65 +96,56 @@ const FileTree = () => {
             );
         },
         [classes]
-    );
+        );
 
     // const GoldenLayout = useSelector((store: IStore) => store.GoldenLayoutReducer.goldenLayout);
 
     const getActionsData = useCallback(
-        (data, path, unfoldStatus, toggleFoldStatus) => {
+            (data, path, unfoldStatus, toggleFoldStatus) => {
 
-            const { type } = data;
+                const { type } = data;
 
-            if (type === "blob") {
-                // goldenLayoutActions.openTab(GoldenLayout, data.path);
-            }
-
-            if (type === "tree") {
-                if (!unfoldStatus) {
-                    toggleFoldStatus();
-                    return null;
-                }
-                return {
-                    icon: <AddIcon style={{color: "white", zoom: "150%",}} />,
-                    label: "new",
-                    hint: "Insert file",
-                    onClick: () => {
-                        dispatch(newDocument(activeProjectUid, "untitled.txt", ""))
-                        // const treeData = Object.assign({}, state.data);
-                        // const nodeData = getNodeDataByPath(treeData, path, "tree");
-                        // if (
-                        //     !Reflect.has(nodeData, "tree") ||
-                        //     !Reflect.has(nodeData.tree, "length")
-                        // ) {
-                        //     nodeData.tree = [];
-                        // }
-                        // nodeData.tree.push({
-                        //     path: "new file",
-                        //     type: "blob",
-                        //     sha: Math.random()
-                        // });
-                        // setState({ ...state, data: treeData });
+                if (type === "blob") {
+                    if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
+                        initialSelectBlock[data.sha.toString()] = true;
+                    } else {
+                        // console.log("CLICK!?", type, unfoldStatus, data);
                     }
-                };
-            }
-            return [
-                {
-                    icon: <DeleteIcon color="secondary" className={classes.icon} />,
-                    hint: "Delete file",
-                    onClick: () => {
-                        const treeData = Object.assign({}, state.data);
-                        const parentData = getNodeDataByPath(
-                            treeData,
-                            path.slice(0, path.length - 1),
-                            "tree"
-                        );
-                        const lastIndex = path[path.length - 1];
-                        parentData.tree.splice(lastIndex, 1);
-                        setState({ ...state, data: treeData });
-                    }
+                    // goldenLayoutActions.openTab(GoldenLayout, data.path);
                 }
-            ];
-        },
+
+                if (type === "tree") {
+                    if (!unfoldStatus) {
+                        toggleFoldStatus();
+                        return null;
+                    }
+                    return {
+                        icon: <AddIcon style={{color: "white", zoom: "150%",}} />,
+                        label: "new",
+                        hint: "Insert file",
+                        onClick: () => {
+                            dispatch(newDocument(activeProjectUid, "untitled.txt", ""));
+                        }
+                    };
+                }
+                return [
+                    {
+                        icon: <DeleteIcon color="secondary" className={classes.icon} />,
+                        hint: "Delete file",
+                        onClick: () => {
+                            const treeData = Object.assign({}, state.data);
+                            const parentData = getNodeDataByPath(
+                                treeData,
+                                path.slice(0, path.length - 1),
+                                "tree"
+                            );
+                            const lastIndex = path[path.length - 1];
+                            parentData.tree.splice(lastIndex, 1);
+                            setState({ ...state, data: treeData });
+                        }
+                    }
+                ];
+            },
         [classes , state, setState, activeProjectUid, dispatch]
     );
 

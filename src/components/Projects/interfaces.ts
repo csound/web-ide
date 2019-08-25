@@ -13,5 +13,5 @@ export interface IProject {
     assets: IAssetFile[];
     name: string;
     isPublic: boolean;
-    documents: IDocument[];
+    documents: {[documentUid: string]: IDocument};
 }
