@@ -107,178 +107,22 @@ nav,button {
     min-height: 32px!important;
 }
 
-/* BURGER MENU */
-/* Position and sizing of burger button */
-.bm-burger-button {
-    display: none;
-    position: fixed;
-    width: 36px;
-    height: 30px;
-    left: 36px;
-    top: 36px;
-}
-
-/* Color/shape of burger icon bars */
-.bm-burger-bars {
-    background: #373a47;
-}
-
-/* Color/shape of burger icon bars on hover*/
-.bm-burger-bars-hover {
-    background: #a90000;
-}
-
-/* Position and sizing of clickable cross button */
-.bm-cross-button {
-    height: 24px;
-    width: 24px;
-}
-
-/* Color/shape of close button cross */
-.bm-cross {
-    background: #bdc3c7;
-}
-
-/*
-Sidebar wrapper styles
-Note: Beware of modifying this element as it can break the animations - you should not need to touch it in most cases
-*/
-.bm-menu-wrap {
-    position: fixed;
-    height: 100%;
-}
-
-/* General sidebar styles */
-.bm-menu {
-    background: #373a47;
-    padding: 2.5em 1.5em 0;
-    font-size: 1.15em;
-}
-
-/* Morph shape necessary with bubble or elastic */
-.bm-morph-shape {
-    fill: #373a47;
-}
-
-/* Wrapper for item list */
-.bm-item-list {
-    color: #b8b7ad;
-    padding: 0.8em;
-}
-
-/* Individual item */
-.bm-item {
-    display: inline-block;
-}
-
-/* Styling of overlay */
-.bm-overlay {
-    background: rgba(0, 0, 0, 0.3);
-}
-
-
-/* Golden Layout */
-
-.lm_root {
-    margin-top: 8px;
-}
-
-.lm_content {
-    /* overflow: visible!important; */
-}
-
-.lm_content > .react-codemirror2 {
+.MuiFileTree .MuiIconButton-root {
     position: absolute;
-    /* margin-top: 18px; */
-    margin-left: -1px;
-    /* width: calc(100% + 2px)!important; */
+    right: 24px;
 }
 
-.lm_header {
-    background: rgba(0, 0, 0, 0.3);
-    height: 26px!important;
-}
-
-.lm_title {
-    font-size: 16px;
-}
-
-.lm_controls {
-    zoom: 120%;
-}
-
-.lm_tab {
-    height: 20px!important;
-}
-
-.lm_close_tab {
-    zoom: 120%;
-    top: 5px!important;
-    right: 4px!important;
-}
-
-
-/* This removes the open-in-new-window functionality */
-.lm_popout {
+.MuiFileTree .MuiListItemIcon-root {
     display: none;
 }
 
-.lm_root,.lm_item {
-    height: 100%!important;
-    margin-top: 0!important;
+.MuiFileTree .MuiListItemText-root {
+    width: 90%;
 }
 
-
-/* react-split-pane */
-
-.Resizer {
-    background: #000;
-    opacity: .2;
-    z-index: 1;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    -moz-background-clip: padding;
-    -webkit-background-clip: padding;
-    background-clip: padding-box;
-}
-
-.Resizer:hover {
-    -webkit-transition: all 2s ease;
-    transition: all 2s ease;
-}
-
-.Resizer.horizontal {
-    height: 11px;
-    margin: -5px 0;
-    border-top: 5px solid rgba(255, 255, 255, 0);
-    border-bottom: 5px solid rgba(255, 255, 255, 0);
-    cursor: row-resize;
-    width: 100%;
-}
-
-.Resizer.horizontal:hover {
-    border-top: 5px solid rgba(0, 0, 0, 0.5);
-    border-bottom: 5px solid rgba(0, 0, 0, 0.5);
-}
-
-.Resizer.vertical {
-    width: 11px;
-    margin: 0 -5px;
-    border-left: 5px solid rgba(255, 255, 255, 0);
-    border-right: 5px solid rgba(255, 255, 255, 0);
-    cursor: col-resize;
-}
-
-.Resizer.vertical:hover {
-    border-left: 5px solid rgba(0, 0, 0, 0.5);
-    border-right: 5px solid rgba(0, 0, 0, 0.5);
-}
-.Resizer.disabled {
-    cursor: not-allowed;
-}
-.Resizer.disabled:hover {
-    border-color: transparent;
+.MuiFileTree .MuiButtonBase-root .MuiButton-label {
+    position: absolute;
+    right: 4px;
 }
 
 #project-trees-container .MuiList-padding {

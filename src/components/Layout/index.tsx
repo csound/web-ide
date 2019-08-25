@@ -52,7 +52,7 @@ const Layout = () => {
     const openDocuments: IDocument[] = tabDockDocuments.map(openDocument =>
         find(Object.values(project.documents), d => d.documentUid === openDocument.uid));
 
-    const tabIndex: number = useSelector((store: IStore) => find(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid).tabDock.tabIndex);
+    const tabIndex: number = useSelector((store: IStore) => store.LayoutReducer.sessions[activeProjectUid].tabDock.tabIndex);
 
     const closeTab = (documentUid, projectUid) => {
         dispatch({

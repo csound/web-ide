@@ -13,8 +13,18 @@ const useStyles = makeStyles({
     treeIcon: {
         color: "red",
     },
-    icon: {
+    deleteIcon: {
         fontSize: 24,
+        // marginRight: 6,
+        color: "white",
+    },
+    editIcon: {
+        fontSize: 18,
+        marginRight: 32,
+        color: "white",
+    },
+    fileIcon: {
+        fontSize: 18,
         marginRight: 6,
         color: "white",
     },
@@ -22,7 +32,18 @@ const useStyles = makeStyles({
         display: "flex",
         alignContent: "center",
         color: "rgb(222,222,222)",
-    }
+        textOverflow: "ellipsis",
+        overflow: "hidden",
+    },
+    active: {
+        fontWeight: "bold",
+    },
+    inactive: {
+        fontWeight: "normal",
+    },
+    closed: {
+        fontWeight: "normal",
+    },
 });
 
 export default useStyles;

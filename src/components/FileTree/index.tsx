@@ -10,6 +10,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import DescriptionIcon from "@material-ui/icons/Description";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import AddIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
@@ -69,85 +70,95 @@ const FileTree = () => {
     }
 
     const renderLabel = useCallback(
-        (data, unfoldStatus) => {
-
-            const { path, type } = data;
-            let variant: "body1" | "body2" = "body1";
-            let iconComp = null;
-            if (type === "tree") {
-                iconComp = unfoldStatus ? <FolderOpenIcon /> : <FolderIcon />;
-            }
-            if (type === "blob") {
-                variant = "body2";
-                if (path.startsWith(".") || path.includes("config")) {
-                    iconComp = <SettingsIcon />;
-                } else if (path.endsWith(".csd") || path.endsWith(".sco") || path.endsWith(".orc") || path.endsWith(".udo")) {
-                    iconComp = <DescriptionIcon />;
-                } else {
-                    iconComp = <InsertDriveFileIcon />;
+            (data, unfoldStatus) => {
+                const { path, type } = data;
+                let textClassName: "active" | "inactive" | "closed" = "inactive";
+                let variant: "body1" | "body2" = "body1";
+                let iconComp = null;
+                if (type === "tree") {
+                    iconComp = unfoldStatus ? <FolderOpenIcon /> : <FolderIcon />;
                 }
-            }
-            return (
-                iconComp && (
+                if (type === "blob") {
+                    // console.log(activeTabDocUid === data.sha, activeTabDocUid, data.sha)
+                    // if (activeTabDocUid === data.sha) {
+                    //     secondaryClassName = "active";
+                    // }
+                    variant = "body2";
+                    if (path.startsWith(".") || path.includes("config")) {
+                        iconComp = <SettingsIcon />;
+                    } else if (path.endsWith(".csd") || path.endsWith(".sco") || path.endsWith(".orc") || path.endsWith(".udo")) {
+                        iconComp = <DescriptionIcon />;
+                    } else {
+                        iconComp = <InsertDriveFileIcon />;
+                    }
+                }
+
+                return (
                     <Typography variant={variant} className={classes.node}>
-                        {React.cloneElement(iconComp, { className: classes.icon })}
-                        {path}
+                        {React.cloneElement(iconComp, { className: classes.fileIcon })}
+                        <span className={classes[textClassName]}>{path}</span>
                     </Typography>
-                )
-            );
-        },
+                );
+            },
         [classes]
-        );
+    );
 
     // const GoldenLayout = useSelector((store: IStore) => store.GoldenLayoutReducer.goldenLayout);
 
     const getActionsData = useCallback(
-            (data, path, unfoldStatus, toggleFoldStatus) => {
+        (data, path, unfoldStatus, toggleFoldStatus) => {
 
-                const { type } = data;
+            const { type } = data;
 
-                if (type === "blob") {
-                    if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
-                        initialSelectBlock[data.sha.toString()] = true;
-                    } else {
-                        dispatch(tabOpenByDocumentUid(activeProjectUid, data.sha))
-                        // console.log("CLICK!?", type, unfoldStatus, data);
-                    }
-                    // goldenLayoutActions.openTab(GoldenLayout, data.path);
+            if (type === "blob") {
+                if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
+                    initialSelectBlock[data.sha.toString()] = true;
+                } else {
+                    dispatch(tabOpenByDocumentUid(activeProjectUid, data.sha))
+                    // console.log("CLICK!?", type, unfoldStatus, data);
                 }
+                // goldenLayoutActions.openTab(GoldenLayout, data.path);
+            }
 
-                if (type === "tree") {
-                    if (!unfoldStatus) {
-                        toggleFoldStatus();
-                        return null;
-                    }
-                    return {
-                        icon: <AddIcon style={{color: "white", zoom: "150%",}} />,
-                        label: "new",
-                        hint: "Insert file",
-                        onClick: () => {
-                            dispatch(newDocument(activeProjectUid, "untitled.txt", ""));
-                        }
-                    };
+            if (type === "tree") {
+                if (!unfoldStatus) {
+                    toggleFoldStatus();
+                    return null;
                 }
-                return [
-                    {
-                        icon: <DeleteIcon color="secondary" className={classes.icon} />,
-                        hint: "Delete file",
-                        onClick: () => {
-                            const treeData = Object.assign({}, state.data);
-                            const parentData = getNodeDataByPath(
-                                treeData,
-                                path.slice(0, path.length - 1),
-                                "tree"
-                            );
-                            const lastIndex = path[path.length - 1];
-                            parentData.tree.splice(lastIndex, 1);
-                            setState({ ...state, data: treeData });
-                        }
+                return {
+                    icon: <AddIcon style={{color: "white", zoom: "175%",}} />,
+                    label: "new",
+                    hint: "Insert file",
+                    onClick: () => {
+                        dispatch(newDocument(activeProjectUid, "untitled.txt", ""));
                     }
-                ];
-            },
+                };
+            }
+            return [
+                {
+                    icon: <EditIcon color="secondary" className={classes.editIcon} />,
+                    hint: "Rename file",
+                    onClick: () => {
+                        setState({ ...state });
+                    }
+                },
+                {
+                    icon: <DeleteIcon color="secondary" className={classes.deleteIcon} />,
+                    hint: "Delete file",
+                    onClick: () => {
+                        const treeData = Object.assign({}, state.data);
+                        const parentData = getNodeDataByPath(
+                            treeData,
+                            path.slice(0, path.length - 1),
+                            "tree"
+                        );
+                        const lastIndex = path[path.length - 1];
+                        parentData.tree.splice(lastIndex, 1);
+                        setState({ ...state, data: treeData });
+                    }
+                }
+            ];
+        },
         [classes , state, setState, activeProjectUid, dispatch]
     );
 
@@ -171,7 +182,7 @@ const FileTree = () => {
 
     return (
         <Tree
-            className={classes.container + " draggable"}
+            className={classes.container + " draggable MuiFileTree"}
             data={state.data}
             labelKey="path"
             valueKey="sha"
