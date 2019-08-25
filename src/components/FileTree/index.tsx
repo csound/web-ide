@@ -15,6 +15,7 @@ import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/interfaces";
 import { newDocument } from "../Projects/actions";
+import { tabOpenByDocumentUid } from "../Layout/actions";
 import { IStore } from "../../db/interfaces";
 // import { find, findIndex } from "lodash";
 
@@ -109,6 +110,7 @@ const FileTree = () => {
                     if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
                         initialSelectBlock[data.sha.toString()] = true;
                     } else {
+                        dispatch(tabOpenByDocumentUid(activeProjectUid, data.sha))
                         // console.log("CLICK!?", type, unfoldStatus, data);
                     }
                     // goldenLayoutActions.openTab(GoldenLayout, data.path);

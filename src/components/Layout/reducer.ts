@@ -1,6 +1,6 @@
 import { ISession } from "./interfaces";
 import { initialProjectUid, initialDocumentUids } from "../Projects/reducer";
-import { filter } from "lodash";
+import { filter, findIndex } from "lodash";
 
 export interface ILayoutReducer {
     sessions: {[projectId: string]: ISession};
@@ -22,6 +22,17 @@ export default (state: ILayoutReducer, action: any) => {
     switch (action.type) {
         case "TAB_DOCK_SWITCH_TAB": {
             state.sessions[action.projectUid].tabDock.tabIndex = action.tabIndex;
+            return {...state};
+        }
+        case "TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID": {
+            const currentOpenDocs = state.sessions[action.projectUid].tabDock.openDocuments;
+            const documentAlreadyOpenIndex = findIndex(currentOpenDocs, od => od.uid === action.documentUid);
+            if (documentAlreadyOpenIndex < 0) {
+                state.sessions[action.projectUid].tabDock.tabIndex = currentOpenDocs.length;
+                currentOpenDocs.push({uid: action.documentUid, editorInstance: null})
+            } else {
+                state.sessions[action.projectUid].tabDock.tabIndex = documentAlreadyOpenIndex;
+            }
             return {...state};
         }
         case "TAB_CLOSE": {

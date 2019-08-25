@@ -113,7 +113,7 @@ const Layout = () => {
     const tabDock = isEmpty(openDocuments) ? (<div />) : (
         <div key="b" data-grid={{x: 3, y: 0, w: 9, h: 18}}>
             {tabPanelController}
-            <Tabs defaultIndex={tabIndex} onSelect={switchTab}>
+            <Tabs onSelect={switchTab} selectedIndex={tabIndex}>
                 <TabList className="react-tabs__tab-list draggable">
                     {openTabList}
                 </TabList>
