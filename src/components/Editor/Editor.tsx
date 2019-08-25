@@ -76,7 +76,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
         updateDocumentValue(this.props.savedValue, projectUid, documentUid);
         storeEditorInstance(this.cm.current.editor, projectUid, documentUid);
-        setTimeout(() => this.cm.current.editor.focus(), 100);
+        setTimeout(() => this.cm.current && this.cm.current.editor && this.cm.current.editor.focus(), 100);
     }
 
     public componentWillUnmount(this) {

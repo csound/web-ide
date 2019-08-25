@@ -1,4 +1,5 @@
-// import { ICsoundObj } from "../Csound/interfaces";
+import { tabOpenByDocumentUid } from "../Layout/actions";
+import { generateUid } from "../../utils";
 
 export const updateDocumentValue = (val: string, projectUid: string, documentUid: string) => {
     return async (dispatch: any) => {
@@ -12,13 +13,17 @@ export const updateDocumentValue = (val: string, projectUid: string, documentUid
 }
 
 export const newDocument = (projectUid: string, name: string, val: string) => {
+    const newDocUid = generateUid(name);
+
     return async (dispatch: any) => {
-        dispatch({
+        await dispatch({
             type: "DOCUMENT_NEW",
+            documentUid: newDocUid,
             projectUid,
             name,
             val,
         })
+        dispatch(tabOpenByDocumentUid(projectUid, newDocUid));
     }
 }
 

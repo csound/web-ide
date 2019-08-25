@@ -93,12 +93,12 @@ export default (state: IProjectsReducer, action: any) => {
             return {...state};
         }
         case "DOCUMENT_NEW": {
-            const newDocUid = generateUid(action.name);
+
             state.projects[action.projectUid].documents =
                 {...state.projects[action.projectUid].documents,
-                 [newDocUid]: {
+                 [action.documentUid]: {
                      currentValue: action.val,
-                     documentUid: newDocUid,
+                     documentUid: action.documentUid,
                      lastEdit: null,
                      name: action.name,
                      savedValue: action.val,
