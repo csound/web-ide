@@ -28,17 +28,14 @@ class Profile extends Component<any, IProfileState> {
                 let uid = firebase.auth().currentUser.uid;
 
                 // Need to fix this...
-                projects.where("userUid", "==", uid).get()
-                    .then(querySnapshot => {
+                projects.where("userUid", "==", uid).onSnapshot(
+                    querySnapshot => {
                         // FIXME: Must be a better way...
                         let projects = [];
                         querySnapshot.forEach(d => projects.push(d.data()));
                         this.setState({ projects, dataLoaded: true })
                         console.log(projects)
                     })
-                    .catch(e => {
-                        console.log("ERROR loading projects");
-                    });
 
             } else {
                 this.setState({...this.state, dataLoaded: true})
