@@ -13,11 +13,10 @@ import Editor from "../Editor/Editor";
 import { toggleEditorFullScreen } from "../Editor/actions"
 import FileTree from "../FileTree";
 import { Responsive as ResponsiveGridLayout } from "react-grid-layout";
-import { find, findIndex, isEmpty } from "lodash";
+import { find, isEmpty } from "lodash";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "react-tabs/style/react-tabs.css";
-
 
 const Layout = () => {
 
@@ -48,12 +47,10 @@ const Layout = () => {
 
     const project: IProject = useSelector((store: IStore) => find(store.ProjectsReducer.projects, p => p.projectUid === activeProjectUid));
 
-    const sessionIndex: number = useSelector((store: IStore) => findIndex(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid));
-
-    const tabDockDocuments = useSelector((store: IStore) => store.LayoutReducer.sessions[sessionIndex].tabDock.openDocuments);
+    const tabDockDocuments = useSelector((store: IStore) => store.LayoutReducer.sessions[activeProjectUid].tabDock.openDocuments);
 
     const openDocuments: IDocument[] = tabDockDocuments.map(openDocument =>
-        find(project.documents, d => d.documentUid === openDocument.uid));
+        find(Object.values(project.documents), d => d.documentUid === openDocument.uid));
 
     const tabIndex: number = useSelector((store: IStore) => find(store.LayoutReducer.sessions, s => s.projectUid === activeProjectUid).tabDock.tabIndex);
 
