@@ -2,10 +2,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { Controlled as CodeMirror} from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
-//import CsoundObj from "../Csound/CsoundObj";
 import { ICsoundObj } from "../Csound/interfaces";
-// import SplitPane from "react-split-pane";
-// import Console from "../Console/Console";
+import PerfectScrollbar from "react-perfect-scrollbar";
 import * as projectActions from "../Projects/actions";
 import { find, isEmpty } from "lodash";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
@@ -16,8 +14,8 @@ require("codemirror/keymap/vim");
 require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 require("codemirror/theme/monokai.css");
-require("codemirror/addon/scroll/simplescrollbars")
-require("codemirror/addon/scroll/simplescrollbars.css")
+// require("codemirror/addon/scroll/simplescrollbars")
+// require("codemirror/addon/scroll/simplescrollbars.css")
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
@@ -93,7 +91,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             lineWrapping: true,
             matchBrackets: true,
             mode: "csound",
-            scrollbarStyle: "simple",
+            // scrollbarStyle: "simple",
             theme: "monokai",
             extraKeys: {
                 "Ctrl-E": () => this.evalCode(),
@@ -110,12 +108,14 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         }
 
         return (
-            <CodeMirror
-                value={this.props.currentDocumentValue}
-                onBeforeChange={onBeforeChange}
-                options={options}
-                ref={this.cm}
-            />
+            <PerfectScrollbar style={{backgroundColor: "#272822"}}>
+                <CodeMirror
+                    value={this.props.currentDocumentValue}
+                    onBeforeChange={onBeforeChange}
+                    options={options}
+                    ref={this.cm}
+                />
+            </PerfectScrollbar>
         );
     }
 }

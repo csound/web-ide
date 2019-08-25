@@ -78,7 +78,7 @@ const Layout = () => {
     });
 
     const openTabPanels = openDocuments.map((document: IDocument, index: number) => (
-        <TabPanel key={index}>
+        <TabPanel key={index} style={{flex: "1 1 auto", marginTop: -10}}>
             <Editor
                 currentDocumentValue={document.currentValue}
                 documentUid={document.documentUid}
@@ -114,8 +114,8 @@ const Layout = () => {
     const tabDock = isEmpty(openDocuments) ? (<div />) : (
         <div key="b" data-grid={{x: 3, y: 0, w: 9, h: 18}}>
             {tabPanelController}
-            <Tabs onSelect={switchTab} selectedIndex={tabIndex}>
-                <TabList className="react-tabs__tab-list draggable">
+            <Tabs onSelect={switchTab} selectedIndex={tabIndex} style={{height: "100%", display: "flex", flexFlow: "column"}}>
+                <TabList className="react-tabs__tab-list draggable" style={{flex: "0 1 auto"}}>
                     {openTabList}
                 </TabList>
                 {openTabPanels}

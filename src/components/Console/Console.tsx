@@ -2,6 +2,7 @@ import React from "react";
 import { ICsoundObj } from "../Csound/interfaces";
 import { connect } from "react-redux";
 import { IStore } from "../../db/interfaces";
+import PerfectScrollbar from "react-perfect-scrollbar";
 // import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
 // import List from "react-virtualized/dist/commonjs/List";
 
@@ -41,11 +42,15 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
 
     public render() {
         return(
+
             <div className="console-log-container draggable">
-                <pre>
-                    {this.state.logs}
-                </pre>
+                <PerfectScrollbar>
+                    <pre>
+                        {this.state.logs}
+                    </pre>
+                </PerfectScrollbar>
             </div>
+
         )
     }
 }

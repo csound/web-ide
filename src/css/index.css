@@ -64,20 +64,20 @@ div .react-tabs {
 
 .react-codemirror2 {
     font-size: 16px;
-    /* margin-top: 8px; */
     width: 100%;
-    /* height: 100%; */
-    height: calc(100% - 34px);
-    top: 34px;
-    /* min-height: 33vh; */
-    position: absolute;
+    height: auto;
+    min-height: 100%;
     bottom: 0;
 }
 
 .react-codemirror2 > div{
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     position: absolute;
+    display: flex;
+    padding-top: 12px;
+    padding-bottom: 20px;
 }
 
 .CodeMirror-fullscreen {
@@ -87,15 +87,29 @@ div .react-tabs {
     z-index: 9;
 }
 
-.CodeMirror-scroll {
-    overflow-x: auto!important;
-    overflow-y: hidden!important;
-    margin: 0!important;
+.CodeMirror-vscrollbar {
+    overflow: hidden!important;
 }
 
-.CodeMirror-simplescroll-vertical {
-    background: #373a47;
+.ps__rail-y {
+    z-index: 9;
+    opacity: 0.4;
 }
+
+.CodeMirror-scroll {
+    /* overflow-x: auto!important; */
+    overflow: visible!important;
+    margin: 0!important;
+    padding: 0!important;
+    height: auto!important;
+    min-height: 100%;
+    width: 100%;
+    position: static!important;
+}
+
+/* .CodeMirror-simplescroll-vertical { */
+/*     background: #373a47; */
+/* } */
 
 nav,button {
     outline: none;
@@ -152,8 +166,7 @@ nav,button {
 
 .console-log-container {
     background: #272822;
-    overflow-y: scroll;
-    overflow-x: hidden;
+    overflow: hidden;
     height: 100%;
     width: 100%;
 }

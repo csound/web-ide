@@ -4,13 +4,14 @@ import { Provider } from "react-redux";
 import { store, history } from "./store";
 import registerServiceWorker from "./registerServiceWorker";
 import Main from "./components/Main/Main";
-import { setCsound } from "./components/Csound/actions"
+import { setCsound } from "./components/Csound/actions";
 import CsoundObj from "./components/Csound/CsoundObj";
 import { ICsoundObj } from "./components/Csound/interfaces";
 import { registerCsoundStoreListener } from "./components/Csound/storeListener";
 import "./config/firestore"; // import for sideffects
 import "./css/filemenu.css"
 import "./css/index.css";
+import "react-perfect-scrollbar/dist/css/styles.css";
 
 (window as any).React = React;
 (window as any).ReactDOM = ReactDOM;
