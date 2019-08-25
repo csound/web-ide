@@ -93,7 +93,6 @@ export default (state: IProjectsReducer, action: any) => {
             return {...state};
         }
         case "DOCUMENT_NEW": {
-
             state.projects[action.projectUid].documents =
                 {...state.projects[action.projectUid].documents,
                  [action.documentUid]: {

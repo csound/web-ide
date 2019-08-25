@@ -1,6 +1,6 @@
 import { ISession } from "./interfaces";
 import { initialProjectUid, initialDocumentUids } from "../Projects/reducer";
-import { filter, findIndex } from "lodash";
+import { filter, find, findIndex } from "lodash";
 
 export interface ILayoutReducer {
     sessions: {[projectId: string]: ISession};
@@ -44,7 +44,8 @@ export default (state: ILayoutReducer, action: any) => {
             return {...state};
         }
         case "STORE_EDITOR_INSTANCE": {
-            const openDocument = state.sessions[action.projectUid].tabDock.openDocuments[action.documentUid];
+            const openDocument = find(state.sessions[action.projectUid].tabDock.openDocuments, od => od.uid === action.documentUid);
+
             if (!openDocument) {
                 return state;
             }
