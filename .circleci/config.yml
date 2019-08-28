@@ -3,7 +3,7 @@ defaults: &defaults #working_directory: ./circleci
         - image: circleci/node:8
     working_directory: ~/repo
 
-version: 3
+version: 2
 jobs:
     prepare:
         <<: *defaults
@@ -46,7 +46,7 @@ jobs:
                   paths:
                       - build
 workflows:
-    version: 3
+    version: 2
     build_accept_deploy:
         jobs:
             - prepare
