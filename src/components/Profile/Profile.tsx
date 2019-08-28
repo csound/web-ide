@@ -11,6 +11,52 @@ interface IProfileState {
     projects: Array<any>;
     dataLoaded: boolean;
 }
+const defaultCsd = {
+    name: "project.csd",
+    savedValue: `<CsoundSynthesizer>
+<CsOptions>
+-o dac
+</CsOptions>
+<CsInstruments>
+#include "project.orc"
+</CsInstruments>
+<CsScore>
+#include "project.sco"
+</CsScore>
+</CsoundSynthesizer>
+    `,
+    type: "txt",
+}
+
+const defaultOrc = {
+    name: "project.orc",
+    value: `
+sr=44100
+ksmps=32
+0dbfs=1
+
+instr 1
+  iamp = ampdbfs(p5)
+  ipch = cps2pch(p4,12)
+  ipan = 0.5
+
+  asig = vco2(iamp, ipch)
+
+  al, ar pan2 asig, ipan
+
+  out(al, ar)
+endin
+    `,
+    type: "txt",
+}
+
+const defaultSco = {
+    name: "project.sco",
+    value: `
+i1 0 2 8.00 -12
+    `,
+    type: "txt",
+}
 
 class Profile extends Component<any, IProfileState> {
 
@@ -102,7 +148,12 @@ class Profile extends Component<any, IProfileState> {
 
             projects.doc(docId).set(newProject)
                 .then(() => {
-
+                    projects.doc(docId).collection('files').doc(
+                        'project.csd').set(defaultCsd);
+                    projects.doc(docId).collection('files').doc(
+                        'project.orc').set(defaultOrc);
+                    projects.doc(docId).collection('files').doc(
+                        'project.sco').set(defaultSco);
                 })
                 .catch(err => {
 
