@@ -3,7 +3,7 @@ defaults: &defaults #working_directory: ./circleci
         - image: circleci/node:8
     working_directory: ~/repo
 
-version: 2
+version: 3
 jobs:
     prepare:
         <<: *defaults
@@ -39,13 +39,14 @@ jobs:
             - checkout
             - attach_workspace:
                   at: .
+            - run: cd functions && npm install
             - run: yarn deploy
             - persist_to_workspace:
                   root: .
                   paths:
                       - build
 workflows:
-    version: 2
+    version: 3
     build_accept_deploy:
         jobs:
             - prepare
