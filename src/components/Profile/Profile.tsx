@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import withStyles from "./styles";
 import { Link } from 'react-router-dom'
 import Header from "../Header/Header";
-import { projects } from "../../config/firestore";
+import { db, projects } from "../../config/firestore";
 import * as firebase from "firebase/app";
 import { generateUid } from "../../utils";
 
@@ -11,9 +11,10 @@ interface IProfileState {
     projects: Array<any>;
     dataLoaded: boolean;
 }
+
 const defaultCsd = {
     name: "project.csd",
-    savedValue: `<CsoundSynthesizer>
+    value: `<CsoundSynthesizer>
 <CsOptions>
 -o dac
 </CsOptions>
@@ -163,9 +164,17 @@ class Profile extends Component<any, IProfileState> {
     }
 
     deleteProject(doc) {
-        projects.doc(doc.projectUid).delete()
-        .then((d) => console.log("Project deleted"))
-        .catch(e => console.log("Deletion error"))
+        projects.doc(doc.projectUid).collection('files').get()
+        .then(files => {
+
+            const batch = db.batch();        
+            const docRef = projects.doc(doc.projectUid);
+            batch.delete(docRef);
+            files.forEach(d => batch.delete(d.ref));
+            batch.commit()
+            .then((d) => console.log("Project deleted"))
+            .catch(e => console.log("Deletion error"))
+        })
     }
 
 
