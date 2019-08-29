@@ -23,13 +23,15 @@ interface IRouterComponent {
 
 const EditorLayout = (args: any) => {
     const classes = layoutStylesHook(args.theme);
+    const { match } = args;
+
     const renderMeth = (matchProps) => {
         const { to, staticContext, ...rest } = matchProps;
         return (
             <CsoundComponent>
                 <Header />
                 <main className={classes.content} {... rest}>
-                    <Layout />
+                    <Layout projectId={match.params.id}/>
                 </main>
             </CsoundComponent>
         );
@@ -51,7 +53,7 @@ class RouterComponent extends Component<IRouterComponent, any> {
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
-                    <EditorLayout path="/editor/:id?" {...this.props} />
+                    <Route path="/editor/:id?" render={(matchProps) => <EditorLayout {... matchProps} />} />
                     {/* <PrivateRoute
                         {...this.props}
                         path="/dashboard"

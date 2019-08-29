@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import withStyles from "./styles";
-import { Link } from 'react-router-dom'
 import Header from "../Header/Header";
 
 class Home extends Component<any, {}> {
@@ -16,12 +15,11 @@ class Home extends Component<any, {}> {
                     Welcome to the Csound Web-IDE. This project is currently
                     under development.
                 </p>
+                <p>
+                    Login and visit your profile page to get started creating new projects.
+                </p>
                 </main>
-                <div className={classes.centerBox}>
-                    <Link to="/editor" className={classes.startCodingButton}>
-                        Start Coding
-                    </Link>
-                </div>
+l
             </div>
         )
     }

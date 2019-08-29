@@ -19,7 +19,11 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "react-tabs/style/react-tabs.css";
 
-const Layout = () => {
+const Layout = (props) => {
+
+    let { projectId } = props;
+
+    console.log(`Project ID: ${projectId}`);
 
     const [dimensions, setDimensions] = useState({
         innerWidth: window.innerWidth,
