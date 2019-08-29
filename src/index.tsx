@@ -43,7 +43,7 @@ registerServiceWorker();
 
 
 // ADD LISTENING TO REDUX STORE FOR SYNCHRONIZING PROJECT FILES TO EMFS
-CsoundObj.importScripts("./csound/").then(() => {
+CsoundObj.importScripts("/csound/").then(() => {
     const csound:ICsoundObj = new CsoundObj();
     store.dispatch(setCsound(csound));
     registerCsoundStoreListener(csound);
