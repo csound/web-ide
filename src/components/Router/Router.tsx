@@ -51,13 +51,13 @@ class RouterComponent extends Component<IRouterComponent, any> {
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
-                    <EditorLayout path="/editor" {...this.props} />
+                    <EditorLayout path="/editor/:id?" {...this.props} />
                     {/* <PrivateRoute
                         {...this.props}
                         path="/dashboard"
                         component={Editor}
                     /> */}
-                    <Profile path="/profile" {...this.props} />
+                    <Profile path="/profile/:username?" {...this.props} />
                     <Route path="/" render={ (matchProps) => <Home {... matchProps} />} />
                 </Switch>
             </ConnectedRouter>
