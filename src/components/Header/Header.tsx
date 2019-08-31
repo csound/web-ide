@@ -21,7 +21,7 @@ import "firebase/auth";
 import { headerStylesHOC } from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
-import MenuBar from "../MenuBar/MenuBarIndex";
+import MenuBar from "../MenuBar/MenuBar";
 
 interface IHeaderProps {
     authenticated: boolean;

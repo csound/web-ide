@@ -39,3 +39,9 @@ export const generateUid = (filename: string): string => {
 export function filterUndef<T>(ts: (T | undefined)[]): T[] {
     return ts.filter((t: T | undefined): t is T => !!t)
 }
+
+export function isMacintosh(): boolean {
+    return navigator.platform.indexOf('Mac') > -1
+}
+
+export const isMac: boolean = isMacintosh();

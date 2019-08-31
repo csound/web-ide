@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import Router from "../Router/Router";
 import Modal from "../Modal";
 import { ThemeProvider } from '@material-ui/styles';
+import { ShortcutProvider } from "react-keybind";
 import { resolveTheme } from "../Themes/themes";
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { IStore } from "../../db/interfaces";
@@ -30,11 +31,13 @@ class Main extends React.Component<IMainProps, {}> {
     public render() {
 
         return (
-            <ThemeProvider theme={resolveTheme(this.props.theme)}>
-                <CssBaseline />
-                <Modal />
-                <Router history={this.props.history} />
-            </ThemeProvider>
+            <ShortcutProvider>
+                <ThemeProvider theme={resolveTheme(this.props.theme)}>
+                    <CssBaseline />
+                    <Modal />
+                    <Router history={this.props.history} />
+                </ThemeProvider>
+            </ShortcutProvider>
         );
     }
 }
