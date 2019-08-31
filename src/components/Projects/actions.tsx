@@ -5,11 +5,12 @@ import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { isEmpty } from "lodash";
+import { DOCUMENT_UPDATE_VALUE, DOCUMENT_NEW } from "./types";
 
 export const updateDocumentValue = (val: string, projectUid: string, documentUid: string) => {
     return async (dispatch: any) => {
         dispatch({
-            type: "DOCUMENT_UPDATE_VALUE",
+            type: DOCUMENT_UPDATE_VALUE,
             val,
             projectUid,
             documentUid,
@@ -44,7 +45,7 @@ export const newDocument = (projectUid: string, val: string) => {
             const newDocUid = generateUid(fileName);
 
             await dispatch({
-                type: "DOCUMENT_NEW",
+                type: DOCUMENT_NEW,
                 documentUid: newDocUid,
                 projectUid,
                 name: fileName,

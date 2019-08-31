@@ -5,7 +5,6 @@ import { IStore } from "../../db/interfaces";
 // import Editor from "../Editor/Editor";
 import Header from "../Header/Header";
 import Home from "../Home/Home";
-import CsoundComponent from "../Csound/CsoundComponent";
 import Profile from "../Profile/Profile";
 import { Route, Switch } from 'react-router-dom';
 import { ConnectedRouter } from "connected-react-router";
@@ -28,12 +27,12 @@ const EditorLayout = (args: any) => {
     const renderMeth = (matchProps) => {
         const { to, staticContext, ...rest } = matchProps;
         return (
-            <CsoundComponent>
+            <div>
                 <Header />
                 <main className={classes.content} {... rest}>
                     <Layout projectId={match.params.id}/>
                 </main>
-            </CsoundComponent>
+            </div>
         );
     }
 

@@ -1,4 +1,4 @@
-import {ICsoundObj} from "./interfaces"
+import {ICsoundObj} from "./types"
 import { store } from "../../store";
 // import { difference } from "lodash"
 

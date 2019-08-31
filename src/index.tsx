@@ -6,7 +6,7 @@ import registerServiceWorker from "./registerServiceWorker";
 import Main from "./components/Main/Main";
 import { setCsound } from "./components/Csound/actions";
 import CsoundObj from "./components/Csound/CsoundObj";
-import { ICsoundObj } from "./components/Csound/interfaces";
+import { ICsoundObj } from "./components/Csound/types";
 import { registerCsoundStoreListener } from "./components/Csound/storeListener";
 import "./config/firestore"; // import for sideffects
 import "./css/filemenu.css"

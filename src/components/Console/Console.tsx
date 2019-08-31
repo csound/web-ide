@@ -1,5 +1,5 @@
 import React from "react";
-import { ICsoundObj } from "../Csound/interfaces";
+import { ICsoundObj } from "../Csound/types";
 import { connect } from "react-redux";
 import { IStore } from "../../db/interfaces";
 import PerfectScrollbar from "react-perfect-scrollbar";

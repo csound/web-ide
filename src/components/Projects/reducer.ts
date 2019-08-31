@@ -1,10 +1,5 @@
-import { IDocument, IProject } from "./interfaces";
+import { IDocument, IProjectsReducer, DOCUMENT_UPDATE_VALUE, DOCUMENT_NEW } from "./types";
 import { generateUid } from "../../utils";
-
-export interface IProjectsReducer {
-    activeProjectUid: string;
-    projects: {[projectUid: string]: IProject};
-};
 
 const defaultCsd: IDocument = {
     currentValue: "",
@@ -87,12 +82,12 @@ const initialProjectsState: IProjectsReducer = {
 
 export default (state: IProjectsReducer = initialProjectsState, action: any) => {
     switch (action.type) {
-        case "DOCUMENT_UPDATE_VALUE": {
+        case DOCUMENT_UPDATE_VALUE: {
             if (!action.documentUid || !action.projectUid) {return state;}
             state.projects[action.projectUid].documents[action.documentUid].currentValue = action.val;
             return {...state};
         }
-        case "DOCUMENT_NEW": {
+        case DOCUMENT_NEW: {
             state.projects[action.projectUid].documents =
                 {...state.projects[action.projectUid].documents,
                  [action.documentUid]: {

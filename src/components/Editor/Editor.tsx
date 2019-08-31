@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Controlled as CodeMirror} from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
-import { ICsoundObj } from "../Csound/interfaces";
+import { ICsoundObj } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import * as projectActions from "../Projects/actions";
 import { find, isEmpty } from "lodash";
@@ -124,7 +124,7 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
 
     const project = find(store.ProjectsReducer.projects, p => p.projectUid === ownProp.projectUid);
     const document = project && find(project.documents, d => d.documentUid === ownProp.documentUid);
-    const currentDocumentValue = !isEmpty(document) ? document.currentValue : "";
+    const currentDocumentValue = (document == null || isEmpty(document)) ? "" : document.currentValue;
 
     return {
         csound: null,

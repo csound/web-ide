@@ -1,4 +1,4 @@
-import { IProjectsReducer } from "../components/Projects/reducer";
+import { IProjectsReducer } from "../components/Projects/types";
 import { ILayoutReducer } from "../components/Layout/reducer";
 import { ICsoundReducer } from "../components/Csound/reducer";
 import { IModalReducer } from "../components/Modal/reducer";
