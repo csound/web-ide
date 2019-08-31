@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import withStyles from "./styles";
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 import Header from "../Header/Header";
 import { db, projects } from "../../config/firestore";
 import * as firebase from "firebase/app";
 import { generateUid } from "../../utils";
-
 
 interface IProfileState {
     projects: Array<any>;
@@ -26,8 +25,8 @@ const defaultCsd = {
 </CsScore>
 </CsoundSynthesizer>
     `,
-    type: "txt",
-}
+    type: "txt"
+};
 
 const defaultOrc = {
     name: "project.orc",
@@ -48,19 +47,18 @@ instr 1
   out(al, ar)
 endin
     `,
-    type: "txt",
-}
+    type: "txt"
+};
 
 const defaultSco = {
     name: "project.sco",
     value: `
 i1 0 2 8.00 -12
     `,
-    type: "txt",
-}
+    type: "txt"
+};
 
 class Profile extends Component<any, IProfileState> {
-
     constructor(props) {
         super(props);
         this.state = { projects: [], dataLoaded: false };
@@ -74,24 +72,21 @@ class Profile extends Component<any, IProfileState> {
             if (user != null) {
                 let uid = firebase.auth().currentUser!.uid;
                 // Need to fix this...
-                projects.where("userUid", "==", uid).onSnapshot(
-                    querySnapshot => {
+                projects
+                    .where("userUid", "==", uid)
+                    .onSnapshot(querySnapshot => {
                         // FIXME: Must be a better way...
                         const projects: any = [];
                         querySnapshot.forEach(d => projects.push(d.data()));
-                        this.setState({ projects, dataLoaded: true })
-                        console.log(projects)
-                    })
-
+                        this.setState({ projects, dataLoaded: true });
+                        console.log(projects);
+                    });
             } else {
-                this.setState({...this.state, dataLoaded: true})
+                this.setState({ ...this.state, dataLoaded: true });
             }
-        })
-
-
+        });
     }
     public render() {
-
         let projectLinks = [<li key="-1">Loading projects...</li>];
 
         if (this.state.dataLoaded) {
@@ -99,10 +94,22 @@ class Profile extends Component<any, IProfileState> {
             projectLinks = [<li key="0">No Projects found for user.</li>];
 
             if (projects != null && projects.length > 0) {
-                projectLinks = projects.map(doc =>
+                projectLinks = projects.map(doc => (
                     <li key={doc.projectUid}>
-                        <Link to={"/editor/" + doc.projectUid}>{doc.name}</Link> - <Link to="" onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.deleteProject(doc) }}>Delete</Link></li>
-                );
+                        <Link to={"/editor/" + doc.projectUid}>{doc.name}</Link>{" "}
+                        -{" "}
+                        <Link
+                            to=""
+                            onClick={e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.deleteProject(doc);
+                            }}
+                        >
+                            Delete
+                        </Link>
+                    </li>
+                ));
             }
         }
 
@@ -114,17 +121,15 @@ class Profile extends Component<any, IProfileState> {
                     <h1>Profile</h1>
                     <p> </p>
                     <p>
-                        <Link to="" onClick={this.createNewProject} >
+                        <Link to="" onClick={this.createNewProject}>
                             + Create New Project
                         </Link>
                     </p>
                     <h2>User Projects</h2>
-                    <ul>
-                        {projectLinks}
-                    </ul>
+                    <ul>{projectLinks}</ul>
                 </main>
             </div>
-        )
+        );
     }
 
     createNewProject(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
@@ -143,40 +148,49 @@ class Profile extends Component<any, IProfileState> {
                 userUid: uid,
                 projectUid: docId,
                 name: "New Project",
-                public: false,
+                public: false
             };
 
-            projects.doc(docId).set(newProject)
+            projects
+                .doc(docId)
+                .set(newProject)
                 .then(() => {
-                    projects.doc(docId).collection('files').doc(
-                        'project.csd').set(defaultCsd);
-                    projects.doc(docId).collection('files').doc(
-                        'project.orc').set(defaultOrc);
-                    projects.doc(docId).collection('files').doc(
-                        'project.sco').set(defaultSco);
+                    projects
+                        .doc(docId)
+                        .collection("files")
+                        .doc("project.csd")
+                        .set(defaultCsd);
+                    projects
+                        .doc(docId)
+                        .collection("files")
+                        .doc("project.orc")
+                        .set(defaultOrc);
+                    projects
+                        .doc(docId)
+                        .collection("files")
+                        .doc("project.sco")
+                        .set(defaultSco);
                 })
-                .catch(err => {
-
-                });
-
+                .catch(err => {});
         }
     }
 
     deleteProject(doc) {
-        projects.doc(doc.projectUid).collection('files').get()
-        .then(files => {
-
-            const batch = db.batch();
-            const docRef = projects.doc(doc.projectUid);
-            batch.delete(docRef);
-            files.forEach(d => batch.delete(d.ref));
-            batch.commit()
-            .then((d) => console.log("Project deleted"))
-            .catch(e => console.log("Deletion error"))
-        })
+        projects
+            .doc(doc.projectUid)
+            .collection("files")
+            .get()
+            .then(files => {
+                const batch = db.batch();
+                const docRef = projects.doc(doc.projectUid);
+                batch.delete(docRef);
+                files.forEach(d => batch.delete(d.ref));
+                batch
+                    .commit()
+                    .then(d => console.log("Project deleted"))
+                    .catch(e => console.log("Deletion error"));
+            });
     }
-
-
 }
 
 export default withStyles(Profile);
