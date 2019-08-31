@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
-import { IDocument, IProject } from "../Projects/interfaces";
+import { IDocument, IProject } from "../Projects/types";
 // import { writeDocumentToEMFS } from "../Csound/actions";
 // import { ISession } from "./interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"

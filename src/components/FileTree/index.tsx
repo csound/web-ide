@@ -14,7 +14,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
-import { IDocument, IProject } from "../Projects/interfaces";
+import { IDocument, IProject } from "../Projects/types";
 import { newDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../Layout/actions";
 import { IStore } from "../../db/interfaces";
