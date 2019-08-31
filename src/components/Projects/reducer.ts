@@ -1,4 +1,4 @@
-import { IDocument, IProjectsReducer, DOCUMENT_UPDATE_VALUE, DOCUMENT_NEW } from "./types";
+import { IDocument, IProjectsReducer, DOCUMENT_UPDATE_VALUE, DOCUMENT_NEW, LOAD_PROJECT_FROM_FIRESTORE, SET_PROJECT } from "./types";
 import { generateUid } from "../../utils";
 
 const defaultCsd: IDocument = {
@@ -82,6 +82,14 @@ const initialProjectsState: IProjectsReducer = {
 
 export default (state: IProjectsReducer = initialProjectsState, action: any) => {
     switch (action.type) {
+        case LOAD_PROJECT_FROM_FIRESTORE: {
+            // FIXME: Just ignore?
+            return state;
+        }
+        case SET_PROJECT: {
+            return state;
+        }
+        // FIXME - Below actions need to be revised for firestore integration
         case DOCUMENT_UPDATE_VALUE: {
             if (!action.documentUid || !action.projectUid) {return state;}
             state.projects[action.projectUid].documents[action.documentUid].currentValue = action.val;
