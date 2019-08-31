@@ -1,3 +1,9 @@
+const PREFIX = "CSOUND.";
+
+// ACTION TYPES
+export const SET_CSOUND = PREFIX + "SET_CSOUND";
+
+// INTERFACES
 export interface ICsoundObj {
     audioContext: any;
     writeToFS: (filepath: string, data: any) => void;
@@ -20,11 +26,10 @@ export interface ICsoundObj {
     setMessageCallback: (msgCallback: (msg: string) => void) => void;
     midiMessage: (byte1: number, byte2: number, byte3: number) => void;
     enableAudioInput: (audioInputCallback: () => void) => void;
-    enableMidiInput: (midiInputCallback: () => void) => void,
+    enableMidiInput: (midiInputCallback: () => void) => void;
     start: () => void;
     reset: () => void;
     destroy: () => void;
     play: () => void;
     stop: () => void;
-
 }

@@ -1,10 +1,10 @@
 import { store } from "../../store";
-import { ICsoundObj } from "./interfaces";
+import { ICsoundObj, SET_CSOUND } from "./types";
 import { IStore } from "../../db/interfaces";
 
 export const setCsound = (csound: ICsoundObj) => {
     return {
-        type: "SET_CSOUND",
+        type: SET_CSOUND,
         csound,
     };
 };
