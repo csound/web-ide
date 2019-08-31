@@ -7,7 +7,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 // import List from "react-virtualized/dist/commonjs/List";
 
 interface IConsoleProps {
-    csound: ICsoundObj;
+    csound: ICsoundObj | null;
 }
 
 interface IConsoleLocalState {

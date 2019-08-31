@@ -1,17 +1,18 @@
 import { IProjectsReducer } from "../components/Projects/reducer";
 import { ILayoutReducer } from "../components/Layout/reducer";
 import { ICsoundReducer } from "../components/Csound/reducer";
+import { IModalReducer } from "../components/Modal/reducer";
 
 export interface IAssetFile {
     name: string;
     isBinary: boolean;
-    lastEdit: Date;
+    lastEdit: Date | null;
     type: "binary" | "txt";
 }
 
 export interface ICsoundFile {
     name: string;
-    lastEdit: Date;
+    lastEdit: Date | null;
     type: "csd" | "orc" | "sco" | "udo";
 }
 
@@ -45,8 +46,8 @@ export interface IStore {
     csound: ICsoundReducer;
     router: any;
     LoginReducer: any;
-    RouterReducer: any;
     LayoutReducer: ILayoutReducer;
     userProfile: IUserProfile | null;
     theme: ITheme;
+    ModalReducer: IModalReducer;
 }

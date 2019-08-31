@@ -15,6 +15,7 @@ import FileTree from "../FileTree";
 import Console from "../Console/Console";
 import { Responsive as ResponsiveGridLayout } from "react-grid-layout";
 import { find, isEmpty } from "lodash";
+import { filterUndef } from "../../utils";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "react-tabs/style/react-tabs.css";
@@ -54,8 +55,10 @@ const Layout = (props) => {
 
     const tabDockDocuments = useSelector((store: IStore) => store.LayoutReducer.sessions[activeProjectUid].tabDock.openDocuments);
 
-    const openDocuments: IDocument[] = tabDockDocuments.map(openDocument =>
-        find(Object.values(project.documents), d => d.documentUid === openDocument.uid));
+    const openDocumentsUnfilt: (IDocument | undefined)[] = tabDockDocuments.map(openDocument =>
+        find(Object.values(project.documents), d => d.documentUid === openDocument.uid)) ;
+
+    const openDocuments: IDocument[] = filterUndef(openDocumentsUnfilt) as IDocument[];
 
     const tabIndex: number = useSelector((store: IStore) => store.LayoutReducer.sessions[activeProjectUid].tabDock.tabIndex);
 
@@ -67,13 +70,13 @@ const Layout = (props) => {
         })
     }
 
-    const openTabList = openDocuments.map((document: IDocument, index: number) => {
+    const openTabList = openDocuments.map((document: IDocument | undefined, index: number) => {
         const isActive: boolean = (index === tabIndex);
         return (
-            <Tab key={index}>{document.name}
+            <Tab key={index}>{document!.name}
                 <Tooltip title="close" placement="right-end">
                     <IconButton size="small" style={{marginLeft: 6, marginBottom: 2}}
-                                onClick={(e) => {e.stopPropagation(); closeTab(document.documentUid, activeProjectUid)}}>
+                                onClick={(e) => {e.stopPropagation(); closeTab(document!.documentUid, activeProjectUid)}}>
                         <FontAwesomeIcon icon={faTimes} size="sm" color={isActive ? "black" : "#f8f8f2"} />
                     </IconButton>
                 </Tooltip>

@@ -68,17 +68,16 @@ class Profile extends Component<any, IProfileState> {
 
     public componentDidMount() {
         // FIXME
-        // UID needs to be determined from url if a username is given, 
+        // UID needs to be determined from url if a username is given,
         // or default to authorized user
         firebase.auth().onAuthStateChanged(user => {
             if (user != null) {
-                let uid = firebase.auth().currentUser.uid;
-
+                let uid = firebase.auth().currentUser!.uid;
                 // Need to fix this...
                 projects.where("userUid", "==", uid).onSnapshot(
                     querySnapshot => {
                         // FIXME: Must be a better way...
-                        let projects = [];
+                        const projects: any = [];
                         querySnapshot.forEach(d => projects.push(d.data()));
                         this.setState({ projects, dataLoaded: true })
                         console.log(projects)
@@ -100,7 +99,7 @@ class Profile extends Component<any, IProfileState> {
             projectLinks = [<li key="0">No Projects found for user.</li>];
 
             if (projects != null && projects.length > 0) {
-                projectLinks = projects.map(doc => 
+                projectLinks = projects.map(doc =>
                     <li key={doc.projectUid}>
                         <Link to={"/editor/" + doc.projectUid}>{doc.name}</Link> - <Link to="" onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.deleteProject(doc) }}>Delete</Link></li>
                 );
@@ -138,7 +137,7 @@ class Profile extends Component<any, IProfileState> {
         let currentUser = firebase.auth().currentUser;
 
         if (currentUser != null) {
-            let uid = firebase.auth().currentUser.uid;
+            let uid = firebase.auth().currentUser!.uid;
 
             let newProject = {
                 userUid: uid,
@@ -167,7 +166,7 @@ class Profile extends Component<any, IProfileState> {
         projects.doc(doc.projectUid).collection('files').get()
         .then(files => {
 
-            const batch = db.batch();        
+            const batch = db.batch();
             const docRef = projects.doc(doc.projectUid);
             batch.delete(docRef);
             files.forEach(d => batch.delete(d.ref));

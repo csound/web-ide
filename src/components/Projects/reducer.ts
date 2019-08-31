@@ -85,7 +85,7 @@ const initialProjectsState: IProjectsReducer = {
     }
 }
 
-export default (state: IProjectsReducer, action: any) => {
+export default (state: IProjectsReducer = initialProjectsState, action: any) => {
     switch (action.type) {
         case "DOCUMENT_UPDATE_VALUE": {
             if (!action.documentUid || !action.projectUid) {return state;}
@@ -106,7 +106,7 @@ export default (state: IProjectsReducer, action: any) => {
             return {...state};
         }
         default: {
-            return state || initialProjectsState;
+            return initialProjectsState;
         }
     }
 }

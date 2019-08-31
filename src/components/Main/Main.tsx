@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import Router from "../Router/Router";
+import Modal from "../Modal";
 import { ThemeProvider } from '@material-ui/styles';
 import { resolveTheme } from "../Themes/themes";
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -31,6 +32,7 @@ class Main extends React.Component<IMainProps, {}> {
         return (
             <ThemeProvider theme={resolveTheme(this.props.theme)}>
                 <CssBaseline />
+                <Modal />
                 <Router history={this.props.history} />
             </ThemeProvider>
         );

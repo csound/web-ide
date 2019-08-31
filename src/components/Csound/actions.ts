@@ -1,5 +1,6 @@
 import { store } from "../../store";
 import { ICsoundObj } from "./interfaces";
+import { IStore } from "../../db/interfaces";
 
 export const setCsound = (csound: ICsoundObj) => {
     return {
@@ -9,7 +10,7 @@ export const setCsound = (csound: ICsoundObj) => {
 };
 
 export const writeDocumentToEMFS = (path: string, text: string): void => {
-    const storeState = store.getState();
-    const csound: ICsoundObj = storeState.csound.csound;
+    const storeState = (store.getState() as IStore);
+    const csound = storeState.csound.csound;
     console.log(csound);
 };

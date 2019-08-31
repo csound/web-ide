@@ -7,7 +7,7 @@ import { find } from "lodash";
 
 interface ICsoundComponentProps {
     activeProjectUid: string;
-    csound: ICsoundObj;
+    csound: ICsoundObj | null;
     children: JSX.Element[] | JSX.Element
     project: IProject;
 }
@@ -20,7 +20,7 @@ class CsoundComponent extends React.Component<ICsoundComponentProps, {}> {
             if (this.props.csound) {
                 clearInterval(initProjectInterval);
                 Object.values(this.props.project.documents).forEach((document: IDocument) => {
-                    this.props.csound.writeToFS(document.name, document.savedValue);
+                    this.props.csound && this.props.csound.writeToFS(document.name, document.savedValue);
                 });
             }
         }, 50);

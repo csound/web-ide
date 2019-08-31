@@ -35,3 +35,7 @@ export const generateUid = (filename: string): string => {
     shaObj.update(Math.round(Math.random() * 1000) + "");
     return shaObj.getHash("HEX");
 }
+
+export function filterUndef<T>(ts: (T | undefined)[]): T[] {
+    return ts.filter((t: T | undefined): t is T => !!t)
+}

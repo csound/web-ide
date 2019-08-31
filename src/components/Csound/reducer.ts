@@ -5,7 +5,7 @@ export interface ICsoundReducer {
 };
 
 
-export default (state: ICsoundReducer, action: any) => {
+export default (state: ICsoundReducer = {csound: null}, action: any) => {
     switch (action.type) {
         case "SET_CSOUND": {
             return {

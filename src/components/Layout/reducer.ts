@@ -18,7 +18,7 @@ const initialLayoutState: ILayoutReducer = {
     }
 }
 
-export default (state: ILayoutReducer, action: any) => {
+export default (state: ILayoutReducer = initialLayoutState, action: any) => {
     switch (action.type) {
         case "TAB_DOCK_SWITCH_TAB": {
             state.sessions[action.projectUid].tabDock.tabIndex = action.tabIndex;

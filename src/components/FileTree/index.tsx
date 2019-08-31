@@ -74,7 +74,7 @@ const FileTree = () => {
                 const { path, type } = data;
                 let textClassName: "active" | "inactive" | "closed" = "inactive";
                 let variant: "body1" | "body2" = "body1";
-                let iconComp = null;
+                let iconComp: React.ReactElement = (<div />);
                 if (type === "tree") {
                     iconComp = unfoldStatus ? <FolderOpenIcon /> : <FolderIcon />;
                 }
@@ -130,7 +130,7 @@ const FileTree = () => {
                     label: "new",
                     hint: "Insert file",
                     onClick: () => {
-                        dispatch(newDocument(activeProjectUid, "untitled.txt", ""));
+                        dispatch(newDocument(activeProjectUid, ""));
                     }
                 };
             }
