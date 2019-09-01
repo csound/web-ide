@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument, IProject } from "../Projects/types";
-// import { writeDocumentToEMFS } from "../Csound/actions";
-// import { ISession } from "./interfaces";
+import SplitterLayout from "react-splitter-layout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faTimes,
@@ -17,37 +17,31 @@ import Editor from "../Editor/Editor";
 import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "../Console/Console";
-import { Responsive as ResponsiveGridLayout } from "react-grid-layout";
 import { find, isEmpty } from "lodash";
 import { filterUndef } from "../../utils";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
 import "react-tabs/style/react-tabs.css";
+import "react-splitter-layout/lib/index.css";
 
 const Layout = props => {
-    let { projectId } = props;
+    // const [dimensions, setDimensions] = useState({
+    //     innerWidth: window.innerWidth,
+    //     innerHeight: window.innerHeight
+    // });
 
-    console.log(`Project ID: ${projectId}`);
-
-    const [dimensions, setDimensions] = useState({
-        innerWidth: window.innerWidth,
-        innerHeight: window.innerHeight
-    });
-
-    useEffect(() => {
-        const onWindowResize = () => {
-            setDimensions({
-                innerWidth: window.innerWidth,
-                innerHeight: window.innerHeight
-            });
-        };
-
-        window.addEventListener("resize", onWindowResize);
-
-        return () => {
-            window.removeEventListener("resize", onWindowResize);
-        };
-    });
+    // useEffect(() => {
+    //     const onWindowResize = () => {
+    //         setDimensions({
+    //             innerWidth: window.innerWidth,
+    //             innerHeight: window.innerHeight
+    //         });
+    //     };
+    //
+    //     window.addEventListener("resize", onWindowResize);
+    //
+    //     return () => {
+    //         window.removeEventListener("resize", onWindowResize);
+    //     };
+    // });
 
     const dispatch = useDispatch();
 
@@ -188,24 +182,18 @@ const Layout = props => {
     );
 
     return (
-        <ResponsiveGridLayout
-            className="layout"
-            draggableHandle=".draggable"
-            autoSize={false}
-            containerHeight={600}
-            width={dimensions.innerWidth}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 }}
-            rowHeight={24}
+        <SplitterLayout
+            primaryIndex={1}
+            primaryMinSize={400}
+            secondaryInitialSize={250}
+            secondaryMinSize={250}
         >
-            <div key="a" data-grid={{ x: 0, y: 0, w: 3, h: 24, minW: 3 }}>
-                <FileTree />
-            </div>
-            {tabDock}
-            <div key="c" data-grid={{ x: 3, y: 18, w: 9, h: 6, minW: 2 }}>
+            <FileTree />
+            <SplitterLayout vertical secondaryInitialSize={250}>
+                {tabDock}
                 <Console />
-            </div>
-        </ResponsiveGridLayout>
+            </SplitterLayout>
+        </SplitterLayout>
     );
 };
 

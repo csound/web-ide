@@ -164,6 +164,18 @@ nav,button {
     z-index: initial;
 }
 
+.layout-pane-primary > div {
+    height: 100%;
+}
+
+.splitter-layout > .layout-splitter {
+    background-color: #696969;
+}
+
+.splitter-layout .layout-splitter:hover {
+    background-color: #a9a9a9;
+}
+
 .console-log-container {
     background: #272822;
     overflow: hidden;
