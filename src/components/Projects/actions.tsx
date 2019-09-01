@@ -13,6 +13,8 @@ import {
 } from "./types";
 import { projects } from "../../config/firestore";
 import { reduce } from "lodash";
+import { store } from "../../store";
+import { ICsoundObj } from "../Csound/types";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -53,14 +55,30 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                             dispatch(tabOpenByDocumentUid(doc.documentUid))
                         );
 
+                    const cs: ICsoundObj = store.getState().csound.csound;
+                    const encoder = new TextEncoder();
                     files.docChanges().forEach(change => {
                         switch (change.type) {
-                            case "added":
+                            case "added": {
+                                const doc = change.doc.data();
+                                //console.log("File Added: ", doc);
+                                cs.writeToFS(
+                                    doc.name,
+                                    encoder.encode(doc.value)
+                                );
                                 break;
+                            }
                             case "removed":
                                 break;
-                            case "modified":
+                            case "modified": {
+                                const doc = change.doc.data();
+                                //console.log("File Modified: ", doc);
+                                cs.writeToFS(
+                                    doc.name,
+                                    encoder.encode(doc.value)
+                                );
                                 break;
+                            }
                         }
                     });
                 });
