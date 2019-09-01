@@ -1,11 +1,17 @@
-import { ProfileActionTypes, GET_USER_PROJECTS } from "./types";
+import {
+    ProfileActionTypes,
+    GET_USER_PROJECTS,
+    GET_USER_PROFILE
+} from "./types";
 
 export interface State {
     readonly userProjects: any;
+    readonly userProfile: any;
 }
 
 const INITIAL_STATE: State = {
-    userProjects: false
+    userProjects: false,
+    userProfile: false
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
@@ -14,6 +20,12 @@ export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
             return {
                 ...state,
                 userProjects: action.payload
+            };
+        }
+        case GET_USER_PROFILE: {
+            return {
+                ...state,
+                userProfile: action.payload
             };
         }
         default: {

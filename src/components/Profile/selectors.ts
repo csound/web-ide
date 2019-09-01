@@ -5,3 +5,8 @@ export const selectUserProjects = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userProjects;
 };
+
+export const selectUserProfile = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.userProfile;
+};

@@ -2,17 +2,46 @@
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import { Action } from "redux";
-import { db, projects } from "../../config/firestore";
+import { db, projects, profiles } from "../../config/firestore";
 import {
     GET_USER_PROJECTS,
     ProfileActionTypes,
     ADD_USER_PROJECT,
-    DELETE_USER_PROJECT
+    DELETE_USER_PROJECT,
+    GET_USER_PROFILE
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
 import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
+
+const getUserProfileAction = (payload: any): ProfileActionTypes => {
+    return {
+        type: GET_USER_PROFILE,
+        payload
+    };
+};
+
+export const getUserProfile = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => dispatch => {
+    firebase.auth().onAuthStateChanged(user => {
+        if (user != null) {
+            const uid = firebase.auth().currentUser!.uid;
+            profiles.where("userUid", "==", uid).onSnapshot(querySnapshot => {
+                const profile: any = [];
+                querySnapshot.forEach(d => {
+                    return profile.push(d.data());
+                });
+
+                dispatch(getUserProfileAction(profile[0]));
+            });
+        }
+    });
+};
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
