@@ -106,10 +106,8 @@ const ProjectEditor = props => {
         (document: IDocument, index: number) => (
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
                 <Editor
-                    currentDocumentValue={document.currentValue}
                     documentUid={document.documentUid}
                     projectUid={project.projectUid}
-                    savedValue={document.savedValue}
                 />
             </TabPanel>
         )

@@ -5,7 +5,6 @@ import { IStore } from "../../db/interfaces";
 import { ICsoundObj } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import * as projectActions from "../Projects/actions";
-import { find, isEmpty } from "lodash";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
@@ -130,18 +129,16 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
     const project = store.projects.activeProject;
-    const document =
-        project &&
-        find(project.documents, d => d.documentUid === ownProp.documentUid);
-    const currentDocumentValue =
-        document == null || isEmpty(document) ? "" : document.currentValue;
+    const document = project!.documents[ownProp.documentUid];
+    const savedValue = document && document.savedValue;
+    const currentDocumentValue = document && document.currentValue;
 
     return {
         csound: null,
         documentUid: ownProp.documentUid,
         currentDocumentValue,
         projectUid: ownProp.projectUid,
-        savedValue: ownProp.savedValue
+        savedValue
     };
 };
 
