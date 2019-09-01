@@ -1,10 +1,10 @@
-import { ITabDock } from "./interfaces";
 import { filter, find, findIndex } from "lodash";
 import {
     TAB_DOCK_SWITCH_TAB,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_CLOSE,
-    STORE_EDITOR_INSTANCE
+    STORE_EDITOR_INSTANCE,
+    ITabDock
 } from "./types";
 
 export interface IProjectEditorReducer {

@@ -6,3 +6,13 @@ export const TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID =
     PREFIX + "TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID";
 export const TAB_CLOSE = PREFIX + "TAB_CLOSE";
 export const STORE_EDITOR_INSTANCE = PREFIX + "STORE_EDITOR_INSTANCE";
+
+// DATA TYPES
+interface IOpenDocument {
+    editorInstance: any;
+    uid: string;
+}
+export interface ITabDock {
+    tabIndex: number;
+    openDocuments: IOpenDocument[];
+}
