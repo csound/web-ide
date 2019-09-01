@@ -15,7 +15,6 @@ import "react-perfect-scrollbar/dist/css/styles.css";
 
 (window as any).React = React;
 (window as any).ReactDOM = ReactDOM;
-(window as any).$ = require("jquery");
 
 // INITIALIZE FIREBASE AND FIRESTORE
 // This is done through the import of config/firestore
