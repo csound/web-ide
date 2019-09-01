@@ -49,7 +49,7 @@ const FileTree = () => {
     const fileTreeDocs = Object.values(documents).map(
         (document: IDocument, index: number) => {
             return {
-                path: document.name,
+                path: document.filename,
                 type: "blob",
                 sha: document.documentUid
             };

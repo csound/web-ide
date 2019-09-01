@@ -91,7 +91,7 @@ const Layout = props => {
             const isActive: boolean = index === tabIndex;
             return (
                 <Tab key={index}>
-                    {document!.name}
+                    {document!.filename}
                     <Tooltip title="close" placement="right-end">
                         <IconButton
                             size="small"

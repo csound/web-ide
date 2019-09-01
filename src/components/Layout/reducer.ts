@@ -1,5 +1,4 @@
 import { ISession } from "./interfaces";
-import { initialProjectUid, initialDocumentUids } from "../Projects/reducer";
 import { filter, find, findIndex } from "lodash";
 
 export interface ILayoutReducer {
@@ -8,14 +7,15 @@ export interface ILayoutReducer {
 
 const initialLayoutState: ILayoutReducer = {
     sessions: {
-        [initialProjectUid]: {
-            projectUid: initialProjectUid,
+        demo: {
+            projectUid: "demo",
             tabDock: {
                 tabIndex: 0,
-                openDocuments: initialDocumentUids.map(uid => ({
-                    uid,
-                    editorInstance: null
-                }))
+                openDocuments: []
+                // initialDocumentUids.map(uid => ({
+                //     uid,
+                //     editorInstance: null
+                // }))
             }
         }
     }

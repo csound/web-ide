@@ -5,43 +5,53 @@ import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { isEmpty } from "lodash";
-import { DOCUMENT_UPDATE_VALUE, DOCUMENT_NEW, SET_PROJECT } from "./types";
+import {
+    DOCUMENT_UPDATE_VALUE,
+    DOCUMENT_NEW,
+    SET_PROJECT,
+    IProject
+} from "./types";
 import { projects } from "../../config/firestore";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
         if (projectUid) {
             const projRef = projects.doc(projectUid);
-            projRef
-                .get()
-                .then(doc => {
-                    dispatch(setProject(doc.data));
+            const doc = await projRef.get();
+            if (doc) {
+                const data = doc.data();
+                const project: IProject = {
+                    projectUid: doc.id,
+                    documents: {},
+                    isPublic: data && data.public,
+                    name: data && data.name
+                };
+                dispatch(setProject(project));
 
-                    // TODO - Sync files to Redux as well as EMFS
-                    projRef.collection("files").onSnapshot(docs => {
-                        docs.docChanges().forEach(change => {
-                            switch (change.type) {
-                                case "added":
-                                    break;
-                                case "removed":
-                                    break;
-                                case "modified":
-                                    break;
-                            }
-                        });
+                // TODO - Sync files to Redux as well as EMFS
+                projRef.collection("files").onSnapshot(docs => {
+                    docs.docChanges().forEach(change => {
+                        switch (change.type) {
+                            case "added":
+                                break;
+                            case "removed":
+                                break;
+                            case "modified":
+                                break;
+                        }
                     });
-                })
-                .catch(err => {});
+                });
+            } else {
+                // handle error
+            }
         }
     };
 };
 
-export const setProject = (project: any) => {
-    return async (dispatch: any) => {
-        dispatch({
-            type: SET_PROJECT,
-            project
-        });
+export const setProject = (project: IProject) => {
+    return {
+        type: SET_PROJECT,
+        project
     };
 };
 
