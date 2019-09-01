@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) =>
             justifyContent: "center",
             listStyle: "none",
             padding: 0,
-            margin: 0,
+            margin: 0
         },
         column: {
             padding: "5px 9px",
@@ -19,9 +19,10 @@ const useStyles = makeStyles((theme: Theme) =>
                 pointer: "cursor",
                 cursor: "pointer",
                 backgroundColor: "rgba(255,255,255,0.1)",
-                borderRadius: 2
-            },
-            boxShadow: "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)",
+                borderRadius: 2,
+                boxShadow:
+                    "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
+            }
         },
         row: {
             backgroundColor: "#272822",
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
             outline: 0,
             margin: 0,
             marginTop: 6,
-            marginLeft: -12,
+            marginLeft: -12
         },
         listItem: {
             padding: "6px 12px",
@@ -41,14 +42,14 @@ const useStyles = makeStyles((theme: Theme) =>
             display: "flex",
             justifyContent: "space-between",
             "&:hover": {
-                backgroundColor: "rgba(255,255,255,0.1)",
+                backgroundColor: "rgba(255,255,255,0.1)"
             }
         },
         label: {
             margin: 0,
-            fontSize: 12,
+            fontSize: 12
         }
-    }),
+    })
 );
 
 export default useStyles;

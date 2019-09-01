@@ -45,16 +45,15 @@ interface IHeaderLocalState {
 type IHeader = IHeaderProps & IHeaderDispatchProperties;
 
 class Header extends React.Component<IHeader, IHeaderLocalState> {
-
     static defaultProps = {
-        showMenuBar: true,
-    }
+        showMenuBar: true
+    };
 
     protected anchorEl: any;
 
     public readonly state: IHeaderLocalState = {
-        isProfileMenuOpen: false,
-    }
+        isProfileMenuOpen: false
+    };
 
     constructor(props: IHeader) {
         super(props);
@@ -74,21 +73,28 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
     logout() {
         firebase.auth().signOut();
         this.setState({ isProfileMenuOpen: false });
-    };
+    }
 
     render() {
         const { isProfileMenuOpen } = this.state;
-        const { authenticated, classes, isLoginDialogOpen,
-                openLoginDialog, avatarUrl } = this.props;
+        const {
+            authenticated,
+            classes,
+            isLoginDialogOpen,
+            openLoginDialog,
+            avatarUrl
+        } = this.props;
 
         const avatar = isEmpty(avatarUrl) ? (
             <AccountCircle />
         ) : (
             <Avatar
                 src={avatarUrl || ""}
-                style={{maxHeight: "24px",
-                        maxWidth: "24px",
-                        padding: "0!important"}}
+                style={{
+                    maxHeight: "24px",
+                    maxWidth: "24px",
+                    padding: "0!important"
+                }}
             />
         );
         const userMenu = () => (
@@ -117,13 +123,11 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
                     onClose={this.handleProfileMenuClose}
                 >
                     <MenuItem>
-                      <Link to="/profile" className={classes.menuItemLink}>
-                          View Profile
-                      </Link>
+                        <Link to="/profile" className={classes.menuItemLink}>
+                            View Profile
+                        </Link>
                     </MenuItem>
-                    <MenuItem onClick={this.props.logOut}>
-                        Logout
-                    </MenuItem>
+                    <MenuItem onClick={this.props.logOut}>Logout</MenuItem>
                 </Menu>
             </div>
         );
@@ -135,7 +139,8 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
                     this.setState({ isProfileMenuOpen: false });
                     openLoginDialog();
                 }}
-            >Login
+            >
+                Login
             </Button>
         );
 
@@ -168,13 +173,16 @@ const mapStateToProps = (store: IStore, ownProps: any): IHeaderProps => {
         classes: ownProps.classes,
         isLoginDialogOpen: store.LoginReducer.isLoginDialogOpen,
         userDisplayName: store.userProfile && store.userProfile.name,
-        showMenuBar: ownProps.showMenuBar,
+        showMenuBar: ownProps.showMenuBar
     };
 };
 
 const mapDispatchToProps = (dispatch: any): IHeaderDispatchProperties => ({
     logOut: () => dispatch(loginActions.logOut()),
-    openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
+    openLoginDialog: () => dispatch(loginActions.openLoginDialog())
 });
 
-export default connect( mapStateToProps, mapDispatchToProps)(headerStylesHOC(Header));
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(headerStylesHOC(Header));
