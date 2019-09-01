@@ -28,7 +28,11 @@ class ProjectContext extends React.Component<IProjectContextProps, {}> {
         if (activeProject) {
             return <main className={className}>{this.props.children}</main>;
         } else {
-            return <h1>LOADING...</h1>;
+            return (
+                <main>
+                    <h1>LOADING...</h1>
+                </main>
+            );
         }
     }
 }
