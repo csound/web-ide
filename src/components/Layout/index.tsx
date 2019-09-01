@@ -49,15 +49,12 @@ const Layout = props => {
         (store: IStore) => store.ProjectsReducer.activeProjectUid
     );
 
-    const project: IProject = useSelector((store: IStore) =>
-        find(
-            store.ProjectsReducer.projects,
-            p => p.projectUid === activeProjectUid
-        )
+    const project: IProject = useSelector(
+        (store: IStore) => store.ProjectsReducer.activeProject
     );
 
     const tabDockDocuments = useSelector(
-        (store: IStore) => store.LayoutReducer.tabDock.openDocuments
+        (store: IStore) => store.LayoutReducer.tabDock.openDocuments || []
     );
 
     const openDocumentsUnfilt: (IDocument | undefined)[] = tabDockDocuments.map(
