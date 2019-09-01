@@ -56,7 +56,8 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                             dispatch(tabOpenByDocumentUid(doc.documentUid))
                         );
 
-                    const cs: ICsoundObj = store.getState().csound.csound;
+                    const cs: ICsoundObj = (store as any).getState().csound
+                        .csound;
                     const encoder = new TextEncoder();
                     files.docChanges().forEach(change => {
                         switch (change.type) {
