@@ -15,7 +15,7 @@ export default (
 ) => {
     switch (action.type) {
         case SET_PROJECT: {
-            return { ...state, project: action.project };
+            return { ...state, activeProject: action.project };
         }
         // FIXME - Below actions need to be revised for firestore integration
         case DOCUMENT_UPDATE_VALUE: {
