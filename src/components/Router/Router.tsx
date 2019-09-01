@@ -13,7 +13,7 @@ import { store } from "../../store";
 // import PrivateRoute from "./PrivateRoute";
 import { History } from "history";
 import { layoutStylesHook } from "./styles";
-import Layout from "../Layout";
+import ProjectEditor from "../ProjectEditor/ProjectEditor";
 
 interface IRouterComponent {
     isAuthenticated: boolean;
@@ -31,7 +31,7 @@ const EditorLayout = (args: any) => {
             <div>
                 <Header />
                 <ProjectContext className={classes.content} {...rest}>
-                    <Layout projectId={match.params.id} />
+                    <ProjectEditor projectId={match.params.id} />
                 </ProjectContext>
             </div>
         );

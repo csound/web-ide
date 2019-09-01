@@ -4,7 +4,7 @@ import ProjectsReducer from "./components/Projects/reducer";
 import LoginReducer from "./components/Login/reducer";
 import TemplateReducer from "./components/Themes/reducer";
 import IDReducer from "./db/IDReducer";
-import LayoutReducer from "./components/Layout/reducer";
+import ProjectEditorReducer from "./components/ProjectEditor/reducer";
 import CsoundReducer from "./components/Csound/reducer";
 import ModalReducer from "./components/Modal/reducer";
 import ProfileReducer from "./components/Profile/reducer";
@@ -15,7 +15,7 @@ export default (history: History) =>
         projects: ProjectsReducer,
         router: connectRouter(history) as Reducer<RouterState, AnyAction>,
         LoginReducer,
-        LayoutReducer,
+        ProjectEditorReducer,
         userProfile: IDReducer,
         theme: TemplateReducer,
         csound: CsoundReducer,

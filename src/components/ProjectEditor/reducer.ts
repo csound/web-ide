@@ -7,18 +7,21 @@ import {
     STORE_EDITOR_INSTANCE
 } from "./types";
 
-export interface ILayoutReducer {
+export interface IProjectEditorReducer {
     tabDock: ITabDock;
 }
 
-const initialLayoutState: ILayoutReducer = {
+const initialLayoutState: IProjectEditorReducer = {
     tabDock: {
         tabIndex: 0,
         openDocuments: []
     }
 };
 
-export default (state: ILayoutReducer = initialLayoutState, action: any) => {
+export default (
+    state: IProjectEditorReducer = initialLayoutState,
+    action: any
+) => {
     switch (action.type) {
         case TAB_DOCK_SWITCH_TAB: {
             state.tabDock.tabIndex = action.tabIndex;

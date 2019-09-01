@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { tabOpenByDocumentUid } from "../Layout/actions";
+import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { generateUid } from "../../utils";
 import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";

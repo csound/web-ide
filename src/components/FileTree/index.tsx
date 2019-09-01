@@ -16,7 +16,7 @@ import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/types";
 import { newDocument } from "../Projects/actions";
-import { tabOpenByDocumentUid } from "../Layout/actions";
+import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { IStore } from "../../db/interfaces";
 // import { find, findIndex } from "lodash";
 

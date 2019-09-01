@@ -1,5 +1,5 @@
 import { IProjectsReducer } from "../components/Projects/types";
-import { ILayoutReducer } from "../components/Layout/reducer";
+import { IProjectEditorReducer } from "../components/ProjectEditor/reducer";
 import { ICsoundReducer } from "../components/Csound/reducer";
 import { IModalReducer } from "../components/Modal/reducer";
 
@@ -46,7 +46,7 @@ export interface IStore {
     csound: ICsoundReducer;
     router: any;
     LoginReducer: any;
-    LayoutReducer: ILayoutReducer;
+    ProjectEditorReducer: IProjectEditorReducer;
     userProfile: IUserProfile | null;
     theme: ITheme;
     ModalReducer: IModalReducer;

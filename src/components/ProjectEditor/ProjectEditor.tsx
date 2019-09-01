@@ -23,7 +23,7 @@ import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import { tabClose, tabSwitch } from "./actions";
 
-const Layout = props => {
+const ProjectEditor = props => {
     // const [dimensions, setDimensions] = useState({
     //     innerWidth: window.innerWidth,
     //     innerHeight: window.innerHeight
@@ -51,7 +51,8 @@ const Layout = props => {
     );
 
     const tabDockDocuments = useSelector(
-        (store: IStore) => store.LayoutReducer.tabDock.openDocuments || []
+        (store: IStore) =>
+            store.ProjectEditorReducer.tabDock.openDocuments || []
     );
 
     const openDocumentsUnfilt: (IDocument | undefined)[] = tabDockDocuments.map(
@@ -67,7 +68,7 @@ const Layout = props => {
     ) as IDocument[];
 
     const tabIndex: number = useSelector(
-        (store: IStore) => store.LayoutReducer.tabDock.tabIndex
+        (store: IStore) => store.ProjectEditorReducer.tabDock.tabIndex
     );
 
     const closeTab = documentUid => {
@@ -178,4 +179,4 @@ const Layout = props => {
     );
 };
 
-export default Layout;
+export default ProjectEditor;
