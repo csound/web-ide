@@ -3,8 +3,7 @@ import { IStore } from "../../db/interfaces";
 
 export const toggleEditorFullScreen = (): void => {
     const storeState = store.getState() as IStore;
-    const activeProjectUid = storeState.ProjectsReducer.activeProjectUid;
-    const session = storeState.LayoutReducer.sessions[activeProjectUid];
+    const session = storeState.LayoutReducer;
     const tabIndex = session.tabDock.tabIndex;
     const editorInstance =
         session.tabDock.openDocuments[tabIndex].editorInstance;

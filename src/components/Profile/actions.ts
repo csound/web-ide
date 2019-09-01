@@ -14,6 +14,7 @@ import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
 import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
+import { generateUid } from "../../utils";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -95,6 +96,9 @@ export const addUserProject = (): ThunkAction<
 
             try {
                 const newProjectRef = await projects.add(newProject);
+                defaultCsd.documentUid = generateUid("default.csd");
+                defaultOrc.documentUid = generateUid("default.orc");
+                defaultSco.documentUid = generateUid("default.sco");
                 await newProjectRef.collection("files").add(defaultCsd);
                 await newProjectRef.collection("files").add(defaultOrc);
                 await newProjectRef.collection("files").add(defaultSco);

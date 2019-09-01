@@ -49,16 +49,12 @@ const Layout = props => {
         (store: IStore) => store.ProjectsReducer.activeProjectUid
     );
 
-    const project: IProject = useSelector((store: IStore) =>
-        find(
-            store.ProjectsReducer.projects,
-            p => p.projectUid === activeProjectUid
-        )
+    const project: IProject = useSelector(
+        (store: IStore) => store.ProjectsReducer.activeProject
     );
 
     const tabDockDocuments = useSelector(
-        (store: IStore) =>
-            store.LayoutReducer.sessions[activeProjectUid].tabDock.openDocuments
+        (store: IStore) => store.LayoutReducer.tabDock.openDocuments || []
     );
 
     const openDocumentsUnfilt: (IDocument | undefined)[] = tabDockDocuments.map(
@@ -74,8 +70,7 @@ const Layout = props => {
     ) as IDocument[];
 
     const tabIndex: number = useSelector(
-        (store: IStore) =>
-            store.LayoutReducer.sessions[activeProjectUid].tabDock.tabIndex
+        (store: IStore) => store.LayoutReducer.tabDock.tabIndex
     );
 
     const closeTab = (documentUid, projectUid) => {
@@ -91,7 +86,7 @@ const Layout = props => {
             const isActive: boolean = index === tabIndex;
             return (
                 <Tab key={index}>
-                    {document!.name}
+                    {document!.filename}
                     <Tooltip title="close" placement="right-end">
                         <IconButton
                             size="small"

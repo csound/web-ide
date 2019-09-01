@@ -6,6 +6,7 @@ import { IStore } from "../../db/interfaces";
 import Header from "../Header/Header";
 import Home from "../Home/Home";
 import Profile from "../Profile/Profile";
+import ProjectContext from "../Projects/ProjectContext";
 import { Route, Switch } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
 import { store } from "../../store";
@@ -29,9 +30,9 @@ const EditorLayout = (args: any) => {
         return (
             <div>
                 <Header />
-                <main className={classes.content} {...rest}>
+                <ProjectContext className={classes.content} {...rest}>
                     <Layout projectId={match.params.id} />
-                </main>
+                </ProjectContext>
             </div>
         );
     };
