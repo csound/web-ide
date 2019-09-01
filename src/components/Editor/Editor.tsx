@@ -129,10 +129,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
-    const project = find(
-        store.ProjectsReducer.projects,
-        p => p.projectUid === ownProp.projectUid
-    );
+    const project = store.projects.activeProject;
     const document =
         project &&
         find(project.documents, d => d.documentUid === ownProp.documentUid);

@@ -12,7 +12,7 @@ import { History } from "history";
 
 export default (history: History) =>
     combineReducers({
-        ProjectsReducer,
+        projects: ProjectsReducer,
         router: connectRouter(history) as Reducer<RouterState, AnyAction>,
         LoginReducer,
         LayoutReducer,

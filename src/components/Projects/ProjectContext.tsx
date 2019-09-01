@@ -35,7 +35,7 @@ class ProjectContext extends React.Component<IProjectContextProps, {}> {
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
     return {
-        activeProject: store.ProjectsReducer.activeProject
+        activeProject: store.projects.activeProject
     };
 };
 

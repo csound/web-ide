@@ -16,8 +16,10 @@ interface IMenuBarProps {
 function MenuBar(props) {
     const { shortcut } = props as IMenuBarProps;
 
-    const activeProjectUid: string = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProjectUid
+    const activeProjectUid: string = useSelector((store: IStore) =>
+        store.projects.activeProject
+            ? store.projects.activeProject.projectUid
+            : ""
     );
 
     const dispatch = useDispatch();

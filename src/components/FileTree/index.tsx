@@ -31,12 +31,14 @@ interface IFileTreeProps {
 const initialSelectBlock: any = {};
 
 const FileTree = () => {
+    // use ! as this Filetree will only be used when activeProject is not-null,
+    // controlled by ProjectContext
     const project: IProject = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProject
+        (store: IStore) => store.projects.activeProject!
     );
 
     const documents: { [documentUid: string]: IDocument } = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProject.documents
+        (store: IStore) => store.projects.activeProject!.documents
     );
 
     const dispatch = useDispatch();

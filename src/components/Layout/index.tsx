@@ -47,7 +47,7 @@ const Layout = props => {
     const dispatch = useDispatch();
 
     const project: IProject = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProject
+        (store: IStore) => store.projects.activeProject!
     );
 
     const tabDockDocuments = useSelector(
