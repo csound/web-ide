@@ -44,7 +44,14 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         isPublic: data && data.public,
                         name: data && data.name
                     };
+
                     dispatch(setProject(project));
+
+                    (Object as any)
+                        .values(documents)
+                        .forEach(doc =>
+                            dispatch(tabOpenByDocumentUid(doc.documentUid))
+                        );
 
                     files.docChanges().forEach(change => {
                         switch (change.type) {
