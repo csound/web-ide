@@ -12,6 +12,7 @@ import {
     IProject
 } from "./types";
 import { projects } from "../../config/firestore";
+import { reduce } from "lodash";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -20,17 +21,32 @@ export const loadProjectFromFirestore = (projectUid: string) => {
             const doc = await projRef.get();
             if (doc) {
                 const data = doc.data();
-                const project: IProject = {
-                    projectUid: doc.id,
-                    documents: {},
-                    isPublic: data && data.public,
-                    name: data && data.name
-                };
-                dispatch(setProject(project));
-
                 // TODO - Sync files to Redux as well as EMFS
-                projRef.collection("files").onSnapshot(docs => {
-                    docs.docChanges().forEach(change => {
+                projRef.collection("files").onSnapshot(files => {
+                    const documents = reduce(
+                        files.docs,
+                        (acc, docSnapshot) => {
+                            const docData = docSnapshot.data();
+                            acc[docData["documentUid"]] = {
+                                currentValue: docData["value"],
+                                documentUid: docData["documentUid"],
+                                savedValue: docData["value"],
+                                filename: docData["name"],
+                                type: docData["type"]
+                            };
+                            return acc;
+                        },
+                        {}
+                    );
+                    const project: IProject = {
+                        projectUid,
+                        documents,
+                        isPublic: data && data.public,
+                        name: data && data.name
+                    };
+                    dispatch(setProject(project));
+
+                    files.docChanges().forEach(change => {
                         switch (change.type) {
                             case "added":
                                 break;
