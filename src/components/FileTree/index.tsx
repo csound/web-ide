@@ -35,25 +35,21 @@ const FileTree = () => {
         (store: IStore) => store.ProjectsReducer.activeProject
     );
 
-    const documents: { [documentUid: string]: IDocument } = useSelector(
-        (store: IStore) =>
-            store.ProjectsReducer.activeProject &&
-            store.ProjectsReducer.activeProject.documents
+    const documents: IDocument[] = useSelector(
+        (store: IStore) => store.ProjectsReducer.activeProject.documents
     );
 
     const dispatch = useDispatch();
 
     const classes = useStyles({});
 
-    const fileTreeDocs = Object.values(documents).map(
-        (document: IDocument, index: number) => {
-            return {
-                path: document.filename,
-                type: "blob",
-                sha: document.documentUid
-            };
-        }
-    );
+    const fileTreeDocs = documents.map((document: IDocument, index: number) => {
+        return {
+            path: document.filename,
+            type: "blob",
+            sha: document.documentUid
+        };
+    });
 
     const [state, setState] = useState({
         project,
