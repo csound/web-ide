@@ -31,15 +31,14 @@ interface IFileTreeProps {
 const initialSelectBlock: any = {};
 
 const FileTree = () => {
-    const activeProjectUid: string = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProjectUid
-    );
     const project: IProject = useSelector(
-        (store: IStore) => store.ProjectsReducer.projects[activeProjectUid]
+        (store: IStore) => store.ProjectsReducer.activeProject
     );
+
     const documents: { [documentUid: string]: IDocument } = useSelector(
         (store: IStore) =>
-            store.ProjectsReducer.projects[activeProjectUid].documents
+            store.ProjectsReducer.activeProject &&
+            store.ProjectsReducer.activeProject.documents
     );
 
     const dispatch = useDispatch();
@@ -128,7 +127,9 @@ const FileTree = () => {
                 if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
                     initialSelectBlock[data.sha.toString()] = true;
                 } else {
-                    dispatch(tabOpenByDocumentUid(activeProjectUid, data.sha));
+                    dispatch(
+                        tabOpenByDocumentUid(project.projectUid, data.sha)
+                    );
                     // console.log("CLICK!?", type, unfoldStatus, data);
                 }
                 // goldenLayoutActions.openTab(GoldenLayout, data.path);
@@ -144,7 +145,7 @@ const FileTree = () => {
                     label: "new",
                     hint: "Insert file",
                     onClick: () => {
-                        dispatch(newDocument(activeProjectUid, ""));
+                        dispatch(newDocument(project.projectUid, ""));
                     }
                 };
             }
@@ -183,7 +184,7 @@ const FileTree = () => {
                 }
             ];
         },
-        [classes, state, setState, activeProjectUid, dispatch]
+        [classes, state, setState, project.projectUid, dispatch]
     );
 
     const requestChildrenData = useCallback(

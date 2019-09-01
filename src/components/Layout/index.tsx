@@ -57,8 +57,7 @@ const Layout = props => {
     );
 
     const tabDockDocuments = useSelector(
-        (store: IStore) =>
-            store.LayoutReducer.sessions[activeProjectUid].tabDock.openDocuments
+        (store: IStore) => store.LayoutReducer.tabDock.openDocuments
     );
 
     const openDocumentsUnfilt: (IDocument | undefined)[] = tabDockDocuments.map(
@@ -74,8 +73,7 @@ const Layout = props => {
     ) as IDocument[];
 
     const tabIndex: number = useSelector(
-        (store: IStore) =>
-            store.LayoutReducer.sessions[activeProjectUid].tabDock.tabIndex
+        (store: IStore) => store.LayoutReducer.tabDock.tabIndex
     );
 
     const closeTab = (documentUid, projectUid) => {
