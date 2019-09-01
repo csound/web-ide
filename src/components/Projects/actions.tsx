@@ -123,7 +123,7 @@ export const newDocument = (projectUid: string, val: string) => {
                 name: fileName,
                 val
             });
-            dispatch(tabOpenByDocumentUid(projectUid, newDocUid));
+            dispatch(tabOpenByDocumentUid(newDocUid));
             dispatch({ type: "MODAL_CLOSE" });
         };
         const newDocumentPromptComp = newDocumentPrompt(

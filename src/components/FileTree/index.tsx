@@ -125,9 +125,7 @@ const FileTree = () => {
                 if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
                     initialSelectBlock[data.sha.toString()] = true;
                 } else {
-                    dispatch(
-                        tabOpenByDocumentUid(project.projectUid, data.sha)
-                    );
+                    dispatch(tabOpenByDocumentUid(data.sha));
                     // console.log("CLICK!?", type, unfoldStatus, data);
                 }
                 // goldenLayoutActions.openTab(GoldenLayout, data.path);

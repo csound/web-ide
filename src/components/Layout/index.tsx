@@ -21,6 +21,7 @@ import { find, isEmpty } from "lodash";
 import { filterUndef } from "../../utils";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
+import { tabClose, tabSwitch } from "./actions";
 
 const Layout = props => {
     // const [dimensions, setDimensions] = useState({
@@ -44,10 +45,6 @@ const Layout = props => {
     // });
 
     const dispatch = useDispatch();
-
-    const activeProjectUid: string = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProjectUid
-    );
 
     const project: IProject = useSelector(
         (store: IStore) => store.ProjectsReducer.activeProject
@@ -73,12 +70,8 @@ const Layout = props => {
         (store: IStore) => store.LayoutReducer.tabDock.tabIndex
     );
 
-    const closeTab = (documentUid, projectUid) => {
-        dispatch({
-            type: "TAB_CLOSE",
-            documentUid,
-            projectUid
-        });
+    const closeTab = documentUid => {
+        dispatch(tabClose(documentUid));
     };
 
     const openTabList = openDocuments.map(
@@ -93,10 +86,7 @@ const Layout = props => {
                             style={{ marginLeft: 6, marginBottom: 2 }}
                             onClick={e => {
                                 e.stopPropagation();
-                                closeTab(
-                                    document!.documentUid,
-                                    activeProjectUid
-                                );
+                                closeTab(document!.documentUid);
                             }}
                         >
                             <FontAwesomeIcon
@@ -148,11 +138,7 @@ const Layout = props => {
     );
 
     const switchTab = (index: number, lastIndex: number, event: Event) => {
-        dispatch({
-            type: "TAB_DOCK_SWITCH_TAB",
-            projectUid: activeProjectUid,
-            tabIndex: index
-        });
+        dispatch(tabSwitch(index));
     };
 
     const tabDock = isEmpty(openDocuments) ? (

@@ -1,5 +1,11 @@
 import { ITabDock } from "./interfaces";
 import { filter, find, findIndex } from "lodash";
+import {
+    TAB_DOCK_SWITCH_TAB,
+    TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
+    TAB_CLOSE,
+    STORE_EDITOR_INSTANCE
+} from "./types";
 
 export interface ILayoutReducer {
     tabDock: ITabDock;
@@ -14,11 +20,11 @@ const initialLayoutState: ILayoutReducer = {
 
 export default (state: ILayoutReducer = initialLayoutState, action: any) => {
     switch (action.type) {
-        case "TAB_DOCK_SWITCH_TAB": {
+        case TAB_DOCK_SWITCH_TAB: {
             state.tabDock.tabIndex = action.tabIndex;
             return { ...state };
         }
-        case "TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID": {
+        case TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID: {
             const currentOpenDocs = state.tabDock.openDocuments;
             const documentAlreadyOpenIndex = findIndex(
                 currentOpenDocs,
@@ -35,7 +41,7 @@ export default (state: ILayoutReducer = initialLayoutState, action: any) => {
             }
             return { ...state };
         }
-        case "TAB_CLOSE": {
+        case TAB_CLOSE: {
             const currentTabIndex = state.tabDock.tabIndex;
             state.tabDock.tabIndex = Math.min(
                 currentTabIndex,
@@ -47,7 +53,7 @@ export default (state: ILayoutReducer = initialLayoutState, action: any) => {
             );
             return { ...state };
         }
-        case "STORE_EDITOR_INSTANCE": {
+        case STORE_EDITOR_INSTANCE: {
             const openDocument = find(
                 state.tabDock.openDocuments,
                 od => od.uid === action.documentUid
