@@ -13,7 +13,7 @@ export interface IProjectEditorReducer {
 
 const initialLayoutState: IProjectEditorReducer = {
     tabDock: {
-        tabIndex: 0,
+        tabIndex: -1,
         openDocuments: []
     }
 };
