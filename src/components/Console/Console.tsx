@@ -15,10 +15,9 @@ interface IConsoleLocalState {
 }
 
 class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
-
     public readonly state: IConsoleLocalState = {
-        logs: "",
-    }
+        logs: ""
+    };
 
     constructor(props: IConsoleProps) {
         super(props);
@@ -26,11 +25,10 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
     }
 
     public messageCallback(msg: string) {
-        this.setState({logs: this.state.logs + msg});
+        this.setState({ logs: this.state.logs + msg });
     }
 
     public componentDidMount() {
-
         const initProjectInterval = setInterval(() => {
             if (this.props.csound) {
                 clearInterval(initProjectInterval);
@@ -41,24 +39,23 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
     }
 
     public render() {
-        return(
-
+        return (
             <div className="console-log-container draggable">
                 <PerfectScrollbar>
-                    <pre>
-                        {this.state.logs}
-                    </pre>
+                    <pre>{this.state.logs}</pre>
                 </PerfectScrollbar>
             </div>
-
-        )
+        );
     }
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
     return {
-        csound: store.csound.csound,
-    }
-}
+        csound: store.csound.csound
+    };
+};
 
-export default connect(mapStateToProps, {})(Console);
+export default connect(
+    mapStateToProps,
+    {}
+)(Console);

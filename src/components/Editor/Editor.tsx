@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Controlled as CodeMirror} from "react-codemirror2";
+import { Controlled as CodeMirror } from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
 import { ICsoundObj } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
@@ -31,7 +31,6 @@ interface ICodeEditorProps {
 // }
 
 class CodeEditor extends React.Component<ICodeEditorProps, {}> {
-
     protected cm: any;
 
     // public readonly state: ICodeEditorLocalState = {
@@ -68,13 +67,22 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     }
 
     public componentDidMount(this) {
-
-        const { updateDocumentValue, projectUid, documentUid,
-                storeEditorInstance } = this.props;
+        const {
+            updateDocumentValue,
+            projectUid,
+            documentUid,
+            storeEditorInstance
+        } = this.props;
 
         updateDocumentValue(this.props.savedValue, projectUid, documentUid);
         storeEditorInstance(this.cm.current.editor, projectUid, documentUid);
-        setTimeout(() => this.cm.current && this.cm.current.editor && this.cm.current.editor.focus(), 100);
+        setTimeout(
+            () =>
+                this.cm.current &&
+                this.cm.current.editor &&
+                this.cm.current.editor.focus(),
+            100
+        );
     }
 
     public componentWillUnmount(this) {
@@ -105,10 +113,10 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
         const onBeforeChange = (editor, data, value) => {
             updateDocumentValue(value, projectUid, documentUid);
-        }
+        };
 
         return (
-            <PerfectScrollbar style={{backgroundColor: "#272822"}}>
+            <PerfectScrollbar style={{ backgroundColor: "#272822" }}>
                 <CodeMirror
                     value={this.props.currentDocumentValue}
                     onBeforeChange={onBeforeChange}
@@ -121,25 +129,49 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
-
-    const project = find(store.ProjectsReducer.projects, p => p.projectUid === ownProp.projectUid);
-    const document = project && find(project.documents, d => d.documentUid === ownProp.documentUid);
-    const currentDocumentValue = (document == null || isEmpty(document)) ? "" : document.currentValue;
+    const project = find(
+        store.ProjectsReducer.projects,
+        p => p.projectUid === ownProp.projectUid
+    );
+    const document =
+        project &&
+        find(project.documents, d => d.documentUid === ownProp.documentUid);
+    const currentDocumentValue =
+        document == null || isEmpty(document) ? "" : document.currentValue;
 
     return {
         csound: null,
         documentUid: ownProp.documentUid,
         currentDocumentValue,
         projectUid: ownProp.projectUid,
-        savedValue: ownProp.savedValue,
-    }
-}
+        savedValue: ownProp.savedValue
+    };
+};
 
 const mapDispatchToProps = (dispatch: any): any => ({
-    updateDocumentValue: (val: string, projectUid: string, documentUid: string) =>
-        dispatch(projectActions.updateDocumentValue(val, projectUid, documentUid)),
-    storeEditorInstance: (editorInstance: any, projectUid: string, documentUid: string) =>
-        dispatch(projectActions.storeEditorInstance(editorInstance, projectUid, documentUid))
+    updateDocumentValue: (
+        val: string,
+        projectUid: string,
+        documentUid: string
+    ) =>
+        dispatch(
+            projectActions.updateDocumentValue(val, projectUid, documentUid)
+        ),
+    storeEditorInstance: (
+        editorInstance: any,
+        projectUid: string,
+        documentUid: string
+    ) =>
+        dispatch(
+            projectActions.storeEditorInstance(
+                editorInstance,
+                projectUid,
+                documentUid
+            )
+        )
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(CodeEditor);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(CodeEditor);

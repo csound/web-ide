@@ -1,5 +1,5 @@
 import * as firebase from "firebase/app";
-import 'firebase/firestore';
+import "firebase/firestore";
 
 // ENVIRONMENT SETTINGS
 /*
@@ -19,11 +19,11 @@ const PROD = {
     projectId: "csound-ide",
     storageBucket: "csound-ide.appspot.com",
     messagingSenderId: "1089526309602"
-} 
+};
 
 // INITIALIZE FIREBASE WITH SETTINGS
 if (!firebase.apps.length) {
-    // TODO - make dev/prod switchable  
+    // TODO - make dev/prod switchable
     firebase.initializeApp(PROD);
 }
 

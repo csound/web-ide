@@ -11,35 +11,39 @@ const useStyles = makeStyles((theme: Theme) =>
         modal: {
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "center"
         },
         paper: {
             backgroundColor: theme.palette.background.paper,
             border: "2px solid #000",
             boxShadow: theme.shadows[5],
-            padding: theme.spacing(2, 4, 3),
-        },
-    }),
+            padding: theme.spacing(2, 4, 3)
+        }
+    })
 );
 
 export default function GlobalModal() {
-
     const classes = useStyles();
 
-    const isOpen: boolean = useSelector((store: IStore) => store.ModalReducer.isOpen);
+    const isOpen: boolean = useSelector(
+        (store: IStore) => store.ModalReducer.isOpen
+    );
 
-    const ModalComponent = useSelector((store: IStore) => store.ModalReducer.component);
+    const ModalComponent = useSelector(
+        (store: IStore) => store.ModalReducer.component
+    );
     const onClose = useSelector((store: IStore) => store.ModalReducer.onClose);
 
     return (
-        <Modal closeAfterTransition
-               BackdropComponent={Backdrop}
-               BackdropProps={{
-                   timeout: 500,
-               }}
-               className={classes.modal}
-               open={isOpen}
-               onClose={onClose}
+        <Modal
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+                timeout: 500
+            }}
+            className={classes.modal}
+            open={isOpen}
+            onClose={onClose}
         >
             <Fade in={isOpen}>
                 <div className={classes.paper}>

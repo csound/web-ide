@@ -8,42 +8,42 @@ const useStyles = makeStyles({
         background: "#272822",
         padding: "0!important",
         color: "#f8f8f2",
-        overflow: "hidden",
+        overflow: "hidden"
     },
     treeIcon: {
-        color: "red",
+        color: "red"
     },
     deleteIcon: {
         fontSize: 24,
         // marginRight: 6,
-        color: "white",
+        color: "white"
     },
     editIcon: {
         fontSize: 18,
         marginRight: 32,
-        color: "white",
+        color: "white"
     },
     fileIcon: {
         fontSize: 18,
         marginRight: 6,
-        color: "white",
+        color: "white"
     },
     node: {
         display: "flex",
         alignContent: "center",
         color: "rgb(222,222,222)",
         textOverflow: "ellipsis",
-        overflow: "hidden",
+        overflow: "hidden"
     },
     active: {
-        fontWeight: "bold",
+        fontWeight: "bold"
     },
     inactive: {
-        fontWeight: "normal",
+        fontWeight: "normal"
     },
     closed: {
-        fontWeight: "normal",
-    },
+        fontWeight: "normal"
+    }
 });
 
 export default useStyles;

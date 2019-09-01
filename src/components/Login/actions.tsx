@@ -1,7 +1,13 @@
 import {
-    SIGNIN_FAIL, SIGNIN_SUCCESS, SIGNIN_REQUEST,
-    OPEN_DIALOG, CLOSE_DIALOG, CREATE_USER_FAIL,
-    CREATE_USER_SUCCESS, CREATE_CLEAR_ERROR, LOG_OUT
+    SIGNIN_FAIL,
+    SIGNIN_SUCCESS,
+    SIGNIN_REQUEST,
+    OPEN_DIALOG,
+    CLOSE_DIALOG,
+    CREATE_USER_FAIL,
+    CREATE_USER_SUCCESS,
+    CREATE_CLEAR_ERROR,
+    LOG_OUT
 } from "./types";
 import firebase from "firebase/app";
 import "firebase/auth";
@@ -14,10 +20,12 @@ export const login = (email: string, password: string) => {
         });
 
         try {
-            const user = await firebase.auth().signInWithEmailAndPassword(email, password);
+            const user = await firebase
+                .auth()
+                .signInWithEmailAndPassword(email, password);
             dispatch({
                 type: SIGNIN_SUCCESS,
-                user,
+                user
             });
             // dispatch(push("/"));
         } catch (e) {
@@ -25,75 +33,76 @@ export const login = (email: string, password: string) => {
                 type: SIGNIN_FAIL
             });
         }
-    }
-}
+    };
+};
 
 export const thirdPartyAuthSuccess = (user: any) => {
     return async (dispatch: any) => {
         dispatch({
             type: SIGNIN_SUCCESS,
-            user,
-        })
-    }
-}
+            user
+        });
+    };
+};
 
 export const openLoginDialog = () => {
     return async (dispatch: any) => {
         dispatch({
-            type: OPEN_DIALOG,
-        })
-    }
-}
+            type: OPEN_DIALOG
+        });
+    };
+};
 
 export const closeLoginDialog = () => {
     return async (dispatch: any) => {
         dispatch({
-            type: CLOSE_DIALOG,
-        })
-    }
-}
+            type: CLOSE_DIALOG
+        });
+    };
+};
 
 export const logOut = () => {
     return async (dispatch: any) => {
         try {
             await firebase.auth().signOut();
-        } catch (e){
+        } catch (e) {
             console.error(e);
         }
         dispatch(push("/"));
         dispatch({
-            type: LOG_OUT,
-        })
-    }
-}
+            type: LOG_OUT
+        });
+    };
+};
 
 export const createNewUser = (email: string, password: string) => {
     return async (dispatch: any) => {
-        firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then((creditendials: any) => {
-                    dispatch({
-                        type: CREATE_USER_SUCCESS,
-                        creditendials,
-                    })
-                })
-                .catch((error: any) => {
-                    dispatch({
-                        type: CREATE_USER_FAIL,
-                        errorCode: error.code,
-                        errorMessage: error.message,
-                    })
+        firebase
+            .auth()
+            .createUserWithEmailAndPassword(email, password)
+            .then((creditendials: any) => {
+                dispatch({
+                    type: CREATE_USER_SUCCESS,
+                    creditendials
                 });
-    }
-}
+            })
+            .catch((error: any) => {
+                dispatch({
+                    type: CREATE_USER_FAIL,
+                    errorCode: error.code,
+                    errorMessage: error.message
+                });
+            });
+    };
+};
 
 export const createUserClearError = () => {
     return async (dispatch: any) => {
         dispatch({
-            type: CREATE_CLEAR_ERROR,
-        })
-    }
-}
-
+            type: CREATE_CLEAR_ERROR
+        });
+    };
+};
 
 // export const logOut = () => {
 //     return async (dispatch: any) => {

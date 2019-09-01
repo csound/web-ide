@@ -1,4 +1,4 @@
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createMuiTheme } from "@material-ui/core/styles";
 
 const darkTheme = createMuiTheme({
     palette: {
@@ -6,19 +6,19 @@ const darkTheme = createMuiTheme({
             light: "#efefef",
             main: "#272822",
             dark: "#002884",
-            contrastText: "#fff",
+            contrastText: "#fff"
         },
         secondary: {
             light: "#b3cde0",
             main: "#005b96",
             dark: "#011f4b",
-            contrastText: "#854442",
+            contrastText: "#854442"
         },
         background: {
-            default: "slategrey",
+            default: "slategrey"
             // default: "#efefef",
         }
-    },
+    }
 });
 
 export const resolveTheme = (themeName: string) => {
@@ -30,4 +30,4 @@ export const resolveTheme = (themeName: string) => {
             return darkTheme;
         }
     }
-}
+};

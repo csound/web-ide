@@ -23,12 +23,11 @@
 
 /* eslint-disable */
 
-
 declare global {
-    interface Window { 
-      CsoundNodeFactory: any; 
-      CsoundScriptProcessorNodeFactory: any;
-      CSOUND_AUDIO_CONTEXT:AudioContext;
+    interface Window {
+        CsoundNodeFactory: any;
+        CsoundScriptProcessorNodeFactory: any;
+        CSOUND_AUDIO_CONTEXT: AudioContext;
     }
 }
 
@@ -37,18 +36,17 @@ declare global {
 let CSOUND_AUDIO_CONTEXT =
     (window as any).CSOUND_AUDIO_CONTEXT ||
     (function() {
-
         try {
-            var AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
+            var AudioContext =
+                (window as any).AudioContext ||
+                (window as any).webkitAudioContext;
             return new AudioContext();
-        }
-        catch(error) {
-
-            console.log('Web Audio API is not supported in this browser');
+        } catch (error) {
+            console.log("Web Audio API is not supported in this browser");
         }
         return null;
-    }());
-window.CSOUND_AUDIO_CONTEXT = CSOUND_AUDIO_CONTEXT; 
+    })();
+window.CSOUND_AUDIO_CONTEXT = CSOUND_AUDIO_CONTEXT;
 
 // Global singleton variables
 var AudioWorkletGlobalScope = (window as any).AudioWorkletGlobalScope || {};
@@ -57,25 +55,28 @@ let CS_HAS_AUDIO_WORKLET: boolean;
 let CS_NODE_FACTORY: any;
 
 /* SETUP NODE TYPE */
-if(typeof AudioWorkletNode !== 'undefined' &&
-   CSOUND_AUDIO_CONTEXT.audioWorklet !== undefined) {
+if (
+    typeof AudioWorkletNode !== "undefined" &&
+    CSOUND_AUDIO_CONTEXT.audioWorklet !== undefined
+) {
     console.log("Using WASM + AudioWorklet Csound implementation");
-    CSOUND_NODE_SCRIPT = 'CsoundNode.js';
+    CSOUND_NODE_SCRIPT = "CsoundNode.js";
     CS_HAS_AUDIO_WORKLET = true;
 } else {
     console.log("Using WASM + ScriptProcessorNode Csound implementation");
-    CSOUND_NODE_SCRIPT = 'CsoundScriptProcessorNode.js';
+    CSOUND_NODE_SCRIPT = "CsoundScriptProcessorNode.js";
     CS_HAS_AUDIO_WORKLET = false;
 }
 
-
 const csound_load_script = function(src: any, callback: any) {
-    var script: any = document.createElementNS("http://www.w3.org/1999/xhtml", "script");
+    var script: any = document.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "script"
+    );
     script.src = src;
     script.onload = callback;
     document.head.appendChild(script);
-}
-
+};
 
 /** This ES6 Class provides an interface to the Csound
  * engine running on a node (an AudioWorkletNode where available,
@@ -145,8 +146,7 @@ class CsoundObj {
         this.node.setOption(option);
     }
 
-    render(filePath: any) {
-    }
+    render(filePath: any) {}
 
     /** Evaluates Csound orchestra code.
      *
@@ -264,7 +264,7 @@ class CsoundObj {
     /** Starts the node containing the Csound engine.
      */
     start() {
-        if(this.microphoneNode != null) {
+        if (this.microphoneNode != null) {
             this.microphoneNode.connect(this.node);
         }
         this.node.start();
@@ -276,8 +276,7 @@ class CsoundObj {
         this.node.reset();
     }
 
-    destroy() {
-    }
+    destroy() {}
 
     /** Starts performance, same as start()
      */
@@ -319,10 +318,11 @@ class CsoundObj {
      * or false if the microphone cannot be enabled
      */
     enableAudioInput(audioInputCallback: any) {
-
-        navigator.getUserMedia = (window as any).navigator.getUserMedia ||
-                                 (window as any).navigator.webkitGetUserMedia ||
-                                 (window as any).navigator.mozGetUserMedia || null;
+        navigator.getUserMedia =
+            (window as any).navigator.getUserMedia ||
+            (window as any).navigator.webkitGetUserMedia ||
+            (window as any).navigator.mozGetUserMedia ||
+            null;
         let that = this;
 
         if (navigator.getUserMedia === null) {
@@ -330,7 +330,9 @@ class CsoundObj {
             audioInputCallback(false);
         } else {
             let onSuccess = function(stream: any) {
-                that.microphoneNode = CSOUND_AUDIO_CONTEXT.createMediaStreamSource(stream);
+                that.microphoneNode = CSOUND_AUDIO_CONTEXT.createMediaStreamSource(
+                    stream
+                );
                 audioInputCallback(true);
             };
 
@@ -339,10 +341,14 @@ class CsoundObj {
                 console.log("Could not initialise audio input, error:" + error);
                 audioInputCallback(false);
             };
-            navigator.getUserMedia({
-                audio: true,
-                video: false
-            }, onSuccess, onFailure);
+            navigator.getUserMedia(
+                {
+                    audio: true,
+                    video: false
+                },
+                onSuccess,
+                onFailure
+            );
         }
     }
 
@@ -351,10 +357,13 @@ class CsoundObj {
             this.midiMessage(evt.data[0], evt.data[1], evt.data[2]);
         };
         const midiSuccess = function(midiInterface: any) {
-
             const inputs = midiInterface.inputs.values();
 
-            for (let input = inputs.next(); input && !input.done; input = inputs.next()) {
+            for (
+                let input = inputs.next();
+                input && !input.done;
+                input = inputs.next()
+            ) {
                 input = input.value;
                 input.onmidimessage = handleMidiInput;
             }
@@ -370,9 +379,10 @@ class CsoundObj {
             }
         };
 
-
         if ((window as any).navigator.requestMIDIAccess) {
-            (window as any).navigator.requestMIDIAccess().then(midiSuccess, midiFail);
+            (window as any).navigator
+                .requestMIDIAccess()
+                .then(midiSuccess, midiFail);
         } else {
             console.log("MIDI not supported in this browser");
             if (midiInputCallback) {
@@ -387,18 +397,18 @@ class CsoundObj {
      *
      * @param {string} script_base A string containing the base path to scripts
      */
-    static importScripts(script_base='./') {
-        return new Promise((resolve) => {
+    static importScripts(script_base = "./") {
+        return new Promise(resolve => {
             csound_load_script(script_base + CSOUND_NODE_SCRIPT, () => {
-                CS_NODE_FACTORY = CS_HAS_AUDIO_WORKLET ? 
-                                   window.CsoundNodeFactory :
-                                   window.CsoundScriptProcessorNodeFactory;
+                CS_NODE_FACTORY = CS_HAS_AUDIO_WORKLET
+                    ? window.CsoundNodeFactory
+                    : window.CsoundScriptProcessorNodeFactory;
                 // FIXME
                 CS_NODE_FACTORY.importScripts(script_base).then(() => {
                     resolve();
-                })
-            })
-        })
+                });
+            });
+        });
     }
 
     /**
@@ -410,10 +420,12 @@ class CsoundObj {
      *  @param {number} OutputChannelCount number of output channels
      *  @return A new Csound Engine Node (CsoundNode or CsoundScriptProcessorNode)
      */
-    static createNode(inputChannelCount=1, outputChannelCount=2) {
-        return CS_NODE_FACTORY.createNode(inputChannelCount,outputChannelCount);
+    static createNode(inputChannelCount = 1, outputChannelCount = 2) {
+        return CS_NODE_FACTORY.createNode(
+            inputChannelCount,
+            outputChannelCount
+        );
     }
-
 }
 
 export default CsoundObj;

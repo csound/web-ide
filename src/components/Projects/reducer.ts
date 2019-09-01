@@ -1,4 +1,11 @@
-import { IDocument, IProjectsReducer, DOCUMENT_UPDATE_VALUE, DOCUMENT_NEW, LOAD_PROJECT_FROM_FIRESTORE, SET_PROJECT } from "./types";
+import {
+    IDocument,
+    IProjectsReducer,
+    DOCUMENT_UPDATE_VALUE,
+    DOCUMENT_NEW,
+    LOAD_PROJECT_FROM_FIRESTORE,
+    SET_PROJECT
+} from "./types";
 import { generateUid } from "../../utils";
 
 const defaultCsd: IDocument = {
@@ -18,8 +25,8 @@ const defaultCsd: IDocument = {
 </CsScore>
 </CsoundSynthesizer>
     `,
-    type: "csd",
-}
+    type: "csd"
+};
 
 const defaultOrc: IDocument = {
     currentValue: "",
@@ -43,8 +50,8 @@ instr 1
   out(al, ar)
 endin
     `,
-    type: "orc",
-}
+    type: "orc"
+};
 
 const defaultSco: IDocument = {
     currentValue: "",
@@ -54,13 +61,15 @@ const defaultSco: IDocument = {
     savedValue: `
 i1 0 2 8.00 -12
     `,
-    type: "sco",
-}
+    type: "sco"
+};
 
 export const initialProjectUid: string = generateUid("defaultproject");
 
 export const initialDocumentUids: string[] = [
-    defaultCsd.documentUid, defaultOrc.documentUid, defaultSco.documentUid
+    defaultCsd.documentUid,
+    defaultOrc.documentUid,
+    defaultSco.documentUid
 ];
 
 const initialProjectsState: IProjectsReducer = {
@@ -72,15 +81,18 @@ const initialProjectsState: IProjectsReducer = {
             documents: {
                 [defaultCsd.documentUid]: defaultCsd,
                 [defaultOrc.documentUid]: defaultOrc,
-                [defaultSco.documentUid]: defaultSco,
+                [defaultSco.documentUid]: defaultSco
             },
             projectUid: initialProjectUid,
-            assets: [],
-        },
+            assets: []
+        }
     }
-}
+};
 
-export default (state: IProjectsReducer = initialProjectsState, action: any) => {
+export default (
+    state: IProjectsReducer = initialProjectsState,
+    action: any
+) => {
     switch (action.type) {
         case LOAD_PROJECT_FROM_FIRESTORE: {
             // FIXME: Just ignore?
@@ -91,25 +103,30 @@ export default (state: IProjectsReducer = initialProjectsState, action: any) => 
         }
         // FIXME - Below actions need to be revised for firestore integration
         case DOCUMENT_UPDATE_VALUE: {
-            if (!action.documentUid || !action.projectUid) {return state;}
-            state.projects[action.projectUid].documents[action.documentUid].currentValue = action.val;
-            return {...state};
+            if (!action.documentUid || !action.projectUid) {
+                return state;
+            }
+            state.projects[action.projectUid].documents[
+                action.documentUid
+            ].currentValue = action.val;
+            return { ...state };
         }
         case DOCUMENT_NEW: {
-            state.projects[action.projectUid].documents =
-                {...state.projects[action.projectUid].documents,
-                 [action.documentUid]: {
-                     currentValue: action.val,
-                     documentUid: action.documentUid,
-                     lastEdit: null,
-                     name: action.name,
-                     savedValue: action.val,
-                     type: "orc",
-                 }} ;
-            return {...state};
+            state.projects[action.projectUid].documents = {
+                ...state.projects[action.projectUid].documents,
+                [action.documentUid]: {
+                    currentValue: action.val,
+                    documentUid: action.documentUid,
+                    lastEdit: null,
+                    name: action.name,
+                    savedValue: action.val,
+                    type: "orc"
+                }
+            };
+            return { ...state };
         }
         default: {
             return initialProjectsState;
         }
     }
-}
+};

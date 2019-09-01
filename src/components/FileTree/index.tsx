@@ -31,22 +31,30 @@ interface IFileTreeProps {
 const initialSelectBlock: any = {};
 
 const FileTree = () => {
-
-    const activeProjectUid: string = useSelector((store: IStore) => store.ProjectsReducer.activeProjectUid);
-    const project: IProject = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProjectUid]);
-    const documents: {[documentUid: string]: IDocument} = useSelector((store: IStore) => store.ProjectsReducer.projects[activeProjectUid].documents);
+    const activeProjectUid: string = useSelector(
+        (store: IStore) => store.ProjectsReducer.activeProjectUid
+    );
+    const project: IProject = useSelector(
+        (store: IStore) => store.ProjectsReducer.projects[activeProjectUid]
+    );
+    const documents: { [documentUid: string]: IDocument } = useSelector(
+        (store: IStore) =>
+            store.ProjectsReducer.projects[activeProjectUid].documents
+    );
 
     const dispatch = useDispatch();
 
     const classes = useStyles({});
 
-    const fileTreeDocs = Object.values(documents).map((document: IDocument, index: number) => {
-        return {
-            path: document.name,
-            type: "blob",
-            sha: document.documentUid,
+    const fileTreeDocs = Object.values(documents).map(
+        (document: IDocument, index: number) => {
+            return {
+                path: document.name,
+                type: "blob",
+                sha: document.documentUid
+            };
         }
-    });
+    );
 
     const [state, setState] = useState({
         project,
@@ -60,8 +68,8 @@ const FileTree = () => {
             path: project.name,
             type: "tree",
             tree: fileTreeDocs,
-            sha: Math.random(),
-        },
+            sha: Math.random()
+        }
     });
 
     if (fileTreeDocs.length !== state.data.tree.length) {
@@ -70,36 +78,43 @@ const FileTree = () => {
     }
 
     const renderLabel = useCallback(
-            (data, unfoldStatus) => {
-                const { path, type } = data;
-                let textClassName: "active" | "inactive" | "closed" = "inactive";
-                let variant: "body1" | "body2" = "body1";
-                let iconComp: React.ReactElement = (<div />);
-                if (type === "tree") {
-                    iconComp = unfoldStatus ? <FolderOpenIcon /> : <FolderIcon />;
+        (data, unfoldStatus) => {
+            const { path, type } = data;
+            let textClassName: "active" | "inactive" | "closed" = "inactive";
+            let variant: "body1" | "body2" = "body1";
+            let iconComp: React.ReactElement = <div />;
+            if (type === "tree") {
+                iconComp = unfoldStatus ? <FolderOpenIcon /> : <FolderIcon />;
+            }
+            if (type === "blob") {
+                // console.log(activeTabDocUid === data.sha, activeTabDocUid, data.sha)
+                // if (activeTabDocUid === data.sha) {
+                //     secondaryClassName = "active";
+                // }
+                variant = "body2";
+                if (path.startsWith(".") || path.includes("config")) {
+                    iconComp = <SettingsIcon />;
+                } else if (
+                    path.endsWith(".csd") ||
+                    path.endsWith(".sco") ||
+                    path.endsWith(".orc") ||
+                    path.endsWith(".udo")
+                ) {
+                    iconComp = <DescriptionIcon />;
+                } else {
+                    iconComp = <InsertDriveFileIcon />;
                 }
-                if (type === "blob") {
-                    // console.log(activeTabDocUid === data.sha, activeTabDocUid, data.sha)
-                    // if (activeTabDocUid === data.sha) {
-                    //     secondaryClassName = "active";
-                    // }
-                    variant = "body2";
-                    if (path.startsWith(".") || path.includes("config")) {
-                        iconComp = <SettingsIcon />;
-                    } else if (path.endsWith(".csd") || path.endsWith(".sco") || path.endsWith(".orc") || path.endsWith(".udo")) {
-                        iconComp = <DescriptionIcon />;
-                    } else {
-                        iconComp = <InsertDriveFileIcon />;
-                    }
-                }
+            }
 
-                return (
-                    <Typography variant={variant} className={classes.node}>
-                        {React.cloneElement(iconComp, { className: classes.fileIcon })}
-                        <span className={classes[textClassName]}>{path}</span>
-                    </Typography>
-                );
-            },
+            return (
+                <Typography variant={variant} className={classes.node}>
+                    {React.cloneElement(iconComp, {
+                        className: classes.fileIcon
+                    })}
+                    <span className={classes[textClassName]}>{path}</span>
+                </Typography>
+            );
+        },
         [classes]
     );
 
@@ -107,14 +122,13 @@ const FileTree = () => {
 
     const getActionsData = useCallback(
         (data, path, unfoldStatus, toggleFoldStatus) => {
-
             const { type } = data;
 
             if (type === "blob") {
                 if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
                     initialSelectBlock[data.sha.toString()] = true;
                 } else {
-                    dispatch(tabOpenByDocumentUid(activeProjectUid, data.sha))
+                    dispatch(tabOpenByDocumentUid(activeProjectUid, data.sha));
                     // console.log("CLICK!?", type, unfoldStatus, data);
                 }
                 // goldenLayoutActions.openTab(GoldenLayout, data.path);
@@ -126,7 +140,7 @@ const FileTree = () => {
                     return null;
                 }
                 return {
-                    icon: <AddIcon style={{color: "white", zoom: "175%",}} />,
+                    icon: <AddIcon style={{ color: "white", zoom: "175%" }} />,
                     label: "new",
                     hint: "Insert file",
                     onClick: () => {
@@ -136,14 +150,24 @@ const FileTree = () => {
             }
             return [
                 {
-                    icon: <EditIcon color="secondary" className={classes.editIcon} />,
+                    icon: (
+                        <EditIcon
+                            color="secondary"
+                            className={classes.editIcon}
+                        />
+                    ),
                     hint: "Rename file",
                     onClick: () => {
                         setState({ ...state });
                     }
                 },
                 {
-                    icon: <DeleteIcon color="secondary" className={classes.deleteIcon} />,
+                    icon: (
+                        <DeleteIcon
+                            color="secondary"
+                            className={classes.deleteIcon}
+                        />
+                    ),
                     hint: "Delete file",
                     onClick: () => {
                         const treeData = Object.assign({}, state.data);
@@ -159,12 +183,11 @@ const FileTree = () => {
                 }
             ];
         },
-        [classes , state, setState, activeProjectUid, dispatch]
+        [classes, state, setState, activeProjectUid, dispatch]
     );
 
     const requestChildrenData = useCallback(
         (data, path, toggleFoldStatus) => {
-
             const { type } = data;
 
             if (type === "blob") {
@@ -187,9 +210,18 @@ const FileTree = () => {
             labelKey="path"
             valueKey="sha"
             childrenKey="tree"
-            foldIcon={<ArrowDropDownIcon style={{color: "white"}} fontSize="large" />}
-            unfoldIcon={<ArrowDropUpIcon style={{color: "white"}} fontSize="large" />}
-            loadMoreIcon={<MoreHorizIcon style={{color: "white"}} fontSize="large" />}
+            foldIcon={
+                <ArrowDropDownIcon
+                    style={{ color: "white" }}
+                    fontSize="large"
+                />
+            }
+            unfoldIcon={
+                <ArrowDropUpIcon style={{ color: "white" }} fontSize="large" />
+            }
+            loadMoreIcon={
+                <MoreHorizIcon style={{ color: "white" }} fontSize="large" />
+            }
             renderLabel={renderLabel}
             pageSize={10}
             actionsAlignRight={false}
@@ -212,5 +244,7 @@ const FileTree = () => {
 //     )
 // }
 
-
-export default connect(null, {})(FileTree);
+export default connect(
+    null,
+    {}
+)(FileTree);

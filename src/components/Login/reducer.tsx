@@ -1,7 +1,14 @@
-import { SIGNIN_FAIL, SIGNIN_SUCCESS, SIGNIN_REQUEST,
-         OPEN_DIALOG, CLOSE_DIALOG, CREATE_USER_FAIL,
-         CREATE_USER_SUCCESS, CREATE_CLEAR_ERROR,
-         LOG_OUT } from "./types";
+import {
+    SIGNIN_FAIL,
+    SIGNIN_SUCCESS,
+    SIGNIN_REQUEST,
+    OPEN_DIALOG,
+    CLOSE_DIALOG,
+    CREATE_USER_FAIL,
+    CREATE_USER_SUCCESS,
+    CREATE_CLEAR_ERROR,
+    LOG_OUT
+} from "./types";
 import { merge } from "lodash";
 
 const INITIAL_STATE = {
@@ -10,7 +17,7 @@ const INITIAL_STATE = {
     requesting: false,
     failed: false,
     errorCode: null,
-    errorMessage: null,
+    errorMessage: null
 };
 
 export default (state = INITIAL_STATE, action: any) => {
@@ -22,7 +29,7 @@ export default (state = INITIAL_STATE, action: any) => {
                 isLoginDialogOpen: true,
                 failed: false,
                 errorCode: null,
-                errorMessage: null,
+                errorMessage: null
             };
         }
         case CREATE_USER_FAIL:
@@ -33,7 +40,7 @@ export default (state = INITIAL_STATE, action: any) => {
                 isLoginDialogOpen: true,
                 failed: true,
                 errorCode: action.errorCode,
-                errorMessage: action.errorMessage,
+                errorMessage: action.errorMessage
             };
         }
         case CREATE_CLEAR_ERROR:
@@ -43,7 +50,7 @@ export default (state = INITIAL_STATE, action: any) => {
                 isLoginDialogOpen: true,
                 failed: false,
                 errorCode: null,
-                errorMessage: false,
+                errorMessage: false
             };
         case CREATE_USER_SUCCESS:
         case SIGNIN_SUCCESS: {
@@ -53,7 +60,7 @@ export default (state = INITIAL_STATE, action: any) => {
                 requesting: false,
                 failed: false,
                 errorCode: null,
-                errorMessage: null,
+                errorMessage: null
             };
         }
         case LOG_OUT: {
@@ -63,14 +70,14 @@ export default (state = INITIAL_STATE, action: any) => {
                 isLoginDialogOpen: false,
                 failed: false,
                 errorCode: null,
-                errorMessage: false,
+                errorMessage: false
             };
         }
         case OPEN_DIALOG: {
-            return {...merge(state, {isLoginDialogOpen: true})};
+            return { ...merge(state, { isLoginDialogOpen: true }) };
         }
         case CLOSE_DIALOG: {
-            return {...merge(state, {isLoginDialogOpen: false})};
+            return { ...merge(state, { isLoginDialogOpen: false }) };
         }
         default: {
             return state;

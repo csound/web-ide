@@ -10,9 +10,13 @@ import {
     LinearProgress
 } from "@material-ui/core";
 import { connect } from "react-redux";
-import { login, closeLoginDialog,
-         createNewUser, createUserClearError,
-         thirdPartyAuthSuccess } from "./actions";
+import {
+    login,
+    closeLoginDialog,
+    createNewUser,
+    createUserClearError,
+    thirdPartyAuthSuccess
+} from "./actions";
 import { IStore } from "../../db/interfaces";
 import { getLoginRequesting, getLoginFail } from "./selectors";
 import { validateEmail } from "../../utils";
@@ -30,7 +34,7 @@ const uiConfig = {
         firebase.auth.FacebookAuthProvider.PROVIDER_ID
     ],
     callbacks: {
-        signInSuccessWithAuthResult: () => false,
+        signInSuccessWithAuthResult: () => false
     }
 };
 
@@ -63,7 +67,6 @@ interface ILoginDispatchProperties {
 type ILogin = ILoginProps & ILoginDispatchProperties;
 
 class Login extends Component<ILogin, ILoginLocalState> {
-
     protected unregisterAuthObserver: any;
 
     public readonly state: ILoginLocalState = {
@@ -73,8 +76,8 @@ class Login extends Component<ILogin, ILoginLocalState> {
         password: "",
         newPassword: "",
         newPasswordConfirm: "",
-        isCreatingUser: false,
-    }
+        isCreatingUser: false
+    };
 
     constructor(props: ILogin) {
         super(props);
@@ -83,9 +86,11 @@ class Login extends Component<ILogin, ILoginLocalState> {
     }
 
     componentDidMount() {
-        this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
-            (user) => !!user && this.props.thirdPartyAuthSuccess(user)
-        );
+        this.unregisterAuthObserver = firebase
+            .auth()
+            .onAuthStateChanged(
+                user => !!user && this.props.thirdPartyAuthSuccess(user)
+            );
     }
 
     componentWillUnmount() {
@@ -94,16 +99,20 @@ class Login extends Component<ILogin, ILoginLocalState> {
 
     public switchToNewUser() {
         this.props.createUserClearError();
-        this.setState(merge(this.state, {
-            isCreatingUser: true,
-        }))
+        this.setState(
+            merge(this.state, {
+                isCreatingUser: true
+            })
+        );
     }
 
     public switchToLogin() {
         this.props.createUserClearError();
-        this.setState(merge(this.state, {
-            isCreatingUser: false,
-        }))
+        this.setState(
+            merge(this.state, {
+                isCreatingUser: false
+            })
+        );
     }
 
     public render() {
@@ -117,10 +126,11 @@ class Login extends Component<ILogin, ILoginLocalState> {
             </div>
         );
 
-        const disabledBool = (((this.state.newPasswordConfirm.length < 6) ||
-                               (this.state.newPassword.length < 6)) ||
-                              (this.state.newPasswordConfirm !== this.state.newPassword) ||
-                              !newEmailValid);
+        const disabledBool =
+            this.state.newPasswordConfirm.length < 6 ||
+            this.state.newPassword.length < 6 ||
+            this.state.newPasswordConfirm !== this.state.newPassword ||
+            !newEmailValid;
 
         const loginView = (
             <div>
@@ -138,7 +148,7 @@ class Login extends Component<ILogin, ILoginLocalState> {
                             type="email"
                             value={this.state.email}
                             onChange={e => {
-                                    this.setState({ email: e.target.value });
+                                this.setState({ email: e.target.value });
                             }}
                             fullWidth
                             error={this.props.fail}
@@ -151,17 +161,18 @@ class Login extends Component<ILogin, ILoginLocalState> {
                             type="password"
                             value={this.state.password}
                             onChange={e => {
-                                    this.setState({ password: e.target.value });
+                                this.setState({ password: e.target.value });
                             }}
                             fullWidth
                             error={this.props.fail}
                             autoComplete="current-password"
-                            onKeyPress={(event) =>
-                                event.key === "Enter" ?
-                                this.props.login(
-                                        this.state.email,
-                                        this.state.password
-                                    ) : null
+                            onKeyPress={event =>
+                                event.key === "Enter"
+                                    ? this.props.login(
+                                          this.state.email,
+                                          this.state.password
+                                      )
+                                    : null
                             }
                         />
                     </form>
@@ -176,10 +187,10 @@ class Login extends Component<ILogin, ILoginLocalState> {
                     <DialogActions>
                         <Button
                             onClick={() => {
-                                    this.props.login(
-                                        this.state.email,
-                                        this.state.password
-                                    );
+                                this.props.login(
+                                    this.state.email,
+                                    this.state.password
+                                );
                             }}
                             color="primary"
                         >
@@ -193,12 +204,15 @@ class Login extends Component<ILogin, ILoginLocalState> {
                         </Button>
                     </DialogActions>
                 </DialogContent>
-                <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
+                <StyledFirebaseAuth
+                    uiConfig={uiConfig}
+                    firebaseAuth={firebase.auth()}
+                />
             </div>
         );
 
         const signupView = (
-            <div style={{padding: "45px"}}>
+            <div style={{ padding: "45px" }}>
                 <DialogTitle>New Account</DialogTitle>
                 <DialogContentText>
                     Please provide a valid email
@@ -212,18 +226,15 @@ class Login extends Component<ILogin, ILoginLocalState> {
                         type="email"
                         value={this.state.newEmail}
                         onChange={e => {
-                                this.setState({
-                                    newEmail: e.target.value,
-                                    newEmailValid: validateEmail(e.target.value)
-                                });
+                            this.setState({
+                                newEmail: e.target.value,
+                                newEmailValid: validateEmail(e.target.value)
+                            });
                         }}
                         fullWidth
                         error={!this.state.newEmailValid}
-
                     />
-                    <DialogContentText
-                        style={{marginTop: "24px"}}
-                    >
+                    <DialogContentText style={{ marginTop: "24px" }}>
                         Choose a good password of minimum 6 characters length
                     </DialogContentText>
                     <TextField
@@ -233,11 +244,11 @@ class Login extends Component<ILogin, ILoginLocalState> {
                         type="password"
                         value={this.state.newPassword}
                         onChange={e => {
-                                this.setState({ newPassword: e.target.value });
+                            this.setState({ newPassword: e.target.value });
                         }}
                         fullWidth
-                        error={(this.state.newPassword.length < 5)}
-                        autoComplete='new-password'
+                        error={this.state.newPassword.length < 5}
+                        autoComplete="new-password"
                     />
                     <TextField
                         margin="dense"
@@ -246,13 +257,18 @@ class Login extends Component<ILogin, ILoginLocalState> {
                         type="password"
                         value={this.state.newPasswordConfirm}
                         onChange={e => {
-                                this.setState({ newPasswordConfirm: e.target.value });
+                            this.setState({
+                                newPasswordConfirm: e.target.value
+                            });
                         }}
                         fullWidth
-                        error={(((this.state.newPasswordConfirm.length < 5) ||
-                                 (this.state.newPassword.length < 5)) ||
-                                (this.state.newPasswordConfirm !== this.state.newPassword)) }
-                        autoComplete='new-password'
+                        error={
+                            this.state.newPasswordConfirm.length < 5 ||
+                            this.state.newPassword.length < 5 ||
+                            this.state.newPasswordConfirm !==
+                                this.state.newPassword
+                        }
+                        autoComplete="new-password"
                     />
                 </form>
                 <div
@@ -271,10 +287,12 @@ class Login extends Component<ILogin, ILoginLocalState> {
                         Back
                     </Button>
                     <Button
-                        onClick={() => this.props.createNewUser(
+                        onClick={() =>
+                            this.props.createNewUser(
                                 this.state.newEmail,
-                                this.state.newPasswordConfirm,
-                        )}
+                                this.state.newPasswordConfirm
+                            )
+                        }
                         color="primary"
                         disabled={disabledBool}
                     >
@@ -284,10 +302,13 @@ class Login extends Component<ILogin, ILoginLocalState> {
             </div>
         );
         return (
-            <Dialog onClose={() => {
+            <Dialog
+                onClose={() => {
                     this.props.createUserClearError();
                     closeLoginDialog();
-            }} open>
+                }}
+                open
+            >
                 {isCreatingUser ? signupView : loginView}
                 {errorBox}
             </Dialog>
@@ -307,16 +328,14 @@ const mapStateToProps = (store: IStore, ownProp: any): ILoginProps => {
 
 const mapDispatchToProps = (dispatch: any): ILoginDispatchProperties => ({
     closeLoginDialog: () => dispatch(closeLoginDialog()),
-    createNewUser: (email, password) => dispatch(
-        createNewUser(email, password)
-    ),
+    createNewUser: (email, password) =>
+        dispatch(createNewUser(email, password)),
     createUserClearError: () => dispatch(createUserClearError()),
-    login: (email, password) => dispatch(
-        login(email, password)
-    ),
-    thirdPartyAuthSuccess: (user) => dispatch(
-        thirdPartyAuthSuccess(user)
-    ),
+    login: (email, password) => dispatch(login(email, password)),
+    thirdPartyAuthSuccess: user => dispatch(thirdPartyAuthSuccess(user))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(loginStylesHOC(Login));
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(loginStylesHOC(Login));

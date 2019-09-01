@@ -1,4 +1,4 @@
-type MenuItemType = 'normal' | 'separator';
+type MenuItemType = "normal" | "separator";
 
 export interface MenuItemDef {
     callback?: (projectUid: string) => void;

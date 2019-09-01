@@ -4,13 +4,13 @@ import { merge } from "lodash";
 const INITIAL_STATE: ITheme = {
     fontFamily: "Roboto",
     fontSize: 0,
-    name: "dark",
+    name: "dark"
 };
 
 export default (state = INITIAL_STATE, action: any) => {
     switch (action.type) {
         case "CHANGE_FONT_FAMILY": {
-            return merge(state, { fontFamily: action.newFontFamily});
+            return merge(state, { fontFamily: action.newFontFamily });
         }
         case "CHANGE_THEME": {
             return merge(state, { theme: action.newTheme });

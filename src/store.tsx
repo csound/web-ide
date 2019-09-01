@@ -18,5 +18,4 @@ const configureStore = () => {
     return { store, history };
 };
 
-
 export const { store, history } = configureStore();
