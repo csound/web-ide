@@ -1,18 +1,19 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { generateUid } from "../../utils";
 import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import { isEmpty } from "lodash";
+import { isEmpty, reduce, some } from "lodash";
 import {
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_NEW,
     SET_PROJECT,
     IProject
 } from "./types";
+import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
-import { reduce } from "lodash";
 import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";
 
@@ -114,18 +115,36 @@ export const updateDocumentValue = (
 const newDocumentPrompt = (callback: (fileName: string) => void) => {
     return (() => {
         const [input, setInput] = useState("");
+        const [nameCollides, setNameCollides] = useState(false);
+
+        const reservedFilenames = useSelector((store: IStore) =>
+            Object.values(store.projects.activeProject!.documents).map(
+                doc => doc.filename
+            )
+        );
+
         const shouldDisable = isEmpty(input);
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
                 <TextField
-                    label="New filename"
+                    label={
+                        nameCollides
+                            ? input + " already exists!"
+                            : "New filename"
+                    }
+                    error={nameCollides}
                     value={input}
-                    onChange={e => setInput(e.target.value)}
+                    onChange={e => {
+                        setInput(e.target.value);
+                        setNameCollides(
+                            some(reservedFilenames, fn => fn === e.target.value)
+                        );
+                    }}
                 />
                 <Button
                     variant="outlined"
                     color="primary"
-                    disabled={shouldDisable}
+                    disabled={shouldDisable || nameCollides}
                     onClick={() => callback(input)}
                     style={{ marginTop: 12 }}
                 >
