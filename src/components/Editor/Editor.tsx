@@ -5,6 +5,7 @@ import { IStore } from "../../db/interfaces";
 import { ICsoundObj } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import * as projectActions from "../Projects/actions";
+import * as projectEditorActions from "../ProjectEditor/actions";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
@@ -157,7 +158,7 @@ const mapDispatchToProps = (dispatch: any): any => ({
         documentUid: string
     ) =>
         dispatch(
-            projectActions.storeEditorInstance(
+            projectEditorActions.storeEditorInstance(
                 editorInstance,
                 projectUid,
                 documentUid
