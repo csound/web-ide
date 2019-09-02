@@ -25,7 +25,8 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
     }
 
     public messageCallback(msg: string) {
-        this.setState({ logs: this.state.logs + msg });
+        const message = msg + "\n";
+        this.setState({ logs: this.state.logs + message });
     }
 
     public componentDidMount() {
