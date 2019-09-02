@@ -16,7 +16,8 @@ const darkTheme = createMuiTheme({
         },
         background: {
             // default: "slategrey" FIXME: This was causing a crash with the snackbar component
-            default: "#efefef"
+            // default: "#efefef"
+            default: "#272822"
         }
     }
 });

@@ -7,14 +7,15 @@ body {
 }
 
 body {
-    position:absolute;
-    top:0;
-    bottom:0;
-    right:0;
-    left:0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
 }
 
-html,body {
+html,
+body {
     padding: 0;
     margin: 0;
 }
@@ -29,13 +30,13 @@ html,body {
 main {
     position: relative;
     padding: 0;
-    min-height: calc(100vh - 40px);  /* minus the header height! */
+    min-height: calc(100vh - 40px); /* minus the header height! */
     bottom: 0;
-    top: 38px;
+    top: 39px;
 }
 
 header {
-    height: 38px!important;
+    height: 38px !important;
 }
 
 #golden-layout-top {
@@ -70,7 +71,7 @@ div .react-tabs {
     bottom: 0;
 }
 
-.react-codemirror2 > div{
+.react-codemirror2 > div {
     width: 100%;
     height: auto;
     min-height: 100%;
@@ -82,13 +83,16 @@ div .react-tabs {
 
 .CodeMirror-fullscreen {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: auto;
     z-index: 9;
 }
 
 .CodeMirror-vscrollbar {
-    overflow: hidden!important;
+    overflow: hidden !important;
 }
 
 .ps__rail-y {
@@ -98,27 +102,27 @@ div .react-tabs {
 
 .CodeMirror-scroll {
     /* overflow-x: auto!important; */
-    overflow: visible!important;
-    margin: 0!important;
-    padding: 0!important;
-    height: auto!important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
     min-height: 100%;
     width: 100%;
-    position: static!important;
+    position: static !important;
 }
 
 /* .CodeMirror-simplescroll-vertical { */
 /*     background: #373a47; */
 /* } */
 
-nav,button {
+nav,
+button {
     outline: none;
 }
 
-
 .MuiToolbar-root {
-    max-height: 48px!important;
-    min-height: 32px!important;
+    max-height: 48px !important;
+    min-height: 32px !important;
 }
 
 .MuiFileTree .MuiIconButton-root {
@@ -140,7 +144,7 @@ nav,button {
 }
 
 #project-trees-container .MuiList-padding {
-    padding: 0!important;
+    padding: 0 !important;
 }
 
 .tab-panel-controller {
