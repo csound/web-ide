@@ -6,12 +6,7 @@ import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { find, isEmpty, reduce, some } from "lodash";
-import {
-    DOCUMENT_UPDATE_VALUE,
-    DOCUMENT_NEW,
-    SET_PROJECT,
-    IProject
-} from "./types";
+import { DOCUMENT_UPDATE_VALUE, SET_PROJECT, IProject } from "./types";
 import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
 import { store } from "../../store";
@@ -186,16 +181,21 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
 export const newDocument = (projectUid: string, val: string) => {
     return async (dispatch: any) => {
         const newDocumentSuccessCallback = async (fileName: string) => {
-            const newDocUid = generateUid(fileName);
+            const project = store.getState().projects.activeProject;
 
-            await dispatch({
-                type: DOCUMENT_NEW,
-                documentUid: newDocUid,
-                projectUid,
-                name: fileName,
-                val
-            });
-            dispatch(tabOpenByDocumentUid(newDocUid));
+            if (project) {
+                const doc = {
+                    type: "text",
+                    name: fileName,
+                    value: val
+                };
+                projects
+                    .doc(project.projectUid)
+                    .collection("files")
+                    .add(doc);
+            }
+
+            //dispatch(tabOpenByDocumentUid(newDocUid));
             dispatch({ type: "MODAL_CLOSE" });
         };
         const newDocumentPromptComp = newDocumentPrompt(
