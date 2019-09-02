@@ -1,5 +1,3 @@
-import * as jsSHA from "jssha";
-
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
     var sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";
@@ -28,14 +26,6 @@ export const isElectron: boolean =
     typeof dirtyWindow.process !== "undefined" &&
     typeof dirtyWindow.process.versions !== "undefined" &&
     typeof dirtyWindow.process.versions["electron"] !== "undefined";
-
-export const generateUid = (filename: string): string => {
-    let shaObj = new jsSHA("SHA-256", "TEXT");
-    shaObj.update(new Date().getTime() + "");
-    shaObj.update(filename);
-    shaObj.update(Math.round(Math.random() * 1000) + "");
-    return shaObj.getHash("HEX");
-};
 
 export function filterUndef<T>(ts: (T | undefined)[]): T[] {
     return ts.filter((t: T | undefined): t is T => !!t);
