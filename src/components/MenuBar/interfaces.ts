@@ -1,7 +1,7 @@
 type MenuItemType = "normal" | "separator";
 
 export interface MenuItemDef {
-    callback?: (projectUid: string) => void;
+    callback?: () => void;
     checked?: boolean;
     enabled?: boolean;
     keyBinding?: string;

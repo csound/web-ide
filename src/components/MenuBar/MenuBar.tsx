@@ -8,10 +8,22 @@ import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
 import { newDocument } from "../Projects/actions";
 import { reduce } from "lodash";
+import { ICsoundObj } from "../Csound/types";
 
 interface IMenuBarProps {
     shortcut: IShortcutProviderRenderProps;
 }
+
+const runCsound = (csound: ICsoundObj) => {
+    console.log("Running csound");
+    window.CSOUND_AUDIO_CONTEXT.resume();
+    csound.reset();
+    //csound.setOption("-m0");
+    csound.setOption("-odac");
+    csound.setOption("-+msg_color=false");
+    csound.compileCSD("project.csd");
+    csound.start();
+};
 
 function MenuBar(props) {
     const { shortcut } = props as IMenuBarProps;
@@ -21,6 +33,8 @@ function MenuBar(props) {
             ? store.projects.activeProject.projectUid
             : ""
     );
+
+    const csound = useSelector((store: IStore) => store.csound.csound!);
 
     const dispatch = useDispatch();
 
@@ -68,8 +82,15 @@ function MenuBar(props) {
         {
             label: "Control",
             submenu: [
-                { label: "Run", role: "doStuff" },
-                { label: "Pause", role: "doStuff" },
+                {
+                    label: "Run",
+                    role: "doStuff",
+                    callback: () => runCsound(csound)
+                },
+                {
+                    label: "Pause",
+                    role: "doStuff"
+                },
                 { label: "Render", role: "doStuff" },
                 { label: "Stop", role: "doStuff" }
             ]
@@ -142,6 +163,16 @@ function MenuBar(props) {
                             <p className={classes.label}>{item.label}</p>
                             <span style={{ width: 24 }} />
                             <i className={classes.label}>{item.keyBinding}</i>
+                        </li>
+                    );
+                } else if (itemCallback) {
+                    acc.push(
+                        <li
+                            className={classes.listItem}
+                            key={index}
+                            onClick={() => itemCallback()}
+                        >
+                            <p className={classes.label}>{item.label}</p>
                         </li>
                     );
                 } else {
