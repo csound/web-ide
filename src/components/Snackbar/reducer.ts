@@ -12,9 +12,9 @@ export interface State {
 }
 
 const INITIAL_STATE: State = {
-    text: "Some info",
-    type: SnackbarType.Error,
-    open: true
+    text: "",
+    type: SnackbarType.Info,
+    open: false
 };
 
 export default (state = INITIAL_STATE, action: SnackbarActionTypes) => {
