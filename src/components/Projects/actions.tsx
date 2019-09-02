@@ -5,7 +5,7 @@ import { generateUid } from "../../utils";
 import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import { isEmpty, reduce, some } from "lodash";
+import { find, isEmpty, reduce, some } from "lodash";
 import {
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_NEW,
@@ -30,9 +30,9 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         files.docs,
                         (acc, docSnapshot) => {
                             const docData = docSnapshot.data();
-                            acc[docData["documentUid"]] = {
+                            acc[docSnapshot.id] = {
                                 currentValue: docData["value"],
-                                documentUid: docData["documentUid"],
+                                documentUid: docSnapshot.id,
                                 savedValue: docData["value"],
                                 filename: docData["name"],
                                 type: docData["type"]
@@ -95,6 +95,33 @@ export const setProject = (project: IProject) => {
     return {
         type: SET_PROJECT,
         project
+    };
+};
+
+export const saveFile = () => {
+    return async (dispatch: any) => {
+        const state = store.getState();
+        const project: IProject = state.projects.activeProject;
+        const dock = state.ProjectEditorReducer.tabDock;
+        const activeTab = dock.openDocuments[dock.tabIndex];
+        const docUid = activeTab.uid;
+
+        console.log(state, project, dock, docUid);
+
+        if (project) {
+            const doc = find(project.documents, d => d.documentUid === docUid);
+
+            console.log(doc);
+            if (doc) {
+                projects
+                    .doc(project.projectUid)
+                    .collection("files")
+                    .doc(doc.documentUid)
+                    .update({
+                        value: doc.currentValue
+                    });
+            }
+        }
     };
 };
 

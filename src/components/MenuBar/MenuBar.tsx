@@ -6,7 +6,7 @@ import useStyles from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
-import { newDocument } from "../Projects/actions";
+import { newDocument, saveFile } from "../Projects/actions";
 import { reduce } from "lodash";
 import { ICsoundObj } from "../Csound/types";
 
@@ -51,7 +51,7 @@ function MenuBar(props) {
                 {
                     label: "Save Document",
                     keyBinding: isMac ? "⌘+s" : "ctrl+alt+s",
-                    callback: () => console.log("FIXME!"),
+                    callback: () => dispatch(saveFile()),
                     role: "saveFile"
                 },
                 {

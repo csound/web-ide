@@ -14,7 +14,6 @@ import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
 import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
-import { generateUid } from "../../utils";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
 
@@ -107,9 +106,6 @@ export const addUserProject = (): ThunkAction<
 
             try {
                 const newProjectRef = await projects.add(newProject);
-                defaultCsd.documentUid = generateUid("default.csd");
-                defaultOrc.documentUid = generateUid("default.orc");
-                defaultSco.documentUid = generateUid("default.sco");
                 await newProjectRef.collection("files").add(defaultCsd);
                 await newProjectRef.collection("files").add(defaultOrc);
                 await newProjectRef.collection("files").add(defaultSco);
