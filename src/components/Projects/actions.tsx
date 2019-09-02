@@ -100,8 +100,6 @@ export const saveFile = () => {
         const activeTab = dock.openDocuments[dock.tabIndex];
         const docUid = activeTab.uid;
 
-        console.log(state, project, dock, docUid);
-
         if (project) {
             const doc = find(project.documents, d => d.documentUid === docUid);
 
@@ -114,6 +112,32 @@ export const saveFile = () => {
                     .update({
                         value: doc.currentValue
                     });
+            }
+        }
+    };
+};
+
+export const deleteFile = (documentUid: string) => {
+    return async (dispatch: any) => {
+        const state = store.getState();
+        const project: IProject = state.projects.activeProject;
+
+        if (project) {
+            const doc = find(
+                project.documents,
+                d => d.documentUid === documentUid
+            );
+
+            if (doc) {
+                if (
+                    window.confirm("Confirm deletion of file: " + doc.filename)
+                ) {
+                    projects
+                        .doc(project.projectUid)
+                        .collection("files")
+                        .doc(doc.documentUid)
+                        .delete();
+                }
             }
         }
     };

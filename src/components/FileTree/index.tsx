@@ -15,13 +15,12 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/types";
-import { newDocument } from "../Projects/actions";
+import { newDocument, deleteFile } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { IStore } from "../../db/interfaces";
 // import { find, findIndex } from "lodash";
 
 // Use import if/when they add type declerations
-const getNodeDataByPath = require("material-ui-tree/lib/util").default;
 const Tree = require("material-ui-tree").default;
 
 interface IFileTreeProps {
@@ -169,15 +168,7 @@ const FileTree = () => {
                     ),
                     hint: "Delete file",
                     onClick: () => {
-                        const treeData = Object.assign({}, state.data);
-                        const parentData = getNodeDataByPath(
-                            treeData,
-                            path.slice(0, path.length - 1),
-                            "tree"
-                        );
-                        const lastIndex = path[path.length - 1];
-                        parentData.tree.splice(lastIndex, 1);
-                        setState({ ...state, data: treeData });
+                        dispatch(deleteFile(data.sha));
                     }
                 }
             ];
