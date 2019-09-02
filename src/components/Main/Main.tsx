@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import Router from "../Router/Router";
 import Modal from "../Modal";
+import Snackbar from "../Snackbar/Snackbar";
 import { ThemeProvider } from "@material-ui/styles";
 import { ShortcutProvider } from "react-keybind";
 import { resolveTheme } from "../Themes/themes";
@@ -34,6 +35,7 @@ class Main extends React.Component<IMainProps, {}> {
                 <ThemeProvider theme={resolveTheme(this.props.theme)}>
                     <CssBaseline />
                     <Modal />
+                    <Snackbar />
                     <Router history={this.props.history} />
                 </ThemeProvider>
             </ShortcutProvider>

@@ -15,6 +15,8 @@ import defaultOrc from "../../templates/DefaultOrc.json";
 import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
 import { generateUid } from "../../utils";
+import { openSnackbar } from "../Snackbar/actions";
+import { SnackbarType } from "../Snackbar/types";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -38,7 +40,16 @@ export const getUserProfile = (): ThunkAction<
                     return profile.push(d.data());
                 });
 
-                dispatch(getUserProfileAction(profile[0]));
+                if (typeof profile[0] === "undefined") {
+                    dispatch(
+                        openSnackbar(
+                            "User profile not found",
+                            SnackbarType.Error
+                        )
+                    );
+                } else {
+                    dispatch(getUserProfileAction(profile[0]));
+                }
             });
         }
     });
@@ -103,8 +114,11 @@ export const addUserProject = (): ThunkAction<
                 await newProjectRef.collection("files").add(defaultOrc);
                 await newProjectRef.collection("files").add(defaultSco);
                 dispatch(addUserProjectAction());
+                dispatch(openSnackbar("Project Added", SnackbarType.Success));
             } catch (e) {
-                console.error("Failed to add project");
+                dispatch(
+                    openSnackbar("Could not add Project", SnackbarType.Error)
+                );
             }
         }
     });
@@ -133,10 +147,12 @@ export const deleteUserProject = (
 
             try {
                 await batch.commit();
-                console.log("Project deleted");
                 dispatch(deleteUserProjectAction());
+                dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
             } catch (e) {
-                console.log("Deletion error");
+                dispatch(
+                    openSnackbar("Could Not Delete Project", SnackbarType.Error)
+                );
             }
         }
     });

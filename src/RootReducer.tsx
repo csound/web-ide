@@ -3,6 +3,7 @@ import { connectRouter, RouterState } from "connected-react-router";
 import ProjectsReducer from "./components/Projects/reducer";
 import LoginReducer from "./components/Login/reducer";
 import TemplateReducer from "./components/Themes/reducer";
+import SnackbarReducer from "./components/Snackbar/reducer";
 import IDReducer from "./db/IDReducer";
 import ProjectEditorReducer from "./components/ProjectEditor/reducer";
 import CsoundReducer from "./components/Csound/reducer";
@@ -20,5 +21,6 @@ export default (history: History) =>
         theme: TemplateReducer,
         csound: CsoundReducer,
         ModalReducer,
-        ProfileReducer
+        ProfileReducer,
+        SnackbarReducer
     });
