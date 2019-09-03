@@ -96,7 +96,8 @@ const FileTree = () => {
                     path.endsWith(".csd") ||
                     path.endsWith(".sco") ||
                     path.endsWith(".orc") ||
-                    path.endsWith(".udo")
+                    path.endsWith(".udo") ||
+                    false
                 ) {
                     iconComp = <DescriptionIcon />;
                 } else {

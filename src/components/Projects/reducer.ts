@@ -1,4 +1,9 @@
-import { IProjectsReducer, DOCUMENT_UPDATE_VALUE, SET_PROJECT } from "./types";
+import {
+    IProjectsReducer,
+    DOCUMENT_UPDATE_VALUE,
+    DOCUMENT_UPDATE_MODIFIED_LOCALLY,
+    SET_PROJECT
+} from "./types";
 
 const initialProjectsState: IProjectsReducer = {
     activeProject: null
@@ -22,6 +27,16 @@ export default (
             }
             state.activeProject.documents[action.documentUid].currentValue =
                 action.val;
+            return { ...state };
+        }
+        case DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
+            if (!action.documentUid || state.activeProject == null) {
+                return state;
+            }
+            state.activeProject.documents[action.documentUid] = {
+                ...state.activeProject.documents[action.documentUid],
+                isModifiedLocally: action.isModified
+            };
             return { ...state };
         }
         default: {

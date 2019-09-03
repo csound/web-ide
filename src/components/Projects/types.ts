@@ -3,13 +3,17 @@ const PREFIX = "PROJECTS.";
 // ACTION TYPES
 export const SET_PROJECT = PREFIX + "SET_PROJECT";
 export const DOCUMENT_UPDATE_VALUE = PREFIX + "DOCUMENT_UPDATE_VALUE";
+export const DOCUMENT_UPDATE_MODIFIED_LOCALLY =
+    PREFIX + "DOCUMENT_UPDATE_MODIFIED_LOCALLY";
 
 // INTERFACES
 export interface IDocument {
     currentValue: string;
     documentUid: string;
-    savedValue: string;
     filename: string;
+    savedValue: string;
+    type: string;
+    isModifiedLocally?: boolean | null;
 }
 
 export interface IProject {

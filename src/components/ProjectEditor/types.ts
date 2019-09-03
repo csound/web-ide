@@ -8,7 +8,7 @@ export const TAB_CLOSE = PREFIX + "TAB_CLOSE";
 export const STORE_EDITOR_INSTANCE = PREFIX + "STORE_EDITOR_INSTANCE";
 
 // DATA TYPES
-interface IOpenDocument {
+export interface IOpenDocument {
     editorInstance: any;
     uid: string;
 }

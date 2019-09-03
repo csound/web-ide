@@ -1,10 +1,9 @@
-// import React, { useEffect, useState } from "react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
-import { IDocument, IProject } from "../Projects/types";
+import { IDocument } from "../Projects/types";
 import SplitterLayout from "react-splitter-layout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -17,37 +16,16 @@ import Editor from "../Editor/Editor";
 import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "../Console/Console";
-import { find, isEmpty } from "lodash";
-import { filterUndef } from "../../utils";
+import { isEmpty } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import { tabClose, tabSwitch } from "./actions";
 
 const ProjectEditor = props => {
-    // const [dimensions, setDimensions] = useState({
-    //     innerWidth: window.innerWidth,
-    //     innerHeight: window.innerHeight
-    // });
-
-    // useEffect(() => {
-    //     const onWindowResize = () => {
-    //         setDimensions({
-    //             innerWidth: window.innerWidth,
-    //             innerHeight: window.innerHeight
-    //         });
-    //     };
-    //
-    //     window.addEventListener("resize", onWindowResize);
-    //
-    //     return () => {
-    //         window.removeEventListener("resize", onWindowResize);
-    //     };
-    // });
-
     const dispatch = useDispatch();
 
-    const project: IProject = useSelector(
-        (store: IStore) => store.projects.activeProject!
+    const projectUid: string = useSelector(
+        (store: IStore) => store.projects.activeProject!.projectUid!
     );
 
     const tabDockDocuments = useSelector(
@@ -55,17 +33,11 @@ const ProjectEditor = props => {
             store.ProjectEditorReducer.tabDock.openDocuments || []
     );
 
-    const openDocumentsUnfilt: (IDocument | undefined)[] = tabDockDocuments.map(
-        openDocument =>
-            find(
-                Object.values(project.documents),
-                d => d.documentUid === openDocument.uid
-            )
+    const openDocuments: IDocument[] = useSelector((store: IStore) =>
+        Object.values(store.projects.activeProject!.documents).filter(doc =>
+            tabDockDocuments.some(tdoc => tdoc.uid === doc.documentUid)
+        )
     );
-
-    const openDocuments: IDocument[] = filterUndef(
-        openDocumentsUnfilt
-    ) as IDocument[];
 
     const tabIndex: number = useSelector(
         (store: IStore) => store.ProjectEditorReducer.tabDock.tabIndex
@@ -78,9 +50,10 @@ const ProjectEditor = props => {
     const openTabList = openDocuments.map(
         (document: IDocument | undefined, index: number) => {
             const isActive: boolean = index === tabIndex;
+            const isModified = document!.isModifiedLocally;
             return (
                 <Tab key={index}>
-                    {document!.filename}
+                    {document!.filename + (isModified ? "*" : "")}
                     <Tooltip title="close" placement="right-end">
                         <IconButton
                             size="small"
@@ -107,7 +80,7 @@ const ProjectEditor = props => {
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
                 <Editor
                     documentUid={document.documentUid}
-                    projectUid={project.projectUid}
+                    projectUid={projectUid}
                 />
             </TabPanel>
         )

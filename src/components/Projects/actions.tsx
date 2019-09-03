@@ -5,7 +5,13 @@ import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { find, isEmpty, reduce, some } from "lodash";
-import { DOCUMENT_UPDATE_VALUE, SET_PROJECT, IProject } from "./types";
+import {
+    DOCUMENT_UPDATE_VALUE,
+    DOCUMENT_UPDATE_MODIFIED_LOCALLY,
+    SET_PROJECT,
+    IProject,
+    IDocument
+} from "./types";
 import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
 import { store } from "../../store";
@@ -29,8 +35,9 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 documentUid: docSnapshot.id,
                                 savedValue: docData["value"],
                                 filename: docData["name"],
-                                type: docData["type"]
-                            };
+                                type: docData["type"],
+                                isModifiedLocally: false
+                            } as IDocument;
                             return acc;
                         },
                         {}
@@ -158,6 +165,19 @@ export const updateDocumentValue = (
     };
 };
 
+export const updateDocumentModifiedLocally = (
+    isModified: boolean,
+    documentUid: string
+) => {
+    return async (dispatch: any) => {
+        dispatch({
+            type: DOCUMENT_UPDATE_MODIFIED_LOCALLY,
+            isModified,
+            documentUid
+        });
+    };
+};
+
 const newDocumentPrompt = (callback: (fileName: string) => void) => {
     return (() => {
         const [input, setInput] = useState("");
@@ -208,7 +228,7 @@ export const newDocument = (projectUid: string, val: string) => {
 
             if (project) {
                 const doc = {
-                    type: "text",
+                    type: "txt",
                     name: fileName,
                     value: val
                 };

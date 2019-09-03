@@ -24,6 +24,7 @@ interface ICodeEditorProps {
     projectUid: string;
     savedValue: string;
     updateDocumentValue: any;
+    updateDocumentModifiedLocally: any;
 }
 
 // interface ICodeEditorLocalState {
@@ -109,10 +110,17 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             }
         };
 
-        const { updateDocumentValue, documentUid, projectUid } = this.props;
+        const {
+            updateDocumentValue,
+            updateDocumentModifiedLocally,
+            documentUid,
+            projectUid,
+            savedValue
+        } = this.props;
 
         const onBeforeChange = (editor, data, value) => {
             updateDocumentValue(value, projectUid, documentUid);
+            updateDocumentModifiedLocally(savedValue !== value, documentUid);
         };
 
         return (
@@ -161,6 +169,13 @@ const mapDispatchToProps = (dispatch: any): any => ({
             projectEditorActions.storeEditorInstance(
                 editorInstance,
                 projectUid,
+                documentUid
+            )
+        ),
+    updateDocumentModifiedLocally: (isModified: boolean, documentUid: string) =>
+        dispatch(
+            projectActions.updateDocumentModifiedLocally(
+                isModified,
                 documentUid
             )
         )
