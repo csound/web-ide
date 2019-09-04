@@ -8,6 +8,7 @@ import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
 import { newDocument, saveFile } from "../Projects/actions";
 import { reduce } from "lodash";
+// import { IDocument } from "../Projects/types";
 import { ICsoundObj } from "../Csound/types";
 
 interface IMenuBarProps {
@@ -50,14 +51,19 @@ function MenuBar(props) {
                 },
                 {
                     label: "Save Document",
-                    keyBinding: isMac ? "⌘+s" : "ctrl+alt+s",
-                    callback: () => dispatch(saveFile()),
+                    keyBinding: isMac ? "⌘+s" : "ctrl+s",
+                    callback: () => {
+                        dispatch(saveFile());
+                    },
                     role: "saveFile"
                 },
                 {
                     label: "Save All",
-                    // keyBinding: isMac ? "⌘+s" : "ctrl+s",
-                    role: "saveFile"
+                    keyBinding: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
+                    callback: () => {
+                        dispatch(saveFile());
+                    },
+                    role: "saveAll"
                 },
                 {
                     label: "Save and Close",

@@ -25,7 +25,11 @@ export const ProjectContext = (props: IProjectContextProps) => {
     }, [dispatch, csound, activeProject, projectUid]);
 
     if (activeProject && csound) {
-        return <main className={className}>{props.children}</main>;
+        return (
+            <div>
+                <main className={className}>{props.children}</main>
+            </div>
+        );
     } else {
         return (
             <main>

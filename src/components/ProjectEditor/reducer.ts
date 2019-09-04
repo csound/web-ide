@@ -1,6 +1,8 @@
 import { filter, find, findIndex } from "lodash";
 import {
+    TAB_DOCK_INIT_SWITCH_TAB,
     TAB_DOCK_SWITCH_TAB,
+    TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_CLOSE,
     STORE_EDITOR_INSTANCE,
@@ -23,9 +25,28 @@ export default (
     action: any
 ) => {
     switch (action.type) {
+        case TAB_DOCK_INIT_SWITCH_TAB: {
+            if (state.tabDock.tabIndex < 0) {
+                state.tabDock.tabIndex = 0;
+                return { ...state };
+            } else {
+                return state;
+            }
+        }
         case TAB_DOCK_SWITCH_TAB: {
             state.tabDock.tabIndex = action.tabIndex;
             return { ...state };
+        }
+        case TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID: {
+            if (state.tabDock.tabIndex < 0) {
+                state.tabDock.openDocuments.push({
+                    uid: action.documentUid,
+                    editorInstance: null
+                });
+                return { ...state };
+            } else {
+                return state;
+            }
         }
         case TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID: {
             const currentOpenDocs = state.tabDock.openDocuments;

@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
+import {
+    initialTabOpenByDocumentUid,
+    tabInitSwitch
+} from "../ProjectEditor/actions";
 import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import { find, isEmpty, reduce, some } from "lodash";
+import { filter, find, isEmpty, reduce, some } from "lodash";
 import {
+    DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     SET_PROJECT,
@@ -54,8 +58,12 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     (Object as any)
                         .values(documents)
                         .forEach(doc =>
-                            dispatch(tabOpenByDocumentUid(doc.documentUid))
+                            dispatch(
+                                initialTabOpenByDocumentUid(doc.documentUid)
+                            )
                         );
+
+                    dispatch(tabInitSwitch());
 
                     const cs: ICsoundObj = (store as any).getState().csound
                         .csound;
@@ -101,17 +109,15 @@ export const setProject = (project: IProject) => {
 
 export const saveFile = () => {
     return async (dispatch: any) => {
-        const state = store.getState();
-        const project: IProject = state.projects.activeProject;
+        const state = store.getState() as IStore;
         const dock = state.ProjectEditorReducer.tabDock;
         const activeTab = dock.openDocuments[dock.tabIndex];
         const docUid = activeTab.uid;
-
-        if (project) {
-            const doc = find(project.documents, d => d.documentUid === docUid);
-
-            console.log(doc);
-            if (doc) {
+        const project: IProject | null = state.projects.activeProject;
+        const doc =
+            project && find(project.documents, d => d.documentUid === docUid);
+        if (project && !!doc) {
+            try {
                 projects
                     .doc(project.projectUid)
                     .collection("files")
@@ -119,17 +125,55 @@ export const saveFile = () => {
                     .update({
                         value: doc.currentValue
                     });
-            }
+                dispatch({
+                    type: DOCUMENT_SAVE,
+                    currentValue: doc.currentValue,
+                    documentUid: doc.documentUid,
+                    projectUid: project.projectUid
+                });
+            } catch (error) {}
+        }
+    };
+};
+
+export const saveAllFiles = () => {
+    return async (dispatch: any) => {
+        const state = store.getState() as IStore;
+        const project: IProject | null = state.projects.activeProject;
+        const docs =
+            project &&
+            filter(
+                Object.values(project.documents),
+                d => d.isModifiedLocally === true
+            );
+        if (project && !isEmpty(docs)) {
+            docs!.forEach(doc => {
+                try {
+                    projects
+                        .doc(project.projectUid)
+                        .collection("files")
+                        .doc(doc.documentUid)
+                        .update({
+                            value: doc.currentValue
+                        });
+                    dispatch({
+                        type: DOCUMENT_SAVE,
+                        currentValue: doc.currentValue,
+                        documentUid: doc.documentUid,
+                        projectUid: project.projectUid
+                    });
+                } catch (error) {}
+            });
         }
     };
 };
 
 export const deleteFile = (documentUid: string) => {
     return async (dispatch: any) => {
-        const state = store.getState();
-        const project: IProject = state.projects.activeProject;
+        const state = store.getState() as IStore;
+        const project: IProject | null = state.projects.activeProject;
 
-        if (project) {
+        if (!!project) {
             const doc = find(
                 project.documents,
                 d => d.documentUid === documentUid
@@ -224,7 +268,7 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
 export const newDocument = (projectUid: string, val: string) => {
     return async (dispatch: any) => {
         const newDocumentSuccessCallback = async (fileName: string) => {
-            const project = store.getState().projects.activeProject;
+            const project = (store.getState() as IStore).projects.activeProject;
 
             if (project) {
                 const doc = {

@@ -1,5 +1,7 @@
 import {
     IProjectsReducer,
+    IProject,
+    DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     SET_PROJECT
@@ -9,13 +11,30 @@ const initialProjectsState: IProjectsReducer = {
     activeProject: null
 };
 
-export default (
-    state: IProjectsReducer = initialProjectsState,
-    action: any
-) => {
+export default (state, action: any) => {
     switch (action.type) {
         case SET_PROJECT: {
-            return { ...state, activeProject: action.project };
+            if (action.project as IProject) {
+                state.activeProject = action.project;
+                return { ...state };
+            } else {
+                return state;
+            }
+        }
+        case DOCUMENT_SAVE: {
+            if (
+                !action.documentUid ||
+                !action.projectUid ||
+                state.activeProject === null
+            ) {
+                return state;
+            }
+            state.activeProject.documents[action.documentUid].savedValue =
+                action.currentValue;
+            state.activeProject.documents[
+                action.documentUid
+            ].isModifiedLocally = false;
+            return { ...state };
         }
         case DOCUMENT_UPDATE_VALUE: {
             if (
@@ -40,7 +59,7 @@ export default (
             return { ...state };
         }
         default: {
-            return state;
+            return (state as IProjectsReducer) || initialProjectsState;
         }
     }
 };

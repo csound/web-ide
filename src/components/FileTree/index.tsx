@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 // import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -22,10 +22,6 @@ import { IStore } from "../../db/interfaces";
 
 // Use import if/when they add type declerations
 const Tree = require("material-ui-tree").default;
-
-interface IFileTreeProps {
-    projects: IProject[];
-}
 
 const initialSelectBlock: any = {};
 
@@ -55,7 +51,6 @@ const FileTree = () => {
     );
 
     const [state, setState] = useState({
-        project,
         expandAll: false,
         alignRight: false,
         unfoldAll: false,
@@ -70,10 +65,10 @@ const FileTree = () => {
         }
     });
 
-    if (fileTreeDocs.length !== state.data.tree.length) {
-        state.data.tree = fileTreeDocs;
-        setState(state);
-    }
+    // if (fileTreeDocs.length !== state.data.tree.length) {
+    //     state.data.tree = fileTreeDocs;
+    //     setState(state);
+    // }
 
     const renderLabel = useCallback(
         (data, unfoldStatus) => {
@@ -106,7 +101,11 @@ const FileTree = () => {
             }
 
             return (
-                <Typography variant={variant} className={classes.node}>
+                <Typography
+                    variant={variant}
+                    className={classes.node}
+                    onClick={() => dispatch(tabOpenByDocumentUid(data.sha))}
+                >
                     {React.cloneElement(iconComp, {
                         className: classes.fileIcon
                     })}
@@ -114,10 +113,8 @@ const FileTree = () => {
                 </Typography>
             );
         },
-        [classes]
+        [classes, dispatch]
     );
-
-    // const GoldenLayout = useSelector((store: IStore) => store.GoldenLayoutReducer.goldenLayout);
 
     const getActionsData = useCallback(
         (data, path, unfoldStatus, toggleFoldStatus) => {
@@ -127,10 +124,8 @@ const FileTree = () => {
                 if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
                     initialSelectBlock[data.sha.toString()] = true;
                 } else {
-                    dispatch(tabOpenByDocumentUid(data.sha));
-                    // console.log("CLICK!?", type, unfoldStatus, data);
+                    // this place is too dangerous, gets call too many times
                 }
-                // goldenLayoutActions.openTab(GoldenLayout, data.path);
             }
 
             if (type === "tree") {
@@ -177,26 +172,22 @@ const FileTree = () => {
         [classes, state, setState, project.projectUid, dispatch]
     );
 
-    const requestChildrenData = useCallback(
-        (data, path, toggleFoldStatus) => {
-            const { type } = data;
+    const requestChildrenData = useCallback((data, path, toggleFoldStatus) => {
+        const { type } = data;
 
-            if (type === "blob") {
-                toggleFoldStatus();
-            }
-            // if (type === "tree") {
-            //     toggleFoldStatus();
-            // } else {
-            //     toggleFoldStatus();
-            // }
-        },
-        []
-        // [state, setState]
-    );
+        if (type === "blob") {
+            toggleFoldStatus();
+        }
+        // if (type === "tree") {
+        //     toggleFoldStatus();
+        // } else {
+        //     toggleFoldStatus();
+        // }
+    }, []);
 
     return (
         <Tree
-            className={classes.container + " draggable MuiFileTree"}
+            className={classes.container + " MuiFileTree"}
             data={state.data}
             labelKey="path"
             valueKey="sha"
@@ -222,20 +213,4 @@ const FileTree = () => {
     );
 };
 
-// const ProjectsFileTree = () => {
-//
-//     const projects = useSelector((store: IStore) => store.ProjectsReducer.projects);
-//
-//     const projectTrees = projects.map((project: IProject, index: number) => {
-//         return FileTree(project, index)
-//     });
-//
-//     return (
-//         <div id="project-trees-container">{projectTrees}</div>
-//     )
-// }
-
-export default connect(
-    null,
-    {}
-)(FileTree);
+export default FileTree;
