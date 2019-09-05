@@ -1,6 +1,7 @@
 import {
     IProjectsReducer,
     IProject,
+    DOCUMENT_RESET,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -20,6 +21,14 @@ export default (state, action: any) => {
             } else {
                 return state;
             }
+        }
+        case DOCUMENT_RESET: {
+            state.activeProject.documents[action.documentUid].currentValue =
+                state.activeProject.documents[action.documentUid].savedValue;
+            state.activeProject.documents[
+                action.documentUid
+            ].isModifiedLocally = false;
+            return { ...state };
         }
         case DOCUMENT_SAVE: {
             if (

@@ -16,7 +16,7 @@ import Editor from "../Editor/Editor";
 import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "../Console/Console";
-import { isEmpty } from "lodash";
+import { isEmpty, reduce } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import { tabClose, tabSwitch } from "./actions";
@@ -34,8 +34,15 @@ const ProjectEditor = props => {
     );
 
     const openDocuments: IDocument[] = useSelector((store: IStore) =>
-        Object.values(store.projects.activeProject!.documents).filter(doc =>
-            tabDockDocuments.some(tdoc => tdoc.uid === doc.documentUid)
+        reduce(
+            tabDockDocuments,
+            (acc, tabDoc) => {
+                acc.push(store.projects.activeProject!.documents[
+                    tabDoc.uid
+                ] as IDocument);
+                return acc;
+            },
+            [] as IDocument[]
         )
     );
 
@@ -43,8 +50,8 @@ const ProjectEditor = props => {
         (store: IStore) => store.ProjectEditorReducer.tabDock.tabIndex
     );
 
-    const closeTab = documentUid => {
-        dispatch(tabClose(documentUid));
+    const closeTab = (documentUid, isModified) => {
+        dispatch(tabClose(documentUid, isModified));
     };
 
     const openTabList = openDocuments.map(
@@ -60,7 +67,7 @@ const ProjectEditor = props => {
                             style={{ marginLeft: 6, marginBottom: 2 }}
                             onClick={e => {
                                 e.stopPropagation();
-                                closeTab(document!.documentUid);
+                                closeTab(document!.documentUid, isModified);
                             }}
                         >
                             <FontAwesomeIcon

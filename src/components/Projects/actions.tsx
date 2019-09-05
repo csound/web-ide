@@ -9,6 +9,7 @@ import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
 import {
+    DOCUMENT_RESET,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -104,6 +105,13 @@ export const setProject = (project: IProject) => {
     return {
         type: SET_PROJECT,
         project
+    };
+};
+
+export const resetDocumentValue = (documentUid: string) => {
+    return {
+        type: DOCUMENT_RESET,
+        documentUid
     };
 };
 
