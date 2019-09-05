@@ -34,7 +34,9 @@ const useStyles = makeStyles((theme: Theme) =>
             outline: 0,
             margin: 0,
             marginTop: 6,
-            marginLeft: -12
+            marginLeft: -8,
+            boxShadow:
+                "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
         },
         listItem: {
             padding: "6px 12px",
@@ -48,6 +50,13 @@ const useStyles = makeStyles((theme: Theme) =>
         label: {
             margin: 0,
             fontSize: 12
+        },
+        hr: {
+            padding: 0,
+            backgroundColor: "rgba(200,200,200,0.1)",
+            height: "1px",
+            border: "none",
+            margin: "2px 12px"
         }
     })
 );

@@ -66,12 +66,15 @@ function MenuBar(props) {
                     role: "saveAll"
                 },
                 {
-                    label: "Save and Close",
+                    role: "hr"
+                },
+                {
+                    label: "Close",
                     // keyBinding: isMac ? "⌘+s" : "ctrl+s",
                     role: "saveFile"
                 },
                 {
-                    label: "Close",
+                    label: "Save and Close",
                     // keyBinding: isMac ? "⌘+s" : "ctrl+s",
                     role: "saveFile"
                 }
@@ -159,7 +162,9 @@ function MenuBar(props) {
                 const keyBinding = item.keyBinding;
                 const itemCallback = item.callback;
 
-                if (keyBinding && itemCallback) {
+                if (item.role === "hr") {
+                    acc.push(<hr key={index} className={classes.hr} />);
+                } else if (keyBinding && itemCallback) {
                     acc.push(
                         <li
                             className={classes.listItem}
