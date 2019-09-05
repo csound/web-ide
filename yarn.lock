@@ -10940,6 +10940,13 @@ react-app-polyfill@^1.0.2:
     regenerator-runtime "0.13.3"
     whatwg-fetch "3.0.0"
 
+react-beforeunload@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-beforeunload/-/react-beforeunload-2.1.0.tgz#549eaf801cc2457e0702a11f6e07f24c38328b8e"
+  integrity sha512-D/raQTUUQNuPDBmouSFtWypnfhWSFTz8w/Lfm+9WEazmmqSC10rZBYAANLAju5QQWhYRqCuIUs3yFYlt43Y5Iw==
+  dependencies:
+    prop-types "^15.7.2"
+
 react-burger-menu@^2.6.11:
   version "2.6.11"
   resolved "https://registry.yarnpkg.com/react-burger-menu/-/react-burger-menu-2.6.11.tgz#e9ec8db2ea156ef9366423be971ae6859ea17570"

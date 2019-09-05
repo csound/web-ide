@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument } from "../Projects/types";
@@ -120,6 +121,15 @@ const ProjectEditor = props => {
         dispatch(tabSwitch(index));
     };
 
+    const someUnsavedData = openDocuments.some(
+        doc => doc.isModifiedLocally === true
+    );
+    const unsavedDataExitText =
+        "You still have unsaved changes, are you sure you want to quit?";
+    const unsavedDataExitPrompt = someUnsavedData && (
+        <Beforeunload onBeforeunload={() => unsavedDataExitText} />
+    );
+
     const tabDock = isEmpty(openDocuments) ? (
         <div />
     ) : (
@@ -142,18 +152,21 @@ const ProjectEditor = props => {
     );
 
     return (
-        <SplitterLayout
-            primaryIndex={1}
-            primaryMinSize={400}
-            secondaryInitialSize={250}
-            secondaryMinSize={250}
-        >
-            <FileTree />
-            <SplitterLayout vertical secondaryInitialSize={250}>
-                {tabDock}
-                <Console />
+        <div>
+            {unsavedDataExitPrompt}
+            <SplitterLayout
+                primaryIndex={1}
+                primaryMinSize={400}
+                secondaryInitialSize={250}
+                secondaryMinSize={250}
+            >
+                <FileTree />
+                <SplitterLayout vertical secondaryInitialSize={250}>
+                    {tabDock}
+                    <Console />
+                </SplitterLayout>
             </SplitterLayout>
-        </SplitterLayout>
+        </div>
     );
 };
 
