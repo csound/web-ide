@@ -281,7 +281,7 @@ class CsoundObj {
     /** Starts performance, same as start()
      */
     play() {
-        this.node.play();
+        this.node.start();
     }
 
     /** Stops (pauses) performance

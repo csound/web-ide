@@ -16,14 +16,25 @@ interface IMenuBarProps {
 }
 
 const runCsound = (csound: ICsoundObj) => {
-    console.log("Running csound");
-    window.CSOUND_AUDIO_CONTEXT.resume();
     csound.reset();
+    window.CSOUND_AUDIO_CONTEXT.resume();
     //csound.setOption("-m0");
     csound.setOption("-odac");
     csound.setOption("-+msg_color=false");
     csound.compileCSD("project.csd");
     csound.start();
+};
+
+const playPauseCsound = (csound: ICsoundObj) => {
+    if(window.CSOUND_AUDIO_CONTEXT.state === "running") {
+        window.CSOUND_AUDIO_CONTEXT.suspend();
+    } else {
+        window.CSOUND_AUDIO_CONTEXT.resume();
+    }
+};
+
+const stopCsound = (csound: ICsoundObj) => {
+    csound.stop();
 };
 
 function MenuBar(props) {
@@ -98,10 +109,15 @@ function MenuBar(props) {
                 },
                 {
                     label: "Pause",
-                    role: "doStuff"
+                    role: "doStuff",
+                    callback: () => playPauseCsound(csound)
                 },
-                { label: "Render", role: "doStuff" },
-                { label: "Stop", role: "doStuff" }
+                // { label: "Render", role: "doStuff" },
+                {
+                    label: "Stop",
+                    role: "doStuff",
+                    callback: () => stopCsound(csound)
+                }
             ]
         },
         { label: "View", submenu: [{ label: "Do Stuff :)", role: "doStuff" }] }

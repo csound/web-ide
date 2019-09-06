@@ -27,6 +27,7 @@ export interface ICsoundObj {
     midiMessage: (byte1: number, byte2: number, byte3: number) => void;
     enableAudioInput: (audioInputCallback: () => void) => void;
     enableMidiInput: (midiInputCallback: () => void) => void;
+    getNode: () => AudioNode;
     start: () => void;
     reset: () => void;
     destroy: () => void;
