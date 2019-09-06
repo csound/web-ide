@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch, shallowEqual } from "react-redux";
 // import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -33,7 +33,8 @@ const FileTree = () => {
     );
 
     const documents: { [documentUid: string]: IDocument } = useSelector(
-        (store: IStore) => store.projects.activeProject!.documents
+        (store: IStore) => store.projects.activeProject!.documents,
+        shallowEqual
     );
 
     const dispatch = useDispatch();
@@ -65,10 +66,10 @@ const FileTree = () => {
         }
     });
 
-    // if (fileTreeDocs.length !== state.data.tree.length) {
-    //     state.data.tree = fileTreeDocs;
-    //     setState(state);
-    // }
+    if (fileTreeDocs.length !== state.data.tree.length) {
+        state.data.tree = fileTreeDocs;
+        setState(state);
+    }
 
     const renderLabel = useCallback(
         (data, unfoldStatus) => {
@@ -205,7 +206,7 @@ const FileTree = () => {
                 <MoreHorizIcon style={{ color: "white" }} fontSize="large" />
             }
             renderLabel={renderLabel}
-            pageSize={10}
+            pageSize={99999}
             actionsAlignRight={false}
             getActionsData={getActionsData}
             requestChildrenData={requestChildrenData}

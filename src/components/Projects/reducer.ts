@@ -1,12 +1,16 @@
 import {
+    IDocument,
     IProjectsReducer,
     IProject,
+    DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     SET_PROJECT
 } from "./types";
+import { filenameToType } from "./utils";
+import { cloneDeep } from "lodash";
 
 const initialProjectsState: IProjectsReducer = {
     activeProject: null
@@ -21,6 +25,24 @@ export default (state, action: any) => {
             } else {
                 return state;
             }
+        }
+        case DOCUMENT_INITIALIZE: {
+            const oldDocuments = cloneDeep(state.activeProject.documents);
+            const newDocument: IDocument = {
+                filename: action.filename,
+                currentValue: "",
+                documentUid: action.documentUid,
+                savedValue: "",
+                type: filenameToType(action.filename),
+                isModifiedLocally: false
+            };
+            const newDocumentsState = {
+                [action.documentUid]: newDocument,
+                ...oldDocuments
+            };
+            const newProjectState: IProject = cloneDeep(state.activeProject);
+            newProjectState.documents = newDocumentsState;
+            return cloneDeep({ activeProject: newProjectState });
         }
         case DOCUMENT_RESET: {
             state.activeProject.documents[action.documentUid].currentValue =

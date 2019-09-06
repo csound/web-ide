@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import {
     initialTabOpenByDocumentUid,
-    tabInitSwitch
+    tabClose,
+    tabInitSwitch,
+    tabOpenByDocumentUid
 } from "../ProjectEditor/actions";
 import { openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
 import {
+    DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
@@ -17,6 +20,7 @@ import {
     IProject,
     IDocument
 } from "./types";
+import { filenameToType } from "./utils";
 import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
 import { store } from "../../store";
@@ -195,7 +199,10 @@ export const deleteFile = (documentUid: string) => {
                         .doc(project.projectUid)
                         .collection("files")
                         .doc(doc.documentUid)
-                        .delete();
+                        .delete()
+                        .then(res => {
+                            dispatch(tabClose(doc.documentUid, false));
+                        });
                 }
             }
         }
@@ -264,7 +271,7 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
                     color="primary"
                     disabled={shouldDisable || nameCollides}
                     onClick={() => callback(input)}
-                    style={{ marginTop: 12 }}
+                    style={{ marginTop: 11 }}
                 >
                     Create
                 </Button>
@@ -275,22 +282,29 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
 
 export const newDocument = (projectUid: string, val: string) => {
     return async (dispatch: any) => {
-        const newDocumentSuccessCallback = async (fileName: string) => {
+        const newDocumentSuccessCallback = async (filename: string) => {
             const project = (store.getState() as IStore).projects.activeProject;
 
             if (project) {
                 const doc = {
-                    type: "txt",
-                    name: fileName,
+                    type: filenameToType(filename),
+                    name: filename,
                     value: val
                 };
                 projects
                     .doc(project.projectUid)
                     .collection("files")
-                    .add(doc);
+                    .add(doc)
+                    .then(res => {
+                        const documentUid = res.id;
+                        dispatch(tabOpenByDocumentUid(res.id));
+                        dispatch({
+                            type: DOCUMENT_INITIALIZE,
+                            filename,
+                            documentUid
+                        });
+                    });
             }
-
-            //dispatch(tabOpenByDocumentUid(newDocUid));
             dispatch({ type: "MODAL_CLOSE" });
         };
         const newDocumentPromptComp = newDocumentPrompt(

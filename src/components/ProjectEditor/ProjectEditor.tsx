@@ -38,9 +38,12 @@ const ProjectEditor = props => {
         reduce(
             tabDockDocuments,
             (acc, tabDoc) => {
-                acc.push(store.projects.activeProject!.documents[
+                const maybeDoc = store.projects.activeProject!.documents[
                     tabDoc.uid
-                ] as IDocument);
+                ];
+                if (maybeDoc) {
+                    acc.push(maybeDoc as IDocument);
+                }
                 return acc;
             },
             [] as IDocument[]
