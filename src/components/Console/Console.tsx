@@ -44,9 +44,10 @@ class Console extends React.Component<
         setTimeout(
             () =>
                 this.scrollbarRef &&
-                this.scrollbarRef._container &&
+                this.scrollbarRef.current &&
+                this.scrollbarRef.current._container &&
                 (this.scrollbarRef.current._container.scrollTop = this.scrollbarRef.current._container.scrollHeight),
-            10
+            1
         );
     }
 

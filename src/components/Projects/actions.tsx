@@ -43,7 +43,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 documentUid: docSnapshot.id,
                                 savedValue: docData["value"],
                                 filename: docData["name"],
-                                type: docData["type"],
+                                type: filenameToType(docData["name"]),
                                 isModifiedLocally: false
                             } as IDocument;
                             return acc;

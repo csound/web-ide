@@ -23,16 +23,16 @@ export default (state: any, action: any): ICsoundReducer => {
             if (!state.csound) {
                 return state;
             }
-            const contextState = state.csound.getNode().context.state;
-
-            if (contextState === "running") {
-                state.csound.reset();
-            } else if (state.csound.status === "playing") {
-                state.csound.stop();
-                state.csound.reset();
-            } else if (state.csound.status === "stopped") {
-                state.csound.reset();
-            }
+            // const contextState = state.csound.getNode().context.state;
+            // if (contextState === "running") {
+            //     state.csound.reset();
+            // } else if (state.csound.status === "playing") {
+            //     state.csound.stop();
+            //     state.csound.reset();
+            // } else if (state.csound.status === "stopped") {
+            //     state.csound.reset();
+            // }
+            state.csound.reset();
             state.csound.setOption("-odac");
             state.csound.setOption("-+msg_color=false");
             state.csound.compileCSD("project.csd");

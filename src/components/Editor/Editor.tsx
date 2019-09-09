@@ -4,6 +4,7 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
+import { isEmpty } from "lodash";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
@@ -46,7 +47,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         this.cm = React.createRef();
     }
 
-    evalLine() {
+    evalCode(blockEval: boolean) {
         const editor = this.cm.current.editor;
 
         const { csound, csoundStatus, documentType } = this.props;
@@ -54,36 +55,25 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         if (csoundStatus !== "playing") {
             this.props.printToConsole("Csound isn't running!");
         } else {
-            const line = editor.getLine(editor.getCursor().line);
+            // selection takes precedence
+            const selection = editor.getSelection();
+            const cursor = editor.getCursor();
+            const line = editor.getLine(cursor.line);
+            const textMarker = editor.markText(
+                { line: cursor.line, ch: 0 },
+                { line: cursor.line, ch: line.length },
+                { className: "blinkEval" }
+            );
+
+            setTimeout(() => textMarker.clear(), 300);
+
+            const evalStr = isEmpty(selection) ? line : selection;
             if (documentType === "orc" || documentType === "udo") {
-                csound.evaluateCode(line);
+                csound.evaluateCode(evalStr);
             } else if (documentType === "sco") {
-                csound.readScore(line);
+                csound.readScore(evalStr);
             } else if (documentType === "csd") {
-                csound.evaluateCode(line);
-            } else {
-                this.props.printToConsole(
-                    "Can't evaluate non-csound documents!"
-                );
-            }
-        }
-    }
-
-    evalBlock() {
-        const editor = this.cm.current.editor;
-
-        const { csound, csoundStatus, documentType } = this.props;
-
-        if (csoundStatus !== "playing") {
-            this.props.printToConsole("Csound isn't running!");
-        } else {
-            const line = editor.getLine(editor.getCursor().line);
-            if (documentType === "orc" || documentType === "udo") {
-                csound.evaluateCode(line);
-            } else if (documentType === "sco") {
-                csound.readScore(line);
-            } else if (documentType === "csd") {
-                csound.evaluateCode(line);
+                csound.evaluateCode(evalStr);
             } else {
                 this.props.printToConsole(
                     "Can't evaluate non-csound documents!"
@@ -133,8 +123,8 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             // scrollbarStyle: "simple",
             theme: "monokai",
             extraKeys: {
-                "Ctrl-E": () => this.evalLine(),
-                "Ctrl-Enter": () => this.evalBlock(),
+                "Ctrl-E": () => this.evalCode(false), // line eval
+                "Ctrl-Enter": () => this.evalCode(true), // block eval
                 // "Ctrl-H": insertHexplay,
                 // "Ctrl-J": insertEuclidplay,
                 "Ctrl-;": () => this.toggleComment()
