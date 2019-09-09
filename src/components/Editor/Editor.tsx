@@ -38,13 +38,75 @@ interface ICodeEditorProps {
 class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     protected cm: any;
 
-    // public readonly state: ICodeEditorLocalState = {
-    //     currentEditorValue: "",
-    // }
-
     constructor(props: ICodeEditorProps) {
         super(props);
         this.cm = React.createRef();
+    }
+
+    uncommentLine(line: string) {
+        let uncommentedLine: any = line.split(";");
+        if (uncommentedLine.length > 1) {
+            uncommentedLine = uncommentedLine[0];
+        } else {
+            uncommentedLine = uncommentedLine[0].split("//");
+            uncommentedLine = uncommentedLine[0];
+        }
+        return uncommentedLine;
+    }
+
+    findOrcBlock() {
+        const editor = this.cm.current.editor;
+        const val = editor.doc.getValue();
+        const lines = val.split("\n");
+        const cursorLine = editor.getCursor().line;
+        const cursurBoundry = Math.min(cursorLine + 1, lines.length + 1);
+        let lastBlockLine, lineNumber;
+
+        for (lineNumber = 1; lineNumber < cursurBoundry; lineNumber++) {
+            const line = this.uncommentLine(lines[lineNumber - 1]);
+            if (line.match(/instr|opcode/g)) {
+                lastBlockLine = lineNumber;
+            } else if (line.match(/endin|endop/g)) {
+                lastBlockLine = null;
+            }
+        }
+
+        if (!lastBlockLine) {
+            return {
+                from: { line: cursorLine, ch: 0 },
+                to: { line: cursorLine, ch: lines[cursorLine - 1].length },
+                evalStr: lines[cursorLine - 1]
+            };
+        }
+
+        let blockEnd;
+
+        for (
+            lineNumber = Math.max(cursorLine - 1, 1);
+            lineNumber < lines.length + 1;
+            lineNumber++
+        ) {
+            if (!!blockEnd) break;
+            const line = this.uncommentLine(lines[lineNumber - 1]);
+
+            if (line.match(/endin|endop/g)) {
+                blockEnd = lineNumber;
+            }
+        }
+
+        if (!blockEnd) {
+            return {
+                from: { line: cursorLine, ch: 0 },
+                to: { line: cursorLine, ch: lines[cursorLine - 1].length },
+                evalStr: lines[cursorLine - 1]
+            };
+        } else {
+            return {
+                from: { line: lastBlockLine - 1, ch: 0 },
+                to: { line: blockEnd, ch: lines[blockEnd - 1].length },
+                evalStr: lines.slice(lastBlockLine - 1, blockEnd).join("\n")
+            };
+        }
     }
 
     evalCode(blockEval: boolean) {
@@ -58,16 +120,43 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             // selection takes precedence
             const selection = editor.getSelection();
             const cursor = editor.getCursor();
-            const line = editor.getLine(cursor.line);
-            const textMarker = editor.markText(
-                { line: cursor.line, ch: 0 },
-                { line: cursor.line, ch: line.length },
-                { className: "blinkEval" }
-            );
+            let evalStr = "";
+            // let csdLoc: "orc" | "sco" | null = null;
 
-            setTimeout(() => textMarker.clear(), 300);
+            if (!blockEval) {
+                const line = editor.getLine(cursor.line);
+                const textMarker = editor.markText(
+                    { line: cursor.line, ch: 0 },
+                    { line: cursor.line, ch: line.length },
+                    { className: "blinkEval" }
+                );
+                setTimeout(() => textMarker.clear(), 300);
+                evalStr = isEmpty(selection) ? line : selection;
+            } else {
+                let result;
+                if (documentType === "orc" || documentType === "udo") {
+                    result = this.findOrcBlock();
+                } else if (documentType === "sco") {
+                    // FIXME
+                    result = {
+                        from: { line: cursor.line, ch: 0 },
+                        to: {
+                            line: cursor.line,
+                            ch: editor.getLine(cursor.line).length
+                        },
+                        evalStr: editor.getLine(cursor.line)
+                    };
+                }
 
-            const evalStr = isEmpty(selection) ? line : selection;
+                if (!!result) {
+                    const textMarker = editor.markText(result.from, result.to, {
+                        className: "blinkEval"
+                    });
+                    setTimeout(() => textMarker.clear(), 300);
+                    evalStr = result!.evalStr;
+                }
+            }
+            if (isEmpty(evalStr)) return;
             if (documentType === "orc" || documentType === "udo") {
                 csound.evaluateCode(evalStr);
             } else if (documentType === "sco") {
