@@ -59,11 +59,18 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         const val = editor.doc.getValue();
         const lines = val.split("\n");
         const cursorLine = editor.getCursor().line;
-        const cursurBoundry = Math.min(cursorLine + 1, lines.length + 1);
+        const currentLineEndOfBound: boolean = this.uncommentLine(
+            lines[cursorLine]
+        ).match(/endin|endop/g);
+
+        const cursorBoundry = Math.min(
+            cursorLine + (currentLineEndOfBound ? 0 : 1),
+            lines.length
+        );
         let lastBlockLine, lineNumber;
 
-        for (lineNumber = 1; lineNumber < cursurBoundry; lineNumber++) {
-            const line = this.uncommentLine(lines[lineNumber - 1]);
+        for (lineNumber = 0; lineNumber < cursorBoundry; lineNumber++) {
+            const line = this.uncommentLine(lines[lineNumber]);
             if (line.match(/instr|opcode/g)) {
                 lastBlockLine = lineNumber;
             } else if (line.match(/endin|endop/g)) {
@@ -74,20 +81,20 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         if (!lastBlockLine) {
             return {
                 from: { line: cursorLine, ch: 0 },
-                to: { line: cursorLine, ch: lines[cursorLine - 1].length },
-                evalStr: lines[cursorLine - 1]
+                to: { line: cursorLine, ch: lines[cursorLine].length },
+                evalStr: lines[cursorLine]
             };
         }
 
         let blockEnd;
 
         for (
-            lineNumber = Math.max(cursorLine - 1, 1);
+            lineNumber = cursorLine;
             lineNumber < lines.length + 1;
             lineNumber++
         ) {
             if (!!blockEnd) break;
-            const line = this.uncommentLine(lines[lineNumber - 1]);
+            const line = this.uncommentLine(lines[lineNumber]);
 
             if (line.match(/endin|endop/g)) {
                 blockEnd = lineNumber;
@@ -98,13 +105,13 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             return {
                 from: { line: cursorLine, ch: 0 },
                 to: { line: cursorLine, ch: lines[cursorLine - 1].length },
-                evalStr: lines[cursorLine - 1]
+                evalStr: lines[cursorLine]
             };
         } else {
             return {
                 from: { line: lastBlockLine - 1, ch: 0 },
-                to: { line: blockEnd, ch: lines[blockEnd - 1].length },
-                evalStr: lines.slice(lastBlockLine - 1, blockEnd).join("\n")
+                to: { line: blockEnd, ch: lines[blockEnd].length },
+                evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
             };
         }
     }
@@ -147,7 +154,6 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                         evalStr: editor.getLine(cursor.line)
                     };
                 }
-
                 if (!!result) {
                     const textMarker = editor.markText(result.from, result.to, {
                         className: "blinkEval"
