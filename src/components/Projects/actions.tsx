@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import {
     initialTabOpenByDocumentUid,
-    tabClose,
     tabInitSwitch,
     tabOpenByDocumentUid
 } from "../ProjectEditor/actions";
-import { openSimpleModal } from "../Modal/actions";
+import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
@@ -180,6 +179,36 @@ export const saveAllFiles = () => {
     };
 };
 
+const deleteDocumentPrompt = (
+    filename: string,
+    cancelCallback: () => void,
+    deleteCallback: () => void
+) => {
+    return (() => {
+        return (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+                <h1>{"Confirm deletion of file: " + filename}</h1>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => cancelCallback()}
+                    style={{ marginTop: 12 }}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => deleteCallback()}
+                    style={{ marginTop: 12 }}
+                >
+                    Delete
+                </Button>
+            </div>
+        );
+    }) as React.FC;
+};
+
 export const deleteFile = (documentUid: string) => {
     return async (dispatch: any) => {
         const state = store.getState() as IStore;
@@ -192,18 +221,24 @@ export const deleteFile = (documentUid: string) => {
             );
 
             if (doc) {
-                if (
-                    window.confirm("Confirm deletion of file: " + doc.filename)
-                ) {
+                const cancelCallback = () => dispatch(closeModal());
+                const deleteCallback = () => {
                     projects
                         .doc(project.projectUid)
                         .collection("files")
                         .doc(doc.documentUid)
                         .delete()
                         .then(res => {
-                            dispatch(tabClose(doc.documentUid, false));
+                            dispatch(closeModal());
                         });
-                }
+                };
+                const deleteDocumentPromptComp = deleteDocumentPrompt(
+                    doc.filename,
+                    cancelCallback,
+                    deleteCallback
+                );
+
+                dispatch(openSimpleModal(deleteDocumentPromptComp));
             }
         }
     };
