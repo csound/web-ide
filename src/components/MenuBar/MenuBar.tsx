@@ -7,7 +7,7 @@ import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
 import { newDocument, saveFile } from "../Projects/actions";
-import { runCsound } from "../Csound/actions";
+import { runCsound, stopCsound } from "../Csound/actions";
 import { reduce } from "lodash";
 // import { IDocument } from "../Projects/types";
 import { ICsoundObj } from "../Csound/types";
@@ -16,25 +16,12 @@ interface IMenuBarProps {
     shortcut: IShortcutProviderRenderProps;
 }
 
-// const runCsound = (csound: ICsoundObj) => {
-//     csound.reset();
-//     window.CSOUND_AUDIO_CONTEXT.resume();
-//     csound.setOption("-odac");
-//     csound.setOption("-+msg_color=false");
-//     csound.compileCSD("project.csd");
-//     csound.start();
-// };
-
 const playPauseCsound = (csound: ICsoundObj) => {
     if (window.CSOUND_AUDIO_CONTEXT.state === "running") {
         window.CSOUND_AUDIO_CONTEXT.suspend();
     } else {
         window.CSOUND_AUDIO_CONTEXT.resume();
     }
-};
-
-const stopCsound = (csound: ICsoundObj) => {
-    csound.stop();
 };
 
 function MenuBar(props) {
@@ -112,7 +99,7 @@ function MenuBar(props) {
                     label: "Stop",
                     keyBinding: "ctrl+.",
                     role: "doStuff",
-                    callback: () => stopCsound(csound)
+                    callback: () => dispatch(stopCsound())
                 },
                 {
                     label: "Pause",

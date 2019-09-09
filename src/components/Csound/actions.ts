@@ -1,5 +1,5 @@
 import { store } from "../../store";
-import { ICsoundObj, RUN_CSOUND, SET_CSOUND } from "./types";
+import { ICsoundObj, RUN_CSOUND, SET_CSOUND, STOP_CSOUND } from "./types";
 import { IStore } from "../../db/interfaces";
 
 export const setCsound = (csound: ICsoundObj) => {
@@ -12,6 +12,12 @@ export const setCsound = (csound: ICsoundObj) => {
 export const runCsound = () => {
     return {
         type: RUN_CSOUND
+    };
+};
+
+export const stopCsound = () => {
+    return {
+        type: STOP_CSOUND
     };
 };
 

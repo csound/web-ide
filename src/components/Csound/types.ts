@@ -10,6 +10,7 @@ export type ICsoundStatus =
 // ACTION TYPES
 export const RUN_CSOUND = PREFIX + "RUN_CSOUND";
 export const SET_CSOUND = PREFIX + "SET_CSOUND";
+export const STOP_CSOUND = PREFIX + "STOP_CSOUND";
 
 // INTERFACES
 export interface ICsoundObj {

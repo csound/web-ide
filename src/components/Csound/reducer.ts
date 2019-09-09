@@ -1,4 +1,10 @@
-import { ICsoundObj, ICsoundStatus, RUN_CSOUND, SET_CSOUND } from "./types";
+import {
+    ICsoundObj,
+    ICsoundStatus,
+    RUN_CSOUND,
+    SET_CSOUND,
+    STOP_CSOUND
+} from "./types";
 
 export interface ICsoundReducer {
     csound: ICsoundObj | null;
@@ -17,7 +23,11 @@ export default (state: any, action: any): ICsoundReducer => {
             if (!state.csound) {
                 return state;
             }
-            if (state.csound.status === "playing") {
+            const contextState = state.csound.getNode().context.state;
+
+            if (contextState === "running") {
+                state.csound.reset();
+            } else if (state.csound.status === "playing") {
                 state.csound.stop();
                 state.csound.reset();
             } else if (state.csound.status === "stopped") {
@@ -31,6 +41,24 @@ export default (state: any, action: any): ICsoundReducer => {
             return {
                 csound: state.csound,
                 status: "playing"
+            };
+        }
+        case STOP_CSOUND: {
+            if (!state.csound) {
+                return state;
+            }
+            const contextState = state.csound.getNode().context.state;
+
+            if (
+                state.csound.status === "playing" &&
+                contextState === "running"
+            ) {
+                state.csound.stop();
+            }
+
+            return {
+                csound: state.csound,
+                status: "stopped"
             };
         }
         default: {
