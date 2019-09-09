@@ -19,14 +19,24 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
         logs: ""
     };
 
+    protected consoleRef: any;
+    protected scrollbarRef: any;
+
     constructor(props: IConsoleProps) {
         super(props);
         this.messageCallback = this.messageCallback.bind(this);
+        this.consoleRef = React.createRef();
+        this.scrollbarRef = React.createRef();
     }
 
     public messageCallback(msg: string) {
         const message = msg + "\n";
         this.setState({ logs: this.state.logs + message });
+        setTimeout(
+            () =>
+                (this.scrollbarRef.current._container.scrollTop = this.scrollbarRef.current._container.scrollHeight),
+            10
+        );
     }
 
     public componentDidMount() {
@@ -41,9 +51,11 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
 
     public render() {
         return (
-            <div className="console-log-container draggable">
-                <PerfectScrollbar>
-                    <pre>{this.state.logs}</pre>
+            <div className="console-log-container">
+                <PerfectScrollbar ref={this.scrollbarRef}>
+                    <pre id="console-log" ref={this.consoleRef}>
+                        {this.state.logs}
+                    </pre>
                 </PerfectScrollbar>
             </div>
         );
