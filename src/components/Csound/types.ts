@@ -1,6 +1,14 @@
 const PREFIX = "CSOUND.";
 
+export type ICsoundStatus =
+    | "initialized"
+    | "stopped"
+    | "paused"
+    | "playing"
+    | "rendering";
+
 // ACTION TYPES
+export const RUN_CSOUND = PREFIX + "RUN_CSOUND";
 export const SET_CSOUND = PREFIX + "SET_CSOUND";
 
 // INTERFACES

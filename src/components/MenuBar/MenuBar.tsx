@@ -7,6 +7,7 @@ import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
 import { newDocument, saveFile } from "../Projects/actions";
+import { runCsound } from "../Csound/actions";
 import { reduce } from "lodash";
 // import { IDocument } from "../Projects/types";
 import { ICsoundObj } from "../Csound/types";
@@ -15,18 +16,17 @@ interface IMenuBarProps {
     shortcut: IShortcutProviderRenderProps;
 }
 
-const runCsound = (csound: ICsoundObj) => {
-    csound.reset();
-    window.CSOUND_AUDIO_CONTEXT.resume();
-    //csound.setOption("-m0");
-    csound.setOption("-odac");
-    csound.setOption("-+msg_color=false");
-    csound.compileCSD("project.csd");
-    csound.start();
-};
+// const runCsound = (csound: ICsoundObj) => {
+//     csound.reset();
+//     window.CSOUND_AUDIO_CONTEXT.resume();
+//     csound.setOption("-odac");
+//     csound.setOption("-+msg_color=false");
+//     csound.compileCSD("project.csd");
+//     csound.start();
+// };
 
 const playPauseCsound = (csound: ICsoundObj) => {
-    if(window.CSOUND_AUDIO_CONTEXT.state === "running") {
+    if (window.CSOUND_AUDIO_CONTEXT.state === "running") {
         window.CSOUND_AUDIO_CONTEXT.suspend();
     } else {
         window.CSOUND_AUDIO_CONTEXT.resume();
@@ -104,19 +104,21 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "Run",
+                    keyBinding: "ctrl+r",
+                    role: "Run Csound",
+                    callback: () => dispatch(runCsound())
+                },
+                {
+                    label: "Stop",
+                    keyBinding: "ctrl+.",
                     role: "doStuff",
-                    callback: () => runCsound(csound)
+                    callback: () => stopCsound(csound)
                 },
                 {
                     label: "Pause",
+                    keyBinding: "ctrl+p",
                     role: "doStuff",
                     callback: () => playPauseCsound(csound)
-                },
-                // { label: "Render", role: "doStuff" },
-                {
-                    label: "Stop",
-                    role: "doStuff",
-                    callback: () => stopCsound(csound)
                 }
             ]
         },

@@ -1,5 +1,6 @@
 import React from "react";
 import { ICsoundObj } from "../Csound/types";
+import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { connect } from "react-redux";
 import { IStore } from "../../db/interfaces";
 import PerfectScrollbar from "react-perfect-scrollbar";
@@ -10,11 +11,19 @@ interface IConsoleProps {
     csound: ICsoundObj | null;
 }
 
+interface IConsoleDispatchProps {
+    setClearConsoleCallback: (callback: () => void) => void;
+    setPrintToConsoleCallback: (callback: (text: string) => void) => void;
+}
+
 interface IConsoleLocalState {
     logs: string;
 }
 
-class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
+class Console extends React.Component<
+    IConsoleProps & IConsoleDispatchProps,
+    IConsoleLocalState
+> {
     public readonly state: IConsoleLocalState = {
         logs: ""
     };
@@ -22,7 +31,7 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
     protected consoleRef: any;
     protected scrollbarRef: any;
 
-    constructor(props: IConsoleProps) {
+    constructor(props) {
         super(props);
         this.messageCallback = this.messageCallback.bind(this);
         this.consoleRef = React.createRef();
@@ -34,17 +43,25 @@ class Console extends React.Component<IConsoleProps, IConsoleLocalState> {
         this.setState({ logs: this.state.logs + message });
         setTimeout(
             () =>
+                this.scrollbarRef &&
+                this.scrollbarRef._container &&
                 (this.scrollbarRef.current._container.scrollTop = this.scrollbarRef.current._container.scrollHeight),
             10
         );
     }
 
     public componentDidMount() {
+        this.props.setClearConsoleCallback(() => {
+            this.setState({ logs: "" });
+        });
+        this.props.setPrintToConsoleCallback((text: string) => {
+            this.setState({ logs: this.state.logs + text + "\n" });
+        });
+
         const initProjectInterval = setInterval(() => {
             if (this.props.csound) {
                 clearInterval(initProjectInterval);
                 this.props.csound.setMessageCallback(this.messageCallback);
-                this.props.csound.start();
             }
         }, 50);
     }
@@ -68,7 +85,14 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     };
 };
 
+const mapDispatchToProps = (dispatch: any): any => ({
+    setClearConsoleCallback: (callback: () => void) =>
+        dispatch(setClearConsoleCallback(callback)),
+    setPrintToConsoleCallback: (callback: (text: string) => void) =>
+        dispatch(setPrintToConsoleCallback(callback))
+});
+
 export default connect(
     mapStateToProps,
-    {}
+    mapDispatchToProps
 )(Console);

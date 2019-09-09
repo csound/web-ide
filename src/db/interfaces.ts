@@ -2,6 +2,7 @@ import { IProjectsReducer } from "../components/Projects/types";
 import { IProjectEditorReducer } from "../components/ProjectEditor/reducer";
 import { ICsoundReducer } from "../components/Csound/reducer";
 import { IModalReducer } from "../components/Modal/reducer";
+import { IConsoleReducer } from "../components/Console/reducer";
 
 export interface IAssetFile {
     name: string;
@@ -50,4 +51,5 @@ export interface IStore {
     userProfile: IUserProfile | null;
     theme: ITheme;
     ModalReducer: IModalReducer;
+    ConsoleReducer: IConsoleReducer;
 }

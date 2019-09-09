@@ -1,11 +1,17 @@
 import { store } from "../../store";
-import { ICsoundObj, SET_CSOUND } from "./types";
+import { ICsoundObj, RUN_CSOUND, SET_CSOUND } from "./types";
 import { IStore } from "../../db/interfaces";
 
 export const setCsound = (csound: ICsoundObj) => {
     return {
         type: SET_CSOUND,
         csound
+    };
+};
+
+export const runCsound = () => {
+    return {
+        type: RUN_CSOUND
     };
 };
 

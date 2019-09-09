@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
-import { ICsoundObj } from "../Csound/types";
+import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
@@ -19,9 +19,12 @@ require("codemirror/theme/monokai.css");
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
+    csoundStatus: ICsoundStatus;
     currentDocumentValue: string;
     documentUid: string;
+    documentType: string;
     projectUid: string;
+    printToConsole: (text: string) => void;
     savedValue: string;
     updateDocumentValue: any;
     updateDocumentModifiedLocally: any;
@@ -43,22 +46,49 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         this.cm = React.createRef();
     }
 
-    evalCode() {
-        let editor = this.cm.current.editor;
-        console.log("Eval code: " + editor.getSelection());
-        // TODO - hook this into global CsoundObj instance?
+    evalLine() {
+        const editor = this.cm.current.editor;
 
-        let cs = this.props.csound;
+        const { csound, csoundStatus, documentType } = this.props;
 
-        if (cs != null) {
-            cs.audioContext.resume();
-            cs.compileOrc(
-                "sr=48000\nksmps=128\n0dbfs=1\nnchnls=2\nnchnls_i=1\n"
-            );
-            cs.setOption("-odac");
-            cs.setOption("-m0");
-            cs.start();
-            cs.compileOrc(editor.getSelection());
+        if (csoundStatus !== "playing") {
+            this.props.printToConsole("Csound isn't running!");
+        } else {
+            const line = editor.getLine(editor.getCursor().line);
+            if (documentType === "orc" || documentType === "udo") {
+                csound.evaluateCode(line);
+            } else if (documentType === "sco") {
+                csound.readScore(line);
+            } else if (documentType === "csd") {
+                csound.evaluateCode(line);
+            } else {
+                this.props.printToConsole(
+                    "Can't evaluate non-csound documents!"
+                );
+            }
+        }
+    }
+
+    evalBlock() {
+        const editor = this.cm.current.editor;
+
+        const { csound, csoundStatus, documentType } = this.props;
+
+        if (csoundStatus !== "playing") {
+            this.props.printToConsole("Csound isn't running!");
+        } else {
+            const line = editor.getLine(editor.getCursor().line);
+            if (documentType === "orc" || documentType === "udo") {
+                csound.evaluateCode(line);
+            } else if (documentType === "sco") {
+                csound.readScore(line);
+            } else if (documentType === "csd") {
+                csound.evaluateCode(line);
+            } else {
+                this.props.printToConsole(
+                    "Can't evaluate non-csound documents!"
+                );
+            }
         }
     }
 
@@ -103,7 +133,8 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             // scrollbarStyle: "simple",
             theme: "monokai",
             extraKeys: {
-                "Ctrl-E": () => this.evalCode(),
+                "Ctrl-E": () => this.evalLine(),
+                "Ctrl-Enter": () => this.evalBlock(),
                 // "Ctrl-H": insertHexplay,
                 // "Ctrl-J": insertEuclidplay,
                 "Ctrl-;": () => this.toggleComment()
@@ -141,11 +172,15 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     const document = project!.documents[ownProp.documentUid];
     const savedValue = document && document.savedValue;
     const currentDocumentValue = document && document.currentValue;
+    const documentType = document && document.type;
 
     return {
-        csound: null,
+        csound: store.csound.csound,
+        csoundStatus: store.csound.status,
         documentUid: ownProp.documentUid,
         currentDocumentValue,
+        documentType,
+        printToConsole: store.ConsoleReducer.printToConsole,
         projectUid: ownProp.projectUid,
         savedValue
     };

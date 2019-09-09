@@ -9,6 +9,7 @@ import ProjectEditorReducer from "./components/ProjectEditor/reducer";
 import CsoundReducer from "./components/Csound/reducer";
 import ModalReducer from "./components/Modal/reducer";
 import ProfileReducer from "./components/Profile/reducer";
+import ConsoleReducer from "./components/Console/reducer";
 import { History } from "history";
 
 export default (history: History) =>
@@ -22,5 +23,6 @@ export default (history: History) =>
         csound: CsoundReducer,
         ModalReducer,
         ProfileReducer,
+        ConsoleReducer,
         SnackbarReducer
     });
