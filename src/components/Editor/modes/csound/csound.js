@@ -2,8 +2,8 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
-
 import * as CodeMirror from "codemirror";
+import synopsis from "csound-manual-react/lib/manual/synopsis";
 
 /* eslint-disable */
 CodeMirror.defineMode("csound", function(config) {
@@ -12,11 +12,18 @@ CodeMirror.defineMode("csound", function(config) {
         for (var i = 0, e = words.length; i < e; ++i) o[words[i]] = true;
         return o;
     }
-    var keywords = wordObj([
+    var keywords = [
+        "ksmps",
         "opcode",
         "endop",
         "instr",
         "endin",
+        "0dbfs",
+        "sr",
+        "kr"
+    ];
+
+    var attributes = [
         "while",
         "do",
         "od",
@@ -24,8 +31,10 @@ CodeMirror.defineMode("csound", function(config) {
         "elseif",
         "else",
         "endif",
-        "until"
-    ]);
+        "until",
+        "then"
+    ];
+    var opcodes = Object.keys(synopsis);
     var indentWords = wordObj(["opcode", "instr", "while", "until"]);
     var dedentWords = wordObj(["endif", "endop", "endin"]);
     var matching = { "[": "]", "{": "}", "(": ")" };
@@ -37,13 +46,16 @@ CodeMirror.defineMode("csound", function(config) {
     }
 
     function tokenBase(stream, state) {
-        if (stream.sol() && stream.match("=begin") && stream.eol()) {
+        if (stream.sol() && stream.match("/*") && stream.eol()) {
             state.tokenize.push(readBlockComment);
             return "comment";
         }
         if (stream.eatSpace()) return null;
+        if (stream.match("0dbfs", true)) return "keyword";
+
         var ch = stream.next(),
             m;
+
         if (ch == "`" || ch == "'" || ch == '"') {
             return chain(
                 readQuoted(ch, "string", ch == '"' || ch == "`"),
@@ -81,7 +93,7 @@ CodeMirror.defineMode("csound", function(config) {
             else if (stream.eat("b")) stream.eatWhile(/[01]/);
             else stream.eatWhile(/[0-7]/);
             return "number";
-        } else if (/\d/.test(ch)) {
+        } else if (/[\d\.?]/.test(ch)) {
             stream.match(/^[\d_]*(?:\.[\d_]+)?(?:[eE][+\-]?[\d_]+)?/);
             return "number";
         } else if (ch == "?") {
@@ -114,11 +126,13 @@ CodeMirror.defineMode("csound", function(config) {
                 return "atom";
             }
             return "operator";
-        } else if (ch == "@" && stream.match(/^@?[a-zA-Z_\xa1-\uffff]/)) {
-            stream.eat("@");
-            stream.eatWhile(/[\w\xa1-\uffff]/);
-            return "variable-2";
-        } else if (ch == "$") {
+        }
+        // else if (ch == "@" && stream.match(/^@?[a-zA-Z_\xa1-\uffff]/)) {
+        //     stream.eat("@");
+        //     stream.eatWhile(/[\w\xa1-\uffff]/);
+        //     return "variable-2";
+        // }
+        else if (ch == "$") {
             if (stream.eat(/[a-zA-Z_]/)) {
                 stream.eatWhile(/[\w]/);
             } else if (stream.eat(/\d/)) {
@@ -255,7 +269,7 @@ CodeMirror.defineMode("csound", function(config) {
         };
     }
     function readBlockComment(stream, state) {
-        if (stream.sol() && stream.match("=end") && stream.eol())
+        if (stream.sol() && stream.match("*/") && stream.eol())
             state.tokenize.pop();
         stream.skipToEnd();
         return "comment";
@@ -277,25 +291,39 @@ CodeMirror.defineMode("csound", function(config) {
             curPunc = null;
             if (stream.sol()) state.indented = stream.indentation();
             var style = state.tokenize[state.tokenize.length - 1](
-                stream,
-                state
-            ),
+                    stream,
+                    state
+                ),
                 kwtype;
             var thisTok = curPunc;
             if (style == "ident") {
                 var word = stream.current();
+                if (keywords.some(s => s === word)) {
+                    style = "keyword";
+                } else if (attributes.some(s => s === word)) {
+                    style = "attribute";
+                } else if (opcodes.some(s => s === word)) {
+                    style = "variable";
+                } else if (word.match(/^a[a-zA-Z0-9_]+/)) {
+                    style = "variable-2";
+                } else if (word.match(/^[ikf][a-zA-Z0-9_]+/)) {
+                    style = "variable-3";
+                } else if (word.match(/^g[ikf][a-zA-Z0-9_]+/)) {
+                    style = "global";
+                } else if (word.match(/^ga[a-zA-Z0-9_]+/)) {
+                    style = "globalaudio";
+                }
+
                 style =
                     state.lastTok == "."
-                    ? "property"
-                    : keywords.propertyIsEnumerable(stream.current())
-                    ? "keyword"
-                    : /^[A-Z]/.test(word)
-                    ? "tag"
-                    : state.lastTok == "def" ||
-                    state.lastTok == "class" ||
-                    state.varList
-                    ? "def"
-                    : "variable";
+                        ? "number"
+                        : /^[A-Z]/.test(word)
+                        ? "tag"
+                        : state.lastTok == "#define#" ||
+                          state.lastTok == "#include" ||
+                          state.varList
+                        ? "def"
+                        : style;
                 if (style == "keyword") {
                     thisTok = word;
                     if (indentWords.propertyIsEnumerable(word))
@@ -332,6 +360,7 @@ CodeMirror.defineMode("csound", function(config) {
 
             if (stream.eol())
                 state.continuedLine = curPunc == "\\" || style == "operator";
+
             return style;
         },
 
@@ -342,12 +371,12 @@ CodeMirror.defineMode("csound", function(config) {
             var ct = state.context;
             var closing =
                 ct.type == matching[firstChar] ||
-                (ct.type == "keyword" &&
-                 /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter));
+                (ct.type == "attribute" &&
+                    /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter));
             return (
                 ct.indented +
-                      (closing ? 0 : config.indentUnit) +
-                      (state.continuedLine ? config.indentUnit : 0)
+                (closing ? 0 : config.indentUnit) +
+                (state.continuedLine ? config.indentUnit : 0)
             );
         },
 

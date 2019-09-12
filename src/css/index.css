@@ -65,6 +65,7 @@ div .react-tabs {
 
 .react-codemirror2 {
     font-size: 16px;
+    font-family: 'Space Mono', monospace;
     width: 100%;
     height: auto;
     min-height: 100%;

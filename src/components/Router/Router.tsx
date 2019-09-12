@@ -50,7 +50,6 @@ class RouterComponent extends Component<IRouterComponent, any> {
     // public componentDidMount() {}
 
     public render() {
-        console.log(CsoundManual);
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
