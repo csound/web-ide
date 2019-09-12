@@ -24,6 +24,8 @@ import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
 import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";
+import JSZip from "jszip";
+import { saveAs } from 'file-saver';
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -346,5 +348,24 @@ export const newDocument = (projectUid: string, val: string) => {
             newDocumentSuccessCallback
         );
         dispatch(openSimpleModal(newDocumentPromptComp));
+    };
+};
+
+export const exportProject = () => {
+    return async (dispatch: any) => {
+        const state = store.getState() as IStore;
+        const project: IProject | null = state.projects.activeProject;
+        if (project) {
+            const zip = new JSZip(); 
+            const folder = zip.folder('project'); 
+            const docs = Object.values(project.documents);
+            docs.forEach(doc => {
+                folder.file(doc.filename, doc.savedValue);
+            });
+            zip.generateAsync({type: 'blob'})
+                .then(content => {
+                    saveAs(content, 'project.zip')
+                });
+        }
     };
 };

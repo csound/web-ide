@@ -6,7 +6,7 @@ import useStyles from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
-import { newDocument, saveFile } from "../Projects/actions";
+import { newDocument, saveFile, exportProject } from "../Projects/actions";
 import { runCsound, stopCsound } from "../Csound/actions";
 import { reduce } from "lodash";
 // import { IDocument } from "../Projects/types";
@@ -75,6 +75,14 @@ function MenuBar(props) {
                     label: "Save and Close",
                     // keyBinding: isMac ? "⌘+s" : "ctrl+s",
                     role: "saveFile"
+                },
+                {
+                    role: "hr"
+                },
+                {
+                    label: "Export Project (.zip)",
+                    callback: () => dispatch(exportProject()),
+                    role: "export"
                 }
             ]
         },
@@ -109,7 +117,6 @@ function MenuBar(props) {
                 }
             ]
         },
-        { label: "View", submenu: [{ label: "Do Stuff :)", role: "doStuff" }] }
     ];
 
     const registerShortcut = shortcut.registerShortcut;
