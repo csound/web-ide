@@ -5,6 +5,8 @@ import { IStore } from "../../db/interfaces";
 // import Editor from "../Editor/Editor";
 import Header from "../Header/Header";
 import Home from "../Home/Home";
+// import Manual from "../Manual/Manual";
+import CsoundManual from "csound-manual-react";
 import Profile from "../Profile/Profile";
 import ProjectContext from "../Projects/ProjectContext";
 import { Route, Switch } from "react-router-dom";
@@ -48,6 +50,7 @@ class RouterComponent extends Component<IRouterComponent, any> {
     // public componentDidMount() {}
 
     public render() {
+        console.log(CsoundManual);
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>
                 <Switch>
@@ -55,11 +58,7 @@ class RouterComponent extends Component<IRouterComponent, any> {
                         path="/editor/:id?"
                         render={matchProps => <EditorLayout {...matchProps} />}
                     />
-                    {/* <PrivateRoute
-                        {...this.props}
-                        path="/dashboard"
-                        component={Editor}
-                    /> */}
+                    <Route path="/manual/:id" render={() => <CsoundManual />} />
                     <Profile path="/profile/:username?" {...this.props} />
                     <Route
                         path="/"
