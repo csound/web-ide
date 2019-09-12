@@ -245,8 +245,9 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                     {`.cm-s-monokai span.cm-variable   {color: #ae81ff!important; font-weight: 800;}
                          .cm-s-monokai span.cm-variable-2 {color: #86c9d6!important; font-weight: 800;}
                          .cm-s-monokai span.cm-number {color: rgba(255,255,255,0.9)}
-                         .cm-global  {color: #66d9ef!important; font-style: italic;}
-                         .cm-globalaudio {color: #86c9d6!important; font-style: italic; font-weight: 800;}`}
+                         .cm-global  {color: #66d9ef; font-style: italic;}
+                         .cm-globalaudio {color: #86c9d6; font-style: italic; font-weight: 800;}
+                         .cm-variable-4 {color: #ffd781; font-weight: 800;}`}
                 </style>
                 <CodeMirror
                     value={this.props.currentDocumentValue}

@@ -312,6 +312,8 @@ CodeMirror.defineMode("csound", function(config) {
                     style = "global";
                 } else if (word.match(/^ga[a-zA-Z0-9_]+/)) {
                     style = "globalaudio";
+                } else if (word.match(/^p[0-9]+/)) {
+                    style = "variable-4";
                 }
 
                 style =
