@@ -187,10 +187,13 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             updateDocumentValue,
             projectUid,
             documentUid,
-            storeEditorInstance
+            storeEditorInstance,
+            isModifiedLocally
         } = this.props;
 
-        updateDocumentValue(this.props.savedValue, projectUid, documentUid);
+        if (!isModifiedLocally) {
+            updateDocumentValue(this.props.savedValue, projectUid, documentUid);
+        }
         storeEditorInstance(this.cm.current.editor, projectUid, documentUid);
         setTimeout(
             () =>
@@ -273,6 +276,7 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
         documentUid: ownProp.documentUid,
         currentDocumentValue,
         documentType,
+        isModifiedLocally: document!.isModifiedLocally,
         printToConsole: store.ConsoleReducer.printToConsole,
         projectUid: ownProp.projectUid,
         savedValue
