@@ -55,7 +55,6 @@ CodeMirror.defineMode("csound", function(config) {
 
         var ch = stream.next(),
             m;
-
         if (ch == "`" || ch == "'" || ch == '"') {
             return chain(
                 readQuoted(ch, "string", ch == '"' || ch == "`"),
@@ -101,32 +100,33 @@ CodeMirror.defineMode("csound", function(config) {
             if (stream.eat("\\")) stream.eatWhile(/\w/);
             else stream.next();
             return "string";
-        } else if (ch == ":") {
-            if (stream.eat("'"))
-                return chain(readQuoted("'", "atom", false), stream, state);
-            if (stream.eat('"'))
-                return chain(readQuoted('"', "atom", true), stream, state);
-
-            // :> :>> :< :<< are valid symbols
-            if (stream.eat(/[\<\>]/)) {
-                stream.eat(/[\<\>]/);
-                return "atom";
-            }
-
-            // :+ :- :/ :* :| :& :! are valid symbols
-            if (stream.eat(/[\+\-\*\/\&\|\:\!]/)) {
-                return "atom";
-            }
-
-            // Symbols can't start by a digit
-            if (stream.eat(/[a-zA-Z$@_\xa1-\uffff]/)) {
-                stream.eatWhile(/[\w$\xa1-\uffff]/);
-                // Only one ? ! = is allowed and only as the last character
-                stream.eat(/[\?\!\=]/);
-                return "atom";
-            }
-            return "operator";
         }
+        // else if (ch == ":") {
+        //     if (stream.eat("'"))
+        //         return chain(readQuoted("'", "atom", false), stream, state);
+        //     if (stream.eat('"'))
+        //         return chain(readQuoted('"', "atom", true), stream, state);
+        //
+        //     // :> :>> :< :<< are valid symbols
+        //     if (stream.eat(/[\<\>]/)) {
+        //         stream.eat(/[\<\>]/);
+        //         return "atom";
+        //     }
+        //
+        //     // :+ :- :/ :* :| :& :! are valid symbols
+        //     // if (stream.eat(/[\+\-\*\/\&\|\:\!]/)) {
+        //     //     return "atom";
+        //     // }
+        //
+        //     // Symbols can't start by a digit
+        //     if (stream.eat(/[a-zA-Z$@_\xa1-\uffff]/)) {
+        //         stream.eatWhile(/[\w$\xa1-\uffff]/);
+        //         // Only one ? ! = is allowed and only as the last character
+        //         stream.eat(/[\?\!\=]/);
+        //         return "atom";
+        //     }
+        //     return "operator";
+        // }
         // else if (ch == "@" && stream.match(/^@?[a-zA-Z_\xa1-\uffff]/)) {
         //     stream.eat("@");
         //     stream.eatWhile(/[\w\xa1-\uffff]/);
@@ -144,7 +144,19 @@ CodeMirror.defineMode("csound", function(config) {
         } else if (/[a-zA-Z_\xa1-\uffff]/.test(ch)) {
             stream.eatWhile(/[\w\xa1-\uffff]/);
             stream.eat(/[\?\!]/);
-            if (stream.eat(":")) return "atom";
+
+            if (stream.peek() == ":") {
+                var isop = opcodes.some(s => s === stream.current());
+                stream.next();
+                if (
+                    isop &&
+                    (typeof stream.peek() == "string" &&
+                        stream.peek().match(/[aik]/))
+                ) {
+                    stream.next();
+                    return "variable";
+                }
+            }
             return "ident";
         } else if (
             ch == "|" &&
@@ -319,13 +331,13 @@ CodeMirror.defineMode("csound", function(config) {
                 style =
                     state.lastTok == "."
                         ? "number"
-                        : /^[A-Z]/.test(word)
+                        : /^[A-Z]\:?/.test(word)
                         ? "tag"
-                        : state.lastTok == "#define#" ||
-                          state.lastTok == "#include" ||
-                          state.varList
-                        ? "def"
-                        : style;
+                        : // : state.lastTok == "#define#" ||
+                          //   state.lastTok == "#include" ||
+                          //   state.varList
+                          // ? "def"
+                          style;
                 if (style == "keyword") {
                     thisTok = word;
                     if (indentWords.propertyIsEnumerable(word))
