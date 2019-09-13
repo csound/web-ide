@@ -24,7 +24,6 @@ interface IMainProps {
 class Main extends React.Component<IMainProps, {}> {
     constructor(props: IMainProps) {
         super(props);
-        console.log(process.env.REACT_APP_SENTRY_DSN);
 
         if (typeof process.env.REACT_APP_SENTRY_DSN !== "undefined") {
             Sentry.init({
