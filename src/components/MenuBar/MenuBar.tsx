@@ -44,12 +44,14 @@ function MenuBar(props) {
                 {
                     label: "New File…",
                     role: "creates new document",
-                    keyBinding: isMac ? "⌘+n" : "ctrl+alt+n",
+                    keyBinding: isMac ? null : "ctrl+alt+n",
+                    keyBindingLabel: isMac ? null : "ctrl+alt+n",
                     callback: () => dispatch(newDocument(activeProjectUid, ""))
                 },
                 {
                     label: "Save Document",
-                    keyBinding: isMac ? "⌘+s" : "ctrl+s",
+                    keyBinding: isMac ? "cmd+s" : "ctrl+s",
+                    keyBindingLabel: isMac ? "⌘+s" : "ctrl+s",
                     callback: () => {
                         dispatch(saveFile());
                     },
@@ -57,7 +59,8 @@ function MenuBar(props) {
                 },
                 {
                     label: "Save All",
-                    keyBinding: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
+                    keyBinding: isMac ? "opt+cmd+s" : "ctrl+shift+s",
+                    keyBindingLabel: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
                     callback: () => {
                         dispatch(saveFile());
                     },
@@ -99,19 +102,22 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "Run",
-                    keyBinding: "ctrl+r",
+                    keyBinding: isMac ? "cmd+r" : "ctrl+r",
+                    keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
                     role: "Run Csound",
                     callback: () => dispatch(runCsound())
                 },
                 {
                     label: "Stop",
-                    keyBinding: "ctrl+.",
+                    keyBinding: isMac ? "cmd+." : "ctrl+.",
+                    keyBindingLabel: isMac ? "⌘+." : "ctrl+.",
                     role: "doStuff",
                     callback: () => dispatch(stopCsound())
                 },
                 {
                     label: "Pause",
-                    keyBinding: "ctrl+p",
+                    keyBinding: isMac ? "cmd+p" : "ctrl+p",
+                    keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
                     role: "doStuff",
                     callback: () => playPauseCsound(csound)
                 }
@@ -185,7 +191,7 @@ function MenuBar(props) {
                         >
                             <p className={classes.label}>{item.label}</p>
                             <span style={{ width: 24 }} />
-                            <i className={classes.label}>{item.keyBinding}</i>
+                            <i className={classes.label}>{item.keyBindingLabel}</i>
                         </li>
                     );
                 } else if (itemCallback) {
