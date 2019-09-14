@@ -1,4 +1,4 @@
-import { IDocumentFileType } from "./types";
+import { IDocumentFileType, IDocumentFileInternalType } from "./types";
 
 export function filenameToType(filename: string): IDocumentFileType {
     if (filename.endsWith(".csd")) {
@@ -12,4 +12,15 @@ export function filenameToType(filename: string): IDocumentFileType {
     } else {
         return "txt";
     }
+}
+
+export function textOrBinary(filename: string): IDocumentFileInternalType {
+    const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
+    const lowerName = filename.toLowerCase();
+
+    if(textFiles.find(ext => lowerName.endsWith(ext))) {
+        return "txt";
+    }
+
+    return "bin";
 }

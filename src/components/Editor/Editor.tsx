@@ -8,6 +8,7 @@ import { isEmpty } from "lodash";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
+import { filenameToType } from "../Projects/utils";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -271,7 +272,7 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     const document = project!.documents[ownProp.documentUid];
     const savedValue = document && document.savedValue;
     const currentDocumentValue = document && document.currentValue;
-    const documentType = document && document.type;
+    const documentType = document && filenameToType(document.filename);
 
     return {
         csound: store.csound.csound,

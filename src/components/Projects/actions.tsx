@@ -19,7 +19,7 @@ import {
     IProject,
     IDocument
 } from "./types";
-import { filenameToType } from "./utils";
+import { filenameToType, textOrBinary } from "./utils";
 import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
 import { store } from "../../store";
@@ -45,7 +45,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 documentUid: docSnapshot.id,
                                 savedValue: docData["value"],
                                 filename: docData["name"],
-                                type: filenameToType(docData["name"]),
+                                type: docData["type"],
                                 isModifiedLocally: false
                             } as IDocument;
                             return acc;
@@ -321,6 +321,49 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
     }) as React.FC;
 };
 
+const addDocumentPrompt = (callback: (fileName: string) => void) => {
+    return (() => {
+        const [input, setInput] = useState("");
+        const [nameCollides, setNameCollides] = useState(false);
+
+        const reservedFilenames = useSelector((store: IStore) =>
+            Object.values(store.projects.activeProject!.documents).map(
+                doc => doc.filename
+            )
+        );
+
+        const shouldDisable = isEmpty(input);
+        return (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+                <TextField
+                    label={
+                        nameCollides
+                            ? input + " already exists!"
+                            : "New filename"
+                    }
+                    error={nameCollides}
+                    value={input}
+                    onChange={e => {
+                        setInput(e.target.value);
+                        setNameCollides(
+                            some(reservedFilenames, fn => fn === e.target.value)
+                        );
+                    }}
+                />
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    disabled={shouldDisable || nameCollides}
+                    onClick={() => callback(input)}
+                    style={{ marginTop: 11 }}
+                >
+                    Create
+                </Button>
+            </div>
+        );
+    }) as React.FC;
+};
+
 export const newDocument = (projectUid: string, val: string) => {
     return async (dispatch: any) => {
         const newDocumentSuccessCallback = async (filename: string) => {
@@ -328,7 +371,7 @@ export const newDocument = (projectUid: string, val: string) => {
 
             if (project) {
                 const doc = {
-                    type: filenameToType(filename),
+                    type: "txt",
                     name: filename,
                     value: val
                 };
@@ -352,6 +395,40 @@ export const newDocument = (projectUid: string, val: string) => {
             newDocumentSuccessCallback
         );
         dispatch(openSimpleModal(newDocumentPromptComp));
+    };
+};
+
+export const addDocument = (projectUid: string) => {
+    return async (dispatch: any) => {
+        const addDocumentSuccessCallback = async (filename: string) => {
+            const project = (store.getState() as IStore).projects.activeProject;
+
+            if (project) {
+                const doc = {
+                    type: textOrBinary(filename),
+                    name: filename,
+                    value: "" 
+                };
+                projects
+                    .doc(project.projectUid)
+                    .collection("files")
+                    .add(doc)
+                    .then(res => {
+                        const documentUid = res.id;
+                        dispatch(tabOpenByDocumentUid(res.id));
+                        dispatch({
+                            type: DOCUMENT_INITIALIZE,
+                            filename,
+                            documentUid
+                        });
+                    });
+            }
+            dispatch({ type: "MODAL_CLOSE" });
+        };
+        const addDocumentPromptComp = addDocumentPrompt(
+            addDocumentSuccessCallback
+        );
+        dispatch(openSimpleModal(addDocumentPromptComp));
     };
 };
 

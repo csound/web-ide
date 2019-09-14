@@ -33,7 +33,7 @@ export default (state, action: any) => {
                 currentValue: "",
                 documentUid: action.documentUid,
                 savedValue: "",
-                type: filenameToType(action.filename),
+                type: action.type,
                 isModifiedLocally: false
             };
             const newDocumentsState = {
