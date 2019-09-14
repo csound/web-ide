@@ -12,6 +12,7 @@ import { thirdPartyAuthSuccess } from "../Login/actions";
 import { History } from "history";
 import { mainStylesHOC } from "./styles";
 import * as firebase from "firebase/app";
+import * as Sentry from "@sentry/browser";
 
 interface IMainProps {
     classes: any;
@@ -21,6 +22,27 @@ interface IMainProps {
 }
 
 class Main extends React.Component<IMainProps, {}> {
+    constructor(props: IMainProps) {
+        super(props);
+
+        if (typeof process.env.REACT_APP_SENTRY_DSN !== "undefined") {
+            Sentry.init({
+                dsn: process.env.REACT_APP_SENTRY_DSN
+            });
+        }
+    }
+
+    componentDidCatch(error, errorInfo) {
+        if (typeof process.env.REACT_APP_SENTRY_DSN !== "undefined") {
+            Sentry.withScope(scope => {
+                Object.keys(errorInfo).forEach(key => {
+                    scope.setExtra(key, errorInfo[key]);
+                });
+                Sentry.captureException(error);
+            });
+        }
+    }
+
     public componentDidMount() {
         firebase
             .auth()
