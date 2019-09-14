@@ -92,6 +92,8 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                             }
                             case "modified": {
                                 //console.log("File Modified: ", doc);
+                                // TODO - need to detect filename changes, perhaps
+                                // keep map of doc id => filename in Redux Store...
                                 cs.writeToFS(
                                     doc.name,
                                     encoder.encode(doc.value)
