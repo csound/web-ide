@@ -94,7 +94,7 @@ const BottomSection = styled.div`
     grid-column: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr;
     background-color: #e8e8e8;
     border-top: 2px solid black;
 `;
