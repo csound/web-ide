@@ -8,7 +8,8 @@ import {
     ProfileActionTypes,
     ADD_USER_PROJECT,
     DELETE_USER_PROJECT,
-    GET_USER_PROFILE
+    GET_USER_PROFILE,
+    GET_USER_IMAGE_URL
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -16,6 +17,7 @@ import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
+import crypto from "crypto";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -150,6 +152,37 @@ export const deleteUserProject = (
                     openSnackbar("Could Not Delete Project", SnackbarType.Error)
                 );
             }
+        }
+    });
+};
+
+export const getUserImageURLAction = (url: string): ProfileActionTypes => {
+    return {
+        type: GET_USER_IMAGE_URL,
+        payload: url
+    };
+};
+
+export const getUserImageURL = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => dispatch => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+            const md5Email = crypto
+                .createHash("md5")
+                .update("phasereset@gmail.com")
+                .digest("hex");
+            const gravatarUrl = `https://www.gravatar.com/avatar/${md5Email}`;
+            const response = await fetch(`${gravatarUrl}?d=404`);
+
+            if (response.status !== 200) {
+                console.log("no gravatar");
+            }
+
+            dispatch(getUserImageURLAction(gravatarUrl));
         }
     });
 };

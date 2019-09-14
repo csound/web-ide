@@ -2,10 +2,16 @@ export const GET_USER_PROJECTS = "PROFILE.GET_USER_PROJECTS";
 export const GET_USER_PROFILE = "PROFILE.GET_USER_PROFILE";
 export const ADD_USER_PROJECT = "PROFILE.ADD_USER_PROJECT";
 export const DELETE_USER_PROJECT = "PROFILE.DELETE_USER_PROJECT";
+export const GET_USER_IMAGE_URL = "PROFILE.GET_USER_IMAGE_URL";
 
 interface GetUserProfileAction {
     type: typeof GET_USER_PROFILE;
     payload: any;
+}
+
+interface GetUserImageURLAction {
+    type: typeof GET_USER_IMAGE_URL;
+    payload: string;
 }
 
 interface GetUserProjectsAction {
@@ -25,4 +31,5 @@ export type ProfileActionTypes =
     | GetUserProfileAction
     | GetUserProjectsAction
     | AddUserProjectAction
-    | DeleteUserProjectAction;
+    | DeleteUserProjectAction
+    | GetUserImageURLAction;
