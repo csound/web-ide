@@ -16,6 +16,7 @@ export const STOP_CSOUND = PREFIX + "STOP_CSOUND";
 export interface ICsoundObj {
     audioContext: any;
     writeToFS: (filepath: string, data: any) => void;
+    unlinkFromFS: (filepath: string) => void;
     compileCSD: (csd: string) => void;
     compileOrc: (orc: string) => void;
     setOption: (option: string) => void;

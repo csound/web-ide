@@ -75,9 +75,9 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         .csound;
                     const encoder = new TextEncoder();
                     files.docChanges().forEach(change => {
+                        const doc = change.doc.data();
                         switch (change.type) {
                             case "added": {
-                                const doc = change.doc.data();
                                 //console.log("File Added: ", doc);
                                 cs.writeToFS(
                                     doc.name,
@@ -85,10 +85,12 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 );
                                 break;
                             }
-                            case "removed":
+                            case "removed": {
+                                //console.log("File Removed: ", doc);
+                                cs.unlinkFromFS(doc.name);
                                 break;
+                            }
                             case "modified": {
-                                const doc = change.doc.data();
                                 //console.log("File Modified: ", doc);
                                 cs.writeToFS(
                                     doc.name,
