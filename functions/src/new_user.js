@@ -1,4 +1,4 @@
-const firebase = require("firebase");
+// const firebase = require("firebase");
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
 const log = require("./logger.js")("new_user_callback");
@@ -10,16 +10,17 @@ const createProfileDocument = async user => {
         `Adding: ${user.displayName}, with uid ${user.uid} to profiles`
     );
 
+    // bio: "",
+    // link1: "",
+    // link2: "",
+    // link3: "",
+
     const userDoc = {
         userUid: user.uid,
-        userJoinDate: firebase.database.ServerValue.TIMESTAMP,
+        userJoinDate: new Date(),
         email: user.email,
-        bio: "",
-        link1: "",
-        link2: "",
-        link3: "",
         displayName: user.displayName,
-        fullName: "",
+        username: "",
         photoUrl: user.photoURL
     };
 
