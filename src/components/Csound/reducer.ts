@@ -32,14 +32,16 @@ export default (state: any, action: any): ICsoundReducer => {
             // } else if (state.csound.status === "stopped") {
             //     state.csound.reset();
             // }
-            state.csound.reset();
-            state.csound.setOption("-odac");
-            state.csound.setOption("-+msg_color=false");
-            state.csound.compileCSD("project.csd");
-            state.csound.start();
+            const cs:ICsoundObj = state.csound; 
+            cs.audioContext.resume();
+            cs.reset();
+            cs.setOption("-odac");
+            cs.setOption("-+msg_color=false");
+            cs.compileCSD("project.csd");
+            cs.start();
 
             return {
-                csound: state.csound,
+                csound: cs,
                 status: "playing"
             };
         }
@@ -47,14 +49,16 @@ export default (state: any, action: any): ICsoundReducer => {
             if (!state.csound) {
                 return state;
             }
-            const contextState = state.csound.getNode().context.state;
 
-            if (
-                state.csound.status === "playing" &&
-                contextState === "running"
-            ) {
-                state.csound.stop();
-            }
+            // FIXME - state.csound has no status param
+            // const contextState = state.csound.getNode().context.state;
+
+            // if (
+                // state.csound.status === "playing" &&
+                // contextState === "running"
+            // ) {
+            state.csound.stop();
+            // }
 
             return {
                 csound: state.csound,
