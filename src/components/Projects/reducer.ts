@@ -9,7 +9,6 @@ import {
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     SET_PROJECT
 } from "./types";
-import { filenameToType } from "./utils";
 import { cloneDeep } from "lodash";
 
 const initialProjectsState: IProjectsReducer = {

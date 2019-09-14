@@ -19,13 +19,13 @@ import {
     IProject,
     IDocument
 } from "./types";
-import { filenameToType, textOrBinary } from "./utils";
+import { textOrBinary } from "./utils";
 import { IStore } from "../../db/interfaces";
 import { projects } from "../../config/firestore";
 import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";
 import JSZip from "jszip";
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -321,9 +321,9 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
     }) as React.FC;
 };
 
-const addDocumentPrompt = (callback: (fileName: string) => void) => {
+const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
     return (() => {
-        const [input, setInput] = useState("");
+        const [files, setFiles] = useState(null as FileList | null);
         const [nameCollides, setNameCollides] = useState(false);
 
         const reservedFilenames = useSelector((store: IStore) =>
@@ -332,32 +332,29 @@ const addDocumentPrompt = (callback: (fileName: string) => void) => {
             )
         );
 
-        const shouldDisable = isEmpty(input);
+        const shouldDisable = isEmpty(files);
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
-                <TextField
-                    label={
-                        nameCollides
-                            ? input + " already exists!"
-                            : "New filename"
-                    }
-                    error={nameCollides}
-                    value={input}
+                <input
+                    id="fileSelector"
+                    type="file"
                     onChange={e => {
-                        setInput(e.target.value);
+                        let files = e.target.files;
+                        let fileName = files ? files[0].name : "";
+                        setFiles(files);
                         setNameCollides(
-                            some(reservedFilenames, fn => fn === e.target.value)
+                            some(reservedFilenames, fn => fn === fileName)
                         );
                     }}
-                />
+                ></input>
                 <Button
                     variant="outlined"
                     color="primary"
                     disabled={shouldDisable || nameCollides}
-                    onClick={() => callback(input)}
+                    onClick={() => callback(files!)}
                     style={{ marginTop: 11 }}
                 >
-                    Create
+                    Upload
                 </Button>
             </div>
         );
@@ -400,28 +397,45 @@ export const newDocument = (projectUid: string, val: string) => {
 
 export const addDocument = (projectUid: string) => {
     return async (dispatch: any) => {
-        const addDocumentSuccessCallback = async (filename: string) => {
+        const addDocumentSuccessCallback = async (files: FileList) => {
             const project = (store.getState() as IStore).projects.activeProject;
 
-            if (project) {
-                const doc = {
-                    type: textOrBinary(filename),
-                    name: filename,
-                    value: "" 
-                };
-                projects
-                    .doc(project.projectUid)
-                    .collection("files")
-                    .add(doc)
-                    .then(res => {
-                        const documentUid = res.id;
-                        dispatch(tabOpenByDocumentUid(res.id));
-                        dispatch({
-                            type: DOCUMENT_INITIALIZE,
-                            filename,
-                            documentUid
-                        });
-                    });
+            if (project && files && files.length > 0) {
+                let file = files[0];
+                let filename = file.name;
+                let fileType = textOrBinary(file.name);
+                let reader = new FileReader();
+
+                console.log("File type found: ", fileType);
+
+                if (fileType === "txt") {
+                    reader.onload = e => {
+                        let txt = reader.result;
+
+                        const doc = {
+                            type: fileType,
+                            name: filename,
+                            value: txt
+                        };
+
+                        projects
+                            .doc(project.projectUid)
+                            .collection("files")
+                            .add(doc)
+                            .then(res => {
+                                const documentUid = res.id;
+                                dispatch(tabOpenByDocumentUid(res.id));
+                                dispatch({
+                                    type: DOCUMENT_INITIALIZE,
+                                    filename,
+                                    documentUid
+                                });
+                            });
+                    };
+                    reader.readAsText(file);
+                } else if (fileType === "bin") {
+
+                }
             }
             dispatch({ type: "MODAL_CLOSE" });
         };
@@ -437,16 +451,15 @@ export const exportProject = () => {
         const state = store.getState() as IStore;
         const project: IProject | null = state.projects.activeProject;
         if (project) {
-            const zip = new JSZip(); 
-            const folder = zip.folder('project'); 
+            const zip = new JSZip();
+            const folder = zip.folder("project");
             const docs = Object.values(project.documents);
             docs.forEach(doc => {
                 folder.file(doc.filename, doc.savedValue);
             });
-            zip.generateAsync({type: 'blob'})
-                .then(content => {
-                    saveAs(content, 'project.zip')
-                });
+            zip.generateAsync({ type: "blob" }).then(content => {
+                saveAs(content, "project.zip");
+            });
         }
     };
 };
