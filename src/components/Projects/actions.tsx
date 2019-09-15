@@ -21,11 +21,12 @@ import {
 } from "./types";
 import { textOrBinary } from "./utils";
 import { IStore } from "../../db/interfaces";
-import { projects } from "../../config/firestore";
+import { projects, storageRef } from "../../config/firestore";
 import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import firebase from "firebase";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -79,10 +80,30 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         switch (change.type) {
                             case "added": {
                                 //console.log("File Added: ", doc);
-                                cs.writeToFS(
-                                    doc.name,
-                                    encoder.encode(doc.value)
-                                );
+                                if(doc.type === "bin") {
+                                    let path = `/${project.projectUid}/${doc.name}`;
+                                    storageRef.child(path).getDownloadURL().then(function(url) {
+                                        // This can be downloaded directly:
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.responseType = 'arraybuffer';
+                                        xhr.onload = function(event) {
+                                          let blob = xhr.response;
+                                          cs.writeToFS(
+                                             doc.name,
+                                             blob
+                                           );
+                                        };
+                                        xhr.open('GET', url);
+                                        xhr.send();
+                                      }).catch(function(error) {
+                                        // Handle any errors
+                                      });
+                                } else {
+                                    cs.writeToFS(
+                                        doc.name,
+                                        encoder.encode(doc.value)
+                                    );
+                                }
                                 break;
                             }
                             case "removed": {
@@ -94,10 +115,30 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 //console.log("File Modified: ", doc);
                                 // TODO - need to detect filename changes, perhaps
                                 // keep map of doc id => filename in Redux Store...
-                                cs.writeToFS(
-                                    doc.name,
-                                    encoder.encode(doc.value)
-                                );
+                                if(doc.type === "bin") {
+                                    let path = `/${project.projectUid}/${doc.name}`;
+                                    storageRef.child(path).getDownloadURL().then(function(url) {
+                                        // This can be downloaded directly:
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.responseType = 'blob';
+                                        xhr.onload = function(event) {
+                                          let blob:Blob = xhr.response;
+                                          cs.writeToFS(
+                                             doc.name,
+                                              blob
+                                           );
+                                        };
+                                        xhr.open('GET', url);
+                                        xhr.send();
+                                      }).catch(function(error) {
+                                        // Handle any errors
+                                      });
+                                } else {
+                                    cs.writeToFS(
+                                        doc.name,
+                                        encoder.encode(doc.value)
+                                    );
+                                }
                                 break;
                             }
                         }
@@ -434,7 +475,63 @@ export const addDocument = (projectUid: string) => {
                     };
                     reader.readAsText(file);
                 } else if (fileType === "bin") {
+                    let uploadTask = storageRef
+                        .child(`${project.projectUid}/${file.name}`)
+                        .put(file);
+                    // Listen for state changes, errors, and completion of the upload.
+                    uploadTask.on(
+                        firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                        function(snapshot) {
+                            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                            var progress =
+                                (snapshot.bytesTransferred /
+                                    snapshot.totalBytes) *
+                                100;
+                            console.log("Upload is " + progress + "% done");
+                            switch (snapshot.state) {
+                                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                                    console.log("Upload is paused");
+                                    break;
+                                case firebase.storage.TaskState.RUNNING: // or 'running'
+                                    console.log("Upload is running");
+                                    break;
+                            }
+                        },
+                        function(error) {
+                            // A full list of error codes is available at
+                            // https://firebase.google.com/docs/storage/web/handle-errors
+                            switch (error.name) {
+                                case "storage/unauthorized":
+                                    // User doesn't have permission to access the object
+                                    break;
 
+                                case "storage/canceled":
+                                    // User canceled the upload
+                                    break;
+
+                                case "storage/unknown":
+                                    // Unknown error occurred, inspect error.serverResponse
+                                    break;
+                            }
+                        },
+                        function() {
+                            // Upload completed successfully, now we can get the download URL
+                            uploadTask.snapshot.ref
+                                .getDownloadURL()
+                                .then(function(downloadURL) {
+                                    const doc = {
+                                        type: "bin",
+                                        name: filename,
+                                        value: downloadURL
+                                    };
+
+                                    projects
+                                        .doc(project.projectUid)
+                                        .collection("files")
+                                        .add(doc);
+                                });
+                        }
+                    );
                 }
             }
             dispatch({ type: "MODAL_CLOSE" });
