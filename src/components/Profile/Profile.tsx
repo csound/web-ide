@@ -146,9 +146,10 @@ const Profile = props => {
     const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
+
     useEffect(() => {
         dispatch(getUserProjects());
-        dispatch(getUserProfile());
+        dispatch(getUserProfile(props.match.params.username || null));
         dispatch(getUserImageURL());
     }, [dispatch]);
     return (

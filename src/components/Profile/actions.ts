@@ -2,7 +2,7 @@
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import { Action } from "redux";
-import { db, projects, profiles } from "../../config/firestore";
+import { db, projects, profiles, usernames } from "../../config/firestore";
 import {
     GET_USER_PROJECTS,
     ProfileActionTypes,
@@ -18,6 +18,7 @@ import firebase from "firebase/app";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
 import crypto from "crypto";
+import { push } from "connected-react-router";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -26,23 +27,32 @@ const getUserProfileAction = (payload: any): ProfileActionTypes => {
     };
 };
 
-export const getUserProfile = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => dispatch => {
+export const getUserProfile = (
+    username: string
+): ThunkAction<void, any, null, Action<string>> => dispatch => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
-            const uid = firebase.auth().currentUser!.uid;
+            let uid;
+            if (username === null) {
+                uid = firebase.auth().currentUser!.uid;
+            } else {
+                const result = await usernames.doc(username).get();
+                const data = result.data() || null;
+
+                if (data === null) {
+                    dispatch(push("/404", { message: "Profile Not Found" }));
+                    return;
+                } else {
+                    uid = data!.userUid;
+                }
+            }
             const profile = await profiles.doc(uid).get();
 
             if (!profile.exists) {
-                return dispatch(
-                    openSnackbar("User profile not found", SnackbarType.Error)
-                );
+                dispatch(push("/404"));
+                openSnackbar("User profile not found", SnackbarType.Error);
             } else {
-                return dispatch(getUserProfileAction(profile.data()));
+                dispatch(getUserProfileAction(profile.data()));
             }
         }
     });

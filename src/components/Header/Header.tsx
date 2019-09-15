@@ -4,6 +4,7 @@ import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
 // import classNames from "classnames";
 // import { Switch, Route } from "react-router-dom";
+import CSLogo from "../CSLogo/CSLogo";
 import { Link } from "react-router-dom";
 import {
     AppBar,
@@ -149,6 +150,8 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
                 {isLoginDialogOpen && <Login />}
                 <AppBar className={classes.appBar}>
                     <Toolbar disableGutters={true}>
+                        <CSLogo size={30} />
+
                         {this.props.showMenuBar && <MenuBar />}
                         <Typography
                             variant="subtitle1"

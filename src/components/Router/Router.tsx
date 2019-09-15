@@ -8,6 +8,7 @@ import Home from "../Home/Home";
 // import Manual from "../Manual/Manual";
 import CsoundManual from "csound-manual-react";
 import Profile from "../Profile/Profile";
+import Page404 from "../Page404/Page404";
 import ProjectContext from "../Projects/ProjectContext";
 import { Route, Switch } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
@@ -58,11 +59,14 @@ class RouterComponent extends Component<IRouterComponent, any> {
                         render={matchProps => <EditorLayout {...matchProps} />}
                     />
                     <Route path="/manual/:id" render={() => <CsoundManual />} />
-                    <Profile path="/profile/:username?" {...this.props} />
+                    <Route path="/profile/:username?" component={Profile} />
                     <Route
                         path="/"
+                        exact
                         render={matchProps => <Home {...matchProps} />}
                     />
+                    <Route path="/404" exact component={Page404} />
+                    <Route component={Page404} />
                 </Switch>
             </ConnectedRouter>
         );
