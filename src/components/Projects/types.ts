@@ -23,6 +23,7 @@ export interface IDocument {
 }
 
 export interface IProject {
+    userUid: string;
     projectUid: string;
     name: string;
     isPublic: boolean;
