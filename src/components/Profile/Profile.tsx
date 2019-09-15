@@ -156,7 +156,9 @@ const Profile = props => {
                             {profile.username}
                         </UsernameContainer>
                         <ProfilePictureSectionContainer>
-                            <ProfilePicture src={imageUrl} />
+                            <ProfilePicture
+                                src={profile.photoUrl || imageUrl || ""}
+                            />
                         </ProfilePictureSectionContainer>
                     </TopSection>
                     <BottomSection>

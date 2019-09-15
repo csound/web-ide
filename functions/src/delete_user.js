@@ -34,6 +34,28 @@ const deleteProfileDocument = async user => {
         });
 };
 
+const deleteUsernameDocument = async user => {
+    log(
+        "deleteUsernameDocument",
+        `Deleting the username of: ${user.displayName}`
+    );
+    await admin
+        .firestore()
+        .collection(`usernames`)
+        .where("userUid", "==", user.uid)
+        .get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                admin
+                    .firestore()
+                    .doc(doc.ref.path)
+                    .delete()
+                    .then(() => {});
+            });
+        });
+    return;
+};
+
 const deleteUserProjects = async user => {
     log("deleteProjects", `Deleting projects created by: ${user.displayName}`);
     // First delete the subcollections
@@ -47,34 +69,20 @@ const deleteUserProjects = async user => {
         .then(querySnapshot => {
             querySnapshot.forEach(doc => {
                 // first delete subcollections
-                log(
-                    "debug",
-                    `Read!: doc.ref.path ${doc.ref.path} doc.ref ${doc.ref}`
-                );
-                admin
-                    .firestore()
-                    .doc(doc.ref.path)
-                    .listCollections()
-                    .then(collections => {
-                        log("debug", `Read!: collections ${collections}`);
-
-                        collections.forEach(coll => {
-                            coll.listDocuments().then(subDocs =>
-                                subDocs.forEach(subDoc => {
-                                    log(
-                                        "debug",
-                                        `Read!: batchDelete this -> ${subDoc}`
-                                    );
-                                    batch.delete(subDoc);
-                                })
-                            );
+                const docRef = admin.firestore().doc(doc.ref.path);
+                docRef.listCollections().then(collections => {
+                    collections.forEach(coll => {
+                        coll.listDocuments().then(subDocs => {
+                            subDocs.forEach(subDoc => {
+                                batch.delete(subDoc);
+                            });
+                            batch.delete(docRef);
+                            batch.commit();
                         });
                     });
-                batch.delete(doc.ref);
+                });
             });
         });
-
-    batch.commit();
     return;
 };
 
@@ -86,5 +94,6 @@ exports.delete_user_callback = functions.auth.user().onDelete(async user => {
     await deleteUserProjects(user);
     await deleteProfileDocument(user);
     await deleteUserDocument(user);
+    await deleteUsernameDocument(user);
     return true;
 });

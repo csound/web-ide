@@ -19,8 +19,7 @@ const createProfileDocument = async user => {
         photoUrl: user.photoURL,
         userUid: user.uid,
         userJoinDate: new Date(),
-        username: "",
-        email: "" // optional
+        username: ""
     };
 
     return await admin
