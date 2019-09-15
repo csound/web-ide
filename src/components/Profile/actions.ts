@@ -100,9 +100,9 @@ export const addUserProject = (): ThunkAction<
 
             try {
                 const newProjectRef = await projects.add(newProject);
-                await newProjectRef.collection("files").add(defaultCsd);
-                await newProjectRef.collection("files").add(defaultOrc);
-                await newProjectRef.collection("files").add(defaultSco);
+                await newProjectRef.collection("files").add({...defaultCsd, userUid: user.uid});
+                await newProjectRef.collection("files").add({...defaultOrc, userUid: user.uid});
+                await newProjectRef.collection("files").add({...defaultSco, userUid: user.uid});
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Added", SnackbarType.Success));
             } catch (e) {

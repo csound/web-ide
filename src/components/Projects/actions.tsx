@@ -419,10 +419,12 @@ export const newDocument = (projectUid: string, val: string) => {
             const project = (store.getState() as IStore).projects.activeProject;
 
             if (project) {
+                const uid = firebase.auth().currentUser!.uid;
                 const doc = {
                     type: "txt",
                     name: filename,
-                    value: val
+                    value: val,
+                    userUid: uid,
                 };
                 projects
                     .doc(project.projectUid)
@@ -453,10 +455,11 @@ export const addDocument = (projectUid: string) => {
             const project = (store.getState() as IStore).projects.activeProject;
 
             if (project && files && files.length > 0) {
-                let file = files[0];
-                let filename = file.name;
-                let fileType = textOrBinary(file.name);
-                let reader = new FileReader();
+                const file = files[0];
+                const filename = file.name;
+                const fileType = textOrBinary(file.name);
+                const reader = new FileReader();
+                const uid = firebase.auth().currentUser!.uid;
 
                 console.log("File type found: ", fileType);
 
@@ -467,7 +470,8 @@ export const addDocument = (projectUid: string) => {
                         const doc = {
                             type: fileType,
                             name: filename,
-                            value: txt
+                            value: txt,
+                            userUid: uid,
                         };
 
                         projects
@@ -490,7 +494,8 @@ export const addDocument = (projectUid: string) => {
                     const doc = {
                         type: "bin",
                         name: filename,
-                        value: ""
+                        value: "",
+                        userUid: uid,
                     };
 
                     projects
@@ -500,7 +505,6 @@ export const addDocument = (projectUid: string) => {
                         .then(docRef => {
                             // Grab ID and use as URL for Storage
                             const docId = docRef.id;
-                            const uid = firebase.auth().currentUser!.uid;
 
                             const uploadTask = storageRef
                                 .child(`${uid}/${project.projectUid}/${docId}`)

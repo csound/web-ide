@@ -1,6 +1,5 @@
 {
     "name": "project.orc",
     "value": "sr=44100\nksmps=32\n0dbfs=1\n\ninstr 1\n\n  iamp = ampdbfs(p5)\n  ipch = cps2pch(p4,12)\n  ipan = 0.5\n\n  asig = vco2(iamp, ipch)\n\n  al, ar pan2 asig, ipan\n\n  out(al, ar)\nendin\n",
-    "type": "txt",
-    "documentUid": ""
+    "type": "txt"
 }

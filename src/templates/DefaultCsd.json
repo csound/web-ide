@@ -1,6 +1,5 @@
 {
     "name": "project.csd",
     "value": "<CsoundSynthesizer>\n<CsOptions>\n-o dac\n</CsOptions>\n<CsInstruments>\n#include \"project.orc\"\n</CsInstruments>\n<CsScore>\n#include \"project.sco\"\n</CsScore>\n</CsoundSynthesizer>",
-    "type": "txt",
-    "documentUid": ""
+    "type": "txt"
 }
