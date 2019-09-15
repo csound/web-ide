@@ -94,7 +94,7 @@ const BottomSection = styled.div`
     grid-column: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr;
     background-color: #e8e8e8;
     border-top: 2px solid black;
 `;
@@ -102,11 +102,14 @@ const BottomSection = styled.div`
 const ProfileSection = styled.div`
     grid-row: 1;
     grid-column: 1;
+    padding: 20px;
 `;
 
 const ProjectsSection = styled.div`
     grid-row: 1;
     grid-column: 2;
+    border-left: 2px solid #cccccc;
+    padding: 20px;
 `;
 
 const ProfilePictureSectionContainer = styled.div`
@@ -116,6 +119,8 @@ const ProfilePictureSectionContainer = styled.div`
     height: 100%;
     padding: 30px;
 `;
+
+const ProfilePictureContainer = styled.div``;
 
 const UsernameContainer = styled.div`
     grid-row: 1;
@@ -141,9 +146,10 @@ const Profile = props => {
     const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
+
     useEffect(() => {
         dispatch(getUserProjects());
-        dispatch(getUserProfile());
+        dispatch(getUserProfile(props.match.params.username || null));
         dispatch(getUserImageURL());
     }, [dispatch]);
     return (
@@ -156,9 +162,9 @@ const Profile = props => {
                             {profile.username}
                         </UsernameContainer>
                         <ProfilePictureSectionContainer>
-                            <ProfilePicture
-                                src={profile.photoUrl || imageUrl || ""}
-                            />
+                            <ProfilePictureContainer>
+                                <ProfilePicture src={imageUrl} />
+                            </ProfilePictureContainer>
                         </ProfilePictureSectionContainer>
                     </TopSection>
                     <BottomSection>

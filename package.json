@@ -26,6 +26,7 @@
         "@types/react-onclickoutside": "^6.7.3",
         "@types/react-redux": "^7.1.2",
         "@types/react-router-dom": "^4.3.5",
+        "@types/styled-components": "^4.1.19",
         "autoprefixer": "9.6.1",
         "babel-core": "6.26.3",
         "babel-jest": "24.9.0",
