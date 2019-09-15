@@ -102,11 +102,14 @@ const BottomSection = styled.div`
 const ProfileSection = styled.div`
     grid-row: 1;
     grid-column: 1;
+    padding: 20px;
 `;
 
 const ProjectsSection = styled.div`
     grid-row: 1;
     grid-column: 2;
+    border-left: 2px solid #cccccc;
+    padding: 20px;
 `;
 
 const ProfilePictureSectionContainer = styled.div`
@@ -116,6 +119,8 @@ const ProfilePictureSectionContainer = styled.div`
     height: 100%;
     padding: 30px;
 `;
+
+const ProfilePictureContainer = styled.div``;
 
 const UsernameContainer = styled.div`
     grid-row: 1;
@@ -156,7 +161,9 @@ const Profile = props => {
                             {profile.username}
                         </UsernameContainer>
                         <ProfilePictureSectionContainer>
-                            <ProfilePicture src={imageUrl} />
+                            <ProfilePictureContainer>
+                                <ProfilePicture src={imageUrl} />
+                            </ProfilePictureContainer>
                         </ProfilePictureSectionContainer>
                     </TopSection>
                     <BottomSection>
