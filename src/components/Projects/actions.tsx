@@ -362,6 +362,18 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
     }) as React.FC;
 };
 
+const formatFileSize = (filesize:number) : string => {
+    const megabyte = Math.pow(10, 6);
+    const kilobyte = Math.pow(10, 3);
+
+    if(filesize > megabyte) {
+        return (filesize / megabyte).toFixed(2) + " MB";
+    } else if (filesize > kilobyte) {
+        return (filesize / kilobyte).toFixed(2) + " KB";
+    } 
+    return filesize + " B";
+}
+
 const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
     return (() => {
         const [files, setFiles] = useState(null as FileList | null);
@@ -373,7 +385,9 @@ const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
             )
         );
 
-        const shouldDisable = isEmpty(files);
+        const megabyte = Math.pow(10, 6);
+        const shouldDisable = (files == null) || isEmpty(files) || (files[0].size > megabyte);
+        const filesize = (files == null) ? 'Select file' : formatFileSize(files[0].size);
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
                 <input
@@ -388,6 +402,7 @@ const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
                         );
                     }}
                 ></input>
+                <p>File Size: {filesize} (Max file size is 1MB)</p>
                 <Button
                     variant="outlined"
                     color="primary"
