@@ -28,6 +28,7 @@ import { ICsoundObj } from "../Csound/types";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase";
+import { formatFileSize } from "../../utils";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -364,18 +365,6 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
             </div>
         );
     }) as React.FC;
-};
-
-const formatFileSize = (filesize: number): string => {
-    const megabyte = Math.pow(10, 6);
-    const kilobyte = Math.pow(10, 3);
-
-    if (filesize > megabyte) {
-        return (filesize / megabyte).toFixed(2) + " MB";
-    } else if (filesize > kilobyte) {
-        return (filesize / kilobyte).toFixed(2) + " KB";
-    }
-    return filesize + " B";
 };
 
 const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
