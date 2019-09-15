@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Header from "../Header/Header";
-import { push } from "connected-react-router";
 import styled from "styled-components";
 import withStyles from "./styles";
 import CSLogo from "../CSLogo/CSLogo";

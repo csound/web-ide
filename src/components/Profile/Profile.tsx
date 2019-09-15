@@ -12,8 +12,10 @@ import {
 import {
     selectUserProjects,
     selectUserProfile,
-    selectUserImageURL
+    selectUserImageURL,
+    selectIsUserProfileOwner
 } from "./selectors";
+import { get } from "lodash";
 import { Button } from "@material-ui/core";
 import { push } from "connected-react-router";
 import styled from "styled-components";
@@ -122,13 +124,33 @@ const ProfilePictureSectionContainer = styled.div`
 
 const ProfilePictureContainer = styled.div``;
 
+const EditProfileButtonContainer = styled.div`
+    grid-row: 1;
+    grid-column: 3;
+    padding: 40px;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 140px;
+`;
+
+const EditProfileButton = styled(Button)`
+    grid-row: 1;
+    grid-column: 2;
+
+    && {
+        color: white;
+        /* font-family: "Merriweather", serif; */
+    }
+`;
+
 const UsernameContainer = styled.div`
     grid-row: 1;
     grid-column: 2;
     text-align: center;
     color: white;
     font-size: 63px;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Merriweather", serif;
+    text-shadow: 0 1px 1px black;
     /* -webkit-text-stroke: 1px black; */
     margin: 10px;
 `;
@@ -146,12 +168,14 @@ const Profile = props => {
     const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
+    const isProfileOwner = useSelector(selectIsUserProfileOwner);
+    const username = get(props, "match.params.username") || null;
 
     useEffect(() => {
         dispatch(getUserProjects());
-        dispatch(getUserProfile(props.match.params.username || null));
+        dispatch(getUserProfile(username));
         dispatch(getUserImageURL());
-    }, [dispatch]);
+    }, [dispatch, username]);
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
@@ -166,6 +190,16 @@ const Profile = props => {
                                 <ProfilePicture src={imageUrl} />
                             </ProfilePictureContainer>
                         </ProfilePictureSectionContainer>
+                        {isProfileOwner && (
+                            <EditProfileButtonContainer>
+                                <EditProfileButton
+                                    variant="contained"
+                                    color="secondary"
+                                >
+                                    Edit Profile
+                                </EditProfileButton>
+                            </EditProfileButtonContainer>
+                        )}
                     </TopSection>
                     <BottomSection>
                         <ProfileSection>

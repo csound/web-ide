@@ -52,7 +52,13 @@ export const getUserProfile = (
                 dispatch(push("/404"));
                 openSnackbar("User profile not found", SnackbarType.Error);
             } else {
-                dispatch(getUserProfileAction(profile.data()));
+                dispatch(
+                    getUserProfileAction({
+                        profile: profile.data(),
+                        loggedInUid: user.uid,
+                        profileUid: uid
+                    })
+                );
             }
         }
     });

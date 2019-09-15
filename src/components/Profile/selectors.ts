@@ -15,3 +15,12 @@ export const selectUserImageURL = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userImageURL;
 };
+
+export const selectIsUserProfileOwner = (store: any) => {
+    const state: State = store.ProfileReducer;
+    const { loggedInUid, profileUid } = state;
+    if (loggedInUid === null || profileUid === null) {
+        return false;
+    }
+    return state.loggedInUid === state.profileUid;
+};
