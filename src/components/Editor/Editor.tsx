@@ -233,6 +233,15 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     }
 
     render() {
+        const {
+            updateDocumentValue,
+            updateDocumentModifiedLocally,
+            documentUid,
+            projectUid,
+            savedValue,
+            documentType
+        } = this.props;
+
         let options = {
             // autoFocus: true,
             autoCloseBrackets: true,
@@ -240,7 +249,9 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             lineNumbers: true,
             lineWrapping: true,
             matchBrackets: true,
-            mode: "csound",
+            mode: ["csd", "orc", "sco", "udo"].some(t => t === documentType)
+                ? "csound"
+                : "text/plain",
             viewportMargin: Infinity,
             // scrollbarStyle: "simple",
             theme: "monokai",
@@ -255,14 +266,6 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                 "Cmd-;": () => this.toggleComment()
             }
         };
-
-        const {
-            updateDocumentValue,
-            updateDocumentModifiedLocally,
-            documentUid,
-            projectUid,
-            savedValue
-        } = this.props;
 
         const onBeforeChange = (editor, data, value) => {
             updateDocumentValue(value, projectUid, documentUid);
