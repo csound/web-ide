@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import {
     initialTabOpenByDocumentUid,
+    tabClose,
     tabInitSwitch,
     tabOpenByDocumentUid
 } from "../ProjectEditor/actions";
@@ -80,24 +81,25 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         switch (change.type) {
                             case "added": {
                                 //console.log("File Added: ", doc);
-                                if(doc.type === "bin") {
+                                if (doc.type === "bin") {
                                     let path = `/${project.projectUid}/${doc.name}`;
-                                    storageRef.child(path).getDownloadURL().then(function(url) {
-                                        // This can be downloaded directly:
-                                        var xhr = new XMLHttpRequest();
-                                        xhr.responseType = 'arraybuffer';
-                                        xhr.onload = function(event) {
-                                          let blob = xhr.response;
-                                          cs.writeToFS(
-                                             doc.name,
-                                             blob
-                                           );
-                                        };
-                                        xhr.open('GET', url);
-                                        xhr.send();
-                                      }).catch(function(error) {
-                                        // Handle any errors
-                                      });
+                                    storageRef
+                                        .child(path)
+                                        .getDownloadURL()
+                                        .then(function(url) {
+                                            // This can be downloaded directly:
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.responseType = "arraybuffer";
+                                            xhr.onload = function(event) {
+                                                let blob = xhr.response;
+                                                cs.writeToFS(doc.name, blob);
+                                            };
+                                            xhr.open("GET", url);
+                                            xhr.send();
+                                        })
+                                        .catch(function(error) {
+                                            // Handle any errors
+                                        });
                                 } else {
                                     cs.writeToFS(
                                         doc.name,
@@ -115,24 +117,25 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 //console.log("File Modified: ", doc);
                                 // TODO - need to detect filename changes, perhaps
                                 // keep map of doc id => filename in Redux Store...
-                                if(doc.type === "bin") {
+                                if (doc.type === "bin") {
                                     let path = `/${project.projectUid}/${doc.name}`;
-                                    storageRef.child(path).getDownloadURL().then(function(url) {
-                                        // This can be downloaded directly:
-                                        var xhr = new XMLHttpRequest();
-                                        xhr.responseType = 'blob';
-                                        xhr.onload = function(event) {
-                                          let blob:Blob = xhr.response;
-                                          cs.writeToFS(
-                                             doc.name,
-                                              blob
-                                           );
-                                        };
-                                        xhr.open('GET', url);
-                                        xhr.send();
-                                      }).catch(function(error) {
-                                        // Handle any errors
-                                      });
+                                    storageRef
+                                        .child(path)
+                                        .getDownloadURL()
+                                        .then(function(url) {
+                                            // This can be downloaded directly:
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.responseType = "blob";
+                                            xhr.onload = function(event) {
+                                                let blob: Blob = xhr.response;
+                                                cs.writeToFS(doc.name, blob);
+                                            };
+                                            xhr.open("GET", url);
+                                            xhr.send();
+                                        })
+                                        .catch(function(error) {
+                                            // Handle any errors
+                                        });
                                 } else {
                                     cs.writeToFS(
                                         doc.name,
@@ -270,6 +273,7 @@ export const deleteFile = (documentUid: string) => {
             if (doc) {
                 const cancelCallback = () => dispatch(closeModal());
                 const deleteCallback = () => {
+                    dispatch(tabClose(documentUid, false));
                     projects
                         .doc(project.projectUid)
                         .collection("files")
@@ -362,17 +366,17 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
     }) as React.FC;
 };
 
-const formatFileSize = (filesize:number) : string => {
+const formatFileSize = (filesize: number): string => {
     const megabyte = Math.pow(10, 6);
     const kilobyte = Math.pow(10, 3);
 
-    if(filesize > megabyte) {
+    if (filesize > megabyte) {
         return (filesize / megabyte).toFixed(2) + " MB";
     } else if (filesize > kilobyte) {
         return (filesize / kilobyte).toFixed(2) + " KB";
-    } 
+    }
     return filesize + " B";
-}
+};
 
 const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
     return (() => {
@@ -386,8 +390,10 @@ const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
         );
 
         const megabyte = Math.pow(10, 6);
-        const shouldDisable = (files == null) || isEmpty(files) || (files[0].size > megabyte);
-        const filesize = (files == null) ? 'Select file' : formatFileSize(files[0].size);
+        const shouldDisable =
+            files == null || isEmpty(files) || files[0].size > megabyte;
+        const filesize =
+            files == null ? "Select file" : formatFileSize(files[0].size);
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
                 <input

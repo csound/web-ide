@@ -21,6 +21,7 @@ import { isEmpty, reduce } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import { tabClose, tabSwitch } from "./actions";
+import { filterUndef } from "../../utils";
 
 const ProjectEditor = props => {
     const dispatch = useDispatch();
@@ -86,7 +87,7 @@ const ProjectEditor = props => {
         }
     );
 
-    const openTabPanels = openDocuments.map(
+    const openTabPanels = filterUndef(openDocuments).map(
         (document: IDocument, index: number) => (
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
                 <Editor

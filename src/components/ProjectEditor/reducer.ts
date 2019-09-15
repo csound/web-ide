@@ -66,6 +66,14 @@ export default (
             return { ...state };
         }
         case TAB_CLOSE: {
+            if (
+                !state.tabDock.openDocuments.some(
+                    od => od.uid === action.documentUid
+                )
+            ) {
+                // dont attempt to close a tab that isn't open
+                return state;
+            }
             const currentTabIndex = state.tabDock.tabIndex;
             state.tabDock.tabIndex = Math.min(
                 currentTabIndex,
