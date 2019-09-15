@@ -9,7 +9,6 @@ import {
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     SET_PROJECT
 } from "./types";
-import { filenameToType } from "./utils";
 import { cloneDeep } from "lodash";
 
 const initialProjectsState: IProjectsReducer = {
@@ -33,7 +32,7 @@ export default (state, action: any) => {
                 currentValue: "",
                 documentUid: action.documentUid,
                 savedValue: "",
-                type: filenameToType(action.filename),
+                type: action.type,
                 isModifiedLocally: false
             };
             const newDocumentsState = {

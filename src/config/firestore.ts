@@ -1,5 +1,6 @@
 import * as firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/firebase-storage";
 
 // ENVIRONMENT SETTINGS
 /*
@@ -31,4 +32,6 @@ if (!firebase.apps.length) {
 export const db = firebase.firestore();
 export const projects = db.collection("projects");
 export const profiles = db.collection("profiles");
+export const usernames = db.collection("usernames");
 export const projectFiles = db.collection("projectFiles");
+export const storageRef = firebase.storage().ref();

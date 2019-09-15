@@ -19,7 +19,6 @@ class Home extends Component<any, {}> {
                         creating new projects.
                     </p>
                 </main>
-                l
             </div>
         );
     }

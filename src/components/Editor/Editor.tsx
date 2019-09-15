@@ -8,6 +8,7 @@ import { isEmpty } from "lodash";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
+import { filenameToType } from "../Projects/utils";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -24,9 +25,15 @@ interface ICodeEditorProps {
     currentDocumentValue: string;
     documentUid: string;
     documentType: string;
+    isModifiedLocally: boolean;
     projectUid: string;
     printToConsole: (text: string) => void;
     savedValue: string;
+    storeEditorInstance: (
+        editor: any,
+        projectUid: string,
+        documentUid: string
+    ) => void;
     updateDocumentValue: any;
     updateDocumentModifiedLocally: any;
 }
@@ -36,11 +43,11 @@ interface ICodeEditorProps {
 // }
 
 class CodeEditor extends React.Component<ICodeEditorProps, {}> {
-    protected cm: any;
+    protected editor: any;
 
     constructor(props: ICodeEditorProps) {
         super(props);
-        this.cm = React.createRef();
+        this.editorDidMount = this.editorDidMount.bind(this);
     }
 
     uncommentLine(line: string) {
@@ -55,7 +62,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     }
 
     findOrcBlock() {
-        const editor = this.cm.current.editor;
+        const editor = this.editor;
         const val = editor.doc.getValue();
         const lines = val.split("\n");
         const cursorLine = editor.getCursor().line;
@@ -117,7 +124,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     }
 
     evalCode(blockEval: boolean) {
-        const editor = this.cm.current.editor;
+        const editor = this.editor;
 
         const { csound, csoundStatus, documentType } = this.props;
 
@@ -182,30 +189,39 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         // editor.toggleComment();
     }
 
-    public componentDidMount(this) {
+    editorDidMount(editor: any) {
         const {
+            storeEditorInstance,
             updateDocumentValue,
             projectUid,
             documentUid,
-            storeEditorInstance,
             isModifiedLocally
         } = this.props;
 
         if (!isModifiedLocally) {
             updateDocumentValue(this.props.savedValue, projectUid, documentUid);
         }
-        storeEditorInstance(this.cm.current.editor, projectUid, documentUid);
-        setTimeout(
-            () =>
-                this.cm.current &&
-                this.cm.current.editor &&
-                this.cm.current.editor.focus(),
-            100
-        );
+
+        this.editor = editor;
+        storeEditorInstance(editor, projectUid, documentUid);
+        editor.focus();
+        const lastCursorPos = localStorage.getItem(documentUid + ":cursorPos");
+        if (!isEmpty(lastCursorPos)) {
+            editor.setCursor(JSON.parse(lastCursorPos || ""));
+        } else {
+            editor.setCursor({ line: 1, ch: 1 });
+        }
     }
 
     public componentWillUnmount(this) {
         const { projectUid, documentUid, storeEditorInstance } = this.props;
+        if (this.editor) {
+            localStorage.setItem(
+                documentUid + ":cursorPos",
+                JSON.stringify(this.editor.getCursor())
+            );
+        }
+
         storeEditorInstance(null, projectUid, documentUid);
     }
 
@@ -256,10 +272,10 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                          .cm-variable-4 {color: #ffd781; font-weight: 800;}`}
                 </style>
                 <CodeMirror
+                    editorDidMount={this.editorDidMount}
                     value={this.props.currentDocumentValue}
                     onBeforeChange={onBeforeChange}
                     options={options}
-                    ref={this.cm}
                 />
             </PerfectScrollbar>
         );
@@ -271,7 +287,7 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     const document = project!.documents[ownProp.documentUid];
     const savedValue = document && document.savedValue;
     const currentDocumentValue = document && document.currentValue;
-    const documentType = document && document.type;
+    const documentType = document && filenameToType(document.filename);
 
     return {
         csound: store.csound.csound,

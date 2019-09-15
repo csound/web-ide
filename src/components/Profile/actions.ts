@@ -32,26 +32,18 @@ export const getUserProfile = (): ThunkAction<
     null,
     Action<string>
 > => dispatch => {
-    firebase.auth().onAuthStateChanged(user => {
+    firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
             const uid = firebase.auth().currentUser!.uid;
-            profiles.where("userUid", "==", uid).onSnapshot(querySnapshot => {
-                const profile: any = [];
-                querySnapshot.forEach(d => {
-                    return profile.push(d.data());
-                });
+            const profile = await profiles.doc(uid).get();
 
-                if (typeof profile[0] === "undefined") {
-                    dispatch(
-                        openSnackbar(
-                            "User profile not found",
-                            SnackbarType.Error
-                        )
-                    );
-                } else {
-                    dispatch(getUserProfileAction(profile[0]));
-                }
-            });
+            if (!profile.exists) {
+                return dispatch(
+                    openSnackbar("User profile not found", SnackbarType.Error)
+                );
+            } else {
+                return dispatch(getUserProfileAction(profile.data()));
+            }
         }
     });
 };

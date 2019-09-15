@@ -6,7 +6,7 @@ import useStyles from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
-import { newDocument, saveFile, exportProject } from "../Projects/actions";
+import { newDocument, saveFile, exportProject, addDocument } from "../Projects/actions";
 import { runCsound, stopCsound } from "../Csound/actions";
 import { reduce } from "lodash";
 // import { IDocument } from "../Projects/types";
@@ -47,6 +47,11 @@ function MenuBar(props) {
                     keyBinding: isMac ? null : "ctrl+alt+n",
                     keyBindingLabel: isMac ? null : "ctrl+alt+n",
                     callback: () => dispatch(newDocument(activeProjectUid, ""))
+                },
+                {
+                    label: "Add File…",
+                    role: "add file from filesystem",
+                    callback: () => dispatch(addDocument(activeProjectUid))
                 },
                 {
                     label: "Save Document",

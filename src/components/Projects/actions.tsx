@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import {
     initialTabOpenByDocumentUid,
+    tabClose,
     tabInitSwitch,
     tabOpenByDocumentUid
 } from "../ProjectEditor/actions";
@@ -19,13 +20,14 @@ import {
     IProject,
     IDocument
 } from "./types";
-import { filenameToType } from "./utils";
+import { textOrBinary } from "./utils";
 import { IStore } from "../../db/interfaces";
-import { projects } from "../../config/firestore";
+import { projects, storageRef } from "../../config/firestore";
 import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";
 import JSZip from "jszip";
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
+import firebase from "firebase";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -45,7 +47,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 documentUid: docSnapshot.id,
                                 savedValue: docData["value"],
                                 filename: docData["name"],
-                                type: filenameToType(docData["name"]),
+                                type: docData["type"],
                                 isModifiedLocally: false
                             } as IDocument;
                             return acc;
@@ -79,10 +81,31 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         switch (change.type) {
                             case "added": {
                                 //console.log("File Added: ", doc);
-                                cs.writeToFS(
-                                    doc.name,
-                                    encoder.encode(doc.value)
-                                );
+                                if (doc.type === "bin") {
+                                    let path = `/${project.projectUid}/${doc.name}`;
+                                    storageRef
+                                        .child(path)
+                                        .getDownloadURL()
+                                        .then(function(url) {
+                                            // This can be downloaded directly:
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.responseType = "arraybuffer";
+                                            xhr.onload = function(event) {
+                                                let blob = xhr.response;
+                                                cs.writeToFS(doc.name, blob);
+                                            };
+                                            xhr.open("GET", url);
+                                            xhr.send();
+                                        })
+                                        .catch(function(error) {
+                                            // Handle any errors
+                                        });
+                                } else {
+                                    cs.writeToFS(
+                                        doc.name,
+                                        encoder.encode(doc.value)
+                                    );
+                                }
                                 break;
                             }
                             case "removed": {
@@ -94,10 +117,31 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 //console.log("File Modified: ", doc);
                                 // TODO - need to detect filename changes, perhaps
                                 // keep map of doc id => filename in Redux Store...
-                                cs.writeToFS(
-                                    doc.name,
-                                    encoder.encode(doc.value)
-                                );
+                                if (doc.type === "bin") {
+                                    let path = `/${project.projectUid}/${doc.name}`;
+                                    storageRef
+                                        .child(path)
+                                        .getDownloadURL()
+                                        .then(function(url) {
+                                            // This can be downloaded directly:
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.responseType = "blob";
+                                            xhr.onload = function(event) {
+                                                let blob: Blob = xhr.response;
+                                                cs.writeToFS(doc.name, blob);
+                                            };
+                                            xhr.open("GET", url);
+                                            xhr.send();
+                                        })
+                                        .catch(function(error) {
+                                            // Handle any errors
+                                        });
+                                } else {
+                                    cs.writeToFS(
+                                        doc.name,
+                                        encoder.encode(doc.value)
+                                    );
+                                }
                                 break;
                             }
                         }
@@ -229,6 +273,7 @@ export const deleteFile = (documentUid: string) => {
             if (doc) {
                 const cancelCallback = () => dispatch(closeModal());
                 const deleteCallback = () => {
+                    dispatch(tabClose(documentUid, false));
                     projects
                         .doc(project.projectUid)
                         .collection("files")
@@ -321,6 +366,63 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
     }) as React.FC;
 };
 
+const formatFileSize = (filesize: number): string => {
+    const megabyte = Math.pow(10, 6);
+    const kilobyte = Math.pow(10, 3);
+
+    if (filesize > megabyte) {
+        return (filesize / megabyte).toFixed(2) + " MB";
+    } else if (filesize > kilobyte) {
+        return (filesize / kilobyte).toFixed(2) + " KB";
+    }
+    return filesize + " B";
+};
+
+const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
+    return (() => {
+        const [files, setFiles] = useState(null as FileList | null);
+        const [nameCollides, setNameCollides] = useState(false);
+
+        const reservedFilenames = useSelector((store: IStore) =>
+            Object.values(store.projects.activeProject!.documents).map(
+                doc => doc.filename
+            )
+        );
+
+        const megabyte = Math.pow(10, 6);
+        const shouldDisable =
+            files == null || isEmpty(files) || files[0].size > megabyte;
+        const filesize =
+            files == null ? "Select file" : formatFileSize(files[0].size);
+        return (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+                <input
+                    id="fileSelector"
+                    type="file"
+                    onChange={e => {
+                        let files = e.target.files;
+                        let fileName = files ? files[0].name : "";
+                        setFiles(files);
+                        setNameCollides(
+                            some(reservedFilenames, fn => fn === fileName)
+                        );
+                    }}
+                ></input>
+                <p>File Size: {filesize} (Max file size is 1MB)</p>
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    disabled={shouldDisable || nameCollides}
+                    onClick={() => callback(files!)}
+                    style={{ marginTop: 11 }}
+                >
+                    Upload
+                </Button>
+            </div>
+        );
+    }) as React.FC;
+};
+
 export const newDocument = (projectUid: string, val: string) => {
     return async (dispatch: any) => {
         const newDocumentSuccessCallback = async (filename: string) => {
@@ -328,7 +430,7 @@ export const newDocument = (projectUid: string, val: string) => {
 
             if (project) {
                 const doc = {
-                    type: filenameToType(filename),
+                    type: "txt",
                     name: filename,
                     value: val
                 };
@@ -355,21 +457,127 @@ export const newDocument = (projectUid: string, val: string) => {
     };
 };
 
+export const addDocument = (projectUid: string) => {
+    return async (dispatch: any) => {
+        const addDocumentSuccessCallback = async (files: FileList) => {
+            const project = (store.getState() as IStore).projects.activeProject;
+
+            if (project && files && files.length > 0) {
+                let file = files[0];
+                let filename = file.name;
+                let fileType = textOrBinary(file.name);
+                let reader = new FileReader();
+
+                console.log("File type found: ", fileType);
+
+                if (fileType === "txt") {
+                    reader.onload = e => {
+                        let txt = reader.result;
+
+                        const doc = {
+                            type: fileType,
+                            name: filename,
+                            value: txt
+                        };
+
+                        projects
+                            .doc(project.projectUid)
+                            .collection("files")
+                            .add(doc)
+                            .then(res => {
+                                const documentUid = res.id;
+                                dispatch(tabOpenByDocumentUid(res.id));
+                                dispatch({
+                                    type: DOCUMENT_INITIALIZE,
+                                    filename,
+                                    documentUid
+                                });
+                            });
+                    };
+                    reader.readAsText(file);
+                } else if (fileType === "bin") {
+                    let uploadTask = storageRef
+                        .child(`${project.projectUid}/${file.name}`)
+                        .put(file);
+                    // Listen for state changes, errors, and completion of the upload.
+                    uploadTask.on(
+                        firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                        function(snapshot) {
+                            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                            var progress =
+                                (snapshot.bytesTransferred /
+                                    snapshot.totalBytes) *
+                                100;
+                            console.log("Upload is " + progress + "% done");
+                            switch (snapshot.state) {
+                                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                                    console.log("Upload is paused");
+                                    break;
+                                case firebase.storage.TaskState.RUNNING: // or 'running'
+                                    console.log("Upload is running");
+                                    break;
+                            }
+                        },
+                        function(error) {
+                            // A full list of error codes is available at
+                            // https://firebase.google.com/docs/storage/web/handle-errors
+                            switch (error.name) {
+                                case "storage/unauthorized":
+                                    // User doesn't have permission to access the object
+                                    break;
+
+                                case "storage/canceled":
+                                    // User canceled the upload
+                                    break;
+
+                                case "storage/unknown":
+                                    // Unknown error occurred, inspect error.serverResponse
+                                    break;
+                            }
+                        },
+                        function() {
+                            // Upload completed successfully, now we can get the download URL
+                            uploadTask.snapshot.ref
+                                .getDownloadURL()
+                                .then(function(downloadURL) {
+                                    const doc = {
+                                        type: "bin",
+                                        name: filename,
+                                        value: downloadURL
+                                    };
+
+                                    projects
+                                        .doc(project.projectUid)
+                                        .collection("files")
+                                        .add(doc);
+                                });
+                        }
+                    );
+                }
+            }
+            dispatch({ type: "MODAL_CLOSE" });
+        };
+        const addDocumentPromptComp = addDocumentPrompt(
+            addDocumentSuccessCallback
+        );
+        dispatch(openSimpleModal(addDocumentPromptComp));
+    };
+};
+
 export const exportProject = () => {
     return async (dispatch: any) => {
         const state = store.getState() as IStore;
         const project: IProject | null = state.projects.activeProject;
         if (project) {
-            const zip = new JSZip(); 
-            const folder = zip.folder('project'); 
+            const zip = new JSZip();
+            const folder = zip.folder("project");
             const docs = Object.values(project.documents);
             docs.forEach(doc => {
                 folder.file(doc.filename, doc.savedValue);
             });
-            zip.generateAsync({type: 'blob'})
-                .then(content => {
-                    saveAs(content, 'project.zip')
-                });
+            zip.generateAsync({ type: "blob" }).then(content => {
+                saveAs(content, "project.zip");
+            });
         }
     };
 };

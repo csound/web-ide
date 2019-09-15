@@ -66,6 +66,7 @@
         "react-beforeunload": "^2.1.0",
         "react-burger-menu": "^2.6.11",
         "react-codemirror2": "^6.0.0",
+        "react-debounce-input": "^3.2.0",
         "react-dev-utils": "^9.0.3",
         "react-dom": "^16.9.0",
         "react-firebaseui": "^4.0.0",

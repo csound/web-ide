@@ -10,25 +10,23 @@ const createProfileDocument = async user => {
         `Adding: ${user.displayName}, with uid ${user.uid} to profiles`
     );
 
-    // bio: "",
-    // link1: "",
-    // link2: "",
-    // link3: "",
-
-    const userDoc = {
+    const profileDoc = {
+        displayName: user.displayName,
+        bio: "",
+        link1: "",
+        link2: "",
+        link3: "",
+        photoUrl: user.photoURL,
         userUid: user.uid,
         userJoinDate: new Date(),
-        email: user.email,
-        displayName: user.displayName,
-        username: "",
-        photoUrl: user.photoURL
+        username: ""
     };
 
     return await admin
         .firestore()
-        .collection(`users`)
+        .collection(`profiles`)
         .doc(user.uid)
-        .set(userDoc, { merge: true })
+        .set(profileDoc, { merge: true })
         .catch(err => {
             log("error", err);
             return;
