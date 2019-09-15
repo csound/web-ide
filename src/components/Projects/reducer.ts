@@ -7,6 +7,7 @@ import {
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
+    CLOSE_PROJECT,
     SET_PROJECT
 } from "./types";
 import { cloneDeep } from "lodash";
@@ -24,6 +25,9 @@ export default (state, action: any) => {
             } else {
                 return state;
             }
+        }
+        case CLOSE_PROJECT: {
+            return { activeProject: null };
         }
         case DOCUMENT_INITIALIZE: {
             const oldDocuments = cloneDeep(state.activeProject.documents);

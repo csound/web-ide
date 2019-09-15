@@ -16,6 +16,7 @@ import {
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
+    CLOSE_PROJECT,
     SET_PROJECT,
     IProject,
     IDocument
@@ -60,7 +61,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         documents,
                         isPublic: data && data.public,
                         name: data && data.name,
-                        userUid: data && data.userUid,
+                        userUid: data && data.userUid
                     };
 
                     dispatch(setProject(project));
@@ -153,6 +154,13 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                 // handle error
             }
         }
+    };
+};
+
+export const closeProject = (project: IProject) => {
+    return {
+        type: CLOSE_PROJECT,
+        project
     };
 };
 
@@ -424,7 +432,7 @@ export const newDocument = (projectUid: string, val: string) => {
                     type: "txt",
                     name: filename,
                     value: val,
-                    userUid: uid,
+                    userUid: uid
                 };
                 projects
                     .doc(project.projectUid)
@@ -471,7 +479,7 @@ export const addDocument = (projectUid: string) => {
                             type: fileType,
                             name: filename,
                             value: txt,
-                            userUid: uid,
+                            userUid: uid
                         };
 
                         projects
@@ -495,7 +503,7 @@ export const addDocument = (projectUid: string) => {
                         type: "bin",
                         name: filename,
                         value: "",
-                        userUid: uid,
+                        userUid: uid
                     };
 
                     projects
