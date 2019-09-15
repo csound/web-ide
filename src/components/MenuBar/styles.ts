@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme: Theme) =>
             }
         },
         row: {
+            width: "fit-content",
             backgroundColor: "#272822",
             position: "absolute",
             listStyle: "none",
@@ -49,7 +50,8 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         label: {
             margin: 0,
-            fontSize: 12
+            fontSize: 12,
+            whiteSpace: "nowrap"
         },
         hr: {
             padding: 0,

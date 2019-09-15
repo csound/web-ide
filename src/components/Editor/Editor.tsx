@@ -44,6 +44,7 @@ interface ICodeEditorProps {
 
 class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     protected editor: any;
+    protected scroller: any;
 
     constructor(props: ICodeEditorProps) {
         super(props);
@@ -201,13 +202,14 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         if (!isModifiedLocally) {
             updateDocumentValue(this.props.savedValue, projectUid, documentUid);
         }
-
         this.editor = editor;
         storeEditorInstance(editor, projectUid, documentUid);
         editor.focus();
         const lastCursorPos = localStorage.getItem(documentUid + ":cursorPos");
         if (!isEmpty(lastCursorPos)) {
-            editor.setCursor(JSON.parse(lastCursorPos || ""));
+            const storedScrollPos = JSON.parse(lastCursorPos || "");
+            editor.setCursor(storedScrollPos);
+            editor.scrollIntoView(storedScrollPos);
         } else {
             editor.setCursor({ line: 1, ch: 1 });
         }
@@ -221,11 +223,25 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                 JSON.stringify(this.editor.getCursor())
             );
         }
-
+        if (this.scroller) {
+            localStorage.setItem(
+                documentUid + ":scrollPos",
+                this.scroller.scrollTop
+            );
+        }
         storeEditorInstance(null, projectUid, documentUid);
     }
 
     render() {
+        const {
+            updateDocumentValue,
+            updateDocumentModifiedLocally,
+            documentUid,
+            projectUid,
+            savedValue,
+            documentType
+        } = this.props;
+
         let options = {
             // autoFocus: true,
             autoCloseBrackets: true,
@@ -233,7 +249,10 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             lineNumbers: true,
             lineWrapping: true,
             matchBrackets: true,
-            mode: "csound",
+            mode: ["csd", "orc", "sco", "udo"].some(t => t === documentType)
+                ? "csound"
+                : "text/plain",
+            viewportMargin: Infinity,
             // scrollbarStyle: "simple",
             theme: "monokai",
             extraKeys: {
@@ -248,21 +267,31 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             }
         };
 
-        const {
-            updateDocumentValue,
-            updateDocumentModifiedLocally,
-            documentUid,
-            projectUid,
-            savedValue
-        } = this.props;
-
         const onBeforeChange = (editor, data, value) => {
             updateDocumentValue(value, projectUid, documentUid);
             updateDocumentModifiedLocally(savedValue !== value, documentUid);
         };
 
         return (
-            <PerfectScrollbar style={{ backgroundColor: "#272822" }}>
+            <PerfectScrollbar
+                style={{ backgroundColor: "#272822" }}
+                containerRef={ref => {
+                    ref !== null &&
+                        setTimeout(
+                            () =>
+                                ref.scrollTo(
+                                    0,
+                                    Number(
+                                        localStorage.getItem(
+                                            documentUid + ":scrollPos"
+                                        )
+                                    )
+                                ),
+                            1
+                        );
+                    this.scroller = ref;
+                }}
+            >
                 <style>
                     {`.cm-s-monokai span.cm-variable   {color: #ae81ff!important; font-weight: 800;}
                          .cm-s-monokai span.cm-variable-2 {color: #86c9d6!important; font-weight: 800;}

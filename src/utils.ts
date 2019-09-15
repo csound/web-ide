@@ -36,3 +36,15 @@ export function isMacintosh(): boolean {
 }
 
 export const isMac: boolean = isMacintosh();
+
+export const formatFileSize = (filesize: number): string => {
+    const megabyte = Math.pow(10, 6);
+    const kilobyte = Math.pow(10, 3);
+
+    if (filesize > megabyte) {
+        return (filesize / megabyte).toFixed(2) + " MB";
+    } else if (filesize > kilobyte) {
+        return (filesize / kilobyte).toFixed(2) + " KB";
+    }
+    return filesize + " B";
+};
