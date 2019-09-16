@@ -29,6 +29,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase";
 import { formatFileSize } from "../../utils";
+import uuidv4 from "uuid/v4";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -60,7 +61,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                         documents,
                         isPublic: data && data.public,
                         name: data && data.name,
-                        userUid: data && data.userUid,
+                        userUid: data && data.userUid
                     };
 
                     dispatch(setProject(project));
@@ -120,16 +121,16 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 // TODO - need to detect filename changes, perhaps
                                 // keep map of doc id => filename in Redux Store...
                                 if (doc.type === "bin") {
-                                    let path = `/${project.projectUid}/${doc.name}`;
+                                    let path = `${project.userUid}/${project.projectUid}/${change.doc.id}`;
                                     storageRef
                                         .child(path)
                                         .getDownloadURL()
                                         .then(function(url) {
                                             // This can be downloaded directly:
                                             var xhr = new XMLHttpRequest();
-                                            xhr.responseType = "blob";
+                                            xhr.responseType = "arraybuffer";
                                             xhr.onload = function(event) {
-                                                let blob: Blob = xhr.response;
+                                                let blob = xhr.response;
                                                 cs.writeToFS(doc.name, blob);
                                             };
                                             xhr.open("GET", url);
@@ -424,7 +425,7 @@ export const newDocument = (projectUid: string, val: string) => {
                     type: "txt",
                     name: filename,
                     value: val,
-                    userUid: uid,
+                    userUid: uid
                 };
                 projects
                     .doc(project.projectUid)
@@ -471,7 +472,7 @@ export const addDocument = (projectUid: string) => {
                             type: fileType,
                             name: filename,
                             value: txt,
-                            userUid: uid,
+                            userUid: uid
                         };
 
                         projects
@@ -490,69 +491,58 @@ export const addDocument = (projectUid: string) => {
                     };
                     reader.readAsText(file);
                 } else if (fileType === "bin") {
-                    // first add doc to Firestore
-                    const doc = {
-                        type: "bin",
-                        name: filename,
-                        value: "",
-                        userUid: uid,
-                    };
+                    // generate UUID
+                    const docId = uuidv4();
 
-                    projects
-                        .doc(project.projectUid)
-                        .collection("files")
-                        .add(doc)
-                        .then(docRef => {
-                            // Grab ID and use as URL for Storage
-                            const docId = docRef.id;
+                    let metadata = { customMetadata: 
+                        { filename, projectUid, userUid: uid, docUid: docId
+                        }}
 
-                            const uploadTask = storageRef
-                                .child(`${uid}/${project.projectUid}/${docId}`)
-                                .put(file);
-                            // Listen for state changes, errors, and completion of the upload.
-                            uploadTask.on(
-                                firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-                                function(snapshot) {
-                                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                                    var progress =
-                                        (snapshot.bytesTransferred /
-                                            snapshot.totalBytes) *
-                                        100;
-                                    console.log(
-                                        "Upload is " + progress + "% done"
-                                    );
-                                    switch (snapshot.state) {
-                                        case firebase.storage.TaskState.PAUSED: // or 'paused'
-                                            console.log("Upload is paused");
-                                            break;
-                                        case firebase.storage.TaskState.RUNNING: // or 'running'
-                                            console.log("Upload is running");
-                                            break;
-                                    }
-                                },
-                                function(error) {
-                                    // A full list of error codes is available at
-                                    // https://firebase.google.com/docs/storage/web/handle-errors
-                                    switch (error.name) {
-                                        case "storage/unauthorized":
-                                            // User doesn't have permission to access the object
-                                            break;
+                    const uploadTask = storageRef
+                        .child(`${uid}/${project.projectUid}/${docId}`)
+                        .put(file, metadata);
+                    // Listen for state changes, errors, and completion of the upload.
+                    uploadTask.on(
+                        firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                        function(snapshot) {
+                            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                            var progress =
+                                (snapshot.bytesTransferred /
+                                    snapshot.totalBytes) *
+                                100;
+                            console.log("Upload is " + progress + "% done");
+                            switch (snapshot.state) {
+                                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                                    console.log("Upload is paused");
+                                    break;
+                                case firebase.storage.TaskState.RUNNING: // or 'running'
+                                    console.log("Upload is running");
+                                    break;
+                            }
+                        },
+                        function(error) {
+                            // A full list of error codes is available at
+                            // https://firebase.google.com/docs/storage/web/handle-errors
+                            switch (error.name) {
+                                case "storage/unauthorized":
+                                    // User doesn't have permission to access the object
+                                    break;
 
-                                        case "storage/canceled":
-                                            // User canceled the upload
-                                            break;
+                                case "storage/canceled":
+                                    // User canceled the upload
+                                    break;
 
-                                        case "storage/unknown":
-                                            // Unknown error occurred, inspect error.serverResponse
-                                            break;
-                                    }
-                                },
-                                function() {
-                                    // Upload completed successfully, now we can get the download URL
-                                    // uploadTask.snapshot.ref.getDownloadURL()
-                                }
-                            );
-                        });
+                                case "storage/unknown":
+                                    // Unknown error occurred, inspect error.serverResponse
+                                    break;
+                            }
+                        },
+                        function() {
+                            // Upload completed successfully, now we can get the download URL
+                            // uploadTask.snapshot.ref.getDownloadURL()
+                            // cloud function updates firestore for file entry
+                        }
+                    );
                 }
             }
             dispatch({ type: "MODAL_CLOSE" });
