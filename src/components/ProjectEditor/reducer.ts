@@ -1,5 +1,4 @@
 import { filter, find, findIndex } from "lodash";
-import { CLOSE_PROJECT } from "../Projects/types";
 import {
     TAB_DOCK_INIT_SWITCH_TAB,
     TAB_DOCK_SWITCH_TAB,

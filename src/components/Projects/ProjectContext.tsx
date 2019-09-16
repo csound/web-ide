@@ -31,7 +31,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
         return () => {
             dispatch(closeProject);
         };
-    }, [dispatch, csound, activeProject, projectUid]);
+    }, [dispatch, csound, activeProject, projectUid, needsLoading]);
 
     if (!needsLoading && csound) {
         return (
