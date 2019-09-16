@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "../../db/interfaces";
-import { loadProjectFromFirestore } from "./actions";
+import { closeProject, loadProjectFromFirestore } from "./actions";
+import { closeTabDock } from "../ProjectEditor/actions";
+import { isEmpty } from "lodash";
 
 interface IProjectContextProps {
     className: string;
@@ -17,14 +19,21 @@ export const ProjectContext = (props: IProjectContextProps) => {
         (store: IStore) => store.projects.activeProject
     );
     const csound = useSelector((store: IStore) => store.csound.csound);
+    const needsLoading =
+        isEmpty(activeProject) ||
+        (activeProject && projectUid !== activeProject.projectUid);
 
     useEffect(() => {
-        if (csound && !activeProject) {
+        if (needsLoading && csound) {
             dispatch(loadProjectFromFirestore(projectUid));
+            dispatch(closeTabDock());
         }
+        return () => {
+            dispatch(closeProject);
+        };
     }, [dispatch, csound, activeProject, projectUid]);
 
-    if (activeProject && csound) {
+    if (!needsLoading && csound) {
         return (
             <div>
                 <main className={className}>{props.children}</main>

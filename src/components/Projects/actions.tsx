@@ -16,6 +16,7 @@ import {
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
+    CLOSE_PROJECT,
     SET_PROJECT,
     IProject,
     IDocument
@@ -154,6 +155,13 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                 // handle error
             }
         }
+    };
+};
+
+export const closeProject = (project: IProject) => {
+    return {
+        type: CLOSE_PROJECT,
+        project
     };
 };
 
@@ -494,9 +502,14 @@ export const addDocument = (projectUid: string) => {
                     // generate UUID
                     const docId = uuidv4();
 
-                    let metadata = { customMetadata: 
-                        { filename, projectUid, userUid: uid, docUid: docId
-                        }}
+                    let metadata = {
+                        customMetadata: {
+                            filename,
+                            projectUid,
+                            userUid: uid,
+                            docUid: docId
+                        }
+                    };
 
                     const uploadTask = storageRef
                         .child(`${uid}/${project.projectUid}/${docId}`)

@@ -5,9 +5,10 @@ import Button from "@material-ui/core/Button";
 import {
     TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
-    TAB_CLOSE,
+    TAB_DOCK_CLOSE,
     TAB_DOCK_INIT_SWITCH_TAB,
     TAB_DOCK_SWITCH_TAB,
+    TAB_CLOSE,
     STORE_EDITOR_INSTANCE
 } from "./types";
 
@@ -24,6 +25,12 @@ export const tabOpenByDocumentUid = (documentUid: string) => {
             type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
             documentUid
         });
+    };
+};
+
+export const closeTabDock = () => {
+    return {
+        type: TAB_DOCK_CLOSE
     };
 };
 

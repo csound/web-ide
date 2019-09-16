@@ -1,9 +1,11 @@
 import { filter, find, findIndex } from "lodash";
+import { CLOSE_PROJECT } from "../Projects/types";
 import {
     TAB_DOCK_INIT_SWITCH_TAB,
     TAB_DOCK_SWITCH_TAB,
     TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
+    TAB_DOCK_CLOSE,
     TAB_CLOSE,
     STORE_EDITOR_INSTANCE,
     ITabDock
@@ -25,6 +27,14 @@ export default (
     action: any
 ) => {
     switch (action.type) {
+        case TAB_DOCK_CLOSE: {
+            return {
+                tabDock: {
+                    tabIndex: -1,
+                    openDocuments: []
+                }
+            };
+        }
         case TAB_DOCK_INIT_SWITCH_TAB: {
             if (state.tabDock.tabIndex < 0) {
                 state.tabDock.tabIndex = 0;
