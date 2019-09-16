@@ -17,8 +17,11 @@ import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
-import crypto from "crypto";
+// import crypto from "crypto";
 import { push } from "connected-react-router";
+import { openSimpleModal } from "../Modal/actions";
+import { AddProjectModal } from "./AddProjectModal";
+import { getDeleteProjectModal } from "./DeleteProjectModal";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -100,25 +103,28 @@ const addUserProjectAction = (): ProfileActionTypes => {
     };
 };
 
-export const addUserProject = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => dispatch => {
+export const addUserProject = (
+    name: string
+): ThunkAction<void, any, null, Action<string>> => dispatch => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
             const newProject = {
                 userUid: user.uid,
-                name: "New Project",
+                name: name,
                 public: false
             };
 
             try {
                 const newProjectRef = await projects.add(newProject);
-                await newProjectRef.collection("files").add({...defaultCsd, userUid: user.uid});
-                await newProjectRef.collection("files").add({...defaultOrc, userUid: user.uid});
-                await newProjectRef.collection("files").add({...defaultSco, userUid: user.uid});
+                await newProjectRef
+                    .collection("files")
+                    .add({ ...defaultCsd, userUid: user.uid });
+                await newProjectRef
+                    .collection("files")
+                    .add({ ...defaultOrc, userUid: user.uid });
+                await newProjectRef
+                    .collection("files")
+                    .add({ ...defaultSco, userUid: user.uid });
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Added", SnackbarType.Success));
             } catch (e) {
@@ -171,26 +177,97 @@ export const getUserImageURLAction = (url: string): ProfileActionTypes => {
     };
 };
 
-export const getUserImageURL = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => dispatch => {
+export const getUserImageURL = (
+    username: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
-            const md5Email = crypto
-                .createHash("md5")
-                .update("phasereset@gmail.com")
-                .digest("hex");
-            const gravatarUrl = `https://www.gravatar.com/avatar/${md5Email}`;
-            const response = await fetch(`${gravatarUrl}?d=404`);
+            let imageUrl: string;
+            let profileUid: string;
+            if (username === null) {
+                profileUid = user.uid;
+            } else {
+                const result = await usernames.doc(username).get();
+                const data = result.data() || null;
 
-            if (response.status !== 200) {
-                console.log("no gravatar");
+                profileUid = data!.userUid;
             }
 
-            dispatch(getUserImageURLAction(gravatarUrl));
+            try {
+                imageUrl = await firebase
+                    .storage()
+                    .ref()
+                    .child(`images/${profileUid}/profile.jpeg`)
+                    .getDownloadURL();
+
+                dispatch(getUserImageURLAction(imageUrl));
+                return;
+            } catch (e) {
+                console.log("no profile pic");
+            }
+
+            // try {
+            //     const md5Email = crypto
+            //         .createHash("md5")
+            //         .update("phasereset@gmail.com")
+            //         .digest("hex");
+            //     imageUrl = `https://www.gravatar.com/avatar/${md5Email}`;
+            //     const response = await fetch(`${imageUrl}?d=404`);
+
+            //     dispatch(getUserImageURLAction(imageUrl));
+            //     return;
+            // } catch (e) {
+            //     console.log("no gravatar");
+            // }
+        }
+    });
+};
+
+export const addProject = () => {
+    return async (dispatch: any) => {
+        dispatch(openSimpleModal(AddProjectModal));
+    };
+};
+
+export const deleteProject = (doc: any) => {
+    return async (dispatch: any) => {
+        const DeleteProjectModal = getDeleteProjectModal(doc);
+        dispatch(openSimpleModal(DeleteProjectModal));
+    };
+};
+
+export const uploadImage = (
+    file: File
+): ThunkAction<void, any, null, Action<string>> => dispatch => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+            try {
+                await firebase
+                    .storage()
+                    .ref()
+                    .child(`images/${user.uid}/profile.jpeg`)
+                    .put(file);
+                const imageUrl = await firebase
+                    .storage()
+                    .ref()
+                    .child(`images/${user.uid}/profile.jpeg`)
+                    .getDownloadURL();
+
+                dispatch(getUserImageURLAction(imageUrl));
+                dispatch(
+                    openSnackbar(
+                        "Profile Picture Uploaded",
+                        SnackbarType.Success
+                    )
+                );
+            } catch (e) {
+                dispatch(
+                    openSnackbar(
+                        "Profile Picture Upload Failed",
+                        SnackbarType.Error
+                    )
+                );
+            }
         }
     });
 };

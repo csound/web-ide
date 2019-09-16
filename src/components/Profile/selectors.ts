@@ -16,6 +16,16 @@ export const selectUserImageURL = (store: any) => {
     return state.userImageURL;
 };
 
+export const selectProfileUid = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.profileUid;
+};
+
+export const selectOAuthPhotoURL = (store: any) => {
+    const state: any = store.userProfile;
+    return state.photoUrl;
+};
+
 export const selectIsUserProfileOwner = (store: any) => {
     const state: State = store.ProfileReducer;
     const { loggedInUid, profileUid } = state;

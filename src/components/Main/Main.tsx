@@ -11,7 +11,7 @@ import { IStore } from "../../db/interfaces";
 import { thirdPartyAuthSuccess } from "../Login/actions";
 import { History } from "history";
 import { mainStylesHOC } from "./styles";
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
 
 interface IMainProps {

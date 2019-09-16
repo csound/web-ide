@@ -28,7 +28,7 @@ import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import firebase from "firebase";
+import firebase from "firebase/app";
 import { formatFileSize } from "../../utils";
 import uuidv4 from "uuid/v4";
 

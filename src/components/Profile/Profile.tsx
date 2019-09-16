@@ -1,13 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, RefObject } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import Header from "../Header/Header";
 import {
     getUserProjects,
-    addUserProject,
-    deleteUserProject,
     getUserProfile,
-    getUserImageURL
+    uploadImage,
+    getUserImageURL,
+    addProject,
+    deleteProject
 } from "./actions";
 import {
     selectUserProjects,
@@ -17,6 +18,7 @@ import {
 } from "./selectors";
 import { get } from "lodash";
 import { Button } from "@material-ui/core";
+import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { push } from "connected-react-router";
 import styled from "styled-components";
 
@@ -122,8 +124,6 @@ const ProfilePictureSectionContainer = styled.div`
     padding: 30px;
 `;
 
-const ProfilePictureContainer = styled.div``;
-
 const EditProfileButtonContainer = styled.div`
     grid-row: 1;
     grid-column: 3;
@@ -151,15 +151,59 @@ const UsernameContainer = styled.div`
     font-size: 63px;
     font-family: "Merriweather", serif;
     text-shadow: 0 1px 1px black;
-    /* -webkit-text-stroke: 1px black; */
     margin: 10px;
 `;
 
-const ProfilePicture = styled.img`
-    width: 100%;
-    height: 100%;
+const ProfilePictureContainer = styled.div`
+    position: relative;
     transform: translate(0px, 24px);
     box-shadow: 0px 8px 12px 0px;
+    width: 100%;
+    height: 100%;
+`;
+
+const ProfilePictureDiv = styled.div`
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+    background: white;
+`;
+
+const UploadProfilePicture = styled.div`
+    width: 100%;
+    height: 30%;
+    bottom: 0px;
+    position: absolute;
+    z-index: 2;
+    background-color: #0000005c;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr;
+    cursor: pointer;
+`;
+
+const UploadProfilePictureText = styled.div`
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    padding-top: 3px;
+    grid-row: 1;
+    grid-column: 1;
+`;
+
+const UploadProfilePictureIcon = styled.div`
+    grid-row: 2;
+    grid-column: 1;
+    align-content: center;
+    color: white;
+    margin-left: auto;
+    margin-right: auto;
+`;
+
+const ProfilePicture = styled.img`
+    object-fit: cover;
 `;
 
 const Profile = props => {
@@ -170,11 +214,13 @@ const Profile = props => {
     const imageUrl = useSelector(selectUserImageURL);
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
     const username = get(props, "match.params.username") || null;
-
+    const [imageHover, setImageHover] = useState(false);
+    let uploadRef: RefObject<HTMLInputElement>;
+    uploadRef = React.createRef();
     useEffect(() => {
         dispatch(getUserProjects());
         dispatch(getUserProfile(username));
-        dispatch(getUserImageURL());
+        dispatch(getUserImageURL(username));
     }, [dispatch, username]);
     return (
         <div className={classes.root}>
@@ -186,8 +232,44 @@ const Profile = props => {
                             {profile.username}
                         </UsernameContainer>
                         <ProfilePictureSectionContainer>
-                            <ProfilePictureContainer>
-                                <ProfilePicture src={imageUrl} />
+                            <ProfilePictureContainer
+                                onMouseEnter={() => setImageHover(true)}
+                                onMouseLeave={() => setImageHover(false)}
+                            >
+                                <ProfilePictureDiv>
+                                    <ProfilePicture
+                                        src={imageUrl}
+                                        width={"100%"}
+                                        height={"100%"}
+                                        alt="User Profile"
+                                    />
+                                </ProfilePictureDiv>
+                                <input
+                                    type="file"
+                                    ref={uploadRef}
+                                    style={{ display: "none" }}
+                                    accept={"image/jpeg"}
+                                    onChange={e => {
+                                        const file: File =
+                                            get(e, "target.files.0") || null;
+                                        dispatch(uploadImage(file));
+                                    }}
+                                />
+                                {imageHover && isProfileOwner && (
+                                    <UploadProfilePicture
+                                        onClick={() => {
+                                            const input = uploadRef.current;
+                                            input!.click();
+                                        }}
+                                    >
+                                        <UploadProfilePictureText>
+                                            Upload New Image
+                                        </UploadProfilePictureText>
+                                        <UploadProfilePictureIcon>
+                                            <CameraIcon />
+                                        </UploadProfilePictureIcon>
+                                    </UploadProfilePicture>
+                                )}
                             </ProfilePictureContainer>
                         </ProfilePictureSectionContainer>
                         {isProfileOwner && (
@@ -213,13 +295,15 @@ const Profile = props => {
                         <ProjectsSection>
                             <h2>User Projects</h2>
                             <p>
-                                <Button
-                                    onClick={() => {
-                                        dispatch(addUserProject());
-                                    }}
-                                >
-                                    + Create New Project
-                                </Button>
+                                {isProfileOwner && (
+                                    <Button
+                                        onClick={() => {
+                                            dispatch(addProject());
+                                        }}
+                                    >
+                                        + Create New Project
+                                    </Button>
+                                )}
                             </p>
                             <ul>
                                 {Array.isArray(projects) &&
@@ -237,15 +321,17 @@ const Profile = props => {
                                             >
                                                 {doc.name}
                                             </Button>
-                                            <Button
-                                                onClick={e => {
-                                                    dispatch(
-                                                        deleteUserProject(doc)
-                                                    );
-                                                }}
-                                            >
-                                                Delete
-                                            </Button>
+                                            {isProfileOwner && (
+                                                <Button
+                                                    onClick={e => {
+                                                        dispatch(
+                                                            deleteProject(doc)
+                                                        );
+                                                    }}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            )}
                                         </li>
                                     ))}
                             </ul>

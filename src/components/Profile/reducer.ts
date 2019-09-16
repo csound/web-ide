@@ -4,7 +4,7 @@ import {
     GET_USER_PROFILE,
     GET_USER_IMAGE_URL
 } from "./types";
-
+import facePng from "./face.png";
 export interface State {
     readonly userProjects: any;
     readonly userProfile: any;
@@ -16,7 +16,7 @@ export interface State {
 const INITIAL_STATE: State = {
     userProjects: false,
     userProfile: false,
-    userImageURL: "",
+    userImageURL: facePng,
     loggedInUid: null,
     profileUid: null
 };
