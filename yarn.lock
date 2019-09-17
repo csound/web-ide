@@ -4301,17 +4301,19 @@ crypto-random-string@^1.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-1.0.0.tgz#a230f64f568310e1498009940790ec99545bca7e"
   integrity sha1-ojD2T1aDEOFJgAmUB5DsmVRbyn4=
 
-csound-manual-react@^1.0.0-alpha1:
-  version "1.0.0-alpha1"
-  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha1.tgz#fb9d31c068fe52b88e1176c0f5b9977c546a2ecf"
-  integrity sha512-EWPOZA8XOZ+kbIyY3V+KMGYncAPNVECzsDS/9um1TguzxmSYHpAWuXaoYIgJl//iqLoutoRGElw9cwWm7x0baA==
+csound-manual-react@^1.0.0-alpha2:
+  version "1.0.0-alpha2"
+  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha2.tgz#6a366952da677a5f9928eb1f3a29f96fe2699537"
+  integrity sha512-bxB/hONbTYRLh7mM5gsB+asjbMo3lpAeCFjcQcPEobHq7SUHj/ssnd9sQT+8O7dxQ12a1o9CY/NMajUF8CrDIA==
   dependencies:
     "@babel/core" "^7.6.0"
     "@babel/preset-env" "^7.6.0"
     "@babel/preset-react" "^7.0.0"
     babel-loader "^8.0.6"
     clean-webpack-plugin "^3.0.0"
+    fuse.js "^3.4.5"
     react "^16.9.0"
+    react-debounce-input "^3.2.0"
     react-router-dom "^5.0.1"
     react-syntax-highlighter "^11.0.2"
     unescape "^1.0.1"
@@ -6318,6 +6320,11 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
   integrity sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=
+
+fuse.js@^3.4.5:
+  version "3.4.5"
+  resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-3.4.5.tgz#8954fb43f9729bd5dbcb8c08f251db552595a7a6"
+  integrity sha512-s9PGTaQIkT69HaeoTVjwGsLfb8V8ScJLx5XGFcKHg0MqLUH/UZ4EKOtqtXX9k7AFqCGxD1aJmYb8Q5VYDibVRQ==
 
 gauge@~2.7.3:
   version "2.7.4"

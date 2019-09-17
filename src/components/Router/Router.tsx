@@ -59,6 +59,7 @@ class RouterComponent extends Component<IRouterComponent, any> {
                         component={EditorLayout}
                         // render={matchProps => <EditorLayout {...matchProps} />}
                     />
+                    <Route path="/manual/" render={() => <CsoundManual />} />
                     <Route path="/manual/:id" render={() => <CsoundManual />} />
                     <Route path="/profile/:username?" component={Profile} />
                     <Route
