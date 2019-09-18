@@ -112,6 +112,8 @@ div .react-tabs {
     position: static !important;
 }
 
+
+
 /* .CodeMirror-simplescroll-vertical { */
 /*     background: #373a47; */
 /* } */
@@ -167,6 +169,13 @@ button {
 
 .react-tabs__tab {
     z-index: initial;
+}
+
+.layout-pane-primary {
+    overflow: hidden;
+}
+.splitter-layout .layout-pane {
+    overflow: hidden;
 }
 
 .layout-pane-primary > div {

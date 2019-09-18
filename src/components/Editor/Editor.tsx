@@ -15,7 +15,6 @@ require("codemirror/addon/edit/closebrackets");
 require("codemirror/keymap/vim");
 require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
-require("codemirror/theme/monokai.css");
 // require("codemirror/addon/scroll/simplescrollbars")
 // require("codemirror/addon/scroll/simplescrollbars.css")
 
@@ -292,14 +291,6 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                     this.scroller = ref;
                 }}
             >
-                <style>
-                    {`.cm-s-monokai span.cm-variable   {color: #ae81ff!important; font-weight: 800;}
-                         .cm-s-monokai span.cm-variable-2 {color: #86c9d6!important; font-weight: 800;}
-                         .cm-s-monokai span.cm-number {color: rgba(255,255,255,0.9)}
-                         .cm-global  {color: #66d9ef; font-style: italic;}
-                         .cm-globalaudio {color: #86c9d6; font-style: italic; font-weight: 800;}
-                         .cm-variable-4 {color: #ffd781; font-weight: 800;}`}
-                </style>
                 <CodeMirror
                     editorDidMount={this.editorDidMount}
                     value={this.props.currentDocumentValue}

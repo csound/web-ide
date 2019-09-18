@@ -6,6 +6,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument } from "../Projects/types";
 import SplitterLayout from "react-splitter-layout";
+import IframeComm from "react-iframe-comm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faTimes,
@@ -137,7 +138,7 @@ const ProjectEditor = props => {
     const tabDock = isEmpty(openDocuments) ? (
         <div />
     ) : (
-        <div key="b" data-grid={{ x: 3, y: 0, w: 9, h: 18 }}>
+        <div>
             {tabPanelController}
             <Tabs
                 onSelect={switchTab}
@@ -155,6 +156,12 @@ const ProjectEditor = props => {
         </div>
     );
 
+    const manualWindow = (
+        <IframeComm
+            attributes={{ src: "/manual", width: "100%", height: "100%" }}
+        />
+    );
+
     return (
         <div>
             {unsavedDataExitPrompt}
@@ -165,9 +172,12 @@ const ProjectEditor = props => {
                 secondaryMinSize={250}
             >
                 <FileTree />
-                <SplitterLayout vertical secondaryInitialSize={250}>
-                    {tabDock}
-                    <Console />
+                <SplitterLayout horizontal secondaryInitialSize={550}>
+                    <SplitterLayout vertical secondaryInitialSize={250}>
+                        {tabDock}
+                        <Console />
+                    </SplitterLayout>
+                    {manualWindow}
                 </SplitterLayout>
             </SplitterLayout>
         </div>
