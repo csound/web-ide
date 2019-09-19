@@ -169,7 +169,7 @@ const ProjectEditor = props => {
         <div style={{ width: "100%", height: "100%" }}>
             <IframeComm
                 attributes={{
-                    src: "/manual/main",
+                    src: "/manual/main?cache=1000",
                     width: "100%",
                     height: "100%"
                 }}

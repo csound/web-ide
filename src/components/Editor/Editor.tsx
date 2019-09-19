@@ -193,16 +193,18 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     docAtPoint() {
         const editor = this.editor;
         const cursor = editor.getCursor();
-        const token = editor.getTokenAt(cursor).string;
+        const token = editor.getTokenAt(cursor).string.replace(/:.*/, "");
+
         const { manualLookupString } = this.props;
 
         if (opcodes.some(opc => opc === token)) {
-            if (manualLookupString === token) {
+            const manualId = synopsis[token]["id"];
+            if (manualLookupString === manualId) {
                 // a way to retrigger the iframe communication
                 this.props.lookupManualString(null);
-                setTimeout(() => this.props.lookupManualString(token), 10);
+                setTimeout(() => this.props.lookupManualString(manualId), 10);
             } else {
-                this.props.lookupManualString(token);
+                this.props.lookupManualString(manualId);
             }
         }
     }
