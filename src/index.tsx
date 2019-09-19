@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { store, history } from "./store";
 import registerServiceWorker from "./registerServiceWorker";
 import Main from "./components/Main/Main";
-import { setCsound } from "./components/Csound/actions";
+import { setCsound, setCsoundPlayState } from "./components/Csound/actions";
 import CsoundObj from "./components/Csound/CsoundObj";
 import { ICsoundObj } from "./components/Csound/types";
 import "./config/firestore"; // import for sideffects
@@ -43,4 +43,8 @@ registerServiceWorker();
 CsoundObj.importScripts("/csound/").then(() => {
     const csound: ICsoundObj = new CsoundObj();
     store.dispatch(setCsound(csound));
+    csound.addPlayStateListener(csObj => {
+        console.log("Csound playState changed: " + csObj.getPlayState());
+        store.dispatch(setCsoundPlayState(csObj.getPlayState()));
+    });
 });

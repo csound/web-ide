@@ -1,5 +1,5 @@
 import { store } from "../../store";
-import { ICsoundObj, RUN_CSOUND, SET_CSOUND, STOP_CSOUND } from "./types";
+import { ICsoundObj, SET_CSOUND, ICsoundStatus, SET_CSOUND_PLAY_STATE } from "./types";
 import { IStore } from "../../db/interfaces";
 
 export const setCsound = (csound: ICsoundObj) => {
@@ -10,16 +10,55 @@ export const setCsound = (csound: ICsoundObj) => {
 };
 
 export const runCsound = () => {
-    return {
-        type: RUN_CSOUND
+    return async (dispatch: any) => {
+        let cs = store.getState().csound.csound;
+
+        if (cs) {
+            cs.audioContext.resume();
+            cs.reset();
+            cs.setOption("-odac");
+            cs.setOption("-+msg_color=false");
+            cs.compileCSD("project.csd");
+            cs.start();
+        }
     };
 };
 
 export const stopCsound = () => {
-    return {
-        type: STOP_CSOUND
+    return async (dispatch: any) => {
+        let cs = store.getState().csound.csound;
+
+        if (cs) {
+            cs.reset();
+        }
     };
 };
+
+export const playPauseCsound = () => {
+    return async (dispatch: any) => {
+        let cs = store.getState().csound.csound;
+
+        if (cs) {
+            switch(cs.getPlayState()) {
+                case "playing":
+                    cs.stop();
+                    break;
+                case "paused":
+                    cs.play();
+                    break;
+                // ignore other cases
+            }
+        }
+    };
+
+}
+
+export const setCsoundPlayState = (playState:ICsoundStatus) => {
+    return {
+        type: SET_CSOUND_PLAY_STATE,
+        status: playState
+    }
+}
 
 export const writeDocumentToEMFS = (path: string, text: string): void => {
     const storeState = store.getState() as IStore;

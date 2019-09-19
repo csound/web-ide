@@ -7,22 +7,12 @@ import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
 import { newDocument, saveFile, exportProject, addDocument } from "../Projects/actions";
-import { runCsound, stopCsound } from "../Csound/actions";
+import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
 import { reduce } from "lodash";
-// import { IDocument } from "../Projects/types";
-import { ICsoundObj } from "../Csound/types";
 
 interface IMenuBarProps {
     shortcut: IShortcutProviderRenderProps;
 }
-
-const playPauseCsound = (csound: ICsoundObj) => {
-    if (window.CSOUND_AUDIO_CONTEXT.state === "running") {
-        window.CSOUND_AUDIO_CONTEXT.suspend();
-    } else {
-        window.CSOUND_AUDIO_CONTEXT.resume();
-    }
-};
 
 function MenuBar(props) {
     const { shortcut } = props as IMenuBarProps;
@@ -32,8 +22,6 @@ function MenuBar(props) {
             ? store.projects.activeProject.projectUid
             : ""
     );
-
-    const csound = useSelector((store: IStore) => store.csound.csound!);
 
     const dispatch = useDispatch();
 
@@ -124,7 +112,7 @@ function MenuBar(props) {
                     keyBinding: isMac ? "cmd+p" : "ctrl+p",
                     keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
                     role: "doStuff",
-                    callback: () => playPauseCsound(csound)
+                    callback: () => dispatch(playPauseCsound())
                 }
             ]
         },

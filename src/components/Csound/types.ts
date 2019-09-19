@@ -8,9 +8,8 @@ export type ICsoundStatus =
     | "rendering";
 
 // ACTION TYPES
-export const RUN_CSOUND = PREFIX + "RUN_CSOUND";
 export const SET_CSOUND = PREFIX + "SET_CSOUND";
-export const STOP_CSOUND = PREFIX + "STOP_CSOUND";
+export const SET_CSOUND_PLAY_STATE = PREFIX + "SET_CSOUND_PLAY_STATE";
 
 // INTERFACES
 export interface ICsoundObj {
@@ -43,4 +42,7 @@ export interface ICsoundObj {
     destroy: () => void;
     play: () => void;
     stop: () => void;
+    getPlayState: () => ICsoundStatus; 
+    addPlayStateListener: (listener:(csoundObj:ICsoundObj) => void) => void;
+    removePlayStateListener: (listener:(csoundObj:ICsoundObj) => void) => void;
 }
