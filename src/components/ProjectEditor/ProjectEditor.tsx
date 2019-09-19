@@ -158,7 +158,7 @@ const ProjectEditor = props => {
 
     const manualWindow = (
         <IframeComm
-            attributes={{ src: "/manual", width: "100%", height: "100%" }}
+            attributes={{ src: "/manual/main", width: "100%", height: "100%" }}
         />
     );
 
