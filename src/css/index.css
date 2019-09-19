@@ -112,7 +112,9 @@ div .react-tabs {
     position: static !important;
 }
 
-
+.CodeMirror-sizer {
+    height: 100%;
+}
 
 /* .CodeMirror-simplescroll-vertical { */
 /*     background: #373a47; */

@@ -27,6 +27,11 @@ import { filterUndef } from "../../utils";
 const ProjectEditor = props => {
     const dispatch = useDispatch();
 
+    // The manual is an iframe, which doesn't detect
+    // mouve positions, so we add an invidible layer then
+    // resizing the manual panel.
+    const [manualDrag, setManualDrag] = React.useState(false);
+
     const projectUid: string = useSelector(
         (store: IStore) => store.projects.activeProject!.projectUid!
     );
@@ -157,9 +162,26 @@ const ProjectEditor = props => {
     );
 
     const manualWindow = (
-        <IframeComm
-            attributes={{ src: "/manual/main", width: "100%", height: "100%" }}
-        />
+        <div style={{ width: "100%", height: "100%" }}>
+            <IframeComm
+                attributes={{
+                    src: "/manual/main",
+                    width: "100%",
+                    height: "100%"
+                }}
+            />
+            {manualDrag && (
+                <div
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        zIndex: 200,
+                        position: "absolute",
+                        top: 0
+                    }}
+                />
+            )}
+        </div>
     );
 
     return (
@@ -172,7 +194,12 @@ const ProjectEditor = props => {
                 secondaryMinSize={250}
             >
                 <FileTree />
-                <SplitterLayout horizontal secondaryInitialSize={550}>
+                <SplitterLayout
+                    horizontal
+                    secondaryInitialSize={500}
+                    onDragStart={() => setManualDrag(true)}
+                    onDragEnd={() => setManualDrag(false)}
+                >
                     <SplitterLayout vertical secondaryInitialSize={250}>
                         {tabDock}
                         <Console />
