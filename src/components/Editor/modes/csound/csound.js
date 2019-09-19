@@ -20,7 +20,9 @@ CodeMirror.defineMode("csound", function(config) {
         "endin",
         "0dbfs",
         "sr",
-        "kr"
+        "kr",
+        "nchnls",
+        "nchnls_i"
     ];
 
     var attributes = [

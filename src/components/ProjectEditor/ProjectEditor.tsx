@@ -161,6 +161,10 @@ const ProjectEditor = props => {
         </div>
     );
 
+    const manualLookupString = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.manualLookupString
+    );
+
     const manualWindow = (
         <div style={{ width: "100%", height: "100%" }}>
             <IframeComm
@@ -169,6 +173,7 @@ const ProjectEditor = props => {
                     width: "100%",
                     height: "100%"
                 }}
+                postMessageData={manualLookupString || ""}
             />
             {manualDrag && (
                 <div

@@ -7,6 +7,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import { isEmpty } from "lodash";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
+import synopsis from "csound-manual-react/lib/manual/synopsis";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 import { filenameToType } from "../Projects/utils";
 require("codemirror/addon/comment/comment");
@@ -17,6 +18,8 @@ require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 // require("codemirror/addon/scroll/simplescrollbars")
 // require("codemirror/addon/scroll/simplescrollbars.css")
+
+const opcodes = Object.keys(synopsis);
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
@@ -35,6 +38,8 @@ interface ICodeEditorProps {
     ) => void;
     updateDocumentValue: any;
     updateDocumentModifiedLocally: any;
+    lookupManualString: any;
+    manualLookupString: string | null;
 }
 
 // interface ICodeEditorLocalState {
@@ -48,6 +53,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     constructor(props: ICodeEditorProps) {
         super(props);
         this.editorDidMount = this.editorDidMount.bind(this);
+        this.docAtPoint = this.docAtPoint.bind(this);
     }
 
     uncommentLine(line: string) {
@@ -184,6 +190,23 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         }
     }
 
+    docAtPoint() {
+        const editor = this.editor;
+        const cursor = editor.getCursor();
+        const token = editor.getTokenAt(cursor).string;
+        const { manualLookupString } = this.props;
+
+        if (opcodes.some(opc => opc === token)) {
+            if (manualLookupString === token) {
+                // a way to retrigger the iframe communication
+                this.props.lookupManualString(null);
+                setTimeout(() => this.props.lookupManualString(token), 10);
+            } else {
+                this.props.lookupManualString(token);
+            }
+        }
+    }
+
     toggleComment() {
         // let editor = this.cm.current.getCodeMirror();
         // editor.toggleComment();
@@ -259,6 +282,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                 "Ctrl-Enter": () => this.evalCode(true), // block eval
                 "Cmd-E": () => this.evalCode(false), // line eval
                 "Cmd-Enter": () => this.evalCode(true), // block eval
+                "Ctrl-M": () => this.docAtPoint(),
                 // "Ctrl-H": insertHexplay,
                 // "Ctrl-J": insertEuclidplay,
                 "Ctrl-;": () => this.toggleComment(),
@@ -308,6 +332,7 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     const savedValue = document && document.savedValue;
     const currentDocumentValue = document && document.currentValue;
     const documentType = document && filenameToType(document.filename);
+    const manualLookupString = store.ProjectEditorReducer.manualLookupString;
 
     return {
         csound: store.csound.csound,
@@ -318,7 +343,8 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
         isModifiedLocally: document!.isModifiedLocally,
         printToConsole: store.ConsoleReducer.printToConsole,
         projectUid: ownProp.projectUid,
-        savedValue
+        savedValue,
+        manualLookupString
     };
 };
 
@@ -349,7 +375,9 @@ const mapDispatchToProps = (dispatch: any): any => ({
                 isModified,
                 documentUid
             )
-        )
+        ),
+    lookupManualString: (manualLookupString: string | null) =>
+        dispatch(projectEditorActions.lookupManualString(manualLookupString))
 });
 
 export default connect(

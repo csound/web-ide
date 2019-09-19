@@ -3,6 +3,7 @@ import { closeModal, openSimpleModal } from "../Modal/actions";
 import { resetDocumentValue } from "../Projects/actions";
 import Button from "@material-ui/core/Button";
 import {
+    MANUAL_LOOKUP_STRING,
     TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_CLOSE,
@@ -91,6 +92,13 @@ export const tabSwitch = (index: number) => {
     return {
         type: TAB_DOCK_SWITCH_TAB,
         tabIndex: index
+    };
+};
+
+export const lookupManualString = (manualLookupString: string | null) => {
+    return {
+        type: MANUAL_LOOKUP_STRING,
+        manualLookupString
     };
 };
 

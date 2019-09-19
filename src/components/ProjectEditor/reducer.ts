@@ -1,5 +1,6 @@
 import { filter, find, findIndex } from "lodash";
 import {
+    MANUAL_LOOKUP_STRING,
     TAB_DOCK_INIT_SWITCH_TAB,
     TAB_DOCK_SWITCH_TAB,
     TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
@@ -14,6 +15,7 @@ import {
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
     secondaryPanel: "manual" | null;
+    manualLookupString: string | null;
 }
 
 const initialLayoutState: IProjectEditorReducer = {
@@ -21,7 +23,8 @@ const initialLayoutState: IProjectEditorReducer = {
         tabIndex: -1,
         openDocuments: []
     },
-    secondaryPanel: null
+    secondaryPanel: null,
+    manualLookupString: null
 };
 
 export default (
@@ -29,13 +32,21 @@ export default (
     action: any
 ) => {
     switch (action.type) {
+        case MANUAL_LOOKUP_STRING: {
+            return {
+                ...state,
+                secondaryPanel: "manual",
+                manualLookupString: action.manualLookupString
+            } as IProjectEditorReducer;
+        }
         case TAB_DOCK_CLOSE: {
             return {
                 tabDock: {
                     tabIndex: -1,
                     openDocuments: []
                 },
-                secondaryPanel: state.secondaryPanel
+                secondaryPanel: state.secondaryPanel,
+                manualLookupString: state.manualLookupString
             };
         }
         case TAB_DOCK_INIT_SWITCH_TAB: {
