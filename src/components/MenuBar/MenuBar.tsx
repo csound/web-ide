@@ -6,7 +6,13 @@ import useStyles from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
-import { newDocument, saveFile, exportProject, addDocument } from "../Projects/actions";
+import {
+    newDocument,
+    saveFile,
+    exportProject,
+    addDocument
+} from "../Projects/actions";
+import { toggleManualPanel } from "../ProjectEditor/actions";
 import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
 import { reduce } from "lodash";
 
@@ -82,7 +88,6 @@ function MenuBar(props) {
                 }
             ]
         },
-
         {
             label: "Edit",
             submenu: [
@@ -116,6 +121,16 @@ function MenuBar(props) {
                 }
             ]
         },
+        {
+            label: "View",
+            submenu: [
+                {
+                    label: "Manual Panel",
+                    role: "toggleManual",
+                    callback: () => dispatch(toggleManualPanel())
+                }
+            ]
+        }
     ];
 
     const registerShortcut = shortcut.registerShortcut;
@@ -184,7 +199,9 @@ function MenuBar(props) {
                         >
                             <p className={classes.label}>{item.label}</p>
                             <span style={{ width: 24 }} />
-                            <i className={classes.label}>{item.keyBindingLabel}</i>
+                            <i className={classes.label}>
+                                {item.keyBindingLabel}
+                            </i>
                         </li>
                     );
                 } else if (itemCallback) {

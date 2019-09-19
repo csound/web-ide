@@ -184,6 +184,10 @@ const ProjectEditor = props => {
         </div>
     );
 
+    const secondaryPanel = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.secondaryPanel
+    );
+
     return (
         <div>
             {unsavedDataExitPrompt}
@@ -204,7 +208,7 @@ const ProjectEditor = props => {
                         {tabDock}
                         <Console />
                     </SplitterLayout>
-                    {manualWindow}
+                    {secondaryPanel === "manual" ? manualWindow : null}
                 </SplitterLayout>
             </SplitterLayout>
         </div>

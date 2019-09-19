@@ -6,19 +6,22 @@ import {
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_CLOSE,
     TAB_CLOSE,
+    TOGGLE_MANUAL_PANEL,
     STORE_EDITOR_INSTANCE,
     ITabDock
 } from "./types";
 
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
+    secondaryPanel: "manual" | null;
 }
 
 const initialLayoutState: IProjectEditorReducer = {
     tabDock: {
         tabIndex: -1,
         openDocuments: []
-    }
+    },
+    secondaryPanel: null
 };
 
 export default (
@@ -31,7 +34,8 @@ export default (
                 tabDock: {
                     tabIndex: -1,
                     openDocuments: []
-                }
+                },
+                secondaryPanel: state.secondaryPanel
             };
         }
         case TAB_DOCK_INIT_SWITCH_TAB: {
@@ -93,6 +97,11 @@ export default (
                 od => od.uid !== action.documentUid
             );
             return { ...state };
+        }
+        case TOGGLE_MANUAL_PANEL: {
+            const secondaryPanel =
+                state.secondaryPanel === "manual" ? null : "manual";
+            return { ...state, secondaryPanel } as IProjectEditorReducer;
         }
         case STORE_EDITOR_INSTANCE: {
             const openDocument = find(

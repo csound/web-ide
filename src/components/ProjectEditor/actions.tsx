@@ -9,6 +9,7 @@ import {
     TAB_DOCK_INIT_SWITCH_TAB,
     TAB_DOCK_SWITCH_TAB,
     TAB_CLOSE,
+    TOGGLE_MANUAL_PANEL,
     STORE_EDITOR_INSTANCE
 } from "./types";
 
@@ -90,6 +91,12 @@ export const tabSwitch = (index: number) => {
     return {
         type: TAB_DOCK_SWITCH_TAB,
         tabIndex: index
+    };
+};
+
+export const toggleManualPanel = () => {
+    return {
+        type: TOGGLE_MANUAL_PANEL
     };
 };
 
