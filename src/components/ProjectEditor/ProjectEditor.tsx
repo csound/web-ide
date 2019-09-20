@@ -165,15 +165,22 @@ const ProjectEditor = props => {
         (store: IStore) => store.ProjectEditorReducer.manualLookupString
     );
 
+    const onManualMessage = evt => {
+        // if (typeof evt.data.playCSD === "string") {
+        //     playCSD(evt.data.playCSD);
+        // }
+    };
+
     const manualWindow = (
         <div style={{ width: "100%", height: "100%" }}>
             <IframeComm
                 attributes={{
-                    src: "/manual/main?cache=1000",
+                    src: "/manual/main?cache=1001",
                     width: "100%",
                     height: "100%"
                 }}
                 postMessageData={manualLookupString || ""}
+                handleReceiveMessage={onManualMessage}
             />
             {manualDrag && (
                 <div

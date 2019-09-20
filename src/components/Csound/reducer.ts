@@ -13,6 +13,8 @@ export interface ICsoundReducer {
 export default (state: any, action: any): ICsoundReducer => {
     switch (action.type) {
         case SET_CSOUND: {
+            // store it globally for the Manual!
+            (window as any).csound = action.csound;
             return {
                 csound: action.csound,
                 status: state.status
@@ -22,7 +24,7 @@ export default (state: any, action: any): ICsoundReducer => {
             return {
                 csound: state.csound,
                 status: action.status
-            }
+            };
         }
         default: {
             return (
