@@ -284,7 +284,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                 "Ctrl-Enter": () => this.evalCode(true), // block eval
                 "Cmd-E": () => this.evalCode(false), // line eval
                 "Cmd-Enter": () => this.evalCode(true), // block eval
-                "Ctrl-M": () => this.docAtPoint(),
+                "Ctrl-.": () => this.docAtPoint(),
                 // "Ctrl-H": insertHexplay,
                 // "Ctrl-J": insertEuclidplay,
                 "Ctrl-;": () => this.toggleComment(),
