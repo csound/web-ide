@@ -107,9 +107,9 @@ function MenuBar(props) {
                 },
                 {
                     label: "Stop",
-                    keyBinding: isMac ? "cmd+." : "ctrl+.",
-                    keyBindingLabel: isMac ? "⌘+." : "ctrl+.",
-                    role: "doStuff",
+                    // keyBinding: isMac ? "cmd+." : "ctrl+.",
+                    // keyBindingLabel: isMac ? "⌘+." : "ctrl+.",
+                    // role: "doStuff",
                     callback: () => dispatch(stopCsound())
                 },
                 {

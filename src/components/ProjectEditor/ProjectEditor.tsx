@@ -21,7 +21,7 @@ import Console from "../Console/Console";
 import { isEmpty, reduce } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
-import { tabClose, tabSwitch } from "./actions";
+import { tabClose, tabSwitch, setManualPanelOpen } from "./actions";
 import { filterUndef } from "../../utils";
 
 const ProjectEditor = props => {
@@ -199,6 +199,27 @@ const ProjectEditor = props => {
     const secondaryPanel = useSelector(
         (store: IStore) => store.ProjectEditorReducer.secondaryPanel
     );
+
+    React.useEffect(() => {
+        return () => {
+            localStorage.setItem(
+                projectUid + ":secondaryPanel",
+                secondaryPanel || ""
+            );
+        };
+    }, [projectUid, secondaryPanel]);
+
+    React.useEffect(() => {
+        const lastSecondaryPanel = localStorage.getItem(
+            projectUid + ":secondaryPanel"
+        );
+        if (!isEmpty(lastSecondaryPanel)) {
+            if (lastSecondaryPanel === "manual") {
+                dispatch(setManualPanelOpen(true));
+            }
+        }
+        // eslint-disable-next-line
+    }, [projectUid]);
 
     return (
         <div>

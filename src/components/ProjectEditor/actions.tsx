@@ -11,6 +11,7 @@ import {
     TAB_DOCK_SWITCH_TAB,
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
+    SET_MANUAL_PANEL_OPEN,
     STORE_EDITOR_INSTANCE
 } from "./types";
 
@@ -105,6 +106,13 @@ export const lookupManualString = (manualLookupString: string | null) => {
 export const toggleManualPanel = () => {
     return {
         type: TOGGLE_MANUAL_PANEL
+    };
+};
+
+export const setManualPanelOpen = (open: boolean) => {
+    return {
+        type: SET_MANUAL_PANEL_OPEN,
+        open
     };
 };
 

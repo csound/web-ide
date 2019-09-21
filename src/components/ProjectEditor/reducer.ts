@@ -8,6 +8,7 @@ import {
     TAB_DOCK_CLOSE,
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
+    SET_MANUAL_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
     ITabDock
 } from "./types";
@@ -113,6 +114,12 @@ export default (
             const secondaryPanel =
                 state.secondaryPanel === "manual" ? null : "manual";
             return { ...state, secondaryPanel } as IProjectEditorReducer;
+        }
+        case SET_MANUAL_PANEL_OPEN: {
+            return {
+                ...state,
+                secondaryPanel: action.open ? "manual" : state.secondaryPanel
+            } as IProjectEditorReducer;
         }
         case STORE_EDITOR_INSTANCE: {
             const openDocument = find(
