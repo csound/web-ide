@@ -18,7 +18,7 @@ import { IDocument, IProject } from "../Projects/types";
 import { newDocument, deleteFile } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { IStore } from "../../db/interfaces";
-// import { find, findIndex } from "lodash";
+import { sortBy } from "lodash";
 
 // Use import if/when they add type declerations
 const Tree = require("material-ui-tree").default;
@@ -41,14 +41,19 @@ const FileTree = () => {
 
     const classes = useStyles({});
 
-    const fileTreeDocs = Object.values(documents).map(
-        (document: IDocument, index: number) => {
+    const fileTreeDocs = sortBy(
+        Object.values(documents).map((document: IDocument, index: number) => {
             return {
                 path: document.filename,
                 type: "blob",
                 sha: document.documentUid
             };
-        }
+        }),
+        [
+            function(d) {
+                return d.path;
+            }
+        ]
     );
 
     const [state, setState] = useState({
