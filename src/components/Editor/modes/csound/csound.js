@@ -48,7 +48,7 @@ CodeMirror.defineMode("csound", function(config) {
     }
 
     function tokenBase(stream, state) {
-        if (stream.sol() && stream.match("/*") && stream.eol()) {
+        if (stream.match(/\/\*/)) {
             state.tokenize.push(readBlockComment);
             return "comment";
         }
@@ -283,9 +283,12 @@ CodeMirror.defineMode("csound", function(config) {
         };
     }
     function readBlockComment(stream, state) {
-        if (stream.sol() && stream.match("*/") && stream.eol())
+        if (stream.match(/.*\*\//)) {
             state.tokenize.pop();
-        stream.skipToEnd();
+            stream.skipTo("*/");
+        } else {
+            stream.skipToEnd();
+        }
         return "comment";
     }
 

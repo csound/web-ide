@@ -10,8 +10,8 @@ import IframeComm from "react-iframe-comm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faTimes,
-    faExpand,
-    faWindowRestore
+    faExpand
+    // faWindowRestore
 } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "../../db/interfaces";
 import Editor from "../Editor/Editor";
@@ -104,17 +104,18 @@ const ProjectEditor = props => {
         )
     );
 
+    // <Tooltip title="Undock" placement="right-end">
+    //     <IconButton size="small">
+    //         <FontAwesomeIcon
+    //             icon={faWindowRestore}
+    //             size="sm"
+    //             color="#f8f8f2"
+    //         />
+    //     </IconButton>
+    // </Tooltip>
+
     const tabPanelController = (
         <div className="tab-panel-controller">
-            <Tooltip title="Undock" placement="right-end">
-                <IconButton size="small">
-                    <FontAwesomeIcon
-                        icon={faWindowRestore}
-                        size="sm"
-                        color="#f8f8f2"
-                    />
-                </IconButton>
-            </Tooltip>
             <Tooltip title="FullScreen" placement="right-end">
                 <IconButton size="small" onClick={toggleEditorFullScreen}>
                     <FontAwesomeIcon
