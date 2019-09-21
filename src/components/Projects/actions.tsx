@@ -13,6 +13,7 @@ import { filter, find, isEmpty, reduce, some } from "lodash";
 import {
     DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
+    DOCUMENT_RENAME_LOCALLY,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -334,9 +335,13 @@ export const updateDocumentModifiedLocally = (
     };
 };
 
-const newDocumentPrompt = (callback: (fileName: string) => void) => {
+const newDocumentPrompt = (
+    callback: (fileName: string) => void,
+    renameAction: boolean,
+    initFilename: string
+) => {
     return (() => {
-        const [input, setInput] = useState("");
+        const [input, setInput] = useState(renameAction ? initFilename : "");
         const [nameCollides, setNameCollides] = useState(false);
 
         const reservedFilenames = useSelector((store: IStore) =>
@@ -370,7 +375,7 @@ const newDocumentPrompt = (callback: (fileName: string) => void) => {
                     onClick={() => callback(input)}
                     style={{ marginTop: 11 }}
                 >
-                    Create
+                    {renameAction ? "Rename" : "Create"}
                 </Button>
             </div>
         );
@@ -452,7 +457,9 @@ export const newDocument = (projectUid: string, val: string) => {
             dispatch({ type: "MODAL_CLOSE" });
         };
         const newDocumentPromptComp = newDocumentPrompt(
-            newDocumentSuccessCallback
+            newDocumentSuccessCallback,
+            false,
+            ""
         );
         dispatch(openSimpleModal(newDocumentPromptComp));
     };
@@ -564,6 +571,43 @@ export const addDocument = (projectUid: string) => {
             addDocumentSuccessCallback
         );
         dispatch(openSimpleModal(addDocumentPromptComp));
+    };
+};
+
+const renameDocumentLocally = (documentUid: string, newFilename: string) => {
+    return {
+        type: DOCUMENT_RENAME_LOCALLY,
+        newFilename,
+        documentUid
+    };
+};
+
+export const renameDocument = (
+    documentUid: string,
+    currentFilename: string
+) => {
+    return async (dispatch: any) => {
+        const renameDocumentSuccessCallback = async (filename: string) => {
+            const project = (store.getState() as IStore).projects.activeProject;
+
+            if (project) {
+                projects
+                    .doc(project.projectUid)
+                    .collection("files")
+                    .doc(documentUid)
+                    .update({ name: filename } as any)
+                    .then(res => {
+                        dispatch(renameDocumentLocally(documentUid, filename));
+                    });
+            }
+            dispatch({ type: "MODAL_CLOSE" });
+        };
+        const renameDocumentPromptComp = newDocumentPrompt(
+            renameDocumentSuccessCallback,
+            true,
+            currentFilename
+        );
+        dispatch(openSimpleModal(renameDocumentPromptComp));
     };
 };
 

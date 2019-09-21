@@ -4,6 +4,7 @@ import {
     IProject,
     DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
+    DOCUMENT_RENAME_LOCALLY,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -89,6 +90,13 @@ export default (state, action: any) => {
             state.activeProject.documents[action.documentUid] = {
                 ...state.activeProject.documents[action.documentUid],
                 isModifiedLocally: action.isModified
+            };
+            return { ...state };
+        }
+        case DOCUMENT_RENAME_LOCALLY: {
+            state.activeProject.documents[action.documentUid] = {
+                ...state.activeProject.documents[action.documentUid],
+                filename: action.newFilename
             };
             return { ...state };
         }

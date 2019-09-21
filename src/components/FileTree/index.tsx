@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useSelector, useDispatch, shallowEqual } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 // import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -15,7 +15,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { Typography } from "@material-ui/core";
 import useStyles from "./styles";
 import { IDocument, IProject } from "../Projects/types";
-import { newDocument, deleteFile } from "../Projects/actions";
+import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { IStore } from "../../db/interfaces";
 import { sortBy } from "lodash";
@@ -33,8 +33,7 @@ const FileTree = () => {
     );
 
     const documents: { [documentUid: string]: IDocument } = useSelector(
-        (store: IStore) => store.projects.activeProject!.documents,
-        shallowEqual
+        (store: IStore) => store.projects.activeProject!.documents
     );
 
     const dispatch = useDispatch();
@@ -71,10 +70,13 @@ const FileTree = () => {
         }
     });
 
-    if (fileTreeDocs.length !== state.data.tree.length) {
-        state.data.tree = fileTreeDocs;
-        setState(state);
-    }
+    React.useEffect(() => {
+        setState(s => {
+            s.data.tree = fileTreeDocs;
+            return s;
+        });
+        // eslint-disable-next-line
+    }, [fileTreeDocs]);
 
     const renderLabel = useCallback(
         (data, unfoldStatus) => {
@@ -158,7 +160,7 @@ const FileTree = () => {
                     ),
                     hint: "Rename file",
                     onClick: () => {
-                        setState({ ...state });
+                        dispatch(renameDocument(data.sha, data.path));
                     }
                 },
                 {
@@ -175,7 +177,7 @@ const FileTree = () => {
                 }
             ];
         },
-        [classes, state, setState, project.projectUid, dispatch]
+        [classes, project.projectUid, dispatch]
     );
 
     const requestChildrenData = useCallback((data, path, toggleFoldStatus) => {
