@@ -4294,10 +4294,10 @@ crypto-random-string@^1.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-1.0.0.tgz#a230f64f568310e1498009940790ec99545bca7e"
   integrity sha1-ojD2T1aDEOFJgAmUB5DsmVRbyn4=
 
-csound-manual-react@^1.0.0-alpha4:
-  version "1.0.0-alpha4"
-  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha4.tgz#b94f344332fccdbed8330a0589d2510f48baab15"
-  integrity sha512-IRCZsNGQUK/Azs+BEru3ad7Di9wiM3PqEhniotMU/KXbTVzDIh+CBHen5PLQfRonIggzx31ZzfhLwwNeQuCnDw==
+csound-manual-react@^1.0.0-alpha8:
+  version "1.0.0-alpha8"
+  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha8.tgz#308e14064d909375711c37ff6ea9f34e7b1ea87a"
+  integrity sha512-BYwhr9EGFY24d0AjIX1+N5HdnCF5ei/nc3M2LNFYCxnYT0aNx1HKDTcFcCd7HjtLDilrJPAkGrkjAicimNjx8Q==
   dependencies:
     "@babel/core" "^7.6.0"
     "@babel/preset-env" "^7.6.0"
@@ -4308,6 +4308,7 @@ csound-manual-react@^1.0.0-alpha4:
     react "^16.9.0"
     react-debounce-input "^3.2.0"
     react-router-dom "^5.0.1"
+    react-window "^1.8.5"
     unescape "^1.0.1"
     webpack "^4.39.3"
     webpack-cli "^3.3.8"
@@ -9100,7 +9101,7 @@ mem@^4.0.0:
     mimic-fn "^2.0.0"
     p-is-promise "^2.0.0"
 
-memoize-one@^5.0.0:
+"memoize-one@>=3.1.1 <6", memoize-one@^5.0.0:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-5.1.1.tgz#047b6e3199b508eaec03504de71229b8eb1d75c0"
   integrity sha512-HKeeBpWvqiVJD57ZUAsJNm71eHTykffzcLZVYWiVfQeI1rJtuEaS7hQiEpWfVVk18donPwJEcFKIkCmPJNOhHA==
@@ -11724,6 +11725,14 @@ react-transition-group@^4.0.0:
     dom-helpers "^5.0.1"
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
+
+react-window@^1.8.5:
+  version "1.8.5"
+  resolved "https://registry.yarnpkg.com/react-window/-/react-window-1.8.5.tgz#a56b39307e79979721021f5d06a67742ecca52d1"
+  integrity sha512-HeTwlNa37AFa8MDZFZOKcNEkuF2YflA0hpGPiTT9vR7OawEt+GZbfM6wqkBahD3D3pUjIabQYzsnY/BSJbgq6Q==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    memoize-one ">=3.1.1 <6"
 
 react@^15.4.2:
   version "15.6.2"

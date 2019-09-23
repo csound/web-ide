@@ -2,16 +2,14 @@ import * as firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/firebase-storage";
 
-// ENVIRONMENT SETTINGS
-/*
 const DEV = {
-    apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
-    authDomain: "csound-ide.firebaseapp.com",
-    databaseURL: "https://csound-ide.firebaseio.com",
-    projectId: "csound-ide",
-    storageBucket: "csound-ide.appspot.com",
-    messagingSenderId: "1089526309602"
-}; */
+    apiKey: "AIzaSyDFV4Pm43eQXbFUrayG9Dj_7ddEBzQ9Gd4",
+    authDomain: "csound-ide-dev.firebaseapp.com",
+    databaseURL: "https://csound-ide-dev.firebaseio.com",
+    projectId: "csound-ide-dev",
+    storageBucket: "csound-ide-dev.appspot.com",
+    messagingSenderId: "449370062532"
+};
 
 const PROD = {
     apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
@@ -24,8 +22,13 @@ const PROD = {
 
 // INITIALIZE FIREBASE WITH SETTINGS
 if (!firebase.apps.length) {
-    // TODO - make dev/prod switchable
-    firebase.initializeApp(PROD);
+    let target;
+    if (process.env.REACT_APP_DATABASE === "DEV") {
+        target = DEV;
+    } else if (process.env.REACT_APP_DATABASE === "PROD") {
+        target = PROD;
+    }
+    firebase.initializeApp(target);
 }
 
 // CREATE REFERENCES FOR USE BY APP CODE
