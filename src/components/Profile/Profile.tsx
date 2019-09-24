@@ -1,6 +1,10 @@
 import React, { useEffect, useState, RefObject } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
+import AssignmentIcon from "@material-ui/icons/Assignment";
+import AddIcon from "@material-ui/icons/Add";
+import SearchIcon from "@material-ui/icons/Search";
+
 import Header from "../Header/Header";
 import {
     getUserProjects,
@@ -14,152 +18,79 @@ import {
     selectUserProjects,
     selectUserProfile,
     selectUserImageURL,
-    selectIsUserProfileOwner
+    selectIsUserProfileOwner,
+    selectProfileLinks
 } from "./selectors";
 import { get } from "lodash";
-import { Button } from "@material-ui/core";
+import {
+    Button,
+    Card,
+    Typography,
+    Link,
+    Tabs,
+    Tab,
+    List,
+    ListItem,
+    ListItemAvatar,
+    Avatar,
+    ListItemText,
+    Divider,
+    Fab,
+    FormControl,
+    InputLabel,
+    Input,
+    InputAdornment,
+    TextField
+} from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { push } from "connected-react-router";
 import styled from "styled-components";
+import { Gradient } from "./Gradient";
+import { AccountCircle } from "@material-ui/icons";
 
 const ProfileContainer = styled.div`
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 300px 1fr;
+    grid-template-columns: 1fr 250px 8fr;
+    grid-template-rows: 30px 220px 1fr 100px;
     width: 100%;
     height: calc(100vh - 40px);
     background-color: black;
+    ${Gradient}
 `;
 
-const TopSection = styled.div`
-    grid-row: 1;
-    grid-column: 1;
-    display: grid;
-    width: 100%;
-    height: 100%;
-    grid-template-columns: 1fr 260px 1fr;
-    grid-template-rows: 60px 1fr;
-    background-color: #556;
-    background-image: linear-gradient(
-            30deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            150deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            30deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            150deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            60deg,
-            #aaa 25%,
-            transparent 25.5%,
-            transparent 75%,
-            #aaa 75%,
-            #aaa
-        ),
-        linear-gradient(
-            60deg,
-            #aaa 25%,
-            transparent 25.5%,
-            transparent 75%,
-            #aaa 75%,
-            #99a
-        );
-    background-size: 80px 140px;
-    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
-`;
-
-const BottomSection = styled.div`
-    padding: 20px;
-    grid-row: 2;
-    grid-column: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    background-color: #e8e8e8;
-    border-top: 2px solid black;
-`;
-
-const ProfileSection = styled.div`
-    grid-row: 1;
-    grid-column: 1;
-    padding: 20px;
-`;
-
-const ProjectsSection = styled.div`
-    grid-row: 1;
-    grid-column: 2;
-    border-left: 2px solid #cccccc;
-    padding: 20px;
-`;
-
-const ProfilePictureSectionContainer = styled.div`
-    grid-row: 2;
-    grid-column: 2;
-    width: 100%;
-    height: 100%;
-    padding: 30px;
-`;
-
-const EditProfileButtonContainer = styled.div`
-    grid-row: 1;
-    grid-column: 3;
-    padding: 40px;
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr 140px;
-`;
-
-const EditProfileButton = styled(Button)`
-    grid-row: 1;
-    grid-column: 2;
-
+const IDContainer = styled(Card)`
     && {
-        color: white;
-        /* font-family: "Merriweather", serif; */
+        grid-row-start: 2;
+        grid-row-end: 4;
+        grid-column-start: 2;
+        grid-column-end: 3;
+        display: grid;
+        grid-template-rows: 250px 1fr;
+        grid-template-columns: 1fr;
+        z-index: 2;
     }
 `;
 
-const UsernameContainer = styled.div`
-    grid-row: 1;
-    grid-column: 2;
-    text-align: center;
-    color: white;
-    font-size: 63px;
-    font-family: "Merriweather", serif;
-    text-shadow: 0 1px 1px black;
-    margin: 10px;
+const DescriptionSection = styled.div`
+    grid-row: 2;
+    grid-column: 1;
+    padding: 20px;
+`;
+
+const MainContent = styled.div`
+    grid-row-start: 3;
+    grid-row-end: 5;
+    grid-column-start: 1;
+    grid-column-end: 4;
+    background: #dedede;
+    box-shadow: 0 3px 10px 0px;
 `;
 
 const ProfilePictureContainer = styled.div`
     position: relative;
-    transform: translate(0px, 24px);
-    box-shadow: 0px 8px 12px 0px;
-    width: 100%;
-    height: 100%;
+    grid-row: 1;
+    grid-column: 1;
+    z-index: 2;
 `;
 
 const ProfilePictureDiv = styled.div`
@@ -170,7 +101,11 @@ const ProfilePictureDiv = styled.div`
     background: white;
 `;
 
-const UploadProfilePicture = styled.div`
+interface IUploadProfilePicture {
+    imageHover: Boolean;
+}
+
+const UploadProfilePicture = styled.div<IUploadProfilePicture>`
     width: 100%;
     height: 30%;
     bottom: 0px;
@@ -181,6 +116,8 @@ const UploadProfilePicture = styled.div`
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr;
     cursor: pointer;
+    transition: opacity 0.3s linear;
+    opacity: ${props => (props.imageHover ? 1 : 0)};
 `;
 
 const UploadProfilePictureText = styled.div`
@@ -206,6 +143,61 @@ const ProfilePicture = styled.img`
     object-fit: cover;
 `;
 
+const NameSectionWrapper = styled.div`
+    grid-row: 2;
+    grid-column: 3;
+    display: grid;
+    grid-template-rows: 1fr 120px;
+    grid-template-columns: 1fr;
+`;
+const NameSection = styled.div`
+    grid-row: 2;
+    grid-column: 1;
+    color: white;
+    padding: 20px;
+`;
+
+const ContentSection = styled.div`
+    grid-row-start: 3;
+    grid-row-end: 5;
+    grid-column: 3;
+    z-index: 2;
+    padding: 0 20px;
+    display: grid;
+    grid-template-rows: 60px 50px 1fr;
+    grid-template-columns: 1fr 250px;
+`;
+
+const ContentTabsContainer = styled.div`
+    grid-row: 1;
+    grid-column: 1;
+`;
+
+const ContentActionsContainer = styled.div`
+    grid-row: 2;
+    grid-column: 1;
+`;
+
+const AddFab = styled(Fab)`
+    float: right;
+
+    && {
+        margin-top: 6px;
+    }
+`;
+
+const ListContainer = styled.div`
+    padding-top: 10px;
+    grid-row: 3;
+    grid-column: 1;
+`;
+
+const SearchBox = styled(TextField)`
+    && {
+        height: 20px;
+    }
+`;
+
 const Profile = props => {
     const { classes } = props;
     const dispatch = useDispatch();
@@ -213,130 +205,159 @@ const Profile = props => {
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
-    const username = get(props, "match.params.username") || null;
+    const links = useSelector(selectProfileLinks);
     const [imageHover, setImageHover] = useState(false);
+    const [selectedSection, setSelectedSection] = useState(0);
     let uploadRef: RefObject<HTMLInputElement>;
     uploadRef = React.createRef();
     useEffect(() => {
+        const username = get(props, "match.params.username") || null;
         dispatch(getUserProjects());
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
-    }, [dispatch, username]);
+    }, [dispatch]);
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
             <main>
-                <ProfileContainer>
-                    <TopSection>
-                        <UsernameContainer>
-                            {profile.username}
-                        </UsernameContainer>
-                        <ProfilePictureSectionContainer>
-                            <ProfilePictureContainer
-                                onMouseEnter={() => setImageHover(true)}
-                                onMouseLeave={() => setImageHover(false)}
-                            >
-                                <ProfilePictureDiv>
-                                    <ProfilePicture
-                                        src={imageUrl}
-                                        width={"100%"}
-                                        height={"100%"}
-                                        alt="User Profile"
-                                    />
-                                </ProfilePictureDiv>
-                                <input
-                                    type="file"
-                                    ref={uploadRef}
-                                    style={{ display: "none" }}
-                                    accept={"image/jpeg"}
-                                    onChange={e => {
-                                        const file: File =
-                                            get(e, "target.files.0") || null;
-                                        dispatch(uploadImage(file));
-                                    }}
+                <ProfileContainer
+                    colorA={"rgba(30, 30, 30, 1)"}
+                    colorB={"rgba(40, 40, 40, 1)"}
+                    colorC={"rgba(20, 20, 20, 1)"}
+                >
+                    <IDContainer>
+                        <ProfilePictureContainer
+                            onMouseEnter={() => setImageHover(true)}
+                            onMouseLeave={() => setImageHover(false)}
+                        >
+                            <ProfilePictureDiv>
+                                <ProfilePicture
+                                    src={imageUrl}
+                                    width={"100%"}
+                                    height={"100%"}
+                                    alt="User Profile"
                                 />
-                                {imageHover && isProfileOwner && (
-                                    <UploadProfilePicture
-                                        onClick={() => {
-                                            const input = uploadRef.current;
-                                            input!.click();
-                                        }}
-                                    >
-                                        <UploadProfilePictureText>
-                                            Upload New Image
-                                        </UploadProfilePictureText>
-                                        <UploadProfilePictureIcon>
-                                            <CameraIcon />
-                                        </UploadProfilePictureIcon>
-                                    </UploadProfilePicture>
-                                )}
-                            </ProfilePictureContainer>
-                        </ProfilePictureSectionContainer>
-                        {isProfileOwner && (
-                            <EditProfileButtonContainer>
-                                <EditProfileButton
-                                    variant="contained"
-                                    color="secondary"
+                            </ProfilePictureDiv>
+                            <input
+                                type="file"
+                                ref={uploadRef}
+                                style={{ display: "none" }}
+                                accept={"image/jpeg"}
+                                onChange={e => {
+                                    const file: File =
+                                        get(e, "target.files.0") || null;
+                                    dispatch(uploadImage(file));
+                                }}
+                            />
+                            {isProfileOwner && (
+                                <UploadProfilePicture
+                                    onClick={() => {
+                                        const input = uploadRef.current;
+                                        input!.click();
+                                    }}
+                                    imageHover={imageHover}
                                 >
-                                    Edit Profile
-                                </EditProfileButton>
-                            </EditProfileButtonContainer>
-                        )}
-                    </TopSection>
-                    <BottomSection>
-                        <ProfileSection>
-                            <h2>Profile</h2>
-                            <h3>Username: {profile.username}</h3>
-                            <h3>Bio: {profile.bio}</h3>
-                            <h3>Link 1: {profile.link1}</h3>
-                            <h3>Link 2: {profile.link2}</h3>
-                            <h3>Link 3: {profile.link3}</h3>
-                        </ProfileSection>
-                        <ProjectsSection>
-                            <h2>User Projects</h2>
-                            <p>
-                                {isProfileOwner && (
-                                    <Button
-                                        onClick={() => {
-                                            dispatch(addProject());
-                                        }}
-                                    >
-                                        + Create New Project
-                                    </Button>
-                                )}
-                            </p>
-                            <ul>
-                                {Array.isArray(projects) &&
-                                    projects.map((doc, i) => (
-                                        <li key={i}>
-                                            <Button
-                                                onClick={e => {
-                                                    dispatch(
-                                                        push(
-                                                            "/editor/" +
-                                                                doc.projectUid
-                                                        )
-                                                    );
-                                                }}
-                                            >
-                                                {doc.name}
-                                            </Button>
-                                            {isProfileOwner && (
-                                                <Button
-                                                    onClick={e => {
-                                                        dispatch(
-                                                            deleteProject(doc)
-                                                        );
-                                                    }}
-                                                >
-                                                    Delete
-                                                </Button>
-                                            )}
-                                        </li>
-                                    ))}
-                            </ul>
-                        </ProjectsSection>
-                    </BottomSection>
+                                    <UploadProfilePictureText>
+                                        Upload New Image
+                                    </UploadProfilePictureText>
+                                    <UploadProfilePictureIcon>
+                                        <CameraIcon />
+                                    </UploadProfilePictureIcon>
+                                </UploadProfilePicture>
+                            )}
+                        </ProfilePictureContainer>
+                        <DescriptionSection>
+                            <Typography variant="h5" component="h4">
+                                Bio
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                component="p"
+                                color="textSecondary"
+                                gutterBottom
+                            >
+                                {profile.bio}
+                            </Typography>
+                            <Typography variant="h5" component="h4">
+                                Links
+                            </Typography>
+                            <Link variant="body2" href={profile.link1}>
+                                {profile.link1}
+                            </Link>
+                        </DescriptionSection>
+                    </IDContainer>
+                    <NameSectionWrapper>
+                        <NameSection>
+                            <Typography variant="h3" component="h3">
+                                {profile.username}
+                            </Typography>
+                        </NameSection>
+                    </NameSectionWrapper>
+                    <MainContent></MainContent>
+                    <ContentSection>
+                        <ContentTabsContainer>
+                            <Tabs
+                                value={selectedSection}
+                                onChange={(e, index) => {
+                                    setSelectedSection(index);
+                                }}
+                                indicatorColor={"primary"}
+                            >
+                                <Tab label="Projects" />
+                                <Tab label="Following" />
+                                <Tab label="Other" />
+                            </Tabs>
+                        </ContentTabsContainer>
+
+                        <ContentActionsContainer>
+                            <SearchBox
+                                id="input-with-icon-adornment"
+                                label="Search"
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <SearchIcon />
+                                        </InputAdornment>
+                                    )
+                                }}
+                                variant="outlined"
+                                margin="dense"
+                            />
+
+                            {isProfileOwner && (
+                                <AddFab
+                                    color="primary"
+                                    variant="extended"
+                                    aria-label="Add"
+                                    size="medium"
+                                    className={classes.margin}
+                                    onClick={() => dispatch(addProject())}
+                                >
+                                    Create
+                                    <AddIcon className={classes.extendedIcon} />
+                                </AddFab>
+                            )}
+                        </ContentActionsContainer>
+
+                        <ListContainer>
+                            <List>
+                                <ListItem alignItems="flex-start">
+                                    <ListItemAvatar>
+                                        <Avatar>
+                                            <AssignmentIcon />
+                                        </Avatar>
+                                    </ListItemAvatar>
+                                    <ListItemText
+                                        primary="909 Drum Machine Sketch"
+                                        secondary={
+                                            "Csound approximation of the Roland-909"
+                                        }
+                                    />
+                                </ListItem>
+                                <Divider variant="inset" component="li" />
+                            </List>
+                        </ListContainer>
+                    </ContentSection>
                 </ProfileContainer>
             </main>
         </div>

@@ -104,13 +104,15 @@ const addUserProjectAction = (): ProfileActionTypes => {
 };
 
 export const addUserProject = (
-    name: string
+    name: string,
+    description: string
 ): ThunkAction<void, any, null, Action<string>> => dispatch => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
             const newProject = {
                 userUid: user.uid,
-                name: name,
+                name,
+                description,
                 public: false
             };
 

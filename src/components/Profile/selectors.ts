@@ -1,4 +1,4 @@
-// import { createSelector } from "reselect";
+import { createSelector } from "reselect";
 import { State } from "./reducer";
 
 export const selectUserProjects = (store: any) => {
@@ -20,6 +20,13 @@ export const selectProfileUid = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.profileUid;
 };
+
+export const selectProfileLinks = createSelector(
+    [selectUserProfile],
+    userProfile => {
+        console.log(userProfile);
+    }
+);
 
 export const selectOAuthPhotoURL = (store: any) => {
     const state: any = store.userProfile;
