@@ -41,7 +41,9 @@ import {
     InputLabel,
     Input,
     InputAdornment,
-    TextField
+    TextField,
+    ListItemSecondaryAction,
+    Chip
 } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { push } from "connected-react-router";
@@ -199,6 +201,13 @@ const SearchBox = styled(TextField)`
     }
 `;
 
+const StyledChip = styled(Chip)`
+    && {
+        margin: 3px;
+        float: right;
+    }
+`;
+
 const Profile = props => {
     const { classes } = props;
     const dispatch = useDispatch();
@@ -218,6 +227,9 @@ const Profile = props => {
         dispatch(getUserImageURL(username));
         dispatch(getTags());
     }, [dispatch]);
+
+    console.log(projects);
+
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
@@ -343,20 +355,52 @@ const Profile = props => {
 
                         <ListContainer>
                             <List>
-                                <ListItem alignItems="flex-start">
-                                    <ListItemAvatar>
-                                        <Avatar>
-                                            <AssignmentIcon />
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText
-                                        primary="909 Drum Machine Sketch"
-                                        secondary={
-                                            "Csound approximation of the Roland-909"
-                                        }
-                                    />
-                                </ListItem>
-                                <Divider variant="inset" component="li" />
+                                {Array.isArray(projects) &&
+                                    projects.map((p, i) => {
+                                        return (
+                                            <React.Fragment key={i}>
+                                                <ListItem
+                                                    button
+                                                    alignItems="flex-start"
+                                                    onClick={e => {
+                                                        dispatch(
+                                                            push(
+                                                                "/editor/" +
+                                                                    p.projectUid
+                                                            )
+                                                        );
+                                                    }}
+                                                >
+                                                    <ListItemAvatar>
+                                                        <Avatar>
+                                                            <AssignmentIcon />
+                                                        </Avatar>
+                                                    </ListItemAvatar>
+                                                    <ListItemText
+                                                        primary={p.name}
+                                                        secondary={
+                                                            p.description
+                                                        }
+                                                    />
+                                                    <ListItemText>
+                                                        {p.tags.map((t, i) => {
+                                                            return (
+                                                                <StyledChip
+                                                                    color="primary"
+                                                                    key={i}
+                                                                    label={t}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </ListItemText>
+                                                </ListItem>
+                                                <Divider
+                                                    variant="inset"
+                                                    component="li"
+                                                />
+                                            </React.Fragment>
+                                        );
+                                    })}
                             </List>
                         </ListContainer>
                     </ContentSection>
