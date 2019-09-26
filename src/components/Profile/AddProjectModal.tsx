@@ -7,9 +7,8 @@ import { TextField, Button, MenuItem, Paper } from "@material-ui/core";
 import { useDispatch } from "react-redux";
 import { addUserProject } from "./actions";
 import styled from "styled-components";
-import ChipInput from "material-ui-chip-input";
 
-import { ReactAutosuggestExample } from "./AutoSuggest";
+import ReactAutosuggestExample from "./TagAutoSuggest";
 const ModalContainer = styled.div`
     display: grid;
     grid-template-rows: 60px 60px 140px 120px 60px;
@@ -81,23 +80,7 @@ export const AddProjectModal = (props: any) => {
                 />
             </FieldRow>
             <FieldRow row={4}>
-                <ChipInput
-                    value={chips}
-                    label={"Tags"}
-                    onAdd={chip => {
-                        const newChips: string[] = [...chips];
-                        newChips.push(chip);
-                        setChips(newChips);
-                    }}
-                    onDelete={(chip, index) => {
-                        const newChips = [...chips];
-                        newChips.splice(index, 1);
-                        setChips(newChips);
-                    }}
-                    fullWidth
-                    dataSource={["ten", "twenty", "thirty"]}
-                />
-                <ReactAutosuggestExample />
+                <ReactAutosuggestExample fullWidth label={"Tags"} />
             </FieldRow>
             <FieldRow row={5}>
                 <Button

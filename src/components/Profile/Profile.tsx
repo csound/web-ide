@@ -12,7 +12,8 @@ import {
     uploadImage,
     getUserImageURL,
     addProject,
-    deleteProject
+    deleteProject,
+    getTags
 } from "./actions";
 import {
     selectUserProjects,
@@ -215,6 +216,7 @@ const Profile = props => {
         dispatch(getUserProjects());
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
+        dispatch(getTags());
     }, [dispatch]);
     return (
         <div className={classes.root}>

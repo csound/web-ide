@@ -33,6 +33,43 @@ export const selectOAuthPhotoURL = (store: any) => {
     return state.photoUrl;
 };
 
+export const selectCurrentTagText = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.currentTagText;
+};
+
+export const selectTags = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.tags;
+};
+
+export const selectCurrentTagSuggestions = createSelector(
+    [selectCurrentTagText, selectTags],
+    (tagText, tagSuggestions) => {
+        const inputValue = tagText.trim().toLowerCase();
+        const inputLength = inputValue.length;
+        let count = 0;
+
+        const result =
+            inputLength === 0
+                ? []
+                : tagSuggestions.filter(suggestion => {
+                      const keep =
+                          count < 5 &&
+                          suggestion.toLowerCase().slice(0, inputLength) ===
+                              inputValue;
+
+                      if (keep) {
+                          count += 1;
+                      }
+
+                      return keep;
+                  });
+
+        return [...result];
+    }
+);
+
 export const selectIsUserProfileOwner = (store: any) => {
     const state: State = store.ProfileReducer;
     const { loggedInUid, profileUid } = state;
@@ -40,4 +77,10 @@ export const selectIsUserProfileOwner = (store: any) => {
         return false;
     }
     return state.loggedInUid === state.profileUid;
+};
+
+export const selectTagsInput = (store: any) => {
+    const state: State = store.ProfileReducer;
+
+    return state.tagsInput;
 };

@@ -2,14 +2,23 @@
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import { Action } from "redux";
-import { db, projects, profiles, usernames } from "../../config/firestore";
+import {
+    db,
+    projects,
+    profiles,
+    usernames,
+    tags
+} from "../../config/firestore";
 import {
     GET_USER_PROJECTS,
     ProfileActionTypes,
     ADD_USER_PROJECT,
     DELETE_USER_PROJECT,
     GET_USER_PROFILE,
-    GET_USER_IMAGE_URL
+    GET_USER_IMAGE_URL,
+    SET_CURRENT_TAG_TEXT,
+    SET_TAGS_INPUT,
+    GET_TAGS
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -22,6 +31,7 @@ import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
 import { AddProjectModal } from "./AddProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
+import { selectTagsInput } from "./selectors";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -106,18 +116,38 @@ const addUserProjectAction = (): ProfileActionTypes => {
 export const addUserProject = (
     name: string,
     description: string
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
+            const state = getState();
+            const currentTags = selectTagsInput(state);
             const newProject = {
                 userUid: user.uid,
                 name,
                 description,
-                public: false
+                public: false,
+                tags: currentTags
             };
 
             try {
                 const newProjectRef = await projects.add(newProject);
+                const tagsResult = currentTags.map(async tag => {
+                    const result = await tags.doc(tag).get();
+                    if (result.exists) {
+                        return tags.doc(tag).update({
+                            projectUids: firebase.firestore.FieldValue.arrayUnion(
+                                newProjectRef.id
+                            )
+                        });
+                    } else {
+                        return tags.doc(tag).set({
+                            projectUids: firebase.firestore.FieldValue.arrayUnion(
+                                newProjectRef.id
+                            )
+                        });
+                    }
+                });
+                await Promise.all(tagsResult);
                 await newProjectRef
                     .collection("files")
                     .add({ ...defaultCsd, userUid: user.uid });
@@ -130,6 +160,8 @@ export const addUserProject = (
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Added", SnackbarType.Success));
             } catch (e) {
+                console.log(e);
+
                 dispatch(
                     openSnackbar("Could not add Project", SnackbarType.Error)
                 );
@@ -177,6 +209,34 @@ export const getUserImageURLAction = (url: string): ProfileActionTypes => {
         type: GET_USER_IMAGE_URL,
         payload: url
     };
+};
+
+export const setCurrentTagText = (text: string): ProfileActionTypes => {
+    return {
+        type: SET_CURRENT_TAG_TEXT,
+        payload: text
+    };
+};
+
+export const setTagsInput = (tags: any[]): ProfileActionTypes => {
+    return {
+        type: SET_TAGS_INPUT,
+        payload: tags
+    };
+};
+
+export const getTags = (): ThunkAction<void, any, null, Action<string>> => (
+    dispatch,
+    getStore
+) => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+            tags.onSnapshot(snapshot => {
+                const result = snapshot.docs.map(doc => doc.id);
+                dispatch({ type: GET_TAGS, payload: result });
+            });
+        }
+    });
 };
 
 export const getUserImageURL = (

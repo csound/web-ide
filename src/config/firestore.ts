@@ -36,5 +36,6 @@ export const db = firebase.firestore();
 export const projects = db.collection("projects");
 export const profiles = db.collection("profiles");
 export const usernames = db.collection("usernames");
+export const tags = db.collection("tags");
 export const projectFiles = db.collection("projectFiles");
 export const storageRef = firebase.storage().ref();
