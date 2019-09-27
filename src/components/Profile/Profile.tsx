@@ -20,8 +20,8 @@ import {
     selectUserProjects,
     selectUserProfile,
     selectUserImageURL,
-    selectIsUserProfileOwner,
-    selectProfileLinks
+    selectIsUserProfileOwner
+    // selectProfileLinks
 } from "./selectors";
 import { get } from "lodash";
 import {
@@ -38,19 +38,14 @@ import {
     ListItemText,
     Divider,
     Fab,
-    FormControl,
-    InputLabel,
-    Input,
     InputAdornment,
     TextField,
-    ListItemSecondaryAction,
     Chip
 } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { push } from "connected-react-router";
 import styled from "styled-components";
 import { Gradient } from "./Gradient";
-import { AccountCircle } from "@material-ui/icons";
 
 const ProfileContainer = styled.div`
     display: grid;
@@ -247,7 +242,7 @@ const Profile = props => {
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
-    const links = useSelector(selectProfileLinks);
+    // const links = useSelector(selectProfileLinks);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
     let uploadRef: RefObject<HTMLInputElement>;
@@ -258,9 +253,7 @@ const Profile = props => {
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
         dispatch(getTags());
-    }, [dispatch]);
-
-    console.log(projects);
+    }, [dispatch, props]);
 
     return (
         <div className={classes.root}>

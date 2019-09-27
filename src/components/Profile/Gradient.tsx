@@ -1,5 +1,4 @@
-import React from "react";
-import { css, CSSObject } from "styled-components";
+import { css } from "styled-components";
 
 interface IGradient {
     colorA: string;

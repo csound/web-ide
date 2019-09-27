@@ -28,12 +28,11 @@ import defaultSco from "../../templates/DefaultSco.json";
 import firebase from "firebase/app";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
-// import crypto from "crypto";
 import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import { selectTagsInput, selectPreviousProjectTags } from "./selectors";
+import { selectPreviousProjectTags } from "./selectors";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -123,7 +122,6 @@ export const addUserProject = (
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
-            const state = getState();
             const newProject = {
                 userUid: user.uid,
                 name,
