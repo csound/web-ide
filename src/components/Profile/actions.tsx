@@ -389,8 +389,11 @@ export const addProject = () => {
 
 export const editProject = (project: any) => {
     return async (dispatch: any) => {
-        dispatch({ type: SET_TAGS_INPUT, payload: project.tags });
-        dispatch({ type: SET_PREVIOUS_PROJECT_TAGS, payload: project.tags });
+        dispatch({ type: SET_TAGS_INPUT, payload: project.tags || [] });
+        dispatch({
+            type: SET_PREVIOUS_PROJECT_TAGS,
+            payload: project.tags || []
+        });
         dispatch(
             openSimpleModal(() => (
                 <ProjectModal
