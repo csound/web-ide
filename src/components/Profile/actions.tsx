@@ -181,13 +181,11 @@ export const editUserProject = (
         if (user !== null) {
             const newProject = {
                 userUid: user.uid,
-                name,
-                description,
+                name: name || "",
+                description: description || "",
                 public: false,
-                tags: currentTags
+                tags: currentTags || []
             };
-
-            console.log(projectID);
 
             const state = getState();
             const previousProjectTags = selectPreviousProjectTags(state);
