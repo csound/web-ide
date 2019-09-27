@@ -84,3 +84,9 @@ export const selectTagsInput = (store: any) => {
 
     return state.tagsInput;
 };
+
+export const selectPreviousProjectTags = (store: any) => {
+    const state: State = store.ProfileReducer;
+
+    return state.previousProjectTags;
+};

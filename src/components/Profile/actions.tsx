@@ -33,7 +33,7 @@ import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import { selectTagsInput } from "./selectors";
+import { selectTagsInput, selectPreviousProjectTags } from "./selectors";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -191,8 +191,59 @@ export const editUserProject = (
 
             console.log(projectID);
 
+            const state = getState();
+            const previousProjectTags = selectPreviousProjectTags(state);
+            const deletedTags: string[] = [];
+            for (let i = 0; i < previousProjectTags.length; ++i) {
+                const pTag = previousProjectTags[i];
+                if (currentTags.includes(pTag) === false) {
+                    deletedTags.push(pTag);
+                }
+            }
+
             try {
                 const newProjectRef = await projects.doc(projectID);
+
+                let tagsResult = deletedTags.map(async tag => {
+                    const result = await tags.doc(tag).get();
+                    if (result.exists) {
+                        return tags.doc(tag).update({
+                            projectUids: firebase.firestore.FieldValue.arrayRemove(
+                                newProjectRef.id
+                            )
+                        });
+                    }
+                });
+                await Promise.all(tagsResult);
+
+                tagsResult = deletedTags.map(async tag => {
+                    const result = await tags.doc(tag).get();
+                    const obj = result.data() || {
+                        projectUids: []
+                    };
+
+                    if (obj.projectUids.length === 0) {
+                        await tags.doc(tag).delete();
+                    }
+                });
+                await Promise.all(tagsResult);
+
+                tagsResult = currentTags.map(async tag => {
+                    const result = await tags.doc(tag).get();
+                    if (result.exists) {
+                        return tags.doc(tag).update({
+                            projectUids: firebase.firestore.FieldValue.arrayUnion(
+                                newProjectRef.id
+                            )
+                        });
+                    } else {
+                        return tags.doc(tag).set({
+                            projectUids: firebase.firestore.FieldValue.arrayUnion(
+                                newProjectRef.id
+                            )
+                        });
+                    }
+                });
                 await newProjectRef.update(newProject);
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Edited", SnackbarType.Success));
