@@ -1,6 +1,7 @@
 // import firebase from "firebase/app";
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
+import React from "react";
 import { Action } from "redux";
 import {
     db,
@@ -18,7 +19,8 @@ import {
     GET_USER_IMAGE_URL,
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
-    GET_TAGS
+    GET_TAGS,
+    SET_PREVIOUS_PROJECT_TAGS
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -29,7 +31,7 @@ import { SnackbarType } from "../Snackbar/types";
 // import crypto from "crypto";
 import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
-import { AddProjectModal } from "./AddProjectModal";
+import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
 import { selectTagsInput } from "./selectors";
 
@@ -115,12 +117,13 @@ const addUserProjectAction = (): ProfileActionTypes => {
 
 export const addUserProject = (
     name: string,
-    description: string
+    description: string,
+    currentTags: string[],
+    projectID: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
             const state = getState();
-            const currentTags = selectTagsInput(state);
             const newProject = {
                 userUid: user.uid,
                 name,
@@ -164,6 +167,40 @@ export const addUserProject = (
 
                 dispatch(
                     openSnackbar("Could not add Project", SnackbarType.Error)
+                );
+            }
+        }
+    });
+};
+
+export const editUserProject = (
+    name: string,
+    description: string,
+    currentTags: string[],
+    projectID: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user !== null) {
+            const newProject = {
+                userUid: user.uid,
+                name,
+                description,
+                public: false,
+                tags: currentTags
+            };
+
+            console.log(projectID);
+
+            try {
+                const newProjectRef = await projects.doc(projectID);
+                await newProjectRef.update(newProject);
+                dispatch(addUserProjectAction());
+                dispatch(openSnackbar("Project Edited", SnackbarType.Success));
+            } catch (e) {
+                console.log(e);
+
+                dispatch(
+                    openSnackbar("Could not edit Project", SnackbarType.Error)
                 );
             }
         }
@@ -287,7 +324,35 @@ export const getUserImageURL = (
 
 export const addProject = () => {
     return async (dispatch: any) => {
-        dispatch(openSimpleModal(AddProjectModal));
+        dispatch(
+            openSimpleModal(() => (
+                <ProjectModal
+                    name={"New Project"}
+                    description={""}
+                    projectAction={addUserProject}
+                    label={"Create"}
+                    projectID=""
+                />
+            ))
+        );
+    };
+};
+
+export const editProject = (project: any) => {
+    return async (dispatch: any) => {
+        dispatch({ type: SET_TAGS_INPUT, payload: project.tags });
+        dispatch({ type: SET_PREVIOUS_PROJECT_TAGS, payload: project.tags });
+        dispatch(
+            openSimpleModal(() => (
+                <ProjectModal
+                    name={project.name}
+                    description={project.description}
+                    projectAction={editUserProject}
+                    label={"Edit"}
+                    projectID={project.projectUid}
+                />
+            ))
+        );
     };
 };
 

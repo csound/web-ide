@@ -12,6 +12,7 @@ import {
     uploadImage,
     getUserImageURL,
     addProject,
+    editProject,
     deleteProject,
     getTags
 } from "./actions";
@@ -54,7 +55,7 @@ import { AccountCircle } from "@material-ui/icons";
 const ProfileContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 250px 8fr;
-    grid-template-rows: 30px 220px 1fr 100px;
+    grid-template-rows: 30px 175px 1fr 100px;
     width: 100%;
     height: calc(100vh - 40px);
     background-color: black;
@@ -82,7 +83,7 @@ const DescriptionSection = styled.div`
 
 const MainContent = styled.div`
     grid-row-start: 3;
-    grid-row-end: 5;
+    grid-row-end: 6;
     grid-column-start: 1;
     grid-column-end: 4;
     background: #dedede;
@@ -193,6 +194,7 @@ const ListContainer = styled.div`
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;
+    overflow: scroll;
 `;
 
 const SearchBox = styled(TextField)`
@@ -204,8 +206,38 @@ const SearchBox = styled(TextField)`
 const StyledChip = styled(Chip)`
     && {
         margin: 3px;
-        float: right;
     }
+`;
+
+const StyledListItemContainer = styled.div`
+    display: grid;
+    grid-template-rows: 1fr 0.5fr;
+    grid-template-columns: 1fr 8fr 70px;
+    width: 100%;
+`;
+
+const StyledListItemAvatar = styled.div`
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column: 1;
+`;
+
+const StyledListItemTopRowText = styled.div`
+    grid-row: 1;
+    grid-column: 2;
+`;
+
+const StyledListItemChipsRow = styled.div`
+    grid-row: 2;
+    grid-column-start: 2;
+    grid-column-end: 3;
+`;
+
+const StyledListButtonsContainer = styled.div`
+    grid-row-start: 1;
+    grid-row-end: 3;
+    grid-column-start: 3;
+    grid-column-end: 4;
 `;
 
 const Profile = props => {
@@ -354,7 +386,7 @@ const Profile = props => {
                         </ContentActionsContainer>
 
                         <ListContainer>
-                            <List>
+                            <List style={{ overflow: "auto" }}>
                                 {Array.isArray(projects) &&
                                     projects.map((p, i) => {
                                         return (
@@ -371,28 +403,70 @@ const Profile = props => {
                                                         );
                                                     }}
                                                 >
-                                                    <ListItemAvatar>
-                                                        <Avatar>
-                                                            <AssignmentIcon />
-                                                        </Avatar>
-                                                    </ListItemAvatar>
-                                                    <ListItemText
-                                                        primary={p.name}
-                                                        secondary={
-                                                            p.description
-                                                        }
-                                                    />
-                                                    <ListItemText>
-                                                        {p.tags.map((t, i) => {
-                                                            return (
-                                                                <StyledChip
-                                                                    color="primary"
-                                                                    key={i}
-                                                                    label={t}
-                                                                />
-                                                            );
-                                                        })}
-                                                    </ListItemText>
+                                                    <StyledListItemContainer>
+                                                        <StyledListItemAvatar>
+                                                            <ListItemAvatar>
+                                                                <Avatar>
+                                                                    <AssignmentIcon />
+                                                                </Avatar>
+                                                            </ListItemAvatar>
+                                                        </StyledListItemAvatar>
+
+                                                        <StyledListItemTopRowText>
+                                                            <ListItemText
+                                                                primary={p.name}
+                                                                secondary={
+                                                                    p.description
+                                                                }
+                                                            />
+                                                        </StyledListItemTopRowText>
+
+                                                        <StyledListItemChipsRow>
+                                                            {p.tags.map(
+                                                                (t, i) => {
+                                                                    return (
+                                                                        <StyledChip
+                                                                            color="primary"
+                                                                            key={
+                                                                                i
+                                                                            }
+                                                                            label={
+                                                                                t
+                                                                            }
+                                                                        />
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </StyledListItemChipsRow>
+                                                        <StyledListButtonsContainer>
+                                                            <Button
+                                                                color="primary"
+                                                                onClick={e => {
+                                                                    dispatch(
+                                                                        editProject(
+                                                                            p
+                                                                        )
+                                                                    );
+                                                                    e.stopPropagation();
+                                                                }}
+                                                            >
+                                                                Edit
+                                                            </Button>
+                                                            <Button
+                                                                color="primary"
+                                                                onClick={e => {
+                                                                    dispatch(
+                                                                        deleteProject(
+                                                                            p
+                                                                        )
+                                                                    );
+                                                                    e.stopPropagation();
+                                                                }}
+                                                            >
+                                                                delete
+                                                            </Button>
+                                                        </StyledListButtonsContainer>
+                                                    </StyledListItemContainer>
                                                 </ListItem>
                                                 <Divider
                                                     variant="inset"

@@ -6,9 +6,14 @@ export const GET_USER_IMAGE_URL = "PROFILE.GET_USER_IMAGE_URL";
 export const SET_CURRENT_TAG_TEXT = "PROFILE.SET_CURRENT_TAG_TEXT";
 export const SET_TAGS_INPUT = "PROFILE.SET_TAGS_INPUT";
 export const GET_TAGS = "PROFILE.GET_TAGS";
-
+export const SET_PREVIOUS_PROJECT_TAGS = "PROFILE.SET_PREVIOUS_PROJECT_TAGS";
 interface SetTagsInputAction {
     type: typeof SET_TAGS_INPUT;
+    payload: any[];
+}
+
+interface SetPreviousProjectTagsAction {
+    type: typeof SET_PREVIOUS_PROJECT_TAGS;
     payload: any[];
 }
 
@@ -52,4 +57,5 @@ export type ProfileActionTypes =
     | GetUserImageURLAction
     | SetCurrentTagTextAction
     | SetTagsInputAction
-    | GetTagsAction;
+    | GetTagsAction
+    | SetPreviousProjectTagsAction;

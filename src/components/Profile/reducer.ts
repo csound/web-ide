@@ -5,7 +5,8 @@ import {
     GET_USER_IMAGE_URL,
     SET_TAGS_INPUT,
     SET_CURRENT_TAG_TEXT,
-    GET_TAGS
+    GET_TAGS,
+    SET_PREVIOUS_PROJECT_TAGS
 } from "./types";
 import facePng from "./face.png";
 export interface State {
@@ -17,6 +18,7 @@ export interface State {
     readonly currentTagText: string;
     readonly tagsInput: any[];
     readonly tags: any[];
+    readonly previousProjectTags: any[];
 }
 
 const INITIAL_STATE: State = {
@@ -27,7 +29,8 @@ const INITIAL_STATE: State = {
     profileUid: null,
     currentTagText: "",
     tagsInput: [],
-    tags: []
+    tags: [],
+    previousProjectTags: []
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
@@ -36,6 +39,12 @@ export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
             return {
                 ...state,
                 tags: action.payload
+            };
+        }
+        case SET_PREVIOUS_PROJECT_TAGS: {
+            return {
+                ...state,
+                previousProjectTags: action.payload
             };
         }
         case SET_TAGS_INPUT: {
