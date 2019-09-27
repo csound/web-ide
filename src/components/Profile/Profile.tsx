@@ -415,21 +415,24 @@ const Profile = props => {
                                                         </StyledListItemTopRowText>
 
                                                         <StyledListItemChipsRow>
-                                                            {p.tags.map(
-                                                                (t, i) => {
-                                                                    return (
-                                                                        <StyledChip
-                                                                            color="primary"
-                                                                            key={
-                                                                                i
-                                                                            }
-                                                                            label={
-                                                                                t
-                                                                            }
-                                                                        />
-                                                                    );
-                                                                }
-                                                            )}
+                                                            {Array.isArray(
+                                                                p.tags
+                                                            ) &&
+                                                                p.tags.map(
+                                                                    (t, i) => {
+                                                                        return (
+                                                                            <StyledChip
+                                                                                color="primary"
+                                                                                key={
+                                                                                    i
+                                                                                }
+                                                                                label={
+                                                                                    t
+                                                                                }
+                                                                            />
+                                                                        );
+                                                                    }
+                                                                )}
                                                         </StyledListItemChipsRow>
                                                         <StyledListButtonsContainer>
                                                             <Button
