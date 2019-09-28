@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "csound-ide"
+    "default": "csound-ide",
+    "develop": "csound-ide-dev"
   }
 }

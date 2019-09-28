@@ -24,6 +24,9 @@ jobs:
                       - node_modules
     build:
         <<: *defaults
+        branches:
+            only:
+                - master
         steps:
             - checkout
             - attach_workspace:
@@ -33,14 +36,46 @@ jobs:
                   root: .
                   paths:
                       - build
+    build_dev:
+        <<: *defaults
+        branches:
+            only:
+                - develop
+        steps:
+            - checkout
+            - attach_workspace:
+                  at: .
+            - run: yarn build-dev
+            - persist_to_workspace:
+                  root: .
+                  paths:
+                      - build
     deploy:
         <<: *defaults
+        branches:
+            only:
+                - master
         steps:
             - checkout
             - attach_workspace:
                   at: .
             - run: cd functions && npm install
             - run: yarn deploy
+            - persist_to_workspace:
+                  root: .
+                  paths:
+                      - build
+    deploy_dev:
+        <<: *defaults
+        branches:
+            only:
+                - develop
+        steps:
+            - checkout
+            - attach_workspace:
+                  at: .
+            - run: cd functions && npm install
+            - run: yarn deploy-dev
             - persist_to_workspace:
                   root: .
                   paths:
@@ -56,3 +91,12 @@ workflows:
             - deploy:
                   requires:
                       - build
+    build_accept_deploy_dev:
+        jobs:
+            - prepare
+            - build_dev:
+                  requires:
+                      - prepare
+            - deploy_dev:
+                  requires:
+                      - build_dev

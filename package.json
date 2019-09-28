@@ -102,10 +102,12 @@
     "scripts": {
         "start": "REACT_APP_DATABASE=DEV react-scripts start",
         "build": "REACT_APP_DATABASE=PROD react-scripts build",
+        "build-dev": "REACT_APP_DATABASE=DEV react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
-        "deploy": "./node_modules/.bin/firebase deploy --token=$FIREBASE_TOKEN"
+        "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
+        "deploy-dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN"
     },
     "jest": {
         "collectCoverageFrom": [

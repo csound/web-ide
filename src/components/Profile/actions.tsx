@@ -189,13 +189,9 @@ export const editUserProject = (
 
             const state = getState();
             const previousProjectTags = selectPreviousProjectTags(state);
-            const deletedTags: string[] = [];
-            for (let i = 0; i < previousProjectTags.length; ++i) {
-                const pTag = previousProjectTags[i];
-                if (currentTags.includes(pTag) === false) {
-                    deletedTags.push(pTag);
-                }
-            }
+            const deletedTags = previousProjectTags.filter(
+                e => !currentTags.includes(e)
+            );
 
             try {
                 const newProjectRef = await projects.doc(projectID);
