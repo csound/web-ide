@@ -90,17 +90,30 @@ workflows:
         jobs:
             - prepare
             - build:
+                  filters:
+                      branches:
+                          only:
+                              - master
+                  requires:
+                      - prepare
+            - build_dev:
+                  filters:
+                      branches:
+                          only:
+                              - develop
                   requires:
                       - prepare
             - deploy:
+                  filters:
+                      branches:
+                          only:
+                              - master
                   requires:
                       - build
-    build_accept_deploy_dev:
-        jobs:
-            - prepare
-            - build_dev:
-                  requires:
-                      - prepare
             - deploy_dev:
+                  filters:
+                      branches:
+                          only:
+                              - develop
                   requires:
                       - build_dev
