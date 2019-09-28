@@ -24,9 +24,10 @@ jobs:
                       - node_modules
     build:
         <<: *defaults
-        branches:
-            only:
-                - master
+        filters:
+            branches:
+                only:
+                    - master
         steps:
             - checkout
             - attach_workspace:
@@ -38,9 +39,10 @@ jobs:
                       - build
     build_dev:
         <<: *defaults
-        branches:
-            only:
-                - develop
+        filters:
+            branches:
+                only:
+                    - develop
         steps:
             - checkout
             - attach_workspace:
@@ -52,9 +54,10 @@ jobs:
                       - build
     deploy:
         <<: *defaults
-        branches:
-            only:
-                - master
+        filters:
+            branches:
+                only:
+                    - master
         steps:
             - checkout
             - attach_workspace:
@@ -67,9 +70,10 @@ jobs:
                       - build
     deploy_dev:
         <<: *defaults
-        branches:
-            only:
-                - develop
+        filters:
+            branches:
+                only:
+                    - develop
         steps:
             - checkout
             - attach_workspace:
