@@ -4,7 +4,6 @@ import Router from "../Router/Router";
 import Modal from "../Modal";
 import Snackbar from "../Snackbar/Snackbar";
 import { ThemeProvider } from "@material-ui/styles";
-import { ShortcutProvider } from "react-keybind";
 import { resolveTheme } from "../Themes/themes";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { IStore } from "../../db/interfaces";
@@ -13,6 +12,7 @@ import { History } from "history";
 import { mainStylesHOC } from "./styles";
 import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
+import HotKeys from "../HotKeys/HotKeys";
 
 interface IMainProps {
     classes: any;
@@ -53,14 +53,14 @@ class Main extends React.Component<IMainProps, {}> {
 
     public render() {
         return (
-            <ShortcutProvider>
+            <HotKeys>
                 <ThemeProvider theme={resolveTheme(this.props.theme)}>
                     <CssBaseline />
                     <Modal />
                     <Snackbar />
                     <Router history={this.props.history} />
                 </ThemeProvider>
-            </ShortcutProvider>
+            </HotKeys>
         );
     }
 }

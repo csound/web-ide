@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { connect, Provider } from "react-redux";
+import React, { Component, useEffect } from "react";
+import { connect, Provider, useDispatch } from "react-redux";
 import { ITheme } from "../../db/interfaces";
 import { IStore } from "../../db/interfaces";
 // import Editor from "../Editor/Editor";
@@ -17,6 +17,7 @@ import { store } from "../../store";
 import { History } from "history";
 import { layoutStylesHook } from "./styles";
 import ProjectEditor from "../ProjectEditor/ProjectEditor";
+import { setMenuBarHotKeys } from "../HotKeys/actions";
 
 interface IRouterComponent {
     isAuthenticated: boolean;
@@ -26,7 +27,12 @@ interface IRouterComponent {
 
 const EditorLayout = (args: any) => {
     const classes = layoutStylesHook(args.theme);
+    const dispatch = useDispatch();
     const { match } = args;
+
+    useEffect(() => {
+        dispatch(setMenuBarHotKeys());
+    }, [dispatch]);
 
     const renderMeth = matchProps => {
         const { to, staticContext, ...rest } = matchProps;

@@ -10,6 +10,7 @@ import CsoundReducer from "./components/Csound/reducer";
 import ModalReducer from "./components/Modal/reducer";
 import ProfileReducer from "./components/Profile/reducer";
 import ConsoleReducer from "./components/Console/reducer";
+import HotKeysReducer from "./components/HotKeys/reducer";
 import { History } from "history";
 
 export default (history: History) =>
@@ -24,5 +25,6 @@ export default (history: History) =>
         ModalReducer,
         ProfileReducer,
         ConsoleReducer,
-        SnackbarReducer
+        SnackbarReducer,
+        HotKeysReducer
     });

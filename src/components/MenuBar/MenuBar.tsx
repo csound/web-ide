@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
-import { withShortcut, IShortcutProviderRenderProps } from "react-keybind";
+// import { withShortcut, IShortcutProviderRenderProps } from "react-keybind";
 import { useSelector, useDispatch } from "react-redux";
 import useStyles from "./styles";
 import { MenuItemDef } from "./interfaces";
@@ -16,13 +16,7 @@ import { toggleManualPanel } from "../ProjectEditor/actions";
 import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
 import { reduce } from "lodash";
 
-interface IMenuBarProps {
-    shortcut: IShortcutProviderRenderProps;
-}
-
 function MenuBar(props) {
-    const { shortcut } = props as IMenuBarProps;
-
     const activeProjectUid: string = useSelector((store: IStore) =>
         store.projects.activeProject
             ? store.projects.activeProject.projectUid
@@ -49,7 +43,7 @@ function MenuBar(props) {
                 },
                 {
                     label: "Save Document",
-                    keyBinding: isMac ? "cmd+s" : "ctrl+s",
+                    keyBinding: isMac ? "alt+y" : "ctrl+s",
                     keyBindingLabel: isMac ? "⌘+s" : "ctrl+s",
                     callback: () => {
                         dispatch(saveFile());
@@ -132,45 +126,6 @@ function MenuBar(props) {
             ]
         }
     ];
-
-    const registerShortcut = shortcut.registerShortcut;
-
-    const registerKeys = useCallback(arr => {
-        if (arr.submenu) {
-            arr.submenu.forEach(child => {
-                if (child.keyBinding) {
-                    registerShortcut!(
-                        child.callback,
-                        [child.keyBinding],
-                        child.label || "",
-                        child.role || ""
-                    );
-                }
-                registerKeys(child);
-            });
-        }
-        // eslint-disable-next-line
-    }, []);
-
-    const unregisterShortcut = shortcut.unregisterShortcut;
-
-    const unregisterKeys = useCallback(arr => {
-        if (arr.submenu) {
-            arr.submenu.forEach(child => {
-                if (child.keyBinding) {
-                    unregisterShortcut!([child.keyBinding]);
-                }
-                unregisterKeys(child);
-            });
-        }
-        // eslint-disable-next-line
-    }, []);
-
-    useEffect(() => {
-        menuBarItems.forEach(i => registerKeys(i));
-        return () => menuBarItems.forEach(i => unregisterKeys(i));
-        // eslint-disable-next-line
-    }, []);
 
     (MenuBar as any).handleClickOutside = evt => {
         setOpen(false);
@@ -269,4 +224,5 @@ const clickOutsideConfig = {
     handleClickOutside: () => (MenuBar as any).handleClickOutside
 };
 
-export default withShortcut(onClickOutside(MenuBar, clickOutsideConfig));
+// export default withShortcut(onClickOutside(MenuBar, clickOutsideConfig));
+export default onClickOutside(MenuBar, clickOutsideConfig);
