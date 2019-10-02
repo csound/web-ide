@@ -21,6 +21,26 @@ export const selectProfileUid = (store: any) => {
     return state.profileUid;
 };
 
+export const selectCurrentlyPlayingProject = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.currentlyPlayingProject;
+};
+
+export const selectListPlayState = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.listPlayState;
+};
+
+export const selectCsoundStatus = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.csoundStatus;
+};
+
+export const selectPreviousCsoundStatus = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.previousCsoundStatus;
+};
+
 export const selectProfileLinks = createSelector(
     [selectUserProfile],
     userProfile => {

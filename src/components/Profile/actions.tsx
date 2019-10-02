@@ -20,7 +20,10 @@ import {
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
     GET_TAGS,
-    SET_PREVIOUS_PROJECT_TAGS
+    SET_PREVIOUS_PROJECT_TAGS,
+    SET_LIST_PLAY_STATE,
+    SET_CURRENTLY_PLAYING_PROJECT,
+    SET_CSOUND_STATUS
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -32,7 +35,18 @@ import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import { selectPreviousProjectTags } from "./selectors";
+import {
+    selectPreviousProjectTags,
+    selectCurrentlyPlayingProject,
+    selectListPlayState,
+    selectCsoundStatus,
+    selectPreviousCsoundStatus
+} from "./selectors";
+import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
+import {
+    loadProjectFromFirestore,
+    syncProjectDocumentsWithEMFS
+} from "../Projects/actions";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -305,6 +319,20 @@ export const setTagsInput = (tags: any[]): ProfileActionTypes => {
     };
 };
 
+export const setCsoundStatus = (
+    status: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
+    const state = getStore();
+    const csoundStatus = selectCsoundStatus(state);
+
+    if (status !== csoundStatus) {
+        dispatch({
+            type: SET_CSOUND_STATUS,
+            payload: status
+        });
+    }
+};
+
 export const getTags = (): ThunkAction<void, any, null, Action<string>> => (
     dispatch,
     getStore
@@ -323,7 +351,7 @@ export const getUserImageURL = (
     username: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
     firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
+        if (user !== null) {
             let imageUrl: string;
             let profileUid: string;
             if (username === null) {
@@ -443,4 +471,55 @@ export const uploadImage = (
             }
         }
     });
+};
+
+export const playListItem = (
+    projectUid: string | false
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    const state = getState();
+
+    const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
+    const listPlayState = selectListPlayState(state);
+    const csoundStatus = selectCsoundStatus(state);
+    const previousCsoundStatus = selectPreviousCsoundStatus(state);
+
+    if (projectUid === false) {
+        console.log("playListItem: projectUid is false");
+        return;
+    }
+
+    if (csoundStatus === "paused") {
+        dispatch(playPauseCsound());
+        dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
+    } else {
+        dispatch({
+            type: SET_CSOUND_STATUS,
+            payload: false
+        });
+        dispatch({
+            type: SET_CURRENTLY_PLAYING_PROJECT,
+            payload: projectUid
+        });
+        dispatch(
+            syncProjectDocumentsWithEMFS(projectUid, () => {
+                dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
+
+                dispatch(runCsound());
+            })
+        );
+    }
+};
+
+export const pauseListItem = (
+    projectUid: string | false
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    const state = getState();
+
+    const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
+    const listPlayState = selectListPlayState(state);
+    const csoundStatus = selectCsoundStatus(state);
+    const previousCsoundStatus = selectPreviousCsoundStatus(state);
+    dispatch({ type: SET_LIST_PLAY_STATE, payload: "paused" });
+
+    dispatch(playPauseCsound());
 };

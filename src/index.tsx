@@ -43,6 +43,7 @@ registerServiceWorker();
 CsoundObj.importScripts("/csound/").then(() => {
     const csound: ICsoundObj = new CsoundObj();
     store.dispatch(setCsound(csound));
+    csound.setMessageCallback(() => {});
     csound.addPlayStateListener(csObj => {
         console.log("Csound playState changed: " + csObj.getPlayState());
         store.dispatch(setCsoundPlayState(csObj.getPlayState()));

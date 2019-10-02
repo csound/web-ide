@@ -6,7 +6,10 @@ import {
     SET_TAGS_INPUT,
     SET_CURRENT_TAG_TEXT,
     GET_TAGS,
-    SET_PREVIOUS_PROJECT_TAGS
+    SET_PREVIOUS_PROJECT_TAGS,
+    SET_CURRENTLY_PLAYING_PROJECT,
+    SET_LIST_PLAY_STATE,
+    SET_CSOUND_STATUS
 } from "./types";
 import facePng from "./face.png";
 export interface State {
@@ -19,6 +22,10 @@ export interface State {
     readonly tagsInput: any[];
     readonly tags: any[];
     readonly previousProjectTags: any[];
+    readonly currentlyPlayingProject: string | false;
+    readonly listPlayState: string;
+    readonly csoundStatus: string | false;
+    readonly previousCsoundStatus: string | false;
 }
 
 const INITIAL_STATE: State = {
@@ -30,11 +37,34 @@ const INITIAL_STATE: State = {
     currentTagText: "",
     tagsInput: [],
     tags: [],
-    previousProjectTags: []
+    previousProjectTags: [],
+    currentlyPlayingProject: false,
+    listPlayState: "stopped",
+    csoundStatus: false,
+    previousCsoundStatus: false
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case SET_CSOUND_STATUS: {
+            return {
+                ...state,
+                previousCsoundStatus: state.csoundStatus,
+                csoundStatus: action.payload
+            };
+        }
+        case SET_CURRENTLY_PLAYING_PROJECT: {
+            return {
+                ...state,
+                currentlyPlayingProject: action.payload
+            };
+        }
+        case SET_LIST_PLAY_STATE: {
+            return {
+                ...state,
+                listPlayState: action.payload
+            };
+        }
         case GET_TAGS: {
             return {
                 ...state,

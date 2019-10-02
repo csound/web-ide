@@ -14,13 +14,20 @@ import {
     addProject,
     editProject,
     deleteProject,
-    getTags
+    getTags,
+    playListItem,
+    pauseListItem,
+    setCsoundStatus
 } from "./actions";
 import {
     selectUserProjects,
     selectUserProfile,
     selectUserImageURL,
-    selectIsUserProfileOwner
+    selectIsUserProfileOwner,
+    selectListPlayState,
+    selectCurrentlyPlayingProject,
+    selectCsoundStatus,
+    selectPreviousCsoundStatus
     // selectProfileLinks
 } from "./selectors";
 import { get } from "lodash";
@@ -40,12 +47,18 @@ import {
     Fab,
     InputAdornment,
     TextField,
-    Chip
+    Chip,
+    IconButton
 } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
+import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
+import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
+
 import { push } from "connected-react-router";
 import styled from "styled-components";
 import { Gradient } from "./Gradient";
+import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors";
+import { SET_LIST_PLAY_STATE } from "./types";
 
 const ProfileContainer = styled.div`
     display: grid;
@@ -207,7 +220,7 @@ const StyledChip = styled(Chip)`
 const StyledListItemContainer = styled.div`
     display: grid;
     grid-template-rows: 1fr 0.5fr;
-    grid-template-columns: 1fr 8fr 70px;
+    grid-template-columns: 1fr 8fr 70px 70px;
     width: 100%;
 `;
 
@@ -228,11 +241,18 @@ const StyledListItemChipsRow = styled.div`
     grid-column-end: 3;
 `;
 
-const StyledListButtonsContainer = styled.div`
+const StyledListPlayButtonContainer = styled.div`
     grid-row-start: 1;
     grid-row-end: 3;
     grid-column-start: 3;
     grid-column-end: 4;
+`;
+
+const StyledListButtonsContainer = styled.div`
+    grid-row-start: 1;
+    grid-row-end: 3;
+    grid-column-start: 4;
+    grid-column-end: 5;
 `;
 
 const Profile = props => {
@@ -242,11 +262,14 @@ const Profile = props => {
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
-    // const links = useSelector(selectProfileLinks);
+    const csoundPlayState = useSelector(selectCsoundPlayState);
+    const listPlayState = useSelector(selectListPlayState);
+    const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
+    const csoundStatus = useSelector(selectCsoundStatus);
+    const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
-    let uploadRef: RefObject<HTMLInputElement>;
-    uploadRef = React.createRef();
+    let uploadRef: RefObject<HTMLInputElement> = React.createRef();
     useEffect(() => {
         const username = get(props, "match.params.username") || null;
         dispatch(getUserProjects());
@@ -254,6 +277,18 @@ const Profile = props => {
         dispatch(getUserImageURL(username));
         dispatch(getTags());
     }, [dispatch, props]);
+
+    useEffect(() => {
+        dispatch(setCsoundStatus(csoundPlayState));
+    }, [dispatch, csoundPlayState]);
+
+    useEffect(() => {
+        console.log(csoundStatus, previousCsoundStatus);
+
+        if (csoundStatus === "stopped" && previousCsoundStatus === "playing") {
+            dispatch({ type: SET_LIST_PLAY_STATE, payload: "stopped" });
+        }
+    }, [dispatch, csoundStatus, previousCsoundStatus]);
 
     return (
         <div className={classes.root}>
@@ -320,9 +355,9 @@ const Profile = props => {
                             <Typography variant="h5" component="h4">
                                 Links
                             </Typography>
-                            <Link variant="body2" href={profile.link1}>
+                            {/* <Link variant="body2" href={profile.link1}>
                                 {profile.link1}
-                            </Link>
+                            </Link> */}
                         </DescriptionSection>
                     </IDContainer>
                     <NameSectionWrapper>
@@ -419,7 +454,13 @@ const Profile = props => {
                                                                 p.tags
                                                             ) &&
                                                                 p.tags.map(
-                                                                    (t, i) => {
+                                                                    (
+                                                                        t: React.ReactNode,
+                                                                        i:
+                                                                            | string
+                                                                            | number
+                                                                            | undefined
+                                                                    ) => {
                                                                         return (
                                                                             <StyledChip
                                                                                 color="primary"
@@ -434,6 +475,44 @@ const Profile = props => {
                                                                     }
                                                                 )}
                                                         </StyledListItemChipsRow>
+                                                        <StyledListPlayButtonContainer>
+                                                            {(listPlayState ===
+                                                                "playing" &&
+                                                                p.projectUid ===
+                                                                    currentlyPlayingProject && (
+                                                                    <IconButton
+                                                                        size="medium"
+                                                                        aria-label="Delete"
+                                                                        onClick={e => {
+                                                                            e.stopPropagation();
+
+                                                                            dispatch(
+                                                                                pauseListItem(
+                                                                                    p.projectUid
+                                                                                )
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <PauseIcon fontSize="large" />
+                                                                    </IconButton>
+                                                                )) || (
+                                                                <IconButton
+                                                                    size="medium"
+                                                                    aria-label="Delete"
+                                                                    onClick={e => {
+                                                                        e.stopPropagation();
+
+                                                                        dispatch(
+                                                                            playListItem(
+                                                                                p.projectUid
+                                                                            )
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <PlayIcon fontSize="large" />
+                                                                </IconButton>
+                                                            )}
+                                                        </StyledListPlayButtonContainer>
                                                         <StyledListButtonsContainer>
                                                             <Button
                                                                 color="primary"

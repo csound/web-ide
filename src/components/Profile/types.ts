@@ -5,8 +5,27 @@ export const DELETE_USER_PROJECT = "PROFILE.DELETE_USER_PROJECT";
 export const GET_USER_IMAGE_URL = "PROFILE.GET_USER_IMAGE_URL";
 export const SET_CURRENT_TAG_TEXT = "PROFILE.SET_CURRENT_TAG_TEXT";
 export const SET_TAGS_INPUT = "PROFILE.SET_TAGS_INPUT";
+export const SET_CURRENTLY_PLAYING_PROJECT =
+    "PROFILE.SET_CURRENTLY_PLAYING_PROJECT";
+export const SET_LIST_PLAY_STATE = "PROFILE.SET_LIST_PLAY_STATE";
 export const GET_TAGS = "PROFILE.GET_TAGS";
 export const SET_PREVIOUS_PROJECT_TAGS = "PROFILE.SET_PREVIOUS_PROJECT_TAGS";
+export const SET_CSOUND_STATUS = "PROFILE.SET_CSOUND_STATUS";
+interface SetCsoundStatusAction {
+    type: typeof SET_CSOUND_STATUS;
+    payload: string;
+}
+
+interface SetListPlayStateAction {
+    type: typeof SET_LIST_PLAY_STATE;
+    payload: string;
+}
+
+interface SetCurrentlyPlayingProjectAction {
+    type: typeof SET_CURRENTLY_PLAYING_PROJECT;
+    payload: string;
+}
+
 interface SetTagsInputAction {
     type: typeof SET_TAGS_INPUT;
     payload: any[];
@@ -58,4 +77,7 @@ export type ProfileActionTypes =
     | SetCurrentTagTextAction
     | SetTagsInputAction
     | GetTagsAction
-    | SetPreviousProjectTagsAction;
+    | SetListPlayStateAction
+    | SetCurrentlyPlayingProjectAction
+    | SetPreviousProjectTagsAction
+    | SetCsoundStatusAction;

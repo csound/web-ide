@@ -32,6 +32,7 @@ import { saveAs } from "file-saver";
 import firebase from "firebase/app";
 import { formatFileSize } from "../../utils";
 import uuidv4 from "uuid/v4";
+import { selectActiveProject } from "./selectors";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -67,94 +68,124 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     };
 
                     dispatch(setProject(project));
-
-                    (Object as any)
-                        .values(documents)
-                        .forEach(doc =>
-                            dispatch(
-                                initialTabOpenByDocumentUid(doc.documentUid)
-                            )
-                        );
-
-                    dispatch(tabInitSwitch());
-
-                    const cs: ICsoundObj = (store as any).getState().csound
-                        .csound;
-                    const encoder = new TextEncoder();
-                    files.docChanges().forEach(change => {
-                        const doc = change.doc.data();
-                        switch (change.type) {
-                            case "added": {
-                                //console.log("File Added: ", doc);
-                                if (doc.type === "bin") {
-                                    let path = `${project.userUid}/${project.projectUid}/${change.doc.id}`;
-                                    storageRef
-                                        .child(path)
-                                        .getDownloadURL()
-                                        .then(function(url) {
-                                            // This can be downloaded directly:
-                                            var xhr = new XMLHttpRequest();
-                                            xhr.responseType = "arraybuffer";
-                                            xhr.onload = function(event) {
-                                                let blob = xhr.response;
-                                                cs.writeToFS(doc.name, blob);
-                                            };
-                                            xhr.open("GET", url);
-                                            xhr.send();
-                                        })
-                                        .catch(function(error) {
-                                            // Handle any errors
-                                        });
-                                } else {
-                                    cs.writeToFS(
-                                        doc.name,
-                                        encoder.encode(doc.value)
-                                    );
-                                }
-                                break;
-                            }
-                            case "removed": {
-                                //console.log("File Removed: ", doc);
-                                cs.unlinkFromFS(doc.name);
-                                break;
-                            }
-                            case "modified": {
-                                //console.log("File Modified: ", doc);
-                                // TODO - need to detect filename changes, perhaps
-                                // keep map of doc id => filename in Redux Store...
-                                if (doc.type === "bin") {
-                                    let path = `${project.userUid}/${project.projectUid}/${change.doc.id}`;
-                                    storageRef
-                                        .child(path)
-                                        .getDownloadURL()
-                                        .then(function(url) {
-                                            // This can be downloaded directly:
-                                            var xhr = new XMLHttpRequest();
-                                            xhr.responseType = "arraybuffer";
-                                            xhr.onload = function(event) {
-                                                let blob = xhr.response;
-                                                cs.writeToFS(doc.name, blob);
-                                            };
-                                            xhr.open("GET", url);
-                                            xhr.send();
-                                        })
-                                        .catch(function(error) {
-                                            // Handle any errors
-                                        });
-                                } else {
-                                    cs.writeToFS(
-                                        doc.name,
-                                        encoder.encode(doc.value)
-                                    );
-                                }
-                                break;
-                            }
-                        }
-                    });
                 });
             } else {
                 // handle error
             }
+        }
+    };
+};
+
+export const openProjectDocumentTabs = () => {
+    return async (dispatch: any, getState: any) => {
+        const state = getState();
+        const project = selectActiveProject(state);
+        (Object as any)
+            .values(project!.documents)
+            .forEach(doc =>
+                dispatch(initialTabOpenByDocumentUid(doc.documentUid))
+            );
+
+        dispatch(tabInitSwitch());
+    };
+};
+
+export const syncProjectDocumentsWithEMFS = (
+    projectUid: string,
+    fileAddedCallback: any = () => {}
+) => {
+    return async (dispatch: any, getState: any) => {
+        const cs: ICsoundObj = (store as any).getState().csound.csound;
+        const encoder = new TextEncoder();
+        const projRef = projects.doc(projectUid);
+        const doc = await projRef.get();
+        if (doc) {
+            const project = doc.data();
+            // TODO - Sync files to Redux as well as EMFS
+
+            const addFileToEMFS = data => {
+                if (data.type === "bin") {
+                    let path = `${project!.userUid}/${project!.projectUid}/${
+                        doc.id
+                    }`;
+                    return storageRef
+                        .child(path)
+                        .getDownloadURL()
+                        .then(function(url) {
+                            // This can be downloaded directly:
+                            var xhr = new XMLHttpRequest();
+                            xhr.responseType = "arraybuffer";
+                            xhr.onload = function(event) {
+                                let blob = xhr.response;
+                                cs.writeToFS(data.name, blob);
+                            };
+                            xhr.open("GET", url);
+                            xhr.send();
+                        })
+                        .catch(function(error) {
+                            // Handle any errors
+                        });
+                } else {
+                    cs.writeToFS(data.name, encoder.encode(data.value));
+                }
+            };
+
+            projRef.collection("files").onSnapshot(async files => {
+                files.docs.map(doc => {
+                    const data = doc.data();
+                    addFileToEMFS(data);
+                });
+
+                fileAddedCallback();
+
+                files.docChanges().forEach(change => {
+                    const doc = change.doc.data();
+                    switch (change.type) {
+                        case "added": {
+                            addFileToEMFS(doc);
+                            break;
+                        }
+                        case "removed": {
+                            //console.log("File Removed: ", doc);
+                            cs.unlinkFromFS(doc.name);
+                            break;
+                        }
+                        case "modified": {
+                            //console.log("File Modified: ", doc);
+                            // TODO - need to detect filename changes, perhaps
+                            // keep map of doc id => filename in Redux Store...
+                            if (doc.type === "bin") {
+                                let path = `${project!.userUid}/${
+                                    project!.projectUid
+                                }/${change.doc.id}`;
+                                storageRef
+                                    .child(path)
+                                    .getDownloadURL()
+                                    .then(function(url) {
+                                        // This can be downloaded directly:
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.responseType = "arraybuffer";
+                                        xhr.onload = function(event) {
+                                            let blob = xhr.response;
+                                            cs.writeToFS(doc.name, blob);
+                                        };
+                                        xhr.open("GET", url);
+                                        xhr.send();
+                                    })
+                                    .catch(function(error) {
+                                        // Handle any errors
+                                    });
+                            } else {
+                                cs.writeToFS(
+                                    doc.name,
+                                    encoder.encode(doc.value)
+                                );
+                            }
+                            break;
+                        }
+                    }
+                });
+            });
         }
     };
 };
