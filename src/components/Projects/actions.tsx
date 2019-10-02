@@ -134,6 +134,7 @@ export const syncProjectDocumentsWithEMFS = (
                 files.docs.map(doc => {
                     const data = doc.data();
                     addFileToEMFS(data);
+                    return null;
                 });
 
                 fileAddedCallback();

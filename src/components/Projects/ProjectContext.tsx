@@ -38,14 +38,14 @@ export const ProjectContext = (props: IProjectContextProps) => {
                 dispatch(closeProject(activeProject));
             }
         };
-    }, [dispatch, csound, projectUid, needsLoading]);
+    }, [dispatch, csound, projectUid, needsLoading, activeProject]);
 
     useEffect(() => {
         if (activeProject) {
             dispatch(openProjectDocumentTabs());
             dispatch(syncProjectDocumentsWithEMFS(projectUid));
         }
-    }, [dispatch, activeProject]);
+    }, [dispatch, activeProject, projectUid]);
 
     if (!needsLoading && csound) {
         return (

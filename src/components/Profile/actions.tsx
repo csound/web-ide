@@ -35,18 +35,9 @@ import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import {
-    selectPreviousProjectTags,
-    selectCurrentlyPlayingProject,
-    selectListPlayState,
-    selectCsoundStatus,
-    selectPreviousCsoundStatus
-} from "./selectors";
-import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
-import {
-    loadProjectFromFirestore,
-    syncProjectDocumentsWithEMFS
-} from "../Projects/actions";
+import { selectPreviousProjectTags, selectCsoundStatus } from "./selectors";
+import { runCsound, playPauseCsound } from "../Csound/actions";
+import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
 
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
@@ -478,10 +469,7 @@ export const playListItem = (
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     const state = getState();
 
-    const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
-    const listPlayState = selectListPlayState(state);
     const csoundStatus = selectCsoundStatus(state);
-    const previousCsoundStatus = selectPreviousCsoundStatus(state);
 
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");
@@ -513,12 +501,6 @@ export const playListItem = (
 export const pauseListItem = (
     projectUid: string | false
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    const state = getState();
-
-    const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
-    const listPlayState = selectListPlayState(state);
-    const csoundStatus = selectCsoundStatus(state);
-    const previousCsoundStatus = selectPreviousCsoundStatus(state);
     dispatch({ type: SET_LIST_PLAY_STATE, payload: "paused" });
 
     dispatch(playPauseCsound());
