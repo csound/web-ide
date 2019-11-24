@@ -58,6 +58,8 @@ import styled from "styled-components";
 import { Gradient } from "./Gradient";
 import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors";
 import { SET_LIST_PLAY_STATE } from "./types";
+import { setProfileHotKeys } from "../HotKeys/actions";
+import { stopCsound } from "../Csound/actions";
 
 const ProfileContainer = styled.div`
     display: grid;
@@ -275,6 +277,10 @@ const Profile = props => {
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
         dispatch(getTags());
+        dispatch(setProfileHotKeys());
+        return () => {
+            dispatch(stopCsound());
+        };
     }, [dispatch, props]);
 
     useEffect(() => {
@@ -282,8 +288,6 @@ const Profile = props => {
     }, [dispatch, csoundPlayState]);
 
     useEffect(() => {
-        console.log(csoundStatus, previousCsoundStatus);
-
         if (csoundStatus === "stopped" && previousCsoundStatus === "playing") {
             dispatch({ type: SET_LIST_PLAY_STATE, payload: "stopped" });
         }
