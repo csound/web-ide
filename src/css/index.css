@@ -65,7 +65,7 @@ div .react-tabs {
 
 .react-codemirror2 {
     font-size: 16px;
-    font-family: 'Space Mono', monospace;
+    font-family: "Space Mono", monospace;
     width: 100%;
     position: absolute;
     height: 100%;
@@ -204,18 +204,23 @@ button {
     padding-left: 6px;
 }
 
-
 // blink eval
 
 @keyframes flash-animation {
-    0% { background-color: rgba(255,255,255,0); }
-    25%   { background-color: rgba(255,255,255,0.1); }
-    100% { background-color: rgba(255,255,255,0); }
+    0% {
+        background-color: rgba(255, 255, 255, 0);
+    }
+    25% {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    100% {
+        background-color: rgba(255, 255, 255, 0);
+    }
 }
 
 .blinkEval {
     z-index: 9999999;
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     transition: 0.1s;
     animation-name: flash-animation;
     animation-duration: 0.1s;

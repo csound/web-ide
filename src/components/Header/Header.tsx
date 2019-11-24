@@ -2,19 +2,13 @@ import React from "react";
 import { connect } from "react-redux";
 import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
+import { push } from "connected-react-router";
 // import classNames from "classnames";
 // import { Switch, Route } from "react-router-dom";
 import CSLogo from "../CSLogo/CSLogo";
 import { Link } from "react-router-dom";
-import {
-    AppBar,
-    Toolbar,
-    Typography,
-    IconButton,
-    MenuItem,
-    Menu
-} from "@material-ui/core";
-import { AccountCircle } from "@material-ui/icons";
+import { AppBar, Toolbar, IconButton, MenuItem, Menu } from "@material-ui/core";
+import { AccountBox } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
@@ -37,6 +31,7 @@ interface IHeaderProps {
 interface IHeaderDispatchProperties {
     logOut: () => void;
     openLoginDialog: () => void;
+    handleIconClick: () => void;
 }
 
 interface IHeaderLocalState {
@@ -85,21 +80,30 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
             openLoginDialog,
             avatarUrl
         } = this.props;
-
         const avatar = isEmpty(avatarUrl) ? (
-            <AccountCircle />
+            <AccountBox />
         ) : (
             <Avatar
                 src={avatarUrl || ""}
                 style={{
-                    maxHeight: "24px",
-                    maxWidth: "24px",
-                    padding: "0!important"
+                    height: "29px",
+                    width: "29px",
+                    padding: "0!important",
+                    marginRight: "6px",
+                    borderRadius: "4px"
                 }}
             />
         );
         const userMenu = () => (
-            <div>
+            <div
+                style={{
+                    position: "absolute",
+                    right: 12,
+                    top: -9,
+                    height: 38,
+                    width: 38
+                }}
+            >
                 <IconButton
                     aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
                     aria-haspopup="true"
@@ -149,18 +153,13 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
             <div className={classes.root}>
                 {isLoginDialogOpen && <Login />}
                 <AppBar className={classes.appBar}>
-                    <Toolbar disableGutters={true}>
-                        <CSLogo size={30} />
-
+                    <Toolbar disableGutters={true} className={classes.toolbar}>
+                        <CSLogo
+                            size={38}
+                            interactive={true}
+                            onClick={this.props.handleIconClick}
+                        />
                         {this.props.showMenuBar && <MenuBar />}
-                        <Typography
-                            variant="subtitle1"
-                            color="inherit"
-                            className={classes.flex + " " + classes.profileName}
-                            noWrap
-                        >
-                            {this.props.userDisplayName}
-                        </Typography>
                         {authenticated ? userMenu() : loginButton()}
                     </Toolbar>
                 </AppBar>
@@ -182,7 +181,8 @@ const mapStateToProps = (store: IStore, ownProps: any): IHeaderProps => {
 
 const mapDispatchToProps = (dispatch: any): IHeaderDispatchProperties => ({
     logOut: () => dispatch(loginActions.logOut()),
-    openLoginDialog: () => dispatch(loginActions.openLoginDialog())
+    openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
+    handleIconClick: () => dispatch(push("/"))
 });
 
 export default connect(

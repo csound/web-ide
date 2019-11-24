@@ -7,13 +7,13 @@ const headerStyles = (theme: Theme) =>
     createStyles({
         root: {
             flexGrow: 1,
-            // height: "32px",
             zIndex: 100,
             overflow: "hidden",
             position: "relative",
-            display: "flex"
+            display: "block"
         },
         appBar: {
+            width: "100%",
             marginBottom: "4px",
             borderBottom: "1px solid rgb(17, 21, 24)",
             zIndex: theme.zIndex.drawer + 1,
@@ -71,6 +71,9 @@ const headerStyles = (theme: Theme) =>
         menuItemLink: {
             textDecoration: "none",
             color: "black"
+        },
+        toolbar: {
+            display: "block"
         }
     });
 

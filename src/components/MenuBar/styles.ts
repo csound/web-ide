@@ -3,18 +3,22 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
-            display: "flex",
+            display: "inline-block",
             position: "relative",
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
             listStyle: "none",
             padding: 0,
-            margin: 0
+            margin: 0,
+            userSelect: "none",
+            top: -5,
+            marginLeft: 6
         },
         column: {
             padding: "5px 9px",
             color: "#f8f8f2",
+            display: "inline",
             "&:hover": {
                 pointer: "cursor",
                 cursor: "pointer",
@@ -59,6 +63,13 @@ const useStyles = makeStyles((theme: Theme) =>
             height: "1px",
             border: "none",
             margin: "2px 12px"
+        },
+        iconButtonRoot: {
+            borderRadius: "3px",
+            // backgroundColor: "#FAACA8",
+            // backgroundImage: "linear-gradient(45deg, #737373 0%, #666666 90%)",
+            padding: "2px 12px",
+            justifySelf: "center"
         }
     })
 );

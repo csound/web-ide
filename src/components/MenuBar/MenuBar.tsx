@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
+import IconButton from "@material-ui/core/IconButton";
+import { PlayIcon } from "../../FontAudio";
 // import { withShortcut, IShortcutProviderRenderProps } from "react-keybind";
 import { useSelector, useDispatch } from "react-redux";
 import useStyles from "./styles";
@@ -12,6 +14,7 @@ import {
     exportProject,
     addDocument
 } from "../Projects/actions";
+
 import { toggleManualPanel } from "../ProjectEditor/actions";
 import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
 import { reduce } from "lodash";
@@ -188,7 +191,7 @@ function MenuBar(props) {
             const index = acc.length;
             const row = (
                 <ul
-                    style={{ display: open === index ? "block" : "none" }}
+                    style={{ display: open === index ? "inline" : "none" }}
                     className={classes.row}
                 >
                     {reduceRow(item.submenu, 0)}
@@ -216,7 +219,23 @@ function MenuBar(props) {
         [] as React.ReactNode[]
     );
 
-    return <ul className={classes.root}>{columns}</ul>;
+    const buttonGroup = (
+        <div style={{ float: "right", marginRight: 32 }}>
+            <IconButton
+                type="button"
+                classes={{ root: classes.iconButtonRoot }}
+            >
+                <PlayIcon size={32} />
+            </IconButton>
+        </div>
+    );
+
+    return (
+        <>
+            <ul className={classes.root}>{columns}</ul>
+            {buttonGroup}
+        </>
+    );
 }
 
 const clickOutsideConfig = {

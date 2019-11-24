@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
@@ -138,7 +139,10 @@ const ProjectEditor = props => {
     const unsavedDataExitText =
         "You still have unsaved changes, are you sure you want to quit?";
     const unsavedDataExitPrompt = someUnsavedData && (
-        <Beforeunload onBeforeunload={() => unsavedDataExitText} />
+        <React.Fragment>
+            <Beforeunload onBeforeunload={() => unsavedDataExitText} />
+            <Prompt when={someUnsavedData} message={unsavedDataExitText} />
+        </React.Fragment>
     );
 
     const tabDock = isEmpty(openDocuments) ? (
