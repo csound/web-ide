@@ -94,10 +94,7 @@ export default (state, action: any) => {
             return { ...state };
         }
         case DOCUMENT_RENAME_LOCALLY: {
-            state.activeProject.documents[action.documentUid] = {
-                ...state.activeProject.documents[action.documentUid],
-                filename: action.newFilename
-            };
+            state.activeProject.documents[action.documentUid].filename = action.newFilename;
             return { ...state };
         }
         default: {

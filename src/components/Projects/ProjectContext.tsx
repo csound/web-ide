@@ -2,12 +2,12 @@ import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "../../db/interfaces";
 import {
-    closeProject,
+    // closeProject,
     loadProjectFromFirestore,
     syncProjectDocumentsWithEMFS,
     openProjectDocumentTabs
 } from "./actions";
-import { closeTabDock } from "../ProjectEditor/actions";
+// import { closeTabDock } from "../ProjectEditor/actions";
 import { isEmpty } from "lodash";
 
 interface IProjectContextProps {
@@ -32,13 +32,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
         if (needsLoading && csound) {
             dispatch(loadProjectFromFirestore(projectUid));
         }
-        return () => {
-            if (activeProject) {
-                dispatch(closeTabDock());
-                dispatch(closeProject(activeProject));
-            }
-        };
-    }, [dispatch, csound, projectUid, needsLoading, activeProject]);
+    }, [dispatch, projectUid, needsLoading, csound]);
 
     useEffect(() => {
         if (activeProject) {

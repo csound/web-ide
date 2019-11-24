@@ -42,6 +42,7 @@ export default (
         }
         case TAB_DOCK_CLOSE: {
             return {
+                ...state,
                 tabDock: {
                     tabIndex: -1,
                     openDocuments: []
