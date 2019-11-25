@@ -57,11 +57,20 @@ const getMenuBarItems = (dispatch, getStore) => [
     }
 ];
 
-const setMenuBarHotKeysAction = (payload: any): HotKeysActionTypes => {
+const setHotKeysAction = (payload: any): HotKeysActionTypes => {
     return {
         type: SET_MENU_BAR_HOTKEYS,
         payload
     };
+};
+
+export const setProfileHotKeys = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => (dispatch, getStore) => {
+    dispatch(setHotKeysAction({ keyMap: {}, keyHandlers: {} }));
 };
 
 export const setMenuBarHotKeys = (): ThunkAction<
@@ -82,5 +91,5 @@ export const setMenuBarHotKeys = (): ThunkAction<
         return acc;
     }, {});
 
-    dispatch(setMenuBarHotKeysAction({ keyMap, keyHandlers }));
+    dispatch(setHotKeysAction({ keyMap, keyHandlers }));
 };

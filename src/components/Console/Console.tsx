@@ -30,6 +30,7 @@ class Console extends React.Component<
 
     protected consoleRef: any;
     protected scrollbarRef: any;
+    protected _isMounted: boolean = false;
 
     constructor(props) {
         super(props);
@@ -39,6 +40,9 @@ class Console extends React.Component<
     }
 
     public messageCallback(msg: string) {
+        if (this._isMounted === false) {
+            return;
+        }
         const message = msg + "\n";
         this.setState({ logs: this.state.logs + message });
         setTimeout(
@@ -52,6 +56,7 @@ class Console extends React.Component<
     }
 
     public componentDidMount() {
+        this._isMounted = true;
         this.props.setClearConsoleCallback(() => {
             this.setState({ logs: "" });
         });
@@ -65,6 +70,10 @@ class Console extends React.Component<
                 this.props.csound.setMessageCallback(this.messageCallback);
             }
         }, 50);
+    }
+
+    public componentWillUnmount() {
+        this._isMounted = false;
     }
 
     public render() {
@@ -93,7 +102,4 @@ const mapDispatchToProps = (dispatch: any): any => ({
         dispatch(setPrintToConsoleCallback(callback))
 });
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Console);
+export default connect(mapStateToProps, mapDispatchToProps)(Console);

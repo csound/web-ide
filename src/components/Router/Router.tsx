@@ -18,7 +18,7 @@ import { History } from "history";
 import { layoutStylesHook } from "./styles";
 import ProjectEditor from "../ProjectEditor/ProjectEditor";
 import { setMenuBarHotKeys } from "../HotKeys/actions";
-
+import { stopCsound } from "../Csound/actions";
 interface IRouterComponent {
     isAuthenticated: boolean;
     history: History;
@@ -32,6 +32,9 @@ const EditorLayout = (args: any) => {
 
     useEffect(() => {
         dispatch(setMenuBarHotKeys());
+        return () => {
+            dispatch(stopCsound());
+        };
     }, [dispatch]);
 
     const renderMeth = matchProps => {
@@ -89,7 +92,4 @@ const mapStateToProps = (store: IStore, ownProp: any): IRouterComponent => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    {}
-)(RouterComponent);
+export default connect(mapStateToProps, {})(RouterComponent);
