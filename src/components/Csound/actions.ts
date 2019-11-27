@@ -6,6 +6,8 @@ import {
     SET_CSOUND_PLAY_STATE
 } from "./types";
 import { IStore } from "../../db/interfaces";
+import { selectActiveProject } from "../Projects/selectors";
+import { saveAs } from "file-saver";
 
 export const setCsound = (csound: ICsoundObj) => {
     return {
@@ -83,4 +85,59 @@ export const writeDocumentToEMFS = (path: string, text: string): void => {
     const storeState = store.getState() as IStore;
     const csound = storeState.csound.csound;
     console.log(csound);
+};
+
+export const renderToDisk = () => {
+    return async (dispatch: any) => {
+        const state =  store.getState();
+        const project = selectActiveProject(state);
+        const encoder = new TextEncoder();
+
+        if (project) {
+            let documents = project.documents;
+            let docs = Object.values(documents);
+
+            let worker = new Worker('/csound/CsoundWebWorker.js');
+
+            worker.onmessage = (evt) => {
+                const data = evt.data;
+                const content = data[1];
+
+                switch(data[0]) {
+                    case 'log':
+                        console.log("CsoundDisk: " + content);
+                        break;
+                    case 'renderResult':
+                        // grab binary data and download as blob
+                        const wav =  new Blob([content.buffer], {type: "audio/wav"});
+                        saveAs(wav, "project-render.wav");
+                        break;
+                    default:
+                        console.log("CsoundWebWorker: Unknown Message: " + data[0]);
+                        break;
+                }
+            };
+
+            docs.forEach(doc => {
+                let msg = ['writeToFS', doc.filename, encoder.encode(doc.savedValue)];
+                worker.postMessage(msg)
+            });
+
+            //let d = docs.find(d => d.filename == 'project.csd');
+
+            // TODO - replace with 'main' csd file name
+            // if(d) {
+              worker.postMessage(['renderCSD', "project.csd"]);
+            //}
+
+        }
+
+
+        // if (cs) {
+        //     cs.reset();
+        //     cs.setOption("-+msg_color=false");
+        //     cs.compileCSD("project.csd");
+        //     cs.start();
+        // }
+    };
 };
