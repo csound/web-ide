@@ -127,13 +127,30 @@ function MenuBar(props) {
             ]
         },
         {
-            label: "View",
+            label: "Help",
             submenu: [
                 {
-                    label: "Manual Panel",
+                    label: "Csound Manual",
                     role: "toggleManual",
                     callback: () => dispatch(toggleManualPanel())
-                }
+                },
+                {
+                    label: "Csound Manual (External)",
+                    role: "openCsoundManual",
+                    callback: () =>  {
+                        window.open('https://csound.com/docs/manual', '_blank');
+                    }                
+                },
+                {
+                    role: "hr"
+                },
+                {
+                    label: "Web-IDE Documentation",
+                    role: "open WebIDE Documentation",
+                    callback: () =>  {
+                        window.open('/documentation', '_blank');
+                    }                
+                },
             ]
         }
     ];

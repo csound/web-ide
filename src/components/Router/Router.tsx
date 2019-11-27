@@ -19,6 +19,7 @@ import { layoutStylesHook } from "./styles";
 import ProjectEditor from "../ProjectEditor/ProjectEditor";
 import { setMenuBarHotKeys } from "../HotKeys/actions";
 import { stopCsound } from "../Csound/actions";
+import SiteDocs from "../SiteDocs/SiteDocs";
 interface IRouterComponent {
     isAuthenticated: boolean;
     history: History;
@@ -75,6 +76,10 @@ class RouterComponent extends Component<IRouterComponent, any> {
                         path="/"
                         exact
                         render={matchProps => <Home {...matchProps} />}
+                    />
+                    <Route
+                        path="/documentation"
+                        render={() => <SiteDocs />}
                     />
                     <Route path="/404" exact component={Page404} />
                     <Route component={Page404} />
