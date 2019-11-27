@@ -9,7 +9,10 @@ import {
     SET_PREVIOUS_PROJECT_TAGS,
     SET_CURRENTLY_PLAYING_PROJECT,
     SET_LIST_PLAY_STATE,
-    SET_CSOUND_STATUS
+    SET_CSOUND_STATUS,
+    SHOULD_REDIRECT_REQUEST,
+    SHOULD_REDIRECT_YES,
+    SHOULD_REDIRECT_NO
 } from "./types";
 import facePng from "./face.png";
 export interface State {
@@ -26,6 +29,7 @@ export interface State {
     readonly listPlayState: string;
     readonly csoundStatus: string | false;
     readonly previousCsoundStatus: string | false;
+    readonly shouldRedirect: string | false;
 }
 
 const INITIAL_STATE: State = {
@@ -41,11 +45,30 @@ const INITIAL_STATE: State = {
     currentlyPlayingProject: false,
     listPlayState: "stopped",
     csoundStatus: false,
-    previousCsoundStatus: false
+    previousCsoundStatus: false,
+    shouldRedirect: false
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case SHOULD_REDIRECT_REQUEST: {
+            return {
+                ...state,
+                shouldRedirect: "REQUEST"
+            };
+        }
+        case SHOULD_REDIRECT_YES: {
+            return {
+                ...state,
+                shouldRedirect: "YES"
+            };
+        }
+        case SHOULD_REDIRECT_NO: {
+            return {
+                ...state,
+                shouldRedirect: "NO"
+            };
+        }
         case SET_CSOUND_STATUS: {
             return {
                 ...state,

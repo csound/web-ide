@@ -8,10 +8,6 @@ export const selectLoginFail = ({ LoginReducer }: IStore) => {
     return LoginReducer.failed;
 };
 
-export const getLoginRequesting = ({ LoginReducer }: IStore) => {
-    return LoginReducer.requesting;
-};
-
-export const getLoginFail = ({ LoginReducer }: IStore) => {
-    return LoginReducer.failed;
+export const selectAuthenticated = ({ LoginReducer }: IStore) => {
+    return LoginReducer.authenticated;
 };

@@ -11,6 +11,21 @@ export const SET_LIST_PLAY_STATE = "PROFILE.SET_LIST_PLAY_STATE";
 export const GET_TAGS = "PROFILE.GET_TAGS";
 export const SET_PREVIOUS_PROJECT_TAGS = "PROFILE.SET_PREVIOUS_PROJECT_TAGS";
 export const SET_CSOUND_STATUS = "PROFILE.SET_CSOUND_STATUS";
+export const SHOULD_REDIRECT_REQUEST = "PROFILE.SHOULD_REDIRECT_REQUEST";
+export const SHOULD_REDIRECT_YES = "PROFILE.SHOULD_REDIRECT_YES";
+export const SHOULD_REDIRECT_NO = "PROFILE.SHOULD_REDIRECT_NO";
+
+interface SetShouldRedirectRequestAction {
+    type: typeof SHOULD_REDIRECT_REQUEST;
+}
+
+interface SetShouldRedirectYesAction {
+    type: typeof SHOULD_REDIRECT_YES;
+}
+
+interface SetShouldRedirectNoAction {
+    type: typeof SHOULD_REDIRECT_NO;
+}
 interface SetCsoundStatusAction {
     type: typeof SET_CSOUND_STATUS;
     payload: string;
@@ -80,4 +95,7 @@ export type ProfileActionTypes =
     | SetListPlayStateAction
     | SetCurrentlyPlayingProjectAction
     | SetPreviousProjectTagsAction
-    | SetCsoundStatusAction;
+    | SetCsoundStatusAction
+    | SetShouldRedirectYesAction
+    | SetShouldRedirectNoAction
+    | SetShouldRedirectRequestAction;

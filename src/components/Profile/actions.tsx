@@ -23,7 +23,10 @@ import {
     SET_PREVIOUS_PROJECT_TAGS,
     SET_LIST_PLAY_STATE,
     SET_CURRENTLY_PLAYING_PROJECT,
-    SET_CSOUND_STATUS
+    SET_CSOUND_STATUS,
+    SHOULD_REDIRECT_REQUEST,
+    SHOULD_REDIRECT_YES,
+    SHOULD_REDIRECT_NO
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -39,50 +42,6 @@ import { selectPreviousProjectTags, selectCsoundStatus } from "./selectors";
 import { runCsound, playPauseCsound } from "../Csound/actions";
 import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
 
-const getUserProfileAction = (payload: any): ProfileActionTypes => {
-    return {
-        type: GET_USER_PROFILE,
-        payload
-    };
-};
-
-export const getUserProfile = (
-    username: string
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-            let uid;
-            if (username === null) {
-                uid = firebase.auth().currentUser!.uid;
-            } else {
-                const result = await usernames.doc(username).get();
-                const data = result.data() || null;
-
-                if (data === null) {
-                    dispatch(push("/404", { message: "Profile Not Found" }));
-                    return;
-                } else {
-                    uid = data!.userUid;
-                }
-            }
-            const profile = await profiles.doc(uid).get();
-
-            if (!profile.exists) {
-                dispatch(push("/404"));
-                openSnackbar("User profile not found", SnackbarType.Error);
-            } else {
-                dispatch(
-                    getUserProfileAction({
-                        profile: profile.data(),
-                        loggedInUid: user.uid,
-                        profileUid: uid
-                    })
-                );
-            }
-        }
-    });
-};
-
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
         type: GET_USER_PROJECTS,
@@ -90,26 +49,18 @@ const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     };
 };
 
-export const getUserProjects = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => dispatch => {
-    firebase.auth().onAuthStateChanged(user => {
-        if (user != null) {
-            const uid = firebase.auth().currentUser!.uid;
-            projects.where("userUid", "==", uid).onSnapshot(querySnapshot => {
-                const projects: any = [];
-                querySnapshot.forEach(d => {
-                    return projects.push({
-                        ...d.data(),
-                        projectUid: querySnapshot.docs[projects.length].id
-                    });
-                });
-                dispatch(getUserProjectsAction(projects));
+export const getUserProjects = (
+    uid
+): ThunkAction<void, any, null, Action<string>> => dispatch => {
+    projects.where("userUid", "==", uid).onSnapshot(querySnapshot => {
+        const projects: any = [];
+        querySnapshot.forEach(d => {
+            return projects.push({
+                ...d.data(),
+                projectUid: querySnapshot.docs[projects.length].id
             });
-        }
+        });
+        dispatch(getUserProjectsAction(projects));
     });
 };
 
@@ -344,27 +295,30 @@ export const getUserImageURL = (
     firebase.auth().onAuthStateChanged(async user => {
         if (user !== null) {
             let imageUrl: string;
-            let profileUid: string;
+            let profileUid: string | null = null;
             if (username === null) {
                 profileUid = user.uid;
             } else {
                 const result = await usernames.doc(username).get();
                 const data = result.data() || null;
-
-                profileUid = data!.userUid;
+                if (data !== null) {
+                    profileUid = data!.userUid;
+                }
             }
 
-            try {
-                imageUrl = await firebase
-                    .storage()
-                    .ref()
-                    .child(`images/${profileUid}/profile.jpeg`)
-                    .getDownloadURL();
+            if (profileUid !== null) {
+                try {
+                    imageUrl = await firebase
+                        .storage()
+                        .ref()
+                        .child(`images/${profileUid}/profile.jpeg`)
+                        .getDownloadURL();
 
-                dispatch(getUserImageURLAction(imageUrl));
-                return;
-            } catch (e) {
-                console.log("no profile pic");
+                    dispatch(getUserImageURLAction(imageUrl));
+                    return;
+                } catch (e) {
+                    console.log("no profile pic");
+                }
             }
 
             // try {
@@ -504,4 +458,87 @@ export const pauseListItem = (
     dispatch({ type: SET_LIST_PLAY_STATE, payload: "paused" });
 
     dispatch(playPauseCsound());
+};
+
+export const getUserProfile = (
+    username: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    dispatch({ type: SHOULD_REDIRECT_REQUEST });
+
+    firebase.auth().onAuthStateChanged(async user => {
+        if (username !== null) {
+            const result = await usernames.doc(username).get();
+            if (result.data() === null) {
+                dispatch(push("/404", { message: "User not found." }));
+            } else {
+                dispatch({ type: SHOULD_REDIRECT_NO });
+                const result = await usernames.doc(username).get();
+
+                const data = result.data() || null;
+
+                if (data === null) {
+                    dispatch(push("/404", { message: "Profile Not Found" }));
+                    return;
+                }
+
+                const profileUid = data!.userUid;
+                const loggedInUid = user ? user!.uid : null;
+
+                if (profileUid) {
+                    const profile = await profiles.doc(profileUid).get();
+
+                    if (!profile.exists) {
+                        dispatch(push("/404"));
+                        openSnackbar(
+                            "User profile not found",
+                            SnackbarType.Error
+                        );
+                    } else {
+                        dispatch(
+                            getUserProfileAction({
+                                profile: profile.data(),
+                                loggedInUid,
+                                profileUid
+                            })
+                        );
+                    }
+                } else {
+                    dispatch(push("/404"));
+                    openSnackbar("User profile not found", SnackbarType.Error);
+                }
+            }
+        }
+        if (user !== null) {
+            if (username === null) {
+                dispatch({ type: SHOULD_REDIRECT_NO });
+                const loggedInUid = user!.uid;
+                const profile = await profiles.doc(loggedInUid).get();
+
+                if (!profile.exists) {
+                    dispatch(push("/404"));
+                    openSnackbar("User profile not found", SnackbarType.Error);
+                } else {
+                    dispatch(
+                        getUserProfileAction({
+                            profile: profile.data(),
+                            loggedInUid,
+                            profileUid: loggedInUid
+                        })
+                    );
+                }
+            }
+        } else if (user === null) {
+            if (username === null) {
+                dispatch({ type: SHOULD_REDIRECT_YES });
+                dispatch(push("/"));
+            }
+        }
+    });
+};
+
+const getUserProfileAction = (payload: any): ProfileActionTypes => {
+    return {
+        type: GET_USER_PROFILE,
+        payload
+    };
 };

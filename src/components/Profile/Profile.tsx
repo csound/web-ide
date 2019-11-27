@@ -27,7 +27,9 @@ import {
     selectListPlayState,
     selectCurrentlyPlayingProject,
     selectCsoundStatus,
-    selectPreviousCsoundStatus
+    selectPreviousCsoundStatus,
+    selectShouldRedirect,
+    selectProfileUid
     // selectProfileLinks
 } from "./selectors";
 import { get } from "lodash";
@@ -259,6 +261,9 @@ const StyledListButtonsContainer = styled.div`
 const Profile = props => {
     const { classes } = props;
     const dispatch = useDispatch();
+    const username = get(props, "match.params.username") || null;
+
+    const shouldRedirect = useSelector(selectShouldRedirect);
     const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
@@ -268,12 +273,18 @@ const Profile = props => {
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
     const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
+    const profileUid = useSelector(selectProfileUid);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
+
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
+
     useEffect(() => {
-        const username = get(props, "match.params.username") || null;
-        dispatch(getUserProjects());
+        if (profileUid !== null) {
+            dispatch(getUserProjects(profileUid));
+        }
+    }, [dispatch, profileUid]);
+    useEffect(() => {
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
         dispatch(getTags());
@@ -281,7 +292,7 @@ const Profile = props => {
         return () => {
             dispatch(stopCsound());
         };
-    }, [dispatch, props]);
+    }, [dispatch, props, username]);
 
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));
@@ -293,196 +304,217 @@ const Profile = props => {
         }
     }, [dispatch, csoundStatus, previousCsoundStatus]);
 
-    return (
-        <div className={classes.root}>
-            <Header showMenuBar={false} />
-            <main>
-                <ProfileContainer
-                    colorA={"rgba(30, 30, 30, 1)"}
-                    colorB={"rgba(40, 40, 40, 1)"}
-                    colorC={"rgba(20, 20, 20, 1)"}
-                >
-                    <IDContainer>
-                        <ProfilePictureContainer
-                            onMouseEnter={() => setImageHover(true)}
-                            onMouseLeave={() => setImageHover(false)}
-                        >
-                            <ProfilePictureDiv>
-                                <ProfilePicture
-                                    src={imageUrl}
-                                    width={"100%"}
-                                    height={"100%"}
-                                    alt="User Profile"
-                                />
-                            </ProfilePictureDiv>
-                            <input
-                                type="file"
-                                ref={uploadRef}
-                                style={{ display: "none" }}
-                                accept={"image/jpeg"}
-                                onChange={e => {
-                                    const file: File =
-                                        get(e, "target.files.0") || null;
-                                    dispatch(uploadImage(file));
-                                }}
-                            />
-                            {isProfileOwner && (
-                                <UploadProfilePicture
-                                    onClick={() => {
-                                        const input = uploadRef.current;
-                                        input!.click();
+    if (shouldRedirect === "NO") {
+        return (
+            <div className={classes.root}>
+                <Header showMenuBar={false} />
+                <main>
+                    <ProfileContainer
+                        colorA={"rgba(30, 30, 30, 1)"}
+                        colorB={"rgba(40, 40, 40, 1)"}
+                        colorC={"rgba(20, 20, 20, 1)"}
+                    >
+                        <IDContainer>
+                            <ProfilePictureContainer
+                                onMouseEnter={() => setImageHover(true)}
+                                onMouseLeave={() => setImageHover(false)}
+                            >
+                                <ProfilePictureDiv>
+                                    <ProfilePicture
+                                        src={imageUrl}
+                                        width={"100%"}
+                                        height={"100%"}
+                                        alt="User Profile"
+                                    />
+                                </ProfilePictureDiv>
+                                <input
+                                    type="file"
+                                    ref={uploadRef}
+                                    style={{ display: "none" }}
+                                    accept={"image/jpeg"}
+                                    onChange={e => {
+                                        const file: File =
+                                            get(e, "target.files.0") || null;
+                                        dispatch(uploadImage(file));
                                     }}
-                                    imageHover={imageHover}
+                                />
+                                {isProfileOwner && (
+                                    <UploadProfilePicture
+                                        onClick={() => {
+                                            const input = uploadRef.current;
+                                            input!.click();
+                                        }}
+                                        imageHover={imageHover}
+                                    >
+                                        <UploadProfilePictureText>
+                                            Upload New Image
+                                        </UploadProfilePictureText>
+                                        <UploadProfilePictureIcon>
+                                            <CameraIcon />
+                                        </UploadProfilePictureIcon>
+                                    </UploadProfilePicture>
+                                )}
+                            </ProfilePictureContainer>
+                            <DescriptionSection>
+                                <Typography variant="h5" component="h4">
+                                    Bio
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    component="p"
+                                    color="textSecondary"
+                                    gutterBottom
                                 >
-                                    <UploadProfilePictureText>
-                                        Upload New Image
-                                    </UploadProfilePictureText>
-                                    <UploadProfilePictureIcon>
-                                        <CameraIcon />
-                                    </UploadProfilePictureIcon>
-                                </UploadProfilePicture>
-                            )}
-                        </ProfilePictureContainer>
-                        <DescriptionSection>
-                            <Typography variant="h5" component="h4">
-                                Bio
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                component="p"
-                                color="textSecondary"
-                                gutterBottom
-                            >
-                                {profile.bio}
-                            </Typography>
-                            <Typography variant="h5" component="h4">
-                                Links
-                            </Typography>
-                            {/* <Link variant="body2" href={profile.link1}>
-                                {profile.link1}
-                            </Link> */}
-                        </DescriptionSection>
-                    </IDContainer>
-                    <NameSectionWrapper>
-                        <NameSection>
-                            <Typography variant="h3" component="h3">
-                                {profile.username}
-                            </Typography>
-                        </NameSection>
-                    </NameSectionWrapper>
-                    <MainContent></MainContent>
-                    <ContentSection>
-                        <ContentTabsContainer>
-                            <Tabs
-                                value={selectedSection}
-                                onChange={(e, index) => {
-                                    setSelectedSection(index);
-                                }}
-                                indicatorColor={"primary"}
-                            >
-                                <Tab label="Projects" />
-                                <Tab label="Following" />
-                                <Tab label="Other" />
-                            </Tabs>
-                        </ContentTabsContainer>
-
-                        <ContentActionsContainer>
-                            <SearchBox
-                                id="input-with-icon-adornment"
-                                label="Search"
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <SearchIcon />
-                                        </InputAdornment>
-                                    )
-                                }}
-                                variant="outlined"
-                                margin="dense"
-                            />
-
-                            {isProfileOwner && (
-                                <AddFab
-                                    color="primary"
-                                    variant="extended"
-                                    aria-label="Add"
-                                    size="medium"
-                                    className={classes.margin}
-                                    onClick={() => dispatch(addProject())}
+                                    {profile.bio}
+                                </Typography>
+                                <Typography variant="h5" component="h4">
+                                    Links
+                                </Typography>
+                                {/* <Link variant="body2" href={profile.link1}>
+                                    {profile.link1}
+                                </Link> */}
+                            </DescriptionSection>
+                        </IDContainer>
+                        <NameSectionWrapper>
+                            <NameSection>
+                                <Typography variant="h3" component="h3">
+                                    {profile.username}
+                                </Typography>
+                            </NameSection>
+                        </NameSectionWrapper>
+                        <MainContent></MainContent>
+                        <ContentSection>
+                            <ContentTabsContainer>
+                                <Tabs
+                                    value={selectedSection}
+                                    onChange={(e, index) => {
+                                        setSelectedSection(index);
+                                    }}
+                                    indicatorColor={"primary"}
                                 >
-                                    Create
-                                    <AddIcon className={classes.extendedIcon} />
-                                </AddFab>
-                            )}
-                        </ContentActionsContainer>
+                                    <Tab label="Projects" />
+                                    <Tab label="Following" />
+                                    <Tab label="Other" />
+                                </Tabs>
+                            </ContentTabsContainer>
 
-                        <ListContainer>
-                            <List style={{ overflow: "auto" }}>
-                                {Array.isArray(projects) &&
-                                    projects.map((p, i) => {
-                                        return (
-                                            <React.Fragment key={i}>
-                                                <ListItem
-                                                    button
-                                                    alignItems="flex-start"
-                                                    onClick={e => {
-                                                        dispatch(
-                                                            push(
-                                                                "/editor/" +
-                                                                    p.projectUid
-                                                            )
-                                                        );
-                                                    }}
-                                                >
-                                                    <StyledListItemContainer>
-                                                        <StyledListItemAvatar>
-                                                            <ListItemAvatar>
-                                                                <Avatar>
-                                                                    <AssignmentIcon />
-                                                                </Avatar>
-                                                            </ListItemAvatar>
-                                                        </StyledListItemAvatar>
+                            <ContentActionsContainer>
+                                <SearchBox
+                                    id="input-with-icon-adornment"
+                                    label="Search"
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <SearchIcon />
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                    variant="outlined"
+                                    margin="dense"
+                                />
 
-                                                        <StyledListItemTopRowText>
-                                                            <ListItemText
-                                                                primary={p.name}
-                                                                secondary={
-                                                                    p.description
-                                                                }
-                                                            />
-                                                        </StyledListItemTopRowText>
+                                {isProfileOwner && (
+                                    <AddFab
+                                        color="primary"
+                                        variant="extended"
+                                        aria-label="Add"
+                                        size="medium"
+                                        className={classes.margin}
+                                        onClick={() => dispatch(addProject())}
+                                    >
+                                        Create
+                                        <AddIcon
+                                            className={classes.extendedIcon}
+                                        />
+                                    </AddFab>
+                                )}
+                            </ContentActionsContainer>
 
-                                                        <StyledListItemChipsRow>
-                                                            {Array.isArray(
-                                                                p.tags
-                                                            ) &&
-                                                                p.tags.map(
-                                                                    (
-                                                                        t: React.ReactNode,
-                                                                        i:
-                                                                            | string
-                                                                            | number
-                                                                            | undefined
-                                                                    ) => {
-                                                                        return (
-                                                                            <StyledChip
-                                                                                color="primary"
-                                                                                key={
-                                                                                    i
-                                                                                }
-                                                                                label={
-                                                                                    t
-                                                                                }
-                                                                            />
-                                                                        );
+                            <ListContainer>
+                                <List style={{ overflow: "auto" }}>
+                                    {Array.isArray(projects) &&
+                                        projects.map((p, i) => {
+                                            return (
+                                                <React.Fragment key={i}>
+                                                    <ListItem
+                                                        button
+                                                        alignItems="flex-start"
+                                                        onClick={e => {
+                                                            dispatch(
+                                                                push(
+                                                                    "/editor/" +
+                                                                        p.projectUid
+                                                                )
+                                                            );
+                                                        }}
+                                                    >
+                                                        <StyledListItemContainer>
+                                                            <StyledListItemAvatar>
+                                                                <ListItemAvatar>
+                                                                    <Avatar>
+                                                                        <AssignmentIcon />
+                                                                    </Avatar>
+                                                                </ListItemAvatar>
+                                                            </StyledListItemAvatar>
+
+                                                            <StyledListItemTopRowText>
+                                                                <ListItemText
+                                                                    primary={
+                                                                        p.name
                                                                     }
-                                                                )}
-                                                        </StyledListItemChipsRow>
-                                                        <StyledListPlayButtonContainer>
-                                                            {(listPlayState ===
-                                                                "playing" &&
-                                                                p.projectUid ===
-                                                                    currentlyPlayingProject && (
+                                                                    secondary={
+                                                                        p.description
+                                                                    }
+                                                                />
+                                                            </StyledListItemTopRowText>
+
+                                                            <StyledListItemChipsRow>
+                                                                {Array.isArray(
+                                                                    p.tags
+                                                                ) &&
+                                                                    p.tags.map(
+                                                                        (
+                                                                            t: React.ReactNode,
+                                                                            i:
+                                                                                | string
+                                                                                | number
+                                                                                | undefined
+                                                                        ) => {
+                                                                            return (
+                                                                                <StyledChip
+                                                                                    color="primary"
+                                                                                    key={
+                                                                                        i
+                                                                                    }
+                                                                                    label={
+                                                                                        t
+                                                                                    }
+                                                                                />
+                                                                            );
+                                                                        }
+                                                                    )}
+                                                            </StyledListItemChipsRow>
+                                                            <StyledListPlayButtonContainer>
+                                                                {(listPlayState ===
+                                                                    "playing" &&
+                                                                    p.projectUid ===
+                                                                        currentlyPlayingProject && (
+                                                                        <IconButton
+                                                                            size="medium"
+                                                                            aria-label="Delete"
+                                                                            onClick={e => {
+                                                                                e.stopPropagation();
+
+                                                                                dispatch(
+                                                                                    pauseListItem(
+                                                                                        p.projectUid
+                                                                                    )
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            <PauseIcon fontSize="large" />
+                                                                        </IconButton>
+                                                                    )) || (
                                                                     <IconButton
                                                                         size="medium"
                                                                         aria-label="Delete"
@@ -490,76 +522,63 @@ const Profile = props => {
                                                                             e.stopPropagation();
 
                                                                             dispatch(
-                                                                                pauseListItem(
+                                                                                playListItem(
                                                                                     p.projectUid
                                                                                 )
                                                                             );
                                                                         }}
                                                                     >
-                                                                        <PauseIcon fontSize="large" />
+                                                                        <PlayIcon fontSize="large" />
                                                                     </IconButton>
-                                                                )) || (
-                                                                <IconButton
-                                                                    size="medium"
-                                                                    aria-label="Delete"
+                                                                )}
+                                                            </StyledListPlayButtonContainer>
+                                                            <StyledListButtonsContainer>
+                                                                <Button
+                                                                    color="primary"
                                                                     onClick={e => {
-                                                                        e.stopPropagation();
-
                                                                         dispatch(
-                                                                            playListItem(
-                                                                                p.projectUid
+                                                                            editProject(
+                                                                                p
                                                                             )
                                                                         );
+                                                                        e.stopPropagation();
                                                                     }}
                                                                 >
-                                                                    <PlayIcon fontSize="large" />
-                                                                </IconButton>
-                                                            )}
-                                                        </StyledListPlayButtonContainer>
-                                                        <StyledListButtonsContainer>
-                                                            <Button
-                                                                color="primary"
-                                                                onClick={e => {
-                                                                    dispatch(
-                                                                        editProject(
-                                                                            p
-                                                                        )
-                                                                    );
-                                                                    e.stopPropagation();
-                                                                }}
-                                                            >
-                                                                Edit
-                                                            </Button>
-                                                            <Button
-                                                                color="primary"
-                                                                onClick={e => {
-                                                                    dispatch(
-                                                                        deleteProject(
-                                                                            p
-                                                                        )
-                                                                    );
-                                                                    e.stopPropagation();
-                                                                }}
-                                                            >
-                                                                delete
-                                                            </Button>
-                                                        </StyledListButtonsContainer>
-                                                    </StyledListItemContainer>
-                                                </ListItem>
-                                                <Divider
-                                                    variant="inset"
-                                                    component="li"
-                                                />
-                                            </React.Fragment>
-                                        );
-                                    })}
-                            </List>
-                        </ListContainer>
-                    </ContentSection>
-                </ProfileContainer>
-            </main>
-        </div>
-    );
+                                                                    Edit
+                                                                </Button>
+                                                                <Button
+                                                                    color="primary"
+                                                                    onClick={e => {
+                                                                        dispatch(
+                                                                            deleteProject(
+                                                                                p
+                                                                            )
+                                                                        );
+                                                                        e.stopPropagation();
+                                                                    }}
+                                                                >
+                                                                    delete
+                                                                </Button>
+                                                            </StyledListButtonsContainer>
+                                                        </StyledListItemContainer>
+                                                    </ListItem>
+                                                    <Divider
+                                                        variant="inset"
+                                                        component="li"
+                                                    />
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                </List>
+                            </ListContainer>
+                        </ContentSection>
+                    </ProfileContainer>
+                </main>
+            </div>
+        );
+    }
+
+    return null;
 };
 
 export default withStyles(Profile);
