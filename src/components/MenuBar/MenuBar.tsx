@@ -16,7 +16,7 @@ import {
 } from "../Projects/actions";
 
 import { toggleManualPanel } from "../ProjectEditor/actions";
-import { runCsound, stopCsound, playPauseCsound } from "../Csound/actions";
+import { runCsound, stopCsound, playPauseCsound, renderToDisk } from "../Csound/actions";
 import { reduce } from "lodash";
 
 function MenuBar(props) {
@@ -61,6 +61,14 @@ function MenuBar(props) {
                         dispatch(saveFile());
                     },
                     role: "saveAll"
+                },
+                {
+                    role: "hr"
+                },
+                {
+                    label: "Render to Disk and Download",
+                    callback: () => dispatch(renderToDisk()),
+                    role: "renderToDisk"
                 },
                 {
                     role: "hr"

@@ -648,6 +648,7 @@ export const exportProject = () => {
         const state = store.getState() as IStore;
         const project: IProject | null = state.projects.activeProject;
         if (project) {
+            // FIXME: does not handle binaries...
             const zip = new JSZip();
             const folder = zip.folder("project");
             const docs = Object.values(project.documents);
