@@ -24,14 +24,52 @@ class SiteDocs extends Component<any, {}> {
                         music-making for musician's around the world.</p>
                     
                     <p>With this site we bring you an online, social coding Csound development experience 
-                        with the same features as found traditionally on desktop systems. We hope the 
+                        with the same features found traditionally on desktop systems. We hope the 
                         features to compose, live code, share, and discover Csound work will help power your 
                         musical endeavors.</p>  
 
                     <h2>Getting Started</h2>
-                    <h2>Searching and Following</h2>
+
+                    <h3>Searching and Browsing Projects</h3>
+
+                    <h3>Sign up for an account</h3>
+
+                    <p>To use the site for your own work, sign up for an account by using the "Login" button in the 
+                        top bar.  You can sign up using an email account or sign-in using a Google or Facebook account. 
+                        Once you sign in, you will need to choose a unique username for your account.  
+                    </p>
+
+                    <h3>View/Edit Profile</h3>
+
+                    <p>The profile page houses your projects. It will show all of your project, public or private, 
+                        as well as the list of people you follow.
+                    </p>
+                    <p>
+                        You can edit your information on the profile page as well, including updating your user image, 
+                        bio, and links. 
+                    </p>
+                    <p>
+                       The profile page is also where you will be creating and modifying project details. You can also audition 
+                       projects using play button as well as select the project to view/edit the project in the main IDE 
+                       editor. 
+                    </p>
+
+                    <h3>Need assistance?</h3> 
+
+                    <p>The easiest way to get help with the Web-IDE is to join the <a href="https://csound.com/community.html">Csound Slack</a> 
+                    and ask questions in the #web-ide channel.</p>
+
+                    <h3>Have an issue or find a bug?</h3> 
+
+                    <p>If you have an issue, find a bug, or want to make a suggestion for improvement, please either 
+                        file an issue on the Web-IDE's <a href="https://github.com/csound/web-ide/issues">Github issue tracker</a>. 
+                        The tracker allows us to follow up with issues when we can and have a conversation to figure out the 
+                        best way to address the issue. We look forward to hearing from you!</p>
+
                     <h2>Creating a New Project</h2>
+
                     <h2>Editing a Project</h2>
+
                     <h2>Sharing Projects</h2>
                 </main>
             </div>
