@@ -18,7 +18,7 @@ import {
     thirdPartyAuthSuccess
 } from "./actions";
 import { IStore } from "../../db/interfaces";
-import { getLoginRequesting, getLoginFail } from "./selectors";
+import { selectLoginRequesting, selectLoginFail } from "./selectors";
 import { validateEmail } from "../../utils";
 import { loginStylesHOC } from "./styles";
 import { isEmpty, merge } from "lodash";
@@ -321,8 +321,8 @@ const mapStateToProps = (store: IStore, ownProp: any): ILoginProps => {
         errorCode: store.LoginReducer.errorCode,
         errorMessage: store.LoginReducer.errorMessage,
         classes: ownProp.classes,
-        requesting: getLoginRequesting(store),
-        fail: getLoginFail(store)
+        requesting: selectLoginRequesting(store),
+        fail: selectLoginFail(store)
     };
 };
 

@@ -4,7 +4,6 @@ import withStyles from "./styles";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
-
 import Header from "../Header/Header";
 import {
     getUserProjects,
@@ -17,7 +16,8 @@ import {
     getTags,
     playListItem,
     pauseListItem,
-    setCsoundStatus
+    setCsoundStatus,
+    editProfile
 } from "./actions";
 import {
     selectUserProjects,
@@ -27,13 +27,13 @@ import {
     selectListPlayState,
     selectCurrentlyPlayingProject,
     selectCsoundStatus,
-    selectPreviousCsoundStatus
-    // selectProfileLinks
+    selectPreviousCsoundStatus,
+    selectShouldRedirect,
+    selectProfileUid
 } from "./selectors";
 import { get } from "lodash";
 import {
     Button,
-    Card,
     Typography,
     Tabs,
     Tab,
@@ -42,11 +42,7 @@ import {
     ListItemAvatar,
     Avatar,
     ListItemText,
-    Divider,
-    Fab,
     InputAdornment,
-    TextField,
-    Chip,
     IconButton
 } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
@@ -54,211 +50,45 @@ import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
 import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
 
 import { push } from "connected-react-router";
-import styled from "styled-components";
-import { Gradient } from "./Gradient";
 import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors";
 import { SET_LIST_PLAY_STATE } from "./types";
 import { setProfileHotKeys } from "../HotKeys/actions";
 import { stopCsound } from "../Csound/actions";
-
-const ProfileContainer = styled.div`
-    display: grid;
-    grid-template-columns: 1fr 250px 8fr;
-    grid-template-rows: 30px 175px 1fr 100px;
-    width: 100%;
-    height: calc(100vh - 40px);
-    background-color: black;
-    ${Gradient}
-`;
-
-const IDContainer = styled(Card)`
-    && {
-        grid-row-start: 2;
-        grid-row-end: 4;
-        grid-column-start: 2;
-        grid-column-end: 3;
-        display: grid;
-        grid-template-rows: 250px 1fr;
-        grid-template-columns: 1fr;
-        z-index: 2;
-    }
-`;
-
-const DescriptionSection = styled.div`
-    grid-row: 2;
-    grid-column: 1;
-    padding: 20px;
-`;
-
-const MainContent = styled.div`
-    grid-row-start: 3;
-    grid-row-end: 6;
-    grid-column-start: 1;
-    grid-column-end: 4;
-    background: #dedede;
-    box-shadow: 0 3px 10px 0px;
-`;
-
-const ProfilePictureContainer = styled.div`
-    position: relative;
-    grid-row: 1;
-    grid-column: 1;
-    z-index: 2;
-`;
-
-const ProfilePictureDiv = styled.div`
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    z-index: 1;
-    background: white;
-`;
-
-interface IUploadProfilePicture {
-    imageHover: Boolean;
-}
-
-const UploadProfilePicture = styled.div<IUploadProfilePicture>`
-    width: 100%;
-    height: 30%;
-    bottom: 0px;
-    position: absolute;
-    z-index: 2;
-    background-color: #0000005c;
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-    grid-template-columns: 1fr;
-    cursor: pointer;
-    transition: opacity 0.3s linear;
-    opacity: ${props => (props.imageHover ? 1 : 0)};
-`;
-
-const UploadProfilePictureText = styled.div`
-    font-family: Arial, Helvetica, sans-serif;
-    text-align: center;
-    font-weight: bold;
-    color: white;
-    padding-top: 3px;
-    grid-row: 1;
-    grid-column: 1;
-`;
-
-const UploadProfilePictureIcon = styled.div`
-    grid-row: 2;
-    grid-column: 1;
-    align-content: center;
-    color: white;
-    margin-left: auto;
-    margin-right: auto;
-`;
-
-const ProfilePicture = styled.img`
-    object-fit: cover;
-`;
-
-const NameSectionWrapper = styled.div`
-    grid-row: 2;
-    grid-column: 3;
-    display: grid;
-    grid-template-rows: 1fr 120px;
-    grid-template-columns: 1fr;
-`;
-const NameSection = styled.div`
-    grid-row: 2;
-    grid-column: 1;
-    color: white;
-    padding: 20px;
-`;
-
-const ContentSection = styled.div`
-    grid-row-start: 3;
-    grid-row-end: 5;
-    grid-column: 3;
-    z-index: 2;
-    padding: 0 20px;
-    display: grid;
-    grid-template-rows: 60px 50px 1fr;
-    grid-template-columns: 1fr 250px;
-`;
-
-const ContentTabsContainer = styled.div`
-    grid-row: 1;
-    grid-column: 1;
-`;
-
-const ContentActionsContainer = styled.div`
-    grid-row: 2;
-    grid-column: 1;
-`;
-
-const AddFab = styled(Fab)`
-    float: right;
-
-    && {
-        margin-top: 6px;
-    }
-`;
-
-const ListContainer = styled.div`
-    padding-top: 10px;
-    grid-row: 3;
-    grid-column: 1;
-    overflow: scroll;
-`;
-
-const SearchBox = styled(TextField)`
-    && {
-        height: 20px;
-    }
-`;
-
-const StyledChip = styled(Chip)`
-    && {
-        margin: 3px;
-    }
-`;
-
-const StyledListItemContainer = styled.div`
-    display: grid;
-    grid-template-rows: 1fr 0.5fr;
-    grid-template-columns: 1fr 8fr 70px 70px;
-    width: 100%;
-`;
-
-const StyledListItemAvatar = styled.div`
-    grid-row-start: 1;
-    grid-row-end: 2;
-    grid-column: 1;
-`;
-
-const StyledListItemTopRowText = styled.div`
-    grid-row: 1;
-    grid-column: 2;
-`;
-
-const StyledListItemChipsRow = styled.div`
-    grid-row: 2;
-    grid-column-start: 2;
-    grid-column-end: 3;
-`;
-
-const StyledListPlayButtonContainer = styled.div`
-    grid-row-start: 1;
-    grid-row-end: 3;
-    grid-column-start: 3;
-    grid-column-end: 4;
-`;
-
-const StyledListButtonsContainer = styled.div`
-    grid-row-start: 1;
-    grid-row-end: 3;
-    grid-column-start: 4;
-    grid-column-end: 5;
-`;
+import {
+    ProfileContainer,
+    IDContainer,
+    ProfilePictureContainer,
+    ProfilePictureDiv,
+    ProfilePicture,
+    UploadProfilePicture,
+    UploadProfilePictureText,
+    UploadProfilePictureIcon,
+    DescriptionSection,
+    NameSectionWrapper,
+    NameSection,
+    MainContent,
+    ContentSection,
+    ContentTabsContainer,
+    ContentActionsContainer,
+    SearchBox,
+    AddFab,
+    ListContainer,
+    StyledListItemContainer,
+    StyledListItemAvatar,
+    StyledListItemTopRowText,
+    StyledListItemChipsRow,
+    StyledChip,
+    StyledListPlayButtonContainer,
+    StyledListButtonsContainer,
+    EditProfileButtonSection
+} from "./ProfileUI";
 
 const Profile = props => {
     const { classes } = props;
     const dispatch = useDispatch();
+    const username = get(props, "match.params.username") || null;
+
+    const shouldRedirect = useSelector(selectShouldRedirect);
     const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
@@ -268,12 +98,18 @@ const Profile = props => {
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
     const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
+    const profileUid = useSelector(selectProfileUid);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
+
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
+
     useEffect(() => {
-        const username = get(props, "match.params.username") || null;
-        dispatch(getUserProjects());
+        if (profileUid !== null) {
+            dispatch(getUserProjects(profileUid));
+        }
+    }, [dispatch, profileUid]);
+    useEffect(() => {
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
         dispatch(getTags());
@@ -281,7 +117,7 @@ const Profile = props => {
         return () => {
             dispatch(stopCsound());
         };
-    }, [dispatch, props]);
+    }, [dispatch, props, username]);
 
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));
@@ -293,6 +129,11 @@ const Profile = props => {
         }
     }, [dispatch, csoundStatus, previousCsoundStatus]);
 
+    if (shouldRedirect !== "NO") {
+        return null;
+    }
+
+    const { displayName, bio, link1, link2, link3 } = profile;
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
@@ -358,15 +199,75 @@ const Profile = props => {
                             <Typography variant="h5" component="h4">
                                 Links
                             </Typography>
-                            {/* <Link variant="body2" href={profile.link1}>
-                                {profile.link1}
-                            </Link> */}
+                            {link1 && (
+                                <a
+                                    href={
+                                        link1.includes("://")
+                                            ? link1
+                                            : `https://${link1}`
+                                    }
+                                >
+                                    <Typography variant="body1" component="div">
+                                        {link1}
+                                    </Typography>
+                                </a>
+                            )}
+                            {link2 && (
+                                <a
+                                    href={
+                                        link2.includes("://")
+                                            ? link2
+                                            : `https://${link2}`
+                                    }
+                                >
+                                    <Typography variant="body1" component="div">
+                                        {link2}
+                                    </Typography>
+                                </a>
+                            )}
+                            {link3 && (
+                                <a
+                                    href={
+                                        link3.includes("://")
+                                            ? link3
+                                            : `https://${link3}`
+                                    }
+                                >
+                                    <Typography variant="body1" component="div">
+                                        {link3}
+                                    </Typography>
+                                </a>
+                            )}
                         </DescriptionSection>
+                        {isProfileOwner && (
+                            <EditProfileButtonSection>
+                                <AddFab
+                                    color="primary"
+                                    variant="extended"
+                                    aria-label="Add"
+                                    size="medium"
+                                    onClick={() =>
+                                        dispatch(
+                                            editProfile(
+                                                profile.username,
+                                                displayName,
+                                                bio,
+                                                link1,
+                                                link2,
+                                                link3
+                                            )
+                                        )
+                                    }
+                                >
+                                    Edit Profile
+                                </AddFab>
+                            </EditProfileButtonSection>
+                        )}
                     </IDContainer>
                     <NameSectionWrapper>
                         <NameSection>
                             <Typography variant="h3" component="h3">
-                                {profile.username}
+                                {displayName}
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
@@ -421,84 +322,72 @@ const Profile = props => {
                                 {Array.isArray(projects) &&
                                     projects.map((p, i) => {
                                         return (
-                                            <React.Fragment key={i}>
-                                                <ListItem
-                                                    button
-                                                    alignItems="flex-start"
-                                                    onClick={e => {
-                                                        dispatch(
-                                                            push(
-                                                                "/editor/" +
-                                                                    p.projectUid
-                                                            )
-                                                        );
-                                                    }}
+                                            <ListItem
+                                                button
+                                                alignItems="flex-start"
+                                                onClick={e => {
+                                                    dispatch(
+                                                        push(
+                                                            "/editor/" +
+                                                                p.projectUid
+                                                        )
+                                                    );
+                                                }}
+                                                key={i}
+                                            >
+                                                <StyledListItemContainer
+                                                    isProfileOwner={
+                                                        isProfileOwner
+                                                    }
                                                 >
-                                                    <StyledListItemContainer>
-                                                        <StyledListItemAvatar>
-                                                            <ListItemAvatar>
-                                                                <Avatar>
-                                                                    <AssignmentIcon />
-                                                                </Avatar>
-                                                            </ListItemAvatar>
-                                                        </StyledListItemAvatar>
+                                                    <StyledListItemAvatar>
+                                                        <ListItemAvatar>
+                                                            <Avatar>
+                                                                <AssignmentIcon />
+                                                            </Avatar>
+                                                        </ListItemAvatar>
+                                                    </StyledListItemAvatar>
 
-                                                        <StyledListItemTopRowText>
-                                                            <ListItemText
-                                                                primary={p.name}
-                                                                secondary={
-                                                                    p.description
+                                                    <StyledListItemTopRowText>
+                                                        <ListItemText
+                                                            primary={p.name}
+                                                            secondary={
+                                                                p.description
+                                                            }
+                                                        />
+                                                    </StyledListItemTopRowText>
+
+                                                    <StyledListItemChipsRow>
+                                                        {Array.isArray(
+                                                            p.tags
+                                                        ) &&
+                                                            p.tags.map(
+                                                                (
+                                                                    t: React.ReactNode,
+                                                                    i:
+                                                                        | string
+                                                                        | number
+                                                                        | undefined
+                                                                ) => {
+                                                                    return (
+                                                                        <StyledChip
+                                                                            color="primary"
+                                                                            key={
+                                                                                i
+                                                                            }
+                                                                            label={
+                                                                                t
+                                                                            }
+                                                                        />
+                                                                    );
                                                                 }
-                                                            />
-                                                        </StyledListItemTopRowText>
-
-                                                        <StyledListItemChipsRow>
-                                                            {Array.isArray(
-                                                                p.tags
-                                                            ) &&
-                                                                p.tags.map(
-                                                                    (
-                                                                        t: React.ReactNode,
-                                                                        i:
-                                                                            | string
-                                                                            | number
-                                                                            | undefined
-                                                                    ) => {
-                                                                        return (
-                                                                            <StyledChip
-                                                                                color="primary"
-                                                                                key={
-                                                                                    i
-                                                                                }
-                                                                                label={
-                                                                                    t
-                                                                                }
-                                                                            />
-                                                                        );
-                                                                    }
-                                                                )}
-                                                        </StyledListItemChipsRow>
-                                                        <StyledListPlayButtonContainer>
-                                                            {(listPlayState ===
-                                                                "playing" &&
-                                                                p.projectUid ===
-                                                                    currentlyPlayingProject && (
-                                                                    <IconButton
-                                                                        size="medium"
-                                                                        aria-label="Delete"
-                                                                        onClick={e => {
-                                                                            e.stopPropagation();
-
-                                                                            dispatch(
-                                                                                pauseListItem(
-                                                                                    p.projectUid
-                                                                                )
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        <PauseIcon fontSize="large" />
-                                                                    </IconButton>
-                                                                )) || (
+                                                            )}
+                                                    </StyledListItemChipsRow>
+                                                    <StyledListPlayButtonContainer>
+                                                        {(listPlayState ===
+                                                            "playing" &&
+                                                            p.projectUid ===
+                                                                currentlyPlayingProject && (
                                                                 <IconButton
                                                                     size="medium"
                                                                     aria-label="Delete"
@@ -506,16 +395,33 @@ const Profile = props => {
                                                                         e.stopPropagation();
 
                                                                         dispatch(
-                                                                            playListItem(
+                                                                            pauseListItem(
                                                                                 p.projectUid
                                                                             )
                                                                         );
                                                                     }}
                                                                 >
-                                                                    <PlayIcon fontSize="large" />
+                                                                    <PauseIcon fontSize="large" />
                                                                 </IconButton>
-                                                            )}
-                                                        </StyledListPlayButtonContainer>
+                                                            )) || (
+                                                            <IconButton
+                                                                size="medium"
+                                                                aria-label="Delete"
+                                                                onClick={e => {
+                                                                    e.stopPropagation();
+
+                                                                    dispatch(
+                                                                        playListItem(
+                                                                            p.projectUid
+                                                                        )
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <PlayIcon fontSize="large" />
+                                                            </IconButton>
+                                                        )}
+                                                    </StyledListPlayButtonContainer>
+                                                    {isProfileOwner && (
                                                         <StyledListButtonsContainer>
                                                             <Button
                                                                 color="primary"
@@ -544,13 +450,9 @@ const Profile = props => {
                                                                 delete
                                                             </Button>
                                                         </StyledListButtonsContainer>
-                                                    </StyledListItemContainer>
-                                                </ListItem>
-                                                <Divider
-                                                    variant="inset"
-                                                    component="li"
-                                                />
-                                            </React.Fragment>
+                                                    )}
+                                                </StyledListItemContainer>
+                                            </ListItem>
                                         );
                                     })}
                             </List>
