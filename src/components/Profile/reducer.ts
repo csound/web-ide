@@ -12,7 +12,9 @@ import {
     SET_CSOUND_STATUS,
     SHOULD_REDIRECT_REQUEST,
     SHOULD_REDIRECT_YES,
-    SHOULD_REDIRECT_NO
+    SHOULD_REDIRECT_NO,
+    SET_USER_PROFILE,
+    REFRESH_USER_PROFILE
 } from "./types";
 import facePng from "./face.png";
 export interface State {
@@ -51,6 +53,12 @@ const INITIAL_STATE: State = {
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case REFRESH_USER_PROFILE: {
+            return {
+                ...state,
+                userProfile: action.payload
+            };
+        }
         case SHOULD_REDIRECT_REQUEST: {
             return {
                 ...state,

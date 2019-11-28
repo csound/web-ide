@@ -26,7 +26,9 @@ import {
     SET_CSOUND_STATUS,
     SHOULD_REDIRECT_REQUEST,
     SHOULD_REDIRECT_YES,
-    SHOULD_REDIRECT_NO
+    SHOULD_REDIRECT_NO,
+    SET_USER_PROFILE,
+    REFRESH_USER_PROFILE
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -41,6 +43,7 @@ import { getDeleteProjectModal } from "./DeleteProjectModal";
 import { selectPreviousProjectTags, selectCsoundStatus } from "./selectors";
 import { runCsound, playPauseCsound } from "../Csound/actions";
 import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
+import { ProfileModal } from "./ProfileModal";
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
@@ -354,6 +357,58 @@ export const addProject = () => {
     };
 };
 
+export const setUserProfile = (
+    username: string,
+    displayName: string,
+    bio: string,
+    link1: string,
+    link2: string,
+    link3: string
+): ThunkAction<void, any, null, Action<string>> => dispatch => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user != null) {
+            await profiles.doc(user.uid).update({
+                username,
+                displayName,
+                bio,
+                link1,
+                link2,
+                link3
+            });
+
+            dispatch({
+                type: REFRESH_USER_PROFILE,
+                payload: { username, displayName, bio, link1, link2, link3 }
+            });
+        }
+    });
+};
+
+export const editProfile = (
+    username: string,
+    displayName: string,
+    bio: string,
+    link1: string,
+    link2: string,
+    link3: string
+) => {
+    return async (dispatch: any) => {
+        dispatch(
+            openSimpleModal(() => (
+                <ProfileModal
+                    username={username}
+                    displayName={displayName}
+                    bio={bio}
+                    link1={link1}
+                    link2={link2}
+                    link3={link3}
+                    profileAction={setUserProfile}
+                />
+            ))
+        );
+    };
+};
+
 export const editProject = (project: any) => {
     return async (dispatch: any) => {
         dispatch({ type: SET_TAGS_INPUT, payload: project.tags || [] });
@@ -473,7 +528,6 @@ export const getUserProfile = (
             } else {
                 dispatch({ type: SHOULD_REDIRECT_NO });
                 const result = await usernames.doc(username).get();
-
                 const data = result.data() || null;
 
                 if (data === null) {
