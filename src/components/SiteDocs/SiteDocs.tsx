@@ -68,9 +68,19 @@ class SiteDocs extends Component<any, {}> {
 
                     <h2>Creating a New Project</h2>
 
+                    <p>On your profile page, use the "Create +" button to create a new project. A modal dialog will appear where 
+                        you can fill in the name of the project, description, and any tags. You can later edit the project information using 
+                        the "Edit" button. The name, description and tags will be visible for the project on your profile page for you and others 
+                        who may look at your profile (if your project is public). These fields will also be used when users search for projects.
+                    </p>
+
                     <h2>Editing a Project</h2>
 
+
+
                     <h2>Sharing Projects</h2>
+
+                    
                 </main>
             </div>
         );
