@@ -17,7 +17,7 @@ export const AudioEditor = ({audioFileUrl}:AudioEditorProps) => {
                         .getDownloadURL();
         setData(fileUrl);
         })();
-    }, []);
+    }, [audioFileUrl]);
     return data == null ?
         <div>
             <p>Looking up audio file URL...</p>

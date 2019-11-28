@@ -25,9 +25,7 @@ import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import { tabClose, tabSwitch, setManualPanelOpen } from "./actions";
 import { filterUndef } from "../../utils";
-import { filenameToType, isAudioFile } from "../Projects/utils";
-import { store } from "../../store";
-import { storageRef } from "../../config/firestore";
+import { isAudioFile } from "../Projects/utils";
 import { selectActiveProject } from "../Projects/selectors";
 
 type EditorForDocumentProps = {
@@ -38,14 +36,14 @@ type EditorForDocumentProps = {
 
 
 function EditorForDocument({uid, projectUid, doc} : EditorForDocumentProps) {
-    if(doc.type == "txt") {
+    if(doc.type === "txt") {
         return <Editor
                 documentUid={doc.documentUid}
                 projectUid={projectUid} />;
-    } else if(doc.type == "bin" && isAudioFile(doc.filename)) {
+    } else if(doc.type === "bin" && isAudioFile(doc.filename)) {
 
         const path = `${uid}/${projectUid}/${doc.documentUid}`;
-        return <AudioEditor audioFileUrl={path} />;
+        return <AudioEditor audioFileUrl={path}/>;
     }
     return <div><p>Unknown document type</p></div>;
 };
