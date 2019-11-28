@@ -5,7 +5,7 @@ import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
-import { IDocument } from "../Projects/types";
+import { IDocument, IProject } from "../Projects/types";
 import SplitterLayout from "react-splitter-layout";
 import IframeComm from "react-iframe-comm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "../../db/interfaces";
 import Editor from "../Editor/Editor";
+import AudioEditor from "../AudioEditor/AudioEditor";
 import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "../Console/Console";
@@ -24,6 +25,31 @@ import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import { tabClose, tabSwitch, setManualPanelOpen } from "./actions";
 import { filterUndef } from "../../utils";
+import { filenameToType, isAudioFile } from "../Projects/utils";
+import { store } from "../../store";
+import { storageRef } from "../../config/firestore";
+import { selectActiveProject } from "../Projects/selectors";
+
+type EditorForDocumentProps = {
+    uid: any,
+    doc:IDocument, 
+    projectUid:string
+}
+
+
+function EditorForDocument({uid, projectUid, doc} : EditorForDocumentProps) {
+    if(doc.type == "txt") {
+        return <Editor
+                documentUid={doc.documentUid}
+                projectUid={projectUid} />;
+    } else if(doc.type == "bin" && isAudioFile(doc.filename)) {
+
+        const path = `${uid}/${projectUid}/${doc.documentUid}`;
+        return <AudioEditor audioFileUrl={path} />;
+    }
+    return <div><p>Unknown document type</p></div>;
+};
+
 
 const ProjectEditor = props => {
     const dispatch = useDispatch();
@@ -33,9 +59,9 @@ const ProjectEditor = props => {
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = React.useState(false);
 
-    const projectUid: string = useSelector(
-        (store: IStore) => store.projects.activeProject!.projectUid!
-    );
+    const activeProject:IProject = useSelector(selectActiveProject)!;
+
+    const projectUid: string = activeProject.projectUid;
 
     const tabDockDocuments = useSelector(
         (store: IStore) =>
@@ -46,7 +72,7 @@ const ProjectEditor = props => {
         reduce(
             tabDockDocuments,
             (acc, tabDoc) => {
-                const maybeDoc = store.projects.activeProject!.documents[
+                const maybeDoc = activeProject.documents[
                     tabDoc.uid
                 ];
                 if (maybeDoc) {
@@ -95,12 +121,11 @@ const ProjectEditor = props => {
     );
 
     const openTabPanels = filterUndef(openDocuments).map(
-        (document: IDocument, index: number) => (
+        (doc: IDocument, index: number) => (
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
-                <Editor
-                    documentUid={document.documentUid}
-                    projectUid={projectUid}
-                />
+                <EditorForDocument uid={activeProject.userUid} 
+                                   projectUid={projectUid} 
+                                   doc={doc}/>
             </TabPanel>
         )
     );
