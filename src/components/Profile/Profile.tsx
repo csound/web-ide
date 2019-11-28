@@ -30,7 +30,6 @@ import {
     selectPreviousCsoundStatus,
     selectShouldRedirect,
     selectProfileUid
-    // selectProfileLinks
 } from "./selectors";
 import { get } from "lodash";
 import {
@@ -44,8 +43,7 @@ import {
     Avatar,
     ListItemText,
     InputAdornment,
-    IconButton,
-    Link
+    IconButton
 } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";

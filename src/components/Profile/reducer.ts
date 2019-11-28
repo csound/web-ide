@@ -13,7 +13,6 @@ import {
     SHOULD_REDIRECT_REQUEST,
     SHOULD_REDIRECT_YES,
     SHOULD_REDIRECT_NO,
-    SET_USER_PROFILE,
     REFRESH_USER_PROFILE
 } from "./types";
 import facePng from "./face.png";
