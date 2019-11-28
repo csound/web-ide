@@ -210,8 +210,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
     }
 
     toggleComment() {
-        // let editor = this.cm.current.getCodeMirror();
-        // editor.toggleComment();
+        this.editor.toggleComment();
     }
 
     editorDidMount(editor: any) {
