@@ -18,6 +18,7 @@ import {
 import { toggleManualPanel } from "../ProjectEditor/actions";
 import { runCsound, stopCsound, playPauseCsound, renderToDisk } from "../Csound/actions";
 import { reduce } from "lodash";
+import { showKeyboardShortcuts } from "../SiteDocs/actions";
 
 function MenuBar(props) {
     const activeProjectUid: string = useSelector((store: IStore) =>
@@ -151,6 +152,14 @@ function MenuBar(props) {
                         window.open('/documentation', '_blank');
                     }                
                 },
+                {
+                    role: "hr"
+                },
+                {
+                    label: "Show Keyboard Shortcuts",
+                    role: "showKeyboardShortcuts",
+                    callback: () => dispatch(showKeyboardShortcuts())
+                }
             ]
         }
     ];
