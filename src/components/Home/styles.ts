@@ -13,6 +13,10 @@ const homeStyles = (theme: Theme) =>
             left: 0,
             position: "absolute"
         },
+        main: {
+            maxWidth: "1024px",
+            margin: "auto",
+        },
         centerBox: {
             position: "absolute",
             width: "100px",
