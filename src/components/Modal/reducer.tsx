@@ -17,8 +17,7 @@ const initialModalState: IModalReducer = {
 export default (state, action: any) => {
     switch (action.type) {
         case "MODAL_CLOSE": {
-            state.isOpen = false;
-            return { ...state };
+            return { ...state, isOpen: false };
         }
         case "MODAL_OPEN_SIMPLE": {
             state.isOpen = true;

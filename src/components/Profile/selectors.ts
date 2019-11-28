@@ -110,3 +110,8 @@ export const selectPreviousProjectTags = (store: any) => {
 
     return state.previousProjectTags;
 };
+
+export const selectShouldRedirect = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.shouldRedirect;
+};
