@@ -6,12 +6,12 @@ const homeStyles = (theme: Theme) =>
         root: {
             backgroundColor: "#e8e8e8",
             fontFamily: "'Space Mono', monospace",
-            width: "100%",
-            height: "auto",
             bottom: "0px",
-            top: "0px",
+            top: "37px",
             left: 0,
-            position: "absolute"
+            right: 0,
+            position: "absolute",
+            overflowY: "auto",
         },
         main: {
             maxWidth: "1024px",

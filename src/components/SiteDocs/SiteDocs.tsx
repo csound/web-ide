@@ -76,11 +76,19 @@ class SiteDocs extends Component<any, {}> {
 
                     <h2>Editing a Project</h2>
 
+                    <p>Within the project editor you will see:</p>
 
+                    <ul>
+                        <li>Menu Bar</li>
+                        <li>Project File Tree</li>
+                        <li>Editors</li>
+                        <li>Console Output</li>
+                        <li>Csound Manual Panel</li>
+                    </ul>
 
                     <h2>Sharing Projects</h2>
 
-                    
+
                 </main>
             </div>
         );
