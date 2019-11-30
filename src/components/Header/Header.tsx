@@ -5,11 +5,12 @@ import * as loginActions from "../Login/actions";
 import { push } from "connected-react-router";
 import CSLogo from "../CSLogo/CSLogo";
 import { Link } from "react-router-dom";
-import { AppBar, Toolbar, IconButton, MenuItem, Menu } from "@material-ui/core";
+import { AppBar, Toolbar, IconButton, MenuItem, Menu, Drawer, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import { AccountBox } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import MenuIcon from "@material-ui/icons/Menu";
+import HelpIcon from "@material-ui/icons/Help";
 import { headerStylesHOC } from "./styles";
 import * as SS from "./styles";
 import { IStore } from "../../db/interfaces";
@@ -55,6 +56,7 @@ export const Header = ({classes, showMenuBar = true }: IHeaderProps) => {
     const anchorEl = useRef(null);
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const handleProfileMenuOpen = (event: any) => {
         setIsProfileMenuOpen(true);
@@ -130,7 +132,7 @@ export const Header = ({classes, showMenuBar = true }: IHeaderProps) => {
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
-                        // onClick={handleDrawerOpen}
+                        onClick={() => setIsDrawerOpen(true)}
                         edge="start"
                         className={clsx(classes.menuButton)}
                     >
@@ -147,6 +149,14 @@ export const Header = ({classes, showMenuBar = true }: IHeaderProps) => {
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>
+            <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+                <List>
+                        <ListItem button>
+                            <ListItemIcon><HelpIcon/></ListItemIcon>
+                            <ListItemText primary="Site Documentation" />
+                        </ListItem>
+                </List>
+            </Drawer>
         </div>
     );
 };
