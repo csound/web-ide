@@ -6,6 +6,7 @@
     "dependencies": {
         "@babel/plugin-transform-typescript": "^7.5.5",
         "@babel/preset-env": "^7.5.5",
+        "@emotion/core": "^10.0.22",
         "@fortawesome/fontawesome-svg-core": "^1.2.22",
         "@fortawesome/free-brands-svg-icons": "^5.10.2",
         "@fortawesome/free-solid-svg-icons": "^5.10.2",
@@ -66,6 +67,7 @@
         "postcss-loader": "3.0.0",
         "promise": "8.0.3",
         "raf": "3.4.1",
+        "ramda": "^0.26.1",
         "react": "^16.9.0",
         "react-autosuggest": "^9.4.3",
         "react-beforeunload": "^2.1.0",
@@ -78,13 +80,14 @@
         "react-hot-loader": "^4.12.12",
         "react-hotkeys": "^2.0.0",
         "react-iframe-comm": "^1.2.2",
+        "react-measure": "^2.3.0",
         "react-onclickoutside": "^6.9.0",
         "react-perfect-scrollbar": "^1.5.3",
         "react-redux": "^7.1.1",
         "react-router-dom": "^5.0.1",
-        "react-scripts": "3.2.0",
         "react-splitter-layout": "^4.0.0",
         "react-tabs": "^3.0.0",
+        "react-virtualized": "^9.21.2",
         "redux": "^4.0.4",
         "redux-thunk": "^2.3.0",
         "reselect": "^4.0.0",
@@ -101,11 +104,11 @@
         "whatwg-fetch": "3.0.0"
     },
     "scripts": {
-        "start": "REACT_APP_DATABASE=DEV react-scripts start",
-        "build": "REACT_APP_DATABASE=PROD react-scripts build",
-        "build-dev": "REACT_APP_DATABASE=DEV react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject",
+        "start": "REACT_APP_DATABASE=DEV react-app-rewired start",
+        "build": "REACT_APP_DATABASE=PROD react-app-rewired build",
+        "build-dev": "REACT_APP_DATABASE=DEV react-app-rewired build",
+        "test": "react-app-rewired test",
+        "eject": "react-app-rewired eject",
         "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
         "deploy-dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN"
@@ -113,13 +116,6 @@
     "jest": {
         "collectCoverageFrom": [
             "src/**/*.{js,jsx,mjs,ts,tsx}"
-        ]
-    },
-    "babel": {
-        "presets": [
-            "react-app",
-            "@babel/preset-env",
-            "@babel/preset-typescript"
         ]
     },
     "eslintConfig": {
@@ -138,10 +134,15 @@
         ]
     },
     "devDependencies": {
+        "@emotion/babel-preset-css-prop": "^10.0.23",
+        "babel-plugin-emotion": "^10.0.23",
         "concurrently": "^5.0.0",
+        "customize-cra": "^0.9.1",
         "electron": "^7.1.2",
         "electron-builder": "^21.2.0",
         "firebase-tools": "^7.3.0",
+        "react-app-rewired": "^2.1.5",
+        "react-scripts": "3.2.0",
         "wait-on": "^3.3.0"
     }
 }

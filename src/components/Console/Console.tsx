@@ -3,9 +3,19 @@ import { ICsoundObj } from "../Csound/types";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { connect } from "react-redux";
 import { IStore } from "../../db/interfaces";
-import PerfectScrollbar from "react-perfect-scrollbar";
-// import AutoSizer from "react-virtualized/dist/commonjs/AutoSizer";
-// import List from "react-virtualized/dist/commonjs/List";
+import { List } from "react-virtualized";
+import Measure from "react-measure";
+import { append, merge, pathOr } from "ramda";
+import PerfectScrollbar from "perfect-scrollbar";
+import * as SS from "./styles";
+import "react-virtualized/styles.css";
+
+type ContentRect = {
+    entry?: {
+        width: number;
+        height: number;
+    };
+};
 
 interface IConsoleProps {
     csound: ICsoundObj | null;
@@ -17,7 +27,10 @@ interface IConsoleDispatchProps {
 }
 
 interface IConsoleLocalState {
-    logs: string;
+    logs: React.ReactNode[];
+    lineCnt: number;
+    logWindowWidth: number;
+    logWindowHeight: number;
 }
 
 class Console extends React.Component<
@@ -25,45 +38,72 @@ class Console extends React.Component<
     IConsoleLocalState
 > {
     public readonly state: IConsoleLocalState = {
-        logs: ""
+        logs: [],
+        lineCnt: 0,
+        logWindowWidth: 300,
+        logWindowHeight: 300
     };
 
     protected consoleRef: any;
-    protected scrollbarRef: any;
     protected _isMounted: boolean = false;
 
     constructor(props) {
         super(props);
         this.messageCallback = this.messageCallback.bind(this);
+        this.onWindowResize = this.onWindowResize.bind(this);
+        this.rowRenderer = this.rowRenderer.bind(this);
         this.consoleRef = React.createRef();
-        this.scrollbarRef = React.createRef();
     }
 
     public messageCallback(msg: string) {
         if (this._isMounted === false) {
             return;
         }
-        const message = msg + "\n";
-        this.setState({ logs: this.state.logs + message });
-        setTimeout(
-            () =>
-                this.scrollbarRef &&
-                this.scrollbarRef.current &&
-                this.scrollbarRef.current._container &&
-                (this.scrollbarRef.current._container.scrollTop = this.scrollbarRef.current._container.scrollHeight),
-            1
+        this.setState({
+            logs: append(msg, this.state.logs),
+            lineCnt: this.state.lineCnt + 1
+        });
+
+        // auto scroll to end when new line is added
+        this.consoleRef &&
+            this.consoleRef.current &&
+            this.consoleRef.current.scrollToPosition(
+                this.consoleRef.current.props.rowHeight * this.state.lineCnt
+            );
+    }
+
+    protected onWindowResize(contentRect: ContentRect) {
+        this.setState(
+            merge(this.state, {
+                logWindowWidth: pathOr(
+                    this.state.logWindowWidth,
+                    ["entry", "width"],
+                    contentRect
+                ),
+                logWindowHeight: pathOr(
+                    this.state.logWindowHeight,
+                    ["entry", "height"],
+                    contentRect
+                )
+            })
+        );
+    }
+
+    protected rowRenderer({ key, index, style }) {
+        return (
+            <li key={key} style={style}>
+                {this.state.logs[index]}
+            </li>
         );
     }
 
     public componentDidMount() {
         this._isMounted = true;
         this.props.setClearConsoleCallback(() => {
-            this.setState({ logs: "" });
+            this.setState({ logs: [] });
         });
-        this.props.setPrintToConsoleCallback((text: string) => {
-            this.setState({ logs: this.state.logs + text + "\n" });
-        });
-
+        this.props.setPrintToConsoleCallback(this.messageCallback);
+        new PerfectScrollbar("#csound-console");
         const initProjectInterval = setInterval(() => {
             if (this.props.csound) {
                 clearInterval(initProjectInterval);
@@ -71,20 +111,30 @@ class Console extends React.Component<
             }
         }, 50);
     }
-
     public componentWillUnmount() {
         this._isMounted = false;
     }
 
     public render() {
         return (
-            <div className="console-log-container">
-                <PerfectScrollbar ref={this.scrollbarRef}>
-                    <pre id="console-log" ref={this.consoleRef}>
-                        {this.state.logs}
-                    </pre>
-                </PerfectScrollbar>
-            </div>
+            <Measure onResize={this.onWindowResize}>
+                {({ measureRef }) => (
+                    <div className="console-log-container" ref={measureRef}>
+                        <List
+                            id="csound-console"
+                            ref={this.consoleRef}
+                            autoHeight={false}
+                            css={SS.listElem}
+                            rowCount={this.state.lineCnt}
+                            width={this.state.logWindowWidth}
+                            height={this.state.logWindowHeight}
+                            rowHeight={16}
+                            rowRenderer={this.rowRenderer}
+                            scrollToAlignment={"end"}
+                        ></List>
+                    </div>
+                )}
+            </Measure>
         );
     }
 }
@@ -102,4 +152,7 @@ const mapDispatchToProps = (dispatch: any): any => ({
         dispatch(setPrintToConsoleCallback(callback))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Console);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Console);
