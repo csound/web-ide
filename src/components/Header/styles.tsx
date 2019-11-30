@@ -11,7 +11,7 @@ export const headerStyles = (theme: Theme) =>
             zIndex: 100,
             overflow: "hidden",
             position: "relative",
-            display: "block"
+            display: "block",
         },
         appBar: {
             width: "100%",
