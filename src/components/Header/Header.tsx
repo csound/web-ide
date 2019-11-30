@@ -14,6 +14,7 @@ import Button from "@material-ui/core/Button";
 import firebase from "firebase/app";
 import "firebase/auth";
 import { headerStylesHOC } from "./styles";
+import * as SS from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
 import MenuBar from "../MenuBar/MenuBar";
@@ -83,27 +84,10 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
         const avatar = isEmpty(avatarUrl) ? (
             <AccountBox />
         ) : (
-            <Avatar
-                src={avatarUrl || ""}
-                style={{
-                    height: "29px",
-                    width: "29px",
-                    padding: "0!important",
-                    marginRight: "6px",
-                    borderRadius: "4px"
-                }}
-            />
+            <Avatar src={avatarUrl || ""} css={SS.avatar} />
         );
         const userMenu = () => (
-            <div
-                style={{
-                    position: "absolute",
-                    right: 12,
-                    top: -9,
-                    height: 38,
-                    width: 38
-                }}
-            >
+            <div css={SS.userMenu}>
                 <IconButton
                     aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
                     aria-haspopup="true"
@@ -139,6 +123,7 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
 
         const loginButton = () => (
             <Button
+                css={SS.loginButton}
                 color="inherit"
                 onClick={() => {
                     this.setState({ isProfileMenuOpen: false });
@@ -153,13 +138,15 @@ class Header extends React.Component<IHeader, IHeaderLocalState> {
             <div className={classes.root}>
                 {isLoginDialogOpen && <Login />}
                 <AppBar className={classes.appBar}>
-                    <Toolbar disableGutters={true} className={classes.toolbar}>
-                        <CSLogo
-                            size={38}
-                            interactive={true}
-                            onClick={this.props.handleIconClick}
-                        />
-                        {this.props.showMenuBar && <MenuBar />}
+                    <Toolbar disableGutters={true} css={SS.toolbar}>
+                        <div>
+                            <CSLogo
+                                size={38}
+                                interactive={true}
+                                onClick={this.props.handleIconClick}
+                            />
+                            {this.props.showMenuBar && <MenuBar />}
+                        </div>
                         {authenticated ? userMenu() : loginButton()}
                     </Toolbar>
                 </AppBar>

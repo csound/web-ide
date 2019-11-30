@@ -5,6 +5,7 @@ import { PlayIcon } from "../../FontAudio";
 // import { withShortcut, IShortcutProviderRenderProps } from "react-keybind";
 import { useSelector, useDispatch } from "react-redux";
 import useStyles from "./styles";
+import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
@@ -16,7 +17,12 @@ import {
 } from "../Projects/actions";
 
 import { toggleManualPanel } from "../ProjectEditor/actions";
-import { runCsound, stopCsound, playPauseCsound, renderToDisk } from "../Csound/actions";
+import {
+    runCsound,
+    stopCsound,
+    playPauseCsound,
+    renderToDisk
+} from "../Csound/actions";
 import { reduce } from "lodash";
 import { showKeyboardShortcuts } from "../SiteDocs/actions";
 
@@ -138,9 +144,9 @@ function MenuBar(props) {
                 {
                     label: "Csound Manual (External)",
                     role: "openCsoundManual",
-                    callback: () =>  {
-                        window.open('https://csound.com/docs/manual', '_blank');
-                    }                
+                    callback: () => {
+                        window.open("https://csound.com/docs/manual", "_blank");
+                    }
                 },
                 {
                     role: "hr"
@@ -148,9 +154,9 @@ function MenuBar(props) {
                 {
                     label: "Web-IDE Documentation",
                     role: "open WebIDE Documentation",
-                    callback: () =>  {
-                        window.open('/documentation', '_blank');
-                    }                
+                    callback: () => {
+                        window.open("/documentation", "_blank");
+                    }
                 },
                 {
                     role: "hr"
@@ -226,14 +232,14 @@ function MenuBar(props) {
             const row = (
                 <ul
                     style={{ display: open === index ? "inline" : "none" }}
-                    className={classes.row}
+                    css={SS.dropdownList}
                 >
                     {reduceRow(item.submenu, 0)}
                 </ul>
             );
             acc.push(
                 <li
-                    className={classes.column}
+                    css={SS.dropdownButton}
                     key={acc.length + open}
                     onClick={() =>
                         open !== false && index === open
@@ -254,7 +260,7 @@ function MenuBar(props) {
     );
 
     const buttonGroup = (
-        <div style={{ float: "right", marginRight: 32 }}>
+        <div css={SS.buttonGroup}>
             <IconButton
                 type="button"
                 classes={{ root: classes.iconButtonRoot }}

@@ -1,4 +1,5 @@
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { css } from "@emotion/core";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -15,34 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
             top: -5,
             marginLeft: 6
         },
-        column: {
-            padding: "5px 9px",
-            color: "#f8f8f2",
-            display: "inline",
-            "&:hover": {
-                pointer: "cursor",
-                cursor: "pointer",
-                backgroundColor: "rgba(255,255,255,0.1)",
-                borderRadius: 2,
-                boxShadow:
-                    "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
-            }
-        },
-        row: {
-            width: "fit-content",
-            backgroundColor: "#272822",
-            position: "absolute",
-            listStyle: "none",
-            border: "none",
-            padding: 0,
-            animation: "fadeIn 0.01s linear",
-            outline: 0,
-            margin: 0,
-            marginTop: 6,
-            marginLeft: -8,
-            boxShadow:
-                "0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)"
-        },
+        column: {},
         listItem: {
             padding: "6px 12px",
             width: "100%",
@@ -66,12 +40,47 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         iconButtonRoot: {
             borderRadius: "3px",
-            // backgroundColor: "#FAACA8",
-            // backgroundImage: "linear-gradient(45deg, #737373 0%, #666666 90%)",
             padding: "2px 12px",
             justifySelf: "center"
         }
     })
 );
+
+export const dropdownButton = css`
+    position: relative;
+    padding: 5px 9px;
+    color: #f8f8f2;
+    display: inline;
+    &:hover: {
+        pointer: cursor;
+        cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+    }
+`;
+
+export const dropdownList = css`
+    width: fit-content;
+    background-color: #272822;
+    position: absolute;
+    line-style: none;
+    border: none;
+    padding: 0;
+    animation: fadeIn 0.01s linear;
+    outline: 0;
+    margin: 0;
+    margin-top: 24px;
+    left: 0;
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+        0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+        0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+`;
+
+export const buttonGroup = css`
+    display: none;
+`;
 
 export default useStyles;

@@ -1,5 +1,6 @@
 import { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, withStyles } from "@material-ui/styles";
+import { css } from "@emotion/core";
 
 const drawerWidth = 240;
 
@@ -71,11 +72,34 @@ const headerStyles = (theme: Theme) =>
         menuItemLink: {
             textDecoration: "none",
             color: "black"
-        },
-        toolbar: {
-            display: "block"
         }
     });
+
+export const toolbar = css`
+    display: flex;
+    justify-content: space-between;
+`;
+
+export const avatar = css`
+    height: 29px;
+    width: 29px;
+    padding: 0 !important;
+    margin-right: 6px;
+    border-radius: 4px;
+`;
+
+export const userMenu = css`
+    position: relative;
+    right: 12px;
+    top: -9px;
+    height: 38px;
+    width: 38px;
+`;
+
+export const loginButton = css`
+    position: relative;
+    right: 12px;
+`;
 
 export const headerStylesHook = makeStyles(headerStyles);
 export const headerStylesHOC = (ClassComponent: any) =>
