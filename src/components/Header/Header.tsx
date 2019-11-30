@@ -1,31 +1,24 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
 import { push } from "connected-react-router";
-// import classNames from "classnames";
-// import { Switch, Route } from "react-router-dom";
 import CSLogo from "../CSLogo/CSLogo";
 import { Link } from "react-router-dom";
 import { AppBar, Toolbar, IconButton, MenuItem, Menu } from "@material-ui/core";
 import { AccountBox } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
-import firebase from "firebase/app";
-import "firebase/auth";
+import MenuIcon from "@material-ui/icons/Menu";
 import { headerStylesHOC } from "./styles";
 import * as SS from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
 import MenuBar from "../MenuBar/MenuBar";
+import clsx from "clsx";
 
 interface IHeaderProps {
-    authenticated: boolean;
-    avatarUrl: string | null | undefined;
     classes: any;
-    isLoginDialogOpen: boolean;
-    // theme: Theme;
-    userDisplayName: string | null;
     showMenuBar: boolean;
 }
 
@@ -41,138 +34,121 @@ interface IHeaderLocalState {
 
 type IHeader = IHeaderProps & IHeaderDispatchProperties;
 
-class Header extends React.Component<IHeader, IHeaderLocalState> {
-    static defaultProps = {
-        showMenuBar: true
+export const Header = ({classes, showMenuBar = true }: IHeaderProps) => {
+    const dispatch = useDispatch();
+
+    const authenticated = useSelector(
+        (store: IStore) => store.LoginReducer.authenticated
+    );
+
+    const avatarUrl = useSelector(
+        (store: IStore) => store.userProfile && store.userProfile.photoUrl
+    );
+    const isLoginDialogOpen = useSelector(
+        (store: IStore) => store.LoginReducer.isLoginDialogOpen
+    );
+    
+    // const userDisplayName = useSelector(
+    //     (store: IStore) => store.userProfile && store.userProfile.name
+    // );
+
+    const anchorEl = useRef(null);
+
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+    const handleProfileMenuOpen = (event: any) => {
+        setIsProfileMenuOpen(true);
     };
 
-    protected anchorEl: any;
-
-    public readonly state: IHeaderLocalState = {
-        isProfileMenuOpen: false
+    const handleProfileMenuClose = (event: any) => {
+        setIsProfileMenuOpen(false);
     };
 
-    constructor(props: IHeader) {
-        super(props);
-        this.handleProfileMenuOpen = this.handleProfileMenuOpen.bind(this);
-        this.handleProfileMenuClose = this.handleProfileMenuClose.bind(this);
-        this.anchorEl = React.createRef();
-    }
+    const logout = () => dispatch(loginActions.logOut());
+    const openLoginDialog = () => dispatch(loginActions.openLoginDialog());
+    const handleIconClick = () => dispatch(push("/"));
 
-    handleProfileMenuOpen(event: any) {
-        this.setState({ isProfileMenuOpen: true });
-    }
+    const avatar = isEmpty(avatarUrl) ? (
+        <AccountBox />
+    ) : (
+        <Avatar src={avatarUrl || ""} css={SS.avatar} />
+    );
 
-    handleProfileMenuClose() {
-        this.setState({ isProfileMenuOpen: false });
-    }
-
-    logout() {
-        firebase.auth().signOut();
-        this.setState({ isProfileMenuOpen: false });
-    }
-
-    render() {
-        const { isProfileMenuOpen } = this.state;
-        const {
-            authenticated,
-            classes,
-            isLoginDialogOpen,
-            openLoginDialog,
-            avatarUrl
-        } = this.props;
-        const avatar = isEmpty(avatarUrl) ? (
-            <AccountBox />
-        ) : (
-            <Avatar src={avatarUrl || ""} css={SS.avatar} />
-        );
-        const userMenu = () => (
-            <div css={SS.userMenu}>
-                <IconButton
-                    aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
-                    aria-haspopup="true"
-                    color="inherit"
-                    onClick={this.handleProfileMenuOpen}
-                    ref={this.anchorEl}
-                >
-                    {avatar}
-                </IconButton>
-                <Menu
-                    id="menu-appbar"
-                    anchorEl={this.anchorEl.current}
-                    anchorOrigin={{
-                        vertical: "top",
-                        horizontal: "right"
-                    }}
-                    transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right"
-                    }}
-                    open={isProfileMenuOpen}
-                    onClose={this.handleProfileMenuClose}
-                >
-                    <MenuItem>
-                        <Link to="/profile" className={classes.menuItemLink}>
-                            View Profile
-                        </Link>
-                    </MenuItem>
-                    <MenuItem onClick={this.props.logOut}>Logout</MenuItem>
-                </Menu>
-            </div>
-        );
-
-        const loginButton = () => (
-            <Button
-                css={SS.loginButton}
+    const userMenu = () => (
+        <div css={SS.userMenu}>
+            <IconButton
+                aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
+                aria-haspopup="true"
                 color="inherit"
-                onClick={() => {
-                    this.setState({ isProfileMenuOpen: false });
-                    openLoginDialog();
-                }}
+                onClick={handleProfileMenuOpen}
+                ref={anchorEl}
             >
-                Login
-            </Button>
-        );
+                {avatar}
+            </IconButton>
+            <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl.current}
+                anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right"
+                }}
+                transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right"
+                }}
+                open={isProfileMenuOpen}
+                onClose={handleProfileMenuClose}
+            >
+                <MenuItem>
+                    <Link to="/profile" className={classes.menuItemLink}>
+                        View Profile
+                    </Link>
+                </MenuItem>
+                <MenuItem onClick={logout}>Logout</MenuItem>
+            </Menu>
+        </div>
+    );
 
-        return (
-            <div className={classes.root}>
-                {isLoginDialogOpen && <Login />}
-                <AppBar className={classes.appBar}>
-                    <Toolbar disableGutters={true} css={SS.toolbar}>
-                        <div>
-                            <CSLogo
-                                size={38}
-                                interactive={true}
-                                onClick={this.props.handleIconClick}
-                            />
-                            {this.props.showMenuBar && <MenuBar />}
-                        </div>
-                        {authenticated ? userMenu() : loginButton()}
-                    </Toolbar>
-                </AppBar>
-            </div>
-        );
-    }
-}
+    const loginButton = () => (
+        <Button
+            css={SS.loginButton}
+            color="inherit"
+            onClick={() => {
+                setIsProfileMenuOpen(false);
+                openLoginDialog();
+            }}
+        >
+            Login
+        </Button>
+    );
 
-const mapStateToProps = (store: IStore, ownProps: any): IHeaderProps => {
-    return {
-        authenticated: store.LoginReducer.authenticated,
-        avatarUrl: store.userProfile && store.userProfile.photoUrl,
-        classes: ownProps.classes,
-        isLoginDialogOpen: store.LoginReducer.isLoginDialogOpen,
-        userDisplayName: store.userProfile && store.userProfile.name,
-        showMenuBar: ownProps.showMenuBar
-    };
+    return (
+        <div className={classes.root}>
+            {isLoginDialogOpen && <Login />}
+            <AppBar className={classes.appBar}>
+                <Toolbar disableGutters={true} css={SS.toolbar}>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        // onClick={handleDrawerOpen}
+                        edge="start"
+                        className={clsx(classes.menuButton)}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+
+                    <CSLogo
+                        size={38}
+                        interactive={true}
+                        onClick={handleIconClick}
+                    />
+                    {showMenuBar && <MenuBar />}
+                    <div className={classes.spacer} />
+                    {authenticated ? userMenu() : loginButton()}
+                </Toolbar>
+            </AppBar>
+        </div>
+    );
 };
 
-const mapDispatchToProps = (dispatch: any): IHeaderDispatchProperties => ({
-    logOut: () => dispatch(loginActions.logOut()),
-    openLoginDialog: () => dispatch(loginActions.openLoginDialog()),
-    handleIconClick: () => dispatch(push("/"))
-});
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(headerStylesHOC(Header));
+export default headerStylesHOC(Header);

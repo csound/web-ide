@@ -16,8 +16,6 @@ const LogoContainer = styled.div<ILogoContainer>`
     line-height: ${props => props.size}px;
     text-align: center;
     font-weight: bold;
-    grid-row: 2;
-    grid-column: 2;
     ${props => !props.interactive && "background: #445;"}
     ${props =>
         props.interactive && ":hover{background: #445; cursor: pointer;}"}

@@ -13,7 +13,6 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: 0,
             margin: 0,
             userSelect: "none",
-            top: -5,
             marginLeft: 6
         },
         column: {},

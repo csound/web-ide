@@ -4,7 +4,7 @@ import { css } from "@emotion/core";
 
 const drawerWidth = 240;
 
-const headerStyles = (theme: Theme) =>
+export const headerStyles = (theme: Theme) =>
     createStyles({
         root: {
             flexGrow: 1,
@@ -38,7 +38,7 @@ const headerStyles = (theme: Theme) =>
         },
         menuButton: {
             marginLeft: 12,
-            marginRight: 36
+            marginRight: 6
         },
         hide: {
             display: "none"
@@ -65,6 +65,9 @@ const headerStyles = (theme: Theme) =>
         },
         flex: {
             flex: 1
+        },
+        spacer: {
+            flexGrow:1
         },
         profileName: {
             textAlign: "right"
