@@ -29,25 +29,24 @@ import { isAudioFile } from "../Projects/utils";
 import { selectActiveProject } from "../Projects/selectors";
 
 type EditorForDocumentProps = {
-    uid: any,
-    doc:IDocument, 
-    projectUid:string
-}
-
-
-function EditorForDocument({uid, projectUid, doc} : EditorForDocumentProps) {
-    if(doc.type === "txt") {
-        return <Editor
-                documentUid={doc.documentUid}
-                projectUid={projectUid} />;
-    } else if(doc.type === "bin" && isAudioFile(doc.filename)) {
-
-        const path = `${uid}/${projectUid}/${doc.documentUid}`;
-        return <AudioEditor audioFileUrl={path}/>;
-    }
-    return <div><p>Unknown document type</p></div>;
+    uid: any;
+    doc: IDocument;
+    projectUid: string;
 };
 
+function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
+    if (doc.type === "txt") {
+        return <Editor documentUid={doc.documentUid} projectUid={projectUid} />;
+    } else if (doc.type === "bin" && isAudioFile(doc.filename)) {
+        const path = `${uid}/${projectUid}/${doc.documentUid}`;
+        return <AudioEditor audioFileUrl={path} />;
+    }
+    return (
+        <div>
+            <p>Unknown document type</p>
+        </div>
+    );
+}
 
 const ProjectEditor = props => {
     const dispatch = useDispatch();
@@ -57,7 +56,7 @@ const ProjectEditor = props => {
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = React.useState(false);
 
-    const activeProject:IProject = useSelector(selectActiveProject)!;
+    const activeProject: IProject = useSelector(selectActiveProject)!;
 
     const projectUid: string = activeProject.projectUid;
 
@@ -70,9 +69,7 @@ const ProjectEditor = props => {
         reduce(
             tabDockDocuments,
             (acc, tabDoc) => {
-                const maybeDoc = activeProject.documents[
-                    tabDoc.uid
-                ];
+                const maybeDoc = activeProject.documents[tabDoc.uid];
                 if (maybeDoc) {
                     acc.push(maybeDoc as IDocument);
                 }
@@ -121,9 +118,11 @@ const ProjectEditor = props => {
     const openTabPanels = filterUndef(openDocuments).map(
         (doc: IDocument, index: number) => (
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
-                <EditorForDocument uid={activeProject.userUid} 
-                                   projectUid={projectUid} 
-                                   doc={doc}/>
+                <EditorForDocument
+                    uid={activeProject.userUid}
+                    projectUid={projectUid}
+                    doc={doc}
+                />
             </TabPanel>
         )
     );

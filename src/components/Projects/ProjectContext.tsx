@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "../../db/interfaces";
+import Header from "../Header/Header";
 import {
-    // closeProject,
     loadProjectFromFirestore,
     syncProjectDocumentsWithEMFS,
     openProjectDocumentTabs
 } from "./actions";
-// import { closeTabDock } from "../ProjectEditor/actions";
+import * as SS from "./styles";
 import { isEmpty } from "lodash";
 
 interface IProjectContextProps {
@@ -41,16 +41,21 @@ export const ProjectContext = (props: IProjectContextProps) => {
         }
     }, [dispatch, activeProject, projectUid]);
 
-    if (!needsLoading && csound) {
+    if (activeProject && activeProject.projectUid && !needsLoading && csound) {
         return (
-            <div>
+            <>
+                <Header />
                 <main className={className}>{props.children}</main>
-            </div>
+            </>
         );
     } else {
         return (
-            <main>
-                <h1>LOADING...</h1>
+            <main css={SS.loadMain}>
+                <div css={SS.loadingSpinner1}>
+                    <div css={SS.loadingSpinner2}>
+                        <div css={SS.loadingSpinner3}></div>
+                    </div>
+                </div>
             </main>
         );
     }
