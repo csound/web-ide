@@ -3,6 +3,7 @@ import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
+// import crypto from "crypto";
 import {
     db,
     projects,
@@ -43,6 +44,7 @@ import { selectPreviousProjectTags, selectCsoundStatus } from "./selectors";
 import { runCsound, playPauseCsound } from "../Csound/actions";
 import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
 import { ProfileModal } from "./ProfileModal";
+import { get } from "lodash";
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
@@ -296,15 +298,24 @@ export const getUserImageURL = (
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user !== null) {
-            let imageUrl: string;
+            let imageUrl: string | null = null;
             let profileUid: string | null = null;
+            let profile: any | null = null;
+            let photoUrl: string | null = null;
+            // let email: string | null = null;
             if (username === null) {
                 profileUid = user.uid;
             } else {
                 const result = await usernames.doc(username).get();
-                const data = result.data() || null;
-                if (data !== null) {
-                    profileUid = data!.userUid;
+
+                if (result.data() !== null) {
+                    profileUid = get(result.data(), "userUid") || null;
+
+                    if (profileUid !== null) {
+                        profile = await profiles.doc(profileUid!).get();
+                        photoUrl = get(profile.data(), "photoUrl") || null;
+                        // email = get(profile.data(), "email") || null;
+                    }
                 }
             }
 
@@ -315,26 +326,30 @@ export const getUserImageURL = (
                         .ref()
                         .child(`images/${profileUid}/profile.jpeg`)
                         .getDownloadURL();
-
-                    dispatch(getUserImageURLAction(imageUrl));
-                    return;
+                    dispatch(getUserImageURLAction(imageUrl!));
                 } catch (e) {
-                    console.log("no profile pic");
+                    imageUrl = null;
                 }
             }
 
-            // try {
-            //     const md5Email = crypto
-            //         .createHash("md5")
-            //         .update("phasereset@gmail.com")
-            //         .digest("hex");
-            //     imageUrl = `https://www.gravatar.com/avatar/${md5Email}`;
-            //     const response = await fetch(`${imageUrl}?d=404`);
+            if (imageUrl === null && photoUrl !== null) {
+                dispatch(getUserImageURLAction(photoUrl!));
+            }
 
-            //     dispatch(getUserImageURLAction(imageUrl));
-            //     return;
-            // } catch (e) {
-            //     console.log("no gravatar");
+            // if (imageUrl === null && photoUrl === null) {
+            //     try {
+            //         const md5Email = crypto
+            //             .createHash("md5")
+            //             .update("example@email.com")
+            //             .digest("hex");
+            //         imageUrl = `https://www.gravatar.com/avatar/${md5Email}?s=2048`;
+            //         const response = await fetch(`${imageUrl}?d=404`);
+
+            //         dispatch(getUserImageURLAction(imageUrl));
+            //         return;
+            //     } catch (e) {
+            //         console.log("no gravatar");
+            //     }
             // }
         }
     });
