@@ -3,6 +3,8 @@ export const GET_USER_PROFILE = "PROFILE.GET_USER_PROFILE";
 export const ADD_USER_PROJECT = "PROFILE.ADD_USER_PROJECT";
 export const DELETE_USER_PROJECT = "PROFILE.DELETE_USER_PROJECT";
 export const GET_USER_IMAGE_URL = "PROFILE.GET_USER_IMAGE_URL";
+export const SET_IMAGE_URL_REQUESTING = "PROFILE.SET_IMAGE_URL_REQUESTING";
+export const SET_PROFILE_REQUESTING = "PROFILE.SET_PROFILE_REQUESTING";
 export const SET_CURRENT_TAG_TEXT = "PROFILE.SET_CURRENT_TAG_TEXT";
 export const SET_TAGS_INPUT = "PROFILE.SET_TAGS_INPUT";
 export const SET_USER_PROFILE = "PROFILE.SET_USER_PROFILE";
@@ -22,6 +24,14 @@ export const GET_LOGGED_IN_USER_FOLLOWING =
 export const GET_USER_PROFILES_FOR_FOLLOWING =
     "PROFILE.GET_USER_PROFILES_FOR_FOLLOWING";
 
+interface SetProfileRequestingAction {
+    type: typeof SET_PROFILE_REQUESTING;
+    payload: boolean;
+}
+interface SetImageURLRequestingAction {
+    type: typeof SET_IMAGE_URL_REQUESTING;
+    payload: boolean;
+}
 interface GetUserProfilesForFollowingAction {
     type: typeof GET_USER_PROFILES_FOR_FOLLOWING;
     payload: [];
@@ -131,4 +141,6 @@ export type ProfileActionTypes =
     | GetUserFollowingAction
     | GetLoggedInUserFollowingAction
     | RefreshUserProfileAction
+    | SetImageURLRequestingAction
+    | SetProfileRequestingAction
     | SetShouldRedirectRequestAction;

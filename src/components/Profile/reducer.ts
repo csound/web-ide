@@ -16,13 +16,17 @@ import {
     REFRESH_USER_PROFILE,
     GET_USER_FOLLOWING,
     GET_LOGGED_IN_USER_FOLLOWING,
-    GET_USER_PROFILES_FOR_FOLLOWING
+    GET_USER_PROFILES_FOR_FOLLOWING,
+    SET_IMAGE_URL_REQUESTING,
+    SET_PROFILE_REQUESTING
 } from "./types";
 import facePng from "./face.png";
 export interface State {
     readonly userProjects: any;
     readonly userProfile: any;
+    readonly userProfileRequesting: boolean;
     readonly userImageURL: string | null | undefined;
+    readonly userImageURLRequesting: boolean;
     readonly loggedInUid: string | null;
     readonly profileUid: string | null;
     readonly currentTagText: string;
@@ -42,7 +46,9 @@ export interface State {
 const INITIAL_STATE: State = {
     userProjects: false,
     userProfile: false,
+    userProfileRequesting: false,
     userImageURL: facePng,
+    userImageURLRequesting: false,
     loggedInUid: null,
     profileUid: null,
     currentTagText: "",
@@ -61,6 +67,18 @@ const INITIAL_STATE: State = {
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case SET_PROFILE_REQUESTING: {
+            return {
+                ...state,
+                userProfileRequesting: action.payload
+            };
+        }
+        case SET_IMAGE_URL_REQUESTING: {
+            return {
+                ...state,
+                userImageURLRequesting: action.payload
+            };
+        }
         case GET_USER_PROFILES_FOR_FOLLOWING: {
             return {
                 ...state,

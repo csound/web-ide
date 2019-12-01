@@ -37,7 +37,9 @@ import {
     selectProfileUid,
     selectLoggedInUid,
     selectUserFollowing,
-    selectUserProfilesForFollowing
+    selectUserProfilesForFollowing,
+    selectUserImageURLRequesting,
+    selectUserProfileRequesting
 } from "./selectors";
 import { get } from "lodash";
 import {
@@ -121,6 +123,11 @@ const Profile = props => {
     const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
     const profileUid = useSelector(selectProfileUid);
     const loggedInUid = useSelector(selectLoggedInUid);
+    const imageUrlRequesting = useSelector(selectUserImageURLRequesting);
+    const profileRequesting = useSelector(selectUserProfileRequesting);
+
+    console.log(profileRequesting);
+
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
     const userFollowing = useSelector(selectUserFollowing);
@@ -184,12 +191,14 @@ const Profile = props => {
                             onMouseLeave={() => setImageHover(false)}
                         >
                             <ProfilePictureDiv>
-                                <ProfilePicture
-                                    src={imageUrl!}
-                                    width={"100%"}
-                                    height={"100%"}
-                                    alt="User Profile"
-                                />
+                                {imageUrlRequesting === false && (
+                                    <ProfilePicture
+                                        src={imageUrl!}
+                                        width={"100%"}
+                                        height={"100%"}
+                                        alt="User Profile"
+                                    />
+                                )}
                             </ProfilePictureDiv>
                             <input
                                 type="file"
@@ -229,14 +238,18 @@ const Profile = props => {
                                 color="textSecondary"
                                 gutterBottom
                             >
-                                {profile.bio}
+                                {profileRequesting === false && profile.bio}
                             </Typography>
                             <Typography variant="h5" component="h4">
                                 Links
                             </Typography>
-                            <UserLink link={link1} />
-                            <UserLink link={link2} />
-                            <UserLink link={link3} />
+                            {profileRequesting === false && (
+                                <>
+                                    <UserLink link={link1} />
+                                    <UserLink link={link2} />
+                                    <UserLink link={link3} />
+                                </>
+                            )}
                         </DescriptionSection>
                         {isProfileOwner && (
                             <EditProfileButtonSection>
@@ -262,41 +275,47 @@ const Profile = props => {
                                 </AddFab>
                             </EditProfileButtonSection>
                         )}
-                        {!isProfileOwner && loggedInUid && !isFollowing && (
-                            <EditProfileButtonSection>
-                                <AddFab
-                                    color="primary"
-                                    variant="extended"
-                                    aria-label="Add"
-                                    size="medium"
-                                    onClick={() => {
-                                        dispatch(followUser(username));
-                                    }}
-                                >
-                                    Follow
-                                </AddFab>
-                            </EditProfileButtonSection>
-                        )}
-                        {!isProfileOwner && loggedInUid && isFollowing && (
-                            <EditProfileButtonSection>
-                                <AddFab
-                                    color="primary"
-                                    variant="extended"
-                                    aria-label="Add"
-                                    size="medium"
-                                    onClick={() => {
-                                        dispatch(unfollowUser(username));
-                                    }}
-                                >
-                                    Unfollow
-                                </AddFab>
-                            </EditProfileButtonSection>
-                        )}
+                        {!isProfileOwner &&
+                            loggedInUid &&
+                            !isFollowing &&
+                            profileRequesting === false && (
+                                <EditProfileButtonSection>
+                                    <AddFab
+                                        color="primary"
+                                        variant="extended"
+                                        aria-label="Add"
+                                        size="medium"
+                                        onClick={() => {
+                                            dispatch(followUser(username));
+                                        }}
+                                    >
+                                        Follow
+                                    </AddFab>
+                                </EditProfileButtonSection>
+                            )}
+                        {!isProfileOwner &&
+                            loggedInUid &&
+                            isFollowing &&
+                            profileRequesting === false && (
+                                <EditProfileButtonSection>
+                                    <AddFab
+                                        color="primary"
+                                        variant="extended"
+                                        aria-label="Add"
+                                        size="medium"
+                                        onClick={() => {
+                                            dispatch(unfollowUser(username));
+                                        }}
+                                    >
+                                        Unfollow
+                                    </AddFab>
+                                </EditProfileButtonSection>
+                            )}
                     </IDContainer>
                     <NameSectionWrapper>
                         <NameSection>
                             <Typography variant="h3" component="h3">
-                                {displayName}
+                                {profileRequesting === false && displayName}
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
@@ -312,7 +331,6 @@ const Profile = props => {
                             >
                                 <Tab label="Projects" />
                                 <Tab label="Following" />
-                                <Tab label="Other" />
                             </Tabs>
                         </ContentTabsContainer>
 
@@ -350,6 +368,7 @@ const Profile = props => {
                             <List style={{ overflow: "auto" }}>
                                 {selectedSection === 0 &&
                                     Array.isArray(projects) &&
+                                    profileRequesting === false &&
                                     projects.map((p, i) => {
                                         return (
                                             <ListItem
@@ -487,6 +506,7 @@ const Profile = props => {
                                     })}
                                 {selectedSection === 1 &&
                                     Array.isArray(userProfilesForFollowing) &&
+                                    profileRequesting === false &&
                                     userProfilesForFollowing.map(
                                         (p: any, i) => {
                                             return (

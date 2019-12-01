@@ -4,9 +4,9 @@ import { Gradient } from "./Gradient";
 export const ProfileContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 250px 8fr;
-    grid-template-rows: 30px 175px 1fr 100px;
+    grid-template-rows: 50px 175px 1fr 70px;
     width: 100%;
-    height: calc(100vh - 40px);
+    height: calc(100vh);
     background-color: black;
     ${Gradient}
 `;

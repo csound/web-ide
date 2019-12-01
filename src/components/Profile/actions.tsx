@@ -31,7 +31,9 @@ import {
     REFRESH_USER_PROFILE,
     GET_USER_FOLLOWING,
     GET_USER_PROFILES_FOR_FOLLOWING,
-    GET_LOGGED_IN_USER_FOLLOWING
+    GET_LOGGED_IN_USER_FOLLOWING,
+    SET_IMAGE_URL_REQUESTING,
+    SET_PROFILE_REQUESTING
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -63,6 +65,8 @@ const getUserProjectsAction = (payload: any): ProfileActionTypes => {
 export const getUserProjects = (
     uid
 ): ThunkAction<void, any, null, Action<string>> => dispatch => {
+    dispatch(getUserProjectsAction([]));
+
     projects.where("userUid", "==", uid).onSnapshot(querySnapshot => {
         const projects: any = [];
         querySnapshot.forEach(d => {
@@ -305,6 +309,7 @@ export const getTags = (): ThunkAction<void, any, null, Action<string>> => (
 export const getUserImageURL = (
     username: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
+    dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: true });
     firebase.auth().onAuthStateChanged(async user => {
         let imageUrl: string | null = null;
         let profileUid: string | null = null;
@@ -336,6 +341,8 @@ export const getUserImageURL = (
                     .child(`images/${profileUid}/profile.jpeg`)
                     .getDownloadURL();
                 dispatch(getUserImageURLAction(imageUrl!));
+                dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
+
                 return;
             } catch (e) {
                 imageUrl = null;
@@ -344,10 +351,13 @@ export const getUserImageURL = (
 
         if (imageUrl === null && photoUrl !== null) {
             dispatch(getUserImageURLAction(photoUrl!));
+            dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
+
             return;
         }
 
         dispatch(getUserImageURLAction(null));
+        dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
 
         // if (imageUrl === null && photoUrl === null) {
         //     try {
@@ -479,14 +489,17 @@ export const getUserFollowing = (
     } else {
         const result = await usernames.doc(username).get();
         const profileUid = get(result.data(), "userUid") || null;
-        const profile = await profiles.doc(profileUid!).get();
-        const profileData = profile.data();
-        const following = get(profileData, "following") || [];
 
-        dispatch({
-            type: GET_USER_FOLLOWING,
-            payload: following
-        });
+        if (profileUid !== null) {
+            const profile = await profiles.doc(profileUid!).get();
+            const profileData = profile.data();
+            const following = get(profileData, "following") || [];
+
+            dispatch({
+                type: GET_USER_FOLLOWING,
+                payload: following
+            });
+        }
     }
 };
 
@@ -511,6 +524,7 @@ export const getLoggedInUserFollowing = (): ThunkAction<
 };
 
 export const setUserProfile = (
+    originalUsername: string,
     username: string,
     displayName: string,
     bio: string,
@@ -529,6 +543,8 @@ export const setUserProfile = (
                 link3
             });
 
+            await usernames.doc(originalUsername).delete();
+            await usernames.doc(username).set({ userUid: user.uid });
             dispatch({
                 type: REFRESH_USER_PROFILE,
                 payload: { username, displayName, bio, link1, link2, link3 }
@@ -672,12 +688,14 @@ export const getUserProfile = (
     username: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     dispatch({ type: SHOULD_REDIRECT_REQUEST });
-
+    dispatch({ type: SET_PROFILE_REQUESTING, payload: true });
     firebase.auth().onAuthStateChanged(async user => {
         if (username !== null) {
             const result = await usernames.doc(username).get();
             if (result.data() === null) {
                 dispatch(push("/404", { message: "User not found." }));
+                dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
+                return;
             } else {
                 dispatch({ type: SHOULD_REDIRECT_NO });
                 const result = await usernames.doc(username).get();
@@ -685,6 +703,8 @@ export const getUserProfile = (
 
                 if (data === null) {
                     dispatch(push("/404", { message: "Profile Not Found" }));
+                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
+
                     return;
                 }
 
@@ -696,6 +716,11 @@ export const getUserProfile = (
 
                     if (!profile.exists) {
                         dispatch(push("/404"));
+                        dispatch({
+                            type: SET_PROFILE_REQUESTING,
+                            payload: false
+                        });
+
                         openSnackbar(
                             "User profile not found",
                             SnackbarType.Error
@@ -708,9 +733,15 @@ export const getUserProfile = (
                                 profileUid
                             })
                         );
+                        dispatch({
+                            type: SET_PROFILE_REQUESTING,
+                            payload: false
+                        });
                     }
                 } else {
                     dispatch(push("/404"));
+                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
+
                     openSnackbar("User profile not found", SnackbarType.Error);
                 }
             }
@@ -723,6 +754,7 @@ export const getUserProfile = (
 
                 if (!profile.exists) {
                     dispatch(push("/404"));
+                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
                     openSnackbar("User profile not found", SnackbarType.Error);
                 } else {
                     dispatch(
@@ -732,12 +764,14 @@ export const getUserProfile = (
                             profileUid: loggedInUid
                         })
                     );
+                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
                 }
             }
         } else if (user === null) {
             if (username === null) {
                 dispatch({ type: SHOULD_REDIRECT_YES });
                 dispatch(push("/"));
+                dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
             }
         }
     });

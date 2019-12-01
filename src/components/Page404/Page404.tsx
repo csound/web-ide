@@ -4,63 +4,20 @@ import styled from "styled-components";
 import withStyles from "./styles";
 import CSLogo from "../CSLogo/CSLogo";
 import { get } from "lodash";
+import { Gradient } from "./Gradient";
 const MainContainer = styled.div`
     display: grid;
     width: 100%;
-    height: calc(100vh - 39px);
+    height: calc(100vh);
     grid-template-columns: auto 300px 300px auto;
     grid-template-rows: auto 300px auto;
     background-color: #556;
-    background-image: linear-gradient(
-            30deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            150deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            30deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            150deg,
-            #445 12%,
-            transparent 12.5%,
-            transparent 87%,
-            #445 87.5%,
-            #445
-        ),
-        linear-gradient(
-            60deg,
-            #aaa 25%,
-            transparent 25.5%,
-            transparent 75%,
-            #aaa 75%,
-            #aaa
-        ),
-        linear-gradient(
-            60deg,
-            #aaa 25%,
-            transparent 25.5%,
-            transparent 75%,
-            #aaa 75%,
-            #99a
-        );
-    background-size: 80px 140px;
-    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+    ${Gradient}
+`;
+
+const CSLogoContainer = styled.div`
+    grid-row: 2;
+    grid-column: 2;
 `;
 
 interface ILogoContainer {
@@ -98,8 +55,14 @@ const Page404 = props => {
         <div className={classes.root}>
             <Header showMenuBar={false} />
             <main>
-                <MainContainer>
-                    <CSLogo size={300} />
+                <MainContainer
+                    colorA={"rgba(30, 30, 30, 1)"}
+                    colorB={"rgba(40, 40, 40, 1)"}
+                    colorC={"rgba(20, 20, 20, 1)"}
+                >
+                    <CSLogoContainer>
+                        <CSLogo size={300} />
+                    </CSLogoContainer>
                     <TextContainer size={200}>
                         404<MessageText size={200}>{message}</MessageText>
                     </TextContainer>

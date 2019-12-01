@@ -20,6 +20,16 @@ export const selectUserImageURL = (store: any) => {
     return state.userImageURL;
 };
 
+export const selectUserImageURLRequesting = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.userImageURLRequesting;
+};
+
+export const selectUserProfileRequesting = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.userProfileRequesting;
+};
+
 export const selectProfileUid = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.profileUid;
