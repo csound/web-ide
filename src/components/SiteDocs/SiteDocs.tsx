@@ -10,7 +10,6 @@ class SiteDocs extends Component<any, {}> {
                 <Header showMenuBar={false} />
                 <main className={classes.main}>
                     <h1>Csound Web-IDE</h1>
-                    <h2>Introduction</h2>
                     
                     <p>Welcome to the Csound Web-IDE!</p>
                     <p>This site is an online Integrated Development Environment (IDE) 
@@ -49,9 +48,9 @@ class SiteDocs extends Component<any, {}> {
                         bio, and links. 
                     </p>
                     <p>
-                       The profile page is also where you will be creating and modifying project details. You can also audition 
-                       projects using play button as well as select the project to view/edit the project in the main IDE 
-                       editor. 
+                    The profile page is also where you will be creating and modifying project details. You can also audition 
+                    projects using play button as well as select the project to view/edit the project in the main IDE 
+                    editor. 
                     </p>
 
                     <h3>Need assistance?</h3> 
@@ -87,7 +86,6 @@ class SiteDocs extends Component<any, {}> {
                     </ul>
 
                     <h2>Sharing Projects</h2>
-
 
                 </main>
             </div>

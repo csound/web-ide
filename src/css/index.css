@@ -30,9 +30,7 @@ body {
 main {
     position: relative;
     padding: 0;
-    min-height: calc(100vh - 40px); /* minus the header height! */
     bottom: 0;
-    top: 39px;
 }
 
 header {
@@ -204,7 +202,7 @@ button {
     padding-left: 6px;
 }
 
-// blink eval
+/* blink eval */
 
 @keyframes flash-animation {
     0% {

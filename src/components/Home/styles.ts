@@ -5,39 +5,30 @@ const homeStyles = (theme: Theme) =>
     createStyles({
         root: {
             backgroundColor: "#e8e8e8",
-            fontFamily: "'Space Mono', monospace",
+            // fontFamily: "'Space Mono', monospace",
             bottom: "0px",
             top: "37px",
             left: 0,
             right: 0,
             position: "absolute",
             overflowY: "auto",
+            fontSize: "1rem",
         },
         main: {
             maxWidth: "1024px",
+            padding: 16,
             margin: "auto",
+            fontSize: 16,
+            "& h1": {
+                margin: "16px 0",
+            },
+            "& h2": {
+                margin: "40px 0 16px",
+            },
+            "& h3": {
+                margin: "40px 0 16px",
+            },
         },
-        centerBox: {
-            position: "absolute",
-            width: "100px",
-            height: "50px",
-            top: "50%",
-            left: "50%",
-            marginTop: "-25px",
-            marginLeft: "-50px"
-        },
-        startCodingButton: {
-            fontSize: "22px",
-            border: "4px solid #518C82",
-            borderRadius: "80%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "220px",
-            height: "220px",
-            textDecoration: "none",
-            background: "#00DFCB"
-        }
     });
 
 export default (ClassComponent: any) => withStyles(homeStyles)(ClassComponent);

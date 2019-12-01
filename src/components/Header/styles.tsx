@@ -2,7 +2,7 @@ import { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, withStyles } from "@material-ui/styles";
 import { css } from "@emotion/core";
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 export const headerStyles = (theme: Theme) =>
     createStyles({
@@ -11,7 +11,7 @@ export const headerStyles = (theme: Theme) =>
             zIndex: 100,
             overflow: "hidden",
             position: "relative",
-            display: "block"
+            display: "block",
         },
         appBar: {
             width: "100%",
@@ -42,6 +42,14 @@ export const headerStyles = (theme: Theme) =>
         },
         hide: {
             display: "none"
+        },
+        drawer: {
+            width: drawerWidth,
+        },
+        drawerHeader: {
+            width: drawerWidth,
+            paddingLeft: 16,
+            height: 40,
         },
         drawerPaper: {
             position: "relative",

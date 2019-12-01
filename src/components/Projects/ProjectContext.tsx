@@ -45,7 +45,9 @@ export const ProjectContext = (props: IProjectContextProps) => {
         return (
             <>
                 <Header />
-                <main className={className}>{props.children}</main>
+                <main css={SS.main} className={className}>
+                    {props.children}
+                </main>
             </>
         );
     } else {

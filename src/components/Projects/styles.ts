@@ -1,5 +1,10 @@
 import { css } from "@emotion/core";
 
+export const main = css`
+    top: 39px;
+    min-height: calc(100vh - 40px); /* minus the header height! */
+`;
+
 export const loadMain = css`
     overflow: hidden;
 `;
