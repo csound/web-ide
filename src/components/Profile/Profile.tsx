@@ -126,8 +126,6 @@ const Profile = props => {
     const imageUrlRequesting = useSelector(selectUserImageURLRequesting);
     const profileRequesting = useSelector(selectUserProfileRequesting);
 
-    console.log(profileRequesting);
-
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
     const userFollowing = useSelector(selectUserFollowing);
