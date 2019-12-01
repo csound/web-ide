@@ -1,15 +1,17 @@
 import React from "react";
 import { storageRef } from "../../config/firestore";
 import { useEffect, useState } from "react";
+import withStyles from "./styles";
 
 type AudioEditorProps = {
     audioFileUrl:string,
+    classes:any, 
 }
 
-export const AudioEditor = ({audioFileUrl}:AudioEditorProps) => {
+export const AudioEditor = ({audioFileUrl, classes }:AudioEditorProps) => {
     const [data, setData] = useState(null);
-    console.log("AFURL: " + audioFileUrl)
-    console.log("Data: " + data)
+    // console.log("AFURL: " + audioFileUrl)
+    // console.log("Data: " + data)
     useEffect(() => {
         (async () => {
         const fileUrl = await storageRef
@@ -23,7 +25,7 @@ export const AudioEditor = ({audioFileUrl}:AudioEditorProps) => {
             <p>Looking up audio file URL...</p>
         </div> 
         :
-        <div>
+        <div className={classes.root}>
             <audio controls>
                 <source src={data!}/>
             </audio>
@@ -31,4 +33,4 @@ export const AudioEditor = ({audioFileUrl}:AudioEditorProps) => {
         ;
 };
 
-export default AudioEditor;
+export default withStyles(AudioEditor);
