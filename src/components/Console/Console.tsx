@@ -6,7 +6,6 @@ import { IStore } from "../../db/interfaces";
 import { List } from "react-virtualized";
 import Measure from "react-measure";
 import { append, merge, pathOr } from "ramda";
-import PerfectScrollbar from "perfect-scrollbar";
 import * as SS from "./styles";
 import "react-virtualized/styles.css";
 
@@ -103,7 +102,7 @@ class Console extends React.Component<
             this.setState({ logs: [] });
         });
         this.props.setPrintToConsoleCallback(this.messageCallback);
-        new PerfectScrollbar("#csound-console");
+
         const initProjectInterval = setInterval(() => {
             if (this.props.csound) {
                 clearInterval(initProjectInterval);
@@ -119,7 +118,11 @@ class Console extends React.Component<
         return (
             <Measure onResize={this.onWindowResize}>
                 {({ measureRef }) => (
-                    <div className="console-log-container" ref={measureRef}>
+                    <div
+                        className="console-log-container"
+                        css={SS.listWrapper}
+                        ref={measureRef}
+                    >
                         <List
                             id="csound-console"
                             ref={this.consoleRef}
