@@ -13,13 +13,16 @@ import {
     SHOULD_REDIRECT_REQUEST,
     SHOULD_REDIRECT_YES,
     SHOULD_REDIRECT_NO,
-    REFRESH_USER_PROFILE
+    REFRESH_USER_PROFILE,
+    GET_USER_FOLLOWING,
+    GET_LOGGED_IN_USER_FOLLOWING,
+    GET_USER_PROFILES_FOR_FOLLOWING
 } from "./types";
 import facePng from "./face.png";
 export interface State {
     readonly userProjects: any;
     readonly userProfile: any;
-    readonly userImageURL: string;
+    readonly userImageURL: string | null | undefined;
     readonly loggedInUid: string | null;
     readonly profileUid: string | null;
     readonly currentTagText: string;
@@ -31,6 +34,9 @@ export interface State {
     readonly csoundStatus: string | false;
     readonly previousCsoundStatus: string | false;
     readonly shouldRedirect: string | false;
+    readonly userFollowing: [];
+    readonly loggedInUserFollowing: [];
+    readonly userProfilesForFollowing: [];
 }
 
 const INITIAL_STATE: State = {
@@ -47,11 +53,32 @@ const INITIAL_STATE: State = {
     listPlayState: "stopped",
     csoundStatus: false,
     previousCsoundStatus: false,
-    shouldRedirect: false
+    shouldRedirect: false,
+    userFollowing: [],
+    loggedInUserFollowing: [],
+    userProfilesForFollowing: []
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case GET_USER_PROFILES_FOR_FOLLOWING: {
+            return {
+                ...state,
+                userProfilesForFollowing: action.payload
+            };
+        }
+        case GET_LOGGED_IN_USER_FOLLOWING: {
+            return {
+                ...state,
+                loggedInUserFollowing: action.payload
+            };
+        }
+        case GET_USER_FOLLOWING: {
+            return {
+                ...state,
+                userFollowing: action.payload
+            };
+        }
         case REFRESH_USER_PROFILE: {
             return {
                 ...state,
@@ -128,10 +155,17 @@ export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
             };
         }
         case GET_USER_IMAGE_URL: {
-            return {
-                ...state,
-                userImageURL: action.payload
-            };
+            if (action.payload === null) {
+                return {
+                    ...state,
+                    userImageURL: facePng
+                };
+            } else {
+                return {
+                    ...state,
+                    userImageURL: action.payload
+                };
+            }
         }
         case SET_CURRENT_TAG_TEXT: {
             return {

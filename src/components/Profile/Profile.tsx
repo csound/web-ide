@@ -17,7 +17,12 @@ import {
     playListItem,
     pauseListItem,
     setCsoundStatus,
-    editProfile
+    editProfile,
+    followUser,
+    unfollowUser,
+    getUserProfilesForFollowing,
+    getUserFollowing,
+    getLoggedInUserFollowing
 } from "./actions";
 import {
     selectUserProjects,
@@ -28,8 +33,11 @@ import {
     selectCurrentlyPlayingProject,
     selectCsoundStatus,
     selectPreviousCsoundStatus,
-    selectShouldRedirect,
-    selectProfileUid
+    selectLoggedInUserFollowing,
+    selectProfileUid,
+    selectLoggedInUid,
+    selectUserFollowing,
+    selectUserProfilesForFollowing
 } from "./selectors";
 import { get } from "lodash";
 import {
@@ -77,18 +85,31 @@ import {
     StyledListItemAvatar,
     StyledListItemTopRowText,
     StyledListItemChipsRow,
+    StyledUserListItemContainer,
     StyledChip,
     StyledListPlayButtonContainer,
     StyledListButtonsContainer,
     EditProfileButtonSection
 } from "./ProfileUI";
 
+const UserLink = ({ link }) => {
+    if (typeof link === "string") {
+        return (
+            <a href={link.includes("://") ? link : `https://${link}`}>
+                <Typography variant="body1" component="div">
+                    {link}
+                </Typography>
+            </a>
+        );
+    }
+    return null;
+};
+
 const Profile = props => {
     const { classes } = props;
+    const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
     const username = get(props, "match.params.username") || null;
-
-    const shouldRedirect = useSelector(selectShouldRedirect);
     const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
@@ -99,25 +120,43 @@ const Profile = props => {
     const csoundStatus = useSelector(selectCsoundStatus);
     const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
     const profileUid = useSelector(selectProfileUid);
+    const loggedInUid = useSelector(selectLoggedInUid);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
-
+    const userFollowing = useSelector(selectUserFollowing);
+    const loggedInUserFollowing = useSelector(selectLoggedInUserFollowing);
+    const isFollowing = loggedInUserFollowing.includes(username);
+    const userProfilesForFollowing = useSelector(
+        selectUserProfilesForFollowing
+    );
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
 
     useEffect(() => {
         if (profileUid !== null) {
             dispatch(getUserProjects(profileUid));
         }
-    }, [dispatch, profileUid]);
+    }, [dispatch, profileUid, username]);
+
+    useEffect(() => {
+        dispatch(getUserProfilesForFollowing(userFollowing));
+    }, [dispatch, userFollowing]);
+
+    useEffect(() => {
+        if (fromFollowing === true) {
+            setSelectedSection(0);
+        }
+    }, [fromFollowing]);
     useEffect(() => {
         dispatch(getUserProfile(username));
         dispatch(getUserImageURL(username));
         dispatch(getTags());
+        dispatch(getUserFollowing(username));
+        dispatch(getLoggedInUserFollowing());
         dispatch(setProfileHotKeys());
         return () => {
             dispatch(stopCsound());
         };
-    }, [dispatch, props, username]);
+    }, [dispatch, username]);
 
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));
@@ -128,10 +167,6 @@ const Profile = props => {
             dispatch({ type: SET_LIST_PLAY_STATE, payload: "stopped" });
         }
     }, [dispatch, csoundStatus, previousCsoundStatus]);
-
-    if (shouldRedirect !== "NO") {
-        return null;
-    }
 
     const { displayName, bio, link1, link2, link3 } = profile;
     return (
@@ -150,7 +185,7 @@ const Profile = props => {
                         >
                             <ProfilePictureDiv>
                                 <ProfilePicture
-                                    src={imageUrl}
+                                    src={imageUrl!}
                                     width={"100%"}
                                     height={"100%"}
                                     alt="User Profile"
@@ -199,45 +234,9 @@ const Profile = props => {
                             <Typography variant="h5" component="h4">
                                 Links
                             </Typography>
-                            {link1 && (
-                                <a
-                                    href={
-                                        link1.includes("://")
-                                            ? link1
-                                            : `https://${link1}`
-                                    }
-                                >
-                                    <Typography variant="body1" component="div">
-                                        {link1}
-                                    </Typography>
-                                </a>
-                            )}
-                            {link2 && (
-                                <a
-                                    href={
-                                        link2.includes("://")
-                                            ? link2
-                                            : `https://${link2}`
-                                    }
-                                >
-                                    <Typography variant="body1" component="div">
-                                        {link2}
-                                    </Typography>
-                                </a>
-                            )}
-                            {link3 && (
-                                <a
-                                    href={
-                                        link3.includes("://")
-                                            ? link3
-                                            : `https://${link3}`
-                                    }
-                                >
-                                    <Typography variant="body1" component="div">
-                                        {link3}
-                                    </Typography>
-                                </a>
-                            )}
+                            <UserLink link={link1} />
+                            <UserLink link={link2} />
+                            <UserLink link={link3} />
                         </DescriptionSection>
                         {isProfileOwner && (
                             <EditProfileButtonSection>
@@ -260,6 +259,36 @@ const Profile = props => {
                                     }
                                 >
                                     Edit Profile
+                                </AddFab>
+                            </EditProfileButtonSection>
+                        )}
+                        {!isProfileOwner && loggedInUid && !isFollowing && (
+                            <EditProfileButtonSection>
+                                <AddFab
+                                    color="primary"
+                                    variant="extended"
+                                    aria-label="Add"
+                                    size="medium"
+                                    onClick={() => {
+                                        dispatch(followUser(username));
+                                    }}
+                                >
+                                    Follow
+                                </AddFab>
+                            </EditProfileButtonSection>
+                        )}
+                        {!isProfileOwner && loggedInUid && isFollowing && (
+                            <EditProfileButtonSection>
+                                <AddFab
+                                    color="primary"
+                                    variant="extended"
+                                    aria-label="Add"
+                                    size="medium"
+                                    onClick={() => {
+                                        dispatch(unfollowUser(username));
+                                    }}
+                                >
+                                    Unfollow
                                 </AddFab>
                             </EditProfileButtonSection>
                         )}
@@ -319,7 +348,8 @@ const Profile = props => {
 
                         <ListContainer>
                             <List style={{ overflow: "auto" }}>
-                                {Array.isArray(projects) &&
+                                {selectedSection === 0 &&
+                                    Array.isArray(projects) &&
                                     projects.map((p, i) => {
                                         return (
                                             <ListItem
@@ -455,6 +485,52 @@ const Profile = props => {
                                             </ListItem>
                                         );
                                     })}
+                                {selectedSection === 1 &&
+                                    Array.isArray(userProfilesForFollowing) &&
+                                    userProfilesForFollowing.map(
+                                        (p: any, i) => {
+                                            return (
+                                                <ListItem
+                                                    button
+                                                    alignItems="flex-start"
+                                                    key={i}
+                                                    onClick={() => {
+                                                        dispatch(
+                                                            push(
+                                                                `/profile/${p.username}`,
+                                                                {
+                                                                    fromFollowing: true
+                                                                }
+                                                            )
+                                                        );
+                                                    }}
+                                                >
+                                                    <StyledUserListItemContainer>
+                                                        <StyledListItemAvatar>
+                                                            <ListItemAvatar>
+                                                                <Avatar
+                                                                    src={
+                                                                        p.imageUrl
+                                                                    }
+                                                                />
+                                                            </ListItemAvatar>
+                                                        </StyledListItemAvatar>
+
+                                                        <StyledListItemTopRowText>
+                                                            <ListItemText
+                                                                primary={
+                                                                    p.displayName
+                                                                }
+                                                                secondary={
+                                                                    p.bio
+                                                                }
+                                                            />
+                                                        </StyledListItemTopRowText>
+                                                    </StyledUserListItemContainer>
+                                                </ListItem>
+                                            );
+                                        }
+                                    )}
                             </List>
                         </ListContainer>
                     </ContentSection>

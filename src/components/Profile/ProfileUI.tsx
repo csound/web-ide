@@ -156,6 +156,15 @@ export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
     width: 100%;
     padding-bottom: 2px;
 `;
+
+export const StyledUserListItemContainer = styled.div`
+    display: grid;
+    grid-template-rows: 1fr 0.5fr;
+    grid-template-columns: 1fr 8fr;
+    width: 100%;
+    padding-bottom: 2px;
+`;
+
 export const StyledListItemAvatar = styled.div`
     grid-row-start: 1;
     grid-row-end: 2;

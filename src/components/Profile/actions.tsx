@@ -28,7 +28,10 @@ import {
     SHOULD_REDIRECT_REQUEST,
     SHOULD_REDIRECT_YES,
     SHOULD_REDIRECT_NO,
-    REFRESH_USER_PROFILE
+    REFRESH_USER_PROFILE,
+    GET_USER_FOLLOWING,
+    GET_USER_PROFILES_FOR_FOLLOWING,
+    GET_LOGGED_IN_USER_FOLLOWING
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -40,7 +43,11 @@ import { push } from "connected-react-router";
 import { openSimpleModal } from "../Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import { selectPreviousProjectTags, selectCsoundStatus } from "./selectors";
+import {
+    selectPreviousProjectTags,
+    selectCsoundStatus,
+    selectUserFollowing
+} from "./selectors";
 import { runCsound, playPauseCsound } from "../Csound/actions";
 import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
 import { ProfileModal } from "./ProfileModal";
@@ -244,7 +251,9 @@ export const deleteUserProject = (
     });
 };
 
-export const getUserImageURLAction = (url: string): ProfileActionTypes => {
+export const getUserImageURLAction = (
+    url: string | null
+): ProfileActionTypes => {
     return {
         type: GET_USER_IMAGE_URL,
         payload: url
@@ -297,61 +306,64 @@ export const getUserImageURL = (
     username: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
     firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            let imageUrl: string | null = null;
-            let profileUid: string | null = null;
-            let profile: any | null = null;
-            let photoUrl: string | null = null;
-            // let email: string | null = null;
-            if (username === null) {
-                profileUid = user.uid;
-            } else {
-                const result = await usernames.doc(username).get();
+        let imageUrl: string | null = null;
+        let profileUid: string | null = null;
+        let profile: any | null = null;
+        let photoUrl: string | null = null;
+        // let email: string | null = null;
+        if (username === null && user !== null) {
+            profileUid = user.uid;
+            profile = await profiles.doc(profileUid!).get();
+            photoUrl = get(profile.data(), "photoUrl") || null;
+        } else if (username !== null) {
+            const result = await usernames.doc(username).get();
 
-                if (result.data() !== null) {
-                    profileUid = get(result.data(), "userUid") || null;
-
-                    if (profileUid !== null) {
-                        profile = await profiles.doc(profileUid!).get();
-                        photoUrl = get(profile.data(), "photoUrl") || null;
-                        // email = get(profile.data(), "email") || null;
-                    }
+            if (result.data() !== null) {
+                profileUid = get(result.data(), "userUid") || null;
+                if (profileUid !== null) {
+                    profile = await profiles.doc(profileUid!).get();
+                    photoUrl = get(profile.data(), "photoUrl") || null;
+                    // email = get(profile.data(), "email") || null;
                 }
             }
-
-            if (profileUid !== null) {
-                try {
-                    imageUrl = await firebase
-                        .storage()
-                        .ref()
-                        .child(`images/${profileUid}/profile.jpeg`)
-                        .getDownloadURL();
-                    dispatch(getUserImageURLAction(imageUrl!));
-                } catch (e) {
-                    imageUrl = null;
-                }
-            }
-
-            if (imageUrl === null && photoUrl !== null) {
-                dispatch(getUserImageURLAction(photoUrl!));
-            }
-
-            // if (imageUrl === null && photoUrl === null) {
-            //     try {
-            //         const md5Email = crypto
-            //             .createHash("md5")
-            //             .update("example@email.com")
-            //             .digest("hex");
-            //         imageUrl = `https://www.gravatar.com/avatar/${md5Email}?s=2048`;
-            //         const response = await fetch(`${imageUrl}?d=404`);
-
-            //         dispatch(getUserImageURLAction(imageUrl));
-            //         return;
-            //     } catch (e) {
-            //         console.log("no gravatar");
-            //     }
-            // }
         }
+
+        if (profileUid !== null) {
+            try {
+                imageUrl = await firebase
+                    .storage()
+                    .ref()
+                    .child(`images/${profileUid}/profile.jpeg`)
+                    .getDownloadURL();
+                dispatch(getUserImageURLAction(imageUrl!));
+                return;
+            } catch (e) {
+                imageUrl = null;
+            }
+        }
+
+        if (imageUrl === null && photoUrl !== null) {
+            dispatch(getUserImageURLAction(photoUrl!));
+            return;
+        }
+
+        dispatch(getUserImageURLAction(null));
+
+        // if (imageUrl === null && photoUrl === null) {
+        //     try {
+        //         const md5Email = crypto
+        //             .createHash("md5")
+        //             .update("example@email.com")
+        //             .digest("hex");
+        //         imageUrl = `https://www.gravatar.com/avatar/${md5Email}?s=2048`;
+        //         const response = await fetch(`${imageUrl}?d=404`);
+
+        //         dispatch(getUserImageURLAction(imageUrl));
+        //         return;
+        //     } catch (e) {
+        //         console.log("no gravatar");
+        //     }
+        // }
     });
 };
 
@@ -369,6 +381,133 @@ export const addProject = () => {
             ))
         );
     };
+};
+
+export const followUser = (
+    username: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user !== null) {
+            const state = getState();
+            const userFollowing: String[] = selectUserFollowing(state);
+            userFollowing.push(username);
+            dispatch({
+                type: GET_USER_FOLLOWING,
+                payload: [...new Set(userFollowing)]
+            });
+            await profiles.doc(user.uid).update({
+                following: firebase.firestore.FieldValue.arrayUnion(username)
+            });
+            dispatch(getLoggedInUserFollowing());
+        }
+    });
+};
+
+export const unfollowUser = (
+    username: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user !== null) {
+            const state = getState();
+            const userFollowing: String[] = selectUserFollowing(state);
+            dispatch({
+                type: GET_USER_FOLLOWING,
+                payload: userFollowing.filter(e => e !== username)
+            });
+            await profiles.doc(user.uid).update({
+                following: firebase.firestore.FieldValue.arrayRemove(username)
+            });
+            dispatch(getLoggedInUserFollowing());
+        }
+    });
+};
+
+export const getUserProfilesForFollowing = (
+    userProfiles: string[]
+): ThunkAction<void, any, null, Action<string>> => dispatch => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user !== null) {
+            const result = userProfiles.map(async username => {
+                const result = await usernames.doc(username).get();
+                const profileUid = get(result.data(), "userUid") || null;
+                const profile = await profiles.doc(profileUid!).get();
+                let imageUrl;
+                try {
+                    imageUrl = await firebase
+                        .storage()
+                        .ref()
+                        .child(`images/${profileUid}/profile.jpeg`)
+                        .getDownloadURL();
+                } catch (e) {
+                    imageUrl = null;
+                }
+
+                if (imageUrl === null) {
+                    imageUrl = get(profile.data(), "photoUrl") || null;
+                }
+
+                const profileData = profile.data();
+                profileData!.imageUrl = imageUrl;
+                return profileData;
+            });
+
+            const followingProfiles = await Promise.all(result);
+            dispatch({
+                type: GET_USER_PROFILES_FOR_FOLLOWING,
+                payload: followingProfiles
+            });
+        }
+    });
+};
+
+export const getUserFollowing = (
+    username: string | null
+): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+    if (username === null) {
+        firebase.auth().onAuthStateChanged(async user => {
+            if (user !== null) {
+                const profile = await profiles.doc(user.uid).get();
+                const profileData = profile.data();
+                const following = get(profileData, "following") || [];
+
+                dispatch({
+                    type: GET_USER_FOLLOWING,
+                    payload: following
+                });
+            }
+        });
+    } else {
+        const result = await usernames.doc(username).get();
+        const profileUid = get(result.data(), "userUid") || null;
+        const profile = await profiles.doc(profileUid!).get();
+        const profileData = profile.data();
+        const following = get(profileData, "following") || [];
+
+        dispatch({
+            type: GET_USER_FOLLOWING,
+            payload: following
+        });
+    }
+};
+
+export const getLoggedInUserFollowing = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => dispatch => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user !== null) {
+            const profile = await profiles.doc(user.uid).get();
+            const profileData = profile.data();
+            const following = get(profileData, "following") || [];
+
+            dispatch({
+                type: GET_LOGGED_IN_USER_FOLLOWING,
+                payload: following
+            });
+        }
+    });
 };
 
 export const setUserProfile = (

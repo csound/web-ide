@@ -1,6 +1,10 @@
 import { createSelector } from "reselect";
 import { State } from "./reducer";
-
+// import { get } from "lodash";
+export const selectUserProfilesForFollowing = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.userProfilesForFollowing;
+};
 export const selectUserProjects = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userProjects;
@@ -19,6 +23,11 @@ export const selectUserImageURL = (store: any) => {
 export const selectProfileUid = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.profileUid;
+};
+
+export const selectLoggedInUid = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.loggedInUid;
 };
 
 export const selectCurrentlyPlayingProject = (store: any) => {
@@ -41,12 +50,15 @@ export const selectPreviousCsoundStatus = (store: any) => {
     return state.previousCsoundStatus;
 };
 
-export const selectProfileLinks = createSelector(
-    [selectUserProfile],
-    userProfile => {
-        console.log(userProfile);
-    }
-);
+export const selectUserFollowing = (store: any) => {
+    const state: any = store.ProfileReducer;
+    return state.userFollowing;
+};
+
+export const selectLoggedInUserFollowing = (store: any) => {
+    const state: any = store.ProfileReducer;
+    return state.loggedInUserFollowing;
+};
 
 export const selectOAuthPhotoURL = (store: any) => {
     const state: any = store.userProfile;

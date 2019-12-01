@@ -16,7 +16,25 @@ export const SHOULD_REDIRECT_REQUEST = "PROFILE.SHOULD_REDIRECT_REQUEST";
 export const SHOULD_REDIRECT_YES = "PROFILE.SHOULD_REDIRECT_YES";
 export const SHOULD_REDIRECT_NO = "PROFILE.SHOULD_REDIRECT_NO";
 export const REFRESH_USER_PROFILE = "PROFILE.REFRESH_USER_PROFILE";
+export const GET_USER_FOLLOWING = "PROFILE.GET_USER_FOLLOWING";
+export const GET_LOGGED_IN_USER_FOLLOWING =
+    "PROFILE.GET_LOGGED_IN_USER_FOLLOWING";
+export const GET_USER_PROFILES_FOR_FOLLOWING =
+    "PROFILE.GET_USER_PROFILES_FOR_FOLLOWING";
 
+interface GetUserProfilesForFollowingAction {
+    type: typeof GET_USER_PROFILES_FOR_FOLLOWING;
+    payload: [];
+}
+interface GetLoggedInUserFollowingAction {
+    type: typeof GET_LOGGED_IN_USER_FOLLOWING;
+    payload: [];
+}
+
+interface GetUserFollowingAction {
+    type: typeof GET_USER_FOLLOWING;
+    payload: [];
+}
 interface SetShouldRedirectRequestAction {
     type: typeof SHOULD_REDIRECT_REQUEST;
 }
@@ -72,7 +90,7 @@ interface GetUserProfileAction {
 
 interface GetUserImageURLAction {
     type: typeof GET_USER_IMAGE_URL;
-    payload: string;
+    payload: string | null;
 }
 
 interface GetUserProjectsAction {
@@ -108,6 +126,9 @@ export type ProfileActionTypes =
     | SetCsoundStatusAction
     | SetShouldRedirectYesAction
     | SetShouldRedirectNoAction
+    | GetUserProfilesForFollowingAction
     | SetUserProfileAction
+    | GetUserFollowingAction
+    | GetLoggedInUserFollowingAction
     | RefreshUserProfileAction
     | SetShouldRedirectRequestAction;
