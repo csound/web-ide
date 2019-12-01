@@ -4,8 +4,8 @@ import { IStore } from "../../db/interfaces";
 import Header from "../Header/Header";
 import {
     loadProjectFromFirestore,
-    syncProjectDocumentsWithEMFS,
-    openProjectDocumentTabs
+    openProjectDocumentTabs,
+    syncProjectDocumentsWithEMFS
 } from "./actions";
 import * as SS from "./styles";
 import { isEmpty } from "lodash";
@@ -32,6 +32,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
         if (needsLoading && csound) {
             dispatch(loadProjectFromFirestore(projectUid));
         }
+        // return () => {};
     }, [dispatch, projectUid, needsLoading, csound]);
 
     useEffect(() => {

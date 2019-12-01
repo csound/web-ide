@@ -23,8 +23,14 @@ import Console from "../Console/Console";
 import { isEmpty, reduce } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
-import { tabClose, tabSwitch, setManualPanelOpen } from "./actions";
+import {
+    closeTabDock,
+    tabClose,
+    tabSwitch,
+    setManualPanelOpen
+} from "./actions";
 import { filterUndef } from "../../utils";
+import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
 import { selectActiveProject } from "../Projects/selectors";
 
@@ -229,12 +235,14 @@ const ProjectEditor = props => {
 
     React.useEffect(() => {
         return () => {
+            dispatch(closeTabDock());
+            dispatch(closeProject());
             localStorage.setItem(
                 projectUid + ":secondaryPanel",
                 secondaryPanel || ""
             );
         };
-    }, [projectUid, secondaryPanel]);
+    }, [projectUid, secondaryPanel, dispatch]);
 
     React.useEffect(() => {
         const lastSecondaryPanel = localStorage.getItem(

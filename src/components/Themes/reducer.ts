@@ -3,7 +3,7 @@ import { merge } from "lodash";
 
 const INITIAL_STATE: ITheme = {
     fontFamily: "Roboto",
-    fontSize: 0,
+    fontSize: 10,
     name: "dark"
 };
 

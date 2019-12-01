@@ -191,10 +191,9 @@ export const syncProjectDocumentsWithEMFS = (
     };
 };
 
-export const closeProject = (project: IProject) => {
+export const closeProject = () => {
     return {
-        type: CLOSE_PROJECT,
-        project
+        type: CLOSE_PROJECT
     };
 };
 

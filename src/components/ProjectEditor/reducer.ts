@@ -12,6 +12,7 @@ import {
     STORE_EDITOR_INSTANCE,
     ITabDock
 } from "./types";
+import { assocPath, append, pathOr } from "ramda";
 
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
@@ -65,10 +66,17 @@ export default (
         }
         case TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID: {
             if (state.tabDock.tabIndex < 0) {
-                state.tabDock.openDocuments.push({
-                    uid: action.documentUid,
-                    editorInstance: null
-                });
+                state = assocPath(
+                    ["tabDock", "openDocuments"],
+                    append(
+                        {
+                            uid: action.documentUid,
+                            editorInstance: null
+                        },
+                        pathOr([], ["tabDock", "openDocuments"], state)
+                    ),
+                    state
+                );
                 return { ...state };
             } else {
                 return state;
@@ -81,15 +89,30 @@ export default (
                 od => od.uid === action.documentUid
             );
             if (documentAlreadyOpenIndex < 0) {
-                state.tabDock.tabIndex = currentOpenDocs.length;
-                currentOpenDocs.push({
-                    uid: action.documentUid,
-                    editorInstance: null
-                });
+                state = assocPath(
+                    ["tabDock", "tabIndex"],
+                    currentOpenDocs.length,
+                    state
+                );
+                state = assocPath(
+                    ["tabDock", "openDocuments"],
+                    append(
+                        {
+                            uid: action.documentUid,
+                            editorInstance: null
+                        },
+                        pathOr([], ["tabDock", "openDocuments"], state)
+                    ),
+                    state
+                );
             } else {
-                state.tabDock.tabIndex = documentAlreadyOpenIndex;
+                state = assocPath(
+                    ["tabDock", "tabIndex"],
+                    documentAlreadyOpenIndex,
+                    state
+                );
             }
-            return { ...state };
+            return state;
         }
         case TAB_CLOSE: {
             if (
