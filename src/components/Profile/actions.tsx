@@ -562,19 +562,32 @@ export const editProfile = (
     link3: string
 ) => {
     return async (dispatch: any) => {
-        dispatch(
-            openSimpleModal(() => (
-                <ProfileModal
-                    username={username}
-                    displayName={displayName}
-                    bio={bio}
-                    link1={link1}
-                    link2={link2}
-                    link3={link3}
-                    profileAction={setUserProfile}
-                />
-            ))
-        );
+        firebase.auth().onAuthStateChanged(async user => {
+            if (user != null) {
+                const names = await usernames.get();
+                const existingNames: string[] = [];
+                names.forEach(e => {
+                    if (e.id !== username) {
+                        existingNames.push(e.id);
+                    }
+                });
+
+                dispatch(
+                    openSimpleModal(() => (
+                        <ProfileModal
+                            existingNames={existingNames}
+                            username={username}
+                            displayName={displayName}
+                            bio={bio}
+                            link1={link1}
+                            link2={link2}
+                            link3={link3}
+                            profileAction={setUserProfile}
+                        />
+                    ))
+                );
+            }
+        });
     };
 };
 

@@ -38,6 +38,7 @@ interface IProfileModal {
     link1: string;
     link2: string;
     link3: string;
+    existingNames: string[];
 }
 
 export const ProfileModal = (props: IProfileModal) => {
@@ -48,6 +49,20 @@ export const ProfileModal = (props: IProfileModal) => {
     const [link2, setLink2] = useState(props.link2);
     const [link3, setLink3] = useState(props.link3);
     const dispatch = useDispatch();
+
+    const existingName = props.existingNames.includes(username);
+    const nonAlphaNumeric = !/^[a-zA-Z0-9\-_]{5,40}$/.test(username);
+    const emptyString = username.length === 0;
+
+    let errorMessage = "";
+
+    if (existingName === true) {
+        errorMessage = "Existing username";
+    }
+
+    if (nonAlphaNumeric === true) {
+        errorMessage = "Only alphanumeric no spaces, 5-40 characters";
+    }
 
     const handleOnSubmit = async () => {
         try {
@@ -88,8 +103,8 @@ export const ProfileModal = (props: IProfileModal) => {
                         setUsername(e.target.value);
                     }}
                     fullWidth
-                    helperText="Only alphanumeric no spaces"
-                    error={!/^[a-zA-Z0-9\-_]{0,40}$/.test(username)}
+                    helperText={errorMessage}
+                    error={nonAlphaNumeric || existingName || emptyString}
                 />
             </FieldRow>
             <FieldRow row={3}>
@@ -162,7 +177,7 @@ export const ProfileModal = (props: IProfileModal) => {
                     color="primary"
                     onClick={handleOnSubmit}
                     style={{ marginTop: 11 }}
-                    disabled={!/^[a-zA-Z0-9\-_]{0,40}$/.test(username)}
+                    disabled={nonAlphaNumeric || existingName || emptyString}
                 >
                     Submit
                 </Button>
