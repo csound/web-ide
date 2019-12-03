@@ -161,6 +161,8 @@ const Profile = props => {
         dispatch(getUserFollowing(username));
         dispatch(getLoggedInUserFollowing());
         dispatch(setProfileHotKeys());
+        dispatch(setProjectFilterString(""));
+        dispatch(setFollowingFilterString(""));
         return () => {
             dispatch(stopCsound());
         };
