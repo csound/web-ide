@@ -33,7 +33,9 @@ import {
     GET_USER_PROFILES_FOR_FOLLOWING,
     GET_LOGGED_IN_USER_FOLLOWING,
     SET_IMAGE_URL_REQUESTING,
-    SET_PROFILE_REQUESTING
+    SET_PROFILE_REQUESTING,
+    SET_FOLLOWING_FILTER_STRING,
+    SET_PROJECT_FILTER_STRING
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -793,6 +795,22 @@ export const getUserProfile = (
 const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
         type: GET_USER_PROFILE,
+        payload
+    };
+};
+
+export const setProjectFilterString = (payload: string): ProfileActionTypes => {
+    return {
+        type: SET_PROJECT_FILTER_STRING,
+        payload
+    };
+};
+
+export const setFollowingFilterString = (
+    payload: string
+): ProfileActionTypes => {
+    return {
+        type: SET_FOLLOWING_FILTER_STRING,
         payload
     };
 };

@@ -18,7 +18,9 @@ import {
     GET_LOGGED_IN_USER_FOLLOWING,
     GET_USER_PROFILES_FOR_FOLLOWING,
     SET_IMAGE_URL_REQUESTING,
-    SET_PROFILE_REQUESTING
+    SET_PROFILE_REQUESTING,
+    SET_FOLLOWING_FILTER_STRING,
+    SET_PROJECT_FILTER_STRING
 } from "./types";
 import facePng from "./face.png";
 export interface State {
@@ -41,6 +43,8 @@ export interface State {
     readonly userFollowing: [];
     readonly loggedInUserFollowing: [];
     readonly userProfilesForFollowing: [];
+    readonly projectFilterString: string;
+    readonly followingFilterString: string;
 }
 
 const INITIAL_STATE: State = {
@@ -62,11 +66,25 @@ const INITIAL_STATE: State = {
     shouldRedirect: false,
     userFollowing: [],
     loggedInUserFollowing: [],
-    userProfilesForFollowing: []
+    userProfilesForFollowing: [],
+    projectFilterString: "",
+    followingFilterString: ""
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case SET_FOLLOWING_FILTER_STRING: {
+            return {
+                ...state,
+                followingFilterString: action.payload
+            };
+        }
+        case SET_PROJECT_FILTER_STRING: {
+            return {
+                ...state,
+                projectFilterString: action.payload
+            };
+        }
         case SET_PROFILE_REQUESTING: {
             return {
                 ...state,

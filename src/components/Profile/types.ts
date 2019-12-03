@@ -8,6 +8,9 @@ export const SET_PROFILE_REQUESTING = "PROFILE.SET_PROFILE_REQUESTING";
 export const SET_CURRENT_TAG_TEXT = "PROFILE.SET_CURRENT_TAG_TEXT";
 export const SET_TAGS_INPUT = "PROFILE.SET_TAGS_INPUT";
 export const SET_USER_PROFILE = "PROFILE.SET_USER_PROFILE";
+export const SET_FOLLOWING_FILTER_STRING =
+    "PROFILE.SET_FOLLOWING_FILTER_STRING";
+export const SET_PROJECT_FILTER_STRING = "PROFILE.SET_PROJECT_FILTER_STRING";
 export const SET_CURRENTLY_PLAYING_PROJECT =
     "PROFILE.SET_CURRENTLY_PLAYING_PROJECT";
 export const SET_LIST_PLAY_STATE = "PROFILE.SET_LIST_PLAY_STATE";
@@ -24,6 +27,15 @@ export const GET_LOGGED_IN_USER_FOLLOWING =
 export const GET_USER_PROFILES_FOR_FOLLOWING =
     "PROFILE.GET_USER_PROFILES_FOR_FOLLOWING";
 
+interface SetFollowingFilterStringAction {
+    type: typeof SET_FOLLOWING_FILTER_STRING;
+    payload: string;
+}
+
+interface SetProjectFilterStringAction {
+    type: typeof SET_PROJECT_FILTER_STRING;
+    payload: string;
+}
 interface SetProfileRequestingAction {
     type: typeof SET_PROFILE_REQUESTING;
     payload: boolean;
@@ -143,4 +155,6 @@ export type ProfileActionTypes =
     | RefreshUserProfileAction
     | SetImageURLRequestingAction
     | SetProfileRequestingAction
+    | SetFollowingFilterStringAction
+    | SetProjectFilterStringAction
     | SetShouldRedirectRequestAction;

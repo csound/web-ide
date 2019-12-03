@@ -22,10 +22,11 @@ import {
     unfollowUser,
     getUserProfilesForFollowing,
     getUserFollowing,
-    getLoggedInUserFollowing
+    getLoggedInUserFollowing,
+    setProjectFilterString,
+    setFollowingFilterString
 } from "./actions";
 import {
-    selectUserProjects,
     selectUserProfile,
     selectUserImageURL,
     selectIsUserProfileOwner,
@@ -37,9 +38,12 @@ import {
     selectProfileUid,
     selectLoggedInUid,
     selectUserFollowing,
-    selectUserProfilesForFollowing,
     selectUserImageURLRequesting,
-    selectUserProfileRequesting
+    selectUserProfileRequesting,
+    selectFilteredUserProjects,
+    selectFilteredUserFollowing,
+    selectProjectFilterString,
+    selectFollowingFilterString
 } from "./selectors";
 import { get } from "lodash";
 import {
@@ -112,7 +116,6 @@ const Profile = props => {
     const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
     const username = get(props, "match.params.username") || null;
-    const projects = useSelector(selectUserProjects);
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
@@ -125,15 +128,15 @@ const Profile = props => {
     const loggedInUid = useSelector(selectLoggedInUid);
     const imageUrlRequesting = useSelector(selectUserImageURLRequesting);
     const profileRequesting = useSelector(selectUserProfileRequesting);
-
+    const filteredProjects = useSelector(selectFilteredUserProjects);
+    const filteredFollowing = useSelector(selectFilteredUserFollowing);
+    const followingFilterString = useSelector(selectFollowingFilterString);
+    const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
     const userFollowing = useSelector(selectUserFollowing);
     const loggedInUserFollowing = useSelector(selectLoggedInUserFollowing);
     const isFollowing = loggedInUserFollowing.includes(username);
-    const userProfilesForFollowing = useSelector(
-        selectUserProfilesForFollowing
-    );
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
 
     useEffect(() => {
@@ -333,19 +336,52 @@ const Profile = props => {
                         </ContentTabsContainer>
 
                         <ContentActionsContainer>
-                            <SearchBox
-                                id="input-with-icon-adornment"
-                                label="Search"
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <SearchIcon />
-                                        </InputAdornment>
-                                    )
-                                }}
-                                variant="outlined"
-                                margin="dense"
-                            />
+                            {selectedSection === 0 && (
+                                <SearchBox
+                                    id="input-with-icon-adornment"
+                                    label="Search Projects"
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <SearchIcon />
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                    value={projectFilterString}
+                                    variant="outlined"
+                                    margin="dense"
+                                    onChange={e => {
+                                        dispatch(
+                                            setProjectFilterString(
+                                                e.target.value
+                                            )
+                                        );
+                                    }}
+                                />
+                            )}
+                            {selectedSection === 1 && (
+                                <SearchBox
+                                    id="input-with-icon-adornment"
+                                    label="Search Following"
+                                    InputProps={{
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <SearchIcon />
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                    value={followingFilterString}
+                                    variant="outlined"
+                                    margin="dense"
+                                    onChange={e => {
+                                        dispatch(
+                                            setFollowingFilterString(
+                                                e.target.value
+                                            )
+                                        );
+                                    }}
+                                />
+                            )}
 
                             {isProfileOwner && (
                                 <AddFab
@@ -365,9 +401,9 @@ const Profile = props => {
                         <ListContainer>
                             <List style={{ overflow: "auto" }}>
                                 {selectedSection === 0 &&
-                                    Array.isArray(projects) &&
+                                    Array.isArray(filteredProjects) &&
                                     profileRequesting === false &&
-                                    projects.map((p, i) => {
+                                    filteredProjects.map((p, i) => {
                                         return (
                                             <ListItem
                                                 button
@@ -503,52 +539,46 @@ const Profile = props => {
                                         );
                                     })}
                                 {selectedSection === 1 &&
-                                    Array.isArray(userProfilesForFollowing) &&
+                                    Array.isArray(filteredFollowing) &&
                                     profileRequesting === false &&
-                                    userProfilesForFollowing.map(
-                                        (p: any, i) => {
-                                            return (
-                                                <ListItem
-                                                    button
-                                                    alignItems="flex-start"
-                                                    key={i}
-                                                    onClick={() => {
-                                                        dispatch(
-                                                            push(
-                                                                `/profile/${p.username}`,
-                                                                {
-                                                                    fromFollowing: true
-                                                                }
-                                                            )
-                                                        );
-                                                    }}
-                                                >
-                                                    <StyledUserListItemContainer>
-                                                        <StyledListItemAvatar>
-                                                            <ListItemAvatar>
-                                                                <Avatar
-                                                                    src={
-                                                                        p.imageUrl
-                                                                    }
-                                                                />
-                                                            </ListItemAvatar>
-                                                        </StyledListItemAvatar>
-
-                                                        <StyledListItemTopRowText>
-                                                            <ListItemText
-                                                                primary={
-                                                                    p.displayName
-                                                                }
-                                                                secondary={
-                                                                    p.bio
-                                                                }
+                                    filteredFollowing.map((p: any, i) => {
+                                        return (
+                                            <ListItem
+                                                button
+                                                alignItems="flex-start"
+                                                key={i}
+                                                onClick={() => {
+                                                    dispatch(
+                                                        push(
+                                                            `/profile/${p.username}`,
+                                                            {
+                                                                fromFollowing: true
+                                                            }
+                                                        )
+                                                    );
+                                                }}
+                                            >
+                                                <StyledUserListItemContainer>
+                                                    <StyledListItemAvatar>
+                                                        <ListItemAvatar>
+                                                            <Avatar
+                                                                src={p.imageUrl}
                                                             />
-                                                        </StyledListItemTopRowText>
-                                                    </StyledUserListItemContainer>
-                                                </ListItem>
-                                            );
-                                        }
-                                    )}
+                                                        </ListItemAvatar>
+                                                    </StyledListItemAvatar>
+
+                                                    <StyledListItemTopRowText>
+                                                        <ListItemText
+                                                            primary={
+                                                                p.displayName
+                                                            }
+                                                            secondary={p.bio}
+                                                        />
+                                                    </StyledListItemTopRowText>
+                                                </StyledUserListItemContainer>
+                                            </ListItem>
+                                        );
+                                    })}
                             </List>
                         </ListContainer>
                     </ContentSection>

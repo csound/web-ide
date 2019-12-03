@@ -1,6 +1,6 @@
 import { createSelector } from "reselect";
 import { State } from "./reducer";
-// import { get } from "lodash";
+import Fuse from "fuse.js";
 export const selectUserProfilesForFollowing = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userProfilesForFollowing;
@@ -9,6 +9,66 @@ export const selectUserProjects = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userProjects;
 };
+
+export const selectProjectFilterString = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.projectFilterString;
+};
+
+export const selectFollowingFilterString = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.followingFilterString;
+};
+
+export const selectFilteredUserProjects = createSelector(
+    [selectUserProjects, selectProjectFilterString],
+    (userProjects, projectFilterString) => {
+        if (
+            typeof projectFilterString === "undefined" ||
+            projectFilterString === ""
+        ) {
+            return userProjects;
+        }
+        const options = {
+            shouldSort: true,
+            keys: ["description", "name", "tags"]
+        };
+
+        const fuse = new Fuse(userProjects, options);
+        const result = fuse.search(projectFilterString);
+        return result;
+    }
+);
+
+export const selectUserFollowing = (store: any) => {
+    const state: any = store.ProfileReducer;
+    return state.userFollowing;
+};
+
+export const selectFilteredUserFollowing = createSelector(
+    [selectUserProfilesForFollowing, selectFollowingFilterString],
+    (userFollowing, followingFilterString) => {
+        if (
+            typeof followingFilterString === "undefined" ||
+            followingFilterString === ""
+        ) {
+            return userFollowing;
+        }
+
+        const options = {
+            shouldSort: true,
+            threshold: 0.4,
+            location: 0,
+            distance: 100,
+            maxPatternLength: 32,
+            minMatchCharLength: 1,
+            keys: ["username", "bio", "displayName"]
+        };
+        const fuse = new Fuse(userFollowing, options);
+        const result = fuse.search(followingFilterString);
+        return result;
+    }
+);
 
 export const selectUserProfile = (store: any) => {
     const state: State = store.ProfileReducer;
@@ -58,11 +118,6 @@ export const selectCsoundStatus = (store: any) => {
 export const selectPreviousCsoundStatus = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.previousCsoundStatus;
-};
-
-export const selectUserFollowing = (store: any) => {
-    const state: any = store.ProfileReducer;
-    return state.userFollowing;
 };
 
 export const selectLoggedInUserFollowing = (store: any) => {
