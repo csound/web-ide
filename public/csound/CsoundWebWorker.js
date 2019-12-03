@@ -53,6 +53,7 @@ const Csound = {
 
     new: CSMOD.cwrap('CsoundObj_new', ['number'], null),
     compileCSD: CSMOD.cwrap('CsoundObj_compileCSD', ['number'], ['number', 'string']),
+    compile: CSMOD.cwrap('CsoundObj_compile', ['number'], ['number', 'string', 'string']),
     reset: CSMOD.cwrap('CsoundObj_reset', null, ['number']),
     render: CSMOD.cwrap('CsoundObj_render', null, ['number']),
     setOption: CSMOD.cwrap('CsoundObj_setOption', null, ['number', 'string']),
@@ -84,8 +85,8 @@ onmessage = (evt) => {
             const csObj = Csound.new();
 
             Csound.setOption(csObj, "-W");
-            Csound.setOption(csObj, "--output=output.wav");
-            Csound.compileCSD(csObj, name);
+            // Csound.setOption(csObj, "--output=output.wav");
+            Csound.compile(csObj, name, "-ooutput.wav");
             Csound.render(csObj);
 
             const output = FS.readFile("output.wav");
