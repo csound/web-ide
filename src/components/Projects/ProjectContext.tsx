@@ -32,7 +32,6 @@ export const ProjectContext = (props: IProjectContextProps) => {
         if (needsLoading && csound) {
             dispatch(loadProjectFromFirestore(projectUid));
         }
-        // return () => {};
     }, [dispatch, projectUid, needsLoading, csound]);
 
     useEffect(() => {

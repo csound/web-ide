@@ -252,9 +252,9 @@ const ProjectEditor = props => {
             if (lastSecondaryPanel === "manual") {
                 dispatch(setManualPanelOpen(true));
             }
+            localStorage.removeItem(projectUid + ":secondaryPanel");
         }
-        // eslint-disable-next-line
-    }, [projectUid]);
+    }, [dispatch, projectUid]);
 
     return (
         <div>

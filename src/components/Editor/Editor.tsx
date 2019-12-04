@@ -5,6 +5,7 @@ import { IStore } from "../../db/interfaces";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { isEmpty } from "lodash";
+import { pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
@@ -329,7 +330,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
     const project = store.projects.activeProject;
-    const document = project!.documents[ownProp.documentUid];
+    const document = pathOr(null, ["documents", ownProp.documentUid], project);
     const savedValue = document && document.savedValue;
     const currentDocumentValue = document && document.currentValue;
     const documentType = document && filenameToType(document.filename);
@@ -341,7 +342,7 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
         documentUid: ownProp.documentUid,
         currentDocumentValue,
         documentType,
-        isModifiedLocally: document!.isModifiedLocally,
+        isModifiedLocally: propOr(false, "isModifiedLocally", document),
         printToConsole: store.ConsoleReducer.printToConsole,
         projectUid: ownProp.projectUid,
         savedValue,
