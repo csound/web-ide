@@ -475,6 +475,10 @@ export const getUserProfilesForFollowing = (
 export const getUserFollowing = (
     username: string | null
 ): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+    dispatch({
+        type: GET_USER_FOLLOWING,
+        payload: []
+    });
     if (username === null) {
         firebase.auth().onAuthStateChanged(async user => {
             if (user !== null) {
