@@ -255,7 +255,8 @@ const ProjectEditor = props => {
             }
             localStorage.removeItem(projectUid + ":secondaryPanel");
         }
-    }, [dispatch, projectUid]);
+        // eslint-disable-next-line
+    }, []);
 
     return (
         <div>

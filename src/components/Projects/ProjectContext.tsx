@@ -32,14 +32,16 @@ export const ProjectContext = (props: IProjectContextProps) => {
         if (needsLoading && csound) {
             dispatch(loadProjectFromFirestore(projectUid));
         }
-    }, [dispatch, projectUid, needsLoading, csound]);
+        // eslint-disable-next-line
+    }, [needsLoading, csound]);
 
     useEffect(() => {
         if (activeProject) {
             dispatch(openProjectDocumentTabs());
             dispatch(syncProjectDocumentsWithEMFS(projectUid));
         }
-    }, [dispatch, activeProject, projectUid]);
+        // eslint-disable-next-line
+    }, [activeProject]);
 
     if (activeProject && activeProject.projectUid && !needsLoading && csound) {
         return (
