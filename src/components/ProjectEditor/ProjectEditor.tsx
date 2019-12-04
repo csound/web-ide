@@ -242,7 +242,8 @@ const ProjectEditor = props => {
                 secondaryPanel || ""
             );
         };
-    }, [projectUid, secondaryPanel, dispatch]);
+        // eslint-disable-next-line
+    }, []);
 
     React.useEffect(() => {
         const lastSecondaryPanel = localStorage.getItem(
