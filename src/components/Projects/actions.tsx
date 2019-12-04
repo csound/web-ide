@@ -10,6 +10,7 @@ import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
+import { propOr } from "ramda";
 import {
     DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
@@ -80,11 +81,11 @@ export const openProjectDocumentTabs = () => {
     return async (dispatch: any, getState: any) => {
         const state = getState();
         const project = selectActiveProject(state);
-        (Object as any)
-            .values(project!.documents)
-            .forEach(doc =>
-                dispatch(initialTabOpenByDocumentUid(doc.documentUid))
-            );
+        Object.values(propOr({}, "documents", project)).forEach(doc =>
+            dispatch(
+                initialTabOpenByDocumentUid(propOr(null, "documentUid", doc))
+            )
+        );
 
         dispatch(tabInitSwitch());
     };
