@@ -30,6 +30,7 @@ import * as SS from "./styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
 import MenuBar from "../MenuBar/MenuBar";
+import TargetDropdown from "../TargetDropdown";
 import clsx from "clsx";
 
 interface IHeaderProps {
@@ -160,6 +161,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                     />
                     {showMenuBar && <MenuBar />}
                     <div className={classes.spacer} />
+                    <TargetDropdown />
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>
@@ -215,11 +217,11 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                         </ListItem>
                     </List>
                     {/* <Divider/>
-                <List >
-                        <ListItem>
-                            <ListItemText primary={`Version: `} />
-                        </ListItem>
-                </List> */}
+                      <List >
+                      <ListItem>
+                      <ListItemText primary={`Version: `} />
+                      </ListItem>
+                      </List> */}
                 </div>
             </Drawer>
         </div>

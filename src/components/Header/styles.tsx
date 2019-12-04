@@ -11,7 +11,7 @@ export const headerStyles = (theme: Theme) =>
             zIndex: 100,
             overflow: "hidden",
             position: "relative",
-            display: "block",
+            display: "block"
         },
         appBar: {
             width: "100%",
@@ -44,12 +44,12 @@ export const headerStyles = (theme: Theme) =>
             display: "none"
         },
         drawer: {
-            width: drawerWidth,
+            width: drawerWidth
         },
         drawerHeader: {
             width: drawerWidth,
             paddingLeft: 16,
-            height: 40,
+            height: 40
         },
         drawerPaper: {
             position: "relative",
@@ -75,7 +75,7 @@ export const headerStyles = (theme: Theme) =>
             flex: 1
         },
         spacer: {
-            flexGrow:1
+            flexGrow: 1
         },
         profileName: {
             textAlign: "right"
