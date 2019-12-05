@@ -104,11 +104,9 @@ export const syncProjectDocumentsWithEMFS = (
             const project = doc.data();
             // TODO - Sync files to Redux as well as EMFS
 
-            const addFileToEMFS = data => {
+            const addFileToEMFS = (dataId, data) => {
                 if (data.type === "bin") {
-                    let path = `${project!.userUid}/${project!.projectUid}/${
-                        doc.id
-                    }`;
+                    let path = `${project!.userUid}/${projectUid}/${dataId}`;
                     return storageRef
                         .child(path)
                         .getDownloadURL()
@@ -134,7 +132,7 @@ export const syncProjectDocumentsWithEMFS = (
             projRef.collection("files").onSnapshot(async files => {
                 files.docs.map(doc => {
                     const data = doc.data();
-                    addFileToEMFS(data);
+                    addFileToEMFS(doc.id, data);
                     return null;
                 });
 
@@ -144,7 +142,7 @@ export const syncProjectDocumentsWithEMFS = (
                     const doc = change.doc.data();
                     switch (change.type) {
                         case "added": {
-                            addFileToEMFS(doc);
+                            addFileToEMFS(change.doc.id, doc);
                             break;
                         }
                         case "removed": {
@@ -156,33 +154,7 @@ export const syncProjectDocumentsWithEMFS = (
                             //console.log("File Modified: ", doc);
                             // TODO - need to detect filename changes, perhaps
                             // keep map of doc id => filename in Redux Store...
-                            if (doc.type === "bin") {
-                                let path = `${project!.userUid}/${
-                                    project!.projectUid
-                                }/${change.doc.id}`;
-                                storageRef
-                                    .child(path)
-                                    .getDownloadURL()
-                                    .then(function(url) {
-                                        // This can be downloaded directly:
-                                        var xhr = new XMLHttpRequest();
-                                        xhr.responseType = "arraybuffer";
-                                        xhr.onload = function(event) {
-                                            let blob = xhr.response;
-                                            cs.writeToFS(doc.name, blob);
-                                        };
-                                        xhr.open("GET", url);
-                                        xhr.send();
-                                    })
-                                    .catch(function(error) {
-                                        // Handle any errors
-                                    });
-                            } else {
-                                cs.writeToFS(
-                                    doc.name,
-                                    encoder.encode(doc.value)
-                                );
-                            }
+                            addFileToEMFS(change.doc.id, doc)
                             break;
                         }
                     }
