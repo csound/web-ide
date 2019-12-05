@@ -28,5 +28,6 @@ export function textOrBinary(filename: string): IDocumentFileInternalType {
 export function isAudioFile(fileName:string) {
     // currently does not deal with FLAC, not sure if browser supports it
     const endings = [".wav", ".ogg", ".mp3"];
-    return endings.some(ending => fileName.endsWith(ending));
+    const lower = fileName.toLowerCase();
+    return endings.some(ending => lower.endsWith(ending));
 }
