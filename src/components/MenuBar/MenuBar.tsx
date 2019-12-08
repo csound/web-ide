@@ -149,6 +149,13 @@ function MenuBar(props) {
                     }
                 },
                 {
+                    label: "Csound FLOSS Manual",
+                    role: "openCsoundFLOSSManual",
+                    callback: () => {
+                        window.open("https://csound-floss.firebaseapp.com/", "_blank");
+                    }
+                },
+                {
                     role: "hr"
                 },
                 {
