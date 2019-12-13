@@ -1,8 +1,12 @@
 import React from "react";
 import Select from "react-select";
+// import { append } from "ramda";
 import * as SS from "./styles";
 
-const options = [{ value: "project.csd", label: "project.csd" }];
+const optionsDev = [
+    { value: "project.csd", label: "project.csd" },
+    { value: "project.csd", label: "project.csd" }
+];
 
 const TargetDropdown = () => {
     return (
@@ -11,13 +15,14 @@ const TargetDropdown = () => {
             placeholder={"project.csd"}
             onChange={() => {}}
             isSearchable={false}
-            options={options}
+            options={optionsDev}
             styles={{
                 control: (provided, state) => SS.control,
                 container: (provided, state) => SS.dropdownContainer,
                 placeholder: (provided, state) => SS.placeholder,
                 menu: (provided, state) => SS.menu,
-                menuList: (provided, state) => SS.menuList
+                menuList: (provided, state) => SS.menuList,
+                option: (provided, state) => SS.menuOption
             }}
         />
     );

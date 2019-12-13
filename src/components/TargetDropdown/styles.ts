@@ -11,6 +11,7 @@ export const menu = css`
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     position: absolute;
     min-width: 120px;
+    width: 100%;
     left: 1px;
 `;
 
@@ -49,6 +50,10 @@ export const control = css`
 
 export const placeholder = css`
     color: hsl(0, 0%, 80%);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 12px;
+`;
+
+export const menuOption = css`
+    padding: 6px 12px !important;
 `;
