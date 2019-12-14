@@ -2,15 +2,17 @@ import React from "react";
 import { connect } from "react-redux";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import { IStore } from "../../db/interfaces";
+import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { isEmpty } from "lodash";
-import { pathOr, propOr } from "ramda";
+import { has, pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 import { filenameToType } from "../Projects/utils";
+import { keys } from "ramda";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -20,7 +22,7 @@ require("codemirror/lib/codemirror.css");
 // require("codemirror/addon/scroll/simplescrollbars")
 // require("codemirror/addon/scroll/simplescrollbars.css")
 
-const opcodes = Object.keys(synopsis);
+const opcodes = keys(synopsis);
 
 interface ICodeEditorProps {
     csound: ICsoundObj;
@@ -329,20 +331,39 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 }
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
-    const project = store.projects.activeProject;
-    const document = pathOr(null, ["documents", ownProp.documentUid], project);
-    const savedValue = document && document.savedValue;
-    const currentDocumentValue = document && document.currentValue;
-    const documentType = document && filenameToType(document.filename);
-    const manualLookupString = store.ProjectEditorReducer.manualLookupString;
-
+    const activeProjectUid = pathOr(
+        null,
+        ["ProjectsReducer", "activeProjectUid"],
+        store
+    );
+    const project = pathOr(
+        {} as IProject,
+        ["ProjectsReducer", "projects", activeProjectUid],
+        store
+    );
+    const document = pathOr(
+        {} as IDocument,
+        ["documents", ownProp.documentUid],
+        project
+    );
+    const savedValue = propOr("", "savedValue", document);
+    const currentDocumentValue = propOr("", "currentValue", document);
+    const documentType = has("filename", document)
+        ? filenameToType(document.filename)
+        : "";
+    const manualLookupString = propOr(
+        null,
+        ["ProjectsReducer", "manualLookupString"],
+        store
+    );
+    const isModifiedLocally = propOr(false, "isModifiedLocally", document);
     return {
         csound: store.csound.csound,
         csoundStatus: store.csound.status,
         documentUid: ownProp.documentUid,
         currentDocumentValue,
         documentType,
-        isModifiedLocally: propOr(false, "isModifiedLocally", document),
+        isModifiedLocally,
         printToConsole: store.ConsoleReducer.printToConsole,
         projectUid: ownProp.projectUid,
         savedValue,

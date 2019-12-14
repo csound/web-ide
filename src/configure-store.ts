@@ -4,7 +4,7 @@ import rootReducer from "./RootReducer";
 import { routerMiddleware } from "connected-react-router";
 import { History, createBrowserHistory } from "history";
 
-const configureStore = () => {
+export const configureStore = () => {
     const history: History = createBrowserHistory();
     const composeEnhancer =
         (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -17,5 +17,3 @@ const configureStore = () => {
     );
     return { store, history };
 };
-
-export const { store, history } = configureStore();

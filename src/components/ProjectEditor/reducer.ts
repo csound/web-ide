@@ -1,4 +1,4 @@
-import { filter, find, findIndex } from "lodash";
+import { find, findIndex } from "lodash";
 import {
     MANUAL_LOOKUP_STRING,
     TAB_DOCK_INIT_SWITCH_TAB,
@@ -10,9 +10,20 @@ import {
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
-    ITabDock
+    ITabDock,
+    IOpenDocument
 } from "./types";
-import { assocPath, append, pathOr } from "ramda";
+import {
+    assocPath,
+    append,
+    curry,
+    filter,
+    lensPath,
+    over,
+    pathOr,
+    pipe,
+    propOr
+} from "ramda";
 
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
@@ -28,6 +39,10 @@ const initialLayoutState: IProjectEditorReducer = {
     secondaryPanel: null,
     manualLookupString: null
 };
+
+const addTabToOpenDocuments = curry((tab, state) =>
+    over(lensPath(["tabDock", "openDocuments"]), append(tab), state)
+);
 
 export default (
     state: IProjectEditorReducer = initialLayoutState,
@@ -52,67 +67,59 @@ export default (
                 manualLookupString: state.manualLookupString
             };
         }
+        // This is an ugly crashfix, which puts the index from -1 to 0
         case TAB_DOCK_INIT_SWITCH_TAB: {
             if (state.tabDock.tabIndex < 0) {
-                state.tabDock.tabIndex = 0;
-                return { ...state };
+                return assocPath(["tabDock", "tabIndex"], 0, state);
             } else {
                 return state;
             }
         }
         case TAB_DOCK_SWITCH_TAB: {
-            state.tabDock.tabIndex = action.tabIndex;
-            return { ...state };
+            return assocPath(["tabDock", "tabIndex"], action.tabIndex, state);
         }
         case TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID: {
             if (state.tabDock.tabIndex < 0) {
-                state = assocPath(
-                    ["tabDock", "openDocuments"],
-                    append(
-                        {
-                            uid: action.documentUid,
-                            editorInstance: null
-                        },
-                        pathOr([], ["tabDock", "openDocuments"], state)
-                    ),
+                return addTabToOpenDocuments(
+                    {
+                        uid: action.documentUid,
+                        editorInstance: null
+                    },
                     state
                 );
-                return { ...state };
             } else {
                 return state;
             }
         }
         case TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID: {
-            const currentOpenDocs = state.tabDock.openDocuments;
+            const currentOpenDocs: IOpenDocument[] = pathOr(
+                [] as IOpenDocument[],
+                ["tabDock", "openDocuments"],
+                state
+            );
+
             const documentAlreadyOpenIndex = findIndex(
                 currentOpenDocs,
-                od => od.uid === action.documentUid
+                (od: IOpenDocument) => od.uid === action.documentUid
             );
             if (documentAlreadyOpenIndex < 0) {
-                state = assocPath(
-                    ["tabDock", "tabIndex"],
-                    currentOpenDocs.length,
-                    state
-                );
-                state = assocPath(
-                    ["tabDock", "openDocuments"],
-                    append(
-                        {
-                            uid: action.documentUid,
-                            editorInstance: null
-                        },
-                        pathOr([], ["tabDock", "openDocuments"], state)
+                return pipe(
+                    assocPath(
+                        ["tabDock", "tabIndex"],
+                        propOr(0, "length", currentOpenDocs)
                     ),
-                    state
-                );
+                    addTabToOpenDocuments({
+                        uid: action.documentUid,
+                        editorInstance: null
+                    })
+                )(state);
             } else {
-                state = assocPath(
+                return assocPath(
                     ["tabDock", "tabIndex"],
                     documentAlreadyOpenIndex,
                     state
                 );
             }
-            return state;
         }
         case TAB_CLOSE: {
             if (
@@ -124,15 +131,26 @@ export default (
                 return state;
             }
             const currentTabIndex = state.tabDock.tabIndex;
-            state.tabDock.tabIndex = Math.min(
-                currentTabIndex,
-                state.tabDock.openDocuments.length - 2
-            );
-            state.tabDock.openDocuments = filter(
-                state.tabDock.openDocuments,
-                od => od.uid !== action.documentUid
-            );
-            return { ...state };
+            return pipe(
+                assocPath(
+                    ["tabDock", "tabIndex"],
+                    Math.min(
+                        currentTabIndex,
+                        pathOr(
+                            0,
+                            ["tabDock", "openDocuments", "length"],
+                            state
+                        ) - 2
+                    )
+                ),
+                assocPath(
+                    ["tabDock", "openDocuments"],
+                    filter(
+                        od => od.uid !== action.documentUid,
+                        pathOr([], ["tabDock", "openDocuments"], state)
+                    )
+                )
+            )(state);
         }
         case TOGGLE_MANUAL_PANEL: {
             const secondaryPanel =

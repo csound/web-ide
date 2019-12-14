@@ -45,7 +45,7 @@ CsoundObj.importScripts("/csound/").then(() => {
     store.dispatch(setCsound(csound));
     csound.setMessageCallback(() => {});
     csound.addPlayStateListener(csObj => {
-        console.log("Csound playState changed: " + csObj.getPlayState());
+        // console.log("Csound playState changed: " + csObj.getPlayState());
         store.dispatch(setCsoundPlayState(csObj.getPlayState()));
     });
 });

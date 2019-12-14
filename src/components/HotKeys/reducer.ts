@@ -1,4 +1,5 @@
 import { HotKeysActionTypes, SET_MENU_BAR_HOTKEYS } from "./types";
+
 export interface State {
     readonly keyMap: any;
     readonly keyHandlers: any;

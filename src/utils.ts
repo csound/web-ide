@@ -1,3 +1,5 @@
+import { addIndex, map } from "ramda";
+
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
     var sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";
@@ -30,6 +32,8 @@ export const isElectron: boolean =
 export function filterUndef<T>(ts: (T | undefined)[]): T[] {
     return ts.filter((t: T | undefined): t is T => !!t);
 }
+
+export const mapIndexed = addIndex(map);
 
 export function isMacintosh(): boolean {
     return navigator.platform.indexOf("Mac") > -1;

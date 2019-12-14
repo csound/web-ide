@@ -56,6 +56,7 @@ import { runCsound, playPauseCsound } from "../Csound/actions";
 import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
+import { assoc, pipe } from "ramda";
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
@@ -66,19 +67,17 @@ const getUserProjectsAction = (payload: any): ProfileActionTypes => {
 
 export const getUserProjects = (
     uid
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
+): ThunkAction<void, any, null, Action<string>> => async dispatch => {
     dispatch(getUserProjectsAction([]));
-
-    projects.where("userUid", "==", uid).onSnapshot(querySnapshot => {
-        const projects: any = [];
-        querySnapshot.forEach(d => {
-            return projects.push({
-                ...d.data(),
-                projectUid: querySnapshot.docs[projects.length].id
-            });
-        });
-        dispatch(getUserProjectsAction(projects));
-    });
+    const queryResult = await projects.where("userUid", "==", uid).get();
+    const userProjects = queryResult.docs.map(psnap =>
+        pipe(
+            p => p.data(),
+            assoc("projectUid", psnap.id),
+            p => assoc("target", p.target || "project.csd", p)
+        )(psnap)
+    );
+    dispatch(getUserProjectsAction(userProjects));
 };
 
 const addUserProjectAction = (): ProfileActionTypes => {

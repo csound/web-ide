@@ -15,7 +15,7 @@ import { History } from "history";
 
 export default (history: History) =>
     combineReducers({
-        projects: ProjectsReducer,
+        ProjectsReducer,
         router: connectRouter(history) as Reducer<RouterState, AnyAction>,
         LoginReducer,
         ProjectEditorReducer,

@@ -17,15 +17,7 @@ export const menu = css`
 
 export const menuList = css`
     div {
-        background-color: unset !important;
-        padding: 0px 12px;
-        outline: none;
-        cursor: pointer;
-        color: hsl(0, 0%, 80%);
-        &:hover {
-            background-color: hsl(0, 0%, 10%) !important;
-            color: white;
-        }
+        padding: 0px;
     }
 `;
 
@@ -55,5 +47,21 @@ export const placeholder = css`
 `;
 
 export const menuOption = css`
+    background-color: unset !important;
     padding: 6px 12px !important;
+    padding-left: 24px !important;
+    outline: none;
+    cursor: pointer;
+    color: hsl(0, 0%, 80%);
+    &:hover {
+        background-color: hsl(0, 0%, 10%) !important;
+        color: white;
+    }
+`;
+
+export const groupHeading = css`
+    text-transformation: none;
+    cursor: default;
+    margin: 6px 0;
+    margin-left: 12px;
 `;

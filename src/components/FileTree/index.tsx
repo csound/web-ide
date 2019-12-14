@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+// import MuiTreeView from "material-ui-treeview";
 // import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -10,38 +11,39 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import DescriptionIcon from "@material-ui/icons/Description";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import AddIcon from "@material-ui/icons/Add";
-import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { Typography } from "@material-ui/core";
-import useStyles from "./styles";
+import EditIcon from "@material-ui/icons/EditTwoTone";
+import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
+import * as SS from "./styles";
 import { IDocument, IProject } from "../Projects/types";
 import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
-import { IStore } from "../../db/interfaces";
+import { assocPath, pathOr, propOr, type as Rtype, values } from "ramda";
+import Tree, {
+    MuiTreeData,
+    MuiTreeLabelButtonData,
+    MuiTreeIconButtonData
+} from "material-ui-tree";
 import { sortBy } from "lodash";
 
-// Use import if/when they add type declerations
-const Tree = require("material-ui-tree").default;
-
-const initialSelectBlock: any = {};
-
 const FileTree = () => {
-    // use ! as this Filetree will only be used when activeProject is not-null,
-    // controlled by ProjectContext
-    const project: IProject = useSelector(
-        (store: IStore) => store.projects.activeProject!
+    const activeProjectUid = useSelector(
+        pathOr(null, ["ProjectsReducer", "activeProjectUid"])
     );
 
-    const documents: { [documentUid: string]: IDocument } = useSelector(
-        (store: IStore) => store.projects.activeProject!.documents
+    const project: IProject = useSelector(
+        pathOr({} as IProject, [
+            "ProjectsReducer",
+            "projects",
+            activeProjectUid
+        ])
     );
+
+    const documents: IDocument = propOr({} as IDocument, "documents", project);
 
     const dispatch = useDispatch();
 
-    const classes = useStyles({});
-
     const fileTreeDocs = sortBy(
-        Object.values(documents).map((document: IDocument, index: number) => {
+        values(documents).map((document: IDocument, index: number) => {
             return {
                 path: document.filename,
                 type: "blob",
@@ -71,30 +73,27 @@ const FileTree = () => {
     });
 
     React.useEffect(() => {
-        setState(s => {
-            s.data.tree = fileTreeDocs;
-            return s;
-        });
+        setState(assocPath(["data", "tree"], fileTreeDocs));
         // eslint-disable-next-line
-    }, [fileTreeDocs]);
+    }, []);
 
     const renderLabel = useCallback(
         (data, unfoldStatus) => {
             const { path, type } = data;
-            let textClassName: "active" | "inactive" | "closed" = "inactive";
-            let variant: "body1" | "body2" = "body1";
-            let iconComp: React.ReactElement = <div />;
+            const rootDirectoryElem = path === project.name;
+            let IconComp: any;
             if (type === "tree") {
-                iconComp = unfoldStatus ? <FolderOpenIcon /> : <FolderIcon />;
+                if (rootDirectoryElem) {
+                    IconComp = FolderOpenIcon;
+                } else {
+                    IconComp = unfoldStatus ? FolderOpenIcon : FolderIcon;
+                }
             }
             if (type === "blob") {
-                // console.log(activeTabDocUid === data.sha, activeTabDocUid, data.sha)
-                // if (activeTabDocUid === data.sha) {
-                //     secondaryClassName = "active";
-                // }
-                variant = "body2";
+                if (Rtype(data.sha) !== "String") return <></>;
+                // variant = "body2";
                 if (path.startsWith(".") || path.includes("config")) {
-                    iconComp = <SettingsIcon />;
+                    IconComp = SettingsIcon;
                 } else if (
                     path.endsWith(".csd") ||
                     path.endsWith(".sco") ||
@@ -102,82 +101,103 @@ const FileTree = () => {
                     path.endsWith(".udo") ||
                     false
                 ) {
-                    iconComp = <DescriptionIcon />;
+                    IconComp = DescriptionIcon;
                 } else {
-                    iconComp = <InsertDriveFileIcon />;
+                    IconComp = InsertDriveFileIcon;
                 }
             }
 
+            const onFileClick = e => {
+                dispatch(tabOpenByDocumentUid(data.sha));
+            };
             return (
-                <Typography
-                    variant={variant}
-                    className={classes.node}
-                    onClick={() => dispatch(tabOpenByDocumentUid(data.sha))}
-                >
-                    {React.cloneElement(iconComp, {
-                        className: classes.fileIcon
-                    })}
-                    <span className={classes[textClassName]}>{path}</span>
-                </Typography>
+                <>
+                    {rootDirectoryElem ? (
+                        <div
+                            css={SS.invisibleUnClickableArea}
+                            onMouseEnter={e => {
+                                e.nativeEvent.stopImmediatePropagation();
+                                e.preventDefault();
+                            }}
+                            onMouseOver={e => {
+                                e.nativeEvent.stopImmediatePropagation();
+                                e.preventDefault();
+                            }}
+                            onClick={e => {
+                                e.nativeEvent.stopImmediatePropagation();
+                                e.preventDefault();
+                            }}
+                        />
+                    ) : (
+                        <div
+                            css={SS.invisibleClickableArea}
+                            onClick={onFileClick}
+                        />
+                    )}
+
+                    <span css={SS.fileTreeNode} onClick={onFileClick}>
+                        <IconComp css={SS.fileIcon} onClick={onFileClick} />
+                        <p onClick={onFileClick} css={SS.fileTreeNodeText}>
+                            {path}
+                        </p>
+                    </span>
+                </>
             );
         },
-        [classes, dispatch]
+        [dispatch]
     );
 
     const getActionsData = useCallback(
-        (data, path, unfoldStatus, toggleFoldStatus) => {
+        (
+            data: MuiTreeData,
+            path: number[],
+            unfoldStatus: boolean,
+            toggleFoldStatus: () => void
+        ): (MuiTreeLabelButtonData | MuiTreeIconButtonData)[] => {
             const { type } = data;
-
-            if (type === "blob") {
-                if (!initialSelectBlock[data.sha.toString()] && !unfoldStatus) {
-                    initialSelectBlock[data.sha.toString()] = true;
-                } else {
-                    // this place is too dangerous, gets call too many times
-                }
-            }
-
             if (type === "tree") {
                 if (!unfoldStatus) {
                     toggleFoldStatus();
-                    return null;
                 }
                 return {
-                    icon: <AddIcon style={{ color: "white", zoom: "175%" }} />,
-                    label: "new",
+                    icon: <AddIcon style={{ display: "none" }} />,
+                    label: "",
                     hint: "Insert file",
-                    onClick: () => {
-                        dispatch(newDocument(project.projectUid, ""));
-                    }
-                };
+                    onClick: () => dispatch(newDocument(project.projectUid, ""))
+                } as any;
             }
             return [
                 {
                     icon: (
-                        <EditIcon
-                            color="secondary"
-                            className={classes.editIcon}
-                        />
+                        <>
+                            <EditIcon css={SS.editIcon} />
+                        </>
                     ),
                     hint: "Rename file",
-                    onClick: () => {
-                        dispatch(renameDocument(data.sha, data.path));
-                    }
+                    onClick: () =>
+                        dispatch(
+                            renameDocument(
+                                propOr("", "sha", data),
+                                propOr("", "path", path)
+                            )
+                        )
                 },
+                // <div css={SS.eventBlackhole} />
                 {
                     icon: (
-                        <DeleteIcon
-                            color="secondary"
-                            className={classes.deleteIcon}
-                        />
+                        <>
+                            <DeleteIcon color="secondary" css={SS.deleteIcon} />
+                        </>
                     ),
                     hint: "Delete file",
                     onClick: () => {
-                        dispatch(deleteFile(data.sha));
+                        typeof data.sha === "string" &&
+                            dispatch(deleteFile(data.sha));
                     }
                 }
-            ];
+            ] as MuiTreeIconButtonData[];
         },
-        [classes, project.projectUid, dispatch]
+        [project.projectUid, dispatch]
     );
 
     const requestChildrenData = useCallback((data, path, toggleFoldStatus) => {
@@ -186,16 +206,12 @@ const FileTree = () => {
         if (type === "blob") {
             toggleFoldStatus();
         }
-        // if (type === "tree") {
-        //     toggleFoldStatus();
-        // } else {
-        //     toggleFoldStatus();
-        // }
     }, []);
 
     return (
         <Tree
-            className={classes.container + " MuiFileTree"}
+            className={" MuiFileTree"}
+            css={SS.container}
             data={state.data}
             labelKey="path"
             valueKey="sha"

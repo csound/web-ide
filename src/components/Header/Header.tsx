@@ -64,10 +64,6 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
         (store: IStore) => store.LoginReducer.isLoginDialogOpen
     );
 
-    // const userDisplayName = useSelector(
-    //     (store: IStore) => store.userProfile && store.userProfile.name
-    // );
-
     const anchorEl = useRef(null);
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -140,9 +136,9 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
     );
 
     return (
-        <div className={classes.root}>
+        <>
             {isLoginDialogOpen && <Login />}
-            <AppBar className={classes.appBar}>
+            <AppBar css={SS.appBar}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     <IconButton
                         color="inherit"
@@ -217,14 +213,14 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                         </ListItem>
                     </List>
                     {/* <Divider/>
-                      <List >
-                      <ListItem>
-                      <ListItemText primary={`Version: `} />
-                      </ListItem>
-                      </List> */}
+                        <List >
+                        <ListItem>
+                        <ListItemText primary={`Version: `} />
+                        </ListItem>
+                        </List> */}
                 </div>
             </Drawer>
-        </div>
+        </>
     );
 };
 

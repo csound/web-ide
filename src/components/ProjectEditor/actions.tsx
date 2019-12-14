@@ -62,7 +62,11 @@ const closeUnsavedTabPrompt = (cancelCallback, closeWithoutSavingCallback) => {
     }) as React.FC;
 };
 
-export const tabClose = (documentUid: string, isModified: boolean) => {
+export const tabClose = (
+    activeProjectUid: string,
+    documentUid: string,
+    isModified: boolean
+) => {
     return async (dispatch: any) => {
         if (!isModified) {
             dispatch({
@@ -77,7 +81,7 @@ export const tabClose = (documentUid: string, isModified: boolean) => {
                     type: TAB_CLOSE,
                     documentUid
                 });
-                dispatch(resetDocumentValue(documentUid));
+                dispatch(resetDocumentValue(activeProjectUid, documentUid));
             };
 
             const closeUnsavedTabPromptComp = closeUnsavedTabPrompt(

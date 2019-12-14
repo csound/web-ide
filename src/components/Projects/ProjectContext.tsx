@@ -1,55 +1,93 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { IStore } from "../../db/interfaces";
+import ProjectEditor from "../ProjectEditor/ProjectEditor";
+import { IProject } from "../Projects/types";
 import Header from "../Header/Header";
 import {
+    activateProject,
     loadProjectFromFirestore,
     openProjectDocumentTabs,
     syncProjectDocumentsWithEMFS
 } from "./actions";
 import * as SS from "./styles";
-import { isEmpty } from "lodash";
+import { has, pathOr, propOr, values } from "ramda";
 
 interface IProjectContextProps {
     className: string;
-    children: JSX.Element[] | JSX.Element;
+    // main: JSX.Element[] | JSX.Element;
     match: any;
 }
 
 export const ProjectContext = (props: IProjectContextProps) => {
     const dispatch = useDispatch();
+    const [projectFetchStarted, setProjectFetchStarted] = useState(false);
+    const [projectIsReady, setProjectIsReady] = useState(false);
+    const [needsLoading, setNeedsLoading] = useState(true);
     const projectUid = props.match.params.id;
     const { className } = props;
-    const activeProject = useSelector(
-        (store: IStore) => store.projects.activeProject
+    const activeProjectUid = useSelector(
+        pathOr(null, ["ProjectsReducer", "activeProjectUid"])
     );
-    const csound = useSelector((store: IStore) => store.csound.csound);
-    const needsLoading =
-        isEmpty(activeProject) ||
-        (activeProject && projectUid !== activeProject.projectUid);
+
+    const project: IProject = useSelector(
+        pathOr({} as IProject, [
+            "ProjectsReducer",
+            "projects",
+            activeProjectUid
+        ])
+    );
+
+    const csound = useSelector(pathOr(null, ["csound", "csound"]));
 
     useEffect(() => {
-        if (needsLoading && csound) {
-            dispatch(loadProjectFromFirestore(projectUid));
+        if (!projectFetchStarted && csound) {
+            const initProject = async () => {
+                setProjectFetchStarted(true);
+                // type bug '(dispatch: any) => Promise<void>'
+                await dispatch(loadProjectFromFirestore(projectUid));
+                await dispatch(activateProject(projectUid));
+                setProjectIsReady(true);
+            };
+            initProject();
+        }
+        if (
+            needsLoading &&
+            projectFetchStarted &&
+            projectIsReady &&
+            csound &&
+            has("documents", project)
+        ) {
+            const initUI = async () => {
+                await dispatch(
+                    openProjectDocumentTabs(
+                        values(propOr({}, "documents", project))
+                    )
+                );
+                await dispatch(syncProjectDocumentsWithEMFS(projectUid));
+                setNeedsLoading(false);
+            };
+            initUI();
         }
         // eslint-disable-next-line
-    }, [needsLoading, csound]);
+    }, [
+        csound,
+        project,
+        activeProjectUid,
+        needsLoading,
+        projectIsReady,
+        projectFetchStarted
+    ]);
 
-    useEffect(() => {
-        if (activeProject) {
-            dispatch(openProjectDocumentTabs());
-            dispatch(syncProjectDocumentsWithEMFS(projectUid));
-        }
-        // eslint-disable-next-line
-    }, [activeProject]);
-
-    if (activeProject && activeProject.projectUid && !needsLoading && csound) {
+    if (!needsLoading) {
         return (
             <>
                 <Header />
-                <main css={SS.main} className={className}>
-                    {props.children}
-                </main>
+                <ProjectEditor
+                    {...props}
+                    css={SS.main}
+                    className={className}
+                    activeProject={project}
+                />
             </>
         );
     } else {

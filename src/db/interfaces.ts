@@ -43,7 +43,7 @@ export interface IBurgerMenu {
 }
 
 export interface IStore {
-    projects: IProjectsReducer;
+    ProjectsReducer: IProjectsReducer;
     csound: ICsoundReducer;
     router: any;
     LoginReducer: any;

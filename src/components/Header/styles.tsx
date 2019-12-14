@@ -4,25 +4,25 @@ import { css } from "@emotion/core";
 
 const drawerWidth = 260;
 
+export const headerRoot = css`
+    flex-grow: 1;
+    z-index: 100;
+    overflow: hidden;
+    position: relative;
+    display: block;
+`;
+
+export const appBar = css`
+    width: 100%;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgb(17, 21, 24);
+    z-index: 2;
+    transition: width 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms,
+        margin 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms;
+`;
+
 export const headerStyles = (theme: Theme) =>
     createStyles({
-        root: {
-            flexGrow: 1,
-            zIndex: 100,
-            overflow: "hidden",
-            position: "relative",
-            display: "block"
-        },
-        appBar: {
-            width: "100%",
-            marginBottom: "4px",
-            borderBottom: "1px solid rgb(17, 21, 24)",
-            zIndex: theme.zIndex.drawer + 1,
-            transition: theme.transitions.create(["width", "margin"], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen
-            })
-        },
         appBarShift: {
             marginLeft: drawerWidth,
             width: `calc(100% - ${drawerWidth}px)`,

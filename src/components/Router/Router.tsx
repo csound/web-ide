@@ -15,7 +15,6 @@ import { store } from "../../store";
 // import PrivateRoute from "./PrivateRoute";
 import { History } from "history";
 import { layoutStylesHook } from "./styles";
-import ProjectEditor from "../ProjectEditor/ProjectEditor";
 import { setMenuBarHotKeys } from "../HotKeys/actions";
 import { stopCsound } from "../Csound/actions";
 import SiteDocs from "../SiteDocs/SiteDocs";
@@ -29,27 +28,26 @@ interface IRouterComponent {
 const EditorLayout = (props: any) => {
     const classes = layoutStylesHook(props.theme);
     const dispatch = useDispatch();
-    const { match } = props;
 
     useEffect(() => {
         dispatch(setMenuBarHotKeys());
         return () => {
             dispatch(stopCsound());
         };
-    }, [dispatch]);
+        // eslint-disable-next-line
+    }, []);
 
     return (
         <Provider store={store}>
-            <ProjectContext className={classes.content} {...props}>
-                <ProjectEditor projectId={match.params.id} />
-            </ProjectContext>
+            <ProjectContext
+                className={classes.content}
+                {...props}
+            ></ProjectContext>
         </Provider>
     );
 };
 
 class RouterComponent extends Component<IRouterComponent, any> {
-    // public componentDidMount() {}
-
     public render() {
         return (
             <ConnectedRouter history={this.props.history} {...this.props}>

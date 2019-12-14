@@ -1,6 +1,10 @@
-import { IProjectsReducer } from "./types";
+import { IProject, IProjectsReducer } from "./types";
+import { pathOr, propOr } from "ramda";
 
-export const selectActiveProject = (store: any) => {
+export const selectActiveProject = (store: any): IProject => {
     const state: IProjectsReducer = store.projects;
-    return state.activeProject;
+    const activeProjectUid = propOr("", "activeProject", state);
+    return activeProjectUid
+        ? pathOr({} as IProject, ["projects", activeProjectUid], state)
+        : ({} as IProject);
 };

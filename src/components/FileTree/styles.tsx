@@ -1,49 +1,159 @@
-// import { Theme } from '@material-ui/core';
-import { makeStyles } from "@material-ui/styles";
+import { css } from "@emotion/core";
 
-const useStyles = makeStyles({
-    container: {
-        width: "100%",
-        height: "100%",
-        background: "#272822",
-        padding: "0!important",
-        color: "#f8f8f2",
-        overflow: "hidden"
-    },
-    treeIcon: {
-        color: "red"
-    },
-    deleteIcon: {
-        fontSize: 24,
-        // marginRight: 6,
-        color: "white"
-    },
-    editIcon: {
-        fontSize: 18,
-        marginRight: 32,
-        color: "white"
-    },
-    fileIcon: {
-        fontSize: 18,
-        marginRight: 6,
-        color: "white"
-    },
-    node: {
-        display: "flex",
-        alignContent: "center",
-        color: "rgb(222,222,222)",
-        textOverflow: "ellipsis",
-        overflow: "hidden"
-    },
-    active: {
-        fontWeight: "bold"
-    },
-    inactive: {
-        fontWeight: "normal"
-    },
-    closed: {
-        fontWeight: "normal"
+// export const useStyles = makeStyles({
+//     container: {
+//         width: "100%",
+//         height: "100%",
+//         background: "#272822",
+//         padding: "0!important",
+//         color: "#f8f8f2",
+//         overflow: "hidden"
+//     },
+//     treeIcon: {
+//         color: "red"
+//     },
+//     deleteIcon: {
+//         fontSize: 24,
+//         // marginRight: 6,
+//         color: "white"
+//     },
+
+//     active: {
+//         fontWeight: "bold"
+//     },
+//     inactive: {
+//         fontWeight: "normal"
+//     },
+//     closed: {
+//         fontWeight: "normal"
+//     }
+// });
+
+export const container = css`
+    width: 100%;
+    height: 100%;
+    background-color: #272822;
+    color: #f8f8f2 !important;
+    padding: 0 !important;
+    button {
+        width: 100%;
     }
-});
+    .MuiExpansionPanelSummary-content {
+        // margin: 12px 0 !important;
+    }
+    & > .MuiList-root {
+        padding: 0 !important;
+        margin-top: 8px;
+    }
+    & > .MuiList-root > .MuiButtonBase-root {
+        transition: none !important;
+        pointer-events: none !important;
+        left: 12px;
+    }
 
-export default useStyles;
+    & div.MuiButtonBase-root {
+        padding-right: 0px;
+        width: 150px;
+    }
+
+    .MuiButtonBase-root button {
+        margin: 0;
+        color: rgb(222, 222, 222) !important;
+        top: 0px;
+        width: 24px;
+        left: 170px;
+        top: -2px;
+    }
+
+    .MuiButtonBase-root button:first-of-type {
+        left: 142px;
+    }
+
+    .MuiListItemText-root {
+        width: 100%;
+        padding: 0 !important;
+        position: relative;
+    }
+`;
+
+export const fileTreeNode = css`
+    position: relative;
+    display: flex;
+    align-content: center;
+`;
+
+export const fileTreeNodeText = css`
+    color: rgb(222, 222, 222);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.43;
+    letter-spacing: 0.01071em;
+    margin 0;
+    margin-left: 6px;
+    padding: 0;
+`;
+
+export const fileIcon = css`
+    z-index: 0;
+    margin-right: 6px;
+    color: white;
+    align-self: center;
+    position: absolute;
+    width: 20px;
+    top: -3px;
+    left: -18px;
+    pointer-events: none;
+`;
+
+// ${fileIcon}
+// top: -8px;
+// left: -32px;
+// z-index: 101;
+// pointer-events: none;
+
+export const editIcon = css`
+    margin-top: 5px;
+    zoom: 80%;
+`;
+
+// ${fileIcon}
+
+export const deleteIcon = css`
+    zoom: 106%;
+    margin-top: 1px;
+    color: rgb(222, 222, 222) !important;
+`;
+
+export const invisibleClickableArea = css`
+    // background-color: blue !important;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: calc(100% - 66px);
+    height: 100%;
+    z-index: 2;
+`;
+
+export const invisibleUnClickableArea = css`
+    cursor: initial !important;
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: calc(100% - 2px);
+    height: 100%;
+    z-index: 100;
+`;
+
+export const eventBlackhole = css`
+    background-color: red !important;
+    cursor: initial !important;
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    z-index: 100;
+`;

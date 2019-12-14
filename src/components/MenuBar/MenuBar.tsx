@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
 import IconButton from "@material-ui/core/IconButton";
 import { PlayIcon } from "../../FontAudio";
-// import { withShortcut, IShortcutProviderRenderProps } from "react-keybind";
 import { useSelector, useDispatch } from "react-redux";
 import useStyles from "./styles";
 import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
-import { IStore } from "../../db/interfaces";
 import { isMac } from "../../utils";
 import {
     newDocument,
@@ -23,14 +21,13 @@ import {
     playPauseCsound,
     renderToDisk
 } from "../Csound/actions";
+import { pathOr } from "ramda";
 import { reduce } from "lodash";
 import { showKeyboardShortcuts } from "../SiteDocs/actions";
 
 function MenuBar(props) {
-    const activeProjectUid: string = useSelector((store: IStore) =>
-        store.projects.activeProject
-            ? store.projects.activeProject.projectUid
-            : ""
+    const activeProjectUid: string = useSelector(
+        pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
 
     const dispatch = useDispatch();
@@ -105,6 +102,15 @@ function MenuBar(props) {
             submenu: [
                 { label: "Undo", role: "doStuff" },
                 { label: "Redo", role: "doStuff" }
+            ]
+        },
+        {
+            label: "Project",
+            submenu: [
+                {
+                    label: "Configure",
+                    role: "toggle-project-configure"
+                }
             ]
         },
         {

@@ -42,7 +42,16 @@ export interface ICsoundObj {
     destroy: () => void;
     play: () => void;
     stop: () => void;
-    getPlayState: () => ICsoundStatus; 
-    addPlayStateListener: (listener:(csoundObj:ICsoundObj) => void) => void;
-    removePlayStateListener: (listener:(csoundObj:ICsoundObj) => void) => void;
+    getPlayState: () => ICsoundStatus;
+    addPlayStateListener: (listener: (csoundObj: ICsoundObj) => void) => void;
+    removePlayStateListener: (
+        listener: (csoundObj: ICsoundObj) => void
+    ) => void;
+}
+
+// JUST A MOCK (WIP)
+export interface ICsoundOptions {
+    messageLevel?: number;
+    sampleRate?: number;
+    ksmps?: number;
 }

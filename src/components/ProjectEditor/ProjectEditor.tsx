@@ -6,6 +6,7 @@ import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument, IProject } from "../Projects/types";
+import { IOpenDocument } from "./types";
 import SplitterLayout from "react-splitter-layout";
 import IframeComm from "react-iframe-comm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,7 +21,8 @@ import AudioEditor from "../AudioEditor/AudioEditor";
 import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "../Console/Console";
-import { isEmpty, reduce } from "lodash";
+import { append, reduce, pathOr, propOr } from "ramda";
+import { find, isEmpty } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import {
@@ -29,10 +31,11 @@ import {
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
-import { filterUndef } from "../../utils";
+import { mapIndexed } from "../../utils";
 import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
-import { selectActiveProject } from "../Projects/selectors";
+import * as SS from "./styles";
+// import { selectActiveProject } from "../Projects/selectors";
 
 type EditorForDocumentProps = {
     uid: any;
@@ -61,67 +64,68 @@ const ProjectEditor = props => {
     // mouve positions, so we add an invidible layer then
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = React.useState(false);
+    const activeProject: IProject = props.activeProject;
 
-    const activeProject: IProject = useSelector(selectActiveProject)!;
+    const projectUid: string = propOr("", "projectUid", activeProject);
 
-    const projectUid: string = activeProject.projectUid;
-
-    const tabDockDocuments = useSelector(
-        (store: IStore) =>
-            store.ProjectEditorReducer.tabDock.openDocuments || []
+    const tabDockDocuments: IOpenDocument[] = useSelector(
+        pathOr([] as IOpenDocument[], [
+            "ProjectEditorReducer",
+            "tabDock",
+            "openDocuments"
+        ])
     );
 
-    const openDocuments: IDocument[] = useSelector((store: IStore) =>
-        reduce(
-            tabDockDocuments,
-            (acc, tabDoc) => {
-                const maybeDoc = activeProject.documents[tabDoc.uid];
-                if (maybeDoc) {
-                    acc.push(maybeDoc as IDocument);
-                }
-                return acc;
-            },
-            [] as IDocument[]
-        )
-    );
+    const openDocuments: IDocument[] = isEmpty(projectUid)
+        ? ([] as IDocument[])
+        : reduce(
+              (acc, tabDoc) => {
+                  const maybeDoc = pathOr(
+                      null,
+                      ["documents", propOr("", "uid", tabDoc)],
+                      activeProject
+                  );
+                  return maybeDoc ? append(maybeDoc as IDocument, acc) : acc;
+              },
+              [],
+              tabDockDocuments
+          );
 
     const tabIndex: number = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.tabDock.tabIndex
+        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
 
     const closeTab = (documentUid, isModified) => {
-        dispatch(tabClose(documentUid, isModified));
+        dispatch(tabClose(projectUid, documentUid, isModified));
     };
 
-    const openTabList = openDocuments.map(
-        (document: IDocument | undefined, index: number) => {
-            const isActive: boolean = index === tabIndex;
-            const isModified = document!.isModifiedLocally;
-            return (
-                <Tab key={index}>
-                    {document!.filename + (isModified ? "*" : "")}
-                    <Tooltip title="close" placement="right-end">
-                        <IconButton
-                            size="small"
-                            style={{ marginLeft: 6, marginBottom: 2 }}
-                            onClick={e => {
-                                e.stopPropagation();
-                                closeTab(document!.documentUid, isModified);
-                            }}
-                        >
-                            <FontAwesomeIcon
-                                icon={faTimes}
-                                size="sm"
-                                color={isActive ? "black" : "#f8f8f2"}
-                            />
-                        </IconButton>
-                    </Tooltip>
-                </Tab>
-            );
-        }
-    );
+    const openTabList = mapIndexed((document: IDocument, index: number) => {
+        const isActive: boolean = index === tabIndex;
+        const isModified = document.isModifiedLocally;
+        return (
+            <Tab key={index}>
+                {document!.filename + (isModified ? "*" : "")}
+                <Tooltip title="close" placement="right-end">
+                    <IconButton
+                        size="small"
+                        style={{ marginLeft: 6, marginBottom: 2 }}
+                        onClick={e => {
+                            e.stopPropagation();
+                            closeTab(document.documentUid, isModified);
+                        }}
+                    >
+                        <FontAwesomeIcon
+                            icon={faTimes}
+                            size="sm"
+                            color={isActive ? "black" : "#f8f8f2"}
+                        />
+                    </IconButton>
+                </Tooltip>
+            </Tab>
+        );
+    }, openDocuments);
 
-    const openTabPanels = filterUndef(openDocuments).map(
+    const openTabPanels = mapIndexed(
         (doc: IDocument, index: number) => (
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
                 <EditorForDocument
@@ -130,18 +134,9 @@ const ProjectEditor = props => {
                     doc={doc}
                 />
             </TabPanel>
-        )
+        ),
+        openDocuments
     );
-
-    // <Tooltip title="Undock" placement="right-end">
-    //     <IconButton size="small">
-    //         <FontAwesomeIcon
-    //             icon={faWindowRestore}
-    //             size="sm"
-    //             color="#f8f8f2"
-    //         />
-    //     </IconButton>
-    // </Tooltip>
 
     const tabPanelController = (
         <div className="tab-panel-controller">
@@ -161,9 +156,11 @@ const ProjectEditor = props => {
         dispatch(tabSwitch(index));
     };
 
-    const someUnsavedData = openDocuments.some(
-        doc => doc.isModifiedLocally === true
+    const someUnsavedData: boolean = !!find(
+        openDocuments,
+        (doc: IDocument) => doc.isModifiedLocally === true
     );
+
     const unsavedDataExitText =
         "You still have unsaved changes, are you sure you want to quit?";
     const unsavedDataExitPrompt = someUnsavedData && (
@@ -181,6 +178,8 @@ const ProjectEditor = props => {
             <Tabs
                 onSelect={switchTab}
                 selectedIndex={tabIndex}
+                className={"react-tabs"}
+                css={`SS.tabDock`}
                 style={{ height: "100%", display: "flex", flexFlow: "column" }}
             >
                 <TabList
@@ -198,11 +197,7 @@ const ProjectEditor = props => {
         (store: IStore) => store.ProjectEditorReducer.manualLookupString
     );
 
-    const onManualMessage = evt => {
-        // if (typeof evt.data.playCSD === "string") {
-        //     playCSD(evt.data.playCSD);
-        // }
-    };
+    const onManualMessage = evt => {};
 
     const manualWindow = (
         <div style={{ width: "100%", height: "100%" }}>
@@ -259,7 +254,7 @@ const ProjectEditor = props => {
     }, []);
 
     return (
-        <div>
+        <div css={SS.splitterLayoutContainer}>
             {unsavedDataExitPrompt}
             <SplitterLayout
                 primaryIndex={1}
