@@ -3,7 +3,6 @@ import onClickOutside from "react-onclickoutside";
 import IconButton from "@material-ui/core/IconButton";
 import { PlayIcon } from "../../FontAudio";
 import { useSelector, useDispatch } from "react-redux";
-import useStyles from "./styles";
 import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { isMac } from "../../utils";
@@ -190,7 +189,7 @@ function MenuBar(props) {
         setOpen(false);
     };
 
-    const classes = useStyles();
+    // const classes = useStyles();
 
     const [open, setOpen] = useState(false) as any;
 
@@ -203,35 +202,33 @@ function MenuBar(props) {
                 const itemCallback = item.callback;
 
                 if (item.role === "hr") {
-                    acc.push(<hr key={index} className={classes.hr} />);
+                    acc.push(<hr key={index} css={SS.hr} />);
                 } else if (keyBinding && itemCallback) {
                     acc.push(
                         <li
-                            className={classes.listItem}
+                            css={SS.listItem}
                             key={index}
                             onClick={() => itemCallback()}
                         >
-                            <p className={classes.label}>{item.label}</p>
+                            <p css={SS.paraLabel}>{item.label}</p>
                             <span style={{ width: 24 }} />
-                            <i className={classes.label}>
-                                {item.keyBindingLabel}
-                            </i>
+                            <i css={SS.paraLabel}>{item.keyBindingLabel}</i>
                         </li>
                     );
                 } else if (itemCallback) {
                     acc.push(
                         <li
-                            className={classes.listItem}
+                            css={SS.listItem}
                             key={index}
                             onClick={() => itemCallback()}
                         >
-                            <p className={classes.label}>{item.label}</p>
+                            <p css={SS.paraLabel}>{item.label}</p>
                         </li>
                     );
                 } else {
                     acc.push(
-                        <li className={classes.listItem} key={index}>
-                            <p className={classes.label}>{item.label}</p>
+                        <li css={SS.listItem} key={index}>
+                            <p css={SS.paraLabel}>{item.label}</p>
                         </li>
                     );
                 }
@@ -277,10 +274,7 @@ function MenuBar(props) {
 
     const buttonGroup = (
         <div css={SS.buttonGroup}>
-            <IconButton
-                type="button"
-                classes={{ root: classes.iconButtonRoot }}
-            >
+            <IconButton type="button" css={SS.iconButtonContainer}>
                 <PlayIcon size={32} />
             </IconButton>
         </div>
@@ -288,7 +282,7 @@ function MenuBar(props) {
 
     return (
         <>
-            <ul className={classes.root}>{columns}</ul>
+            <ul css={SS.root}>{columns}</ul>
             {buttonGroup}
         </>
     );

@@ -168,11 +168,7 @@ const FileTree = () => {
             }
             return [
                 {
-                    icon: (
-                        <>
-                            <EditIcon css={SS.editIcon} />
-                        </>
-                    ),
+                    icon: <EditIcon css={SS.editIcon} />,
                     hint: "Rename file",
                     onClick: () =>
                         dispatch(
@@ -182,14 +178,9 @@ const FileTree = () => {
                             )
                         )
                 },
-                // <div css={SS.eventBlackhole} />
                 {
-                    icon: (
-                        <>
-                            <DeleteIcon color="secondary" css={SS.deleteIcon} />
-                        </>
-                    ),
-                    hint: "Delete file",
+                    icon: <DeleteIcon color="secondary" css={SS.deleteIcon} />,
+                    hint: `Delete ${propOr("", "sha", data)}`,
                     onClick: () => {
                         typeof data.sha === "string" &&
                             dispatch(deleteFile(data.sha));

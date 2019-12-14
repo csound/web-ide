@@ -29,9 +29,11 @@ body {
 }
 
 main {
-    position: relative;
+    position: absolute;
     padding: 0;
     bottom: 0;
+    width: 100%;
+    top: 38px;
 }
 
 header {

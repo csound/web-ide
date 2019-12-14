@@ -7,6 +7,7 @@ export const dropdownContainer = css`
 `;
 
 export const menu = css`
+    z-index: 2;
     background-color: #272822;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     position: absolute;

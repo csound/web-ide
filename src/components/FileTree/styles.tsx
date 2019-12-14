@@ -136,16 +136,5 @@ export const invisibleUnClickableArea = css`
     left: 0;
     width: calc(100% - 2px);
     height: 100%;
-    z-index: 100;
-`;
-
-export const eventBlackhole = css`
-    background-color: red !important;
-    cursor: initial !important;
-    position: absolute;
-    top: -3px;
-    left: 0;
-    width: 12px;
-    height: 12px;
-    z-index: 100;
+    z-index: 2;
 `;

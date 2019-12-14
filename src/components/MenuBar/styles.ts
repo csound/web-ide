@@ -3,47 +3,42 @@ import { css } from "@emotion/core";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
-        root: {
-            display: "inline-block",
-            position: "relative",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            listStyle: "none",
-            padding: 0,
-            margin: 0,
-            userSelect: "none",
-            marginLeft: 6
-        },
+        root: {},
         column: {},
-        listItem: {
-            padding: "6px 12px",
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            "&:hover": {
-                backgroundColor: "rgba(255,255,255,0.1)"
-            }
-        },
-        label: {
-            margin: 0,
-            fontSize: 12,
-            whiteSpace: "nowrap"
-        },
-        hr: {
-            padding: 0,
-            backgroundColor: "rgba(200,200,200,0.1)",
-            height: "1px",
-            border: "none",
-            margin: "2px 12px"
-        },
-        iconButtonRoot: {
-            borderRadius: "3px",
-            padding: "2px 12px",
-            justifySelf: "center"
-        }
+        listItem: {},
+        label: {},
+        hr: {},
+        iconButtonRoot: {}
     })
 );
+
+export const root = css`
+    z-index: 9999999;
+    display: inline-block;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    user-select: none;
+    margin-left: 6px;
+`;
+
+export const hr = css`
+    padding: 0;
+    background-color: rgba(200, 200, 200, 0.1);
+    height: 1px;
+    border: none;
+    margin: 2px 12px;
+`;
+
+export const paraLabel = css`
+    margin: 0;
+    font-size: 12px;
+    white-space: nowrap;
+`;
 
 export const dropdownButton = css`
     position: relative;
@@ -62,10 +57,12 @@ export const dropdownButton = css`
 `;
 
 export const dropdownList = css`
+    z-index: 10000;
     width: fit-content;
-    background-color: #272822;
+    background-color: rgb(39, 40, 34);
+    opacity: 1;
     position: absolute;
-    line-style: none;
+    list-style: none !important;
     border: none;
     padding: 0;
     animation: fadeIn 0.01s linear;
@@ -80,6 +77,23 @@ export const dropdownList = css`
 
 export const buttonGroup = css`
     display: none;
+`;
+
+export const iconButtonContainer = css`
+    border-radius: 3px;
+    padding: 2px 12px;
+    justify-self: center;
+`;
+
+export const listItem = css`
+    padding: 6px 12px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    background-color: #272822;
+    li:hover: {
+        backgroundcolor: rgba(255, 255, 255, 0.1);
+    }
 `;
 
 export default useStyles;

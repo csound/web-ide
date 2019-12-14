@@ -179,7 +179,7 @@ const ProjectEditor = props => {
                 onSelect={switchTab}
                 selectedIndex={tabIndex}
                 className={"react-tabs"}
-                css={`SS.tabDock`}
+                css={SS.tabDock}
                 style={{ height: "100%", display: "flex", flexFlow: "column" }}
             >
                 <TabList

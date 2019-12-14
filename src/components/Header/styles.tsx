@@ -6,13 +6,12 @@ const drawerWidth = 260;
 
 export const headerRoot = css`
     flex-grow: 1;
-    z-index: 100;
-    overflow: hidden;
     position: relative;
     display: block;
 `;
 
 export const appBar = css`
+    position: static !important;
     width: 100%;
     margin-bottom: 4px;
     border-bottom: 1px solid rgb(17, 21, 24);
