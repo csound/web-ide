@@ -144,7 +144,7 @@ const FileTree = () => {
                 </>
             );
         },
-        [dispatch]
+        [dispatch, project.name]
     );
 
     const getActionsData = useCallback(

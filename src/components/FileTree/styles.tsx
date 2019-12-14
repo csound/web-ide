@@ -108,18 +108,10 @@ export const fileIcon = css`
     pointer-events: none;
 `;
 
-// ${fileIcon}
-// top: -8px;
-// left: -32px;
-// z-index: 101;
-// pointer-events: none;
-
 export const editIcon = css`
     margin-top: 5px;
     zoom: 80%;
 `;
-
-// ${fileIcon}
 
 export const deleteIcon = css`
     zoom: 106%;
