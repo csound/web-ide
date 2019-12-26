@@ -17,7 +17,14 @@ import * as SS from "./styles";
 import { IDocument, IDocumentsMap, IProject } from "../Projects/types";
 import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
-import { assocPath, pathOr, propOr, type as Rtype, values } from "ramda";
+import {
+    assocPath,
+    equals,
+    pathOr,
+    propOr,
+    type as Rtype,
+    values
+} from "ramda";
 import Tree, {
     MuiTreeData,
     MuiTreeLabelButtonData,
@@ -72,10 +79,14 @@ const FileTree = () => {
         }
     });
 
-    React.useEffect(() => {
+    if (!equals(state.data.tree, fileTreeDocs)) {
         setState(assocPath(["data", "tree"], fileTreeDocs));
-        // eslint-disable-next-line
-    }, []);
+    }
+
+    // React.useEffect(() => {
+    //     setState(assocPath(["data", "tree"], fileTreeDocs));
+    //     // eslint-disable-next-line
+    // }, []);
 
     const renderLabel = useCallback(
         (data, unfoldStatus) => {

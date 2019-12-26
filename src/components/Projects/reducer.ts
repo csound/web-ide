@@ -14,7 +14,7 @@ import {
     SET_PROJECT_FILES,
     SET_PROJECT_TARGETS
 } from "./types";
-import { append, assoc, assocPath, curry, pathOr, pipe } from "ramda";
+import { assoc, assocPath, curry, pathOr, pipe } from "ramda";
 import { isEmpty } from "lodash";
 
 type IProjectMap = { [projectUid: string]: IProject };
@@ -101,13 +101,13 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                 action.filename
             );
             return assocPath(
-                ["projects", action.projectUid, "documents"],
-                append(
-                    newDocument,
-                    pathOr([], ["projects", action.projectUid, "documents"])(
-                        state as IProjectsReducer
-                    )
-                )
+                [
+                    "projects",
+                    action.projectUid,
+                    "documents",
+                    action.documentUid
+                ],
+                newDocument
             )(state) as IProjectsReducer;
         }
         case DOCUMENT_RESET: {

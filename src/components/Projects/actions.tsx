@@ -581,7 +581,8 @@ export const newDocument = (projectUid: string, val: string) => {
             if (!isEmpty(project)) {
                 const uid = firebase.auth().currentUser!.uid;
                 const doc = {
-                    type: "txt",
+                    type: filenameToType(filename),
+                    internalType: "txt",
                     name: filename,
                     value: val,
                     userUid: uid
@@ -640,9 +641,9 @@ export const addDocument = (projectUid: string) => {
                 if (fileType === "txt") {
                     reader.onload = e => {
                         let txt = reader.result;
-
                         const doc = {
-                            type: fileType,
+                            internalType: fileType,
+                            type: filenameToType(filename),
                             name: filename,
                             value: txt,
                             userUid: uid
