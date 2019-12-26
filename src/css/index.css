@@ -12,6 +12,9 @@ body {
     bottom: 0;
     right: 0;
     left: 0;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 
 html,
@@ -20,32 +23,27 @@ body {
     margin: 0;
 }
 
-#root {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
-}
+/* #root {
+   position: relative;
+   height: 100%;
+   width: 100%;
+   top: 0;
+   left: 0;
+   }
+ */
 
-main {
-    position: absolute;
-    padding: 0;
-    bottom: 0;
-    width: 100%;
-    top: 38px;
-}
-
-header {
-    height: 38px !important;
-}
-
-#golden-layout-top {
-    position: absolute;
-    z-index: 100;
-    height: 100%;
-    width: 100%;
-}
+/* main {
+   position: absolute;
+   padding: 0;
+   bottom: 0;
+   width: 100%;
+   top: 38px;
+   }
+ */
+/* header {
+   height: 38px !important;
+   }
+ */
 
 div .react-tabs {
     background-color: #222;
@@ -126,11 +124,10 @@ button {
     outline: none;
 }
 
-.MuiToolbar-root {
-    max-height: 48px !important;
-    min-height: 32px !important;
-}
-
+/* .MuiToolbar-root {
+   height: 48px !important;
+   }
+ */
 .MuiFileTree .MuiIconButton-root {
     position: absolute;
     right: 24px;
@@ -175,7 +172,7 @@ button {
 }
 
 .layout-pane-primary {
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 .splitter-layout .layout-pane {
     overflow: hidden;

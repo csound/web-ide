@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "../ProjectEditor/ProjectEditor";
-import { IProject } from "../Projects/types";
+import { IDocumentsMap, IProject } from "../Projects/types";
 import Header from "../Header/Header";
 import {
     activateProject,
@@ -26,7 +26,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
     const projectUid = props.match.params.id;
     const { className } = props;
     const activeProjectUid = useSelector(
-        pathOr(null, ["ProjectsReducer", "activeProjectUid"])
+        pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
 
     const project: IProject = useSelector(
@@ -60,7 +60,11 @@ export const ProjectContext = (props: IProjectContextProps) => {
             const initUI = async () => {
                 await dispatch(
                     openProjectDocumentTabs(
-                        values(propOr({}, "documents", project))
+                        values(propOr(
+                            {},
+                            "documents",
+                            project
+                        ) as IDocumentsMap)
                     )
                 );
                 await dispatch(syncProjectDocumentsWithEMFS(projectUid));
@@ -78,6 +82,12 @@ export const ProjectContext = (props: IProjectContextProps) => {
         projectFetchStarted
     ]);
 
+    // return (
+    //     <>
+    //         <div style={{ backgroundColor: "red", height: 3000 }}></div>
+    //     </>
+    // );
+
     if (!needsLoading) {
         return (
             <>
@@ -85,6 +95,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
                 <ProjectEditor
                     {...props}
                     css={SS.main}
+                    style={{ display: "none!important" }}
                     className={className}
                     activeProject={project}
                 />
@@ -92,13 +103,16 @@ export const ProjectContext = (props: IProjectContextProps) => {
         );
     } else {
         return (
-            <main css={SS.loadMain}>
-                <div css={SS.loadingSpinner1}>
-                    <div css={SS.loadingSpinner2}>
-                        <div css={SS.loadingSpinner3}></div>
+            <>
+                <Header />
+                <main css={SS.loadMain}>
+                    <div css={SS.loadingSpinner1}>
+                        <div css={SS.loadingSpinner2}>
+                            <div css={SS.loadingSpinner3}></div>
+                        </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </>
         );
     }
 };

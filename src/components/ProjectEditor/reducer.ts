@@ -28,7 +28,7 @@ import {
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
     secondaryPanel: "manual" | null;
-    manualLookupString: string | null;
+    manualLookupString: string;
 }
 
 const initialLayoutState: IProjectEditorReducer = {
@@ -37,7 +37,7 @@ const initialLayoutState: IProjectEditorReducer = {
         openDocuments: []
     },
     secondaryPanel: null,
-    manualLookupString: null
+    manualLookupString: ""
 };
 
 const addTabToOpenDocuments = curry((tab, state) =>
@@ -146,11 +146,11 @@ export default (
                 assocPath(
                     ["tabDock", "openDocuments"],
                     filter(
-                        od => od.uid !== action.documentUid,
+                        (od: IOpenDocument) => od.uid !== action.documentUid,
                         pathOr([], ["tabDock", "openDocuments"], state)
                     )
                 )
-            )(state);
+            )(state as IProjectEditorReducer);
         }
         case TOGGLE_MANUAL_PANEL: {
             const secondaryPanel =

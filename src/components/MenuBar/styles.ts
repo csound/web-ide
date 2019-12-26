@@ -13,7 +13,6 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const root = css`
-    z-index: 9999999;
     display: inline-block;
     position: relative;
     flex-direction: row;
@@ -24,6 +23,15 @@ export const root = css`
     margin: 0;
     user-select: none;
     margin-left: 6px;
+    li:hover: {
+        pointer: cursor;
+        cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+    }
 `;
 
 export const hr = css`
@@ -45,15 +53,6 @@ export const dropdownButton = css`
     padding: 5px 9px;
     color: #f8f8f2;
     display: inline;
-    &:hover: {
-        pointer: cursor;
-        cursor: pointer;
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
-            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
-    }
 `;
 
 export const dropdownList = css`

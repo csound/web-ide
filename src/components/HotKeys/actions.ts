@@ -2,10 +2,11 @@
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import { SET_MENU_BAR_HOTKEYS, HotKeysActionTypes } from "./types";
+import { getPlayActionFromTarget } from "../TargetControls/utils";
 import { Action } from "redux";
 import { isMac } from "../../utils";
 import { newDocument, saveFile } from "../Projects/actions";
-import { runCsound, playPauseCsound } from "../Csound/actions";
+import { playPauseCsound } from "../Csound/actions";
 
 const getMenuBarItems = (dispatch, getStore) => [
     {
@@ -42,16 +43,14 @@ const getMenuBarItems = (dispatch, getStore) => [
         keyBinding: isMac ? "command+r" : "ctrl+r",
         callback: e => {
             e.preventDefault();
-            dispatch(runCsound());
+            dispatch(getPlayActionFromTarget(getStore()));
         }
     },
-
     {
         label: "Pause",
         keyBinding: isMac ? "command+p" : "ctrl+p",
         callback: e => {
             e.preventDefault();
-
             dispatch(playPauseCsound());
         }
     }

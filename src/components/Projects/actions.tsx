@@ -27,7 +27,7 @@ import {
     ITarget,
     IDocument
 } from "./types";
-import { textOrBinary } from "./utils";
+import { filenameToType, textOrBinary } from "./utils";
 import { IStore } from "../../db/interfaces";
 import { projects, storageRef } from "../../config/firestore";
 import { store } from "../../store";
@@ -62,11 +62,9 @@ export const loadProjectFromFirestore = (projectUid: string) => {
 
                 const targets = reduce(
                     targetsSnapshots.docs,
-                    (acc, targetSnapshot) => {
+                    (acc: Object, targetSnapshot) => {
                         const targetData = targetSnapshot.data();
-                        acc[
-                            propOr("", "targetName", targetData)
-                        ] = targetData as ITarget;
+                        acc[targetData.targetName] = targetData as ITarget;
                         return acc;
                     },
                     {}
@@ -82,7 +80,8 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                             documentUid: docSnapshot.id,
                             savedValue: docData["value"],
                             filename: docData["name"],
-                            type: docData["type"],
+                            type: filenameToType(docData["name"]),
+                            internalType: docData["type"],
                             isModifiedLocally: false
                         } as IDocument;
                         return acc;
@@ -91,8 +90,8 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                 );
                 dispatch(setProjectFiles(projectUid, files));
                 const fallbackDefaultMain = find(
-                    values(files),
-                    d => d.filename === "project.csd"
+                    values(files) as IDocument[],
+                    (d: IDocument) => d.filename === "project.csd"
                 );
 
                 // defensive programming, old accounts don't have defaultTarget
@@ -104,7 +103,8 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                                 csoundOptions: {},
                                 targetDocumentUid:
                                     fallbackDefaultMain.documentUid,
-                                targetName: "main"
+                                targetName: "main",
+                                targetType: "main"
                             }
                         })
                     );
@@ -471,9 +471,11 @@ const newDocumentPrompt = (
             ])
         );
 
-        const reservedFilenames = values(propOr({}, "documents", project)).map(
-            doc => doc.filename
-        );
+        const reservedFilenames = project.documents
+            ? (values(project.documents) as IDocument[]).map(
+                  doc => doc.filename
+              )
+            : [];
 
         const shouldDisable = isEmpty(input);
         return (
@@ -523,9 +525,9 @@ const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
             ])
         );
 
-        const reservedFilenames = values(propOr({}, "documents", project)).map(
-            doc => doc.filename
-        );
+        const reservedFilenames = (values(
+            project.documents
+        ) as IDocument[]).map(doc => doc.filename);
 
         const megabyte = Math.pow(10, 6);
         const shouldDisable =

@@ -26,21 +26,28 @@ export interface IDocument {
     documentUid: string;
     filename: string;
     savedValue: string;
-    type: IDocumentFileInternalType;
-    isModifiedLocally?: boolean | null;
+    type: IDocumentFileType;
+    internalType: IDocumentFileInternalType;
+    isModifiedLocally: boolean;
 }
 
 export interface IMainTarget {
     csoundOptions: ICsoundOptions;
     targetDocumentUid: string;
     targetName: string;
+    targetType: string;
 }
 
 export interface IPlaylist {
     csoundOptions: ICsoundOptions;
     playlistDocumentsUid: string[];
     targetName: string;
+    targetType: string;
 }
+
+export type IDocumentsMap = { [documentUid: string]: IDocument };
+
+export type ITargetMap = { [targetName: string]: ITarget };
 
 export interface IProject {
     userUid: string;
@@ -48,8 +55,8 @@ export interface IProject {
     name: string;
     isPublic: boolean;
     defaultTarget: string | null;
-    targets: { [targetName: string]: ITarget };
-    documents: { [documentUid: string]: IDocument };
+    targets: ITargetMap;
+    documents: IDocumentsMap;
 }
 
 export interface IProjectsReducer {

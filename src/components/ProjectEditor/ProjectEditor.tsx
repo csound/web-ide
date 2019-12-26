@@ -35,7 +35,6 @@ import { mapIndexed } from "../../utils";
 import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
 import * as SS from "./styles";
-// import { selectActiveProject } from "../Projects/selectors";
 
 type EditorForDocumentProps = {
     uid: any;
@@ -44,9 +43,14 @@ type EditorForDocumentProps = {
 };
 
 function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
-    if (doc.type === "txt") {
-        return <Editor documentUid={doc.documentUid} projectUid={projectUid} />;
-    } else if (doc.type === "bin" && isAudioFile(doc.filename)) {
+    if (doc.internalType === "txt") {
+        return (
+            <Editor
+                documentUid={doc.documentUid}
+                projectUid={projectUid}
+            ></Editor>
+        );
+    } else if (doc.internalType === "bin" && isAudioFile(doc.filename)) {
         const path = `${uid}/${projectUid}/${doc.documentUid}`;
         return <AudioEditor audioFileUrl={path} />;
     }
@@ -68,12 +72,12 @@ const ProjectEditor = props => {
 
     const projectUid: string = propOr("", "projectUid", activeProject);
 
-    const tabDockDocuments: IOpenDocument[] = useSelector(
-        pathOr([] as IOpenDocument[], [
-            "ProjectEditorReducer",
-            "tabDock",
-            "openDocuments"
-        ])
+    const tabDockDocuments: IOpenDocument[] = useSelector(s =>
+        pathOr(
+            [] as IOpenDocument[],
+            ["ProjectEditorReducer", "tabDock", "openDocuments"],
+            s
+        )
     );
 
     const openDocuments: IDocument[] = isEmpty(projectUid)
@@ -81,13 +85,13 @@ const ProjectEditor = props => {
         : reduce(
               (acc, tabDoc) => {
                   const maybeDoc = pathOr(
-                      null,
+                      {} as IDocument,
                       ["documents", propOr("", "uid", tabDoc)],
                       activeProject
                   );
                   return maybeDoc ? append(maybeDoc as IDocument, acc) : acc;
               },
-              [],
+              [] as IDocument[],
               tabDockDocuments
           );
 
@@ -99,34 +103,37 @@ const ProjectEditor = props => {
         dispatch(tabClose(projectUid, documentUid, isModified));
     };
 
-    const openTabList = mapIndexed((document: IDocument, index: number) => {
-        const isActive: boolean = index === tabIndex;
-        const isModified = document.isModifiedLocally;
-        return (
-            <Tab key={index}>
-                {document!.filename + (isModified ? "*" : "")}
-                <Tooltip title="close" placement="right-end">
-                    <IconButton
-                        size="small"
-                        style={{ marginLeft: 6, marginBottom: 2 }}
-                        onClick={e => {
-                            e.stopPropagation();
-                            closeTab(document.documentUid, isModified);
-                        }}
-                    >
-                        <FontAwesomeIcon
-                            icon={faTimes}
-                            size="sm"
-                            color={isActive ? "black" : "#f8f8f2"}
-                        />
-                    </IconButton>
-                </Tooltip>
-            </Tab>
-        );
-    }, openDocuments);
+    const openTabList = mapIndexed(
+        (document: any, index) => {
+            const isActive: boolean = index === tabIndex;
+            const isModified: boolean = document.isModifiedLocally;
+            return (
+                <Tab key={index}>
+                    {document!.filename + (isModified ? "*" : "")}
+                    <Tooltip title="close" placement="right-end">
+                        <IconButton
+                            size="small"
+                            style={{ marginLeft: 6, marginBottom: 2 }}
+                            onClick={e => {
+                                e.stopPropagation();
+                                closeTab(document.documentUid, isModified);
+                            }}
+                        >
+                            <FontAwesomeIcon
+                                icon={faTimes}
+                                size="sm"
+                                color={isActive ? "black" : "#f8f8f2"}
+                            />
+                        </IconButton>
+                    </Tooltip>
+                </Tab>
+            );
+        },
+        openDocuments as IDocument[]
+    );
 
     const openTabPanels = mapIndexed(
-        (doc: IDocument, index: number) => (
+        (doc: any, index: number) => (
             <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
                 <EditorForDocument
                     uid={activeProject.userUid}

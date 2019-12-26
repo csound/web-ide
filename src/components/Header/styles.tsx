@@ -1,23 +1,19 @@
 import { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, withStyles } from "@material-ui/styles";
+import { css as classCss } from "emotion";
 import { css } from "@emotion/core";
 
 const drawerWidth = 260;
 
 export const headerRoot = css`
-    flex-grow: 1;
-    position: relative;
-    display: block;
-`;
-
-export const appBar = css`
-    position: static !important;
-    width: 100%;
-    margin-bottom: 4px;
-    border-bottom: 1px solid rgb(17, 21, 24);
-    z-index: 2;
-    transition: width 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms,
-        margin 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms;
+    background-image: linear-gradient(
+        to right,
+        #262724,
+        #252622,
+        #242520,
+        #23241d,
+        #22231b
+    );
 `;
 
 export const headerStyles = (theme: Theme) =>
@@ -91,24 +87,32 @@ export const toolbar = css`
 `;
 
 export const avatar = css`
-    height: 29px;
-    width: 29px;
+    height: 42px;
+    width: 42px;
     padding: 0 !important;
     margin-right: 6px;
     border-radius: 4px;
 `;
 
 export const userMenu = css`
-    position: relative;
-    right: 12px;
-    top: -9px;
-    height: 38px;
-    width: 38px;
+    position: static;
+    margin-right: 12px;
+    & > button {
+        padding: 0 !important;
+    }
+`;
+
+export const menuPaper = classCss`
+    top: 40px!important;
 `;
 
 export const loginButton = css`
     position: relative;
     right: 12px;
+`;
+
+export const accountTooltip = classCss`
+    margin-right: 24px;
 `;
 
 export const headerStylesHook = makeStyles(headerStyles);

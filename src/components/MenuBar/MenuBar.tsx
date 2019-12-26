@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
-import IconButton from "@material-ui/core/IconButton";
-import { PlayIcon } from "../../FontAudio";
 import { useSelector, useDispatch } from "react-redux";
 import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
@@ -12,16 +10,11 @@ import {
     exportProject,
     addDocument
 } from "../Projects/actions";
-
 import { toggleManualPanel } from "../ProjectEditor/actions";
-import {
-    runCsound,
-    stopCsound,
-    playPauseCsound,
-    renderToDisk
-} from "../Csound/actions";
+import { stopCsound, playPauseCsound, renderToDisk } from "../Csound/actions";
 import { pathOr } from "ramda";
 import { reduce } from "lodash";
+import { getPlayActionFromTarget } from "../TargetControls/utils";
 import { showKeyboardShortcuts } from "../SiteDocs/actions";
 
 function MenuBar(props) {
@@ -30,6 +23,8 @@ function MenuBar(props) {
     );
 
     const dispatch = useDispatch();
+
+    const playAction = useSelector(getPlayActionFromTarget);
 
     const menuBarItems: MenuItemDef[] = [
         {
@@ -120,7 +115,7 @@ function MenuBar(props) {
                     keyBinding: isMac ? "cmd+r" : "ctrl+r",
                     keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
                     role: "Run Csound",
-                    callback: () => dispatch(runCsound())
+                    callback: () => dispatch(playAction)
                 },
                 {
                     label: "Stop",
@@ -188,8 +183,6 @@ function MenuBar(props) {
     (MenuBar as any).handleClickOutside = evt => {
         setOpen(false);
     };
-
-    // const classes = useStyles();
 
     const [open, setOpen] = useState(false) as any;
 
@@ -272,18 +265,9 @@ function MenuBar(props) {
         [] as React.ReactNode[]
     );
 
-    const buttonGroup = (
-        <div css={SS.buttonGroup}>
-            <IconButton type="button" css={SS.iconButtonContainer}>
-                <PlayIcon size={32} />
-            </IconButton>
-        </div>
-    );
-
     return (
         <>
             <ul css={SS.root}>{columns}</ul>
-            {buttonGroup}
         </>
     );
 }

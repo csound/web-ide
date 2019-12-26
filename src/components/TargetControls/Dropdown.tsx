@@ -1,9 +1,8 @@
 import React from "react";
 import Select from "react-select";
-import { useSelector } from "react-redux";
-import { IStore } from "../../db/interfaces";
-import { append, filter, has, keys, pathOr, propOr } from "ramda";
-import { find, isEmpty, reduce } from "lodash";
+import { ITarget } from "../Projects/types";
+import { append, filter, has, values } from "ramda";
+import { isEmpty, reduce } from "lodash";
 import * as SS from "./styles";
 
 interface IDropdownOption {
@@ -11,31 +10,26 @@ interface IDropdownOption {
     value: string;
 }
 
-const TargetDropdown = () => {
-    // const dropdownRef = useRef();
-    // const { current } = dropdownRef;
-
-    const targets = useSelector((store: IStore) =>
-        pathOr({}, ["projects", "activeProject", "targets"], store)
+const TargetDropdown = ({ selectedTarget, targets }) => {
+    const mainTargets: ITarget[] = filter(
+        has("targetDocumentUid"),
+        values(targets)
     );
 
-    const mainTargets = filter(has("targetDocumentUid"), targets);
-
-    const playlistTargets = find(targets, has("playlistDocumentsUid"));
-
-    const defaultTarget = useSelector((store: IStore) =>
-        pathOr("", ["projects", "activeProject", "defaultTarget"], store)
+    const playlistTargets: ITarget[] = filter(
+        has("playlistDocumentsUid"),
+        values(targets)
     );
 
     const mainDropdownOptions = isEmpty(mainTargets)
         ? []
         : reduce(
-              keys(mainTargets),
-              (acc, target) => {
+              mainTargets,
+              (acc: IDropdownOption[], target) => {
                   return append(
                       {
-                          value: target,
-                          label: pathOr("", [target, "targetName"], targets)
+                          value: target.targetName,
+                          label: target.targetName
                       },
                       acc
                   );
@@ -46,12 +40,12 @@ const TargetDropdown = () => {
     const playlistDropdownOptions = isEmpty(playlistTargets)
         ? []
         : reduce(
-              propOr([], "playlistDocumentsUid", playlistTargets),
-              (acc, docUid) => {
+              playlistTargets,
+              (acc, target) => {
                   return append(
                       {
-                          value: docUid,
-                          label: docUid
+                          value: target.targetName,
+                          label: target.targetName
                       },
                       acc
                   );
@@ -59,17 +53,14 @@ const TargetDropdown = () => {
               [] as IDropdownOption[]
           );
 
-    const defaultTargetData = isEmpty(defaultTarget)
-        ? propOr({}, 0, mainDropdownOptions)
-        : find(mainDropdownOptions, dd => dd.value === defaultTarget);
-
     return (
         <Select
-            value={propOr(null, "value", defaultTargetData)}
+            value={selectedTarget}
             closeMenuOnSelect={true}
-            menuIsOpen={true}
-            placeholder={propOr("Select target", "label", defaultTargetData)}
-            onChange={() => {}}
+            placeholder={
+                selectedTarget.length > 0 ? selectedTarget : "Select target"
+            }
+            // onChange={e => setCurrentTarget(e.value)}
             isSearchable={false}
             options={[
                 { label: "Playlist", options: playlistDropdownOptions },
@@ -85,7 +76,9 @@ const TargetDropdown = () => {
                 placeholder: (provided, state) => SS.placeholder,
                 menu: (provided, state) => SS.menu,
                 menuList: (provided, state) => SS.menuList,
-                option: (provided, state) => SS.menuOption
+                option: (provided, state) => SS.menuOption,
+                indicatorsContainer: (provided, state) => SS.indicatorContainer,
+                indicatorSeparator: (provided, state) => SS.indicatorSeparator
             }}
         />
     );

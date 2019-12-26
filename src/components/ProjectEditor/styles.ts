@@ -1,7 +1,11 @@
 import { css } from "@emotion/core";
 
 export const splitterLayoutContainer = css`
-    height: 100%;
+    & > div {
+        height: calc(100% - 64px);
+        bottom: 0;
+        overflow: hidden;
+    }
 `;
 
 export const tabDock = css`

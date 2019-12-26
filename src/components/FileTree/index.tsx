@@ -14,7 +14,7 @@ import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/EditTwoTone";
 import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
 import * as SS from "./styles";
-import { IDocument, IProject } from "../Projects/types";
+import { IDocument, IDocumentsMap, IProject } from "../Projects/types";
 import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { assocPath, pathOr, propOr, type as Rtype, values } from "ramda";
@@ -27,7 +27,7 @@ import { sortBy } from "lodash";
 
 const FileTree = () => {
     const activeProjectUid = useSelector(
-        pathOr(null, ["ProjectsReducer", "activeProjectUid"])
+        pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
 
     const project: IProject = useSelector(
@@ -38,7 +38,7 @@ const FileTree = () => {
         ])
     );
 
-    const documents: IDocument = propOr({} as IDocument, "documents", project);
+    const documents: IDocumentsMap = propOr({}, "documents", project);
 
     const dispatch = useDispatch();
 
@@ -169,7 +169,7 @@ const FileTree = () => {
             return [
                 {
                     icon: <EditIcon css={SS.editIcon} />,
-                    hint: "Rename file",
+                    hint: `Rename ${propOr("", "path", data)}`,
                     onClick: () =>
                         dispatch(
                             renameDocument(
@@ -180,7 +180,7 @@ const FileTree = () => {
                 },
                 {
                     icon: <DeleteIcon color="secondary" css={SS.deleteIcon} />,
-                    hint: `Delete ${propOr("", "sha", data)}`,
+                    hint: `Delete ${propOr("", "path", data)}`,
                     onClick: () => {
                         typeof data.sha === "string" &&
                             dispatch(deleteFile(data.sha));

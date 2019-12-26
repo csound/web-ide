@@ -332,7 +332,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
 
 const mapStateToProps = (store: IStore, ownProp: any) => {
     const activeProjectUid = pathOr(
-        null,
+        "",
         ["ProjectsReducer", "activeProjectUid"],
         store
     );
@@ -351,9 +351,9 @@ const mapStateToProps = (store: IStore, ownProp: any) => {
     const documentType = has("filename", document)
         ? filenameToType(document.filename)
         : "";
-    const manualLookupString = propOr(
-        null,
-        ["ProjectsReducer", "manualLookupString"],
+    const manualLookupString = pathOr(
+        "",
+        ["ProjectEditorReducer", "manualLookupString"],
         store
     );
     const isModifiedLocally = propOr(false, "isModifiedLocally", document);

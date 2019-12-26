@@ -1,12 +1,12 @@
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import AppBar from "@material-ui/core/AppBar";
 import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
 import { push } from "connected-react-router";
 import CSLogo from "../CSLogo/CSLogo";
 import { Link } from "react-router-dom";
 import {
-    AppBar,
     Toolbar,
     IconButton,
     MenuItem,
@@ -27,10 +27,12 @@ import GitHubIcon from "@material-ui/icons/GitHub";
 import ReportProblemIcon from "@material-ui/icons/ReportProblem";
 import { headerStylesHOC } from "./styles";
 import * as SS from "./styles";
+// import { tooltipClasses } from "@styles";
 import { IStore } from "../../db/interfaces";
 import { isEmpty } from "lodash";
+// import { hasPath } from "ramda";
 import MenuBar from "../MenuBar/MenuBar";
-import TargetDropdown from "../TargetDropdown";
+import TargetControls from "../TargetControls";
 import clsx from "clsx";
 
 interface IHeaderProps {
@@ -67,6 +69,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
     const anchorEl = useRef(null);
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const handleProfileMenuOpen = (event: any) => {
@@ -99,7 +102,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                 {avatar}
             </IconButton>
             <Menu
-                id="menu-appbar"
+                classes={{ paper: SS.menuPaper }}
                 anchorEl={anchorEl.current}
                 anchorOrigin={{
                     vertical: "top",
@@ -138,7 +141,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
     return (
         <>
             {isLoginDialogOpen && <Login />}
-            <AppBar css={SS.appBar}>
+            <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     <IconButton
                         color="inherit"
@@ -157,7 +160,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                     />
                     {showMenuBar && <MenuBar />}
                     <div className={classes.spacer} />
-                    <TargetDropdown />
+                    {showMenuBar && <TargetControls />}
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>

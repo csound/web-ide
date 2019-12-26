@@ -14,13 +14,13 @@ import {
     SET_PROJECT_FILES,
     SET_PROJECT_TARGETS
 } from "./types";
-import { assoc, assocPath, append, curry, pathOr, pipe } from "ramda";
+import { append, assoc, assocPath, curry, pathOr, pipe } from "ramda";
 import { isEmpty } from "lodash";
 
 type IProjectMap = { [projectUid: string]: IProject };
 
 const initialProjectsState: IProjectsReducer = {
-    activeProjectUid: null,
+    activeProjectUid: "",
     projects: {} as IProjectMap
 };
 
@@ -30,64 +30,63 @@ const generateEmptyDocument = (documentUid, type, filename): IDocument => ({
     documentUid,
     savedValue: "",
     type,
+    internalType: "txt",
     isModifiedLocally: false
 });
 
-const resetDocumentToSavedValue = curry((action, state) =>
-    pipe(
-        assocPath(
-            [
-                "projects",
-                state.activeProjectUid,
-                "documents",
-                action.documentUid,
-                "currentValue"
-            ],
-            pathOr("", [
-                "projects",
-                state.activeProjectUid,
-                "documents",
-                action.documentUid,
-                "savedValue"
-            ])
-        ),
-        assocPath(
-            [
-                "projects",
-                state.activeProjectUid,
-                "documents",
-                action.documentUid,
-                "isModifiedLocally"
-            ],
-            false
-        )
-    )(state)
+const resetDocumentToSavedValue = curry(
+    (action: any, state: IProjectsReducer) =>
+        pipe(
+            assocPath(
+                [
+                    "projects",
+                    state.activeProjectUid,
+                    "documents",
+                    action.documentUid,
+                    "currentValue"
+                ],
+                pathOr("", [
+                    "projects",
+                    state.activeProjectUid,
+                    "documents",
+                    action.documentUid,
+                    "savedValue"
+                ])
+            ) as (IProjectsReducer) => IProjectsReducer,
+            assocPath(
+                [
+                    "projects",
+                    state.activeProjectUid,
+                    "documents",
+                    action.documentUid,
+                    "isModifiedLocally"
+                ],
+                false
+            )
+        )(state)
 );
 
-export default (state: IProjectsReducer, action: any) => {
+export default (state: IProjectsReducer | undefined, action: any) => {
     switch (action.type) {
         case SET_PROJECT: {
             return isEmpty(action.project)
                 ? state
-                : assocPath(
+                : (assocPath(
                       ["projects", action.project.projectUid],
-                      action.project,
-                      state
-                  );
+                      action.project
+                  )(state as IProjectsReducer) as IProjectsReducer);
         }
         case SET_PROJECT_FILES: {
             return assocPath(
                 ["projects", action.projectUid, "documents"],
-                action.files,
-                state
-            );
+                action.files
+            )(state) as IProjectsReducer;
         }
         case SET_PROJECT_TARGETS: {
             return assocPath(
                 ["projects", action.projectUid, "targets"],
-                action.targets,
-                state
-            );
+                action.targets
+            )(state) as IProjectsReducer;
         }
         case ACTIVATE_PROJECT:
             return assoc("activeProjectUid", action.projectUid, state);
@@ -102,55 +101,43 @@ export default (state: IProjectsReducer, action: any) => {
                 action.filename
             );
             return assocPath(
-                ["documents", action.projectUid, "documents"],
+                ["projects", action.projectUid, "documents"],
                 append(
                     newDocument,
-                    pathOr(
-                        [],
-                        ["documents", action.projectUid, "documents"],
-                        state
+                    pathOr([], ["projects", action.projectUid, "documents"])(
+                        state as IProjectsReducer
                     )
-                ),
-                state
-            );
+                )
+            )(state) as IProjectsReducer;
         }
         case DOCUMENT_RESET: {
-            return resetDocumentToSavedValue(action, state);
+            return state ? resetDocumentToSavedValue(action, state) : state;
         }
         case DOCUMENT_SAVE: {
-            if (
-                !action.documentUid ||
-                !action.projectUid ||
-                state.activeProjectUid === null
-            ) {
+            if (!action.documentUid || !action.projectUid || !state) {
                 return state;
             } else {
                 return resetDocumentToSavedValue(action, state);
             }
         }
         case DOCUMENT_UPDATE_VALUE: {
-            if (
-                !action.documentUid ||
-                !action.projectUid ||
-                state.activeProjectUid === null
-            ) {
+            if (!action.documentUid || !action.projectUid || !state) {
                 return state;
+            } else {
+                return assocPath(
+                    [
+                        "projects",
+                        action.projectUid,
+                        "documents",
+                        action.documentUid,
+                        "currentValue"
+                    ],
+                    action.val
+                )(state) as IProjectsReducer;
             }
-
-            return assocPath(
-                [
-                    "projects",
-                    action.projectUid,
-                    "documents",
-                    action.documentUid,
-                    "currentValue"
-                ],
-                action.val,
-                state
-            );
         }
         case DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
-            if (!action.documentUid || state.activeProjectUid == null) {
+            if (!action.documentUid || !state) {
                 return state;
             }
             return assocPath(
@@ -161,20 +148,23 @@ export default (state: IProjectsReducer, action: any) => {
                     action.documentUid,
                     "isModifiedLocally"
                 ],
-                action.isModified,
-                state
-            );
+                action.isModified
+            )(state) as IProjectsReducer;
         }
         case DOCUMENT_RENAME_LOCALLY: {
-            return assocPath(
-                [
-                    "projects",
-                    state.activeProjectUid,
-                    "documents",
-                    action.documentUid,
-                    "filename"
-                ],
-                action.newFilename,
+            return (
+                (state &&
+                    (assocPath(
+                        [
+                            "projects",
+                            state.activeProjectUid,
+                            "documents",
+                            action.documentUid,
+                            "filename"
+                        ],
+                        action.newFilename,
+                        state
+                    )(state) as IProjectsReducer)) ||
                 state
             );
         }

@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "baseUrl": "src",
+        "paths": {
+            "@root/*": ["./*"],
+            "@store": ["./store/index.ts"],
+            "@store/*": ["./store/*"],
+            "@comp/*": ["./components/*"],
+            "@config/*": ["./config/*"],
+            "@styles": ["./styles/index.ts"],
+            "@styles/*": ["./styles/*"]
+        }
+    }
+}

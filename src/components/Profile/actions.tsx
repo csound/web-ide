@@ -52,7 +52,7 @@ import {
     selectCsoundStatus,
     selectUserFollowing
 } from "./selectors";
-import { runCsound, playPauseCsound } from "../Csound/actions";
+import { playCSDFromEMFS, playPauseCsound } from "../Csound/actions";
 import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
@@ -687,8 +687,7 @@ export const playListItem = (
         dispatch(
             syncProjectDocumentsWithEMFS(projectUid, () => {
                 dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
-
-                dispatch(runCsound());
+                dispatch(playCSDFromEMFS("FIXME"));
             })
         );
     }

@@ -3,6 +3,7 @@ import { IProjectEditorReducer } from "../components/ProjectEditor/reducer";
 import { ICsoundReducer } from "../components/Csound/reducer";
 import { IModalReducer } from "../components/Modal/reducer";
 import { IConsoleReducer } from "../components/Console/reducer";
+import IDReducer from "./IDReducer";
 
 export interface IAssetFile {
     name: string;
@@ -17,14 +18,6 @@ export interface ICsoundFile {
     type: "csd" | "orc" | "sco" | "udo";
 }
 
-// export interface ICollection {
-//     collectionId: number;
-//     created: Date;
-//     name: string;
-//     lastEdit: Date;
-//     projects: IProject[];
-// }
-
 export interface IUserProfile {
     name: string;
     email: string;
@@ -36,10 +29,6 @@ export interface ITheme {
     fontFamily: string;
     fontSize: number;
     name: string;
-}
-
-export interface IBurgerMenu {
-    isOpen: boolean;
 }
 
 export interface IStore {
