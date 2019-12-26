@@ -16,6 +16,7 @@ import {
     DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
     DOCUMENT_RENAME_LOCALLY,
+    DOCUMENT_REMOVE_LOCALLY,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -391,6 +392,9 @@ export const deleteFile = (documentUid: string) => {
                 const cancelCallback = () => dispatch(closeModal());
                 const deleteCallback = () => {
                     dispatch(tabClose(activeProjectUid, documentUid, false));
+                    dispatch(
+                        removeDocumentLocally(activeProjectUid, documentUid)
+                    );
                     projects
                         .doc(project.projectUid)
                         .collection("files")
@@ -739,6 +743,14 @@ const renameDocumentLocally = (documentUid: string, newFilename: string) => {
     return {
         type: DOCUMENT_RENAME_LOCALLY,
         newFilename,
+        documentUid
+    };
+};
+
+const removeDocumentLocally = (projectUid: string, documentUid: string) => {
+    return {
+        type: DOCUMENT_REMOVE_LOCALLY,
+        projectUid,
         documentUid
     };
 };

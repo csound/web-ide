@@ -37,32 +37,37 @@ const FileTree = () => {
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
 
-    const project: IProject = useSelector(
-        pathOr({} as IProject, [
+    const project: IProject | null = useSelector(
+        pathOr(null, ["ProjectsReducer", "projects", activeProjectUid])
+    );
+
+    const documents: IDocumentsMap | null = useSelector(
+        pathOr(null, [
             "ProjectsReducer",
             "projects",
-            activeProjectUid
+            activeProjectUid,
+            "documents"
         ])
     );
 
-    const documents: IDocumentsMap = propOr({}, "documents", project);
-
     const dispatch = useDispatch();
 
-    const fileTreeDocs = sortBy(
-        values(documents).map((document: IDocument, index: number) => {
-            return {
-                path: document.filename,
-                type: "blob",
-                sha: document.documentUid
-            };
-        }),
-        [
-            function(d) {
-                return d.path;
-            }
-        ]
-    );
+    const fileTreeDocs = documents
+        ? sortBy(
+              values(documents).map((document: IDocument, index: number) => {
+                  return {
+                      path: document.filename,
+                      type: "blob",
+                      sha: document.documentUid
+                  };
+              }),
+              [
+                  function(d) {
+                      return d.path;
+                  }
+              ]
+          )
+        : null;
 
     const [state, setState] = useState({
         expandAll: false,
@@ -72,9 +77,9 @@ const FileTree = () => {
         data: {
             unfoldFirst: false,
             unfoldAll: false,
-            path: project.name,
+            path: project ? (project as IProject).name : "",
             type: "tree",
-            tree: fileTreeDocs,
+            tree: fileTreeDocs || [],
             sha: Math.random()
         }
     });
@@ -83,15 +88,11 @@ const FileTree = () => {
         setState(assocPath(["data", "tree"], fileTreeDocs));
     }
 
-    // React.useEffect(() => {
-    //     setState(assocPath(["data", "tree"], fileTreeDocs));
-    //     // eslint-disable-next-line
-    // }, []);
-
     const renderLabel = useCallback(
         (data, unfoldStatus) => {
+            if (!project) return <></>;
             const { path, type } = data;
-            const rootDirectoryElem = path === project.name;
+            const rootDirectoryElem = path === (project as IProject).name;
             let IconComp: any;
             if (type === "tree") {
                 if (rootDirectoryElem) {
@@ -155,7 +156,7 @@ const FileTree = () => {
                 </>
             );
         },
-        [dispatch, project.name]
+        [dispatch, project]
     );
 
     const getActionsData = useCallback(
@@ -174,7 +175,11 @@ const FileTree = () => {
                     icon: <AddIcon style={{ display: "none" }} />,
                     label: "",
                     hint: "Insert file",
-                    onClick: () => dispatch(newDocument(project.projectUid, ""))
+                    onClick: () =>
+                        project &&
+                        dispatch(
+                            newDocument((project as IProject).projectUid, "")
+                        )
                 } as any;
             }
             return [
@@ -199,7 +204,7 @@ const FileTree = () => {
                 }
             ] as MuiTreeIconButtonData[];
         },
-        [project.projectUid, dispatch]
+        [project, dispatch]
     );
 
     const requestChildrenData = useCallback((data, path, toggleFoldStatus) => {

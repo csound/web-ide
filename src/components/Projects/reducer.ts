@@ -6,6 +6,7 @@ import {
     DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
     DOCUMENT_RENAME_LOCALLY,
+    DOCUMENT_REMOVE_LOCALLY,
     DOCUMENT_SAVE,
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -14,7 +15,7 @@ import {
     SET_PROJECT_FILES,
     SET_PROJECT_TARGETS
 } from "./types";
-import { assoc, assocPath, curry, pathOr, pipe } from "ramda";
+import { assoc, assocPath, curry, dissocPath, pathOr, pipe } from "ramda";
 import { isEmpty } from "lodash";
 
 type IProjectMap = { [projectUid: string]: IProject };
@@ -93,6 +94,7 @@ export default (state: IProjectsReducer | undefined, action: any) => {
         case CLOSE_PROJECT: {
             return assoc("activeProjectUid", null, state);
         }
+
         case DOCUMENT_INITIALIZE: {
             // const oldDocuments = cloneDeep(state.activeProject.documents);
             const newDocument = generateEmptyDocument(
@@ -109,6 +111,14 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                 ],
                 newDocument
             )(state) as IProjectsReducer;
+        }
+        case DOCUMENT_REMOVE_LOCALLY: {
+            return dissocPath([
+                "projects",
+                action.projectUid,
+                "documents",
+                action.documentUid
+            ])(state);
         }
         case DOCUMENT_RESET: {
             return state ? resetDocumentToSavedValue(action, state) : state;

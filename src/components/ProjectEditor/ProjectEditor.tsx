@@ -69,7 +69,6 @@ const ProjectEditor = props => {
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = React.useState(false);
     const activeProject: IProject = props.activeProject;
-
     const projectUid: string = propOr("", "projectUid", activeProject);
 
     const tabDockDocuments: IOpenDocument[] = useSelector(s =>
