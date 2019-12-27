@@ -1,7 +1,5 @@
 import React, { useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-// import MuiTreeView from "material-ui-treeview";
-// import Switch from "@material-ui/core/Switch";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";

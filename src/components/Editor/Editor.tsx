@@ -1,7 +1,7 @@
-import React from "react";
-import { connect } from "react-redux";
-import { Controlled as CodeMirror } from "react-codemirror2";
-import { IStore } from "../../db/interfaces";
+import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { UnControlled as CodeMirror } from "react-codemirror2";
+import useDebounce from "./utils";
 import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
@@ -24,42 +24,60 @@ require("codemirror/lib/codemirror.css");
 
 const opcodes = keys(synopsis);
 
-interface ICodeEditorProps {
-    csound: ICsoundObj;
-    csoundStatus: ICsoundStatus;
-    currentDocumentValue: string;
-    documentUid: string;
-    documentType: string;
-    isModifiedLocally: boolean;
-    projectUid: string;
-    printToConsole: (text: string) => void;
-    savedValue: string;
-    storeEditorInstance: (
-        editor: any,
-        projectUid: string,
-        documentUid: string
-    ) => void;
-    updateDocumentValue: any;
-    updateDocumentModifiedLocally: any;
-    lookupManualString: any;
-    manualLookupString: string | null;
-}
+type IPrintToConsole = ((text: string) => void) | null;
 
-// interface ICodeEditorLocalState {
-//     currentEditorValue: string;
-// }
+const CodeEditor = ({ documentUid, projectUid }) => {
+    const [editorRef, setEditorRef] = useState(null as any);
+    const [scrollerRef, setScrollerRef] = useState(null as any);
+    const [editorValue, setEditorValue] = useState("");
 
-class CodeEditor extends React.Component<ICodeEditorProps, {}> {
-    protected editor: any;
-    protected scroller: any;
+    const debouncedEditorValue = useDebounce(editorValue, 200);
 
-    constructor(props: ICodeEditorProps) {
-        super(props);
-        this.editorDidMount = this.editorDidMount.bind(this);
-        this.docAtPoint = this.docAtPoint.bind(this);
-    }
+    const dispatch = useDispatch();
+    const activeProjectUid = useSelector(
+        pathOr("", ["ProjectsReducer", "activeProjectUid"])
+    );
 
-    uncommentLine(line: string) {
+    const project = useSelector(
+        pathOr({} as IProject, [
+            "ProjectsReducer",
+            "projects",
+            activeProjectUid
+        ])
+    );
+
+    const document = pathOr(
+        {} as IDocument,
+        ["documents", documentUid],
+        project
+    );
+
+    const savedValue: string = propOr("", "savedValue", document);
+    const currentDocumentValue: string = propOr("", "currentValue", document);
+    const documentType: string = has("filename", document)
+        ? filenameToType(document.filename)
+        : "";
+    const manualLookupString: string = useSelector(
+        pathOr("", ["ProjectEditorReducer", "manualLookupString"])
+    );
+
+    const csound: ICsoundObj | null = useSelector(
+        pathOr(null, ["csound", "csound"])
+    ) as ICsoundObj | null;
+
+    const csoundStatus: ICsoundStatus = useSelector(
+        pathOr("stopped", ["csound", "status"])
+    ) as ICsoundStatus;
+
+    const printToConsole: IPrintToConsole = useSelector(
+        pathOr(null, ["ConsoleReducer", "printToConsole"])
+    ) as IPrintToConsole;
+
+    const lookupManualString = dispatch => (
+        manualLookupString: string | null
+    ) => dispatch(projectEditorActions.lookupManualString(manualLookupString));
+
+    const uncommentLine = (line: string) => {
         let uncommentedLine: any = line.split(";");
         if (uncommentedLine.length > 1) {
             uncommentedLine = uncommentedLine[0];
@@ -68,14 +86,13 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             uncommentedLine = uncommentedLine[0];
         }
         return uncommentedLine;
-    }
+    };
 
-    findOrcBlock() {
-        const editor = this.editor;
-        const val = editor.doc.getValue();
+    const findOrcBlock = () => {
+        const val = editorRef ? editorRef.doc.getValue() : "";
         const lines = val.split("\n");
-        const cursorLine = editor.getCursor().line;
-        const currentLineEndOfBound: boolean = this.uncommentLine(
+        const cursorLine = editorRef ? editorRef.getCursor().line : 0;
+        const currentLineEndOfBound: boolean = uncommentLine(
             lines[cursorLine]
         ).match(/endin|endop/g);
 
@@ -86,7 +103,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         let lastBlockLine, lineNumber;
 
         for (lineNumber = 0; lineNumber < cursorBoundry; lineNumber++) {
-            const line = this.uncommentLine(lines[lineNumber]);
+            const line = uncommentLine(lines[lineNumber]);
             if (line.match(/instr|opcode/g)) {
                 lastBlockLine = lineNumber;
             } else if (line.match(/endin|endop/g)) {
@@ -110,7 +127,7 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             lineNumber++
         ) {
             if (!!blockEnd) break;
-            const line = this.uncommentLine(lines[lineNumber]);
+            const line = uncommentLine(lines[lineNumber]);
 
             if (line.match(/endin|endop/g)) {
                 blockEnd = lineNumber;
@@ -130,25 +147,21 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
                 evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
             };
         }
-    }
+    };
 
-    evalCode(blockEval: boolean) {
-        const editor = this.editor;
-
-        const { csound, csoundStatus, documentType } = this.props;
-
+    const evalCode = (blockEval: boolean) => {
         if (csoundStatus !== "playing") {
-            this.props.printToConsole("Csound isn't running!");
-        } else {
+            printToConsole && printToConsole("Csound isn't running!");
+        } else if (editorRef) {
             // selection takes precedence
-            const selection = editor.getSelection();
-            const cursor = editor.getCursor();
+            const selection = editorRef.getSelection();
+            const cursor = editorRef.getCursor();
             let evalStr = "";
             // let csdLoc: "orc" | "sco" | null = null;
 
             if (!blockEval) {
-                const line = editor.getLine(cursor.line);
-                const textMarker = editor.markText(
+                const line = editorRef.getLine(cursor.line);
+                const textMarker = editorRef.markText(
                     { line: cursor.line, ch: 0 },
                     { line: cursor.line, ch: line.length },
                     { className: "blinkEval" }
@@ -158,78 +171,85 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
             } else {
                 let result;
                 if (documentType === "orc" || documentType === "udo") {
-                    result = this.findOrcBlock();
+                    result = findOrcBlock();
                 } else if (documentType === "sco") {
                     // FIXME
                     result = {
                         from: { line: cursor.line, ch: 0 },
                         to: {
                             line: cursor.line,
-                            ch: editor.getLine(cursor.line).length
+                            ch: editorRef.getLine(cursor.line).length
                         },
-                        evalStr: editor.getLine(cursor.line)
+                        evalStr: editorRef.getLine(cursor.line)
                     };
                 }
                 if (!!result) {
-                    const textMarker = editor.markText(result.from, result.to, {
-                        className: "blinkEval"
-                    });
+                    const textMarker = editorRef.markText(
+                        result.from,
+                        result.to,
+                        {
+                            className: "blinkEval"
+                        }
+                    );
                     setTimeout(() => textMarker.clear(), 300);
                     evalStr = result!.evalStr;
                 }
             }
             if (isEmpty(evalStr)) return;
             if (documentType === "orc" || documentType === "udo") {
-                csound.evaluateCode(evalStr);
+                csound && csound.evaluateCode(evalStr);
             } else if (documentType === "sco") {
-                csound.readScore(evalStr);
+                csound && csound.readScore(evalStr);
             } else if (documentType === "csd") {
-                csound.evaluateCode(evalStr);
+                csound && csound.evaluateCode(evalStr);
             } else {
-                this.props.printToConsole(
-                    "Can't evaluate non-csound documents!"
-                );
+                printToConsole &&
+                    printToConsole("Can't evaluate non-csound documents!");
             }
         }
-    }
+    };
 
-    docAtPoint() {
-        const editor = this.editor;
-        const cursor = editor.getCursor();
-        const token = editor.getTokenAt(cursor).string.replace(/:.*/, "");
-
-        const { manualLookupString } = this.props;
+    const docAtPoint = () => {
+        if (!editorRef) return;
+        const cursor = editorRef.getCursor();
+        const token = editorRef.getTokenAt(cursor).string.replace(/:.*/, "");
 
         if (opcodes.some(opc => opc === token)) {
             const manualId = synopsis[token]["id"];
             if (manualLookupString === manualId) {
                 // a way to retrigger the iframe communication
-                this.props.lookupManualString(null);
-                setTimeout(() => this.props.lookupManualString(manualId), 10);
+                lookupManualString(null);
+                setTimeout(() => lookupManualString(manualId), 10);
             } else {
-                this.props.lookupManualString(manualId);
+                lookupManualString(manualId);
             }
         }
-    }
+    };
 
-    toggleComment() {
-        this.editor.toggleComment();
-    }
+    const toggleComment = () => {
+        editorRef && editorRef.toggleComment();
+    };
 
-    editorDidMount(editor: any) {
-        const {
-            storeEditorInstance,
-            updateDocumentValue,
-            projectUid,
-            documentUid,
-            isModifiedLocally
-        } = this.props;
-
-        if (!isModifiedLocally) {
-            updateDocumentValue(this.props.savedValue, projectUid, documentUid);
-        }
-        this.editor = editor;
-        storeEditorInstance(editor, projectUid, documentUid);
+    const editorDidMount = (editor: any) => {
+        editor.getDoc().setValue(currentDocumentValue);
+        setEditorValue(currentDocumentValue);
+        // if (!isModifiedLocally) {
+        //     dispatch(
+        //         projectActions.updateDocumentValue(
+        //             savedValue,
+        //             projectUid,
+        //             documentUid
+        //         )
+        //     );
+        // }
+        setEditorRef(editor as any);
+        dispatch(
+            projectEditorActions.storeEditorInstance(
+                editor,
+                projectUid,
+                documentUid
+            )
+        );
         editor.focus();
         const lastCursorPos = localStorage.getItem(documentUid + ":cursorPos");
         if (!isEmpty(lastCursorPos)) {
@@ -239,171 +259,101 @@ class CodeEditor extends React.Component<ICodeEditorProps, {}> {
         } else {
             editor.setCursor({ line: 1, ch: 1 });
         }
-    }
-
-    public componentWillUnmount(this) {
-        const { projectUid, documentUid, storeEditorInstance } = this.props;
-        if (this.editor) {
-            localStorage.setItem(
-                documentUid + ":cursorPos",
-                JSON.stringify(this.editor.getCursor())
-            );
-        }
-        if (this.scroller) {
-            localStorage.setItem(
-                documentUid + ":scrollPos",
-                this.scroller.scrollTop
-            );
-        }
-        storeEditorInstance(null, projectUid, documentUid);
-    }
-
-    render() {
-        const {
-            updateDocumentValue,
-            updateDocumentModifiedLocally,
-            documentUid,
-            projectUid,
-            savedValue,
-            documentType
-        } = this.props;
-
-        let options = {
-            // autoFocus: true,
-            autoCloseBrackets: true,
-            fullScreen: true,
-            lineNumbers: true,
-            lineWrapping: true,
-            matchBrackets: true,
-            mode: ["csd", "orc", "sco", "udo"].some(t => t === documentType)
-                ? "csound"
-                : "text/plain",
-            viewportMargin: Infinity,
-            // scrollbarStyle: "simple",
-            theme: "monokai",
-            extraKeys: {
-                "Ctrl-E": () => this.evalCode(false), // line eval
-                "Ctrl-Enter": () => this.evalCode(true), // block eval
-                "Cmd-E": () => this.evalCode(false), // line eval
-                "Cmd-Enter": () => this.evalCode(true), // block eval
-                "Ctrl-.": () => this.docAtPoint(),
-                // "Ctrl-H": insertHexplay,
-                // "Ctrl-J": insertEuclidplay,
-                "Ctrl-;": () => this.toggleComment(),
-                "Cmd-;": () => this.toggleComment()
-            }
-        };
-
-        const onBeforeChange = (editor, data, value) => {
-            updateDocumentValue(value, projectUid, documentUid);
-            updateDocumentModifiedLocally(savedValue !== value, documentUid);
-        };
-
-        return (
-            <PerfectScrollbar
-                style={{ backgroundColor: "#272822" }}
-                containerRef={ref => {
-                    ref !== null &&
-                        setTimeout(
-                            () =>
-                                ref.scrollTo(
-                                    0,
-                                    Number(
-                                        localStorage.getItem(
-                                            documentUid + ":scrollPos"
-                                        )
-                                    )
-                                ),
-                            1
-                        );
-                    this.scroller = ref;
-                }}
-            >
-                <CodeMirror
-                    editorDidMount={this.editorDidMount}
-                    value={this.props.currentDocumentValue}
-                    onBeforeChange={onBeforeChange}
-                    options={options}
-                />
-            </PerfectScrollbar>
-        );
-    }
-}
-
-const mapStateToProps = (store: IStore, ownProp: any) => {
-    const activeProjectUid = pathOr(
-        "",
-        ["ProjectsReducer", "activeProjectUid"],
-        store
-    );
-    const project = pathOr(
-        {} as IProject,
-        ["ProjectsReducer", "projects", activeProjectUid],
-        store
-    );
-    const document = pathOr(
-        {} as IDocument,
-        ["documents", ownProp.documentUid],
-        project
-    );
-    const savedValue = propOr("", "savedValue", document);
-    const currentDocumentValue = propOr("", "currentValue", document);
-    const documentType = has("filename", document)
-        ? filenameToType(document.filename)
-        : "";
-    const manualLookupString = pathOr(
-        "",
-        ["ProjectEditorReducer", "manualLookupString"],
-        store
-    );
-    const isModifiedLocally = propOr(false, "isModifiedLocally", document);
-    return {
-        csound: store.csound.csound,
-        csoundStatus: store.csound.status,
-        documentUid: ownProp.documentUid,
-        currentDocumentValue,
-        documentType,
-        isModifiedLocally,
-        printToConsole: store.ConsoleReducer.printToConsole,
-        projectUid: ownProp.projectUid,
-        savedValue,
-        manualLookupString
     };
-};
 
-const mapDispatchToProps = (dispatch: any): any => ({
-    updateDocumentValue: (
-        val: string,
-        projectUid: string,
-        documentUid: string
-    ) =>
+    useEffect(() => {
+        return () => {
+            if (editorRef) {
+                localStorage.setItem(
+                    documentUid + ":cursorPos",
+                    JSON.stringify(editorRef.getCursor())
+                );
+            }
+            if (scrollerRef) {
+                localStorage.setItem(
+                    documentUid + ":scrollPos",
+                    (scrollerRef as any).scrollTop
+                );
+            }
+            dispatch(
+                projectEditorActions.storeEditorInstance(
+                    null,
+                    projectUid,
+                    documentUid
+                )
+            );
+        };
+        // eslint-disable-next-line
+    }, []);
+
+    const options = {
+        // autoFocus: true,
+        autoCloseBrackets: true,
+        fullScreen: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        matchBrackets: true,
+        mode: ["csd", "orc", "sco", "udo"].some(t => t === documentType)
+            ? "csound"
+            : "text/plain",
+        viewportMargin: Infinity,
+        // scrollbarStyle: "simple",
+        theme: "monokai",
+        extraKeys: {
+            "Ctrl-E": () => evalCode(false), // line eval
+            "Ctrl-Enter": () => evalCode(true), // block eval
+            "Cmd-E": () => evalCode(false), // line eval
+            "Cmd-Enter": () => evalCode(true), // block eval
+            "Ctrl-.": () => docAtPoint(),
+            // "Ctrl-H": insertHexplay,
+            // "Ctrl-J": insertEuclidplay,
+            "Ctrl-;": () => toggleComment(),
+            "Cmd-;": () => toggleComment()
+        }
+    };
+
+    useEffect(() => {
+        if (editorValue !== savedValue) {
+            console.log(editorValue, "SAVED VALUE", savedValue);
+        }
         dispatch(
-            projectActions.updateDocumentValue(val, projectUid, documentUid)
-        ),
-    storeEditorInstance: (
-        editorInstance: any,
-        projectUid: string,
-        documentUid: string
-    ) =>
-        dispatch(
-            projectEditorActions.storeEditorInstance(
-                editorInstance,
+            projectActions.updateDocumentModifiedLocally(
+                editorValue !== savedValue,
                 projectUid,
                 documentUid
             )
-        ),
-    updateDocumentModifiedLocally: (isModified: boolean, documentUid: string) =>
+        );
         dispatch(
-            projectActions.updateDocumentModifiedLocally(
-                isModified,
+            projectActions.updateDocumentValue(
+                debouncedEditorValue,
+                projectUid,
                 documentUid
             )
-        ),
-    lookupManualString: (manualLookupString: string | null) =>
-        dispatch(projectEditorActions.lookupManualString(manualLookupString))
-});
+        );
+        // eslint-disable-next-line
+    }, [dispatch, debouncedEditorValue]);
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(CodeEditor);
+    // eslint-disable-next-line
+    const onChange = (editor, data, value) => {
+        // if editorRef doesn't exist = not yet
+        // mounted (meaning the value wont fit savedValue)
+        if (editorRef) {
+            setEditorValue(value);
+        }
+    };
+
+    return (
+        <PerfectScrollbar
+            style={{ backgroundColor: "#272822" }}
+            containerRef={setScrollerRef}
+        >
+            <CodeMirror
+                editorDidMount={editorDidMount}
+                options={options}
+                onChange={onChange}
+            />
+        </PerfectScrollbar>
+    );
+};
+
+export default CodeEditor;

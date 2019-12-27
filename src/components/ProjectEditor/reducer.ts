@@ -1,4 +1,4 @@
-import { find, findIndex } from "lodash";
+import { findIndex } from "lodash";
 import {
     MANUAL_LOOKUP_STRING,
     TAB_DOCK_INIT_SWITCH_TAB,
@@ -164,16 +164,24 @@ export default (
             } as IProjectEditorReducer;
         }
         case STORE_EDITOR_INSTANCE: {
-            const openDocument = find(
+            const openDocumentIndex = findIndex(
                 state.tabDock.openDocuments,
                 od => od.uid === action.documentUid
             );
-
-            if (!openDocument) {
+            if (openDocumentIndex < 0) {
                 return state;
+            } else {
+                return assocPath(
+                    [
+                        "tabDock",
+                        "openDocuments",
+                        openDocumentIndex,
+                        "editorInstance"
+                    ],
+                    action.editorInstance,
+                    state
+                );
             }
-            openDocument.editorInstance = action.editorInstance;
-            return { ...state };
         }
         default: {
             return state || initialLayoutState;

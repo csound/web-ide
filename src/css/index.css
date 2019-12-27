@@ -46,8 +46,21 @@ body {
  */
 
 div .react-tabs {
-    background-color: #222;
     color: #f8f8f2;
+}
+
+div .react-tabs > ul {
+    background-color: #222;
+}
+
+div .react-tabs > ul > li {
+    box-sizing: content-box;
+    border-bottom: 1px solid #aaa;
+}
+
+div .react-tabs > ul > li:hover {
+    background-color: #2e2e2d;
+    border-radius: 5px 5px 0 0;
 }
 
 .react-resizable-handle {
@@ -115,9 +128,9 @@ div .react-tabs {
     height: 100%;
 }
 
-/* .CodeMirror-simplescroll-vertical { */
-/*     background: #373a47; */
-/* } */
+.react-tabs__tab--selected:hover {
+    background: #fff !important;
+}
 
 nav,
 button {

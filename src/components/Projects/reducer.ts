@@ -36,30 +36,36 @@ const generateEmptyDocument = (documentUid, type, filename): IDocument => ({
 });
 
 const resetDocumentToSavedValue = curry(
-    (action: any, state: IProjectsReducer) =>
+    (state: IProjectsReducer, activeProjectUid: string, documentUid: string) =>
         pipe(
+            st =>
+                assocPath(
+                    [
+                        "projects",
+                        activeProjectUid,
+                        "documents",
+                        documentUid,
+                        "currentValue"
+                    ],
+                    pathOr(
+                        "",
+                        [
+                            "projects",
+                            activeProjectUid,
+                            "documents",
+                            documentUid,
+                            "savedValue"
+                        ],
+                        st
+                    ),
+                    st
+                ),
             assocPath(
                 [
                     "projects",
-                    state.activeProjectUid,
+                    activeProjectUid,
                     "documents",
-                    action.documentUid,
-                    "currentValue"
-                ],
-                pathOr("", [
-                    "projects",
-                    state.activeProjectUid,
-                    "documents",
-                    action.documentUid,
-                    "savedValue"
-                ])
-            ) as (IProjectsReducer) => IProjectsReducer,
-            assocPath(
-                [
-                    "projects",
-                    state.activeProjectUid,
-                    "documents",
-                    action.documentUid,
+                    documentUid,
                     "isModifiedLocally"
                 ],
                 false
@@ -121,13 +127,51 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             ])(state);
         }
         case DOCUMENT_RESET: {
-            return state ? resetDocumentToSavedValue(action, state) : state;
+            return state
+                ? resetDocumentToSavedValue(
+                      state,
+                      action.projectUid,
+                      action.documentUid
+                  )
+                : state;
         }
         case DOCUMENT_SAVE: {
             if (!action.documentUid || !action.projectUid || !state) {
                 return state;
             } else {
-                return resetDocumentToSavedValue(action, state);
+                return pipe(
+                    assocPath(
+                        [
+                            "projects",
+                            action.projectUid,
+                            "documents",
+                            action.documentUid,
+                            "currentValue"
+                        ],
+
+                        action.currentValue
+                    ),
+                    assocPath(
+                        [
+                            "projects",
+                            action.projectUid,
+                            "documents",
+                            action.documentUid,
+                            "savedValue"
+                        ],
+                        action.currentValue
+                    ),
+                    assocPath(
+                        [
+                            "projects",
+                            action.projectUid,
+                            "documents",
+                            action.documentUid,
+                            "isModifiedLocally"
+                        ],
+                        false
+                    )
+                )(state);
             }
         }
         case DOCUMENT_UPDATE_VALUE: {
@@ -153,7 +197,7 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             return assocPath(
                 [
                     "projects",
-                    state.activeProjectUid,
+                    action.projectUid,
                     "documents",
                     action.documentUid,
                     "isModifiedLocally"

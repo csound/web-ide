@@ -275,7 +275,7 @@ export const saveFile = () => {
         );
         const doc =
             project && find(project.documents, d => d.documentUid === docUid);
-        if (project && !!doc) {
+        if (project && doc) {
             try {
                 projects
                     .doc(project.projectUid)
@@ -444,13 +444,15 @@ export const updateDocumentValue = (
 
 export const updateDocumentModifiedLocally = (
     isModified: boolean,
+    projectUid: string,
     documentUid: string
 ) => {
     return async (dispatch: any) => {
         dispatch({
             type: DOCUMENT_UPDATE_MODIFIED_LOCALLY,
             isModified,
-            documentUid
+            documentUid,
+            projectUid
         });
     };
 };
