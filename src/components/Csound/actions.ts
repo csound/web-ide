@@ -10,6 +10,7 @@ import {
 import { selectActiveProject } from "../Projects/selectors";
 import { saveAs } from "file-saver";
 import { pathOr } from "ramda";
+import { storageRef } from "../../config/firestore";
 
 export const setCsound = (csound: ICsoundObj) => {
     return {
@@ -126,14 +127,32 @@ export const renderToDisk = () => {
                 }
             };
 
-            docs.forEach(doc => {
-                let msg = [
-                    "writeToFS",
-                    doc.filename,
-                    encoder.encode(doc.savedValue)
-                ];
-                worker.postMessage(msg);
-            });
+            for(let i = 0; i < docs.length; i++) {
+                let doc = docs[i];
+                if(doc.internalType === "bin") {
+                    const path = `${project.userUid}/${project.projectUid}/${doc.documentUid}`;
+                    const url = await storageRef
+                        .child(path)
+                        .getDownloadURL();
+                   
+                    const response = await fetch(url);
+                    const blob = await response.arrayBuffer();
+                    let msg = [
+                        "writeToFS",
+                        doc.filename,
+                        blob 
+                    ];
+                    worker.postMessage(msg);
+                } else {
+                    let msg = [
+                        "writeToFS",
+                        doc.filename,
+                        encoder.encode(doc.savedValue)
+                    ];
+                    worker.postMessage(msg);
+                }
+            }
+            
 
             //let d = docs.find(d => d.filename == 'project.csd');
 
