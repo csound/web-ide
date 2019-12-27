@@ -132,9 +132,9 @@ export const openProjectDocumentTabs = (documents: IDocument[]) => {
 
 export const syncProjectDocumentsWithEMFS = (
     projectUid: string,
-    fileAddedCallback: any = () => {}
+    filesAddedCallback: any = () => {}
 ) => {
-    return async (dispatch: any, getState: any) => {
+    return async (dispatch: any) => {
         const cs: ICsoundObj = (store as any).getState().csound.csound;
         const encoder = new TextEncoder();
         const projRef = projects.doc(projectUid);
@@ -175,7 +175,7 @@ export const syncProjectDocumentsWithEMFS = (
                     return null;
                 });
 
-                fileAddedCallback();
+                filesAddedCallback();
 
                 files.docChanges().forEach(change => {
                     const doc = change.doc.data();

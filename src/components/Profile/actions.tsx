@@ -52,11 +52,15 @@ import {
     selectCsoundStatus,
     selectUserFollowing
 } from "./selectors";
-import { playCSDFromEMFS, playPauseCsound } from "../Csound/actions";
-import { syncProjectDocumentsWithEMFS } from "../Projects/actions";
+import { playPauseCsound } from "../Csound/actions";
+import {
+    loadProjectFromFirestore,
+    syncProjectDocumentsWithEMFS
+} from "../Projects/actions";
+import { getPlayActionFromProject } from "../TargetControls/utils";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
-import { assoc, pipe } from "ramda";
+import { assoc, hasPath, pipe } from "ramda";
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
@@ -676,20 +680,50 @@ export const playListItem = (
         dispatch(playPauseCsound());
         dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
     } else {
-        dispatch({
-            type: SET_CSOUND_STATUS,
-            payload: false
-        });
-        dispatch({
-            type: SET_CURRENTLY_PLAYING_PROJECT,
-            payload: projectUid
-        });
-        dispatch(
-            syncProjectDocumentsWithEMFS(projectUid, () => {
-                dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
-                dispatch(playCSDFromEMFS("FIXME"));
-            })
-        );
+        if (hasPath(["ProjectsReducer", "projects", projectUid], state)) {
+            const playAction = getPlayActionFromProject(state, projectUid);
+            if (playAction) {
+                dispatch({
+                    type: SET_LIST_PLAY_STATE,
+                    payload: "playing"
+                });
+                dispatch(playAction);
+                dispatch({
+                    type: SET_CSOUND_STATUS,
+                    payload: false
+                });
+                dispatch({
+                    type: SET_CURRENTLY_PLAYING_PROJECT,
+                    payload: projectUid
+                });
+            }
+        } else {
+            loadProjectFromFirestore(projectUid)(dispatch).then(() => {
+                dispatch(
+                    syncProjectDocumentsWithEMFS(projectUid, () => {
+                        const playAction = getPlayActionFromProject(
+                            state,
+                            projectUid
+                        );
+                        if (playAction) {
+                            dispatch({
+                                type: SET_LIST_PLAY_STATE,
+                                payload: "playing"
+                            });
+                            dispatch(playAction);
+                            dispatch({
+                                type: SET_CSOUND_STATUS,
+                                payload: false
+                            });
+                            dispatch({
+                                type: SET_CURRENTLY_PLAYING_PROJECT,
+                                payload: projectUid
+                            });
+                        }
+                    })
+                );
+            });
+        }
     }
 };
 

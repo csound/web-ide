@@ -24,6 +24,7 @@ export const playCSDFromEMFS = (emfsPath: string) => {
         const cs = pathOr(null, ["csound", "csound"], store.getState());
         if (cs !== null) {
             const safeCs = cs as ICsoundObj;
+            safeCs.setMessageCallback(console.log);
             safeCs.audioContext.resume();
             safeCs.reset();
             safeCs.setOption("-odac");
@@ -127,21 +128,15 @@ export const renderToDisk = () => {
                 }
             };
 
-            for(let i = 0; i < docs.length; i++) {
+            for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
-                if(doc.internalType === "bin") {
+                if (doc.internalType === "bin") {
                     const path = `${project.userUid}/${project.projectUid}/${doc.documentUid}`;
-                    const url = await storageRef
-                        .child(path)
-                        .getDownloadURL();
-                   
+                    const url = await storageRef.child(path).getDownloadURL();
+
                     const response = await fetch(url);
                     const blob = await response.arrayBuffer();
-                    let msg = [
-                        "writeToFS",
-                        doc.filename,
-                        blob 
-                    ];
+                    let msg = ["writeToFS", doc.filename, blob];
                     worker.postMessage(msg);
                 } else {
                     let msg = [
@@ -152,7 +147,6 @@ export const renderToDisk = () => {
                     worker.postMessage(msg);
                 }
             }
-            
 
             //let d = docs.find(d => d.filename == 'project.csd');
 
