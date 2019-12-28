@@ -8,9 +8,7 @@ import { setCsound, setCsoundPlayState } from "./components/Csound/actions";
 import CsoundObj from "./components/Csound/CsoundObj";
 import { ICsoundObj } from "./components/Csound/types";
 import "./config/firestore"; // import for sideffects
-import "./css/filemenu.css";
 import "./css/index.css";
-import "./css/monokai.css";
 import "react-perfect-scrollbar/dist/css/styles.css";
 
 (window as any).React = React;

@@ -24,15 +24,122 @@ const monokaiLineNumber = "#8F908A";
 const monokaiHighlight = "#49483E";
 const monokaiHighlightAlt = "#3E3D31";
 const monokaiHighlightLine = "#3C3D37";
+const monokaiBlueDark = "#40CAE4";
+const monokaiLightBlue2 = "#92E7F7";
+const monokaiBlueHighContrast = "#1DB4D0";
 
 const theme = {
     background: {
         primary: monokaiBackground,
-        secondary: `white`
+        secondary: monokaiEmphasis
     },
     color: {
         primary: monokaiForeground,
         secondary: sundriedClay
+    },
+    error: {
+        primary: monokaiRed,
+        secondary: monokaiRed
+    },
+    highlight: {
+        primary: monokaiHighlight,
+        secondary: monokaiHighlight
+    },
+    highlightAlt: {
+        primary: monokaiHighlightAlt,
+        secondary: monokaiHighlightAlt
+    },
+    cursor: {
+        primary: monokaiForeground,
+        secondary: sundriedClay
+    },
+    opcode: {
+        primary: monokaiMagenta,
+        secondary: monokaiMagenta
+    },
+    operator: {
+        primary: monokaiEmphasis,
+        secondary: sundriedClay
+    },
+    attribute: {
+        primary: monokaiBlueHighContrast,
+        secondary: monokaiBlueDark
+    },
+    keyword: {
+        primary: orchid,
+        secondary: orchid
+    },
+    string: {
+        primary: monokaiYellow,
+        secondary: monokaiYellow
+    },
+    number: {
+        primary: monokaiEmphasis,
+        secondary: sundriedClay
+    },
+    bracket: {
+        primary: monokaiHighlightAlt,
+        secondary: monokaiHighlightAlt
+    },
+    aRateVar: {
+        primary: monokaiViolet,
+        secondary: monokaiViolet
+    },
+    iRateVar: {
+        primary: monokaiCyan,
+        secondary: monokaiCyan
+    },
+    kRateVar: {
+        primary: monokaiLightBlue,
+        secondary: monokaiLightBlue
+    },
+    fRateVar: {
+        primary: monokaiMagenta,
+        secondary: monokaiMagenta
+    },
+    pField: {
+        primary: monokaiYellow,
+        secondary: monokaiOrange
+    },
+    flash: {
+        primary: monokaiHighlight,
+        secondary: monokaiHighlightAlt
+    },
+    gutterBackground: {
+        primary: monokaiHighlightLine,
+        secondary: monokaiEmphasis
+    },
+    gutterMarker: {
+        primary: monokaiForeground,
+        secondary: sundriedClay
+    },
+    gutterMarkerSubtle: {
+        primary: monokaiForeground,
+        secondary: sundriedClay
+    },
+    lineNumber: {
+        primary: monokaiLineNumber,
+        secondary: monokaiEmphasis
+    },
+    comment: {
+        primary: monokaiComments,
+        secondary: monokaiComments
+    },
+    commentAttribute: {
+        primary: henn1nk,
+        secondary: henn1nk
+    },
+    commentDef: {
+        primary: monokaiOrange,
+        secondary: monokaiOrange
+    },
+    commentTag: {
+        primary: monokaiMagenta,
+        secondary: monokaiMagenta
+    },
+    commentType: {
+        primary: monokaiCyan,
+        secondary: monokaiCyan
     }
 };
 

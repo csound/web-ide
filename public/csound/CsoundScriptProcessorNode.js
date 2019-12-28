@@ -311,9 +311,9 @@ CsoundScriptProcessorNode = function(context, options) {
             FS.close(stream);
         },
 
-        /** 
-         * 
-         * Unlink file from WASM filesystem (i.e. remove). 
+        /**
+         *
+         * Unlink file from WASM filesystem (i.e. remove).
          *
          * @param {string} filePath A string containing the path to write to.
          * @memberof CsoundMixin
@@ -375,7 +375,7 @@ CsoundScriptProcessorNode = function(context, options) {
          */
 
         evaluateCode(codeString) {
-            CSOUND.evaluateCode(this.csound, codeString);
+            return "??" + CSOUND.evaluateCode(this.csound, codeString);
         },
         /** Reads a numeric score string.
          *
@@ -617,28 +617,30 @@ CsoundScriptProcessorNode = function(context, options) {
         },
 
         /** Returns the current play state of Csound. Results are either
-         * "playing", "paused", or "stopped". 
-         */ 
+         * "playing", "paused", or "stopped".
+         */
+
         getPlayState() {
-            if(this.running) {
+            if (this.running) {
                 return "playing";
-            } else if(this.started) {
-                return "paused"
+            } else if (this.started) {
+                return "paused";
             }
-            return "stopped"; 
+            return "stopped";
         },
 
+        /** Add a listener callback for play state listening. Must be a function
+         * of type (csoundObj:CsoundObj):void.
+         */
 
-        /** Add a listener callback for play state listening. Must be a function 
-         * of type (csoundObj:CsoundObj):void. 
-         */ 
         addPlayStateListener(listener) {
             this.playStateListeners.add(listener);
         },
 
         /** Remove a listener callback for play state listening. Must be the same
-         * function as passed in with addPlayStateListener. 
-         */ 
+         * function as passed in with addPlayStateListener.
+         */
+
         removePlayStateListener(listener) {
             this.playStateListeners.delete(listener);
         },
@@ -685,7 +687,7 @@ CsoundScriptProcessorNode = function(context, options) {
                     // if we need more samples from Csound
                     result = CSOUND.performKsmps(this.csound);
                     cnt = 0;
-                    if(result != 0) {
+                    if (result != 0) {
                         this.running = false;
                         this.started = false;
                         this.firePlayStateChange();

@@ -20,7 +20,7 @@ import {
 import { IStore } from "@store/types";
 import { selectLoginRequesting, selectLoginFail } from "./selectors";
 import { validateEmail } from "../../utils";
-import { loginStylesHOC } from "./styles";
+import * as SS from "./styles";
 import { isEmpty, merge } from "lodash";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import * as firebase from "firebase/app";
@@ -51,7 +51,6 @@ interface ILoginLocalState {
 interface ILoginProps {
     errorCode: string;
     errorMessage: string;
-    classes: any;
     fail: boolean;
     requesting: boolean;
 }
@@ -116,11 +115,11 @@ class Login extends Component<ILogin, ILoginLocalState> {
     }
 
     public render() {
-        const { classes, closeLoginDialog } = this.props;
+        const { closeLoginDialog } = this.props;
         const { isCreatingUser, newEmailValid } = this.state;
 
         const errorBox = !isEmpty(this.props.errorMessage) && (
-            <div className={classes.errorBox}>
+            <div css={SS.errorBox}>
                 <h5>{"Error " + this.props.errorCode}</h5>
                 <p>{this.props.errorMessage}</p>
             </div>
@@ -320,7 +319,6 @@ const mapStateToProps = (store: IStore, ownProp: any): ILoginProps => {
     return {
         errorCode: store.LoginReducer.errorCode,
         errorMessage: store.LoginReducer.errorMessage,
-        classes: ownProp.classes,
         requesting: selectLoginRequesting(store),
         fail: selectLoginFail(store)
     };
@@ -338,4 +336,4 @@ const mapDispatchToProps = (dispatch: any): ILoginDispatchProperties => ({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(loginStylesHOC(Login));
+)(Login);

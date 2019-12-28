@@ -21,6 +21,7 @@ export interface ICsoundObj {
     setOption: (option: string) => void;
     render: (filepath: string) => void;
     evaluateCode: (code: string) => void;
+    evaluateCodePromise: (code: string) => any;
     readScore: (score: string) => void;
     setControlChannel: (channelName: string, value: number) => void;
     setStringChannel: (channelNama: string, value: string) => void;

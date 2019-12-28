@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { UnControlled as CodeMirror } from "react-codemirror2";
-import useDebounce from "./utils";
+import { editorEvalCode, useDebounce } from "./utils";
 import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
@@ -12,7 +12,8 @@ import * as projectEditorActions from "../ProjectEditor/actions";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 import { filenameToType } from "../Projects/utils";
-import { keys } from "ramda";
+import * as SS from "./styles";
+import { assoc, keys } from "ramda";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -142,70 +143,10 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             };
         } else {
             return {
-                from: { line: lastBlockLine - 1, ch: 0 },
+                from: { line: lastBlockLine, ch: 0 },
                 to: { line: blockEnd, ch: lines[blockEnd].length },
                 evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
             };
-        }
-    };
-
-    const evalCode = (blockEval: boolean) => {
-        if (csoundStatus !== "playing") {
-            printToConsole && printToConsole("Csound isn't running!");
-        } else if (editorRef) {
-            // selection takes precedence
-            const selection = editorRef.getSelection();
-            const cursor = editorRef.getCursor();
-            let evalStr = "";
-            // let csdLoc: "orc" | "sco" | null = null;
-
-            if (!blockEval) {
-                const line = editorRef.getLine(cursor.line);
-                const textMarker = editorRef.markText(
-                    { line: cursor.line, ch: 0 },
-                    { line: cursor.line, ch: line.length },
-                    { className: "blinkEval" }
-                );
-                setTimeout(() => textMarker.clear(), 300);
-                evalStr = isEmpty(selection) ? line : selection;
-            } else {
-                let result;
-                if (documentType === "orc" || documentType === "udo") {
-                    result = findOrcBlock();
-                } else if (documentType === "sco") {
-                    // FIXME
-                    result = {
-                        from: { line: cursor.line, ch: 0 },
-                        to: {
-                            line: cursor.line,
-                            ch: editorRef.getLine(cursor.line).length
-                        },
-                        evalStr: editorRef.getLine(cursor.line)
-                    };
-                }
-                if (!!result) {
-                    const textMarker = editorRef.markText(
-                        result.from,
-                        result.to,
-                        {
-                            className: "blinkEval"
-                        }
-                    );
-                    setTimeout(() => textMarker.clear(), 300);
-                    evalStr = result!.evalStr;
-                }
-            }
-            if (isEmpty(evalStr)) return;
-            if (documentType === "orc" || documentType === "udo") {
-                csound && csound.evaluateCode(evalStr);
-            } else if (documentType === "sco") {
-                csound && csound.readScore(evalStr);
-            } else if (documentType === "csd") {
-                csound && csound.evaluateCode(evalStr);
-            } else {
-                printToConsole &&
-                    printToConsole("Can't evaluate non-csound documents!");
-            }
         }
     };
 
@@ -252,6 +193,15 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         }
     };
 
+    const editorEvalCurried = editorEvalCode(
+        csound,
+        csoundStatus,
+        documentType,
+        printToConsole,
+        findOrcBlock,
+        editorRef
+    );
+
     const editorWillUnmount = () => {
         if (editorRef) {
             localStorage.setItem(
@@ -284,13 +234,11 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             ? "csound"
             : "text/plain",
         viewportMargin: Infinity,
-        // scrollbarStyle: "simple",
-        theme: "monokai",
         extraKeys: {
-            "Ctrl-E": () => evalCode(false), // line eval
-            "Ctrl-Enter": () => evalCode(true), // block eval
-            "Cmd-E": () => evalCode(false), // line eval
-            "Cmd-Enter": () => evalCode(true), // block eval
+            "Ctrl-E": () => editorEvalCurried(false),
+            "Ctrl-Enter": () => editorEvalCurried(true),
+            "Cmd-E": () => editorEvalCurried(false),
+            "Cmd-Enter": () => editorEvalCurried(true),
             "Ctrl-.": () => docAtPoint(),
             // "Ctrl-H": insertHexplay,
             // "Ctrl-J": insertEuclidplay,
@@ -335,6 +283,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             containerRef={setScrollerRef}
         >
             <CodeMirror
+                css={SS.root}
                 editorDidMount={editorDidMount}
                 editorWillUnmount={editorWillUnmount}
                 options={options}

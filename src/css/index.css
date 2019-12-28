@@ -1,7 +1,6 @@
 html {
     height: 100%;
 }
-
 html,
 body {
     padding: 0;
@@ -27,36 +26,6 @@ body {
 main {
     height: 100%;
 }
-
-/* body {
-   position: absolute;
-   top: 0;
-   bottom: 0;
-   right: 0;
-   left: 0;
-   padding: 0 !important;
-   overflow-x: hidden !important;
-   overflow-y: auto !important;
-   } */
-
-/* #root {
-   height: 100%;
-   width: 100%;
-   position: relative;
-   } */
-
-/* main {
-   position: absolute;
-   padding: 0;
-   bottom: 0;
-   width: 100%;
-   top: 38px;
-   }
- */
-/* header {
-   height: 38px !important;
-   }
- */
 
 div .react-tabs {
     color: #f8f8f2;
@@ -88,57 +57,9 @@ div .react-tabs > ul > li:hover {
     border-bottom: 2px solid rgba(255, 255, 255, 0.4);
 }
 
-.react-codemirror2 {
-    font-size: 16px;
-    font-family: "Space Mono", monospace;
-    width: 100%;
-    position: absolute;
-    height: 100%;
-    bottom: 0;
-}
-
-.react-codemirror2 > div {
-    width: 100%;
-    height: auto;
-    min-height: 100%;
-    position: absolute;
-    display: flex;
-    padding-top: 12px;
-    padding-bottom: 20px;
-}
-
-.CodeMirror-fullscreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: auto;
-    z-index: 9;
-}
-
-.CodeMirror-vscrollbar {
-    overflow: hidden !important;
-}
-
 .ps__rail-y {
     z-index: 9;
     opacity: 0.4;
-}
-
-.CodeMirror-scroll {
-    /* overflow-x: auto!important; */
-    overflow: visible !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    min-height: 100%;
-    width: 100%;
-    position: static !important;
-}
-
-.CodeMirror-sizer {
-    height: 100%;
 }
 
 .react-tabs__tab--selected:hover {
@@ -150,10 +71,6 @@ button {
     outline: none;
 }
 
-/* .MuiToolbar-root {
-   height: 48px !important;
-   }
- */
 .MuiFileTree .MuiIconButton-root {
     position: absolute;
     right: 24px;
@@ -226,26 +143,4 @@ button {
     color: #f8f8f2;
     white-space: pre-wrap;
     padding-left: 6px;
-}
-
-/* blink eval */
-
-@keyframes flash-animation {
-    0% {
-        background-color: rgba(255, 255, 255, 0);
-    }
-    25% {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-    100% {
-        background-color: rgba(255, 255, 255, 0);
-    }
-}
-
-.blinkEval {
-    z-index: 9999999;
-    background-color: rgba(255, 255, 255, 0.1);
-    transition: 0.1s;
-    animation-name: flash-animation;
-    animation-duration: 0.1s;
 }

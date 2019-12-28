@@ -1,25 +1,25 @@
 /*
-    CsoundNode.js
+   CsoundNode.js
 
-    Copyright (C) 2018 Steven Yi, Victor Lazzarini
+   Copyright (C) 2018 Steven Yi, Victor Lazzarini
 
-    This file is part of Csound.
+   This file is part of Csound.
 
-    The Csound Library is free software; you can redistribute it
-    and/or modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
+   The Csound Library is free software; you can redistribute it
+   and/or modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-    Csound is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+   Csound is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public
-    License along with Csound; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-    02110-1301 USA
-*/
+   You should have received a copy of the GNU Lesser General Public
+   License along with Csound; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+   02110-1301 USA
+ */
 
 // Setup a single global AudioContext object if not already defined
 var CSOUND_AUDIO_CONTEXT =
@@ -57,6 +57,7 @@ class CsoundNode extends AudioWorkletNode {
 
         this.port.start();
         this.channels = {};
+        this.evaluateCodePromises = {};
         this.channelCallbacks = {};
         this.stringChannels = {};
         this.stringChannelCallbacks = {};
@@ -69,6 +70,13 @@ class CsoundNode extends AudioWorkletNode {
             switch (data[0]) {
                 case "log":
                     this.msgCallback(data[1]);
+                    break;
+                case "evalCodePromise":
+                    let promize = this.evaluateCodePromises[data[1]];
+                    if (promize) {
+                        promize(data[2]);
+                        this.evaluateCodePromises[data[1]] = null;
+                    }
                     break;
                 case "control":
                     this.channels[data[1]] = data[2];
@@ -157,6 +165,16 @@ class CsoundNode extends AudioWorkletNode {
 
     evaluateCode(codeString) {
         this.port.postMessage(["evalCode", codeString]);
+    }
+
+    evaluateCodePromise(codeString) {
+        return new Promise((resolve, reject) => {
+            const promiseId = Math.random()
+                .toString(36)
+                .substring(2, 15);
+            this.evaluateCodePromises[promiseId] = resolve;
+            this.port.postMessage(["evalCodePromise", promiseId, codeString]);
+        });
     }
 
     /** Reads a numeric score string.
@@ -358,9 +376,9 @@ class CsoundNode extends AudioWorkletNode {
 }
 
 /** This E6 class is used to setup scripts and
-    allow the creation of new CsoundNode objects
+   allow the creation of new CsoundNode objects
    @hideconstructor
-*/
+ */
 class CsoundNodeFactory {
     /**
      * This static method is used to asynchronously setup scripts for AudioWorklet Csound

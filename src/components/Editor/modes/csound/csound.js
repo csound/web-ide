@@ -63,10 +63,6 @@ CodeMirror.defineMode("csound", function(config) {
                 stream,
                 state
             );
-        } else if (ch == "/") {
-            if (regexpAhead(stream))
-                return chain(readQuoted(ch, "string-2", true), stream, state);
-            else return "operator";
         } else if (ch == "%") {
             var style = "string",
                 embed = true;
@@ -81,7 +77,7 @@ CodeMirror.defineMode("csound", function(config) {
             if (!delim) return "operator";
             if (matching.propertyIsEnumerable(delim)) delim = matching[delim];
             return chain(readQuoted(delim, style, embed, true), stream, state);
-        } else if (ch == ";") {
+        } else if (ch == ";" || (ch == "/" && stream.eat("/"))) {
             stream.skipToEnd();
             return "comment";
         } else if (
@@ -178,32 +174,6 @@ CodeMirror.defineMode("csound", function(config) {
         } else {
             return null;
         }
-    }
-
-    function regexpAhead(stream) {
-        var start = stream.pos,
-            depth = 0,
-            next,
-            found = false,
-            escaped = false;
-        while ((next = stream.next()) != null) {
-            if (!escaped) {
-                if ("[{(".indexOf(next) > -1) {
-                    depth++;
-                } else if ("]})".indexOf(next) > -1) {
-                    depth--;
-                    if (depth < 0) break;
-                } else if (next == "/" && depth == 0) {
-                    found = true;
-                    break;
-                }
-                escaped = next == "\\";
-            } else {
-                escaped = false;
-            }
-        }
-        stream.backUp(stream.pos - start);
-        return found;
     }
 
     function tokenBaseUntilBrace(depth) {
@@ -323,14 +293,31 @@ CodeMirror.defineMode("csound", function(config) {
                     style = "variable";
                 } else if (word.match(/^a[a-zA-Z0-9_]+/)) {
                     style = "variable-2";
-                } else if (word.match(/^[ikf][a-zA-Z0-9_]+/)) {
+                } else if (word.match(/^i[a-zA-Z0-9_]+/)) {
                     style = "variable-3";
-                } else if (word.match(/^g[ikf][a-zA-Z0-9_]+/)) {
-                    style = "global";
-                } else if (word.match(/^ga[a-zA-Z0-9_]+/)) {
-                    style = "globalaudio";
-                } else if (word.match(/^p[0-9]+/)) {
+                } else if (word.match(/^k[a-zA-Z0-9_]+/)) {
                     style = "variable-4";
+                } else if (word.match(/^f[a-zA-Z0-9_]+/)) {
+                    style = "variable-5";
+                } else if (word.match(/^p[0-9]+/)) {
+                    style = "variable-6";
+                } else if (word.match(/^g[aikf][a-zA-Z0-9_]+/)) {
+                    if (word.length > 1) {
+                        switch (word.charAt(1)) {
+                            case "a":
+                                style = "variable-2 global";
+                                break;
+                            case "i":
+                                style = "variable-3 global";
+                                break;
+                            case "k":
+                                style = "variable-4 global";
+                                break;
+                            case "f":
+                                style = "variable-5 global";
+                                break;
+                        }
+                    }
                 }
 
                 style =
@@ -400,7 +387,7 @@ CodeMirror.defineMode("csound", function(config) {
         },
 
         electricInput: /^\s*(?:end|rescue|elsif|else|\})$/,
-        lineComment: ";",
+        // lineComment: /;|\/\//,
         fold: "indent"
     };
 });

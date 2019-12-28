@@ -121,11 +121,11 @@ class CsoundObj {
         this.node.writeToFS(filePath, blobData);
     }
 
-    /** Unlink file from WASM filesystem (i.e. remove). 
-     * 
-     * @param {string} filePath A string containing the path to unlink. 
-    */
-    unlinkFromFS(filePath:string) {
+    /** Unlink file from WASM filesystem (i.e. remove).
+     *
+     * @param {string} filePath A string containing the path to unlink.
+     */
+    unlinkFromFS(filePath: string) {
         this.node.unlinkFromFS(filePath);
     }
 
@@ -164,6 +164,14 @@ class CsoundObj {
      */
     evaluateCode(codeString: any) {
         this.node.evaluateCode(codeString);
+    }
+
+    /** Evaluates Csound orchestra code and returns promise containing result code
+     *
+     * @param {string} codeString A string containing the orchestra code.
+     */
+    evaluateCodePromise(codeString: any) {
+        return this.node.evaluateCodePromise(codeString);
     }
 
     /** Reads a numeric score string.
@@ -402,29 +410,32 @@ class CsoundObj {
     }
 
     /** Returns the current play state of Csound. Results are either
-     * "playing", "paused", or "stopped". 
-     */ 
-    getPlayState():ICsoundStatus {
+     * "playing", "paused", or "stopped".
+     */
+
+    getPlayState(): ICsoundStatus {
         return this.node.getPlayState();
     }
 
+    /** Add a listener callback for play state listening. Must be a function
+     * of type (csoundObj:CsoundObj):void.
+     */
 
-    /** Add a listener callback for play state listening. Must be a function 
-     * of type (csoundObj:CsoundObj):void. 
-     */ 
-    addPlayStateListener(listener:(csoundObj:CsoundObj) => void) {
-        // CsoundObj will wrap the listener so that it will use itself as the 
+    addPlayStateListener(listener: (csoundObj: CsoundObj) => void) {
+        // CsoundObj will wrap the listener so that it will use itself as the
         // as the listener's argument
-        this.node.addPlayStateListener((csoundObj:CsoundObj) => listener(this));
+        this.node.addPlayStateListener((csoundObj: CsoundObj) =>
+            listener(this)
+        );
     }
 
     /** Remove a listener callback for play state listening. Must be the same
-     * function as passed in with addPlayStateListener. 
-     */ 
-    removePlayStateListener(listener:(csoundObj:CsoundObj) => void) {
+     * function as passed in with addPlayStateListener.
+     */
+
+    removePlayStateListener(listener: (csoundObj: CsoundObj) => void) {
         this.node.removePlayStateListener(listener);
     }
-    
 
     /**
      * This static method is used to asynchronously setup the Csound
