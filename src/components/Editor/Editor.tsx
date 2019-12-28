@@ -233,15 +233,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     const editorDidMount = (editor: any) => {
         editor.getDoc().setValue(currentDocumentValue);
         setEditorValue(currentDocumentValue);
-        // if (!isModifiedLocally) {
-        //     dispatch(
-        //         projectActions.updateDocumentValue(
-        //             savedValue,
-        //             projectUid,
-        //             documentUid
-        //         )
-        //     );
-        // }
         setEditorRef(editor as any);
         dispatch(
             projectEditorActions.storeEditorInstance(
@@ -261,31 +252,27 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         }
     };
 
-    useEffect(() => {
-        return () => {
-            if (editorRef) {
-                localStorage.setItem(
-                    documentUid + ":cursorPos",
-                    JSON.stringify(editorRef.getCursor())
-                );
-            }
-            if (scrollerRef) {
-                localStorage.setItem(
-                    documentUid + ":scrollPos",
-                    (scrollerRef as any).scrollTop
-                );
-            }
-            dispatch(
-                projectEditorActions.storeEditorInstance(
-                    null,
-                    projectUid,
-                    documentUid
-                )
+    const editorWillUnmount = () => {
+        if (editorRef) {
+            localStorage.setItem(
+                documentUid + ":cursorPos",
+                JSON.stringify(editorRef.getCursor())
             );
-        };
-        // eslint-disable-next-line
-    }, []);
-
+        }
+        if (scrollerRef) {
+            localStorage.setItem(
+                documentUid + ":scrollPos",
+                (scrollerRef as any).scrollTop
+            );
+        }
+        dispatch(
+            projectEditorActions.storeEditorInstance(
+                null,
+                projectUid,
+                documentUid
+            )
+        );
+    };
     const options = {
         // autoFocus: true,
         autoCloseBrackets: true,
@@ -313,23 +300,23 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
 
     useEffect(() => {
-        if (editorValue !== savedValue) {
-            console.log(editorValue, "SAVED VALUE", savedValue);
+        // editorRef indicates that editor has initialized
+        if (editorRef) {
+            dispatch(
+                projectActions.updateDocumentModifiedLocally(
+                    editorValue !== savedValue,
+                    projectUid,
+                    documentUid
+                )
+            );
+            dispatch(
+                projectActions.updateDocumentValue(
+                    debouncedEditorValue,
+                    projectUid,
+                    documentUid
+                )
+            );
         }
-        dispatch(
-            projectActions.updateDocumentModifiedLocally(
-                editorValue !== savedValue,
-                projectUid,
-                documentUid
-            )
-        );
-        dispatch(
-            projectActions.updateDocumentValue(
-                debouncedEditorValue,
-                projectUid,
-                documentUid
-            )
-        );
         // eslint-disable-next-line
     }, [dispatch, debouncedEditorValue]);
 
@@ -349,6 +336,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         >
             <CodeMirror
                 editorDidMount={editorDidMount}
+                editorWillUnmount={editorWillUnmount}
                 options={options}
                 onChange={onChange}
             />
