@@ -7,12 +7,12 @@ const homeStyles = (theme: Theme) =>
             backgroundColor: "#e8e8e8",
             // fontFamily: "'Space Mono', monospace",
             bottom: "0px",
-            top: "37px",
+            top: 0,
             left: 0,
             right: 0,
             position: "absolute",
             overflowY: "auto",
-            fontSize: "1rem",
+            fontSize: "1rem"
         },
         main: {
             maxWidth: "1024px",
@@ -20,15 +20,15 @@ const homeStyles = (theme: Theme) =>
             margin: "auto",
             fontSize: 16,
             "& h1": {
-                margin: "16px 0",
+                margin: "16px 0"
             },
             "& h2": {
-                margin: "40px 0 16px",
+                margin: "40px 0 16px"
             },
             "& h3": {
-                margin: "40px 0 16px",
-            },
-        },
+                margin: "40px 0 16px"
+            }
+        }
     });
 
 export default (ClassComponent: any) => withStyles(homeStyles)(ClassComponent);

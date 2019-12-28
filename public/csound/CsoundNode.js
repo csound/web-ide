@@ -22,27 +22,23 @@
 */
 
 // Setup a single global AudioContext object if not already defined
-var CSOUND_AUDIO_CONTEXT = window.CSOUND_AUDIO_CONTEXT || 
+var CSOUND_AUDIO_CONTEXT =
+    window.CSOUND_AUDIO_CONTEXT ||
     (function() {
-
         try {
             var AudioContext = window.AudioContext || window.webkitAudioContext;
-            return new AudioContext();      
-        }
-        catch(error) {
-
-            console.log('Web Audio API is not supported in this browser');
+            return new AudioContext();
+        } catch (error) {
+            console.log("Web Audio API is not supported in this browser");
         }
         return null;
-    }());
+    })();
 
-
-/** This ES6 Class defines a Custom Node as an AudioWorkletNode 
+/** This ES6 Class defines a Custom Node as an AudioWorkletNode
  *  that holds a Csound engine.
  */
 class CsoundNode extends AudioWorkletNode {
-
-    /** 
+    /**
      *
      * @constructor
      * @param {AudioContext} context AudioContext in which this node will run
@@ -52,64 +48,70 @@ class CsoundNode extends AudioWorkletNode {
      */
     constructor(context, options) {
         options = options || {};
-        
-        super(context, 'Csound', options);
 
-        this.msgCallback = (msg) => { console.log(msg); }
+        super(context, "Csound", options);
+
+        this.msgCallback = msg => {
+            console.log(msg);
+        };
 
         this.port.start();
-        this.channels =  {};
+        this.channels = {};
         this.channelCallbacks = {};
-        this.stringChannels =  {};
+        this.stringChannels = {};
         this.stringChannelCallbacks = {};
         this.table = {};
         this.tableCallbacks = {};
         this.playState = "stopped";
         this.playStateListeners = new Set();
-        this.port.onmessage = (event) => {
+        this.port.onmessage = event => {
             let data = event.data;
-            switch(data[0]) {
-            case "log":
-                this.msgCallback(data[1]);
-                break;
-            case "control":
-                this.channels[data[1]] = data[2];
-                if (typeof this.channelCallbacks[data[1]] != 'undefined')
-                      this.channelCallbacks[data[1]](); 
-                break;
-            case "stringChannel":
-                this.stringChannels[data[1]] = data[2];
-                if (typeof this.stringChannelCallbacks[data[1]] != 'undefined')
-                      this.stringChannelCallbacks[data[1]](); 
-                break;
-            case "table":
-                this.table[data[1]] = data[2];
-                if (typeof this.tableCallbacks[data[1]] != 'undefined')
-                      this.tableCallbacks[data[1]](); 
-               break;
-            case "playState":
-                this.playState = data[1];
-                this.firePlayStateChange();
-                break;
-            default:
-                console.log('[CsoundNode] Invalid Message: "' + event.data);
+            switch (data[0]) {
+                case "log":
+                    this.msgCallback(data[1]);
+                    break;
+                case "control":
+                    this.channels[data[1]] = data[2];
+                    if (typeof this.channelCallbacks[data[1]] != "undefined")
+                        this.channelCallbacks[data[1]]();
+                    break;
+                case "stringChannel":
+                    this.stringChannels[data[1]] = data[2];
+                    if (
+                        typeof this.stringChannelCallbacks[data[1]] !=
+                        "undefined"
+                    )
+                        this.stringChannelCallbacks[data[1]]();
+                    break;
+                case "table":
+                    this.table[data[1]] = data[2];
+                    if (typeof this.tableCallbacks[data[1]] != "undefined")
+                        this.tableCallbacks[data[1]]();
+                    break;
+                case "playState":
+                    this.playState = data[1];
+                    this.firePlayStateChange();
+                    break;
+                default:
+                    console.log('[CsoundNode] Invalid Message: "' + event.data);
             }
         };
     }
-    
+
     /** Writes data to a file in the WASM filesystem for
      *  use with csound.
      *
      * @param {string} filePath A string containing the path to write to.
      * @param {blob}   blobData The data to write to file.
-     */  
+     */
+
     writeToFS(filePath, blobData) {
         this.port.postMessage(["writeToFS", filePath, blobData]);
     }
 
-    /** 
-     * 
-     * Unlink file from WASM filesystem (i.e. remove). 
+    /**
+     *
+     * Unlink file from WASM filesystem (i.e. remove).
      *
      * @param {string} filePath A string containing the path to write to.
      * @memberof CsoundMixin
@@ -130,28 +132,29 @@ class CsoundNode extends AudioWorkletNode {
     /** Compiles Csound orchestra code.
      *
      * @param {string} orcString A string containing the orchestra code.
-     */    
+     */
+
     compileOrc(orcString) {
         this.port.postMessage(["compileOrc", orcString]);
     }
 
     /** Sets a Csound engine option (flag)
-     *  
+     *
      *
      * @param {string} option The Csound engine option to set. This should
      * not contain any whitespace.
      */
     setOption(option) {
-        this.port.postMessage(["setOption", option]);    
+        this.port.postMessage(["setOption", option]);
     }
 
-    render(filePath) {
-    }
+    render(filePath) {}
 
     /** Evaluates Csound orchestra code.
      *
      * @param {string} codeString A string containing the orchestra code.
-     */   
+     */
+
     evaluateCode(codeString) {
         this.port.postMessage(["evalCode", codeString]);
     }
@@ -159,7 +162,8 @@ class CsoundNode extends AudioWorkletNode {
     /** Reads a numeric score string.
      *
      * @param {string} scoreString A string containing a numeric score.
-     */    
+     */
+
     readScore(scoreString) {
         this.port.postMessage(["readScore", scoreString]);
     }
@@ -168,86 +172,88 @@ class CsoundNode extends AudioWorkletNode {
      *
      * @param {string} channelName A string containing the channel name.
      * @param {number} value The value to be set.
-     */ 
+     */
+
     setControlChannel(channelName, value) {
-        this.port.postMessage(["setControlChannel",
-                               channelName, value]);
+        this.port.postMessage(["setControlChannel", channelName, value]);
     }
 
     /** Sets the value of a string channel in the software bus
      *
      * @param {string} channelName A string containing the channel name.
      * @param {string} stringValue The string to be set.
-     */ 
+     */
+
     setStringChannel(channelName, value) {
-        this.port.postMessage(["setStringChannel",
-                               channelName, value]);
+        this.port.postMessage(["setStringChannel", channelName, value]);
     }
 
-    /** Request the data from a control channel 
+    /** Request the data from a control channel
      *
      * @param {string} channelName A string containing the channel name.
      * @param {function} callback An optional callback to be called when
      *  the requested data is available. This can be set once for all
      *  subsequent requests.
-     */ 
+     */
+
     requestControlChannel(channelName, callback = null) {
-        this.port.postMessage(["getControlChannel",
-                               channelName]);
-        if (callback !== null)
-          this.channelCallbacks[channelName] = callback;
+        this.port.postMessage(["getControlChannel", channelName]);
+        if (callback !== null) this.channelCallbacks[channelName] = callback;
     }
 
-    /** Request the data from a String channel 
+    /** Request the data from a String channel
      *
      * @param {string} channelName A string containing the channel name.
      * @param {function} callback An optional callback to be called when
      *  the requested data is available. This can be set once for all
      *  subsequent requests.
-     */ 
+     */
+
     requestStringChannel(channelName, callback = null) {
-        this.port.postMessage(["getStringChannel",
-                               channelName]);
+        this.port.postMessage(["getStringChannel", channelName]);
         if (callback !== null)
-          this.stringChannelCallbacks[channelName] = callback;
+            this.stringChannelCallbacks[channelName] = callback;
     }
 
-    /** Get the latest requested channel data 
+    /** Get the latest requested channel data
      *
      * @param {string} channelName A string containing the channel name.
      * @returns {number} The latest channel value requested.
-     */   
+     */
+
     getControlChannel(channelName) {
         return this.channels[channelName];
     }
 
-    /** Get the latest requested string channel data 
+    /** Get the latest requested string channel data
      *
      * @param {string} channelName A string containing the channel name.
      * @returns {string} The latest channel value requested.
-     */   
+     */
+
     getStringChannel(channelName) {
         return this.stringChannels[channelName];
     }
 
-     /** Request the data from a Csound function table
+    /** Request the data from a Csound function table
      *
      * @param {number} number The function table number
      * @param {function} callback An optional callback to be called when
      *  the requested data is available. This can be set once for all
      *  subsequent requests.
-     */ 
+     */
+
     requestTable(number, callback = null) {
         this.port.postMessage(["getTable", number]);
-        if (callback !== null)
-          this.tableCallbacks[number] = callback;
+        if (callback !== null) this.tableCallbacks[number] = callback;
     }
 
     /** Get the requested table number
      *
      * @param {number} number The function table number
      * @returns {Float32Array} The table as a typed array.
-     */   
+     */
+
     getTable(number) {
         return this.table[number];
     }
@@ -257,21 +263,22 @@ class CsoundNode extends AudioWorkletNode {
      * @param {number} number The function table number
      * @param {number} index The index of the position to be set
      * @param {number} value The value to set
-     */ 
+     */
+
     setTableValue(number, index, value) {
-        this.port.postMessage(["setTableAtIndex", number,
-                              index, value]);
+        this.port.postMessage(["setTableAtIndex", number, index, value]);
     }
 
     /** Set a table with data from an array
      *
      * @param {number} number The function table number
      * @param {Float32Array} table The source data for the table
-     */   
+     */
+
     setTable(number, table) {
         this.port.postMessage(["setTable", number, table]);
     }
-    
+
     /** Starts processing in this node
      */
     start() {
@@ -284,15 +291,14 @@ class CsoundNode extends AudioWorkletNode {
         this.port.postMessage(["reset"]);
     }
 
-    destroy() {
-    }
+    destroy() {}
 
     /** Starts performance, same as start()
      */
     play() {
         this.port.postMessage(["play"]);
     }
-    
+
     /** Stops (pauses) performance
      */
     stop() {
@@ -301,10 +307,11 @@ class CsoundNode extends AudioWorkletNode {
 
     /** Sets a callback to process Csound console messages.
      *
-     * @param {function} msgCallback A callback to process messages 
+     * @param {function} msgCallback A callback to process messages
      * with signature function(message), where message is a string
      * from Csound.
-     */ 
+     */
+
     setMessageCallback(msgCallback) {
         this.msgCallback = msgCallback;
     }
@@ -321,23 +328,25 @@ class CsoundNode extends AudioWorkletNode {
     }
 
     /** Returns the current play state of Csound. Results are either
-     * "playing", "paused", or "stopped". 
-     */ 
+     * "playing", "paused", or "stopped".
+     */
+
     getPlayState() {
-       return this.playState; 
+        return this.playState;
     }
 
+    /** Add a listener callback for play state listening. Must be a function
+     * of type (csoundObj:CsoundObj):void.
+     */
 
-    /** Add a listener callback for play state listening. Must be a function 
-     * of type (csoundObj:CsoundObj):void. 
-     */ 
     addPlayStateListener(listener) {
         this.playStateListeners.add(listener);
     }
 
     /** Remove a listener callback for play state listening. Must be the same
-     * function as passed in with addPlayStateListener. 
-     */ 
+     * function as passed in with addPlayStateListener.
+     */
+
     removePlayStateListener(listener) {
         this.playStateListeners.delete(listener);
     }
@@ -353,36 +362,35 @@ class CsoundNode extends AudioWorkletNode {
    @hideconstructor
 */
 class CsoundNodeFactory {
-
-    /** 
+    /**
      * This static method is used to asynchronously setup scripts for AudioWorklet Csound
      *
      * @param {string} script_base A string containing the base path to scripts
      */
-    static importScripts(script_base='./') {
+    static importScripts(script_base = "./") {
         let actx = CSOUND_AUDIO_CONTEXT;
-        return new Promise( (resolve) => {
-            actx.audioWorklet.addModule(script_base + 'CsoundProcessor.js').then(() => {
-                resolve(); 
-            })      
-        }) 
+        return new Promise(resolve => {
+            actx.audioWorklet
+                .addModule(script_base + "CsoundProcessor.js")
+                .then(() => {
+                    resolve();
+                });
+        });
     }
 
-    /** 
-     * This static method creates a new CsoundNode. 
+    /**
+     * This static method creates a new CsoundNode.
      *  @param {number} InputChannelCount number of input channels
      *  @param {number} OutputChannelCount number of output channels
      *  @returns {object}
      */
-    static createNode(inputChannelCount=1, outputChannelCount=2) {
+    static createNode(inputChannelCount = 1, outputChannelCount = 2) {
         var options = {};
-        options.numberOfInputs  = inputChannelCount;
+        options.numberOfInputs = inputChannelCount;
         options.numberOfOutputs = 1;
-        options.outputChannelCount = [ outputChannelCount ];
+        options.outputChannelCount = [outputChannelCount];
         return new CsoundNode(CSOUND_AUDIO_CONTEXT, options);
     }
 }
 
-
 window.CsoundNodeFactory = CsoundNodeFactory;
-

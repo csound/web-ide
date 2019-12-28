@@ -7,11 +7,10 @@ const profileStyles = (theme: Theme) =>
             backgroundColor: "#e8e8e8",
             fontFamily: "'Space Mono', monospace",
             width: "100%",
-            height: "auto",
+            height: "100%",
             bottom: "0px",
-            top: "0px",
-            left: 0,
-            position: "absolute"
+            top: 0,
+            left: 0
         },
         centerBox: {
             position: "absolute",

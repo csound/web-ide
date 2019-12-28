@@ -2,7 +2,7 @@ import { css } from "@emotion/core";
 
 export const splitterLayoutContainer = css`
     & > div {
-        height: calc(100% - 64px);
+        height: 100%;
         bottom: 0;
         overflow: hidden;
     }

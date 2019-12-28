@@ -1,20 +1,5 @@
 html {
     height: 100%;
-    overflow-x: hidden;
-}
-body {
-    min-height: 100%;
-}
-
-body {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    padding: 0 !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
 }
 
 html,
@@ -23,14 +8,42 @@ body {
     margin: 0;
 }
 
+body {
+    min-height: 100%;
+    overflow-x: hidden;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+#root {
+    position: relative;
+    min-height: calc(100% - 64px);
+    top: 64px;
+}
+
+main {
+    height: 100%;
+}
+
+/* body {
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   right: 0;
+   left: 0;
+   padding: 0 !important;
+   overflow-x: hidden !important;
+   overflow-y: auto !important;
+   } */
+
 /* #root {
-   position: relative;
    height: 100%;
    width: 100%;
-   top: 0;
-   left: 0;
-   }
- */
+   position: relative;
+   } */
 
 /* main {
    position: absolute;

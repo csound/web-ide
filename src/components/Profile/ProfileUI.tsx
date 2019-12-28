@@ -2,11 +2,12 @@ import { Card, Fab, TextField, Chip } from "@material-ui/core";
 import styled from "styled-components";
 import { Gradient } from "./Gradient";
 export const ProfileContainer = styled.div`
+    position: relative;
+    height: 100%;
     display: grid;
     grid-template-columns: 1fr 250px 8fr;
     grid-template-rows: 50px 175px 1fr 70px;
     width: 100%;
-    height: calc(100vh);
     background-color: black;
     ${Gradient}
 `;
@@ -20,6 +21,7 @@ export const IDContainer = styled(Card)`
         grid-template-rows: 250px 1fr 100px;
         grid-template-columns: 1fr;
         z-index: 2;
+        min-height: 580px;
     }
 `;
 export const DescriptionSection = styled.div`
@@ -112,7 +114,9 @@ export const ContentSection = styled.div`
     padding: 0 20px;
     display: grid;
     grid-template-rows: 60px 50px 1fr;
-    grid-template-columns: 1fr 250px;
+    grid-template-columns: 1fr 24px;
+    min-width: 600px;
+    max-width: 1000px;
 `;
 export const ContentTabsContainer = styled.div`
     grid-row: 1;
@@ -133,7 +137,6 @@ export const ListContainer = styled.div`
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;
-    overflow: scroll;
 `;
 export const SearchBox = styled(TextField)`
     && {
