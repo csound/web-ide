@@ -1,5 +1,5 @@
 import { pathOr } from "ramda";
-import { IStore } from "@root/db/interfaces";
+import { IStore } from "@store/types";
 import { IDocument, ITarget, IMainTarget, IPlaylist } from "../Projects/types";
 import { playCSDFromEMFS } from "../Csound/actions";
 

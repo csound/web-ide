@@ -1,5 +1,5 @@
 import { SIGNIN_SUCCESS, LOG_OUT } from "../components/Login/types";
-import { IUserProfile } from "./interfaces";
+import { IUserProfile } from "./types";
 
 export default (state = {}, action: any): IUserProfile => {
     switch (action.type) {

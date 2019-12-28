@@ -25,18 +25,15 @@ import MenuIcon from "@material-ui/icons/Menu";
 import HelpIcon from "@material-ui/icons/Help";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import ReportProblemIcon from "@material-ui/icons/ReportProblem";
-import { headerStylesHOC } from "./styles";
 import * as SS from "./styles";
 // import { tooltipClasses } from "@styles";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import { isEmpty } from "lodash";
 // import { hasPath } from "ramda";
 import MenuBar from "../MenuBar/MenuBar";
 import TargetControls from "../TargetControls";
-import clsx from "clsx";
 
 interface IHeaderProps {
-    classes: any;
     showMenuBar: boolean;
 }
 
@@ -52,7 +49,7 @@ interface IHeaderLocalState {
 
 type IHeader = IHeaderProps & IHeaderDispatchProperties;
 
-export const Header = ({ classes, showMenuBar = true }: IHeader) => {
+export const Header = ({ showMenuBar = true }) => {
     const dispatch = useDispatch();
 
     const authenticated = useSelector(
@@ -116,7 +113,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                 onClose={handleProfileMenuClose}
             >
                 <MenuItem>
-                    <Link to="/profile" className={classes.menuItemLink}>
+                    <Link to="/profile" css={SS.menuItemLink}>
                         View Profile
                     </Link>
                 </MenuItem>
@@ -148,7 +145,7 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                         aria-label="open drawer"
                         onClick={() => setIsDrawerOpen(true)}
                         edge="start"
-                        className={clsx(classes.menuButton)}
+                        css={SS.menuButton}
                     >
                         <MenuIcon />
                     </IconButton>
@@ -159,15 +156,15 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
                         onClick={handleIconClick}
                     />
                     {showMenuBar && <MenuBar />}
-                    <div className={classes.spacer} />
+                    <div style={{ flexGrow: 1 }} />
                     {showMenuBar && <TargetControls />}
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>
 
             <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-                <div className={classes.drawer}>
-                    <div className={classes.drawerHeader}>
+                <div css={SS.drawer}>
+                    <div css={SS.drawerHeader}>
                         <h2>Csound Web-IDE</h2>
                     </div>
                     <Divider />
@@ -227,4 +224,4 @@ export const Header = ({ classes, showMenuBar = true }: IHeader) => {
     );
 };
 
-export default headerStylesHOC(Header);
+export default Header;

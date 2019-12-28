@@ -47,6 +47,7 @@
         "dotenv-expand": "5.1.0",
         "electron-is-dev": "^1.1.0",
         "emotion": "^10.0.23",
+        "emotion-theming": "^10.0.27",
         "eslint": "^6.7.1",
         "eslint-loader": "3.0.2",
         "eslint-plugin-flowtype": "4.4.1",

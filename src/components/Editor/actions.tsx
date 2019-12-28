@@ -1,5 +1,5 @@
 import { store } from "../../store";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 
 export const toggleEditorFullScreen = (): void => {
     const storeState = store.getState() as IStore;

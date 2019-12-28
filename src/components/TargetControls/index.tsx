@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import Dropdown from "./Dropdown";
 import PlayButton from "./PlayButton";
-import { IStore } from "@root/db/interfaces";
+import { IStore } from "@store/types";
 import { ITarget, ITargetMap } from "../Projects/types";
 import { setSelectedTarget } from "./actons";
 import { pathOr, values } from "ramda";

@@ -1,7 +1,6 @@
 import React, { Component, useEffect } from "react";
 import { connect, Provider, useDispatch } from "react-redux";
-import { ITheme } from "../../db/interfaces";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import Home from "../Home/Home";
 import CsoundManual from "csound-manual-react";
 import Profile from "../Profile/Profile";
@@ -11,7 +10,6 @@ import { Route, Switch } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
 import { store } from "../../store";
 import { History } from "history";
-import { layoutStylesHook } from "./styles";
 import { setMenuBarHotKeys } from "../HotKeys/actions";
 import { stopCsound } from "../Csound/actions";
 import SiteDocs from "../SiteDocs/SiteDocs";
@@ -19,11 +17,9 @@ import SiteDocs from "../SiteDocs/SiteDocs";
 interface IRouterComponent {
     isAuthenticated: boolean;
     history: History;
-    theme: ITheme;
 }
 
 const EditorLayout = (props: any) => {
-    const classes = layoutStylesHook(props.theme);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -36,10 +32,7 @@ const EditorLayout = (props: any) => {
 
     return (
         <Provider store={store}>
-            <ProjectContext
-                className={classes.content}
-                {...props}
-            ></ProjectContext>
+            <ProjectContext {...props}></ProjectContext>
         </Provider>
     );
 };
@@ -73,8 +66,7 @@ class RouterComponent extends Component<IRouterComponent, any> {
 const mapStateToProps = (store: IStore, ownProp: any): IRouterComponent => {
     return {
         isAuthenticated: store.LoginReducer.authenticated,
-        history: ownProp.history,
-        theme: store.theme
+        history: ownProp.history
     };
 };
 

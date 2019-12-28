@@ -1,4 +1,4 @@
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 
 export const selectLoginRequesting = ({ LoginReducer }: IStore) => {
     return LoginReducer.requesting;

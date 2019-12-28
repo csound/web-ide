@@ -15,7 +15,7 @@ import {
     faExpand
     // faWindowRestore
 } from "@fortawesome/free-solid-svg-icons";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import Editor from "../Editor/Editor";
 import AudioEditor from "../AudioEditor/AudioEditor";
 import { toggleEditorFullScreen } from "../Editor/actions";

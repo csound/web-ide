@@ -1,4 +1,4 @@
-// import { IStore } from "../../db/interfaces";
+// import { IStore } from "@store/types";
 //
 // export const getAuthRequesting = ({ RouterReducer }: IStore) => {
 //     return RouterReducer.requesting;

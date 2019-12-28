@@ -2,7 +2,7 @@ import { combineReducers, AnyAction, Reducer } from "redux";
 import { connectRouter, RouterState } from "connected-react-router";
 import ProjectsReducer from "@comp/Projects/reducer";
 import LoginReducer from "@comp/Login/reducer";
-import TemplateReducer from "@comp/Themes/reducer";
+import ThemeReducer from "@comp/Themes/reducer";
 import SnackbarReducer from "@comp/Snackbar/reducer";
 import IDReducer from "../db/IDReducer";
 import ProjectEditorReducer from "@comp/ProjectEditor/reducer";
@@ -21,8 +21,8 @@ export default (history: History) =>
         LoginReducer,
         ProjectEditorReducer,
         userProfile: IDReducer,
-        theme: TemplateReducer,
         csound: CsoundReducer,
+        ThemeReducer,
         ModalReducer,
         ProfileReducer,
         ConsoleReducer,

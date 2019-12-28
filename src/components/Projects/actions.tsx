@@ -29,7 +29,7 @@ import {
     IDocument
 } from "./types";
 import { filenameToType, textOrBinary } from "./utils";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import { projects, storageRef } from "../../config/firestore";
 import { store } from "../../store";
 import { ICsoundObj } from "../Csound/types";

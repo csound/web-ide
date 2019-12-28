@@ -1,7 +1,7 @@
 // import { Route, Redirect } from "react-router-dom";
 // import React from "react";
 // import { getAuthState, getAuthRequesting } from "./selectors";
-// import { IStore } from "../../db/interfaces";
+// import { IStore } from "@store/types";
 // import { connect } from "react-redux";
 // import LinearProgress from "@material-ui/core/LinearProgress";
 //

@@ -1,9 +1,10 @@
 import React from "react";
 import * as SS from "./styles";
 import { useSelector, useDispatch } from "react-redux";
-import { IStore } from "@root/db/interfaces";
+import { IStore } from "@store/types";
 import { pathOr } from "ramda";
 import { getPlayActionFromTarget } from "./utils";
+import { stopCsound } from "@comp/Csound/actions";
 
 const PlayButton = () => {
     const playAction = useSelector(getPlayActionFromTarget);
@@ -18,7 +19,11 @@ const PlayButton = () => {
         return (
             <div
                 css={SS.playButtonContainer}
-                onClick={e => dispatch(playAction)}
+                onClick={e =>
+                    csoundPlayState === "playing"
+                        ? dispatch(stopCsound())
+                        : dispatch(playAction)
+                }
             >
                 <button
                     css={SS.playButtonStyle(csoundPlayState === "playing")}

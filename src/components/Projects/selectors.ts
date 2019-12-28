@@ -1,4 +1,4 @@
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import { IProject, IProjectsReducer } from "./types";
 import { pathOr, propOr } from "ramda";
 

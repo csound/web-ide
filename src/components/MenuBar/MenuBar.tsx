@@ -69,25 +69,17 @@ function MenuBar(props) {
                     role: "renderToDisk"
                 },
                 {
-                    role: "hr"
+                    label: "Export Project (.zip)",
+                    callback: () => dispatch(exportProject()),
+                    role: "export"
                 },
                 {
-                    label: "Close",
-                    // keyBinding: isMac ? "⌘+s" : "ctrl+s",
-                    role: "saveFile"
+                    role: "hr"
                 },
                 {
                     label: "Save and Close",
                     // keyBinding: isMac ? "⌘+s" : "ctrl+s",
                     role: "saveFile"
-                },
-                {
-                    role: "hr"
-                },
-                {
-                    label: "Export Project (.zip)",
-                    callback: () => dispatch(exportProject()),
-                    role: "export"
                 }
             ]
         },
@@ -102,15 +94,6 @@ function MenuBar(props) {
             label: "Project",
             submenu: [
                 {
-                    label: "Configure",
-                    role: "toggle-project-configure"
-                }
-            ]
-        },
-        {
-            label: "Control",
-            submenu: [
-                {
                     label: "Run",
                     keyBinding: isMac ? "cmd+r" : "ctrl+r",
                     keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
@@ -119,9 +102,6 @@ function MenuBar(props) {
                 },
                 {
                     label: "Stop",
-                    // keyBinding: isMac ? "cmd+." : "ctrl+.",
-                    // keyBindingLabel: isMac ? "⌘+." : "ctrl+.",
-                    // role: "doStuff",
                     callback: () => dispatch(stopCsound())
                 },
                 {
@@ -130,6 +110,13 @@ function MenuBar(props) {
                     keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
                     role: "doStuff",
                     callback: () => dispatch(playPauseCsound())
+                },
+                {
+                    role: "hr"
+                },
+                {
+                    label: "Configure Targets",
+                    role: "toggle-project-configure"
                 }
             ]
         },

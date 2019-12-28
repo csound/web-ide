@@ -1,12 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
 import Router from "../Router/Router";
+import ThemeProvider from "@styles/ThemeProvider";
 import Modal from "../Modal";
 import Snackbar from "../Snackbar/Snackbar";
-import { ThemeProvider } from "@material-ui/styles";
-import { resolveTheme } from "../Themes/themes";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import { thirdPartyAuthSuccess } from "../Login/actions";
 import { History } from "history";
 import { mainStylesHOC } from "./styles";
@@ -54,7 +53,7 @@ class Main extends React.Component<IMainProps, {}> {
     public render() {
         return (
             <HotKeys>
-                <ThemeProvider theme={resolveTheme(this.props.theme)}>
+                <ThemeProvider>
                     <CssBaseline />
                     <Modal />
                     <Snackbar />
@@ -68,8 +67,7 @@ class Main extends React.Component<IMainProps, {}> {
 const mapStateToProps = (store: IStore, ownProp: any) => {
     return {
         classes: ownProp.classes,
-        history: ownProp.history,
-        theme: store.theme.name
+        history: ownProp.history
     };
 };
 

@@ -2,7 +2,7 @@ import React from "react";
 import { ICsoundObj } from "../Csound/types";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { connect } from "react-redux";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import { List } from "react-virtualized";
 import Measure from "react-measure";
 import { append, merge, pathOr } from "ramda";

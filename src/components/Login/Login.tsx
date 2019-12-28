@@ -17,7 +17,7 @@ import {
     createUserClearError,
     thirdPartyAuthSuccess
 } from "./actions";
-import { IStore } from "../../db/interfaces";
+import { IStore } from "@store/types";
 import { selectLoginRequesting, selectLoginFail } from "./selectors";
 import { validateEmail } from "../../utils";
 import { loginStylesHOC } from "./styles";

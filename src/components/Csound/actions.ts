@@ -1,5 +1,5 @@
-import { store } from "../../store";
-import { IStore } from "../../db/interfaces";
+import { store } from "@store";
+import { IStore } from "@store/types";
 import { IDocument, IProject } from "../Projects/types";
 import {
     ICsoundObj,
@@ -93,7 +93,7 @@ export const writeDocumentToEMFS = (path: string, text: string): void => {
 
 export const renderToDisk = () => {
     return async (dispatch: any) => {
-        const state: IStore = store.getState() as IStore;
+        const state: IStore = store.getState();
         const project: IProject | null = selectActiveProject(state);
         if (project === null) return;
 

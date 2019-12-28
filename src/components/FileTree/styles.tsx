@@ -1,49 +1,17 @@
 import { css } from "@emotion/core";
 
-// export const useStyles = makeStyles({
-//     container: {
-//         width: "100%",
-//         height: "100%",
-//         background: "#272822",
-//         padding: "0!important",
-//         color: "#f8f8f2",
-//         overflow: "hidden"
-//     },
-//     treeIcon: {
-//         color: "red"
-//     },
-//     deleteIcon: {
-//         fontSize: 24,
-//         // marginRight: 6,
-//         color: "white"
-//     },
-
-//     active: {
-//         fontWeight: "bold"
-//     },
-//     inactive: {
-//         fontWeight: "normal"
-//     },
-//     closed: {
-//         fontWeight: "normal"
-//     }
-// });
-
 export const container = css`
     width: 100%;
     height: 100%;
     background-color: #272822;
     color: #f8f8f2 !important;
     padding: 0 !important;
+    border-radius: 0px !important;
     button {
         width: 100%;
     }
-    .MuiExpansionPanelSummary-content {
-        // margin: 12px 0 !important;
-    }
     & > .MuiList-root {
         padding: 0 !important;
-        margin-top: 8px;
     }
     & > .MuiList-root > .MuiButtonBase-root {
         transition: none !important;

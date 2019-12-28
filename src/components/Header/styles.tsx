@@ -1,5 +1,3 @@
-import { Theme } from "@material-ui/core";
-import { makeStyles, createStyles, withStyles } from "@material-ui/styles";
 import { css as classCss } from "emotion";
 import { css } from "@emotion/core";
 
@@ -16,70 +14,92 @@ export const headerRoot = css`
     );
 `;
 
-export const headerStyles = (theme: Theme) =>
-    createStyles({
-        appBarShift: {
-            marginLeft: drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`,
-            transition: theme.transitions.create(["width", "margin"], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen
-            })
-        },
-        burgerToggler: {
-            margin: "0 12px",
-            color: theme.palette.primary.contrastText,
-            width: "48px"
-        },
-        menuButton: {
-            marginLeft: 12,
-            marginRight: 6
-        },
-        hide: {
-            display: "none"
-        },
-        drawer: {
-            width: drawerWidth
-        },
-        drawerHeader: {
-            width: drawerWidth,
-            paddingLeft: 16,
-            height: 40
-        },
-        drawerPaper: {
-            position: "relative",
-            whiteSpace: "nowrap",
-            width: drawerWidth,
-            transition: theme.transitions.create("width", {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen
-            })
-        },
-        drawerPaperClose: {
-            overflowX: "hidden",
-            transition: theme.transitions.create("width", {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen
-            }),
-            width: theme.spacing(7),
-            [theme.breakpoints.up("sm")]: {
-                width: theme.spacing(9)
-            }
-        },
-        flex: {
-            flex: 1
-        },
-        spacer: {
-            flexGrow: 1
-        },
-        profileName: {
-            textAlign: "right"
-        },
-        menuItemLink: {
-            textDecoration: "none",
-            color: "black"
-        }
-    });
+// export const appBarShift = css``
+
+// export const headerStyles = (theme: Theme) =>
+//     createStyles({
+//         appBarShift: {
+//             marginLeft: drawerWidth,
+//             width: `calc(100% - ${drawerWidth}px)`,
+//             transition: theme.transitions.create(["width", "margin"], {
+//                 easing: theme.transitions.easing.sharp,
+//                 duration: theme.transitions.duration.enteringScreen
+//             })
+//         },
+//         burgerToggler: {
+//             margin: "0 12px",
+//             color: theme.palette.primary.contrastText,
+//             width: "48px"
+//         },
+//         menuButton: {
+//             marginLeft: 12,
+//             marginRight: 6
+//         },
+//         hide: {
+//             display: "none"
+//         },
+//         drawer: {
+//             width: drawerWidth
+//         },
+//         drawerHeader: {
+//             width: drawerWidth,
+//             paddingLeft: 16,
+//             height: 40
+//         },
+//         drawerPaper: {
+//             position: "relative",
+//             whiteSpace: "nowrap",
+//             width: drawerWidth,
+//             transition: theme.transitions.create("width", {
+//                 easing: theme.transitions.easing.sharp,
+//                 duration: theme.transitions.duration.enteringScreen
+//             })
+//         },
+//         drawerPaperClose: {
+//             overflowX: "hidden",
+//             transition: theme.transitions.create("width", {
+//                 easing: theme.transitions.easing.sharp,
+//                 duration: theme.transitions.duration.leavingScreen
+//             }),
+//             width: theme.spacing(7),
+//             [theme.breakpoints.up("sm")]: {
+//                 width: theme.spacing(9)
+//             }
+//         },
+//         flex: {
+//             flex: 1
+//         },
+//         spacer: {
+//             flexGrow: 1
+//         },
+//         profileName: {
+//             textAlign: "right"
+//         },
+//         menuItemLink: {
+//             textDecoration: "none",
+//             color: "black"
+//         }
+//     });
+
+export const drawer = css`
+    width: ${drawerWidth};
+`;
+
+export const drawerHeader = css`
+    width: ${drawerWidth};
+    padding-left: 16px;
+    height: 40px;
+`;
+
+export const menuButton = css`
+    margin-left: 12px;
+    margin-right: 6px;
+`;
+
+export const menuItemLink = theme => css`
+    text-decoration: none;
+    color: ${theme.color.black};
+`;
 
 export const toolbar = css`
     display: flex;
@@ -115,6 +135,6 @@ export const accountTooltip = classCss`
     margin-right: 24px;
 `;
 
-export const headerStylesHook = makeStyles(headerStyles);
-export const headerStylesHOC = (ClassComponent: any) =>
-    withStyles(headerStyles)(ClassComponent);
+// export const headerStylesHook = makeStyles(headerStyles);
+// export const headerStylesHOC = (ClassComponent: any) =>
+//     withStyles(headerStyles)(ClassComponent);
