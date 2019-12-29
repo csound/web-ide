@@ -24,7 +24,6 @@ export const playCSDFromEMFS = (emfsPath: string) => {
         const cs = pathOr(null, ["csound", "csound"], store.getState());
         if (cs !== null) {
             const safeCs = cs as ICsoundObj;
-            safeCs.setMessageCallback(console.log);
             safeCs.audioContext.resume();
             safeCs.reset();
             safeCs.setOption("-odac");

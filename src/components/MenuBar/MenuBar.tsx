@@ -231,21 +231,27 @@ function MenuBar(props) {
                 </ul>
             );
             acc.push(
-                <li
-                    css={SS.dropdownButton}
+                <div
+                    css={SS.dropdownButtonWrapper}
                     key={acc.length + open}
-                    onClick={() =>
+                    onClick={e => {
                         open !== false && index === open
                             ? setOpen(false)
-                            : setOpen(index)
-                    }
-                    onMouseOver={() =>
-                        open !== false && index !== open ? setOpen(index) : null
-                    }
+                            : setOpen(index);
+                    }}
                 >
-                    {item.label}
+                    <div
+                        css={SS.dropdownButton}
+                        onMouseOver={() =>
+                            open !== false && index !== open
+                                ? setOpen(index)
+                                : null
+                        }
+                    >
+                        <span>{item.label}</span>
+                    </div>
                     {row}
-                </li>
+                </div>
             );
             return acc;
         },

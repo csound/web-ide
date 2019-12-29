@@ -12,8 +12,9 @@ import * as projectEditorActions from "../ProjectEditor/actions";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 import { filenameToType } from "../Projects/utils";
+import { perfectScrollbarStyleSheet } from "@styles/_perfectScrollbar";
 import * as SS from "./styles";
-import { assoc, keys } from "ramda";
+import { keys } from "ramda";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -279,7 +280,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
 
     return (
         <PerfectScrollbar
-            style={{ backgroundColor: "#272822" }}
+            css={perfectScrollbarStyleSheet}
             containerRef={setScrollerRef}
         >
             <CodeMirror

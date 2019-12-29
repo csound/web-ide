@@ -14,6 +14,7 @@ export const container = css`
         padding: 0 !important;
     }
     & > .MuiList-root > .MuiButtonBase-root {
+        display: none;
         transition: none !important;
         pointer-events: none !important;
         left: 12px;
@@ -41,6 +42,24 @@ export const container = css`
         width: 100%;
         padding: 0 !important;
         position: relative;
+    }
+
+    .MuiIconButton-root {
+        position: absolute;
+        right: 24px;
+    }
+
+    .MuiListItemIcon-root {
+        display: none;
+    }
+
+    .MuiListItemText-root {
+        width: 90%;
+    }
+
+    .MuiButtonBase-root .MuiButton-label {
+        position: absolute;
+        right: 4px;
     }
 `;
 

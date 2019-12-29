@@ -6,6 +6,7 @@
 
 const henn1nk = `#a6e22e`;
 const monokaiGray = "#64645E";
+const monokaiLightGray = "#CCCCCC";
 const monokaiCyan = "#A1EFE4";
 const monokaiLightBlue = `#66d9ef`;
 const monokaiOrange = `#fd971f`;
@@ -37,6 +38,10 @@ const theme = {
         primary: monokaiForeground,
         secondary: sundriedClay
     },
+    alternativeColor: {
+        primary: monokaiLineNumber,
+        secondary: monokaiHighlight
+    },
     error: {
         primary: monokaiRed,
         secondary: monokaiRed
@@ -48,6 +53,18 @@ const theme = {
     highlightAlt: {
         primary: monokaiHighlightAlt,
         secondary: monokaiHighlightAlt
+    },
+    scrollbar: {
+        primary: monokaiHighlight,
+        secondary: monokaiHighlight
+    },
+    scrollbarHover: {
+        primary: monokaiLightGray,
+        secondary: monokaiHighlightAlt
+    },
+    console: {
+        primary: monokaiLightGray,
+        secondary: monokaiGray
     },
     cursor: {
         primary: monokaiForeground,

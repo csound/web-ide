@@ -60,6 +60,7 @@ const TargetDropdown = ({ selectedTarget, targets }) => {
             placeholder={
                 selectedTarget.length > 0 ? selectedTarget : "Select target"
             }
+            // menuIsOpen={true}
             // onChange={e => setCurrentTarget(e.value)}
             isSearchable={false}
             options={[

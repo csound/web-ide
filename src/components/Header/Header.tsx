@@ -149,7 +149,6 @@ export const Header = ({ showMenuBar = true }) => {
                     >
                         <MenuIcon />
                     </IconButton>
-
                     <CSLogo
                         size={38}
                         interactive={true}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTheme } from "emotion-theming";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "../ProjectEditor/ProjectEditor";
 import { IDocumentsMap, IProject } from "../Projects/types";
@@ -18,8 +19,13 @@ interface IProjectContextProps {
     match: any;
 }
 
+const ForceBackgroundColor = ({ theme }) => (
+    <style>{`body {background-color: ${theme.background.primary}}`}</style>
+);
+
 export const ProjectContext = (props: IProjectContextProps) => {
     const dispatch = useDispatch();
+    const theme = useTheme();
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
@@ -82,15 +88,10 @@ export const ProjectContext = (props: IProjectContextProps) => {
         projectFetchStarted
     ]);
 
-    // return (
-    //     <>
-    //         <div style={{ backgroundColor: "red", height: 3000 }}></div>
-    //     </>
-    // );
-
     if (!needsLoading) {
         return (
             <>
+                <ForceBackgroundColor theme={theme} />
                 <Header />
                 <ProjectEditor
                     {...props}
@@ -104,6 +105,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
     } else {
         return (
             <>
+                <ForceBackgroundColor theme={theme} />
                 <Header />
                 <main css={SS.loadMain}>
                     <div css={SS.loadingSpinner1}>

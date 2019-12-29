@@ -1,9 +1,13 @@
-interface IThemeEntry {
+interface IThemeColorEntry {
     primary: string;
     secondary: string;
 }
 
+interface IThemeFontEntry {
+    regular: string;
+    monospace: string;
+}
+
 export interface ITheme {
-    color: IThemeEntry;
-    background: IThemeEntry;
+    [el: string]: IThemeColorEntry | IThemeFontEntry;
 }

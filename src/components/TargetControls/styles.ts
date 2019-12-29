@@ -9,17 +9,18 @@ export const dropdownContainer = css`
     box-sizing: content-box;
 `;
 
-export const menu = css`
+export const menu = theme => css`
     z-index: 2;
-    background-color: #272822;
+    border: 2px solid ${theme.highlight.primary};
+    border-radius: 6px;
+    background-color: ${theme.background.primary};
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     position: absolute;
     min-width: 120px;
     width: 100%;
     margin-bottom: -6px;
     right: 0px;
-    font-size: 16px;
-
+    font-size: 14px;
     @keyframes dropIn {
         from,
         60%,
@@ -40,12 +41,12 @@ export const menu = css`
 `;
 
 export const menuList = css`
-    div {
-        padding: 0px;
+    & > div {
+        padding: 12px;
     }
 `;
 
-export const control = css`
+export const control = theme => css`
     overflow: hidden;
     display: flex;
     height: 38px;
@@ -53,9 +54,9 @@ export const control = css`
     border-radius: 0;
     text-decoration: none;
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     padding: 0px;
-    border: 2px solid #9c9c9c;
+    border: 2px solid ${theme.highlight.primary};
     margin: 2px 2px;
     border-radius: 3px;
     cursor: default;
@@ -64,49 +65,50 @@ export const control = css`
         display: none;
     }
     &:hover {
+        border: 2px solid ${theme.highlightAlt.primary};
         cursor: pointer;
-        filter: sepia(0.2);
     }
 `;
 
-export const placeholder = css`
-    color: hsl(0, 0%, 80%);
-    font-size: 16px;
-    line-height: 12px;
+export const placeholder = theme => css`
+    color: ${theme.color.primary};
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1.25px;
 `;
 
-export const menuOption = css`
+export const menuOption = theme => css`
     background-color: unset !important;
     padding: 6px 12px !important;
     padding-left: 24px !important;
+    font-size: 15px;
     outline: none;
     cursor: pointer;
-    color: hsl(0, 0%, 80%);
+    color: ${theme.color.primary};
     &:hover {
-        background-color: hsl(0, 0%, 10%) !important;
+        border-radius: 2px;
+        background-color: ${theme.highlightAlt.primary} !important;
         color: white;
     }
 `;
 
-export const groupHeading = css`
+export const groupHeading = theme => css`
     text-transformation: none;
     cursor: default;
     height: 38px;
     margin: 0;
     padding: 6px 6px 12px 20px !important;
-    color: hsl(0, 0%, 80%);
-    font-size: 18px;
+    color: ${theme.alternativeColor.primary};
+    font-size: 15px;
     font-weight: 500;
 `;
 
-export const indicatorContainer = css`
-    background-color: #9c9c9c;
+export const indicatorContainer = theme => css`
+    background-color: ${theme.highlight.primary};
     width: 18px;
     & > div {
+        color: ${theme.alternativeColor.primary} !important;
         padding: 0;
-    }
-    & > div:hover {
-        color: hsl(0, 0%, 80%) !important;
     }
     & svg {
         margin-left: 1px;
@@ -119,37 +121,44 @@ export const indicatorSeparator = css`
     color: white;
 `;
 
-export const playButtonContainer = css`
-    border: 2px solid #9c9c9c;
+export const playButtonContainer = theme => css`
+    border: 2px solid ${theme.highlight.primary};
+    cursor: pointer;
     border-radius: 3px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
     height: 42px;
     width: 42px;
     margin-right: 6px;
     &:hover {
-        filter: sepia(0.2);
+        cursor: pointer;
+        border: 2px solid ${theme.highlightAlt.primary};
+        & > button {
+            border-color: transparent transparent transparent
+                ${theme.highlightAlt.primary};
+        }
     }
 `;
 
-export const playButtonStyle = (playing: boolean) => css`
+export const playButtonStyle = (playing: boolean) => theme => css`
     border: 0;
     background: transparent;
     box-sizing: border-box;
     width: 0;
     height: 12px;
-
-    border-color: transparent transparent transparent #9c9c9c;
-    transition: 100ms all ease;
     cursor: pointer;
+    border-color: transparent transparent transparent
+        ${theme.alternativeColor.primary};
+    transition: 100ms all ease;
 
     // play state
-    margin-top: 4px;
-    margin-left: 8px;
+    margin-top: 6px;
+    margin-left: 10px;
     border-style: solid;
-    border-width: 14px 0 14px 22px;
+    border-width: 12px 0 12px 20px;
 
     ${playing &&
         `
+cursor: pointer;
 border-style: double;
 border-width: 0px 0 0px 20px;
 height: 26px;

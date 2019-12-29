@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { ICsoundObj } from "../Csound/types";
-import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
-import { connect } from "react-redux";
-import { IStore } from "@store/types";
+import {
+    // setClearConsoleCallback,
+    setPrintToConsoleCallback
+} from "./actions";
+import { useDispatch, useSelector } from "react-redux";
+// import { IStore } from "@store/types";
 import { List } from "react-virtualized";
-import Measure from "react-measure";
-import { append, merge, pathOr } from "ramda";
+import { withResizeDetector } from "react-resize-detector";
+import { append, pathOr } from "ramda";
 import * as SS from "./styles";
 import "react-virtualized/styles.css";
+
+type IGlobalMsgCallback = (msg: string) => void;
 
 type ContentRect = {
     entry?: {
@@ -16,146 +21,79 @@ type ContentRect = {
     };
 };
 
-interface IConsoleProps {
-    csound: ICsoundObj | null;
-}
+type IConsoleProps = {
+    width: number;
+    height: number;
+};
 
-interface IConsoleDispatchProps {
-    setClearConsoleCallback: (callback: () => void) => void;
-    setPrintToConsoleCallback: (callback: (text: string) => void) => void;
-}
+const Console = ({ width, height }: IConsoleProps) => {
+    const dispatch = useDispatch();
+    const consoleRef: any = useRef(null);
 
-interface IConsoleLocalState {
-    logs: React.ReactNode[];
-    lineCnt: number;
-    logWindowWidth: number;
-    logWindowHeight: number;
-}
+    const [logs, setLogs] = useState([]);
 
-class Console extends React.Component<
-    IConsoleProps & IConsoleDispatchProps,
-    IConsoleLocalState
-> {
-    public readonly state: IConsoleLocalState = {
-        logs: [],
-        lineCnt: 0,
-        logWindowWidth: 300,
-        logWindowHeight: 300
-    };
+    const csound: ICsoundObj | null = useSelector(
+        pathOr(null, ["csound", "csound"])
+    ) as ICsoundObj | null;
 
-    protected consoleRef: any;
-    protected _isMounted: boolean = false;
+    const globalMessageCallback: IGlobalMsgCallback | null = useSelector(
+        pathOr(null, ["ConsoleReducer", "printToConsole"])
+    );
 
-    constructor(props) {
-        super(props);
-        this.messageCallback = this.messageCallback.bind(this);
-        this.onWindowResize = this.onWindowResize.bind(this);
-        this.rowRenderer = this.rowRenderer.bind(this);
-        this.consoleRef = React.createRef();
-    }
+    const messageCallback = useCallback(
+        (logs, setLogs) => {
+            return function msgCb(msg: string) {
+                setLogs(append(msg));
 
-    public messageCallback(msg: string) {
-        if (this._isMounted === false) {
-            return;
+                // auto scroll to end when new line is added
+                // consoleRef &&
+                //     consoleRef.current &&
+                //     consoleRef.current.scrollToPosition(
+                //         consoleRef.current.props.rowHeight * logs.length
+                //     );
+            };
+        },
+        // eslint-disable-next-line
+        [logs, setLogs]
+    );
+
+    useEffect(() => {
+        if (csound) {
+            if (!globalMessageCallback) {
+                dispatch(
+                    setPrintToConsoleCallback(messageCallback(logs, setLogs))
+                );
+                csound &&
+                    csound.setMessageCallback(messageCallback(logs, setLogs));
+            }
         }
-        this.setState({
-            logs: append(msg, this.state.logs),
-            lineCnt: this.state.lineCnt + 1
-        });
+        return function() {
+            globalMessageCallback && dispatch(setPrintToConsoleCallback(null));
+        };
+        // eslint-disable-next-line
+    }, [csound, globalMessageCallback]);
 
-        // auto scroll to end when new line is added
-        this.consoleRef &&
-            this.consoleRef.current &&
-            this.consoleRef.current.scrollToPosition(
-                this.consoleRef.current.props.rowHeight * this.state.lineCnt
-            );
-    }
-
-    protected onWindowResize(contentRect: ContentRect) {
-        this.setState(
-            merge(this.state, {
-                logWindowWidth: pathOr(
-                    this.state.logWindowWidth,
-                    ["entry", "width"],
-                    contentRect
-                ),
-                logWindowHeight: pathOr(
-                    this.state.logWindowHeight,
-                    ["entry", "height"],
-                    contentRect
-                )
-            })
-        );
-    }
-
-    protected rowRenderer({ key, index, style }) {
+    function rowRenderer({ key, index, style }) {
         return (
             <li key={key} style={style}>
-                {this.state.logs[index]}
+                {logs[index]}
             </li>
         );
     }
-
-    public componentDidMount() {
-        this._isMounted = true;
-        this.props.setClearConsoleCallback(() => {
-            this.setState({ logs: [] });
-        });
-        this.props.setPrintToConsoleCallback(this.messageCallback);
-
-        const initProjectInterval = setInterval(() => {
-            if (this.props.csound) {
-                clearInterval(initProjectInterval);
-                this.props.csound.setMessageCallback(this.messageCallback);
-            }
-        }, 50);
-    }
-    public componentWillUnmount() {
-        this._isMounted = false;
-    }
-
-    public render() {
-        return (
-            <Measure onResize={this.onWindowResize}>
-                {({ measureRef }) => (
-                    <div
-                        className="console-log-container"
-                        css={SS.listWrapper}
-                        ref={measureRef}
-                    >
-                        <List
-                            id="csound-console"
-                            ref={this.consoleRef}
-                            autoHeight={false}
-                            css={SS.listElem}
-                            rowCount={this.state.lineCnt}
-                            width={this.state.logWindowWidth}
-                            height={this.state.logWindowHeight}
-                            rowHeight={16}
-                            rowRenderer={this.rowRenderer}
-                            scrollToAlignment={"end"}
-                        ></List>
-                    </div>
-                )}
-            </Measure>
-        );
-    }
-}
-
-const mapStateToProps = (store: IStore, ownProp: any) => {
-    return {
-        csound: store.csound.csound
-    };
+    return (
+        <List
+            key={"ListWithResize"}
+            ref={consoleRef}
+            autoHeight={false}
+            height={height || 400}
+            width={width || 400}
+            css={SS.listWrapper}
+            rowCount={logs.length}
+            rowHeight={16}
+            rowRenderer={rowRenderer}
+            scrollToAlignment={"end"}
+        ></List>
+    );
 };
 
-const mapDispatchToProps = (dispatch: any): any => ({
-    setClearConsoleCallback: (callback: () => void) =>
-        dispatch(setClearConsoleCallback(callback)),
-    setPrintToConsoleCallback: (callback: (text: string) => void) =>
-        dispatch(setPrintToConsoleCallback(callback))
-});
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Console);
+export default withResizeDetector(Console);

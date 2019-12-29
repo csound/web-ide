@@ -145,7 +145,7 @@ const ProjectEditor = props => {
     );
 
     const tabPanelController = (
-        <div className="tab-panel-controller">
+        <div css={SS.tabPanelController}>
             <Tooltip title="FullScreen" placement="right-end">
                 <IconButton size="small" onClick={toggleEditorFullScreen}>
                     <FontAwesomeIcon
@@ -184,9 +184,7 @@ const ProjectEditor = props => {
             <Tabs
                 onSelect={switchTab}
                 selectedIndex={tabIndex}
-                className={"react-tabs"}
                 css={SS.tabDock}
-                style={{ height: "100%", display: "flex", flexFlow: "column" }}
             >
                 <TabList
                     className="react-tabs__tab-list draggable"

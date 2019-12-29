@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
@@ -30,8 +29,6 @@ import Tree, {
     MuiTreeIconButtonData
 } from "material-ui-tree";
 import { sortBy } from "lodash";
-
-const muiTheme = createMuiTheme();
 
 const FileTree = () => {
     const activeProjectUid = useSelector(
@@ -217,39 +214,31 @@ const FileTree = () => {
     }, []);
 
     return (
-        <ThemeProvider theme={muiTheme}>
-            <Tree
-                className={" MuiFileTree"}
-                css={SS.container}
-                data={state.data}
-                labelKey="path"
-                valueKey="sha"
-                childrenKey="tree"
-                foldIcon={
-                    <ArrowDropDownIcon
-                        style={{ color: "white" }}
-                        fontSize="large"
-                    />
-                }
-                unfoldIcon={
-                    <ArrowDropUpIcon
-                        style={{ color: "white" }}
-                        fontSize="large"
-                    />
-                }
-                loadMoreIcon={
-                    <MoreHorizIcon
-                        style={{ color: "white" }}
-                        fontSize="large"
-                    />
-                }
-                renderLabel={renderLabel}
-                pageSize={99999}
-                actionsAlignRight={false}
-                getActionsData={getActionsData}
-                requestChildrenData={requestChildrenData}
-            />
-        </ThemeProvider>
+        <Tree
+            className={" MuiFileTree"}
+            css={SS.container}
+            data={state.data}
+            labelKey="path"
+            valueKey="sha"
+            childrenKey="tree"
+            foldIcon={
+                <ArrowDropDownIcon
+                    style={{ color: "white" }}
+                    fontSize="large"
+                />
+            }
+            unfoldIcon={
+                <ArrowDropUpIcon style={{ color: "white" }} fontSize="large" />
+            }
+            loadMoreIcon={
+                <MoreHorizIcon style={{ color: "white" }} fontSize="large" />
+            }
+            renderLabel={renderLabel}
+            pageSize={99999}
+            actionsAlignRight={false}
+            getActionsData={getActionsData}
+            requestChildrenData={requestChildrenData}
+        />
     );
 };
 

@@ -24,8 +24,8 @@ export default (history: History) =>
         csound: CsoundReducer,
         ThemeReducer,
         ModalReducer,
-        ProfileReducer,
         ConsoleReducer,
+        ProfileReducer,
         SnackbarReducer,
         HotKeysReducer,
         TargetControlsReducer

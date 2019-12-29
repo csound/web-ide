@@ -51,10 +51,6 @@ class CsoundNode extends AudioWorkletNode {
 
         super(context, "Csound", options);
 
-        this.msgCallback = msg => {
-            console.log(msg);
-        };
-
         this.port.start();
         this.channels = {};
         this.evaluateCodePromises = {};

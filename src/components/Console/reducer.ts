@@ -2,32 +2,34 @@ import {
     SET_CLEAR_CONSOLE_CALLBACK,
     SET_PRINT_TO_CONSOLE_CALLBACK
 } from "./types";
+import { assoc } from "ramda";
+
+type ClearConsole = () => void;
+type PrintToConsole = (text: string) => void;
 
 export interface IConsoleReducer {
-    clearConsole: () => void;
-    printToConsole: (text: string) => void;
+    clearConsole: ClearConsole | null;
+    printToConsole: PrintToConsole | null;
 }
 
-export default (state: any, action: any): IConsoleReducer => {
+const initState: IConsoleReducer = {
+    clearConsole: null,
+    printToConsole: null
+};
+
+export default (
+    state: IConsoleReducer | undefined,
+    action: any
+): IConsoleReducer => {
     switch (action.type) {
         case SET_CLEAR_CONSOLE_CALLBACK: {
-            state.clearConsole = action.callback;
-            return { ...state };
+            return assoc("clearConsole", action.callback, state);
         }
         case SET_PRINT_TO_CONSOLE_CALLBACK: {
-            return {
-                printToConsole: action.callback,
-                clearConsole: state.clearConsole
-            };
+            return assoc("printToConsole", action.callback, state);
         }
         default: {
-            return (
-                state ||
-                ({
-                    clearConsole: () => {},
-                    printToConsole: text => {}
-                } as IConsoleReducer)
-            );
+            return state || initState;
         }
     }
 };
