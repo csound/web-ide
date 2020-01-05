@@ -47,8 +47,7 @@ const ProjectListItem = props => {
         isProfileOwner,
         project,
         listPlayState,
-        currentlyPlayingProject,
-        username
+        currentlyPlayingProject
     } = props;
     const dispatch = useDispatch();
     const { projectUid, name, description, tags, starred } = project;
@@ -73,7 +72,7 @@ const ProjectListItem = props => {
                     <IconButton
                         size="small"
                         onClick={e => {
-                            dispatch(toggleStarProject(projectUid, username));
+                            dispatch(toggleStarProject(projectUid));
                             e.stopPropagation();
                         }}
                     >

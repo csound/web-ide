@@ -58,6 +58,7 @@ export interface IProject {
     defaultTarget: string | null;
     targets: ITargetMap;
     documents: IDocumentsMap;
+    stars: string[];
 }
 
 export interface IProjectsReducer {

@@ -54,7 +54,8 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     defaultTarget: propOr(null, "defaultTarget", data),
                     isPublic: propOr(false, "public", data),
                     name: propOr("", "name", data),
-                    userUid: propOr("", "userUid", data)
+                    userUid: propOr("", "userUid", data),
+                    stars: propOr([], "stars", data)
                 };
                 await dispatch(setProject(project));
                 const targetsSnapshots = await projRef
@@ -816,22 +817,19 @@ export const exportProject = () => {
             const folder = zip.folder("project");
             const docs = Object.values(project.documents);
 
-            for(let i = 0; i < docs.length; i++) {
+            for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
-                if(doc.internalType === "bin") {
+                if (doc.internalType === "bin") {
                     const path = `${project.userUid}/${project.projectUid}/${doc.documentUid}`;
-                    const url = await storageRef
-                        .child(path)
-                        .getDownloadURL();
-                   
+                    const url = await storageRef.child(path).getDownloadURL();
+
                     const response = await fetch(url);
                     const blob = await response.arrayBuffer();
-                    folder.file(doc.filename, blob, {binary: true});
+                    folder.file(doc.filename, blob, { binary: true });
                 } else {
                     folder.file(doc.filename, doc.savedValue);
                 }
             }
-            
 
             zip.generateAsync({ type: "blob" }).then(content => {
                 saveAs(content, "project.zip");

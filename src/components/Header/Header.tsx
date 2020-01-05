@@ -32,6 +32,7 @@ import { isEmpty } from "lodash";
 // import { hasPath } from "ramda";
 import MenuBar from "../MenuBar/MenuBar";
 import TargetControls from "../TargetControls";
+import SocialControls from "../SocialControls/SocialControls";
 
 interface IHeaderProps {
     showMenuBar: boolean;
@@ -157,6 +158,7 @@ export const Header = ({ showMenuBar = true }) => {
                     {showMenuBar && <MenuBar />}
                     <div style={{ flexGrow: 1 }} />
                     {showMenuBar && <TargetControls />}
+                    {showMenuBar && <SocialControls />}
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>

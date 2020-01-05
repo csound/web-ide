@@ -43,7 +43,9 @@ const Console = ({ width, height }: IConsoleProps) => {
     const messageCallback = useCallback(
         (logs, setLogs) => {
             return function msgCb(msg: string) {
-                setLogs(append(msg));
+                if (consoleRef.current) {
+                    setLogs(append(msg));
+                }
 
                 // auto scroll to end when new line is added
                 // consoleRef &&

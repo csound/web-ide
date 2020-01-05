@@ -875,8 +875,7 @@ export const getLoggedInUserStars = (): ThunkAction<
 };
 
 export const toggleStarProject = (
-    projectUid: string,
-    username: string
+    projectUid: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     const state = getState();
     const starProjectRequesting = selectStarProjectRequesting(state);
