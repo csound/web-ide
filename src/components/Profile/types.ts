@@ -26,6 +26,18 @@ export const GET_LOGGED_IN_USER_FOLLOWING =
     "PROFILE.GET_LOGGED_IN_USER_FOLLOWING";
 export const GET_USER_PROFILES_FOR_FOLLOWING =
     "PROFILE.GET_USER_PROFILES_FOR_FOLLOWING";
+export const SET_STAR_PROJECT_REQUESTING =
+    "PROFILE.SET_STAR_PROJECT_REQUESTING";
+export const GET_LOGGED_IN_USER_STARS = "PROFILE.GET_LOGGED_IN_USER_STARS";
+
+interface GetLoggedInUserStarsAction {
+    type: typeof GET_LOGGED_IN_USER_STARS;
+    payload: string[];
+}
+interface SetStarProjectRequestingAction {
+    type: typeof SET_STAR_PROJECT_REQUESTING;
+    payload: boolean;
+}
 
 interface SetFollowingFilterStringAction {
     type: typeof SET_FOLLOWING_FILTER_STRING;
@@ -157,4 +169,6 @@ export type ProfileActionTypes =
     | SetProfileRequestingAction
     | SetFollowingFilterStringAction
     | SetProjectFilterStringAction
-    | SetShouldRedirectRequestAction;
+    | SetShouldRedirectRequestAction
+    | SetStarProjectRequestingAction
+    | GetLoggedInUserStarsAction;

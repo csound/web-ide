@@ -35,7 +35,9 @@ import {
     SET_IMAGE_URL_REQUESTING,
     SET_PROFILE_REQUESTING,
     SET_FOLLOWING_FILTER_STRING,
-    SET_PROJECT_FILTER_STRING
+    SET_PROJECT_FILTER_STRING,
+    SET_STAR_PROJECT_REQUESTING,
+    GET_LOGGED_IN_USER_STARS
 } from "./types";
 import defaultCsd from "../../templates/DefaultCsd.json";
 import defaultOrc from "../../templates/DefaultOrc.json";
@@ -50,7 +52,9 @@ import { getDeleteProjectModal } from "./DeleteProjectModal";
 import {
     selectPreviousProjectTags,
     selectCsoundStatus,
-    selectUserFollowing
+    selectUserFollowing,
+    selectStarProjectRequesting,
+    selectLoggedInUserStars
 } from "./selectors";
 import { playPauseCsound } from "../Csound/actions";
 import {
@@ -849,4 +853,97 @@ export const setFollowingFilterString = (
         type: SET_FOLLOWING_FILTER_STRING,
         payload
     };
+};
+
+export const getLoggedInUserStars = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => dispatch => {
+    firebase.auth().onAuthStateChanged(async user => {
+        if (user !== null) {
+            const profile = await profiles.doc(user.uid).get();
+            const stars = get(profile.data(), "stars") || [];
+
+            dispatch({
+                type: GET_LOGGED_IN_USER_STARS,
+                payload: stars
+            });
+        }
+    });
+};
+
+export const toggleStarProject = (
+    projectUid: string,
+    username: string
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+    const state = getState();
+    const starProjectRequesting = selectStarProjectRequesting(state);
+
+    if (starProjectRequesting.includes(projectUid) === true) {
+        return;
+    }
+
+    firebase.auth().onAuthStateChanged(async user => {
+        starProjectRequesting.push(projectUid);
+        dispatch({
+            type: SET_STAR_PROJECT_REQUESTING,
+            payload: starProjectRequesting
+        });
+        if (user !== null) {
+            const project = await projects.doc(projectUid).get();
+
+            const stars = get(project.data(), "stars") || [];
+            const starsKeys = stars.map(e => get(Object.keys(e), "0")) || [];
+            const currentStars = selectLoggedInUserStars(state);
+
+            if (starsKeys.includes(user.uid) === true) {
+                const index = starsKeys.indexOf(user.uid);
+                const starToRemove = stars[index];
+
+                currentStars.splice(currentStars.indexOf(projectUid), 1);
+                dispatch({
+                    type: GET_LOGGED_IN_USER_STARS,
+                    payload: currentStars
+                });
+
+                await projects.doc(projectUid).update({
+                    stars: firebase.firestore.FieldValue.arrayRemove(
+                        starToRemove
+                    )
+                });
+                await profiles.doc(user.uid).update({
+                    stars: firebase.firestore.FieldValue.arrayRemove(projectUid)
+                });
+            } else {
+                currentStars.push(projectUid);
+                dispatch({
+                    type: GET_LOGGED_IN_USER_STARS,
+                    payload: currentStars
+                });
+
+                await projects.doc(projectUid).update({
+                    stars: firebase.firestore.FieldValue.arrayUnion({
+                        [user.uid]: Date.now()
+                    })
+                });
+                await profiles.doc(user.uid).update({
+                    stars: firebase.firestore.FieldValue.arrayUnion(projectUid)
+                });
+            }
+
+            starProjectRequesting.splice(
+                starProjectRequesting.indexOf(projectUid),
+                1
+            );
+
+            dispatch({
+                type: SET_STAR_PROJECT_REQUESTING,
+                payload: starProjectRequesting
+            });
+
+            dispatch(getLoggedInUserStars());
+        }
+    });
 };

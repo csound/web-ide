@@ -10,6 +10,11 @@ export const selectUserProjects = (store: any) => {
     return state.userProjects;
 };
 
+export const selectStarProjectRequesting = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.starProjectRequesting;
+};
+
 export const selectProjectFilterString = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.projectFilterString;
@@ -20,22 +25,45 @@ export const selectFollowingFilterString = (store: any) => {
     return state.followingFilterString;
 };
 
+export const selectUserProfile = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.userProfile;
+};
+
+export const selectLoggedInUserStars = (store: any) => {
+    const state: State = store.ProfileReducer;
+    return state.loggedInUserStars;
+};
+
 export const selectFilteredUserProjects = createSelector(
-    [selectUserProjects, selectProjectFilterString],
-    (userProjects, projectFilterString) => {
+    [selectUserProjects, selectProjectFilterString, selectLoggedInUserStars],
+    (userProjects, projectFilterString, stars) => {
+        let result: any = [];
+
+        if (userProjects === false) {
+            return [];
+        }
         if (
             typeof projectFilterString === "undefined" ||
             projectFilterString === ""
         ) {
-            return userProjects;
-        }
-        const options = {
-            shouldSort: true,
-            keys: ["description", "name", "tags"]
-        };
+            result = userProjects;
+        } else {
+            const options = {
+                shouldSort: true,
+                keys: ["description", "name", "tags"]
+            };
 
-        const fuse = new Fuse(userProjects, options);
-        const result = fuse.search(projectFilterString);
+            const fuse = new Fuse(userProjects, options);
+            result = fuse.search(projectFilterString);
+        }
+
+        result = result.map((proj: any) => {
+            const starred = stars.includes(proj.projectUid);
+            proj.starred = starred;
+            return proj;
+        });
+
         return result;
     }
 );
@@ -69,11 +97,6 @@ export const selectFilteredUserFollowing = createSelector(
         return result;
     }
 );
-
-export const selectUserProfile = (store: any) => {
-    const state: State = store.ProfileReducer;
-    return state.userProfile;
-};
 
 export const selectUserImageURL = (store: any) => {
     const state: State = store.ProfileReducer;

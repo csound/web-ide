@@ -20,7 +20,9 @@ import {
     SET_IMAGE_URL_REQUESTING,
     SET_PROFILE_REQUESTING,
     SET_FOLLOWING_FILTER_STRING,
-    SET_PROJECT_FILTER_STRING
+    SET_PROJECT_FILTER_STRING,
+    SET_STAR_PROJECT_REQUESTING,
+    GET_LOGGED_IN_USER_STARS
 } from "./types";
 import facePng from "./face.png";
 export interface State {
@@ -45,6 +47,8 @@ export interface State {
     readonly userProfilesForFollowing: [];
     readonly projectFilterString: string;
     readonly followingFilterString: string;
+    readonly starProjectRequesting: string[];
+    readonly loggedInUserStars: string[];
 }
 
 const INITIAL_STATE: State = {
@@ -68,11 +72,25 @@ const INITIAL_STATE: State = {
     loggedInUserFollowing: [],
     userProfilesForFollowing: [],
     projectFilterString: "",
-    followingFilterString: ""
+    followingFilterString: "",
+    starProjectRequesting: [],
+    loggedInUserStars: []
 };
 
 export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
     switch (action.type) {
+        case GET_LOGGED_IN_USER_STARS: {
+            return {
+                ...state,
+                loggedInUserStars: [...action.payload]
+            };
+        }
+        case SET_STAR_PROJECT_REQUESTING: {
+            return {
+                ...state,
+                starProjectRequesting: action.payload
+            };
+        }
         case SET_FOLLOWING_FILTER_STRING: {
             return {
                 ...state,
@@ -118,7 +136,7 @@ export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
         case REFRESH_USER_PROFILE: {
             return {
                 ...state,
-                userProfile: action.payload
+                userProfile: { ...state.userProfile, ...action.payload }
             };
         }
         case SHOULD_REDIRECT_REQUEST: {

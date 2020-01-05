@@ -20,7 +20,8 @@ import {
     getUserFollowing,
     getLoggedInUserFollowing,
     setProjectFilterString,
-    setFollowingFilterString
+    setFollowingFilterString,
+    getLoggedInUserStars
 } from "./actions";
 import {
     selectUserProfile,
@@ -129,6 +130,7 @@ const Profile = props => {
         dispatch(setProfileHotKeys());
         dispatch(setProjectFilterString(""));
         dispatch(setFollowingFilterString(""));
+        dispatch(getLoggedInUserStars());
         return () => {
             dispatch(stopCsound());
         };
@@ -147,7 +149,6 @@ const Profile = props => {
     const { displayName, bio, link1, link2, link3 } = profile;
     return (
         <div className={classes.root}>
-            <style>{`#root {height: 100%;}`}</style>
             <Header showMenuBar={false} />
             <main>
                 <ProfileContainer
@@ -371,7 +372,7 @@ const Profile = props => {
                             <ProfileLists
                                 selectedSection={selectedSection}
                                 filteredProjects={filteredProjects}
-                                isProfileOwner={isProfileOwner}
+                                username={username}
                             />
                         </ListContainer>
                     </ContentSection>
