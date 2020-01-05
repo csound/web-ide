@@ -53,9 +53,9 @@ const SocialControls = () => {
             >
                 {starred && <StyledStarIcon fontSize="large" />}
                 {!starred && <StyledOutlinedStarIcon fontSize="large" />}
-                <StyledLabelContainer>star</StyledLabelContainer>
-                {/* {starred && <StarIcon />} */}
-                {/* {!starred && <OutlinedStarIcon />} */}
+                <StyledLabelContainer>
+                    {starred && "un"}star
+                </StyledLabelContainer>
             </StyledIconButton>
         </div>
     );

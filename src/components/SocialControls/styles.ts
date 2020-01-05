@@ -5,7 +5,7 @@ export const starButtonContainer = theme => css`
     border-radius: 3px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
     height: 42px;
-    width: 82px;
+    width: 92px;
     margin-right: 6px;
     &:hover {
         cursor: pointer;
