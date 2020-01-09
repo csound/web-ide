@@ -3,19 +3,24 @@ import onClickOutside from "react-onclickoutside";
 import { useSelector, useDispatch } from "react-redux";
 import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
-import { isMac } from "../../utils";
+import { isMac } from "@root/utils";
 import {
     newDocument,
     saveFile,
     exportProject,
     addDocument
-} from "../Projects/actions";
-import { toggleManualPanel } from "../ProjectEditor/actions";
-import { stopCsound, playPauseCsound, renderToDisk } from "../Csound/actions";
+} from "@comp/Projects/actions";
+import { toggleManualPanel } from "@comp/ProjectEditor/actions";
+import {
+    stopCsound,
+    playPauseCsound,
+    renderToDisk
+} from "@comp/Csound/actions";
 import { pathOr } from "ramda";
 import { reduce } from "lodash";
-import { getPlayActionFromTarget } from "../TargetControls/utils";
-import { showKeyboardShortcuts } from "../SiteDocs/actions";
+import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
+import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
+// import { changeTheme } from "@comp/Themes/action";
 
 function MenuBar(props) {
     const activeProjectUid: string = useSelector(
@@ -87,7 +92,11 @@ function MenuBar(props) {
             label: "Edit",
             submenu: [
                 { label: "Undo", role: "doStuff" },
-                { label: "Redo", role: "doStuff" }
+                { label: "Redo", role: "doStuff" },
+                {
+                    label: "Theme",
+                    submenu: [{ label: "BluePunk", role: "doStuff" }]
+                }
             ]
         },
         {

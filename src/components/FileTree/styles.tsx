@@ -1,14 +1,18 @@
 import { css } from "@emotion/core";
 
-export const container = css`
+export const container = theme => css`
     width: 100%;
     height: 100%;
-    background-color: #272822;
-    color: #f8f8f2 !important;
+    background-color: ${theme.fileTreeBackground.primary};
+    color: ${theme.color.primary} !important;
     padding: 0 !important;
+    margin-top: 3px;
     border-radius: 0px !important;
     button {
         width: 100%;
+    }
+    & p {
+        color: ${theme.color.primary} !important;
     }
     & > .MuiList-root {
         padding: 0 !important;
@@ -36,6 +40,10 @@ export const container = css`
 
     .MuiButtonBase-root button:first-of-type {
         left: 142px;
+    }
+
+    .MuiListItem-button {
+        background-color: ${theme.fileTreeBackground.primary};
     }
 
     .MuiListItemText-root {
@@ -83,10 +91,10 @@ export const fileTreeNodeText = css`
     padding: 0;
 `;
 
-export const fileIcon = css`
+export const fileIcon = theme => css`
     z-index: 0;
     margin-right: 6px;
-    color: white;
+    color: ${theme.color.primary};
     align-self: center;
     position: absolute;
     width: 20px;

@@ -85,6 +85,7 @@ export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
     //       )
     //     : null;
 
+    if (!targetDocument) return;
     switch ((targetDocument as IDocument).type) {
         case "csd": {
             return playCSDFromEMFS((targetDocument as IDocument).filename);

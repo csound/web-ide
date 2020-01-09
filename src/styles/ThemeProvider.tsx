@@ -17,11 +17,11 @@ import { makeMuiTheme } from "./utils";
 const ThirdPartyLibPainter = ({ theme }) => (
     <style>{`
     .splitter-layout > .layout-splitter {
-         background-color: ${theme.highlight.primary};
+         background-color: ${theme.highlight.primary}!important;
     }
 
     .splitter-layout .layout-splitter:hover {
-        background-color: ${theme.highlightAlt.primary};
+        background-color: ${theme.highlightAlt.primary}!important;
     }
 
     body > li[role=tab] {

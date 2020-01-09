@@ -18,12 +18,12 @@ export const getDeleteProjectModal = (doc: any) => (props: any) => {
             />
             <Button
                 variant="outlined"
-                color="primary"
+                color="secondary"
                 onClick={() => {
                     dispatch(deleteUserProject(doc));
                     dispatch(closeModal());
                 }}
-                style={{ marginTop: 11 }}
+                style={{ marginTop: 11, marginLeft: 12 }}
                 disabled={name !== doc.name}
             >
                 Delete

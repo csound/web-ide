@@ -1,11 +1,14 @@
 import { css } from "@emotion/core";
 export const starButtonContainer = theme => css`
+    position: relative;
+    top: 0;
     border: 2px solid ${theme.highlight.primary};
     cursor: pointer;
     border-radius: 3px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
     height: 42px;
     width: 92px;
+    margin: 0;
     margin-right: 6px;
     &:hover {
         cursor: pointer;

@@ -1,5 +1,4 @@
 import React from "react";
-import PerfectScrollbar from "react-perfect-scrollbar";
 import {
     Button,
     List,
@@ -41,6 +40,7 @@ import {
     deleteProject,
     toggleStarProject
 } from "./actions";
+import { useTheme } from "emotion-theming";
 
 const ProjectListItem = props => {
     const {
@@ -50,108 +50,123 @@ const ProjectListItem = props => {
         currentlyPlayingProject
     } = props;
     const dispatch = useDispatch();
+    const theme: any = useTheme();
     const { projectUid, name, description, tags, starred } = project;
 
     return (
-        <ListItem
-            button
-            alignItems="flex-start"
-            onClick={e => {
-                dispatch(push("/editor/" + projectUid));
-            }}
-        >
-            <StyledListItemContainer isProfileOwner={isProfileOwner}>
-                <StyledListItemAvatar>
-                    <ListItemAvatar>
-                        <Avatar>
-                            <AssignmentIcon />
-                        </Avatar>
-                    </ListItemAvatar>
-                </StyledListItemAvatar>
-                <StyledListStarButtonContainer>
-                    <IconButton
-                        size="small"
-                        onClick={e => {
-                            dispatch(toggleStarProject(projectUid));
-                            e.stopPropagation();
-                        }}
-                    >
-                        {starred && <StarIcon />}
-                        {!starred && <OutlinedStarIcon />}
-                    </IconButton>
-                </StyledListStarButtonContainer>
+        <div style={{ position: "relative" }}>
+            <ListItem
+                button
+                alignItems="flex-start"
+                onClick={e => {
+                    dispatch(push("/editor/" + projectUid));
+                }}
+            >
+                <StyledListItemContainer isProfileOwner={isProfileOwner}>
+                    <StyledListItemAvatar>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <AssignmentIcon />
+                            </Avatar>
+                        </ListItemAvatar>
+                    </StyledListItemAvatar>
+                    <StyledListStarButtonContainer>
+                        <IconButton
+                            size="small"
+                            onClick={e => {
+                                dispatch(toggleStarProject(projectUid));
+                                e.stopPropagation();
+                            }}
+                        >
+                            {starred && <StarIcon />}
+                            {!starred && <OutlinedStarIcon />}
+                        </IconButton>
+                    </StyledListStarButtonContainer>
 
-                <StyledListItemTopRowText>
-                    <ListItemText primary={name} secondary={description} />
-                </StyledListItemTopRowText>
+                    <StyledListItemTopRowText>
+                        <ListItemText primary={name} secondary={description} />
+                    </StyledListItemTopRowText>
 
-                <StyledListItemChipsRow>
-                    {Array.isArray(tags) &&
-                        tags.map(
-                            (
-                                t: React.ReactNode,
-                                i: string | number | undefined
-                            ) => {
-                                return (
-                                    <StyledChip
-                                        color="primary"
-                                        key={i}
-                                        label={t}
+                    <StyledListItemChipsRow>
+                        {Array.isArray(tags) &&
+                            tags.map(
+                                (
+                                    t: React.ReactNode,
+                                    i: string | number | undefined
+                                ) => {
+                                    return (
+                                        <StyledChip
+                                            color="primary"
+                                            key={i}
+                                            label={t}
+                                        />
+                                    );
+                                }
+                            )}
+                    </StyledListItemChipsRow>
+                    <StyledListPlayButtonContainer>
+                        {(listPlayState === "playing" &&
+                            projectUid === currentlyPlayingProject && (
+                                <IconButton
+                                    size="medium"
+                                    aria-label="Delete"
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        dispatch(pauseListItem(projectUid));
+                                    }}
+                                >
+                                    <PauseIcon
+                                        fontSize="large"
+                                        style={{
+                                            color:
+                                                theme.profilePlayButton
+                                                    .secondary
+                                        }}
                                     />
-                                );
-                            }
-                        )}
-                </StyledListItemChipsRow>
-                <StyledListPlayButtonContainer>
-                    {(listPlayState === "playing" &&
-                        projectUid === currentlyPlayingProject && (
+                                </IconButton>
+                            )) || (
                             <IconButton
                                 size="medium"
                                 aria-label="Delete"
                                 onClick={e => {
                                     e.stopPropagation();
-                                    dispatch(pauseListItem(projectUid));
+                                    dispatch(playListItem(projectUid));
                                 }}
                             >
-                                <PauseIcon fontSize="large" />
+                                <PlayIcon
+                                    fontSize="large"
+                                    style={{
+                                        color: theme.profilePlayButton.primary
+                                    }}
+                                />
                             </IconButton>
-                        )) || (
-                        <IconButton
-                            size="medium"
-                            aria-label="Delete"
-                            onClick={e => {
-                                e.stopPropagation();
-                                dispatch(playListItem(projectUid));
-                            }}
-                        >
-                            <PlayIcon fontSize="large" />
-                        </IconButton>
-                    )}
-                </StyledListPlayButtonContainer>
-                {isProfileOwner && (
-                    <StyledListButtonsContainer>
-                        <Button
-                            color="primary"
-                            onClick={e => {
-                                dispatch(editProject(project));
-                                e.stopPropagation();
-                            }}
-                        >
-                            Edit
-                        </Button>
-                        <Button
-                            color="primary"
-                            onClick={e => {
-                                dispatch(deleteProject(project));
-                                e.stopPropagation();
-                            }}
-                        >
-                            delete
-                        </Button>
-                    </StyledListButtonsContainer>
-                )}
-            </StyledListItemContainer>
-        </ListItem>
+                        )}
+                    </StyledListPlayButtonContainer>
+                </StyledListItemContainer>
+            </ListItem>
+            {isProfileOwner && (
+                <StyledListButtonsContainer>
+                    <Button
+                        color="primary"
+                        onClick={e => {
+                            dispatch(editProject(project));
+                            e.stopPropagation();
+                        }}
+                    >
+                        Edit
+                    </Button>
+                    <Button
+                        color="secondary"
+                        onClick={e => {
+                            dispatch(deleteProject(project));
+                            e.stopPropagation();
+                        }}
+                    >
+                        delete
+                    </Button>
+                </StyledListButtonsContainer>
+            )}
+        </div>
     );
 };
 
@@ -164,60 +179,56 @@ export default ({ selectedSection, filteredProjects, username }) => {
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
 
     return (
-        <PerfectScrollbar>
-            <List>
-                {selectedSection === 0 &&
-                    Array.isArray(filteredProjects) &&
-                    profileRequesting === false &&
-                    filteredProjects.map((p, i) => {
-                        return (
-                            <ProjectListItem
-                                key={i}
-                                isProfileOwner={isProfileOwner}
-                                project={p}
-                                listPlayState={listPlayState}
-                                currentlyPlayingProject={
-                                    currentlyPlayingProject
-                                }
-                                username={username}
-                            />
-                        );
-                    })}
-                {selectedSection === 1 &&
-                    Array.isArray(filteredFollowing) &&
-                    profileRequesting === false &&
-                    filteredFollowing.map((p: any, i) => {
-                        return (
-                            <ListItem
-                                button
-                                alignItems="flex-start"
-                                key={i}
-                                onClick={() => {
-                                    dispatch(
-                                        push(`/profile/${p.username}`, {
-                                            fromFollowing: true
-                                        })
-                                    );
-                                }}
-                            >
-                                <StyledUserListItemContainer>
-                                    <StyledListItemAvatar>
-                                        <ListItemAvatar>
-                                            <Avatar src={p.imageUrl} />
-                                        </ListItemAvatar>
-                                    </StyledListItemAvatar>
+        <List>
+            {selectedSection === 0 &&
+                Array.isArray(filteredProjects) &&
+                profileRequesting === false &&
+                filteredProjects.map((p, i) => {
+                    return (
+                        <ProjectListItem
+                            key={i}
+                            isProfileOwner={isProfileOwner}
+                            project={p}
+                            listPlayState={listPlayState}
+                            currentlyPlayingProject={currentlyPlayingProject}
+                            username={username}
+                        />
+                    );
+                })}
+            {selectedSection === 1 &&
+                Array.isArray(filteredFollowing) &&
+                profileRequesting === false &&
+                filteredFollowing.map((p: any, i) => {
+                    return (
+                        <ListItem
+                            button
+                            alignItems="flex-start"
+                            key={i}
+                            onClick={() => {
+                                dispatch(
+                                    push(`/profile/${p.username}`, {
+                                        fromFollowing: true
+                                    })
+                                );
+                            }}
+                        >
+                            <StyledUserListItemContainer>
+                                <StyledListItemAvatar>
+                                    <ListItemAvatar>
+                                        <Avatar src={p.imageUrl} />
+                                    </ListItemAvatar>
+                                </StyledListItemAvatar>
 
-                                    <StyledListItemTopRowText>
-                                        <ListItemText
-                                            primary={p.displayName}
-                                            secondary={p.bio}
-                                        />
-                                    </StyledListItemTopRowText>
-                                </StyledUserListItemContainer>
-                            </ListItem>
-                        );
-                    })}
-            </List>
-        </PerfectScrollbar>
+                                <StyledListItemTopRowText>
+                                    <ListItemText
+                                        primary={p.displayName}
+                                        secondary={p.bio}
+                                    />
+                                </StyledListItemTopRowText>
+                            </StyledUserListItemContainer>
+                        </ListItem>
+                    );
+                })}
+        </List>
     );
 };

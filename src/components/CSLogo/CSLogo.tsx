@@ -12,11 +12,12 @@ const LogoContainer = styled.div<ILogoContainer>`
     height: ${props => props.size}px;
     border-radius: ${props => props.size / 2}px;
     font-size: ${props => Math.floor(props.size * 0.75)}px;
-    color: #fff;
+    color: ${props => props.theme.color.primary};
     line-height: ${props => props.size}px;
     text-align: center;
     font-weight: bold;
-    ${props => !props.interactive && "background: #445;"}
+    background: ${props =>
+        props.interactive ? "inherit" : props.theme.highlight.primary};
     ${props =>
         props.interactive && ":hover{background: #445; cursor: pointer;}"}
 `;

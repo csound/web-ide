@@ -157,8 +157,10 @@ export const Header = ({ showMenuBar = true }) => {
                     />
                     {showMenuBar && <MenuBar />}
                     <div style={{ flexGrow: 1 }} />
-                    {showMenuBar && <TargetControls />}
-                    {showMenuBar && <SocialControls />}
+                    <div css={SS.headerRightSideGroup}>
+                        {showMenuBar && <TargetControls />}
+                        {showMenuBar && <SocialControls />}
+                    </div>
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>

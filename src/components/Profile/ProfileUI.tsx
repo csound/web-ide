@@ -1,6 +1,7 @@
 import { Card, Fab, TextField, Chip } from "@material-ui/core";
 import styled from "styled-components";
 import { Gradient } from "./Gradient";
+
 export const ProfileContainer = styled.div`
     position: absolute;
     height: 100%;
@@ -40,7 +41,7 @@ export const MainContent = styled.div`
     grid-row-end: 6;
     grid-column-start: 1;
     grid-column-end: 4;
-    background: #dedede;
+    background: ${props => props.theme.background.primary};
     box-shadow: 0 3px 10px 0px;
 `;
 export const ProfilePictureContainer = styled.div`
@@ -137,7 +138,6 @@ export const ListContainer = styled.div`
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;
-    overflow: scroll;
 `;
 export const SearchBox = styled(TextField)`
     && {
@@ -192,10 +192,20 @@ export const StyledListPlayButtonContainer = styled.div`
     grid-column-end: 4;
 `;
 export const StyledListButtonsContainer = styled.div`
-    grid-row-start: 1;
-    grid-row-end: 3;
-    grid-column-start: 4;
-    grid-column-end: 5;
+    position: absolute;
+    top: 0;
+    right: 12px;
+    margin: auto 0;
+    height: 100%;
+    max-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    & button {
+        width: 100%;
+        align-self: center;
+        margin-top: 6px;
+    }
 `;
 
 export const StyledListStarButtonContainer = styled.div`

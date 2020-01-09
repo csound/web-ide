@@ -187,14 +187,7 @@ const ProjectEditor = props => {
         return (
             <DragTab closable={true} key={index}>
                 {document!.filename + (isModified ? "*" : "")}
-                <Tooltip
-                    title={
-                        <span style={{ color: theme.color.primary }}>
-                            close
-                        </span>
-                    }
-                    placement="right-end"
-                >
+                <Tooltip title={"close"} placement="right-end">
                     <IconButton
                         size="small"
                         css={SS.closeButton}

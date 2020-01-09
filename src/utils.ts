@@ -1,4 +1,4 @@
-import { addIndex, map } from "ramda";
+import { addIndex, concat, isNil, mergeWith, uniq, map } from "ramda";
 
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
@@ -51,4 +51,19 @@ export const formatFileSize = (filesize: number): string => {
         return (filesize / kilobyte).toFixed(2) + " KB";
     }
     return filesize + " B";
+};
+
+export const deepMerge = (v1, v2) => {
+    if (Array.isArray(v1) && Array.isArray(v2)) {
+        return uniq(concat(v1, v2));
+    } else if (
+        typeof v1 === "object" &&
+        typeof v2 === "object" &&
+        !isNil(v1) &&
+        !isNil(v2)
+    ) {
+        return mergeWith(deepMerge, v1, v2);
+    } else {
+        return v2;
+    }
 };

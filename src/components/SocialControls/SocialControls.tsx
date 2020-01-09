@@ -27,10 +27,9 @@ const StyledOutlinedStarIcon = styled(OutlinedStarIcon)`
 
 const StyledLabelContainer = styled.div`
     padding: 2px;
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
-    color: #f8f8f2;
+    color: ${props => props.theme.color.primary};
     letter-spacing: 1.25px;
 `;
 const SocialControls = () => {

@@ -4,8 +4,7 @@ export const dropdownContainer = css`
     position: relative;
     width: auto;
     height: 42px;
-    margin-right: 18px;
-    padding-bottom: 5px;
+    margin-right: 6px;
     box-sizing: content-box;
 `;
 
@@ -15,7 +14,6 @@ export const menu = theme => css`
     border-radius: 6px;
     background-color: ${theme.background.primary};
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-    position: absolute;
     min-width: 120px;
     width: 100%;
     margin-bottom: -6px;
@@ -51,13 +49,13 @@ export const control = theme => css`
     display: flex;
     height: 38px;
     width: auto;
+    transition: width 2s;
     border-radius: 0;
     text-decoration: none;
     color: white;
     font-size: 15px;
     padding: 0px;
     border: 2px solid ${theme.highlight.primary};
-    margin: 2px 2px;
     border-radius: 3px;
     cursor: default;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
@@ -88,7 +86,6 @@ export const menuOption = theme => css`
     &:hover {
         border-radius: 2px;
         background-color: ${theme.highlightAlt.primary} !important;
-        color: white;
     }
 `;
 
@@ -122,11 +119,13 @@ export const indicatorSeparator = css`
 `;
 
 export const playButtonContainer = theme => css`
+    position: relative;
+    overflow: hidden;
     border: 2px solid ${theme.highlight.primary};
     cursor: pointer;
     border-radius: 3px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
-    height: 42px;
+    height: 100%;
     width: 42px;
     margin-right: 6px;
     &:hover {

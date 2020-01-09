@@ -34,6 +34,14 @@ const theme = {
         primary: monokaiBackground,
         secondary: monokaiEmphasis
     },
+    headerBackground: {
+        primary: monokaiBackground,
+        secondary: monokaiEmphasis
+    },
+    fileTreeBackground: {
+        primary: monokaiBackground,
+        secondary: monokaiEmphasis
+    },
     color: {
         primary: monokaiForeground,
         secondary: sundriedClay
@@ -57,6 +65,14 @@ const theme = {
     highlightAlt: {
         primary: monokaiHighlightAlt,
         secondary: monokaiHighlightAlt
+    },
+    button: {
+        primary: orchid,
+        secondary: monokaiBlueHighContrast
+    },
+    profilePlayButton: {
+        primary: henn1nk,
+        secondary: monokaiOrange
     },
     scrollbar: {
         primary: monokaiHighlight,

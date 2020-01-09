@@ -4,13 +4,7 @@ import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
 // import crypto from "crypto";
-import {
-    db,
-    projects,
-    profiles,
-    usernames,
-    tags
-} from "../../config/firestore";
+import { db, projects, profiles, usernames, tags } from "@config/firestore";
 import {
     GET_USER_PROJECTS,
     ProfileActionTypes,
@@ -39,14 +33,14 @@ import {
     SET_STAR_PROJECT_REQUESTING,
     GET_LOGGED_IN_USER_STARS
 } from "./types";
-import defaultCsd from "../../templates/DefaultCsd.json";
-import defaultOrc from "../../templates/DefaultOrc.json";
-import defaultSco from "../../templates/DefaultSco.json";
+import defaultCsd from "@root/templates/DefaultCsd.json";
+import defaultOrc from "@root/templates/DefaultOrc.json";
+import defaultSco from "@root/templates/DefaultSco.json";
 import firebase from "firebase/app";
-import { openSnackbar } from "../Snackbar/actions";
-import { SnackbarType } from "../Snackbar/types";
+import { openSnackbar } from "@comp/Snackbar/actions";
+import { SnackbarType } from "@comp/Snackbar/types";
 import { push } from "connected-react-router";
-import { openSimpleModal } from "../Modal/actions";
+import { openSimpleModal } from "@comp/Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
 import {
@@ -56,12 +50,12 @@ import {
     selectStarProjectRequesting,
     selectLoggedInUserStars
 } from "./selectors";
-import { playPauseCsound } from "../Csound/actions";
+import { playPauseCsound } from "@comp/Csound/actions";
 import {
     loadProjectFromFirestore,
     syncProjectDocumentsWithEMFS
-} from "../Projects/actions";
-import { getPlayActionFromProject } from "../TargetControls/utils";
+} from "@comp/Projects/actions";
+import { getPlayActionFromProject } from "@comp/TargetControls/utils";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
 import { assoc, hasPath, pipe } from "ramda";
@@ -253,7 +247,8 @@ export const deleteUserProject = (
 
             try {
                 await batch.commit();
-                dispatch(deleteUserProjectAction());
+                setTimeout(() => dispatch(deleteUserProjectAction()), 1);
+
                 dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
             } catch (e) {
                 dispatch(
