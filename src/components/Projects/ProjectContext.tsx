@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "emotion-theming";
 import { useSelector, useDispatch } from "react-redux";
-import ProjectEditor from "../ProjectEditor/ProjectEditor";
-import { IDocumentsMap, IProject } from "../Projects/types";
-import Header from "../Header/Header";
+import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
+import { getDefaultTargetDocument } from "@comp/TargetControls/utils";
+import { IDocumentsMap, IProject } from "@comp/Projects/types";
+import Header from "@comp/Header/Header";
 import {
     activateProject,
     loadProjectFromFirestore,
@@ -43,6 +44,9 @@ export const ProjectContext = (props: IProjectContextProps) => {
         ])
     );
 
+    const defaultTarget = useSelector(store =>
+        getDefaultTargetDocument(store, projectUid)
+    );
     const csound = useSelector(pathOr(null, ["csound", "csound"]));
 
     useEffect(() => {
@@ -66,11 +70,11 @@ export const ProjectContext = (props: IProjectContextProps) => {
             const initUI = async () => {
                 await dispatch(
                     openProjectDocumentTabs(
-                        values(propOr(
-                            {},
-                            "documents",
-                            project
-                        ) as IDocumentsMap)
+                        projectUid,
+                        defaultTarget,
+                        values(
+                            propOr({}, "documents", project) as IDocumentsMap
+                        )
                     )
                 );
                 await dispatch(syncProjectDocumentsWithEMFS(projectUid));

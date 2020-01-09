@@ -1,27 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
+import { simpleSwitch } from "react-tabtab/lib/helpers/move";
+import tabStyles from "./tabStyles";
 import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument, IProject } from "../Projects/types";
 import { IOpenDocument } from "./types";
 import SplitterLayout from "react-splitter-layout";
 import IframeComm from "react-iframe-comm";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faTimes,
-    faExpand
-    // faWindowRestore
-} from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "@store/types";
 import Editor from "../Editor/Editor";
 import AudioEditor from "../AudioEditor/AudioEditor";
-import { toggleEditorFullScreen } from "../Editor/actions";
+import { useTheme } from "emotion-theming";
+// import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "../Console/Console";
-import { append, reduce, pathOr, propOr } from "ramda";
+import {
+    append,
+    concat,
+    filter,
+    indexOf,
+    map,
+    reduce,
+    pathOr,
+    pipe,
+    prop,
+    propOr,
+    sortBy
+} from "ramda";
 import { find, isEmpty } from "lodash";
 import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
@@ -63,21 +74,93 @@ function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
 
 const ProjectEditor = props => {
     const dispatch = useDispatch();
+    const theme: any = useTheme();
+    const [tabOrder, setTabOrder_] = useState([] as string[]);
 
     // The manual is an iframe, which doesn't detect
     // mouve positions, so we add an invidible layer then
     // resizing the manual panel.
-    const [manualDrag, setManualDrag] = React.useState(false);
+    const [manualDrag, setManualDrag] = useState(false);
     const activeProject: IProject = props.activeProject;
     const projectUid: string = propOr("", "projectUid", activeProject);
 
-    const tabDockDocuments: IOpenDocument[] = useSelector(s =>
-        pathOr(
-            [] as IOpenDocument[],
-            ["ProjectEditorReducer", "tabDock", "openDocuments"],
-            s
+    const tabDockDocuments: IOpenDocument[] = useSelector(
+        pipe(
+            pathOr([] as IOpenDocument[], [
+                "ProjectEditorReducer",
+                "tabDock",
+                "openDocuments"
+            ]),
+            sortBy(tb => indexOf(prop("uid", tb), tabOrder))
         )
     );
+
+    const tabIndex: number = useSelector(
+        pipe(
+            pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"]),
+            idx => {
+                if (idx < 0) {
+                    return idx;
+                } else {
+                    return Math.min(tabDockDocuments.length - 1, idx);
+                }
+            }
+        )
+    );
+
+    const setTabOrder = (newTabOrder: string[]) => {
+        if (tabDockDocuments.length > 0 && newTabOrder.length > 0) {
+            localStorage.setItem(
+                projectUid + ":tabOrder",
+                JSON.stringify(newTabOrder)
+            );
+        }
+        setTabOrder_(newTabOrder);
+    };
+
+    useEffect(() => {
+        if (tabOrder.length === 0 && tabDockDocuments.length > 0) {
+            const lastTabOrder = localStorage.getItem(projectUid + ":tabOrder");
+            if (
+                lastTabOrder &&
+                lastTabOrder.length > 0 &&
+                lastTabOrder !== "[]"
+            ) {
+                try {
+                    setTabOrder(JSON.parse(lastTabOrder) as string[]);
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                setTabOrder(map(prop("uid"), tabDockDocuments));
+            }
+        } else if (tabDockDocuments.length !== tabOrder.length) {
+            if (tabDockDocuments.length > tabOrder.length) {
+                // Tab was added
+                const newTabs = map(
+                    (td: IOpenDocument) => td.uid,
+                    filter(
+                        (td: IOpenDocument) =>
+                            !tabOrder.some(toUid => toUid === td.uid),
+                        tabDockDocuments
+                    )
+                );
+                setTabOrder(concat(tabOrder, newTabs));
+            } else {
+                // Tab was removed
+                setTabOrder(
+                    filter(
+                        tabUid =>
+                            tabDockDocuments.some(
+                                (tdd: IOpenDocument) => tdd.uid === tabUid
+                            ),
+                        tabOrder
+                    )
+                );
+            }
+        }
+        // eslint-disable-next-line
+    }, [tabDockDocuments]);
 
     const openDocuments: IDocument[] = isEmpty(projectUid)
         ? ([] as IDocument[])
@@ -94,71 +177,63 @@ const ProjectEditor = props => {
               tabDockDocuments
           );
 
-    const tabIndex: number = useSelector(
-        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
-    );
-
     const closeTab = (documentUid, isModified) => {
         dispatch(tabClose(projectUid, documentUid, isModified));
     };
 
-    const openTabList = mapIndexed(
-        (document: any, index) => {
-            const isActive: boolean = index === tabIndex;
-            const isModified: boolean = document.isModifiedLocally;
-            return (
-                <Tab key={index}>
-                    {document!.filename + (isModified ? "*" : "")}
-                    <Tooltip title="close" placement="right-end">
-                        <IconButton
-                            size="small"
-                            style={{ marginLeft: 6, marginBottom: 2 }}
-                            onClick={e => {
-                                e.stopPropagation();
-                                closeTab(document.documentUid, isModified);
-                            }}
-                        >
-                            <FontAwesomeIcon
-                                icon={faTimes}
-                                size="sm"
-                                color={isActive ? "black" : "#f8f8f2"}
-                            />
-                        </IconButton>
-                    </Tooltip>
-                </Tab>
-            );
-        },
-        openDocuments as IDocument[]
-    );
+    const openTabList = mapIndexed((document: any, index) => {
+        const isActive: boolean = index === tabIndex;
+        const isModified: boolean = document.isModifiedLocally;
+
+        return (
+            <DragTab closable={true} key={index}>
+                {document!.filename + (isModified ? "*" : "")}
+                <Tooltip
+                    title={
+                        <span style={{ color: theme.color.primary }}>
+                            close
+                        </span>
+                    }
+                    placement="right-end"
+                >
+                    <IconButton
+                        size="small"
+                        css={SS.closeButton}
+                        onClick={e => {
+                            e.stopPropagation();
+                            closeTab(document.documentUid, isModified);
+                        }}
+                    >
+                        <FontAwesomeIcon
+                            icon={faTimes}
+                            size="sm"
+                            color={
+                                isActive
+                                    ? theme.color.primary
+                                    : theme.highlightAlt.primary
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
+            </DragTab>
+        );
+    }, openDocuments as IDocument[]);
 
     const openTabPanels = mapIndexed(
         (doc: any, index: number) => (
-            <TabPanel key={index} style={{ flex: "1 1 auto", marginTop: -10 }}>
+            <Panel key={index}>
                 <EditorForDocument
                     uid={activeProject.userUid}
                     projectUid={projectUid}
                     doc={doc}
                 />
-            </TabPanel>
+            </Panel>
         ),
         openDocuments
     );
 
-    const tabPanelController = (
-        <div css={SS.tabPanelController}>
-            <Tooltip title="FullScreen" placement="right-end">
-                <IconButton size="small" onClick={toggleEditorFullScreen}>
-                    <FontAwesomeIcon
-                        icon={faExpand}
-                        size="sm"
-                        color="#f8f8f2"
-                    />
-                </IconButton>
-            </Tooltip>
-        </div>
-    );
-
-    const switchTab = (index: number, lastIndex: number, event: Event) => {
+    const switchTab = (index: number) => {
+        localStorage.setItem(projectUid + ":tabIndex", `${index}`);
         dispatch(tabSwitch(index));
     };
 
@@ -176,26 +251,25 @@ const ProjectEditor = props => {
         </React.Fragment>
     );
 
-    const tabDock = isEmpty(openDocuments) ? (
-        <div />
-    ) : (
-        <div>
-            {tabPanelController}
+    const tabDock =
+        isEmpty(openDocuments) || isEmpty(tabOrder) ? (
+            <div />
+        ) : (
             <Tabs
-                onSelect={switchTab}
-                selectedIndex={tabIndex}
-                css={SS.tabDock}
+                activeIndex={tabIndex}
+                onTabChange={switchTab}
+                customStyle={tabStyles}
+                onTabSequenceChange={({ oldIndex, newIndex }) => {
+                    setTabOrder(simpleSwitch(tabOrder, oldIndex, newIndex));
+                    tabOrder[oldIndex] === tabDockDocuments[tabIndex].uid &&
+                        switchTab(newIndex);
+                }}
+                onTabEdit={console.log}
             >
-                <TabList
-                    className="react-tabs__tab-list draggable"
-                    style={{ flex: "0 1 auto" }}
-                >
-                    {openTabList}
-                </TabList>
-                {openTabPanels}
+                <DragTabList>{openTabList}</DragTabList>
+                <PanelList>{openTabPanels}</PanelList>
             </Tabs>
-        </div>
-    );
+        );
 
     const manualLookupString = useSelector(
         (store: IStore) => store.ProjectEditorReducer.manualLookupString
@@ -232,27 +306,32 @@ const ProjectEditor = props => {
         (store: IStore) => store.ProjectEditorReducer.secondaryPanel
     );
 
-    React.useEffect(() => {
-        return () => {
-            dispatch(closeTabDock());
-            dispatch(closeProject());
-            localStorage.setItem(
+    useEffect(() => {
+        return () =>
+            sessionStorage.setItem(
                 projectUid + ":secondaryPanel",
                 secondaryPanel || ""
             );
+        // eslint-disable-next-line
+    }, [secondaryPanel]);
+
+    useEffect(() => {
+        return () => {
+            dispatch(closeTabDock());
+            dispatch(closeProject());
         };
         // eslint-disable-next-line
     }, []);
 
-    React.useEffect(() => {
-        const lastSecondaryPanel = localStorage.getItem(
+    useEffect(() => {
+        const lastSecondaryPanel = sessionStorage.getItem(
             projectUid + ":secondaryPanel"
         );
         if (!isEmpty(lastSecondaryPanel)) {
             if (lastSecondaryPanel === "manual") {
                 dispatch(setManualPanelOpen(true));
             }
-            localStorage.removeItem(projectUid + ":secondaryPanel");
+            sessionStorage.removeItem(projectUid + ":secondaryPanel");
         }
         // eslint-disable-next-line
     }, []);

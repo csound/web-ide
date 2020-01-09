@@ -24,6 +24,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
             white: theme.color.secondary
         }),
         assocPath(["palette", "primary"], primaryPalette),
-        assocPath(["palette", "type"], backgroundPalette)
+        assocPath(["palette", "type"], backgroundPalette),
+        assocPath(["MuiTooltip", "tooltip", "color"], theme.color.primary)
     )(muiTheme) as DefaultTheme;
 };

@@ -21,8 +21,7 @@ import {
     lensPath,
     over,
     pathOr,
-    pipe,
-    propOr
+    pipe
 } from "ramda";
 
 export interface IProjectEditorReducer {
@@ -67,10 +66,23 @@ export default (
                 manualLookupString: state.manualLookupString
             };
         }
-        // This is an ugly crashfix, which puts the index from -1 to 0
         case TAB_DOCK_INIT_SWITCH_TAB: {
             if (state.tabDock.tabIndex < 0) {
-                return assocPath(["tabDock", "tabIndex"], 0, state);
+                const lastIndex = localStorage.getItem(
+                    action.projectUid + ":tabIndex"
+                );
+                let initialIndex = 0;
+                if (lastIndex && lastIndex.length > 0) {
+                    try {
+                        initialIndex = Math.min(
+                            Math.max(1, state.tabDock.openDocuments.length) - 1,
+                            parseInt(lastIndex)
+                        );
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+                return assocPath(["tabDock", "tabIndex"], initialIndex, state);
             } else {
                 return state;
             }
@@ -102,17 +114,25 @@ export default (
                 currentOpenDocs,
                 (od: IOpenDocument) => od.uid === action.documentUid
             );
-            if (documentAlreadyOpenIndex < 0) {
-                return pipe(
-                    assocPath(
-                        ["tabDock", "tabIndex"],
-                        propOr(0, "length", currentOpenDocs)
-                    ),
-                    addTabToOpenDocuments({
+            if ((documentAlreadyOpenIndex < 0 || action.init) && !action.hack) {
+                return addTabToOpenDocuments(
+                    {
                         uid: action.documentUid,
                         editorInstance: null
-                    })
-                )(state);
+                    },
+                    state
+                );
+
+                // return pipe(
+                //     assocPath(
+                //         ["tabDock", "tabIndex"],
+                //         propOr(0, "length", currentOpenDocs)
+                //     ),
+                //     addTabToOpenDocuments({
+                //         uid: action.documentUid,
+                //         editorInstance: null
+                //     })
+                // )(state);
             } else {
                 return assocPath(
                     ["tabDock", "tabIndex"],

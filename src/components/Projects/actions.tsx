@@ -10,7 +10,7 @@ import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
-import { pathOr, propOr, values } from "ramda";
+import { find as rfind, pathOr, propEq, propOr, values } from "ramda";
 import {
     ACTIVATE_PROJECT,
     DOCUMENT_INITIALIZE,
@@ -36,7 +36,7 @@ import { ICsoundObj } from "../Csound/types";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase/app";
-import { formatFileSize } from "../../utils";
+import { formatFileSize } from "@root/utils";
 import uuidv4 from "uuid/v4";
 // import { selectActiveProject } from "./selectors";
 
@@ -120,14 +120,39 @@ export const loadProjectFromFirestore = (projectUid: string) => {
     };
 };
 
-export const openProjectDocumentTabs = (documents: IDocument[]) => {
+export const openProjectDocumentTabs = (
+    projectUid: string,
+    defaultTarget,
+    documents: IDocument[]
+) => {
     return async (dispatch: any) => {
-        documents.forEach(doc =>
-            dispatch(
-                initialTabOpenByDocumentUid(propOr(null, "documentUid", doc))
+        const lastTabOrder = localStorage.getItem(projectUid + ":tabOrder");
+        const docsToOpen: string[] = [];
+        if (lastTabOrder && lastTabOrder.length > 0) {
+            try {
+                (JSON.parse(lastTabOrder) as string[]).forEach(uid => {
+                    const maybeDocStillExists = rfind(
+                        propEq("documentUid", uid),
+                        documents
+                    );
+                    maybeDocStillExists && docsToOpen.push(uid);
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        if (docsToOpen.length === 0 && defaultTarget) {
+            docsToOpen.push(defaultTarget.documentUid);
+        }
+
+        Promise.all(
+            docsToOpen.map(docUid =>
+                dispatch(initialTabOpenByDocumentUid(docUid))
             )
-        );
-        dispatch(tabInitSwitch());
+        ).then(() => {
+            dispatch(tabInitSwitch(projectUid));
+        });
     };
 };
 

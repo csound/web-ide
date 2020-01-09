@@ -42,6 +42,10 @@ const theme = {
         primary: monokaiLineNumber,
         secondary: monokaiHighlight
     },
+    tabHighlight: {
+        primary: monokaiLightBlue2,
+        secondary: monokaiMagenta
+    },
     error: {
         primary: monokaiRed,
         secondary: monokaiRed

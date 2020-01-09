@@ -70,3 +70,11 @@ export const tabDock = theme => css`
         color: #f8f8f2;
     }
 `;
+
+export const closeButton = css`
+    top: 10px;
+    right: 8px;
+    padding: 6px;
+    position: absolute;
+    z-index: 1001;
+`;

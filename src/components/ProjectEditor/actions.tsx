@@ -24,8 +24,14 @@ export const initialTabOpenByDocumentUid = (documentUid: string) => {
 
 export const tabOpenByDocumentUid = (documentUid: string) => {
     return async (dispatch: any) => {
+        await dispatch({
+            type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
+            hack: false,
+            documentUid
+        });
         dispatch({
             type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
+            hack: true,
             documentUid
         });
     };
@@ -122,9 +128,10 @@ export const setManualPanelOpen = (open: boolean) => {
 
 // Basically sets tabIndex to 0 if it's -1
 // as tabIndex -1 signals that the tabs aren't initialized
-export const tabInitSwitch = () => {
+export const tabInitSwitch = (projectUid: string) => {
     return {
-        type: TAB_DOCK_INIT_SWITCH_TAB
+        type: TAB_DOCK_INIT_SWITCH_TAB,
+        projectUid
     };
 };
 

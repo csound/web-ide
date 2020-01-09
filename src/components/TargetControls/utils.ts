@@ -1,10 +1,10 @@
-import { pathOr } from "ramda";
+import { find, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
 import { IDocument, ITarget, IMainTarget, IPlaylist } from "../Projects/types";
 import { playCSDFromEMFS } from "../Csound/actions";
 
-export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
-    const defaultTargetName: string | null = pathOr(
+const getDefaultTargetName = (store, projectUid): string | null =>
+    pathOr(
         null,
         [
             "ProjectsReducer",
@@ -16,7 +16,38 @@ export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
         store
     );
 
-    const defaultTarget: ITarget | null = defaultTargetName
+export const getDefaultTargetDocument = (
+    store,
+    projectUid
+): IDocument | null => {
+    const maybeDefaultTarget: ITarget | null = pathOr(
+        null,
+        [
+            "ProjectsReducer",
+            "projects",
+            projectUid,
+            "documents",
+            "targets",
+            getDefaultTargetName(store, projectUid) || ""
+        ],
+        store
+    );
+
+    const projectCsdFallback =
+        find(
+            propEq("filename", "project.csd"),
+            values(
+                pathOr(
+                    {},
+                    ["ProjectsReducer", "projects", projectUid, "documents"],
+                    store
+                )
+            )
+        ) || null;
+
+    // ATT: fallback to project.csd is to prevserve fallback behaviour
+    // This should be marked as a deprecated fallback, soonish
+    const targetDocument: IDocument | null = maybeDefaultTarget
         ? pathOr(
               null,
               [
@@ -24,30 +55,35 @@ export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
                   "projects",
                   projectUid,
                   "documents",
-                  "targets",
-                  defaultTargetName
+                  (maybeDefaultTarget as ITarget).targetType === "main"
+                      ? (maybeDefaultTarget as IMainTarget).targetDocumentUid
+                      : (maybeDefaultTarget as IPlaylist)
+                            .playlistDocumentsUid[0]
               ],
               store
           )
-        : null;
+        : projectCsdFallback;
 
-    // ATT: fallback to project.csd is to prevserve fallback behaviour
-    // This should be marked as a deprecated fallback, soonish
-    const targetDocument: IDocument = defaultTarget
-        ? pathOr(
-              { type: "csd", filename: "project.csd" } as IDocument,
-              [
-                  "ProjectsReducer",
-                  "projects",
-                  projectUid,
-                  "documents",
-                  (defaultTarget as ITarget).targetType === "main"
-                      ? (defaultTarget as IMainTarget).targetDocumentUid
-                      : (defaultTarget as IPlaylist).playlistDocumentsUid[0]
-              ],
-              store
-          )
-        : ({ type: "csd", filename: "project.csd" } as IDocument);
+    return targetDocument;
+};
+
+export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
+    const targetDocument = getDefaultTargetDocument(store, projectUid);
+
+    // const defaultTarget: ITarget | null = defaultTargetName
+    //     ? pathOr(
+    //           null,
+    //           [
+    //               "ProjectsReducer",
+    //               "projects",
+    //               projectUid,
+    //               "documents",
+    //               "targets",
+    //               defaultTargetName
+    //           ],
+    //           store
+    //       )
+    //     : null;
 
     switch ((targetDocument as IDocument).type) {
         case "csd": {
