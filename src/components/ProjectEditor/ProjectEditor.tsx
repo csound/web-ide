@@ -34,7 +34,6 @@ import {
     sortBy
 } from "ramda";
 import { find, isEmpty } from "lodash";
-import "react-tabs/style/react-tabs.css";
 import "react-splitter-layout/lib/index.css";
 import {
     closeTabDock,
