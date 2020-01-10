@@ -1,16 +1,11 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import {
-    initialTabOpenByDocumentUid,
-    tabClose,
-    tabInitSwitch,
-    tabOpenByDocumentUid
-} from "../ProjectEditor/actions";
+import { tabClose, tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
-import { find as rfind, pathOr, propEq, propOr, values } from "ramda";
+import { pathOr, propOr, values } from "ramda";
 import {
     ACTIVATE_PROJECT,
     DOCUMENT_INITIALIZE,
@@ -30,15 +25,15 @@ import {
 } from "./types";
 import { filenameToType, textOrBinary } from "./utils";
 import { IStore } from "@store/types";
-import { projects, storageRef } from "../../config/firestore";
-import { store } from "../../store";
-import { ICsoundObj } from "../Csound/types";
+import { projects, storageRef } from "@config/firestore";
+import { store } from "@root/store";
+import { ICsoundObj } from "@comp/Csound/types";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase/app";
 import { formatFileSize } from "@root/utils";
 import uuidv4 from "uuid/v4";
-// import { selectActiveProject } from "./selectors";
+import * as SS from "./styles";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -117,42 +112,6 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                 // handle error
             }
         }
-    };
-};
-
-export const openProjectDocumentTabs = (
-    projectUid: string,
-    defaultTarget,
-    documents: IDocument[]
-) => {
-    return async (dispatch: any) => {
-        const lastTabOrder = localStorage.getItem(projectUid + ":tabOrder");
-        const docsToOpen: string[] = [];
-        if (lastTabOrder && lastTabOrder.length > 0) {
-            try {
-                (JSON.parse(lastTabOrder) as string[]).forEach(uid => {
-                    const maybeDocStillExists = rfind(
-                        propEq("documentUid", uid),
-                        documents
-                    );
-                    maybeDocStillExists && docsToOpen.push(uid);
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        if (docsToOpen.length === 0 && defaultTarget) {
-            docsToOpen.push(defaultTarget.documentUid);
-        }
-
-        Promise.all(
-            docsToOpen.map(docUid =>
-                dispatch(initialTabOpenByDocumentUid(docUid))
-            )
-        ).then(() => {
-            dispatch(tabInitSwitch(projectUid));
-        });
     };
 };
 
@@ -375,7 +334,7 @@ const deleteDocumentPrompt = (
                 <h2>{"Confirm deletion of file: " + filename}</h2>
                 <Button
                     variant="outlined"
-                    color="secondary"
+                    color="primary"
                     onClick={() => cancelCallback()}
                     style={{ marginTop: 12 }}
                 >
@@ -383,7 +342,7 @@ const deleteDocumentPrompt = (
                 </Button>
                 <Button
                     variant="outlined"
-                    color="primary"
+                    color="secondary"
                     onClick={() => deleteCallback()}
                     style={{ marginTop: 12 }}
                 >
@@ -518,6 +477,9 @@ const newDocumentPrompt = (
                             ? input + " already exists!"
                             : "New filename"
                     }
+                    onKeyDown={evt =>
+                        evt.key === "Enter" && !shouldDisable && callback(input)
+                    }
                     error={nameCollides}
                     value={input}
                     onChange={e => {
@@ -528,8 +490,9 @@ const newDocumentPrompt = (
                     }}
                 />
                 <Button
+                    css={SS.modalSubmitButton}
                     variant="outlined"
-                    color="primary"
+                    color={shouldDisable ? undefined : "primary"}
                     disabled={shouldDisable || nameCollides}
                     onClick={() => callback(input)}
                     style={{ marginTop: 11 }}
@@ -625,13 +588,9 @@ export const newDocument = (projectUid: string, val: string) => {
                     .add(doc)
                     .then(res => {
                         const documentUid = res.id;
-                        dispatch(tabOpenByDocumentUid(res.id));
+                        dispatch(tabOpenByDocumentUid(res.id, projectUid));
                         dispatch(
-                            newEmptyDocument(
-                                project.projectUid,
-                                documentUid,
-                                filename
-                            )
+                            newEmptyDocument(projectUid, documentUid, filename)
                         );
                     });
             }
@@ -687,7 +646,12 @@ export const addDocument = (projectUid: string) => {
                             .add(doc)
                             .then(res => {
                                 const documentUid = res.id;
-                                dispatch(tabOpenByDocumentUid(res.id));
+                                dispatch(
+                                    tabOpenByDocumentUid(
+                                        res.id,
+                                        activeProjectUid
+                                    )
+                                );
                                 dispatch(
                                     newEmptyDocument(
                                         project.projectUid,

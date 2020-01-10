@@ -2,11 +2,12 @@
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import { SET_MENU_BAR_HOTKEYS, HotKeysActionTypes } from "./types";
-import { getPlayActionFromTarget } from "../TargetControls/utils";
+import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { Action } from "redux";
-import { isMac } from "../../utils";
-import { newDocument, saveFile } from "../Projects/actions";
-import { playPauseCsound } from "../Csound/actions";
+import { isMac } from "@root/utils";
+import { newDocument, saveFile } from "@comp/Projects/actions";
+import { playPauseCsound } from "@comp/Csound/actions";
+import { pathOr } from "ramda";
 
 const getMenuBarItems = (dispatch, getStore) => [
     {
@@ -15,10 +16,12 @@ const getMenuBarItems = (dispatch, getStore) => [
         callback: e => {
             e.preventDefault();
             const store = getStore();
-            const activeProjectUid = store.projects.activeProject
-                ? store.projects.activeProject.projectUid
-                : "";
-            dispatch(newDocument(activeProjectUid, ""));
+            const activeProjectUid: string | null = pathOr(
+                null,
+                ["ProjectsReducer", "activeProject"],
+                store
+            );
+            activeProjectUid && dispatch(newDocument(activeProjectUid, ""));
         }
     },
 

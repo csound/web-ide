@@ -12,7 +12,7 @@ import { assocPath, pathOr, pipe } from "ramda";
 import { ITheme } from "./types";
 import { CodeMirrorPainter } from "./CodeMirrorPainter";
 import themeMonokai from "./_theme_monokai";
-import { makeMuiTheme } from "./utils";
+import { makeMuiTheme } from "./MaterialUiStyle";
 
 const ThirdPartyLibPainter = ({ theme }) => (
     <style>{`
@@ -29,6 +29,10 @@ const ThirdPartyLibPainter = ({ theme }) => (
    }
     body > li[role=tab] button {
       z-index: 10000;
+   }
+   .MuiButton-outlinedPrimary {
+     color: ${theme.color.primary}!important;
+     border-color: ${theme.color.primary}!important;
    }
         `}</style>
 );

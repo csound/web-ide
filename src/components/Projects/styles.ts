@@ -1,4 +1,5 @@
 import { css } from "@emotion/core";
+import { rgba } from "@styles/utils";
 
 export const main = css`
     top: 39px;
@@ -7,6 +8,13 @@ export const main = css`
 
 export const loadMain = css`
     overflow: hidden;
+`;
+
+export const modalSubmitButton = theme => css`
+    &.MuiButton-outlinedPrimary {
+        color: ${theme.allowed.primary};
+        background-color: rgba(${rgba(theme.allowed.primary, 0.05)});
+    }
 `;
 
 export const loadingSpinner1 = css`

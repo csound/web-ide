@@ -1,38 +1,104 @@
 import React from "react";
-import { closeModal, openSimpleModal } from "../Modal/actions";
-import { resetDocumentValue } from "../Projects/actions";
 import Button from "@material-ui/core/Button";
+import { closeModal, openSimpleModal } from "@comp/Modal/actions";
+import { resetDocumentValue } from "@comp/Projects/actions";
+import { IDocument } from "@comp/Projects/types";
+import { sortByStoredTabOrder } from "./utils";
 import {
     MANUAL_LOOKUP_STRING,
-    TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_CLOSE,
-    TAB_DOCK_INIT_SWITCH_TAB,
+    TAB_DOCK_INIT,
+    TAB_DOCK_REARRANGE_TABS,
     TAB_DOCK_SWITCH_TAB,
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
-    STORE_EDITOR_INSTANCE
+    STORE_EDITOR_INSTANCE,
+    IOpenDocument
 } from "./types";
 
-export const initialTabOpenByDocumentUid = (documentUid: string) => {
-    return {
-        type: TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID,
-        documentUid
+export const tabDockInit = (
+    projectUid: string,
+    allDocuments: IDocument[],
+    defaultTargetDocUid: string
+) => {
+    const storedIndex = localStorage.getItem(projectUid + ":tabIndex");
+    const storedTabOrder: string | null = localStorage.getItem(
+        projectUid + ":tabOrder"
+    );
+
+    let initialOpenDocuments: IOpenDocument[] = [];
+    let initialIndex: number = -1;
+
+    if (
+        storedTabOrder &&
+        typeof storedTabOrder === "string" &&
+        storedTabOrder.length > 0 &&
+        storedTabOrder !== "[]"
+    ) {
+        try {
+            const tabOrder = storedTabOrder
+                ? (JSON.parse(storedTabOrder) as string[])
+                : [];
+            const initIndex = storedIndex
+                ? (parseInt(storedIndex) as number)
+                : -1;
+
+            if (tabOrder.length > 0) {
+                initialOpenDocuments = sortByStoredTabOrder(
+                    tabOrder,
+                    allDocuments
+                );
+            }
+            if (initIndex > -1 && initialOpenDocuments.length > 0) {
+                initialIndex = initIndex % initialOpenDocuments.length;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    if (initialOpenDocuments.length === 0 && allDocuments.length > 0) {
+        initialOpenDocuments.push({
+            uid: defaultTargetDocUid,
+            editorInstance: null
+        });
+    }
+
+    if (initialOpenDocuments.length > 0 && initialIndex < 0) {
+        initialIndex = 0;
+    }
+
+    return async (dispatch: any) => {
+        dispatch({ type: TAB_DOCK_INIT, initialOpenDocuments, initialIndex });
     };
 };
 
-export const tabOpenByDocumentUid = (documentUid: string) => {
+export const rearrangeTabs = (
+    projectUid: string,
+    modifiedDock: IOpenDocument[],
+    newActiveIndex: number
+) => {
     return async (dispatch: any) => {
-        await dispatch({
-            type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
-            hack: false,
-            documentUid
+        dispatch({
+            type: TAB_DOCK_REARRANGE_TABS,
+            projectUid,
+            modifiedDock,
+            newActiveIndex
         });
+    };
+};
+
+export const tabOpenByDocumentUid = (
+    documentUid: string,
+    projectUid: string
+) => {
+    return async (dispatch: any) => {
         dispatch({
             type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
-            hack: true,
-            documentUid
+            documentUid,
+            projectUid
         });
     };
 };
@@ -123,15 +189,6 @@ export const setManualPanelOpen = (open: boolean) => {
     return {
         type: SET_MANUAL_PANEL_OPEN,
         open
-    };
-};
-
-// Basically sets tabIndex to 0 if it's -1
-// as tabIndex -1 signals that the tabs aren't initialized
-export const tabInitSwitch = (projectUid: string) => {
-    return {
-        type: TAB_DOCK_INIT_SWITCH_TAB,
-        projectUid
     };
 };
 

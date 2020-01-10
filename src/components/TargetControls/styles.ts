@@ -10,13 +10,14 @@ export const dropdownContainer = css`
 
 export const menu = theme => css`
     z-index: 2;
+    position: absolute;
     border: 2px solid ${theme.highlight.primary};
     border-radius: 6px;
     background-color: ${theme.background.primary};
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     min-width: 120px;
     width: 100%;
-    margin-bottom: -6px;
+    margin-top: 6px;
     right: 0px;
     font-size: 14px;
     @keyframes dropIn {

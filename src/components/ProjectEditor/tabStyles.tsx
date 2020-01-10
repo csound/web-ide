@@ -7,7 +7,9 @@ TabListStyle = styled(TabListStyle)`
     background-color: ${props => props.theme.background.primary};
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
         0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    border: 0;
+    & li::after {
+        z-index: 0;
+    }
 `;
 
 TabStyle = styled(TabStyle)`
@@ -17,6 +19,7 @@ TabStyle = styled(TabStyle)`
             ? props.theme.color.primary
             : props.theme.highlight.primary};
     font-weight: ${props => (props.active ? 500 : 400)};
+    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
     background-color: ${props =>
         props.active
             ? props.theme.highlight.primary
@@ -70,10 +73,22 @@ TabStyle = styled(TabStyle)`
 `;
 
 ActionButtonStyle = styled(ActionButtonStyle)`
-    background-color: transparent;
+    background-color: ${props => props.theme.gutterBackground.primary};
+    border: 2px solid ${props => props.theme.highlight.primary};
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     border-radius: 0;
-    &:hover {
-        background-color: #eee;
+    border: none !important;
+    z-index: 1;
+    width: 42px;
+    svg {
+        fill: ${props => props.theme.lineNumber.primary};
+        width: 100%;
+        height: 100%
+        padding: 0;;
+    }
+    svg:hover {
+        fill: ${props => props.theme.lineNumber.secondary};
+        background-color: ${props => props.theme.lineNumber.primary};
     }
 `;
 

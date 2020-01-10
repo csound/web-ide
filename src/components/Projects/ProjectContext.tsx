@@ -3,16 +3,17 @@ import { useTheme } from "emotion-theming";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
 import { getDefaultTargetDocument } from "@comp/TargetControls/utils";
-import { IDocumentsMap, IProject } from "@comp/Projects/types";
+import { IDocument, IDocumentsMap, IProject } from "@comp/Projects/types";
+import { ICsoundObj } from "@comp/Csound/types";
 import Header from "@comp/Header/Header";
 import {
     activateProject,
     loadProjectFromFirestore,
-    openProjectDocumentTabs,
     syncProjectDocumentsWithEMFS
 } from "./actions";
+import { tabDockInit } from "@comp/ProjectEditor/actions";
 import * as SS from "./styles";
-import { has, pathOr, propOr, values } from "ramda";
+import { has, path, pathOr, values } from "ramda";
 
 interface IProjectContextProps {
     className: string;
@@ -32,22 +33,47 @@ export const ProjectContext = (props: IProjectContextProps) => {
     const [needsLoading, setNeedsLoading] = useState(true);
     const projectUid = props.match.params.id;
     const { className } = props;
-    const activeProjectUid = useSelector(
-        pathOr("", ["ProjectsReducer", "activeProjectUid"])
+
+    const activeProjectUid: string | null = useSelector(
+        store =>
+            (path(["ProjectsReducer", "activeProjectUid"], store) as string) ||
+            null
     );
 
-    const project: IProject = useSelector(
-        pathOr({} as IProject, [
-            "ProjectsReducer",
-            "projects",
-            activeProjectUid
-        ])
+    const project: IProject | null = useSelector(store =>
+        activeProjectUid
+            ? (path(
+                  ["ProjectsReducer", "projects", activeProjectUid],
+                  store
+              ) as IProject) || null
+            : null
     );
 
-    const defaultTarget = useSelector(store =>
-        getDefaultTargetDocument(store, projectUid)
+    const documentsMap: IDocumentsMap | null = useSelector(store =>
+        activeProjectUid && project
+            ? (path(
+                  [
+                      "ProjectsReducer",
+                      "projects",
+                      activeProjectUid,
+                      "documents"
+                  ],
+                  store
+              ) as IDocumentsMap) || null
+            : null
     );
-    const csound = useSelector(pathOr(null, ["csound", "csound"]));
+
+    const documents: IDocument[] | null = documentsMap
+        ? values(documentsMap)
+        : null;
+
+    const defaultTarget: IDocument | null = useSelector(store =>
+        project ? getDefaultTargetDocument(store, projectUid) : null
+    );
+
+    const csound: ICsoundObj | null = useSelector(
+        pathOr(null, ["csound", "csound"])
+    );
 
     useEffect(() => {
         if (!projectFetchStarted && csound) {
@@ -65,22 +91,24 @@ export const ProjectContext = (props: IProjectContextProps) => {
             projectFetchStarted &&
             projectIsReady &&
             csound &&
-            has("documents", project)
+            has("documents", project) &&
+            documents &&
+            documents.length > 0 &&
+            defaultTarget
         ) {
-            const initUI = async () => {
-                await dispatch(
-                    openProjectDocumentTabs(
+            const filesAddedCallback = () => {
+                dispatch(
+                    tabDockInit(
                         projectUid,
-                        defaultTarget,
-                        values(
-                            propOr({}, "documents", project) as IDocumentsMap
-                        )
+                        documents,
+                        defaultTarget.documentUid
                     )
                 );
-                await dispatch(syncProjectDocumentsWithEMFS(projectUid));
-                setNeedsLoading(false);
             };
-            initUI();
+            dispatch(
+                syncProjectDocumentsWithEMFS(projectUid, filesAddedCallback)
+            );
+            setNeedsLoading(false);
         }
         // eslint-disable-next-line
     }, [

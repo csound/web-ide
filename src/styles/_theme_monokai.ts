@@ -58,6 +58,10 @@ const theme = {
         primary: monokaiRed,
         secondary: monokaiRed
     },
+    allowed: {
+        primary: monokaiGreen,
+        secondary: monokaiGreen
+    },
     highlight: {
         primary: monokaiHighlight,
         secondary: monokaiHighlight
@@ -67,7 +71,7 @@ const theme = {
         secondary: monokaiHighlightAlt
     },
     button: {
-        primary: orchid,
+        primary: monokaiBlueHighContrast,
         secondary: monokaiBlueHighContrast
     },
     profilePlayButton: {

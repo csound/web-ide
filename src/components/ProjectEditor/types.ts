@@ -3,10 +3,9 @@ const PREFIX = "PROJECT_EDITOR.";
 // ACTION TYPES
 export const MANUAL_LOOKUP_STRING = PREFIX + "MANUAL_LOOKUP_STRING";
 export const SET_MANUAL_PANEL_OPEN = PREFIX + "SET_MANUAL_PANEL_OPEN";
-export const TAB_DOCK_INIT_SWITCH_TAB = PREFIX + "TAB_DOCK_INIT_SWITCH_TAB";
+export const TAB_DOCK_INIT = PREFIX + "TAB_DOCK_INIT";
 export const TAB_DOCK_SWITCH_TAB = PREFIX + "TAB_DOCK_SWITCH_TAB";
-export const TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID =
-    PREFIX + "TAB_DOCK_INITIAL_OPEN_TAB_BY_DOCUMENT_UID";
+export const TAB_DOCK_REARRANGE_TABS = PREFIX + "TAB_DOCK_REARRANGE_TABS";
 export const TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID =
     PREFIX + "TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID";
 export const TAB_DOCK_CLOSE = PREFIX + "TAB_DOCK_CLOSE";
@@ -19,6 +18,7 @@ export interface IOpenDocument {
     editorInstance: any;
     uid: string;
 }
+
 export interface ITabDock {
     tabIndex: number;
     openDocuments: IOpenDocument[];

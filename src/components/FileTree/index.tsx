@@ -31,7 +31,7 @@ import Tree, {
 import { sortBy } from "lodash";
 
 const FileTree = () => {
-    const activeProjectUid = useSelector(
+    const activeProjectUid: string = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
 
@@ -118,7 +118,7 @@ const FileTree = () => {
             }
 
             const onFileClick = e => {
-                dispatch(tabOpenByDocumentUid(data.sha));
+                dispatch(tabOpenByDocumentUid(data.sha, activeProjectUid));
             };
             return (
                 <>
@@ -154,7 +154,7 @@ const FileTree = () => {
                 </>
             );
         },
-        [dispatch, project]
+        [dispatch, project, activeProjectUid]
     );
 
     const getActionsData = useCallback(
