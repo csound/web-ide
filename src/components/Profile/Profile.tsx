@@ -44,7 +44,6 @@ import { Typography, Tabs, Tab, InputAdornment } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors";
 import { SET_LIST_PLAY_STATE } from "./types";
-import { setProfileHotKeys } from "../HotKeys/actions";
 import { stopCsound } from "../Csound/actions";
 import {
     ProfileContainer,
@@ -127,7 +126,6 @@ const Profile = props => {
         dispatch(getTags());
         dispatch(getUserFollowing(username));
         dispatch(getLoggedInUserFollowing());
-        dispatch(setProfileHotKeys());
         dispatch(setProjectFilterString(""));
         dispatch(setFollowingFilterString(""));
         dispatch(getLoggedInUserStars());

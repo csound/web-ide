@@ -1,4 +1,5 @@
 import { HotKeysActionTypes, SET_MENU_BAR_HOTKEYS } from "./types";
+import { assoc, pipe } from "ramda";
 
 export interface State {
     readonly keyMap: any;
@@ -13,11 +14,10 @@ const INITIAL_STATE: State = {
 export default (state = INITIAL_STATE, action: HotKeysActionTypes) => {
     switch (action.type) {
         case SET_MENU_BAR_HOTKEYS: {
-            return {
-                ...state,
-                keyMap: action.payload.keyMap,
-                keyHandlers: action.payload.keyHandlers
-            };
+            return pipe(
+                assoc("keyMap", action.keyMap),
+                assoc("keyHandlers", action.keyHandlers)
+            )(state);
         }
         default: {
             return state;

@@ -10,7 +10,6 @@ import { Route, Switch } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
 import { store } from "../../store";
 import { History } from "history";
-import { setMenuBarHotKeys } from "../HotKeys/actions";
 import { stopCsound } from "../Csound/actions";
 import SiteDocs from "../SiteDocs/SiteDocs";
 
@@ -23,7 +22,6 @@ const EditorLayout = (props: any) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(setMenuBarHotKeys());
         return () => {
             dispatch(stopCsound());
         };
@@ -70,7 +68,4 @@ const mapStateToProps = (store: IStore, ownProp: any): IRouterComponent => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    {}
-)(RouterComponent);
+export default connect(mapStateToProps, {})(RouterComponent);

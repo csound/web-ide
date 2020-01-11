@@ -20,12 +20,12 @@ export const hr = theme => css`
     background-color: ${theme.highlight.primary};
     height: 2px;
     border: none;
-    margin-top: 12px;
-    margin-bottom: 12px;
+    margin: 0;
 `;
 
 export const paraLabel = css`
-    margin: 0;
+    margin: 9px 12px 9px 24px;
+    font-size: 14px;
     white-space: nowrap;
 `;
 
@@ -44,6 +44,7 @@ export const dropdownButton = theme => css`
     &:hover {
         cursor: pointer;
         background-color: ${theme.highlightAlt.primary};
+        z-index: 3;
         box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
             0px 4px 5px 0px rgba(0, 0, 0, 0.14),
             0px 1px 10px 0px rgba(0, 0, 0, 0.12);
@@ -64,7 +65,7 @@ export const dropdownList = theme => css`
     opacity: 1;
     position: absolute;
     list-style: none !important;
-    padding: 12px;
+    padding: 0;
     animation: fadeIn 0.01s linear;
     outline: 0;
     margin: 0;
@@ -74,24 +75,26 @@ export const dropdownList = theme => css`
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 `;
 
-export const buttonGroup = css`
-    display: none;
+export const dropdownListNested = theme => css`
+    ${dropdownList(theme)}
+    top: 0;
+    left: 100%;
+    margin: 0;
+    transform: translate(4px, 0px);
 `;
 
-export const iconButtonContainer = css`
-    border-radius: 3px;
-    padding: 2px 12px;
-    justify-self: center;
+export const nestedWrapper = css`
+    position: relative;
 `;
 
 export const listItem = theme => css`
-    padding: 6px 12px;
+    padding: 2px 12px;
     width: 100%;
     display: flex;
     justify-content: space-between;
     background-color: ${theme.background.primary};
+    position: relative;
     &:hover {
-        pointer: cursor;
         cursor: pointer;
         background-color: ${theme.highlightAlt.primary};
         border-radius: 2px;
@@ -99,4 +102,18 @@ export const listItem = theme => css`
             0px 4px 5px 0px rgba(0, 0, 0, 0.14),
             0px 1px 10px 0px rgba(0, 0, 0, 0.12);
     }
+    & > p,
+    span {
+        display: block;
+    }
+`;
+
+export const listItemNested = theme => css`
+    ${listItem(theme)}
+`;
+
+export const iconButtonContainer = css`
+    border-radius: 3px;
+    padding: 2px 12px;
+    justify-self: center;
 `;

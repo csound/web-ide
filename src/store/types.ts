@@ -17,3 +17,5 @@ export interface IStore {
     ModalReducer: IModalReducer;
     ConsoleReducer: IConsoleReducer;
 }
+
+export type ISelector = (x: IStore) => any;

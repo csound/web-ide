@@ -1,12 +1,9 @@
-// import { createSelector } from "reselect";
-import { State } from "./reducer";
+import { ISelector } from "@store/types";
+import { path } from "ramda";
 
-export const selectKeyHandlers = (store: any) => {
-    const state: State = store.HotKeysReducer;
-    return state.keyHandlers;
-};
+export const selectKeyHandlers: ISelector = path([
+    "HotKeysReducer",
+    "keyHandlers"
+]);
 
-export const selectKeyMaps = (store: any) => {
-    const state: State = store.HotKeysReducer;
-    return state.keyMap;
-};
+export const selectKeyMaps: ISelector = path(["HotKeysReducer", "keyMap"]);

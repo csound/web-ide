@@ -1,35 +1,33 @@
 import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
-import { useSelector, useDispatch } from "react-redux";
+// import { useSelector, useDispatch } from "react-redux";
 import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
 import { isMac } from "@root/utils";
-import {
-    newDocument,
-    saveFile,
-    exportProject,
-    addDocument
-} from "@comp/Projects/actions";
-import { toggleManualPanel } from "@comp/ProjectEditor/actions";
-import {
-    stopCsound,
-    playPauseCsound,
-    renderToDisk
-} from "@comp/Csound/actions";
-import { pathOr } from "ramda";
-import { reduce } from "lodash";
-import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
-import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
-// import { changeTheme } from "@comp/Themes/action";
+// import {
+//     newDocument,
+//     saveFile,
+//     exportProject,
+//     addDocument
+// } from "@comp/Projects/actions";
+// import { toggleManualPanel } from "@comp/ProjectEditor/actions";
+// import {
+//     stopCsound,
+//     playPauseCsound,
+//     renderToDisk
+// } from "@comp/Csound/actions";
+import { append, equals, isEmpty, reduce, slice } from "ramda";
+// import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
+// import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
 
 function MenuBar(props) {
-    const activeProjectUid: string = useSelector(
-        pathOr("", ["ProjectsReducer", "activeProjectUid"])
-    );
+    // const activeProjectUid: string = useSelector(
+    //     pathOr("", ["ProjectsReducer", "activeProjectUid"])
+    // );
 
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
 
-    const playAction = useSelector(getPlayActionFromTarget);
+    // const playAction = useSelector(getPlayActionFromTarget);
 
     const menuBarItems: MenuItemDef[] = [
         {
@@ -39,30 +37,36 @@ function MenuBar(props) {
                     label: "New File…",
                     role: "creates new document",
                     keyBinding: isMac ? null : "ctrl+alt+n",
-                    keyBindingLabel: isMac ? null : "ctrl+alt+n",
-                    callback: () => dispatch(newDocument(activeProjectUid, ""))
+                    keyBindingLabel: isMac ? null : "ctrl+alt+n"
+                    // callback: useCallback(
+                    //     () => dispatch(newDocument(activeProjectUid, "")),
+                    //     // eslint-disable-next-line
+                    //     []
+                    // )
                 },
                 {
                     label: "Add File…",
-                    role: "add file from filesystem",
-                    callback: () => dispatch(addDocument(activeProjectUid))
+                    role: "add file from filesystem"
+                    // callback: useCallback(
+                    //     () => dispatch(addDocument(activeProjectUid)),
+                    //     // eslint-disable-next-line
+                    //     []
+                    // )
                 },
                 {
                     label: "Save Document",
                     keyBinding: isMac ? "alt+y" : "ctrl+s",
                     keyBindingLabel: isMac ? "⌘+s" : "ctrl+s",
-                    callback: () => {
-                        dispatch(saveFile());
-                    },
+                    // eslint-disable-next-line
+                    // callback: () => useCallback(dispatch(saveFile()), []),
                     role: "saveFile"
                 },
                 {
                     label: "Save All",
                     keyBinding: isMac ? "opt+cmd+s" : "ctrl+shift+s",
                     keyBindingLabel: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
-                    callback: () => {
-                        dispatch(saveFile());
-                    },
+                    // eslint-disable-next-line
+                    // callback: useCallback(() => dispatch(saveFile()), []),
                     role: "saveAll"
                 },
                 {
@@ -70,12 +74,12 @@ function MenuBar(props) {
                 },
                 {
                     label: "Render to Disk and Download",
-                    callback: () => dispatch(renderToDisk()),
+                    // callback: () => dispatch(renderToDisk()),
                     role: "renderToDisk"
                 },
                 {
                     label: "Export Project (.zip)",
-                    callback: () => dispatch(exportProject()),
+                    // callback: () => dispatch(exportProject()),
                     role: "export"
                 },
                 {
@@ -95,7 +99,46 @@ function MenuBar(props) {
                 { label: "Redo", role: "doStuff" },
                 {
                     label: "Theme",
-                    submenu: [{ label: "BluePunk", role: "doStuff" }]
+                    submenu: [
+                        {
+                            label: "BluePunk",
+                            role: "doStuff",
+                            submenu: [
+                                { label: "TEST1", role: "" },
+                                {
+                                    label: "TEST2",
+                                    role: "",
+                                    submenu: [
+                                        {
+                                            label: "Undo",
+                                            role: "doStuff",
+                                            submenu: [
+                                                {
+                                                    label: "Undo",
+                                                    role: "doStuff",
+                                                    submenu: [
+                                                        {
+                                                            label: "Undo",
+                                                            role: "doStuff"
+                                                        },
+                                                        {
+                                                            label: "Redo",
+                                                            role: "doStuff"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    label:
+                                                        "VAR FYRIR NE?ANN EN NUNA?"
+                                                }
+                                            ]
+                                        },
+                                        { label: "Redo", role: "doStuff" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },
@@ -106,19 +149,19 @@ function MenuBar(props) {
                     label: "Run",
                     keyBinding: isMac ? "cmd+r" : "ctrl+r",
                     keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
-                    role: "Run Csound",
-                    callback: () => dispatch(playAction)
+                    role: "Run Csound"
+                    // callback: () => dispatch(playAction)
                 },
                 {
-                    label: "Stop",
-                    callback: () => dispatch(stopCsound())
+                    label: "Stop"
+                    // callback: () => dispatch(stopCsound())
                 },
                 {
                     label: "Pause",
                     keyBinding: isMac ? "cmd+p" : "ctrl+p",
                     keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
-                    role: "doStuff",
-                    callback: () => dispatch(playPauseCsound())
+                    role: "doStuff"
+                    // callback: () => dispatch(playPauseCsound())
                 },
                 {
                     role: "hr"
@@ -134,8 +177,8 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "Csound Manual",
-                    role: "toggleManual",
-                    callback: () => dispatch(toggleManualPanel())
+                    role: "toggleManual"
+                    // callback: () => dispatch(toggleManualPanel())
                 },
                 {
                     label: "Csound Manual (External)",
@@ -169,107 +212,143 @@ function MenuBar(props) {
                 },
                 {
                     label: "Show Keyboard Shortcuts",
-                    role: "showKeyboardShortcuts",
-                    callback: () => dispatch(showKeyboardShortcuts())
+                    role: "showKeyboardShortcuts"
+                    // callback: () => dispatch(showKeyboardShortcuts())
                 }
             ]
         }
     ];
 
     (MenuBar as any).handleClickOutside = evt => {
-        setOpen(false);
+        setOpenPath([]);
     };
 
-    const [open, setOpen] = useState(false) as any;
+    const [openPath, setOpenPath]: [number[], (p: number[]) => any] = useState(
+        [] as number[]
+    );
 
-    function reduceRow(items, nesting) {
-        return reduce(
-            items,
-            (acc, item) => {
+    const reduceRow = (items, openPath: number[], rowNesting: number[]) =>
+        reduce(
+            (acc: React.ReactNode[], item: MenuItemDef) => {
                 const index = acc.length;
-                const keyBinding = item.keyBinding;
-                const itemCallback = item.callback;
+                const thisRowNesting = append(index, rowNesting);
+                const hasChild: boolean = typeof item.submenu !== "undefined";
 
                 if (item.role === "hr") {
                     acc.push(<hr key={index} css={SS.hr} />);
-                } else if (keyBinding && itemCallback) {
-                    acc.push(
-                        <li
-                            css={SS.listItem}
-                            key={index}
-                            onClick={() => itemCallback()}
-                        >
-                            <p css={SS.paraLabel}>{item.label}</p>
-                            <span style={{ width: 24 }} />
-                            <i css={SS.paraLabel}>{item.keyBindingLabel}</i>
-                        </li>
-                    );
-                } else if (itemCallback) {
-                    acc.push(
-                        <li
-                            css={SS.listItem}
-                            key={index}
-                            onClick={() => itemCallback()}
-                        >
-                            <p css={SS.paraLabel}>{item.label}</p>
-                        </li>
-                    );
                 } else {
                     acc.push(
-                        <li css={SS.listItem} key={index}>
-                            <p css={SS.paraLabel}>{item.label}</p>
-                        </li>
+                        <div
+                            key={index}
+                            onClick={() => item.callback && item.callback()}
+                            css={hasChild && SS.nestedWrapper}
+                            onMouseOver={() => {
+                                setOpenPath(thisRowNesting);
+                            }}
+                        >
+                            {hasChild &&
+                                equals(
+                                    thisRowNesting,
+                                    (slice as any)(
+                                        0,
+                                        thisRowNesting.length,
+                                        openPath
+                                    )
+                                ) && (
+                                    <ul
+                                        css={SS.dropdownListNested}
+                                        style={{
+                                            zIndex: thisRowNesting.length
+                                        }}
+                                        onMouseOver={e => {
+                                            thisRowNesting.length >
+                                                openPath.length &&
+                                                setOpenPath(
+                                                    append(
+                                                        0,
+                                                        (slice as any)(
+                                                            0,
+                                                            thisRowNesting.length,
+                                                            openPath
+                                                        )
+                                                    )
+                                                );
+                                            e.stopPropagation();
+                                        }}
+                                    >
+                                        {reduceRow(
+                                            item.submenu,
+                                            openPath,
+                                            thisRowNesting
+                                        )}
+                                    </ul>
+                                )}
+
+                            <li css={SS.listItem}>
+                                <p css={SS.paraLabel}>{item.label}</p>
+                                {item.keyBindingLabel && (
+                                    <i css={SS.paraLabel}>
+                                        {item.keyBindingLabel}
+                                    </i>
+                                )}
+                            </li>
+                        </div>
                     );
                 }
                 return acc;
             },
-            [] as React.ReactNode[]
+            [] as React.ReactNode[],
+            items
         );
-    }
 
-    const columns = reduce(
-        menuBarItems,
-        (acc, item) => {
-            const index = acc.length;
-            const row = (
-                <ul
-                    style={{ display: open === index ? "inline" : "none" }}
-                    css={SS.dropdownList}
-                >
-                    {reduceRow(item.submenu, 0)}
-                </ul>
-            );
-            acc.push(
-                <div
-                    css={SS.dropdownButtonWrapper}
-                    key={acc.length + open}
-                    onClick={e => {
-                        open !== false && index === open
-                            ? setOpen(false)
-                            : setOpen(index);
-                    }}
-                >
-                    <div
-                        css={SS.dropdownButton}
-                        onMouseOver={() =>
-                            open !== false && index !== open
-                                ? setOpen(index)
-                                : null
-                        }
+    const columns = openPath =>
+        reduce(
+            (acc: React.ReactNode[], item: MenuItemDef) => {
+                const index = acc.length;
+                // const openPath = openPath;
+                const anyColIsOpen = !isEmpty(openPath);
+                const thisColIsOpen =
+                    !isEmpty(openPath) && equals(openPath[0], index);
+                const row = (
+                    <ul
+                        style={{ display: thisColIsOpen ? "inline" : "none" }}
+                        css={SS.dropdownList}
                     >
-                        <span>{item.label}</span>
+                        {!isEmpty(openPath) &&
+                            !isEmpty(item.submenu) &&
+                            reduceRow(item.submenu, openPath, [index])}
+                    </ul>
+                );
+                acc.push(
+                    <div
+                        css={SS.dropdownButtonWrapper}
+                        key={acc.length}
+                        onClick={e => {
+                            thisColIsOpen
+                                ? setOpenPath([])
+                                : setOpenPath([index]);
+                        }}
+                    >
+                        <div
+                            css={SS.dropdownButton}
+                            onMouseOver={() =>
+                                anyColIsOpen && setOpenPath([index])
+                            }
+                        >
+                            <span>{item.label}</span>
+                        </div>
+                        {row}
                     </div>
-                    {row}
-                </div>
-            );
-            return acc;
-        },
-        [] as React.ReactNode[]
-    );
+                );
+                return acc;
+            },
+            [] as React.ReactNode[],
+            menuBarItems
+        );
 
     return (
         <>
-            <ul css={SS.root}>{columns}</ul>
+            <ul css={SS.root}>{columns(openPath)}</ul>
         </>
     );
 }

@@ -39,14 +39,6 @@ export const makeMuiTheme = (muiTheme, theme) => {
         assocPath(["overrides", "MuiTypography", "root"], {
             color: `${theme.color.primary}!important`
         }),
-        assocPath(["overrides", "MuiButtonBase", "outlinedPrimary"], {
-            color: `${theme.button.primary}`,
-            borderColor: "brown",
-            backgroundColor: "red",
-            "&:hover": {
-                backgroundColor: `${theme.highlight.primary}!important`
-            }
-        }),
         assocPath(["overrides", "MuiButtonBase", "root"], {
             color: `${theme.button.primary}`,
             "&:hover": {
