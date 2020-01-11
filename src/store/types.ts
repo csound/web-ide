@@ -18,4 +18,4 @@ export interface IStore {
     ConsoleReducer: IConsoleReducer;
 }
 
-export type ISelector = (x: IStore) => any;
+export type Selector = (x: IStore) => any;

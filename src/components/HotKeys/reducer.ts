@@ -1,26 +1,45 @@
-import { HotKeysActionTypes, SET_MENU_BAR_HOTKEYS } from "./types";
-import { assoc, pipe } from "ramda";
+import defaultBindings from "./defaultBindings";
+import { assoc, mergeAll } from "ramda";
+import {
+    HotKeysActionTypes,
+    IHotKeysCallbacks,
+    BindingsMap,
+    STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
+} from "./types";
 
-export interface State {
-    readonly keyMap: any;
-    readonly keyHandlers: any;
+export interface IHotKeys {
+    bindings: BindingsMap;
+    callbacks: IHotKeysCallbacks;
 }
 
-const INITIAL_STATE: State = {
-    keyMap: {},
-    keyHandlers: {}
+const INITIAL_STATE: IHotKeys = {
+    bindings: defaultBindings,
+    callbacks: {
+        // IProfileCommands
+        new_project: null,
+        // IProjectEditorCommands
+        new_document: null,
+        pause_playback: null,
+        run_project: null,
+        save_all_documents: null,
+        save_document: null,
+        stop_playback: null,
+        // IEditorCommands
+        doc_at_point: null
+    }
 };
 
-export default (state = INITIAL_STATE, action: HotKeysActionTypes) => {
+export default (state: IHotKeys, action: HotKeysActionTypes) => {
     switch (action.type) {
-        case SET_MENU_BAR_HOTKEYS: {
-            return pipe(
-                assoc("keyMap", action.keyMap),
-                assoc("keyHandlers", action.keyHandlers)
-            )(state);
+        case STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS: {
+            return assoc(
+                "callbacks",
+                mergeAll([state.callbacks, action.callbacks]),
+                state
+            );
         }
         default: {
-            return state;
+            return state || INITIAL_STATE;
         }
     }
 };

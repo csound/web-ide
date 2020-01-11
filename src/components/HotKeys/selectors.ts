@@ -1,9 +1,15 @@
-import { ISelector } from "@store/types";
-import { path } from "ramda";
+import { BindingsMap, IHotKeysCallbacks } from "./types";
+import { pathOr } from "ramda";
 
-export const selectKeyHandlers: ISelector = path([
+export const selectKeyCallbacks: (
+    Selector
+) => IHotKeysCallbacks | null = pathOr(null, ["HotKeysReducer", "callbacks"]);
+
+export const selectKeyBindings: (
+    Selector
+) => BindingsMap | undefined = pathOr(undefined, [
     "HotKeysReducer",
-    "keyHandlers"
+    "bindings"
 ]);
 
-export const selectKeyMaps: ISelector = path(["HotKeysReducer", "keyMap"]);
+// export const selectKeyMaps: Selector = path(["HotKeysReducer", "keyMap"]);

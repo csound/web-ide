@@ -1,33 +1,33 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import onClickOutside from "react-onclickoutside";
-// import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import * as SS from "./styles";
 import { MenuItemDef } from "./interfaces";
-import { isMac } from "@root/utils";
-// import {
-//     newDocument,
-//     saveFile,
-//     exportProject,
-//     addDocument
-// } from "@comp/Projects/actions";
+// import { isMac } from "@root/utils";
+import {
+    newDocument,
+    saveFile,
+    exportProject,
+    addDocument
+} from "@comp/Projects/actions";
 // import { toggleManualPanel } from "@comp/ProjectEditor/actions";
-// import {
-//     stopCsound,
-//     playPauseCsound,
-//     renderToDisk
-// } from "@comp/Csound/actions";
-import { append, equals, isEmpty, reduce, slice } from "ramda";
-// import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
-// import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
+import {
+    stopCsound,
+    playPauseCsound,
+    renderToDisk
+} from "@comp/Csound/actions";
+import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
+import { append, equals, isEmpty, pathOr, reduce, slice } from "ramda";
+import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
 
 function MenuBar(props) {
-    // const activeProjectUid: string = useSelector(
-    //     pathOr("", ["ProjectsReducer", "activeProjectUid"])
-    // );
+    const activeProjectUid: string = useSelector(
+        pathOr("", ["ProjectsReducer", "activeProjectUid"])
+    );
 
-    // const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-    // const playAction = useSelector(getPlayActionFromTarget);
+    const playAction = useSelector(getPlayActionFromTarget);
 
     const menuBarItems: MenuItemDef[] = [
         {
@@ -36,37 +36,28 @@ function MenuBar(props) {
                 {
                     label: "New File…",
                     role: "creates new document",
-                    keyBinding: isMac ? null : "ctrl+alt+n",
-                    keyBindingLabel: isMac ? null : "ctrl+alt+n"
-                    // callback: useCallback(
-                    //     () => dispatch(newDocument(activeProjectUid, "")),
-                    //     // eslint-disable-next-line
-                    //     []
-                    // )
+                    hotKey: "new_document",
+                    callback: () => dispatch(newDocument(activeProjectUid, ""))
                 },
                 {
                     label: "Add File…",
-                    role: "add file from filesystem"
-                    // callback: useCallback(
-                    //     () => dispatch(addDocument(activeProjectUid)),
-                    //     // eslint-disable-next-line
-                    //     []
-                    // )
+                    role: "add file from filesystem",
+                    callback: () => dispatch(addDocument(activeProjectUid))
                 },
                 {
                     label: "Save Document",
-                    keyBinding: isMac ? "alt+y" : "ctrl+s",
-                    keyBindingLabel: isMac ? "⌘+s" : "ctrl+s",
+                    // keyBinding: isMac ? "alt+y" : "ctrl+s",
+                    // keyBindingLabel: isMac ? "⌘+s" : "ctrl+s",
                     // eslint-disable-next-line
-                    // callback: () => useCallback(dispatch(saveFile()), []),
+                    callback: () => useCallback(dispatch(saveFile()), []),
                     role: "saveFile"
                 },
                 {
                     label: "Save All",
-                    keyBinding: isMac ? "opt+cmd+s" : "ctrl+shift+s",
-                    keyBindingLabel: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
+                    // keyBinding: isMac ? "opt+cmd+s" : "ctrl+shift+s",
+                    // keyBindingLabel: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
                     // eslint-disable-next-line
-                    // callback: useCallback(() => dispatch(saveFile()), []),
+                    callback: useCallback(() => dispatch(saveFile()), []),
                     role: "saveAll"
                 },
                 {
@@ -74,12 +65,12 @@ function MenuBar(props) {
                 },
                 {
                     label: "Render to Disk and Download",
-                    // callback: () => dispatch(renderToDisk()),
+                    callback: () => dispatch(renderToDisk()),
                     role: "renderToDisk"
                 },
                 {
                     label: "Export Project (.zip)",
-                    // callback: () => dispatch(exportProject()),
+                    callback: () => dispatch(exportProject()),
                     role: "export"
                 },
                 {
@@ -147,21 +138,21 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "Run",
-                    keyBinding: isMac ? "cmd+r" : "ctrl+r",
-                    keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
-                    role: "Run Csound"
-                    // callback: () => dispatch(playAction)
+                    // keyBinding: isMac ? "cmd+r" : "ctrl+r",
+                    // keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
+                    role: "Run Csound",
+                    callback: () => dispatch(playAction)
                 },
                 {
-                    label: "Stop"
-                    // callback: () => dispatch(stopCsound())
+                    label: "Stop",
+                    callback: () => dispatch(stopCsound())
                 },
                 {
                     label: "Pause",
-                    keyBinding: isMac ? "cmd+p" : "ctrl+p",
-                    keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
-                    role: "doStuff"
-                    // callback: () => dispatch(playPauseCsound())
+                    // keyBinding: isMac ? "cmd+p" : "ctrl+p",
+                    // keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
+                    role: "doStuff",
+                    callback: () => dispatch(playPauseCsound())
                 },
                 {
                     role: "hr"
@@ -212,8 +203,8 @@ function MenuBar(props) {
                 },
                 {
                     label: "Show Keyboard Shortcuts",
-                    role: "showKeyboardShortcuts"
-                    // callback: () => dispatch(showKeyboardShortcuts())
+                    role: "showKeyboardShortcuts",
+                    callback: () => dispatch(showKeyboardShortcuts())
                 }
             ]
         }
@@ -240,7 +231,10 @@ function MenuBar(props) {
                     acc.push(
                         <div
                             key={index}
-                            onClick={() => item.callback && item.callback()}
+                            onClick={e => {
+                                item.callback && item.callback();
+                                e.preventDefault();
+                            }}
                             css={hasChild && SS.nestedWrapper}
                             onMouseOver={() => {
                                 setOpenPath(thisRowNesting);

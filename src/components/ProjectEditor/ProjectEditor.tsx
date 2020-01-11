@@ -19,7 +19,8 @@ import AudioEditor from "../AudioEditor/AudioEditor";
 import { useTheme } from "emotion-theming";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
-import Console from "../Console/Console";
+import Console from "@comp/Console/Console";
+import { storeProjectEditorKeyboardCallbacks } from "@comp/HotKeys/actions";
 import { append, reduce, pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
 import "react-splitter-layout/lib/index.css";
@@ -233,6 +234,7 @@ const ProjectEditor = props => {
     }, [secondaryPanel]);
 
     useEffect(() => {
+        dispatch(storeProjectEditorKeyboardCallbacks(projectUid));
         return () => {
             dispatch(closeTabDock());
             dispatch(closeProject());
