@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { push } from "connected-react-router";
 import { tabClose, tabOpenByDocumentUid } from "../ProjectEditor/actions";
 import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
@@ -320,6 +321,15 @@ export const saveAllFiles = () => {
                 } catch (error) {}
             });
         }
+    };
+};
+
+export const saveAllAndClose = (goTo: string) => {
+    return function(dispatch) {
+        return saveAllFiles()(dispatch).then(
+            () => dispatch(push(goTo)),
+            console.error
+        );
     };
 };
 

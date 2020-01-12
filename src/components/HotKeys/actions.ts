@@ -4,7 +4,13 @@ import {
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
 import { curry } from "ramda";
-import { newDocument, saveFile, addDocument } from "@comp/Projects/actions";
+import {
+    newDocument,
+    saveAllAndClose,
+    saveAllFiles,
+    saveFile,
+    addDocument
+} from "@comp/Projects/actions";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { stopCsound } from "@comp/Csound/actions";
 
@@ -30,7 +36,10 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
             ),
             run_project: withPreventDefault(() => dispatch(playAction)),
             save_all_documents: withPreventDefault(() =>
-                console.log("TODO: IMPLEMENT SAVE_ALL!")
+                dispatch(saveAllFiles())
+            ),
+            save_and_close: withPreventDefault(() =>
+                dispatch(saveAllAndClose("/profile"))
             ),
             save_document: withPreventDefault(() => dispatch(saveFile())),
             stop_playback: withPreventDefault(() => dispatch(stopCsound()))

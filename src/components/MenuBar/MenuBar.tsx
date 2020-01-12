@@ -9,6 +9,8 @@ import { BindingsMap } from "@comp/HotKeys/types";
 import { humanizeKeySequence } from "@comp/HotKeys/utils";
 import {
     newDocument,
+    saveAllAndClose,
+    saveAllFiles,
     saveFile,
     exportProject,
     addDocument
@@ -62,7 +64,7 @@ function MenuBar(props) {
                 {
                     label: "Save All",
                     hotKey: "save_all_documents",
-                    callback: () => dispatch(saveFile())
+                    callback: () => dispatch(saveAllFiles())
                 },
                 {
                     seperator: true
@@ -79,7 +81,9 @@ function MenuBar(props) {
                     seperator: true
                 },
                 {
-                    label: "Save and Close"
+                    label: "Save and Close",
+                    hotKey: "save_and_close",
+                    callback: () => dispatch(saveAllAndClose("/profile"))
                 }
             ]
         },
@@ -110,14 +114,17 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "Run/Play",
+                    hotKey: "run_project",
                     callback: () => dispatch(playAction)
                 },
                 {
                     label: "Stop",
+                    hotKey: "stop_playback",
                     callback: () => dispatch(stopCsound())
                 },
                 {
                     label: "Pause",
+                    hotKey: "pause_playback",
                     callback: () => dispatch(playPauseCsound())
                 },
                 {

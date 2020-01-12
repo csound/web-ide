@@ -31,6 +31,7 @@ export interface IProjectEditorCallbacks {
     run_project: CallbackOrUnbound;
     save_all_documents: CallbackOrUnbound;
     save_document: CallbackOrUnbound;
+    save_and_close: CallbackOrUnbound;
     stop_playback: CallbackOrUnbound;
 }
 

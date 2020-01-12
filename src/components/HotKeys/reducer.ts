@@ -23,6 +23,7 @@ const INITIAL_STATE: IHotKeys = {
         pause_playback: null,
         run_project: null,
         save_all_documents: null,
+        save_and_close: null,
         save_document: null,
         stop_playback: null,
         // IEditorCommands
