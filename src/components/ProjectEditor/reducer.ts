@@ -110,13 +110,20 @@ export default (
                 currentOpenDocs,
                 (od: IOpenDocument) => od.uid === action.documentUid
             );
-            if ((documentAlreadyOpenIndex < 0 || action.init) && !action.hack) {
-                const newState = addTabToOpenDocuments(
+            if (documentAlreadyOpenIndex < 0 || action.init) {
+                const newAppendedState = addTabToOpenDocuments(
                     {
                         uid: action.documentUid,
                         editorInstance: null
                     },
                     state
+                );
+
+                // Focus on open action (can be made configureable)
+                const newState = assocPath(
+                    ["tabDock", "tabIndex"],
+                    newAppendedState.tabDock.openDocuments.length - 1,
+                    newAppendedState
                 );
                 storeTabDockState(
                     action.projectUid,
@@ -124,6 +131,7 @@ export default (
                 );
                 return newState;
             } else {
+                console.log(documentAlreadyOpenIndex, state.tabDock.tabIndex);
                 return assocPath(
                     ["tabDock", "tabIndex"],
                     documentAlreadyOpenIndex,
