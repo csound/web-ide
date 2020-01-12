@@ -22,7 +22,8 @@ import {
     SET_PROJECT_TARGETS,
     IProject,
     ITarget,
-    IDocument
+    IDocument,
+    SET_PROJECT_PUBLIC
 } from "./types";
 import { filenameToType, textOrBinary } from "./utils";
 import { IStore } from "@store/types";
@@ -35,6 +36,9 @@ import firebase from "firebase/app";
 import { formatFileSize } from "@root/utils";
 import uuidv4 from "uuid/v4";
 import * as SS from "./styles";
+import { selectActiveProjectUid } from "../SocialControls/selectors";
+import { Action } from "redux";
+import { ThunkAction } from "redux-thunk";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -834,5 +838,30 @@ export const exportProject = () => {
                 saveAs(content, "project.zip");
             });
         }
+    };
+};
+
+export const markProjectPublic = (
+    isPublic: boolean
+): ThunkAction<void, any, null, Action<string>> => {
+    return (dispatch, getState) => {
+        console.log("setting project to " + isPublic)
+        const state = getState();
+        const activeProjectUid = selectActiveProjectUid(state);
+        if (activeProjectUid == null) {
+            return;
+        }
+        firebase.auth().onAuthStateChanged(async user => {
+            if (user !== null) {
+                await projects.doc(activeProjectUid).update({
+                    public: isPublic
+                });
+                dispatch({
+                    type: SET_PROJECT_PUBLIC,
+                    projectUid: activeProjectUid,
+                    isPublic
+                });
+            }
+        });
     };
 };

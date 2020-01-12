@@ -2,6 +2,8 @@ import { IStore } from "@store/types";
 import { IProject, IProjectsReducer } from "../Projects/types";
 import { createSelector } from "reselect";
 import { selectLoggedInUserStars } from "../Profile/selectors";
+import { propOr } from "ramda";
+import { selectActiveProject } from "../Projects/selectors";
 export const selectActiveProjectUid = (store: IStore): string | null => {
     const state: IProjectsReducer = store.ProjectsReducer;
     return state.activeProjectUid;
@@ -23,3 +25,9 @@ export const selectUserStarredProject = createSelector(
         return loggedInUserStars.includes(activeProjectUid);
     }
 );
+
+export const selectProjectPublic = (store: IStore) => {
+    const activeProject = selectActiveProject(store);
+    console.log("select: ", activeProject)
+    return propOr(true, "isPublic", activeProject);
+}

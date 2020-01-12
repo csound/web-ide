@@ -13,7 +13,8 @@ import {
     CLOSE_PROJECT,
     SET_PROJECT,
     SET_PROJECT_FILES,
-    SET_PROJECT_TARGETS
+    SET_PROJECT_TARGETS,
+    SET_PROJECT_PUBLIC
 } from "./types";
 import { assoc, assocPath, curry, dissocPath, pathOr, pipe } from "ramda";
 import { isEmpty } from "lodash";
@@ -93,6 +94,12 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             return assocPath(
                 ["projects", action.projectUid, "targets"],
                 action.targets
+            )(state) as IProjectsReducer;
+        }
+        case SET_PROJECT_PUBLIC: {
+            return assocPath(
+                ["projects", action.projectUid, "isPublic"],
+                action.isPublic
             )(state) as IProjectsReducer;
         }
         case ACTIVATE_PROJECT:

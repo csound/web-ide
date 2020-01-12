@@ -100,7 +100,7 @@ export const addUserProject = (
                 userUid: user.uid,
                 name,
                 description,
-                public: false,
+                public: true,
                 tags: currentTags
             };
 
