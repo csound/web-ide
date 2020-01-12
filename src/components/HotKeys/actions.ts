@@ -1,18 +1,10 @@
 import "firebase/auth";
-// import { ThunkAction } from "redux-thunk";
 import {
-    // HotKeysActionTypes,
     IProjectEditorCallbacks,
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
-// import { Action } from "redux";
 import { curry } from "ramda";
-import {
-    newDocument,
-    saveFile
-    // exportProject,
-    // addDocument
-} from "@comp/Projects/actions";
+import { newDocument, saveFile, addDocument } from "@comp/Projects/actions";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { stopCsound } from "@comp/Csound/actions";
 
@@ -27,6 +19,9 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
         const playAction = getPlayActionFromTarget(store);
 
         const callbacks: IProjectEditorCallbacks = {
+            add_file: withPreventDefault(() =>
+                dispatch(addDocument(projectUid))
+            ),
             new_document: withPreventDefault(() =>
                 dispatch(newDocument(projectUid, ""))
             ),
@@ -46,37 +41,3 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
         });
     };
 };
-
-// const setHotKeysAction = ({ keyMap, keyHandlers }): HotKeysActionTypes => ({
-//     type: SET_MENU_BAR_HOTKEYS,
-//     keyMap,
-//     keyHandlers
-// });
-//
-// export const setProfileHotKeys = (): ThunkAction<
-//     void,
-//     any,
-//     null,
-//     Action<string>
-// > => (dispatch, getStore) =>
-//     dispatch(setHotKeysAction({ keyMap: {}, keyHandlers: {} }));
-
-// export const setMenuBarHotKeys = (): ThunkAction<
-//     void,
-//     any,
-//     null,
-//     Action<string>
-// > => (dispatch, getStore) => {
-//     const menuBarItems = getMenuBarItems(dispatch, getStore);
-//
-//     const keyMap = menuBarItems.reduce((acc, { label, keyBinding }) => {
-//         acc[label] = keyBinding;
-//         return acc;
-//     }, {});
-//
-//     const keyHandlers = menuBarItems.reduce(
-//         (acc, { label, callback }) => assoc(label, callback)(acc),
-//         {}
-//     );
-//     dispatch(setHotKeysAction({ keyMap, keyHandlers }));
-// };

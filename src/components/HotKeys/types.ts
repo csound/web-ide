@@ -25,6 +25,7 @@ export interface IProfileCallbacks {
 }
 
 export interface IProjectEditorCallbacks {
+    add_file: CallbackOrUnbound;
     new_document: CallbackOrUnbound;
     pause_playback: CallbackOrUnbound;
     run_project: CallbackOrUnbound;

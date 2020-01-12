@@ -1,15 +1,17 @@
 import { ITheme } from "@styles/types";
 import MonokaiTheme from "@styles/_theme_monokai";
 import BluePunkTheme from "@styles/_theme_bluepunk";
-import { mergeAll } from "ramda";
+// import { mergeAll } from "ramda";
 import { THEMES_CHANGE_THEME } from "./types";
 
 export interface IThemeReducer {
     selectedTheme: ITheme;
+    selectedThemeName: string;
 }
 
 const initialState = {
-    selectedTheme: MonokaiTheme as ITheme
+    selectedTheme: MonokaiTheme as ITheme,
+    selectedThemeName: "monokai"
 };
 
 export default (state: IThemeReducer, action: any) => {
@@ -17,16 +19,22 @@ export default (state: IThemeReducer, action: any) => {
         case THEMES_CHANGE_THEME: {
             switch (action.newTheme) {
                 case "monokai": {
-                    return mergeAll([state, { theme: MonokaiTheme as ITheme }]);
+                    return {
+                        selectedTheme: MonokaiTheme,
+                        selectedThemeName: "monokai"
+                    };
                 }
                 case "bluepunk": {
-                    return mergeAll([
-                        state,
-                        { theme: BluePunkTheme as ITheme }
-                    ]);
+                    return {
+                        selectedTheme: BluePunkTheme,
+                        selectedThemeName: "bluepunk"
+                    };
                 }
                 default: {
-                    return mergeAll([state, { theme: MonokaiTheme as ITheme }]);
+                    return {
+                        selectedTheme: MonokaiTheme,
+                        selectedThemeName: "monokai"
+                    };
                 }
             }
         }

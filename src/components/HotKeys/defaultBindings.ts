@@ -2,6 +2,7 @@ import { isMac } from "@root/utils";
 import { BindingsMap } from "./types";
 
 const defaultBindings: BindingsMap = {
+    add_file: isMac ? "command+alt+u" : "ctrl+alt+u",
     new_document: isMac ? "command+alt+n" : "ctrl+alt+n",
     pause_playback: isMac ? "command+p" : "ctrl+p",
     run_project: isMac ? "command+r" : "ctrl+r",

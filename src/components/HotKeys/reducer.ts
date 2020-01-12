@@ -18,6 +18,7 @@ const INITIAL_STATE: IHotKeys = {
         // IProfileCommands
         new_project: null,
         // IProjectEditorCommands
+        add_file: null,
         new_document: null,
         pause_playback: null,
         run_project: null,

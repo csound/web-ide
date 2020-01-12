@@ -23,6 +23,21 @@ export const hr = theme => css`
     margin: 0;
 `;
 
+export const selectedIcon = theme => css`
+    position: absolute;
+    fill: ${theme.color.primary};
+    height: auto;
+    width: 18px;
+    margin-top: 8px;
+`;
+
+export const nestedMenuIcon = theme => css`
+    ${selectedIcon(theme)}
+    margin-top: 6px;
+    right: 0px;
+    zoom: 130%;
+`;
+
 export const paraLabel = css`
     margin: 9px 12px 9px 24px;
     font-size: 14px;
@@ -89,6 +104,7 @@ export const nestedWrapper = css`
 
 export const listItem = theme => css`
     padding: 2px 12px;
+    padding-right: 18px;
     width: 100%;
     display: flex;
     justify-content: space-between;

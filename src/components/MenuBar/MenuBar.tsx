@@ -1,23 +1,27 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
 import { useSelector, useDispatch } from "react-redux";
+import SelectedIcon from "@material-ui/icons/DoneSharp";
+import NestedMenuIcon from "@material-ui/icons/ArrowRightSharp";
 import * as SS from "./styles";
-import { MenuItemDef } from "./interfaces";
-// import { isMac } from "@root/utils";
+import { MenuItemDef } from "./types";
+import { BindingsMap } from "@comp/HotKeys/types";
+import { humanizeKeySequence } from "@comp/HotKeys/utils";
 import {
     newDocument,
     saveFile,
     exportProject,
     addDocument
 } from "@comp/Projects/actions";
-// import { toggleManualPanel } from "@comp/ProjectEditor/actions";
+import { toggleManualPanel } from "@comp/ProjectEditor/actions";
 import {
     stopCsound,
     playPauseCsound,
     renderToDisk
 } from "@comp/Csound/actions";
+import { changeTheme } from "@comp/Themes/action";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
-import { append, equals, isEmpty, pathOr, reduce, slice } from "ramda";
+import { append, equals, isEmpty, pathOr, propOr, reduce, slice } from "ramda";
 import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
 
 function MenuBar(props) {
@@ -28,6 +32,13 @@ function MenuBar(props) {
     const dispatch = useDispatch();
 
     const playAction = useSelector(getPlayActionFromTarget);
+    const keyBindings: BindingsMap | null = useSelector(
+        pathOr(null, ["HotKeysReducer", "bindings"])
+    );
+
+    const selectedThemeName: string | null = useSelector(
+        pathOr(null, ["ThemeReducer", "selectedThemeName"])
+    );
 
     const menuBarItems: MenuItemDef[] = [
         {
@@ -35,99 +46,60 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "New File…",
-                    role: "creates new document",
                     hotKey: "new_document",
                     callback: () => dispatch(newDocument(activeProjectUid, ""))
                 },
                 {
                     label: "Add File…",
-                    role: "add file from filesystem",
+                    hotKey: "add_file",
                     callback: () => dispatch(addDocument(activeProjectUid))
                 },
                 {
                     label: "Save Document",
-                    // keyBinding: isMac ? "alt+y" : "ctrl+s",
-                    // keyBindingLabel: isMac ? "⌘+s" : "ctrl+s",
-                    // eslint-disable-next-line
-                    callback: () => useCallback(dispatch(saveFile()), []),
-                    role: "saveFile"
+                    hotKey: "save_document",
+                    callback: () => dispatch(saveFile())
                 },
                 {
                     label: "Save All",
-                    // keyBinding: isMac ? "opt+cmd+s" : "ctrl+shift+s",
-                    // keyBindingLabel: isMac ? "⌥+⌘+s" : "ctrl+shift+s",
-                    // eslint-disable-next-line
-                    callback: useCallback(() => dispatch(saveFile()), []),
-                    role: "saveAll"
+                    hotKey: "save_all_documents",
+                    callback: () => dispatch(saveFile())
                 },
                 {
-                    role: "hr"
+                    seperator: true
                 },
                 {
                     label: "Render to Disk and Download",
-                    callback: () => dispatch(renderToDisk()),
-                    role: "renderToDisk"
+                    callback: () => dispatch(renderToDisk())
                 },
                 {
                     label: "Export Project (.zip)",
-                    callback: () => dispatch(exportProject()),
-                    role: "export"
+                    callback: () => dispatch(exportProject())
                 },
                 {
-                    role: "hr"
+                    seperator: true
                 },
                 {
-                    label: "Save and Close",
-                    // keyBinding: isMac ? "⌘+s" : "ctrl+s",
-                    role: "saveFile"
+                    label: "Save and Close"
                 }
             ]
         },
         {
             label: "Edit",
             submenu: [
-                { label: "Undo", role: "doStuff" },
-                { label: "Redo", role: "doStuff" },
+                { label: "Undo" },
+                { label: "Redo" },
                 {
                     label: "Theme",
                     submenu: [
                         {
+                            label: "Monokai",
+                            callback: () => dispatch(changeTheme("monokai")),
+                            checked: selectedThemeName === "monokai"
+                        },
+                        {
                             label: "BluePunk",
-                            role: "doStuff",
-                            submenu: [
-                                { label: "TEST1", role: "" },
-                                {
-                                    label: "TEST2",
-                                    role: "",
-                                    submenu: [
-                                        {
-                                            label: "Undo",
-                                            role: "doStuff",
-                                            submenu: [
-                                                {
-                                                    label: "Undo",
-                                                    role: "doStuff",
-                                                    submenu: [
-                                                        {
-                                                            label: "Undo",
-                                                            role: "doStuff"
-                                                        },
-                                                        {
-                                                            label: "Redo",
-                                                            role: "doStuff"
-                                                        }
-                                                    ]
-                                                },
-                                                {
-                                                    label:
-                                                        "VAR FYRIR NE?ANN EN NUNA?"
-                                                }
-                                            ]
-                                        },
-                                        { label: "Redo", role: "doStuff" }
-                                    ]
-                                }
-                            ]
+                            callback: () => dispatch(changeTheme("bluepunk")),
+                            checked: selectedThemeName === "bluepunk"
                         }
                     ]
                 }
@@ -137,10 +109,7 @@ function MenuBar(props) {
             label: "Project",
             submenu: [
                 {
-                    label: "Run",
-                    // keyBinding: isMac ? "cmd+r" : "ctrl+r",
-                    // keyBindingLabel: isMac ? "⌘+r" : "ctrl+r",
-                    role: "Run Csound",
+                    label: "Run/Play",
                     callback: () => dispatch(playAction)
                 },
                 {
@@ -149,17 +118,13 @@ function MenuBar(props) {
                 },
                 {
                     label: "Pause",
-                    // keyBinding: isMac ? "cmd+p" : "ctrl+p",
-                    // keyBindingLabel: isMac ? "⌘+p" : "ctrl+p",
-                    role: "doStuff",
                     callback: () => dispatch(playPauseCsound())
                 },
                 {
-                    role: "hr"
+                    seperator: true
                 },
                 {
-                    label: "Configure Targets",
-                    role: "toggle-project-configure"
+                    label: "Configure Targets"
                 }
             ]
         },
@@ -168,19 +133,16 @@ function MenuBar(props) {
             submenu: [
                 {
                     label: "Csound Manual",
-                    role: "toggleManual"
-                    // callback: () => dispatch(toggleManualPanel())
+                    callback: () => dispatch(toggleManualPanel())
                 },
                 {
                     label: "Csound Manual (External)",
-                    role: "openCsoundManual",
                     callback: () => {
                         window.open("https://csound.com/docs/manual", "_blank");
                     }
                 },
                 {
                     label: "Csound FLOSS Manual",
-                    role: "openCsoundFLOSSManual",
                     callback: () => {
                         window.open(
                             "https://csound-floss.firebaseapp.com/",
@@ -189,21 +151,19 @@ function MenuBar(props) {
                     }
                 },
                 {
-                    role: "hr"
+                    seperator: true
                 },
                 {
                     label: "Web-IDE Documentation",
-                    role: "open WebIDE Documentation",
                     callback: () => {
                         window.open("/documentation", "_blank");
                     }
                 },
                 {
-                    role: "hr"
+                    seperator: true
                 },
                 {
                     label: "Show Keyboard Shortcuts",
-                    role: "showKeyboardShortcuts",
                     callback: () => dispatch(showKeyboardShortcuts())
                 }
             ]
@@ -225,7 +185,7 @@ function MenuBar(props) {
                 const thisRowNesting = append(index, rowNesting);
                 const hasChild: boolean = typeof item.submenu !== "undefined";
 
-                if (item.role === "hr") {
+                if (item.seperator) {
                     acc.push(<hr key={index} css={SS.hr} />);
                 } else {
                     acc.push(
@@ -279,11 +239,25 @@ function MenuBar(props) {
                                 )}
 
                             <li css={SS.listItem}>
+                                {item.checked && (
+                                    <SelectedIcon css={SS.selectedIcon} />
+                                )}
                                 <p css={SS.paraLabel}>{item.label}</p>
-                                {item.keyBindingLabel && (
-                                    <i css={SS.paraLabel}>
-                                        {item.keyBindingLabel}
-                                    </i>
+                                {item.hotKey &&
+                                    keyBindings &&
+                                    keyBindings[item.hotKey] && (
+                                        <i css={SS.paraLabel}>
+                                            {humanizeKeySequence(
+                                                propOr(
+                                                    "",
+                                                    item.hotKey,
+                                                    keyBindings
+                                                )
+                                            )}
+                                        </i>
+                                    )}
+                                {hasChild && (
+                                    <NestedMenuIcon css={SS.nestedMenuIcon} />
                                 )}
                             </li>
                         </div>
