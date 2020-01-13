@@ -28,6 +28,5 @@ export const selectUserStarredProject = createSelector(
 
 export const selectProjectPublic = (store: IStore) => {
     const activeProject = selectActiveProject(store);
-    console.log("select: ", activeProject)
     return propOr(true, "isPublic", activeProject);
 }
