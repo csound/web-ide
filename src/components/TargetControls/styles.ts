@@ -192,6 +192,18 @@ margin-left: 9px;
 `}
 `;
 
+export const closeIcon = theme => css`
+    position: absolute;
+    right: 50px;
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    & span,
+    svg {
+        width: 15px;
+    }
+`;
+
 export const menuForDialog = theme => css`
     ${menu(theme)}
     top: 44px;

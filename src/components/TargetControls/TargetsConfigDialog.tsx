@@ -11,7 +11,9 @@ import {
     FormGroup,
     TextField
 } from "@material-ui/core";
+import Tooltip from "@material-ui/core/Tooltip";
 import AddIcon from "@material-ui/icons/Add";
+import CloseIcon from "@material-ui/icons/Close";
 import SaveIcon from "@material-ui/icons/Save";
 import { ICsoundOptions } from "@comp/Csound/types";
 import { IStore } from "@store/types";
@@ -130,9 +132,10 @@ const TargetsConfigDialog = () => {
     const [storedTargets, setStoredTargets] = useState(targetsToLocalState());
 
     useEffect(() => {
-        return setStoredTargets(targetsToLocalState());
+        setStoredTargets(targetsToLocalState());
+        return () => setStoredTargets(targetsToLocalState());
         // eslint-disable-next-line
-    }, [targets]);
+    }, [targets, defaultTarget]);
 
     const [newTargets, setNewTargets] = useState(storedTargets);
 
@@ -207,6 +210,24 @@ const TargetsConfigDialog = () => {
                         error={!targetNameIsValid}
                         onChange={handleTargetNameInput}
                     />
+                    <Tooltip title={"delete target"} placement="right-end">
+                        <Fab
+                            onClick={() =>
+                                setNewTargets(
+                                    reject(
+                                        propEq("targetName", targetName),
+                                        newTargets
+                                    )
+                                )
+                            }
+                            css={SS.closeIcon}
+                            color="secondary"
+                            variant="round"
+                            size="small"
+                        >
+                            <CloseIcon />
+                        </Fab>
+                    </Tooltip>
                 </FormGroup>
                 <FormGroup style={{ marginTop: 24 }} row>
                     <p css={SS.targetLabel}>{"target type"}</p>
@@ -358,16 +379,21 @@ const TargetsConfigDialog = () => {
             aria-label="Save"
             size="medium"
             disabled={shouldDisallowSave}
-            onClick={() =>
+            onClick={() => {
+                const maybeDefaultTarget = find(
+                    prop("isDefaultTarget"),
+                    newTargets
+                );
                 dispatch(
                     saveChangesToTarget(
                         activeProjectUid,
                         firestoreNewTargets(newTargets),
-                        (find as any)(prop("isDefaultTarget"), newTargets) ||
-                            null
+                        maybeDefaultTarget
+                            ? maybeDefaultTarget.targetName
+                            : null
                     )
-                )
-            }
+                );
+            }}
             style={{ marginLeft: 12 }}
         >
             Save changes

@@ -229,9 +229,15 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             );
         }
         case UPDATE_TARGETS_LOCALLY: {
-            return assocPath(
-                ["projects", action.projectUid, "targets"],
-                action.targets
+            return pipe(
+                assocPath(
+                    ["projects", action.projectUid, "targets"],
+                    action.targets
+                ),
+                assocPath(
+                    ["projects", action.projectUid, "defaultTarget"],
+                    action.defaultTarget
+                )
             )(state);
         }
         default: {

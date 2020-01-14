@@ -10,7 +10,7 @@ export const setSelectedTarget = (selectedTarget: string) => {
             type: SET_SELECTED_TARGET,
             selectedTarget
         });
-        setTimeout(() => showTargetsConfigDialog()(dispatch), 1000);
+        // setTimeout(() => showTargetsConfigDialog()(dispatch), 1000);
     };
 };
 
@@ -20,8 +20,13 @@ export const showTargetsConfigDialog = () => {
     };
 };
 
-const updateTargetsLocally = (dispatch, projectUid, targets) => {
-    dispatch({ type: UPDATE_TARGETS_LOCALLY, projectUid, targets });
+const updateTargetsLocally = (dispatch, defaultTarget, projectUid, targets) => {
+    dispatch({
+        type: UPDATE_TARGETS_LOCALLY,
+        defaultTarget,
+        projectUid,
+        targets
+    });
 };
 
 export const saveChangesToTarget = (
@@ -38,13 +43,6 @@ export const saveChangesToTarget = (
             },
             { merge: true }
         );
-        updateTargetsLocally(dispatch, projectUid, targets);
-
-        // console.log(result);
-        // dispatch({
-        //     type: SET_SELECTED_TARGET,
-        //     selectedTarget
-        // });
-        // setTimeout(() => showTargetsConfigDialog()(dispatch), 1000);
+        updateTargetsLocally(dispatch, defaultTarget, projectUid, targets);
     };
 };
