@@ -16,6 +16,7 @@ import {
     SET_PROJECT_TARGETS,
     SET_PROJECT_PUBLIC
 } from "./types";
+import { UPDATE_TARGETS_LOCALLY } from "@comp/TargetControls/types";
 import { assoc, assocPath, curry, dissocPath, pathOr, pipe } from "ramda";
 import { isEmpty } from "lodash";
 
@@ -155,7 +156,6 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                             action.documentUid,
                             "currentValue"
                         ],
-
                         action.currentValue
                     ),
                     assocPath(
@@ -223,11 +223,16 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                             action.documentUid,
                             "filename"
                         ],
-                        action.newFilename,
-                        state
+                        action.newFilename
                     )(state) as IProjectsReducer)) ||
                 state
             );
+        }
+        case UPDATE_TARGETS_LOCALLY: {
+            return assocPath(
+                ["projects", action.projectUid, "targets"],
+                action.targets
+            )(state);
         }
         default: {
             return (state as IProjectsReducer) || initialProjectsState;

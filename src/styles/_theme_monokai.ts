@@ -46,6 +46,10 @@ const theme = {
         primary: monokaiForeground,
         secondary: sundriedClay
     },
+    disabledColor: {
+        primary: monokaiGray,
+        secondary: monokaiEmphasis
+    },
     alternativeColor: {
         primary: monokaiLineNumber,
         secondary: monokaiHighlight

@@ -28,6 +28,7 @@ export interface IProjectEditorCallbacks {
     add_file: CallbackOrUnbound;
     new_document: CallbackOrUnbound;
     pause_playback: CallbackOrUnbound;
+    open_target_config_dialog: CallbackOrUnbound;
     run_project: CallbackOrUnbound;
     save_all_documents: CallbackOrUnbound;
     save_document: CallbackOrUnbound;

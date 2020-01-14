@@ -19,11 +19,10 @@ import {
     CLOSE_PROJECT,
     SET_PROJECT,
     SET_PROJECT_FILES,
+    SET_PROJECT_PUBLIC,
     SET_PROJECT_TARGETS,
     IProject,
-    ITarget,
-    IDocument,
-    SET_PROJECT_PUBLIC
+    IDocument
 } from "./types";
 import { filenameToType, textOrBinary } from "./utils";
 import { IStore } from "@store/types";
@@ -50,7 +49,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                 const project: IProject = {
                     projectUid,
                     documents: {},
-                    targets: {},
+                    targets: propOr({}, "targets", data),
                     defaultTarget: propOr(null, "defaultTarget", data),
                     isPublic: propOr(false, "public", data),
                     name: propOr("", "name", data),
@@ -58,19 +57,19 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     stars: propOr([], "stars", data)
                 };
                 await dispatch(setProject(project));
-                const targetsSnapshots = await projRef
-                    .collection("targets")
-                    .get();
+                // const targetsSnapshots = await projRef
+                //     .collection("targets")
+                //     .get();
 
-                const targets = reduce(
-                    targetsSnapshots.docs,
-                    (acc: Object, targetSnapshot) => {
-                        const targetData = targetSnapshot.data();
-                        acc[targetData.targetName] = targetData as ITarget;
-                        return acc;
-                    },
-                    {}
-                );
+                // const targets = reduce(
+                //     targetsSnapshots.docs,
+                //     (acc: Object, targetSnapshot) => {
+                //         const targetData = targetSnapshot.data();
+                //         acc[targetData.targetName] = targetData as ITarget;
+                //         return acc;
+                //     },
+                //     {}
+                // );
 
                 const filesSnapshots = await projRef.collection("files").get();
                 const files = reduce(
@@ -91,28 +90,28 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     {}
                 );
                 dispatch(setProjectFiles(projectUid, files));
-                const fallbackDefaultMain = find(
-                    values(files) as IDocument[],
-                    (d: IDocument) => d.filename === "project.csd"
-                );
+                // const fallbackDefaultMain = find(
+                //     values(files) as IDocument[],
+                //     (d: IDocument) => d.filename === "project.csd"
+                // );
 
                 // defensive programming, old accounts don't have defaultTarget
                 // so we check if the default file project.csd exits
-                if (isEmpty(targets) && fallbackDefaultMain) {
-                    dispatch(
-                        setProjectTargets(projectUid, {
-                            main: {
-                                csoundOptions: {},
-                                targetDocumentUid:
-                                    fallbackDefaultMain.documentUid,
-                                targetName: "main",
-                                targetType: "main"
-                            }
-                        })
-                    );
-                } else {
-                    setProjectTargets(projectUid, targets);
-                }
+                // if (isEmpty(project.targets) && fallbackDefaultMain) {
+                //     dispatch(
+                //         setProjectTargets(projectUid, {
+                //             main: {
+                //                 csoundOptions: {},
+                //                 targetDocumentUid:
+                //                     fallbackDefaultMain.documentUid,
+                //                 targetName: "main",
+                //                 targetType: "main"
+                //             }
+                //         })
+                //     );
+                // } else {
+                //     setProjectTargets(projectUid, targets);
+                // }
             } else {
                 // handle error
             }
@@ -845,7 +844,7 @@ export const markProjectPublic = (
     isPublic: boolean
 ): ThunkAction<void, any, null, Action<string>> => {
     return (dispatch, getState) => {
-        console.log("setting project to " + isPublic)
+        console.log("setting project to " + isPublic);
         const state = getState();
         const activeProjectUid = selectActiveProjectUid(state);
         if (activeProjectUid == null) {

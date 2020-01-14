@@ -11,6 +11,7 @@ import {
     saveFile,
     addDocument
 } from "@comp/Projects/actions";
+import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { stopCsound } from "@comp/Csound/actions";
 
@@ -30,6 +31,9 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
             ),
             new_document: withPreventDefault(() =>
                 dispatch(newDocument(projectUid, ""))
+            ),
+            open_target_config_dialog: withPreventDefault(() =>
+                dispatch(showTargetsConfigDialog())
             ),
             pause_playback: withPreventDefault(() =>
                 console.log("TODO: IMPLEMENT PAUSE!")

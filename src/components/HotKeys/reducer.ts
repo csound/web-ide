@@ -20,6 +20,7 @@ const INITIAL_STATE: IHotKeys = {
         // IProjectEditorCommands
         add_file: null,
         new_document: null,
+        open_target_config_dialog: null,
         pause_playback: null,
         run_project: null,
         save_all_documents: null,

@@ -2,6 +2,7 @@ import { css } from "@emotion/core";
 
 export const content = theme => css`
     position: absolute;
+    outline: none;
     & > div {
         color: ${theme.color.primary};
         position: relative;

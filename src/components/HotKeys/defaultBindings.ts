@@ -4,6 +4,7 @@ import { BindingsMap } from "./types";
 const defaultBindings: BindingsMap = {
     add_file: isMac ? "command+alt+u" : "ctrl+alt+u",
     new_document: isMac ? "command+alt+n" : "ctrl+alt+n",
+    open_target_config_dialog: isMac ? "command+alt+t" : "ctrl+alt+t",
     pause_playback: isMac ? "command+p" : "ctrl+p",
     run_project: isMac ? "command+r" : "ctrl+r",
     save_document: isMac ? "command+s" : "ctrl+s",

@@ -20,7 +20,6 @@ export const DOCUMENT_UPDATE_MODIFIED_LOCALLY =
 
 export type IDocumentFileType = "csd" | "orc" | "sco" | "udo" | "txt";
 export type IDocumentFileInternalType = "txt" | "bin";
-export type ITarget = IMainTarget | IPlaylist;
 
 // INTERFACES
 export interface IDocument {
@@ -33,18 +32,12 @@ export interface IDocument {
     isModifiedLocally: boolean;
 }
 
-export interface IMainTarget {
+export interface ITarget {
     csoundOptions: ICsoundOptions;
-    targetDocumentUid: string;
     targetName: string;
     targetType: string;
-}
-
-export interface IPlaylist {
-    csoundOptions: ICsoundOptions;
-    playlistDocumentsUid: string[];
-    targetName: string;
-    targetType: string;
+    targetDocumentUid?: string;
+    playlistDocumentsUid?: string[];
 }
 
 export type IDocumentsMap = { [documentUid: string]: IDocument };

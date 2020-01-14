@@ -8,6 +8,14 @@ export const dropdownContainer = css`
     box-sizing: content-box;
 `;
 
+export const dropdownContainerForDialog = css`
+    ${dropdownContainer}
+    display: inline-flex;
+    min-width: 180px;
+    flex-direction: column;
+    margin: 12px 0;
+`;
+
 export const menu = theme => css`
     z-index: 2;
     position: absolute;
@@ -53,7 +61,7 @@ export const control = theme => css`
     transition: width 2s;
     border-radius: 0;
     text-decoration: none;
-    color: white;
+    color: ${theme.color.primary};
     font-size: 15px;
     padding: 0px;
     border: 2px solid ${theme.highlight.primary};
@@ -66,6 +74,15 @@ export const control = theme => css`
     &:hover {
         border: 2px solid ${theme.highlightAlt.primary};
         cursor: pointer;
+    }
+`;
+
+export const controlError = theme => css`
+    ${control(theme)}
+    color: ${theme.error.primary};
+    border: 2px solid ${theme.error.primary};
+    &:hover {
+        border: 2px solid ${theme.error.primary};
     }
 `;
 
@@ -85,8 +102,16 @@ export const menuOption = theme => css`
     cursor: pointer;
     color: ${theme.color.primary};
     &:hover {
-        border-radius: 2px;
         background-color: ${theme.highlightAlt.primary} !important;
+    }
+`;
+
+export const menuOptionDisabled = theme => css`
+    ${menuOption(theme)}
+    color: ${theme.disabledColor.primary};
+    cursor: initial;
+    &:hover {
+        background-color: unset!important;
     }
 `;
 
@@ -165,4 +190,37 @@ height: 26px;
 margin-top: 6px;
 margin-left: 9px;
 `}
+`;
+
+export const menuForDialog = theme => css`
+    ${menu(theme)}
+    top: 44px;
+    margin: 0;
+`;
+
+export const targetsDialog = theme => css`
+    min-width: 400px;
+    max-heigh: 80vh;
+`;
+
+export const targetsDialogBottom = theme => css`
+    padding-top: 12px;
+`;
+
+export const targetsDialogMain = theme => css`
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 12px;
+    border: 2px solid ${theme.highlight.primary};
+    border-radius: 6px;
+    padding: 12px;
+`;
+
+export const targetLabel = theme => css`
+    color: ${theme.alternativeColor.primary};
+    position: absolute;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+    margin: 0;
+    margin-top: -4px;
 `;

@@ -1,6 +1,6 @@
 import { find, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
-import { IDocument, ITarget, IMainTarget, IPlaylist } from "../Projects/types";
+import { IDocument, ITarget } from "../Projects/types";
 import { playCSDFromEMFS } from "../Csound/actions";
 
 const getDefaultTargetName = (store, projectUid): string | null =>
@@ -48,7 +48,7 @@ export const getDefaultTargetDocument = (
     // ATT: fallback to project.csd is to prevserve fallback behaviour
     // This should be marked as a deprecated fallback, soonish
     const targetDocument: IDocument | null = maybeDefaultTarget
-        ? pathOr(
+        ? (pathOr as any)(
               null,
               [
                   "ProjectsReducer",
@@ -56,9 +56,14 @@ export const getDefaultTargetDocument = (
                   projectUid,
                   "documents",
                   (maybeDefaultTarget as ITarget).targetType === "main"
-                      ? (maybeDefaultTarget as IMainTarget).targetDocumentUid
-                      : (maybeDefaultTarget as IPlaylist)
-                            .playlistDocumentsUid[0]
+                      ? maybeDefaultTarget &&
+                        (maybeDefaultTarget as ITarget)!.targetDocumentUid
+                      : maybeDefaultTarget &&
+                        pathOr(
+                            "",
+                            ["playlistDocumentsUid", 0],
+                            maybeDefaultTarget as ITarget
+                        )
               ],
               store
           )
@@ -132,21 +137,29 @@ export const getPlayActionFromTarget = (store: IStore) => {
 
     if (!target) return null;
 
-    const targetDocument: IDocument | null = pathOr(
-        null,
-        [
-            "ProjectsReducer",
-            "projects",
-            activeProjectUid,
-            "documents",
-            (target as ITarget).targetType === "main"
-                ? (target as IMainTarget).targetDocumentUid
-                : (target as IPlaylist).playlistDocumentsUid[
-                      selectedTargetPlaylistIndex
-                  ]
-        ],
-        store
-    );
+    const targetDocument: IDocument | null = target
+        ? (pathOr as any)(
+              null,
+              [
+                  "ProjectsReducer",
+                  "projects",
+                  activeProjectUid,
+                  "documents",
+                  target && (target as ITarget).targetType === "main"
+                      ? target && (target as ITarget).targetDocumentUid
+                      : target &&
+                        pathOr(
+                            "",
+                            [
+                                "playlistDocumentsUid",
+                                selectedTargetPlaylistIndex
+                            ],
+                            target as ITarget
+                        )
+              ],
+              store
+          )
+        : null;
 
     if (targetDocument && (targetDocument as IDocument).type) {
         switch ((targetDocument as IDocument).type) {

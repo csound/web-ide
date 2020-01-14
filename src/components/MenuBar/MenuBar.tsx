@@ -4,9 +4,11 @@ import { useSelector, useDispatch } from "react-redux";
 import SelectedIcon from "@material-ui/icons/DoneSharp";
 import NestedMenuIcon from "@material-ui/icons/ArrowRightSharp";
 import * as SS from "./styles";
+import { hr as hrCss } from "@styles/_common";
 import { MenuItemDef } from "./types";
 import { BindingsMap } from "@comp/HotKeys/types";
 import { humanizeKeySequence } from "@comp/HotKeys/utils";
+import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import {
     newDocument,
     saveAllAndClose,
@@ -16,11 +18,8 @@ import {
     addDocument
 } from "@comp/Projects/actions";
 import { toggleManualPanel } from "@comp/ProjectEditor/actions";
-import {
-    stopCsound,
-    playPauseCsound,
-    renderToDisk
-} from "@comp/Csound/actions";
+import { pauseCsound, renderToDisk, stopCsound } from "@comp/Csound/actions";
+import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { changeTheme } from "@comp/Themes/action";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { append, equals, isEmpty, pathOr, propOr, reduce, slice } from "ramda";
@@ -32,7 +31,7 @@ function MenuBar(props) {
     );
 
     const dispatch = useDispatch();
-
+    const csoundStatus = useSelector(selectCsoundStatus);
     const playAction = useSelector(getPlayActionFromTarget);
     const keyBindings: BindingsMap | null = useSelector(
         pathOr(null, ["HotKeysReducer", "bindings"])
@@ -113,25 +112,30 @@ function MenuBar(props) {
             label: "Project",
             submenu: [
                 {
-                    label: "Run/Play",
+                    label: csoundStatus === "paused" ? "Resume" : "Run/Play",
                     hotKey: "run_project",
-                    callback: () => dispatch(playAction)
+                    callback: () => dispatch(playAction),
+                    disabled: csoundStatus === "playing"
                 },
                 {
                     label: "Stop",
                     hotKey: "stop_playback",
-                    callback: () => dispatch(stopCsound())
+                    callback: () => dispatch(stopCsound()),
+                    disabled:
+                        csoundStatus !== "playing" && csoundStatus !== "paused"
                 },
                 {
                     label: "Pause",
                     hotKey: "pause_playback",
-                    callback: () => dispatch(playPauseCsound())
+                    callback: () => dispatch(pauseCsound()),
+                    disabled: csoundStatus !== "playing"
                 },
                 {
                     seperator: true
                 },
                 {
-                    label: "Configure Targets"
+                    label: "Configure Targets",
+                    callback: () => dispatch(showTargetsConfigDialog())
                 }
             ]
         },
@@ -193,13 +197,15 @@ function MenuBar(props) {
                 const hasChild: boolean = typeof item.submenu !== "undefined";
 
                 if (item.seperator) {
-                    acc.push(<hr key={index} css={SS.hr} />);
+                    acc.push(<hr key={index} css={hrCss} />);
                 } else {
                     acc.push(
                         <div
                             key={index}
                             onClick={e => {
-                                item.callback && item.callback();
+                                item.callback &&
+                                    !item.disabled &&
+                                    item.callback();
                                 e.preventDefault();
                             }}
                             css={hasChild && SS.nestedWrapper}
@@ -245,7 +251,13 @@ function MenuBar(props) {
                                     </ul>
                                 )}
 
-                            <li css={SS.listItem}>
+                            <li
+                                css={
+                                    item.disabled
+                                        ? SS.listItemDisabled
+                                        : SS.listItem
+                                }
+                            >
                                 {item.checked && (
                                     <SelectedIcon css={SS.selectedIcon} />
                                 )}

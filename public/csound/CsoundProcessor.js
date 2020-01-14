@@ -62,7 +62,6 @@ const Csound = {
         ["number"],
         ["number", "string"]
     ),
-
     reset: CSMOD.cwrap("CsoundObj_reset", null, ["number"]),
     getOutputBuffer: CSMOD.cwrap(
         "CsoundObj_getOutputBuffer",
@@ -244,7 +243,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
     }
 
     start() {
-        if (this.started == false) {
+        if (this.started === false) {
             let csObj = this.csObj;
             let ksmps = Csound.getKsmps(csObj);
             this.ksmps = ksmps;
@@ -278,8 +277,9 @@ class CsoundProcessor extends AudioWorkletProcessor {
             return "playing";
         } else if (this.started) {
             return "paused";
+        } else {
+            return "stopped";
         }
-        return "stopped";
     }
 
     firePlayStateChange() {
@@ -321,10 +321,16 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 break;
             case "stop":
                 this.running = false;
+                this.started = false;
                 this.firePlayStateChange();
                 break;
             case "play":
                 this.start();
+                break;
+            case "pause":
+                this.running = false;
+                this.started = true;
+                this.firePlayStateChange();
                 break;
             case "setOption":
                 Csound.setOption(this.csObj, data[1]);

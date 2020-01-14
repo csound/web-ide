@@ -21,30 +21,44 @@ export const setCsound = (csound: ICsoundObj) => {
 
 export const playCSDFromEMFS = (emfsPath: string) => {
     return async (dispatch: any) => {
-        const cs = pathOr(null, ["csound", "csound"], store.getState());
-        if (cs !== null) {
-            const safeCs = cs as ICsoundObj;
-            safeCs.audioContext.resume();
-            safeCs.reset();
-            safeCs.setOption("-odac");
-            safeCs.setOption("-+msg_color=false");
-            safeCs.compileCSD(emfsPath);
-            safeCs.start();
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            store.getState()
+        ) as ICsoundObj | null;
+        if (cs) {
+            if (cs.getPlayState() === "paused") {
+                cs.play();
+            } else {
+                cs.audioContext.resume();
+                cs.reset();
+                cs.setOption("-odac");
+                cs.setOption("-+msg_color=false");
+                cs.compileCSD(emfsPath);
+                cs.start();
+            }
         }
     };
 };
 
 export const playCSDFromString = (csd: string) => {
     return async (dispatch: any) => {
-        const cs = pathOr(null, ["csound", "csound"], store.getState());
-        if (cs !== null) {
-            const safeCs = cs as ICsoundObj;
-            safeCs.audioContext.resume();
-            safeCs.reset();
-            safeCs.setOption("-odac");
-            safeCs.setOption("-+msg_color=false");
-            safeCs.compileCSD(csd);
-            safeCs.start();
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            store.getState()
+        ) as ICsoundObj | null;
+        if (cs) {
+            if (cs.getPlayState() === "paused") {
+                cs.play();
+            } else {
+                cs.audioContext.resume();
+                cs.reset();
+                cs.setOption("-odac");
+                cs.setOption("-+msg_color=false");
+                cs.compileCSD(csd);
+                cs.start();
+            }
         }
     };
 };
@@ -54,8 +68,19 @@ export const stopCsound = () => {
         const cs = pathOr(null, ["csound", "csound"], store.getState());
         if (cs !== null) {
             const safeCs = cs as ICsoundObj;
-            safeCs.reset();
+            safeCs.stop();
         }
+    };
+};
+
+export const pauseCsound = () => {
+    return async (dispatch: any) => {
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            store.getState()
+        ) as ICsoundObj | null;
+        cs && cs.getPlayState() && cs.pause();
     };
 };
 

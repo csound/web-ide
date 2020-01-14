@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import Dropdown from "./Dropdown";
 import PlayButton from "./PlayButton";
 import { IStore } from "@store/types";
-import { ITarget, ITargetMap } from "../Projects/types";
-import { setSelectedTarget } from "./actons";
+import { ITarget, ITargetMap } from "@comp/Projects/types";
+import { setSelectedTarget } from "./actions";
 import { pathOr, values } from "ramda";
 import { useDispatch, useSelector } from "react-redux";
 

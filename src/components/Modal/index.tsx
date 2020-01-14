@@ -44,13 +44,25 @@ export default function GlobalModal() {
 
     useEffect(() => {
         isOpen && setTimeout(() => updateDimensions(true), 0);
-        const timer = setInterval(() => {
+        function handleResize() {
             if (isOpen) {
                 updateDimensions(false);
             }
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [isOpen]);
+        }
+        const resizeObserver = new (window as any).ResizeObserver(handleResize);
+        let copiedRef;
+        setTimeout(() => {
+            if (modalRef.current) {
+                resizeObserver.observe(modalRef.current);
+                copiedRef = modalRef.current;
+            }
+        }, 100);
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            copiedRef && resizeObserver.unobserve(copiedRef);
+        };
+    }, [modalRef, isOpen]);
 
     return (
         <Modal

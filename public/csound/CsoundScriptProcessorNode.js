@@ -574,6 +574,10 @@ CsoundScriptProcessorNode = function(context, options) {
             CSOUND.destroy(this.csound);
         },
 
+        pause() {
+            this.running = false;
+        },
+
         /** Starts performance, same as start()
          * @memberof CsoundMixin
          */
@@ -588,6 +592,7 @@ CsoundScriptProcessorNode = function(context, options) {
 
         stop() {
             this.running = false;
+            this.started = false;
             this.firePlayStateChange();
         },
 

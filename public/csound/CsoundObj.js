@@ -279,13 +279,19 @@ class CsoundObj {
 
     destroy() {}
 
+    /** Pauses performance
+     */
+    pause() {
+        this.node.pause();
+    }
+
     /** Starts performance, same as start()
      */
     play() {
         this.node.play();
     }
 
-    /** Stops (pauses) performance
+    /** Stops performance
      */
     stop() {
         this.node.stop();

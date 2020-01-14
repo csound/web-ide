@@ -41,6 +41,7 @@ export interface ICsoundObj {
     start: () => void;
     reset: () => void;
     destroy: () => void;
+    pause: () => void;
     play: () => void;
     stop: () => void;
     getPlayState: () => ICsoundStatus;

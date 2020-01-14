@@ -15,14 +15,6 @@ export const root = theme => css`
     margin-left: 12px;
 `;
 
-export const hr = theme => css`
-    padding: 0;
-    background-color: ${theme.highlight.primary};
-    height: 2px;
-    border: none;
-    margin: 0;
-`;
-
 export const selectedIcon = theme => css`
     position: absolute;
     fill: ${theme.color.primary};
@@ -124,8 +116,18 @@ export const listItem = theme => css`
     }
 `;
 
-export const listItemNested = theme => css`
+export const listItemDisabled = theme => css`
     ${listItem(theme)}
+    &:hover {
+        cursor: initial;
+        background-color: unset;
+        box-shadow: unset;
+    }
+    & > p,
+    span,
+    i {
+        color: ${theme.disabledColor.primary};
+    }
 `;
 
 export const iconButtonContainer = css`
