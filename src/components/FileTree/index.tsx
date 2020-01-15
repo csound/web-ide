@@ -188,7 +188,7 @@ const FileTree = () => {
                         dispatch(
                             renameDocument(
                                 propOr("", "sha", data),
-                                propOr("", "path", path)
+                                propOr("", "path", data)
                             )
                         )
                 },

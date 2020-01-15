@@ -43,14 +43,14 @@ type EditorForDocumentProps = {
 };
 
 function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
-    if (doc.internalType === "txt") {
+    if (doc.type === "txt") {
         return (
             <Editor
                 documentUid={doc.documentUid}
                 projectUid={projectUid}
             ></Editor>
         );
-    } else if (doc.internalType === "bin" && isAudioFile(doc.filename)) {
+    } else if (doc.type === "bin" && isAudioFile(doc.filename)) {
         const path = `${uid}/${projectUid}/${doc.documentUid}`;
         return <AudioEditor audioFileUrl={path} />;
     }

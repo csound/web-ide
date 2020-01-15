@@ -75,6 +75,10 @@ export const ProjectContext = (props: IProjectContextProps) => {
         pathOr(null, ["csound", "csound"])
     );
 
+    const tabIndex: number = useSelector(
+        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
+    );
+
     useEffect(() => {
         if (!projectFetchStarted && csound) {
             const initProject = async () => {
@@ -93,21 +97,12 @@ export const ProjectContext = (props: IProjectContextProps) => {
             csound &&
             has("documents", project) &&
             documents &&
-            documents.length > 0 &&
-            defaultTarget
+            documents.length > 0
         ) {
-            const filesAddedCallback = () => {
-                dispatch(
-                    tabDockInit(
-                        projectUid,
-                        documents,
-                        defaultTarget.documentUid
-                    )
-                );
-            };
-            dispatch(
-                syncProjectDocumentsWithEMFS(projectUid, filesAddedCallback)
-            );
+            if (tabIndex < 0) {
+                dispatch(tabDockInit(projectUid, documents, defaultTarget));
+            }
+            dispatch(syncProjectDocumentsWithEMFS(projectUid, () => {}));
             setNeedsLoading(false);
         }
         // eslint-disable-next-line
@@ -117,7 +112,8 @@ export const ProjectContext = (props: IProjectContextProps) => {
         activeProjectUid,
         needsLoading,
         projectIsReady,
-        projectFetchStarted
+        projectFetchStarted,
+        tabIndex
     ]);
 
     if (!needsLoading) {

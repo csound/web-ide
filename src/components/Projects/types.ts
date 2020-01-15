@@ -18,8 +18,7 @@ export const DOCUMENT_UPDATE_VALUE = PREFIX + "DOCUMENT_UPDATE_VALUE";
 export const DOCUMENT_UPDATE_MODIFIED_LOCALLY =
     PREFIX + "DOCUMENT_UPDATE_MODIFIED_LOCALLY";
 
-export type IDocumentFileType = "csd" | "orc" | "sco" | "udo" | "txt";
-export type IDocumentFileInternalType = "txt" | "bin";
+export type IDocumentFileType = "txt" | "bin";
 
 // INTERFACES
 export interface IDocument {
@@ -28,7 +27,6 @@ export interface IDocument {
     filename: string;
     savedValue: string;
     type: IDocumentFileType;
-    internalType: IDocumentFileInternalType;
     isModifiedLocally: boolean;
 }
 

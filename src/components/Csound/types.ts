@@ -51,6 +51,8 @@ export interface ICsoundObj {
     ) => void;
 }
 
+export type ICsoundFileType = "csd" | "orc" | "sco" | "udo";
+
 // JUST A MOCK (WIP)
 export interface ICsoundOptions {
     messageLevel?: number;

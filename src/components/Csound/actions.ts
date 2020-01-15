@@ -63,6 +63,29 @@ export const playCSDFromString = (csd: string) => {
     };
 };
 
+export const playORCFromString = (orc: string) => {
+    return async (dispatch: any) => {
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            store.getState()
+        ) as ICsoundObj | null;
+        if (cs) {
+            if (cs.getPlayState() === "paused") {
+                cs.play();
+            } else {
+                cs.audioContext.resume();
+                cs.reset();
+                cs.setOption("-odac");
+                cs.setOption("-+msg_color=false");
+                cs.setOption("-d");
+                cs.compileOrc(orc);
+                cs.start();
+            }
+        }
+    };
+};
+
 export const stopCsound = () => {
     return async (dispatch: any) => {
         const cs = pathOr(null, ["csound", "csound"], store.getState());
@@ -154,7 +177,7 @@ export const renderToDisk = () => {
 
             for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
-                if (doc.internalType === "bin") {
+                if (doc.type === "bin") {
                     const path = `${project.userUid}/${project.projectUid}/${doc.documentUid}`;
                     const url = await storageRef.child(path).getDownloadURL();
 

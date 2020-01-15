@@ -1,6 +1,9 @@
 import React from "react";
 import Select from "react-select";
-import { ITarget } from "../Projects/types";
+import { useDispatch, useSelector } from "react-redux";
+import { ITarget, ITargetMap } from "@comp/Projects/types";
+import { setSelectedTarget } from "./actions";
+import { selectProjectTargets, selectSelectedTarget } from "./selectors";
 import { append, filter, has, values } from "ramda";
 import { isEmpty, reduce } from "lodash";
 import * as SS from "./styles";
@@ -10,16 +13,20 @@ interface IDropdownOption {
     value: string;
 }
 
-const TargetDropdown = ({ selectedTarget, targets }) => {
-    const mainTargets: ITarget[] = filter(
-        has("targetDocumentUid"),
-        values(targets)
+const TargetDropdown = ({ activeProjectUid }) => {
+    const dispatch = useDispatch();
+    const targets: ITargetMap | null = useSelector(
+        selectProjectTargets(activeProjectUid)
     );
 
-    const playlistTargets: ITarget[] = filter(
-        has("playlistDocumentsUid"),
-        values(targets)
-    );
+    const selectedTarget: string | null = useSelector(selectSelectedTarget);
+    const mainTargets: ITarget[] = targets
+        ? filter(has("targetDocumentUid"), values(targets))
+        : [];
+
+    const playlistTargets: ITarget[] = targets
+        ? filter(has("playlistDocumentsUid"), values(targets))
+        : [];
 
     const mainDropdownOptions = isEmpty(mainTargets)
         ? []
@@ -58,10 +65,14 @@ const TargetDropdown = ({ selectedTarget, targets }) => {
             value={selectedTarget}
             closeMenuOnSelect={true}
             placeholder={
-                selectedTarget.length > 0 ? selectedTarget : "Select target"
+                selectedTarget
+                    ? selectedTarget!.length > 0
+                        ? selectedTarget
+                        : "Select target"
+                    : "No targets found"
             }
             // menuIsOpen={true}
-            // onChange={e => setCurrentTarget(e.value)}
+            onChange={e => dispatch(setSelectedTarget(e.value))}
             isSearchable={false}
             options={[
                 { label: "Playlist", options: playlistDropdownOptions },

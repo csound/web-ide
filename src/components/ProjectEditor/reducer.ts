@@ -131,7 +131,6 @@ export default (
                 );
                 return newState;
             } else {
-                console.log(documentAlreadyOpenIndex, state.tabDock.tabIndex);
                 return assocPath(
                     ["tabDock", "tabIndex"],
                     documentAlreadyOpenIndex,
@@ -149,7 +148,7 @@ export default (
                 return state;
             }
             const currentTabIndex = state.tabDock.tabIndex;
-            return pipe(
+            const newState: IProjectEditorReducer = (pipe as any)(
                 assocPath(
                     ["tabDock", "tabIndex"],
                     Math.min(
@@ -168,7 +167,12 @@ export default (
                         pathOr([], ["tabDock", "openDocuments"], state)
                     )
                 )
-            )(state as IProjectEditorReducer);
+            )(state);
+            storeTabDockState(
+                action.projectUid,
+                newState.tabDock.openDocuments
+            );
+            return newState;
         }
         case TOGGLE_MANUAL_PANEL: {
             const secondaryPanel =

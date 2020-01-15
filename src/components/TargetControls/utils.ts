@@ -1,18 +1,13 @@
 import { find, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
-import { IDocument, ITarget } from "../Projects/types";
-import { playCSDFromEMFS } from "../Csound/actions";
+import { IDocument, ITarget } from "@comp/Projects/types";
+import { playORCFromString, playCSDFromEMFS } from "@comp/Csound/actions";
+import { filenameToCsoundType } from "@comp/Csound/utils";
 
 const getDefaultTargetName = (store, projectUid): string | null =>
     pathOr(
         null,
-        [
-            "ProjectsReducer",
-            "projects",
-            projectUid,
-            "documents",
-            "defaultTarget"
-        ],
+        ["ProjectsReducer", "projects", projectUid, "defaultTarget"],
         store
     );
 
@@ -26,7 +21,6 @@ export const getDefaultTargetDocument = (
             "ProjectsReducer",
             "projects",
             projectUid,
-            "documents",
             "targets",
             getDefaultTargetName(store, projectUid) || ""
         ],
@@ -74,29 +68,13 @@ export const getDefaultTargetDocument = (
 
 export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
     const targetDocument = getDefaultTargetDocument(store, projectUid);
-
-    // const defaultTarget: ITarget | null = defaultTargetName
-    //     ? pathOr(
-    //           null,
-    //           [
-    //               "ProjectsReducer",
-    //               "projects",
-    //               projectUid,
-    //               "documents",
-    //               "targets",
-    //               defaultTargetName
-    //           ],
-    //           store
-    //       )
-    //     : null;
-
     if (!targetDocument) return;
-    switch ((targetDocument as IDocument).type) {
+    const csoundDocType = filenameToCsoundType(
+        (targetDocument as IDocument).filename
+    );
+    switch (csoundDocType) {
         case "csd": {
             return playCSDFromEMFS((targetDocument as IDocument).filename);
-        }
-        default: {
-            return null;
         }
     }
 };
@@ -161,16 +139,19 @@ export const getPlayActionFromTarget = (store: IStore) => {
           )
         : null;
 
-    if (targetDocument && (targetDocument as IDocument).type) {
-        switch ((targetDocument as IDocument).type) {
+    if (targetDocument && (targetDocument as IDocument).filename) {
+        const csoundDocType = filenameToCsoundType(
+            (targetDocument as IDocument).filename
+        );
+        switch (csoundDocType) {
             case "csd": {
                 return playCSDFromEMFS((targetDocument as IDocument).filename);
             }
-            default: {
-                return null;
+            case "orc": {
+                return playORCFromString(
+                    (targetDocument as IDocument).savedValue
+                );
             }
         }
-    } else {
-        return null;
     }
 };

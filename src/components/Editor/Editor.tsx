@@ -6,12 +6,12 @@ import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import { isEmpty } from "lodash";
-import { has, pathOr, propOr } from "ramda";
+import { pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
-import { filenameToType } from "../Projects/utils";
+import { filenameToCsoundType } from "@comp/Csound/utils";
 import { perfectScrollbarStyleSheet } from "@styles/_perfectScrollbar";
 import * as SS from "./styles";
 import { keys } from "ramda";
@@ -56,9 +56,9 @@ const CodeEditor = ({ documentUid, projectUid }) => {
 
     const savedValue: string = propOr("", "savedValue", document);
     const currentDocumentValue: string = propOr("", "currentValue", document);
-    const documentType: string = has("filename", document)
-        ? filenameToType(document.filename)
-        : "";
+    const maybeCsoundFile = filenameToCsoundType(document.filename);
+    const documentType: string = maybeCsoundFile ? maybeCsoundFile : "txt";
+
     const manualLookupString: string = useSelector(
         pathOr("", ["ProjectEditorReducer", "manualLookupString"])
     );

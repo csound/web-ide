@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import Dropdown from "./Dropdown";
-import PlayButton from "./PlayButton";
 import { IStore } from "@store/types";
+import TargetDropdown from "./Dropdown";
+import PlayButton from "./PlayButton";
+import { selectProjectTargets, selectSelectedTarget } from "./selectors";
 import { ITarget, ITargetMap } from "@comp/Projects/types";
 import { setSelectedTarget } from "./actions";
 import { pathOr, values } from "ramda";
@@ -10,25 +11,15 @@ import { useDispatch, useSelector } from "react-redux";
 const TargetControls = () => {
     const dispatch = useDispatch();
 
-    const selectedTarget: string | null = useSelector((store: IStore) => {
-        return pathOr(null, ["TargetControlsReducer", "selectedTarget"], store);
-    });
+    const selectedTarget: string | null = useSelector(selectSelectedTarget);
 
     const activeProjectUid: string | null = useSelector((store: IStore) => {
         return pathOr(null, ["ProjectsReducer", "activeProjectUid"], store);
     });
 
-    const targets: ITargetMap | null = useSelector((store: IStore) => {
-        if (activeProjectUid) {
-            return pathOr(
-                {} as ITargetMap,
-                ["ProjectsReducer", "projects", activeProjectUid, "targets"],
-                store
-            );
-        } else {
-            return null;
-        }
-    });
+    const targets: ITargetMap | null = useSelector((store: IStore) =>
+        (selectProjectTargets as any)(activeProjectUid)
+    );
 
     const targetsValues: ITarget[] | null = targets ? values(targets) : null;
 
@@ -61,6 +52,9 @@ const TargetControls = () => {
                 }
             }
         }
+        return () => {
+            setSelectedTarget(null);
+        };
     }, [dispatch, targetsValues, savedDefaultTarget, selectedTarget]);
 
     if (!selectedTarget) {
@@ -69,7 +63,7 @@ const TargetControls = () => {
         return (
             <>
                 <PlayButton />
-                <Dropdown selectedTarget={selectedTarget} targets={targets} />
+                <TargetDropdown activeProjectUid={activeProjectUid} />
             </>
         );
     }

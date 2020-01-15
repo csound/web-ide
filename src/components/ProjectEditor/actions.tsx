@@ -21,7 +21,7 @@ import {
 export const tabDockInit = (
     projectUid: string,
     allDocuments: IDocument[],
-    defaultTargetDocUid: string
+    defaultTarget: IDocument | null
 ) => {
     const storedIndex = localStorage.getItem(projectUid + ":tabIndex");
     const storedTabOrder: string | null = localStorage.getItem(
@@ -59,9 +59,13 @@ export const tabDockInit = (
         }
     }
 
-    if (initialOpenDocuments.length === 0 && allDocuments.length > 0) {
+    if (
+        defaultTarget &&
+        initialOpenDocuments.length === 0 &&
+        allDocuments.length > 0
+    ) {
         initialOpenDocuments.push({
-            uid: defaultTargetDocUid,
+            uid: defaultTarget.documentUid,
             editorInstance: null
         });
     }

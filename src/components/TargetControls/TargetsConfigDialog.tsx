@@ -16,6 +16,7 @@ import AddIcon from "@material-ui/icons/Add";
 import CloseIcon from "@material-ui/icons/Close";
 import SaveIcon from "@material-ui/icons/Save";
 import { ICsoundOptions } from "@comp/Csound/types";
+import { filenameToCsoundType } from "@comp/Csound/utils";
 import { IStore } from "@store/types";
 import { IDocument, IDocumentsMap, ITargetMap } from "@comp/Projects/types";
 import {
@@ -257,8 +258,20 @@ const TargetsConfigDialog = () => {
                                 options={pipe(
                                     filter<any, any>(
                                         either(
-                                            propEq("type", "csd"),
-                                            propEq("type", "orc")
+                                            ({ filename }) =>
+                                                equals(
+                                                    "csd",
+                                                    filenameToCsoundType(
+                                                        filename
+                                                    )
+                                                ),
+                                            ({ filename }) =>
+                                                equals(
+                                                    "orc",
+                                                    filenameToCsoundType(
+                                                        filename
+                                                    )
+                                                )
                                         )
                                     ),
                                     sort(ascend(prop("filename"))),
@@ -390,7 +403,8 @@ const TargetsConfigDialog = () => {
                         firestoreNewTargets(newTargets),
                         maybeDefaultTarget
                             ? maybeDefaultTarget.targetName
-                            : null
+                            : null,
+                        () => setStoredTargets(newTargets)
                     )
                 );
             }}

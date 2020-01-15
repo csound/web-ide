@@ -24,7 +24,7 @@ import {
     IProject,
     IDocument
 } from "./types";
-import { filenameToType, textOrBinary } from "./utils";
+import { textOrBinary } from "./utils";
 import { IStore } from "@store/types";
 import { projects, storageRef } from "@config/firestore";
 import { store } from "@root/store";
@@ -57,19 +57,6 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     stars: propOr([], "stars", data)
                 };
                 await dispatch(setProject(project));
-                // const targetsSnapshots = await projRef
-                //     .collection("targets")
-                //     .get();
-
-                // const targets = reduce(
-                //     targetsSnapshots.docs,
-                //     (acc: Object, targetSnapshot) => {
-                //         const targetData = targetSnapshot.data();
-                //         acc[targetData.targetName] = targetData as ITarget;
-                //         return acc;
-                //     },
-                //     {}
-                // );
 
                 const filesSnapshots = await projRef.collection("files").get();
                 const files = reduce(
@@ -81,8 +68,7 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                             documentUid: docSnapshot.id,
                             savedValue: docData["value"],
                             filename: docData["name"],
-                            type: filenameToType(docData["name"]),
-                            internalType: docData["type"],
+                            type: docData["type"],
                             isModifiedLocally: false
                         } as IDocument;
                         return acc;
@@ -90,28 +76,6 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                     {}
                 );
                 dispatch(setProjectFiles(projectUid, files));
-                // const fallbackDefaultMain = find(
-                //     values(files) as IDocument[],
-                //     (d: IDocument) => d.filename === "project.csd"
-                // );
-
-                // defensive programming, old accounts don't have defaultTarget
-                // so we check if the default file project.csd exits
-                // if (isEmpty(project.targets) && fallbackDefaultMain) {
-                //     dispatch(
-                //         setProjectTargets(projectUid, {
-                //             main: {
-                //                 csoundOptions: {},
-                //                 targetDocumentUid:
-                //                     fallbackDefaultMain.documentUid,
-                //                 targetName: "main",
-                //                 targetType: "main"
-                //             }
-                //         })
-                //     );
-                // } else {
-                //     setProjectTargets(projectUid, targets);
-                // }
             } else {
                 // handle error
             }
@@ -589,8 +553,7 @@ export const newDocument = (projectUid: string, val: string) => {
             if (!isEmpty(project)) {
                 const uid = firebase.auth().currentUser!.uid;
                 const doc = {
-                    type: filenameToType(filename),
-                    internalType: "txt",
+                    type: "txt",
                     name: filename,
                     value: val,
                     userUid: uid
@@ -646,13 +609,11 @@ export const addDocument = (projectUid: string) => {
                     reader.onload = e => {
                         let txt = reader.result;
                         const doc = {
-                            internalType: fileType,
-                            type: filenameToType(filename),
+                            type: fileType,
                             name: filename,
                             value: txt,
                             userUid: uid
                         };
-
                         projects
                             .doc(project.projectUid)
                             .collection("files")
@@ -821,7 +782,7 @@ export const exportProject = () => {
 
             for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
-                if (doc.internalType === "bin") {
+                if (doc.type === "bin") {
                     const path = `${project.userUid}/${project.projectUid}/${doc.documentUid}`;
                     const url = await storageRef.child(path).getDownloadURL();
 

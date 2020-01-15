@@ -27,13 +27,12 @@ const initialProjectsState: IProjectsReducer = {
     projects: {} as IProjectMap
 };
 
-const generateEmptyDocument = (documentUid, type, filename): IDocument => ({
+const generateEmptyDocument = (documentUid, filename): IDocument => ({
     filename,
     currentValue: "",
     documentUid,
     savedValue: "",
-    type,
-    internalType: "txt",
+    type: "txt",
     isModifiedLocally: false
 });
 
@@ -110,10 +109,8 @@ export default (state: IProjectsReducer | undefined, action: any) => {
         }
 
         case DOCUMENT_INITIALIZE: {
-            // const oldDocuments = cloneDeep(state.activeProject.documents);
             const newDocument = generateEmptyDocument(
                 action.documentUid,
-                action.type,
                 action.filename
             );
             return assocPath(
