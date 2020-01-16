@@ -59,7 +59,6 @@ import { getPlayActionFromProject } from "@comp/TargetControls/utils";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
 import { assoc, hasPath, pipe } from "ramda";
-import { IStore } from "@root/store/types";
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
@@ -73,8 +72,7 @@ export const getUserProjects = (
 ): ThunkAction<void, any, null, Action<string>> => async (dispatch, getState) => {
     dispatch(getUserProjectsAction([]));
     firebase.auth().onAuthStateChanged(async user => {
-        const store:IStore = getState();
-        const queryResult = (uid == user?.uid) ? 
+        const queryResult = (uid === user?.uid) ? 
             await projects.where("userUid", "==", uid).get() :
             await projects.where("userUid", "==", uid).where("public", "==", true).get();
 
