@@ -110,6 +110,10 @@ const TargetDropdown = ({ activeProjectUid }) => {
 
     const [menuIsOpen, setMenuIsOpen] = useState(false);
     const [tooltipIsOpen, setTooltipIsOpen] = useState(false);
+
+    if (activeProjectUid == null) {
+        return null;
+    }
     return (
         <Tooltip
             open={tooltipIsOpen}
