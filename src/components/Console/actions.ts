@@ -3,9 +3,9 @@ import {
     SET_PRINT_TO_CONSOLE_CALLBACK
 } from "./types";
 
-export const setClearConsoleCallback = (callback: () => void) => ({
+export const setClearConsoleCallback = (callback: any) => ({
     type: SET_CLEAR_CONSOLE_CALLBACK,
-    callback: callback
+    callback
 });
 
 type CB = (text: string) => void;

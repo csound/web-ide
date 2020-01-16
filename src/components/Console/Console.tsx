@@ -1,9 +1,6 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ICsoundObj } from "../Csound/types";
-import {
-    // setClearConsoleCallback,
-    setPrintToConsoleCallback
-} from "./actions";
+import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { useDispatch, useSelector } from "react-redux";
 // import { IStore } from "@store/types";
 import { List } from "react-virtualized";
@@ -26,11 +23,13 @@ type IConsoleProps = {
     height: number;
 };
 
+let scrollPosition = 0;
+
 const Console = ({ width, height }: IConsoleProps) => {
     const dispatch = useDispatch();
     const consoleRef: any = useRef(null);
 
-    const [logs, setLogs] = useState([]);
+    const [logs, setLogs] = useState([] as string[]);
 
     const csound: ICsoundObj | null = useSelector(
         pathOr(null, ["csound", "csound"])
@@ -40,33 +39,41 @@ const Console = ({ width, height }: IConsoleProps) => {
         pathOr(null, ["ConsoleReducer", "printToConsole"])
     );
 
-    const messageCallback = useCallback(
-        (logs, setLogs) => {
-            return function msgCb(msg: string) {
-                if (consoleRef.current) {
-                    setLogs(append(msg));
-                }
+    useEffect(() => {
+        dispatch(
+            setClearConsoleCallback(() => {
+                scrollPosition = 0;
+                setLogs([]);
+            })
+        );
+        return () => {
+            dispatch(setClearConsoleCallback(() => {}));
+        };
+    }, [dispatch, setLogs]);
 
-                // auto scroll to end when new line is added
-                // consoleRef &&
-                //     consoleRef.current &&
-                //     consoleRef.current.scrollToPosition(
-                //         consoleRef.current.props.rowHeight * logs.length
-                //     );
-            };
-        },
-        // eslint-disable-next-line
-        [logs, setLogs]
-    );
+    const messageCallback = (msg: string) => {
+        if (consoleRef && consoleRef.current) {
+            const row = consoleRef.current;
+            setLogs(currentLogs => {
+                const passtInitialHeight =
+                    row.props.height * 1.1 <
+                    row.props.rowHeight * row.props.rowCount;
+                if (
+                    !passtInitialHeight ||
+                    row.props.rowCount - scrollPosition < 3
+                ) {
+                    setTimeout(() => row.scrollToRow(row.props.rowCount), 9);
+                }
+                return append(msg, currentLogs);
+            });
+        }
+    };
 
     useEffect(() => {
         if (csound) {
             if (!globalMessageCallback) {
-                dispatch(
-                    setPrintToConsoleCallback(messageCallback(logs, setLogs))
-                );
-                csound &&
-                    csound.setMessageCallback(messageCallback(logs, setLogs));
+                dispatch(setPrintToConsoleCallback(messageCallback));
+                csound && csound.setMessageCallback(messageCallback);
             }
         }
         return function() {
@@ -89,11 +96,15 @@ const Console = ({ width, height }: IConsoleProps) => {
             autoHeight={false}
             height={height || 400}
             width={width || 400}
+            style={{ paddingBottom: 12 }}
             css={SS.listWrapper}
             rowCount={logs.length}
             rowHeight={16}
             rowRenderer={rowRenderer}
             scrollToAlignment={"end"}
+            onRowsRendered={(e: any) => {
+                scrollPosition = e.overscanStopIndex;
+            }}
         ></List>
     );
 };

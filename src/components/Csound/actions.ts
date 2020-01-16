@@ -21,15 +21,23 @@ export const setCsound = (csound: ICsoundObj) => {
 
 export const playCSDFromEMFS = (emfsPath: string) => {
     return async (dispatch: any) => {
+        const state = store.getState();
         const cs = pathOr(
             null,
             ["csound", "csound"],
-            store.getState()
+            state
         ) as ICsoundObj | null;
+        const clearConsoleCallback: any = pathOr(
+            null,
+            ["ConsoleReducer", "clearConsole"],
+            state
+        );
         if (cs) {
             if (cs.getPlayState() === "paused") {
                 cs.play();
             } else {
+                typeof clearConsoleCallback === "function" &&
+                    clearConsoleCallback();
                 cs.audioContext.resume();
                 cs.reset();
                 cs.setOption("-odac");
