@@ -81,10 +81,6 @@ export const container = theme => css`
         display: none;
     }
 
-    .MuiListItemText-root {
-        width: 90%;
-    }
-
     .MuiButtonBase-root .MuiButton-label {
         position: absolute;
         right: 4px;
@@ -95,6 +91,7 @@ export const fileTreeNode = css`
     position: relative;
     display: flex;
     align-content: center;
+    width: 100%;
 `;
 
 export const fileTreeNodeText = css`

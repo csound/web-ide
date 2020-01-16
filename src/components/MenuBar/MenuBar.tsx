@@ -20,6 +20,7 @@ import {
 import { toggleManualPanel } from "@comp/ProjectEditor/actions";
 import { pauseCsound, renderToDisk, stopCsound } from "@comp/Csound/actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
+import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { changeTheme } from "@comp/Themes/action";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { append, equals, isEmpty, pathOr, propOr, reduce, slice } from "ramda";
@@ -31,6 +32,7 @@ function MenuBar(props) {
     );
 
     const dispatch = useDispatch();
+    const isOwner = useSelector(selectIsOwner(activeProjectUid));
     const csoundStatus = useSelector(selectCsoundStatus);
     const playAction = useSelector(getPlayActionFromTarget);
     const keyBindings: BindingsMap | null = useSelector(
@@ -53,7 +55,8 @@ function MenuBar(props) {
                 {
                     label: "Add File…",
                     hotKey: "add_file",
-                    callback: () => dispatch(addDocument(activeProjectUid))
+                    callback: () => dispatch(addDocument(activeProjectUid)),
+                    disabled: !isOwner
                 },
                 {
                     label: "Save Document",
@@ -80,9 +83,10 @@ function MenuBar(props) {
                     seperator: true
                 },
                 {
-                    label: "Save and Close",
+                    label: isOwner ? "Save and Close" : "Close",
                     hotKey: "save_and_close",
-                    callback: () => dispatch(saveAllAndClose("/profile"))
+                    callback: () =>
+                        isOwner && dispatch(saveAllAndClose("/profile"))
                 }
             ]
         },
@@ -135,7 +139,8 @@ function MenuBar(props) {
                 },
                 {
                     label: "Configure Targets",
-                    callback: () => dispatch(showTargetsConfigDialog())
+                    callback: () => dispatch(showTargetsConfigDialog()),
+                    disabled: !isOwner
                 }
             ]
         },

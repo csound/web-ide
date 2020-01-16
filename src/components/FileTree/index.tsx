@@ -11,10 +11,14 @@ import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/EditTwoTone";
 import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFolderPlus } from "@fortawesome/free-solid-svg-icons";
+import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
 import { IDocument, IDocumentsMap, IProject } from "../Projects/types";
 import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
+import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import {
     assocPath,
     equals,
@@ -34,7 +38,7 @@ const FileTree = () => {
     const activeProjectUid: string = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
-
+    const isOwner = useSelector(selectIsOwner(activeProjectUid));
     const project: IProject | null = useSelector(
         pathOr(null, ["ProjectsReducer", "projects", activeProjectUid])
     ) as IProject | null;
@@ -48,6 +52,7 @@ const FileTree = () => {
         ])
     );
 
+    const theme: any = useTheme();
     const dispatch = useDispatch();
 
     const fileTreeDocs = documents
@@ -121,14 +126,14 @@ const FileTree = () => {
                 dispatch(tabOpenByDocumentUid(data.sha, activeProjectUid));
             };
             return (
-                <>
-                    <span css={SS.fileTreeNode} onClick={onFileClick}>
-                        <IconComp css={SS.fileIcon} onClick={onFileClick} />
+                <div onClick={onFileClick}>
+                    <span css={SS.fileTreeNode}>
+                        <IconComp css={SS.fileIcon} />
                         <p onClick={onFileClick} css={SS.fileTreeNodeText}>
                             {path}
                         </p>
                     </span>
-                </>
+                </div>
             );
         },
         [dispatch, project, activeProjectUid]
@@ -157,29 +162,36 @@ const FileTree = () => {
                         )
                 } as any;
             }
-            return [
-                {
-                    icon: <EditIcon css={SS.editIcon} />,
-                    hint: `Rename ${propOr("", "path", data)}`,
-                    onClick: () =>
-                        dispatch(
-                            renameDocument(
-                                propOr("", "sha", data),
-                                propOr("", "path", data)
-                            )
-                        )
-                },
-                {
-                    icon: <DeleteIcon color="secondary" css={SS.deleteIcon} />,
-                    hint: `Delete ${propOr("", "path", data)}`,
-                    onClick: () => {
-                        typeof data.sha === "string" &&
-                            dispatch(deleteFile(data.sha));
-                    }
-                }
-            ] as MuiTreeIconButtonData[];
+            return isOwner
+                ? [
+                      {
+                          icon: <EditIcon css={SS.editIcon} />,
+                          hint: `Rename ${propOr("", "path", data)}`,
+                          onClick: () =>
+                              dispatch(
+                                  renameDocument(
+                                      propOr("", "sha", data),
+                                      propOr("", "path", data)
+                                  )
+                              )
+                      },
+                      {
+                          icon: (
+                              <DeleteIcon
+                                  color="secondary"
+                                  css={SS.deleteIcon}
+                              />
+                          ),
+                          hint: `Delete ${propOr("", "path", data)}`,
+                          onClick: () => {
+                              typeof data.sha === "string" &&
+                                  dispatch(deleteFile(data.sha));
+                          }
+                      }
+                  ]
+                : ([] as MuiTreeIconButtonData[]);
         },
-        [project, dispatch]
+        [project, dispatch, isOwner]
     );
 
     const requestChildrenData = useCallback((data, path, toggleFoldStatus) => {
@@ -193,7 +205,13 @@ const FileTree = () => {
     return (
         <>
             <div css={SS.projectNameBar}>
-                <p>{project ? `Root of: ${project.name}` : ""}</p>
+                <p>{project ? project.name : ""}</p>
+                <FontAwesomeIcon // TODO
+                    icon={faFolderPlus}
+                    size="sm"
+                    color={theme.color.primary}
+                    style={{ display: "none" }}
+                />
             </div>
             <Tree
                 className={" MuiFileTree"}
@@ -204,13 +222,13 @@ const FileTree = () => {
                 childrenKey="tree"
                 foldIcon={
                     <ArrowDropDownIcon
-                        style={{ color: "white" }}
+                        style={{ color: theme.color.primary }}
                         fontSize="large"
                     />
                 }
                 unfoldIcon={
                     <ArrowDropUpIcon
-                        style={{ color: "white" }}
+                        style={{ color: theme.color.primary }}
                         fontSize="large"
                     />
                 }

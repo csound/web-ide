@@ -27,7 +27,8 @@ interface IDropdownOption {
 
 const titleTooltip = ({ documents, selectedTarget }) => {
     const mainDocument: IDocument | null =
-        typeof selectedTarget === "object"
+        typeof selectedTarget === "object" &&
+        has("targetDocumentUid", selectedTarget)
             ? documents[selectedTarget.targetDocumentUid]
             : null;
     if (mainDocument && selectedTarget.targetType === "main") {

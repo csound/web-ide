@@ -66,7 +66,7 @@ const ProjectEditor = props => {
     const theme: any = useTheme();
 
     // The manual is an iframe, which doesn't detect
-    // mouve positions, so we add an invidible layer then
+    // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = useState(false);
     const activeProject: IProject = props.activeProject;
