@@ -71,7 +71,9 @@ export const getUserProjects = (
     uid
 ): ThunkAction<void, any, null, Action<string>> => async dispatch => {
     dispatch(getUserProjectsAction([]));
-    const queryResult = await projects.where("userUid", "==", uid).get();
+    const queryResult = await projects.where("userUid", "==", uid)
+                        .where("public", "==", true).get();
+
     const userProjects = queryResult.docs.map(psnap =>
         pipe(
             p => p.data(),
