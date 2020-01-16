@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Select from "react-select";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch, useSelector } from "react-redux";
+import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import {
     ITarget,
     ITargetMap,
@@ -103,7 +104,7 @@ const TargetDropdown = ({ activeProjectUid }) => {
                 options: mainDropdownOptions
             }
         ],
-        isOwner ? [{ label: "Configure" }] : []
+        isOwner ? [{ label: "Configure", value: "___toggle-configure" }] : []
     );
 
     const [menuIsOpen, setMenuIsOpen] = useState(false);
@@ -137,7 +138,11 @@ const TargetDropdown = ({ activeProjectUid }) => {
                         setMenuIsOpen(true);
                     }}
                     onMenuClose={() => setMenuIsOpen(false)}
-                    onChange={e => dispatch(setSelectedTarget(e.value))}
+                    onChange={e => {
+                        e.value === "___toggle-configure"
+                            ? dispatch(showTargetsConfigDialog())
+                            : dispatch(setSelectedTarget(e.value));
+                    }}
                     isSearchable={false}
                     options={options}
                     styles={{

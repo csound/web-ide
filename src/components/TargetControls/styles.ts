@@ -227,6 +227,12 @@ export const targetsDialog = theme => css`
 
 export const targetsDialogBottom = theme => css`
     padding-top: 12px;
+    & button {
+        padding: 0 18px !important;
+    }
+    & svg {
+        margin-left: 6px;
+    }
 `;
 
 export const targetsDialogMain = theme => css`

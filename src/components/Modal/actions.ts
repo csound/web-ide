@@ -8,6 +8,15 @@ export const closeModal = () => {
     };
 };
 
+export const setOnCloseModal = (onClose: () => void) => {
+    return async (dispatch: any) => {
+        dispatch({
+            type: "MODAL_SET_ON_CLOSE",
+            onClose
+        });
+    };
+};
+
 export const openSimpleModal = (component: React.FC) => {
     return async (dispatch: any) => {
         dispatch({

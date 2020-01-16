@@ -1,4 +1,5 @@
 import React from "react";
+import { assoc } from "ramda";
 
 export interface IModalReducer {
     isOpen: boolean;
@@ -17,7 +18,10 @@ const initialModalState: IModalReducer = {
 export default (state, action: any) => {
     switch (action.type) {
         case "MODAL_CLOSE": {
-            return { ...state, isOpen: false };
+            return { isOpen: false, component: dummyComp };
+        }
+        case "MODAL_SET_ON_CLOSE": {
+            return assoc("onClose", action.onClose, state);
         }
         case "MODAL_OPEN_SIMPLE": {
             state.isOpen = true;

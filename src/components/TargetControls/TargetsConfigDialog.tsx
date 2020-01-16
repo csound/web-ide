@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { saveChangesToTarget } from "./actions";
+import { setOnCloseModal, closeModal } from "@comp/Modal/actions";
 import { useTheme } from "emotion-theming";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import Select from "react-select";
@@ -71,8 +72,8 @@ const dropdownStyle = {
 
 const TargetsConfigDialog = () => {
     const dispatch = useDispatch();
-
     const theme: any = useTheme();
+
     const activeProjectUid: string = useSelector((store: IStore) => {
         return pathOr("", ["ProjectsReducer", "activeProjectUid"], store);
     });
@@ -336,7 +337,7 @@ const TargetsConfigDialog = () => {
             color="primary"
             variant="extended"
             aria-label="Add"
-            size="medium"
+            size="small"
             onClick={() => {
                 setNewTargets(
                     append(
@@ -361,6 +362,15 @@ const TargetsConfigDialog = () => {
     const someErrorPresent: boolean = newTargets.some(propEq("isValid", false));
     const someChangesMade: boolean = !equals(storedTargets, newTargets);
     const shouldDisallowSave: boolean = someErrorPresent || !someChangesMade;
+
+    useEffect(() => {
+        dispatch(
+            setOnCloseModal(() => {
+                shouldDisallowSave && dispatch(closeModal());
+            })
+        );
+        // eslint-disable-next-line
+    }, [shouldDisallowSave]);
 
     const firestoreNewTargets = (newTargets: ITargetFromInput[]) =>
         reduce(
@@ -390,7 +400,7 @@ const TargetsConfigDialog = () => {
             color="primary"
             variant="extended"
             aria-label="Save"
-            size="medium"
+            size="small"
             disabled={shouldDisallowSave}
             onClick={() => {
                 const maybeDefaultTarget = find(
@@ -415,10 +425,24 @@ const TargetsConfigDialog = () => {
         </Fab>
     );
 
+    const closeButton = (
+        <Fab
+            color="primary"
+            variant="extended"
+            aria-label="Close"
+            size="small"
+            style={{ marginLeft: 12 }}
+            onClick={() => dispatch(closeModal())}
+        >
+            Close
+        </Fab>
+    );
+
     const bottomArea = (
         <div css={SS.targetsDialogBottom}>
             {createTargetButton}
             {saveButton}
+            {closeButton}
         </div>
     );
 

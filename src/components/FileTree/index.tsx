@@ -37,7 +37,7 @@ const FileTree = () => {
 
     const project: IProject | null = useSelector(
         pathOr(null, ["ProjectsReducer", "projects", activeProjectUid])
-    );
+    ) as IProject | null;
 
     const documents: IDocumentsMap | null = useSelector(
         pathOr(null, [
@@ -122,29 +122,6 @@ const FileTree = () => {
             };
             return (
                 <>
-                    {rootDirectoryElem ? (
-                        <div
-                            css={SS.invisibleUnClickableArea}
-                            onMouseEnter={e => {
-                                e.nativeEvent.stopImmediatePropagation();
-                                e.preventDefault();
-                            }}
-                            onMouseOver={e => {
-                                e.nativeEvent.stopImmediatePropagation();
-                                e.preventDefault();
-                            }}
-                            onClick={e => {
-                                e.nativeEvent.stopImmediatePropagation();
-                                e.preventDefault();
-                            }}
-                        />
-                    ) : (
-                        <div
-                            css={SS.invisibleClickableArea}
-                            onClick={onFileClick}
-                        />
-                    )}
-
                     <span css={SS.fileTreeNode} onClick={onFileClick}>
                         <IconComp css={SS.fileIcon} onClick={onFileClick} />
                         <p onClick={onFileClick} css={SS.fileTreeNodeText}>
@@ -214,31 +191,42 @@ const FileTree = () => {
     }, []);
 
     return (
-        <Tree
-            className={" MuiFileTree"}
-            css={SS.container}
-            data={state.data}
-            labelKey="path"
-            valueKey="sha"
-            childrenKey="tree"
-            foldIcon={
-                <ArrowDropDownIcon
-                    style={{ color: "white" }}
-                    fontSize="large"
-                />
-            }
-            unfoldIcon={
-                <ArrowDropUpIcon style={{ color: "white" }} fontSize="large" />
-            }
-            loadMoreIcon={
-                <MoreHorizIcon style={{ color: "white" }} fontSize="large" />
-            }
-            renderLabel={renderLabel}
-            pageSize={99999}
-            actionsAlignRight={false}
-            getActionsData={getActionsData}
-            requestChildrenData={requestChildrenData}
-        />
+        <>
+            <div css={SS.projectNameBar}>
+                <p>{project ? `Root of: ${project.name}` : ""}</p>
+            </div>
+            <Tree
+                className={" MuiFileTree"}
+                css={SS.container}
+                data={state.data}
+                labelKey="path"
+                valueKey="sha"
+                childrenKey="tree"
+                foldIcon={
+                    <ArrowDropDownIcon
+                        style={{ color: "white" }}
+                        fontSize="large"
+                    />
+                }
+                unfoldIcon={
+                    <ArrowDropUpIcon
+                        style={{ color: "white" }}
+                        fontSize="large"
+                    />
+                }
+                loadMoreIcon={
+                    <MoreHorizIcon
+                        style={{ color: "white" }}
+                        fontSize="large"
+                    />
+                }
+                renderLabel={renderLabel}
+                pageSize={99999}
+                actionsAlignRight={false}
+                getActionsData={getActionsData}
+                requestChildrenData={requestChildrenData}
+            />
+        </>
     );
 };
 

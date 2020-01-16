@@ -1,12 +1,30 @@
 import { css } from "@emotion/core";
 
+export const projectNameBar = theme => css`
+    background-color: ${theme.highlightAlt.primary};
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    top: 0;
+    position: absolute;
+    width: 100%;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+    & p {
+        margin: 0;
+        margin-left: 12px;
+        color: ${theme.lineNumber.primary};
+    }
+`;
+
 export const container = theme => css`
     width: 100%;
     height: 100%;
     background-color: ${theme.fileTreeBackground.primary};
     color: ${theme.color.primary} !important;
     padding: 0 !important;
-    margin-top: 3px;
+    margin-top: 40px;
     border-radius: 0px !important;
     button {
         width: 100%;
@@ -26,7 +44,8 @@ export const container = theme => css`
 
     & div.MuiButtonBase-root {
         padding-right: 0px;
-        width: 150px;
+        min-width: 150px;
+        position: relative;
     }
 
     .MuiButtonBase-root button {
@@ -34,12 +53,13 @@ export const container = theme => css`
         color: rgb(222, 222, 222) !important;
         top: 0px;
         width: 24px;
-        left: 170px;
+        right: 30px;
         top: -2px;
     }
 
     .MuiButtonBase-root button:first-of-type {
-        left: 142px;
+        margin: 0;
+        margin-right: 32px;
     }
 
     .MuiListItem-button {
