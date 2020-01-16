@@ -45,13 +45,25 @@ export const menu = theme => css`
         }
     }
     animation: dropIn 0.2s;
-`;
-
-export const menuList = css`
-    & > div {
-        padding: 12px;
+    & > div:last-child {
+        text-align: center;
+    }
+    & > div > div:last-of-type {
+        border-top: 2px solid ${theme.highlight.primary};
+        line-height: 42px !important;
     }
 `;
+
+export const dropdownTooltip = theme => css`
+    padding: 12px;
+    & h4 {
+        font-size: 15px;
+        margin: 0;
+        padding: 0;
+    }
+`;
+
+export const menuList = css``;
 
 export const control = theme => css`
     overflow: hidden;
@@ -95,9 +107,8 @@ export const placeholder = theme => css`
 
 export const menuOption = theme => css`
     background-color: unset !important;
-    padding: 6px 12px !important;
-    padding-left: 24px !important;
     font-size: 15px;
+    line-height: 36px;
     outline: none;
     cursor: pointer;
     color: ${theme.color.primary};
@@ -118,9 +129,8 @@ export const menuOptionDisabled = theme => css`
 export const groupHeading = theme => css`
     text-transformation: none;
     cursor: default;
-    height: 38px;
+    line-height: 36px;
     margin: 0;
-    padding: 6px 6px 12px 20px !important;
     color: ${theme.alternativeColor.primary};
     font-size: 15px;
     font-weight: 500;

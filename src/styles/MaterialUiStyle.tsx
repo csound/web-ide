@@ -27,11 +27,11 @@ export const makeMuiTheme = (muiTheme, theme) => {
 
         assocPath(["overrides", "MuiTooltip", "tooltip"], {
             color: theme.color.primary,
-            backgroundColor: theme.alternativeColor.primary,
+            backgroundColor: theme.alternativeColor.secondary,
             textShadow: "0px 2px 2px rgba(0, 0, 0, 0.4)",
-            fontSize: "12px",
+            fontSize: "14px",
             padding: "12px",
-            fontWeight: "600"
+            fontWeight: "500"
         }),
         assocPath(["overrides", "MuiListItemText", "secondary"], {
             color: `${theme.alternativeColor.primary}!important`

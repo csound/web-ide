@@ -7,9 +7,14 @@ import OutlinedStarIcon from "@material-ui/icons/StarBorderOutlined";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import styled from "styled-components";
-import { selectUserStarredProject, selectActiveProjectUid, selectProjectPublic } from "./selectors";
+import {
+    selectUserStarredProject,
+    selectActiveProjectUid,
+    selectProjectPublic
+} from "./selectors";
 import { getLoggedInUserStars, toggleStarProject } from "../Profile/actions";
 import { markProjectPublic } from "../Projects/actions";
+import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 
 const StyledIconButton = styled(IconButton)`
     && {
@@ -47,9 +52,11 @@ const StyledLabelContainer = styled.div`
     color: ${props => props.theme.color.primary};
     letter-spacing: 1.25px;
 `;
+
 const SocialControls = () => {
     const starred = useSelector(selectUserStarredProject);
     const projectUid = useSelector(selectActiveProjectUid);
+    const isOwner = useSelector(selectIsOwner(projectUid as any));
     const isPublic = useSelector(selectProjectPublic);
     const dispatch = useDispatch();
 
@@ -58,39 +65,41 @@ const SocialControls = () => {
     }, [dispatch]);
     return (
         <>
-        <div css={SS.starButtonContainer}>
-            <StyledIconButton
-                size="medium"
-                onClick={() => {
-                    if (projectUid !== null) {
-                        dispatch(toggleStarProject(projectUid));
-                    }
-                }}
-            >
-                {starred && <StyledStarIcon fontSize="large" />}
-                {!starred && <StyledOutlinedStarIcon fontSize="large" />}
-                <StyledLabelContainer>
-                    {starred && "un"}star
-                </StyledLabelContainer>
-            </StyledIconButton>
-        </div>
-        <div css={SS.publicButtonContainer}>
-            <StyledIconButton
-                size="medium"
-                onClick={() => {
-                    if (projectUid !== null) {
-                        dispatch(markProjectPublic(!isPublic));
-                    }
-                }}
-            >
-                {isPublic ?
-                ( <StyledPublicIcon fontSize="large"/>)
-                : (<StyledPublicOffIcon fontSize="large"/>) }
-                <StyledLabelContainer>
-                    Public
-                </StyledLabelContainer>
-            </StyledIconButton>
-        </div>
+            <div css={SS.starButtonContainer}>
+                <StyledIconButton
+                    size="medium"
+                    onClick={() => {
+                        if (projectUid !== null) {
+                            dispatch(toggleStarProject(projectUid));
+                        }
+                    }}
+                >
+                    {starred && <StyledStarIcon fontSize="large" />}
+                    {!starred && <StyledOutlinedStarIcon fontSize="large" />}
+                    <StyledLabelContainer>
+                        {starred && "un"}star
+                    </StyledLabelContainer>
+                </StyledIconButton>
+            </div>
+            {isOwner && (
+                <div css={SS.publicButtonContainer}>
+                    <StyledIconButton
+                        size="medium"
+                        onClick={() => {
+                            if (projectUid !== null) {
+                                dispatch(markProjectPublic(!isPublic));
+                            }
+                        }}
+                    >
+                        {isPublic ? (
+                            <StyledPublicIcon fontSize="large" />
+                        ) : (
+                            <StyledPublicOffIcon fontSize="large" />
+                        )}
+                        <StyledLabelContainer>Public</StyledLabelContainer>
+                    </StyledIconButton>
+                </div>
+            )}
         </>
     );
 };

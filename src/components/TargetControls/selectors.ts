@@ -1,5 +1,5 @@
 import { IStore } from "@store/types";
-import { ITargetMap } from "@comp/Projects/types";
+import { ITargetMap, IDocumentsMap } from "@comp/Projects/types";
 import { curry, pathOr } from "ramda";
 
 export const selectProjectTargets = curry(
@@ -19,3 +19,17 @@ export const selectProjectTargets = curry(
 export const selectSelectedTarget = (store: IStore) => {
     return pathOr(null, ["TargetControlsReducer", "selectedTarget"], store);
 };
+
+export const selectProjectDocuments = (curry as any)(
+    (activeProjectUid: string | null, store: IStore) => {
+        if (activeProjectUid) {
+            return pathOr(
+                {} as IDocumentsMap,
+                ["ProjectsReducer", "projects", activeProjectUid, "documents"],
+                store
+            );
+        } else {
+            return null;
+        }
+    }
+);
