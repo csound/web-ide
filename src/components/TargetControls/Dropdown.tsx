@@ -29,13 +29,10 @@ const titleTooltip = ({ documents, selectedTarget }) => {
     const mainDocument: IDocument | null =
         typeof selectedTarget === "object" &&
         has("targetDocumentUid", selectedTarget)
-            ? documents[selectedTarget.targetDocumentUid]
+            ? documents[(selectedTarget || ({} as any)).targetDocumentUid]
             : null;
     if (mainDocument && selectedTarget.targetType === "main") {
         return `main: ${mainDocument.filename}`;
-        // <div css={SS.dropdownTooltip}>
-        //     <h4>{`main: ${mainDocument.filename}`}</h4>
-        // </div>
     } else {
         return `No document found for selected target: ${selectedTarget.targetName}`;
     }
@@ -114,16 +111,18 @@ const TargetDropdown = ({ activeProjectUid }) => {
     if (activeProjectUid == null) {
         return null;
     }
+
+    const tooltipText =
+        selectedTarget !== undefined || selectedTarget !== null
+            ? titleTooltip({ documents, selectedTarget })
+            : "No target found";
+
     return (
         <Tooltip
             open={tooltipIsOpen}
             onOpen={() => !menuIsOpen && setTooltipIsOpen(true)}
             onClose={() => setTooltipIsOpen(false)}
-            title={(() => {
-                return typeof selectedTarget === "object"
-                    ? titleTooltip({ documents, selectedTarget })
-                    : "No target found";
-            })()}
+            title={tooltipText}
             placement="bottom-end"
         >
             <div>

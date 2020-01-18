@@ -82,12 +82,11 @@ export const ProjectContext = (props: IProjectContextProps) => {
     useEffect(() => {
         if (!projectFetchStarted && csound) {
             const initProject = async () => {
-                setProjectFetchStarted(true);
-                // type bug '(dispatch: any) => Promise<void>'
-                await dispatch(loadProjectFromFirestore(projectUid));
-                await dispatch(activateProject(projectUid));
+                await loadProjectFromFirestore(projectUid)(dispatch);
+                await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };
+            setProjectFetchStarted(true);
             initProject();
         }
         if (

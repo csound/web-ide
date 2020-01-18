@@ -50,7 +50,8 @@ function MenuBar(props) {
                 {
                     label: "New File…",
                     hotKey: "new_document",
-                    callback: () => dispatch(newDocument(activeProjectUid, ""))
+                    callback: () => dispatch(newDocument(activeProjectUid, "")),
+                    disabled: !isOwner
                 },
                 {
                     label: "Add File…",
@@ -61,12 +62,14 @@ function MenuBar(props) {
                 {
                     label: "Save Document",
                     hotKey: "save_document",
-                    callback: () => dispatch(saveFile())
+                    callback: () => dispatch(saveFile()),
+                    disabled: !isOwner
                 },
                 {
                     label: "Save All",
                     hotKey: "save_all_documents",
-                    callback: () => dispatch(saveAllFiles())
+                    callback: () => dispatch(saveAllFiles()),
+                    disabled: !isOwner
                 },
                 {
                     seperator: true

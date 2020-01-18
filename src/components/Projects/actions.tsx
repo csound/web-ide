@@ -6,7 +6,7 @@ import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, reduce, some } from "lodash";
-import { pathOr, propOr, values } from "ramda";
+import { assoc, pathOr, propOr, values } from "ramda";
 import {
     ACTIVATE_PROJECT,
     DOCUMENT_INITIALIZE,
@@ -20,7 +20,6 @@ import {
     SET_PROJECT,
     SET_PROJECT_FILES,
     SET_PROJECT_PUBLIC,
-    SET_PROJECT_TARGETS,
     IProject,
     IDocument
 } from "./types";
@@ -41,44 +40,43 @@ import { ThunkAction } from "redux-thunk";
 
 export const loadProjectFromFirestore = (projectUid: string) => {
     return async (dispatch: any) => {
-        if (projectUid) {
-            const projRef = projects.doc(projectUid);
-            const doc = await projRef.get();
-            if (doc && doc.exists) {
-                const data = doc.data();
-                const project: IProject = {
-                    projectUid,
-                    documents: {},
-                    targets: propOr({}, "targets", data),
-                    defaultTarget: propOr(null, "defaultTarget", data),
-                    isPublic: propOr(false, "public", data),
-                    name: propOr("", "name", data),
-                    userUid: propOr("", "userUid", data),
-                    stars: propOr([], "stars", data)
-                };
-                await dispatch(setProject(project));
-
-                const filesSnapshots = await projRef.collection("files").get();
-                const files = reduce(
-                    filesSnapshots.docs,
-                    (acc, docSnapshot) => {
-                        const docData = docSnapshot.data();
-                        acc[docSnapshot.id] = {
-                            currentValue: docData["value"],
-                            documentUid: docSnapshot.id,
-                            savedValue: docData["value"],
-                            filename: docData["name"],
-                            type: docData["type"],
-                            isModifiedLocally: false
-                        } as IDocument;
-                        return acc;
-                    },
-                    {}
-                );
-                dispatch(setProjectFiles(projectUid, files));
-            } else {
-                // handle error
-            }
+        const projRef = projects.doc(projectUid);
+        const doc = await projRef.get();
+        if (doc && doc.exists) {
+            const data = doc.data();
+            const project: IProject = {
+                projectUid,
+                documents: {},
+                targets: propOr({}, "targets", data),
+                defaultTarget: propOr(null, "defaultTarget", data),
+                isPublic: propOr(false, "public", data),
+                name: propOr("", "name", data),
+                userUid: propOr("", "userUid", data),
+                stars: propOr([], "stars", data)
+            };
+            await dispatch(setProject(project));
+            const filesSnapshots = await projRef.collection("files").get();
+            const docs = await Promise.all(
+                filesSnapshots.docs.map(d =>
+                    assoc("documentUid", d.id, d.data())
+                )
+            );
+            const files = reduce(
+                docs,
+                (acc, docData) => {
+                    acc[docData["documentUid"]] = {
+                        currentValue: docData["value"],
+                        documentUid: docData["documentUid"],
+                        savedValue: docData["value"],
+                        filename: docData["name"],
+                        type: docData["type"],
+                        isModifiedLocally: false
+                    } as IDocument;
+                    return acc;
+                },
+                {}
+            );
+            await setProjectFiles(projectUid, files)(dispatch);
         }
     };
 };
@@ -187,19 +185,12 @@ export const setProject = (project: IProject) => {
 };
 
 export const setProjectFiles = (projectUid: string, files) => {
-    return {
-        type: SET_PROJECT_FILES,
-        projectUid,
-        files
-    };
-};
-
-export const setProjectTargets = (projectUid: string, targets) => {
-    return {
-        type: SET_PROJECT_TARGETS,
-        projectUid,
-        targets
-    };
+    return async (dispatch: any) =>
+        dispatch({
+            type: SET_PROJECT_FILES,
+            projectUid,
+            files
+        });
 };
 
 export const resetDocumentValue = (projectUid: string, documentUid: string) => {

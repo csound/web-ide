@@ -17,6 +17,7 @@ import { IStore } from "@store/types";
 import Editor from "../Editor/Editor";
 import AudioEditor from "../AudioEditor/AudioEditor";
 import { useTheme } from "emotion-theming";
+import { setSelectedTarget } from "@comp/TargetControls/actions";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "@comp/Console/Console";
@@ -238,6 +239,7 @@ const ProjectEditor = props => {
         return () => {
             dispatch(closeTabDock());
             dispatch(closeProject());
+            dispatch(setSelectedTarget(null));
         };
         // eslint-disable-next-line
     }, []);

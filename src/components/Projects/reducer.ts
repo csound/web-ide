@@ -13,7 +13,6 @@ import {
     CLOSE_PROJECT,
     SET_PROJECT,
     SET_PROJECT_FILES,
-    SET_PROJECT_TARGETS,
     SET_PROJECT_PUBLIC
 } from "./types";
 import { UPDATE_TARGETS_LOCALLY } from "@comp/TargetControls/types";
@@ -90,12 +89,12 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                 action.files
             )(state) as IProjectsReducer;
         }
-        case SET_PROJECT_TARGETS: {
-            return assocPath(
-                ["projects", action.projectUid, "targets"],
-                action.targets
-            )(state) as IProjectsReducer;
-        }
+        // case SET_PROJECT_TARGETS: {
+        //     return assocPath(
+        //         ["projects", action.projectUid, "targets"],
+        //         action.targets
+        //     )(state) as IProjectsReducer;
+        // }
         case SET_PROJECT_PUBLIC: {
             return assocPath(
                 ["projects", action.projectUid, "isPublic"],

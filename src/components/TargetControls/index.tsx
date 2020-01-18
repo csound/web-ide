@@ -52,9 +52,6 @@ const TargetControls = () => {
                 }
             }
         }
-        return () => {
-            setSelectedTarget(null);
-        };
     }, [dispatch, targetsValues, savedDefaultTarget, selectedTarget]);
 
     if (!selectedTarget) {
