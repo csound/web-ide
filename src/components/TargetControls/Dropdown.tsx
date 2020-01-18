@@ -119,11 +119,11 @@ const TargetDropdown = ({ activeProjectUid }) => {
             open={tooltipIsOpen}
             onOpen={() => !menuIsOpen && setTooltipIsOpen(true)}
             onClose={() => setTooltipIsOpen(false)}
-            title={
-                typeof selectedTarget === "object"
+            title={(() => {
+                return typeof selectedTarget === "object"
                     ? titleTooltip({ documents, selectedTarget })
-                    : "No target found"
-            }
+                    : "No target found";
+            })()}
             placement="bottom-end"
         >
             <div>
