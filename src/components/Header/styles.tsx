@@ -77,3 +77,7 @@ export const headerRightSideGroup = css`
         vertical-align: middle;
     }
 `;
+
+export const spacer = css`
+    margin-left: 12px;
+`;
