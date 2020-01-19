@@ -2,6 +2,7 @@
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
 const log = require("./logger.js")("new_user_callback");
+const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
 
 // Add a project file entry in Firestore when binary file is uploaded
 exports.add_project_file_on_storage_upload_callback = functions.storage
@@ -18,11 +19,18 @@ exports.add_project_file_on_storage_upload_callback = functions.storage
                 );
                 await admin
                     .firestore()
-                    .collection('projects')
+                    .collection("projects")
                     .doc(projectUid)
-                    .collection('files')
+                    .collection("files")
                     .doc(docUid)
-                    .set({ name: filename, type: "bin", userUid , value: ""});
+                    .set({
+                        name: filename,
+                        type: "bin",
+                        userUid,
+                        value: "",
+                        createdAt: newTimestamp(),
+                        lastModified: newTimestamp()
+                    });
             }
         }
         //const {filename} = obj.metadata;

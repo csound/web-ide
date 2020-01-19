@@ -8,6 +8,8 @@ import {
 } from "@comp/TargetControls/selectors";
 import { selectTabDockIndex } from "@comp/ProjectEditor/selectors";
 import { closeModal, openSimpleModal } from "../Modal/actions";
+import { openSnackbar } from "@comp/Snackbar/actions";
+import { SnackbarType } from "@comp/Snackbar/types";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, some } from "lodash";
@@ -78,7 +80,9 @@ export const newEmptyDocument = (
     type: DOCUMENT_INITIALIZE,
     filename,
     documentUid,
-    projectUid
+    projectUid,
+    lastModified: getFirebaseTimestamp(),
+    createdAt: getFirebaseTimestamp()
 });
 
 export const closeProject = () => {
@@ -425,18 +429,22 @@ const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
             files == null ? "Select file" : formatFileSize(files[0].size);
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
-                <input
-                    id="fileSelector"
-                    type="file"
-                    onChange={e => {
-                        let files = e.target.files;
-                        let fileName = files ? files[0].name : "";
-                        setFiles(files);
-                        setNameCollides(
-                            some(reservedFilenames, fn => fn === fileName)
-                        );
-                    }}
-                ></input>
+                <Button variant="contained" color="primary" component="label">
+                    {files ? `${files[0].name}` : "Choose file..."}
+                    <input
+                        id="fileSelector"
+                        type="file"
+                        style={{ display: "none" }}
+                        onChange={e => {
+                            let files = e.target.files;
+                            let fileName = files ? files[0].name : "";
+                            setFiles(files);
+                            setNameCollides(
+                                some(reservedFilenames, fn => fn === fileName)
+                            );
+                        }}
+                    ></input>
+                </Button>
                 <p>File Size: {filesize} (Max file size is 1MB)</p>
                 <Button
                     variant="outlined"
@@ -528,7 +536,9 @@ export const addDocument = (projectUid: string) => {
                             type: fileType,
                             name: filename,
                             value: txt,
-                            userUid: uid
+                            userUid: uid,
+                            lastModified: getFirebaseTimestamp(),
+                            createdAt: getFirebaseTimestamp()
                         };
                         projects
                             .doc(project.projectUid)
@@ -588,6 +598,9 @@ export const addDocument = (projectUid: string) => {
                             }
                         },
                         function(error) {
+                            dispatch(
+                                openSnackbar(error.message, SnackbarType.Error)
+                            );
                             // A full list of error codes is available at
                             // https://firebase.google.com/docs/storage/web/handle-errors
                             switch (error.name) {
