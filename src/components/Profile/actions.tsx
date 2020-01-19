@@ -135,6 +135,24 @@ export const addUserProject = (
                 await newProjectRef
                     .collection("files")
                     .add({ ...defaultCsd, userUid: user.uid });
+                const filesWithCsd = await newProjectRef
+                    .collection("files")
+                    .get();
+                const defaultCsdUid = filesWithCsd.docs[0].id;
+                await newProjectRef.set(
+                    {
+                        targets: {
+                            "project.csd": {
+                                csoundOptions: {},
+                                targetName: "project.csd",
+                                targetType: "main",
+                                targetDocumentUid: defaultCsdUid
+                            }
+                        },
+                        defaultTarget: "project.csd"
+                    },
+                    { merge: true }
+                );
                 await newProjectRef
                     .collection("files")
                     .add({ ...defaultOrc, userUid: user.uid });
@@ -689,7 +707,7 @@ export const playListItem = (
         dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
     } else {
         if (hasPath(["ProjectsReducer", "projects", projectUid], state)) {
-            const playAction = getPlayActionFromProject(state, projectUid);
+            const playAction = getPlayActionFromProject(projectUid, state);
             if (playAction) {
                 dispatch({
                     type: SET_LIST_PLAY_STATE,

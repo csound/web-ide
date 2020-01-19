@@ -16,7 +16,7 @@ import {
     selectSelectedTarget
 } from "./selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
-import { append, concat, filter, has, values } from "ramda";
+import { append, allPass, concat, filter, isNil, has, values } from "ramda";
 import { isEmpty, reduce } from "lodash";
 import * as SS from "./styles";
 
@@ -24,6 +24,14 @@ interface IDropdownOption {
     label: string;
     value: string;
 }
+
+const paranoidNotNullChecker = (item: any): boolean =>
+    allPass([
+        i => typeof i !== "undefined",
+        i => `${i}` !== "undefined",
+        i => !isNil(i),
+        i => i !== null
+    ])(item);
 
 const titleTooltip = ({ documents, selectedTarget }) => {
     const mainDocument: IDocument | null =
@@ -112,10 +120,9 @@ const TargetDropdown = ({ activeProjectUid }) => {
         return null;
     }
 
-    const tooltipText =
-        selectedTarget !== undefined || selectedTarget !== null
-            ? titleTooltip({ documents, selectedTarget })
-            : "No target found";
+    const tooltipText = paranoidNotNullChecker(selectedTarget)
+        ? titleTooltip({ documents, selectedTarget })
+        : "No target selected";
 
     return (
         <Tooltip
@@ -130,8 +137,9 @@ const TargetDropdown = ({ activeProjectUid }) => {
                     value={selectedTargetName}
                     closeMenuOnSelect={true}
                     placeholder={
-                        selectedTargetName
-                            ? selectedTargetName!.length > 0
+                        values(targets || []).length > 0
+                            ? selectedTargetName &&
+                              selectedTargetName!.length > 0
                                 ? selectedTargetName
                                 : "Select target"
                             : "No targets found"

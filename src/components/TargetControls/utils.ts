@@ -1,4 +1,4 @@
-import { find, pathOr, propEq, values } from "ramda";
+import { curry, find, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
 import { IDocument, ITarget } from "@comp/Projects/types";
 import { playORCFromString, playCSDFromEMFS } from "@comp/Csound/actions";
@@ -11,73 +11,84 @@ const getDefaultTargetName = (store, projectUid): string | null =>
         store
     );
 
-export const getDefaultTargetDocument = (
-    store,
-    projectUid
-): IDocument | null => {
-    const maybeDefaultTarget: ITarget | null = pathOr(
-        null,
-        [
-            "ProjectsReducer",
-            "projects",
-            projectUid,
-            "targets",
-            getDefaultTargetName(store, projectUid) || ""
-        ],
-        store
-    );
+export const getDefaultTargetDocument = curry(
+    (projectUid, store): IDocument | null => {
+        const maybeDefaultTarget: ITarget | null = pathOr(
+            null,
+            [
+                "ProjectsReducer",
+                "projects",
+                projectUid,
+                "targets",
+                getDefaultTargetName(store, projectUid) || ""
+            ],
+            store
+        );
 
-    const projectCsdFallback =
-        find(
-            propEq("filename", "project.csd"),
-            values(
-                pathOr(
-                    {},
-                    ["ProjectsReducer", "projects", projectUid, "documents"],
-                    store
+        const projectCsdFallback =
+            find(
+                propEq("filename", "project.csd"),
+                values(
+                    pathOr(
+                        {},
+                        [
+                            "ProjectsReducer",
+                            "projects",
+                            projectUid,
+                            "documents"
+                        ],
+                        store
+                    )
                 )
-            )
-        ) || null;
+            ) || null;
 
-    // ATT: fallback to project.csd is to prevserve fallback behaviour
-    // This should be marked as a deprecated fallback, soonish
-    const targetDocument: IDocument | null = maybeDefaultTarget
-        ? (pathOr as any)(
-              null,
-              [
-                  "ProjectsReducer",
-                  "projects",
-                  projectUid,
-                  "documents",
-                  (maybeDefaultTarget as ITarget).targetType === "main"
-                      ? maybeDefaultTarget &&
-                        (maybeDefaultTarget as ITarget)!.targetDocumentUid
-                      : maybeDefaultTarget &&
-                        pathOr(
-                            "",
-                            ["playlistDocumentsUid", 0],
-                            maybeDefaultTarget as ITarget
-                        )
-              ],
-              store
-          )
-        : projectCsdFallback;
+        // ATT: fallback to project.csd is to prevserve fallback behaviour
+        // This should be marked as a deprecated fallback, soonish
+        const targetDocument: IDocument | null = maybeDefaultTarget
+            ? (pathOr as any)(
+                  null,
+                  [
+                      "ProjectsReducer",
+                      "projects",
+                      projectUid,
+                      "documents",
+                      (maybeDefaultTarget as ITarget).targetType === "main"
+                          ? maybeDefaultTarget &&
+                            (maybeDefaultTarget as ITarget)!.targetDocumentUid
+                          : maybeDefaultTarget &&
+                            pathOr(
+                                "",
+                                ["playlistDocumentsUid", 0],
+                                maybeDefaultTarget as ITarget
+                            )
+                  ],
+                  store
+              )
+            : projectCsdFallback;
 
-    return targetDocument;
-};
+        return targetDocument;
+    }
+);
 
-export const getPlayActionFromProject = (store: IStore, projectUid: string) => {
-    const targetDocument = getDefaultTargetDocument(store, projectUid);
-    if (!targetDocument) return;
-    const csoundDocType = filenameToCsoundType(
-        (targetDocument as IDocument).filename
-    );
-    switch (csoundDocType) {
-        case "csd": {
-            return playCSDFromEMFS((targetDocument as IDocument).filename);
+export const getPlayActionFromProject = curry(
+    (projectUid: string, store: IStore) => {
+        const targetDocument = getDefaultTargetDocument(store, projectUid);
+        if (!targetDocument) return;
+        const csoundDocType = filenameToCsoundType(
+            (targetDocument as IDocument).filename
+        );
+        switch (csoundDocType) {
+            case "csd": {
+                return playCSDFromEMFS((targetDocument as IDocument).filename);
+            }
+            case "orc": {
+                return playORCFromString(
+                    (targetDocument as IDocument).savedValue
+                );
+            }
         }
     }
-};
+);
 
 export const getPlayActionFromTarget = (store: IStore) => {
     const selectedTarget = pathOr(

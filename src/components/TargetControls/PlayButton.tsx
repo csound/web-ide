@@ -4,47 +4,58 @@ import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "@store/types";
 import { pathOr } from "ramda";
-import { getPlayActionFromTarget } from "./utils";
+import {
+    getDefaultTargetDocument,
+    getPlayActionFromProject,
+    getPlayActionFromTarget
+} from "./utils";
 import { selectSelectedTarget } from "./selectors";
 import { stopCsound } from "@comp/Csound/actions";
 
-const PlayButton = () => {
-    const playAction = useSelector(getPlayActionFromTarget);
+const PlayButton = ({ activeProjectUid }) => {
+    // const getPlayAction = (getPlayActionFromTarget as any)(activeProjectUid);
+    const playActionDefault = useSelector(getPlayActionFromTarget);
+
+    const playActionFallback = useSelector(
+        getPlayActionFromProject(activeProjectUid)
+    );
 
     const csoundPlayState: string = useSelector((store: IStore) => {
         return pathOr("stopped", ["csound", "status"], store);
     });
-
     const selectedTargetName: string | null = useSelector(selectSelectedTarget);
+
+    const fallbackTargetDocument: any = useSelector(
+        getDefaultTargetDocument(activeProjectUid)
+    );
 
     const dispatch = useDispatch();
 
-    if (playAction) {
-        return (
-            <Tooltip
-                title={
+    const tooltipText =
+        !selectedTargetName && !fallbackTargetDocument
+            ? ""
+            : csoundPlayState === "playing"
+            ? "pause playback"
+            : `run ${selectedTargetName || fallbackTargetDocument.filename}`;
+
+    const playAction = playActionDefault || playActionFallback;
+
+    return (
+        <Tooltip title={tooltipText}>
+            <div
+                css={SS.playButtonContainer}
+                onClick={e =>
                     csoundPlayState === "playing"
-                        ? "pause playback"
-                        : `run ${selectedTargetName}`
+                        ? dispatch(stopCsound())
+                        : playAction && dispatch(playAction)
                 }
             >
-                <div
-                    css={SS.playButtonContainer}
-                    onClick={e =>
-                        csoundPlayState === "playing"
-                            ? dispatch(stopCsound())
-                            : dispatch(playAction)
-                    }
-                >
-                    <button
-                        css={SS.playButtonStyle(csoundPlayState === "playing")}
-                    />
-                </div>
-            </Tooltip>
-        );
-    } else {
-        return <></>;
-    }
+                <button
+                    css={SS.playButtonStyle(csoundPlayState === "playing")}
+                />
+            </div>
+        </Tooltip>
+    );
 };
 
 export default PlayButton;

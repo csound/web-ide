@@ -45,8 +45,8 @@ const TargetControls = () => {
             if (savedDefaultTarget && savedDefaultTarget.length > 0) {
                 dispatch(setSelectedTarget(savedDefaultTarget));
             } else if (targetsValues && targetsValues.length > 0) {
-                if (targetsValues.some(t => t.targetName === "main")) {
-                    dispatch(setSelectedTarget("main"));
+                if (targetsValues.some(t => t.targetName === "project.csd")) {
+                    dispatch(setSelectedTarget("project.csd"));
                 } else {
                     dispatch(setSelectedTarget(targetsValues[0].targetName));
                 }
@@ -54,16 +54,12 @@ const TargetControls = () => {
         }
     }, [dispatch, targetsValues, savedDefaultTarget, selectedTarget]);
 
-    if (!selectedTarget) {
-        return <></>;
-    } else {
-        return (
-            <>
-                <PlayButton />
-                <TargetDropdown activeProjectUid={activeProjectUid} />
-            </>
-        );
-    }
+    return (
+        <>
+            <PlayButton activeProjectUid={activeProjectUid} />
+            <TargetDropdown activeProjectUid={activeProjectUid} />
+        </>
+    );
 };
 
 export default TargetControls;
