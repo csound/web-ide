@@ -28,6 +28,7 @@ if (!firebase.apps.length) {
     } else if (process.env.REACT_APP_DATABASE === "PROD") {
         target = PROD;
     }
+    // firebase.settings();
     firebase.initializeApp(target);
 }
 
@@ -39,3 +40,6 @@ export const usernames = db.collection("usernames");
 export const tags = db.collection("tags");
 export const projectFiles = db.collection("projectFiles");
 export const storageRef = firebase.storage().ref();
+export const getFirebaseTimestamp: () => any =
+    firebase.firestore.FieldValue.serverTimestamp;
+export type Timestamp = firebase.firestore.Timestamp;

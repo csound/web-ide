@@ -51,10 +51,7 @@ import {
     selectLoggedInUserStars
 } from "./selectors";
 import { playPauseCsound } from "@comp/Csound/actions";
-import {
-    loadProjectFromFirestore,
-    syncProjectDocumentsWithEMFS
-} from "@comp/Projects/actions";
+// import { loadProjectFromFirestore } from "@comp/Projects/actions";
 import { getPlayActionFromProject } from "@comp/TargetControls/utils";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
@@ -69,12 +66,19 @@ const getUserProjectsAction = (payload: any): ProfileActionTypes => {
 
 export const getUserProjects = (
     uid
-): ThunkAction<void, any, null, Action<string>> => async (dispatch, getState) => {
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
     dispatch(getUserProjectsAction([]));
     firebase.auth().onAuthStateChanged(async user => {
-        const queryResult = (uid === user?.uid) ? 
-            await projects.where("userUid", "==", uid).get() :
-            await projects.where("userUid", "==", uid).where("public", "==", true).get();
+        const queryResult =
+            uid === user?.uid
+                ? await projects.where("userUid", "==", uid).get()
+                : await projects
+                      .where("userUid", "==", uid)
+                      .where("public", "==", true)
+                      .get();
 
         const userProjects = queryResult.docs.map(psnap =>
             pipe(
@@ -84,8 +88,7 @@ export const getUserProjects = (
             )(psnap)
         );
         dispatch(getUserProjectsAction(userProjects));
-
-            });
+    });
 };
 
 const addUserProjectAction = (): ProfileActionTypes => {
@@ -703,31 +706,31 @@ export const playListItem = (
                 });
             }
         } else {
-            loadProjectFromFirestore(projectUid)(dispatch).then(() => {
-                dispatch(
-                    syncProjectDocumentsWithEMFS(projectUid, () => {
-                        const playAction = getPlayActionFromProject(
-                            state,
-                            projectUid
-                        );
-                        if (playAction) {
-                            dispatch({
-                                type: SET_LIST_PLAY_STATE,
-                                payload: "playing"
-                            });
-                            dispatch(playAction);
-                            dispatch({
-                                type: SET_CSOUND_STATUS,
-                                payload: false
-                            });
-                            dispatch({
-                                type: SET_CURRENTLY_PLAYING_PROJECT,
-                                payload: projectUid
-                            });
-                        }
-                    })
-                );
-            });
+            // loadProjectFromFirestore(projectUid)(dispatch).then(() => {
+            //     dispatch(
+            //         syncProjectDocumentsWithEMFS(projectUid, () => {
+            //             const playAction = getPlayActionFromProject(
+            //                 state,
+            //                 projectUid
+            //             );
+            //             if (playAction) {
+            //                 dispatch({
+            //                     type: SET_LIST_PLAY_STATE,
+            //                     payload: "playing"
+            //                 });
+            //                 dispatch(playAction);
+            //                 dispatch({
+            //                     type: SET_CSOUND_STATUS,
+            //                     payload: false
+            //                 });
+            //                 dispatch({
+            //                     type: SET_CURRENTLY_PLAYING_PROJECT,
+            //                     payload: projectUid
+            //                 });
+            //             }
+            //         })
+            //     );
+            // });
         }
     }
 };

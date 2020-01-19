@@ -2,7 +2,8 @@ import React from "react";
 import Button from "@material-ui/core/Button";
 import { closeModal, openSimpleModal } from "@comp/Modal/actions";
 import { resetDocumentValue } from "@comp/Projects/actions";
-import { IDocument } from "@comp/Projects/types";
+import { IDocument, ITarget } from "@comp/Projects/types";
+import { find, propEq } from "ramda";
 import { sortByStoredTabOrder } from "./utils";
 import {
     MANUAL_LOOKUP_STRING,
@@ -21,7 +22,7 @@ import {
 export const tabDockInit = (
     projectUid: string,
     allDocuments: IDocument[],
-    defaultTarget: IDocument | null
+    defaultTarget: ITarget | null
 ) => {
     const storedIndex = localStorage.getItem(projectUid + ":tabIndex");
     const storedTabOrder: string | null = localStorage.getItem(
@@ -61,13 +62,39 @@ export const tabDockInit = (
 
     if (
         defaultTarget &&
+        defaultTarget.targetDocumentUid &&
         initialOpenDocuments.length === 0 &&
         allDocuments.length > 0
     ) {
         initialOpenDocuments.push({
-            uid: defaultTarget.documentUid,
+            uid: defaultTarget.targetDocumentUid,
             editorInstance: null
         });
+    } else if (
+        defaultTarget &&
+        defaultTarget.playlistDocumentsUid &&
+        initialOpenDocuments.length === 0 &&
+        allDocuments.length > 0
+    ) {
+        defaultTarget.playlistDocumentsUid.forEach(docUid => {
+            initialOpenDocuments.push({
+                uid: docUid,
+                editorInstance: null
+            });
+        });
+    } else if (
+        allDocuments.length > 0 &&
+        allDocuments.some(d => d.filename === "project.csd")
+    ) {
+        const projectCsd = find(
+            propEq("filename", "project.csd"),
+            allDocuments
+        );
+        projectCsd &&
+            initialOpenDocuments.push({
+                uid: projectCsd.documentUid,
+                editorInstance: null
+            });
     }
 
     if (initialOpenDocuments.length > 0 && initialIndex < 0) {

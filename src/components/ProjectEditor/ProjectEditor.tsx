@@ -9,7 +9,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
-import { IDocument, IProject } from "../Projects/types";
+import { IDocument } from "../Projects/types";
 import { IOpenDocument } from "./types";
 import SplitterLayout from "react-splitter-layout";
 import IframeComm from "react-iframe-comm";
@@ -18,6 +18,7 @@ import Editor from "../Editor/Editor";
 import AudioEditor from "../AudioEditor/AudioEditor";
 import { useTheme } from "emotion-theming";
 import { setSelectedTarget } from "@comp/TargetControls/actions";
+import { subscribeToProjectChanges } from "@comp/Projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "@comp/Console/Console";
@@ -62,7 +63,7 @@ function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
     );
 }
 
-const ProjectEditor = props => {
+const ProjectEditor = ({ activeProject, csound }) => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 
@@ -70,8 +71,17 @@ const ProjectEditor = props => {
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = useState(false);
-    const activeProject: IProject = props.activeProject;
     const projectUid: string = propOr("", "projectUid", activeProject);
+
+    useEffect(() => {
+        const unsubscribe = subscribeToProjectChanges(
+            projectUid,
+            dispatch,
+            csound
+        );
+        return unsubscribe;
+        // eslint-disable-next-line
+    }, []);
 
     const tabDockDocuments: IOpenDocument[] = useSelector(
         pathOr([] as IOpenDocument[], [
@@ -183,7 +193,6 @@ const ProjectEditor = props => {
                     )
                 );
             }}
-            onTabEdit={console.log}
         >
             <DragTabList>{openTabList}</DragTabList>
             <PanelList>{openTabPanels}</PanelList>

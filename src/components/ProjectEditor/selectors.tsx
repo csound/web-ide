@@ -14,3 +14,6 @@ export const selectIsOwner = curry(
         return equals(owner, (currentUser && currentUser.uid) || -1);
     }
 );
+
+export const selectTabDockIndex = (store: IStore) =>
+    pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"], store);

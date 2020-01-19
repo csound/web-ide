@@ -2,22 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useTheme } from "emotion-theming";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
-import { getDefaultTargetDocument } from "@comp/TargetControls/utils";
-import { IDocument, IDocumentsMap, IProject } from "@comp/Projects/types";
+import { IProject } from "@comp/Projects/types";
 import { ICsoundObj } from "@comp/Csound/types";
 import Header from "@comp/Header/Header";
-import {
-    activateProject,
-    loadProjectFromFirestore,
-    syncProjectDocumentsWithEMFS
-} from "./actions";
-import { tabDockInit } from "@comp/ProjectEditor/actions";
+import { activateProject, initializeProject } from "./actions";
 import * as SS from "./styles";
-import { has, path, pathOr, values } from "ramda";
+import { path, pathOr } from "ramda";
 
 interface IProjectContextProps {
-    className: string;
-    // main: JSX.Element[] | JSX.Element;
     match: any;
 }
 
@@ -32,7 +24,6 @@ export const ProjectContext = (props: IProjectContextProps) => {
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
     const projectUid = props.match.params.id;
-    const { className } = props;
 
     const activeProjectUid: string | null = useSelector(
         store =>
@@ -49,28 +40,6 @@ export const ProjectContext = (props: IProjectContextProps) => {
             : null
     );
 
-    const documentsMap: IDocumentsMap | null = useSelector(store =>
-        activeProjectUid && project
-            ? (path(
-                  [
-                      "ProjectsReducer",
-                      "projects",
-                      activeProjectUid,
-                      "documents"
-                  ],
-                  store
-              ) as IDocumentsMap) || null
-            : null
-    );
-
-    const documents: IDocument[] | null = documentsMap
-        ? values(documentsMap)
-        : null;
-
-    const defaultTarget: IDocument | null = useSelector(store =>
-        project ? getDefaultTargetDocument(store, projectUid) : null
-    );
-
     const csound: ICsoundObj | null = useSelector(
         pathOr(null, ["csound", "csound"])
     );
@@ -82,26 +51,14 @@ export const ProjectContext = (props: IProjectContextProps) => {
     useEffect(() => {
         if (!projectFetchStarted && csound) {
             const initProject = async () => {
-                await loadProjectFromFirestore(projectUid)(dispatch);
+                await initializeProject(projectUid)(dispatch);
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };
             setProjectFetchStarted(true);
             initProject();
         }
-        if (
-            needsLoading &&
-            projectFetchStarted &&
-            projectIsReady &&
-            csound &&
-            has("documents", project) &&
-            documents &&
-            documents.length > 0
-        ) {
-            if (tabIndex < 0) {
-                dispatch(tabDockInit(projectUid, documents, defaultTarget));
-            }
-            dispatch(syncProjectDocumentsWithEMFS(projectUid, () => {}));
+        if (needsLoading && projectFetchStarted && projectIsReady && csound) {
             setNeedsLoading(false);
         }
         // eslint-disable-next-line
@@ -122,9 +79,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
                 <Header />
                 <ProjectEditor
                     {...props}
-                    css={SS.main}
-                    style={{ display: "none!important" }}
-                    className={className}
+                    csound={csound as unknown}
                     activeProject={project}
                 />
             </>

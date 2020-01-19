@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { push } from "connected-react-router";
-import { tabClose, tabOpenByDocumentUid } from "../ProjectEditor/actions";
+import { tabOpenByDocumentUid, tabDockInit } from "@comp/ProjectEditor/actions";
+import {
+    selectDefaultTargetName,
+    selectTarget
+} from "@comp/TargetControls/selectors";
+import { selectTabDockIndex } from "@comp/ProjectEditor/selectors";
 import { closeModal, openSimpleModal } from "../Modal/actions";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import { filter, find, isEmpty, reduce, some } from "lodash";
-import { assoc, pathOr, propOr, values } from "ramda";
+import { filter, find, isEmpty, some } from "lodash";
+import { pathOr, propOr, values } from "ramda";
 import {
     ACTIVATE_PROJECT,
+    ADD_PROJECT_DOCUMENTS,
     DOCUMENT_INITIALIZE,
     DOCUMENT_RESET,
     DOCUMENT_RENAME_LOCALLY,
@@ -18,16 +24,21 @@ import {
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     CLOSE_PROJECT,
     SET_PROJECT,
-    SET_PROJECT_FILES,
     SET_PROJECT_PUBLIC,
+    ITarget,
     IProject,
-    IDocument
+    IDocument,
+    IDocumentsMap
 } from "./types";
 import { textOrBinary } from "./utils";
 import { IStore } from "@store/types";
-import { projects, storageRef } from "@config/firestore";
+import {
+    db,
+    getFirebaseTimestamp,
+    projects,
+    storageRef
+} from "@config/firestore";
 import { store } from "@root/store";
-import { ICsoundObj } from "@comp/Csound/types";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase/app";
@@ -38,7 +49,7 @@ import { selectActiveProjectUid } from "../SocialControls/selectors";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
-export const loadProjectFromFirestore = (projectUid: string) => {
+export const initializeProject = (projectUid: string) => {
     return async (dispatch: any) => {
         const projRef = projects.doc(projectUid);
         const doc = await projRef.get();
@@ -55,99 +66,6 @@ export const loadProjectFromFirestore = (projectUid: string) => {
                 stars: propOr([], "stars", data)
             };
             await dispatch(setProject(project));
-            const filesSnapshots = await projRef.collection("files").get();
-            const docs = await Promise.all(
-                filesSnapshots.docs.map(d =>
-                    assoc("documentUid", d.id, d.data())
-                )
-            );
-            const files = reduce(
-                docs,
-                (acc, docData) => {
-                    acc[docData["documentUid"]] = {
-                        currentValue: docData["value"],
-                        documentUid: docData["documentUid"],
-                        savedValue: docData["value"],
-                        filename: docData["name"],
-                        type: docData["type"],
-                        isModifiedLocally: false
-                    } as IDocument;
-                    return acc;
-                },
-                {}
-            );
-            await setProjectFiles(projectUid, files)(dispatch);
-        }
-    };
-};
-
-export const syncProjectDocumentsWithEMFS = (
-    projectUid: string,
-    filesAddedCallback: any = () => {}
-) => {
-    return async (dispatch: any) => {
-        const cs: ICsoundObj = (store as any).getState().csound.csound;
-        const encoder = new TextEncoder();
-        const projRef = projects.doc(projectUid);
-        const doc = await projRef.get();
-        if (doc) {
-            const project = doc.data();
-
-            // TODO - Sync files to Redux as well as EMFS
-            const addFileToEMFS = (dataId, data) => {
-                if (data.type === "bin") {
-                    let path = `${project!.userUid}/${projectUid}/${dataId}`;
-                    return storageRef
-                        .child(path)
-                        .getDownloadURL()
-                        .then(function(url) {
-                            // This can be downloaded directly:
-                            var xhr = new XMLHttpRequest();
-                            xhr.responseType = "arraybuffer";
-                            xhr.onload = function(event) {
-                                let blob = xhr.response;
-                                cs.writeToFS(data.name, blob);
-                            };
-                            xhr.open("GET", url);
-                            xhr.send();
-                        })
-                        .catch(function(error) {
-                            // Handle any errors
-                        });
-                } else {
-                    cs.writeToFS(data.name, encoder.encode(data.value));
-                }
-            };
-
-            projRef.collection("files").onSnapshot(async files => {
-                files.docs.map(doc => {
-                    const data = doc.data();
-                    addFileToEMFS(doc.id, data);
-                    return null;
-                });
-
-                filesAddedCallback();
-
-                files.docChanges().forEach(change => {
-                    const doc = change.doc.data();
-                    switch (change.type) {
-                        case "added": {
-                            addFileToEMFS(change.doc.id, doc);
-                            break;
-                        }
-                        case "removed": {
-                            cs.unlinkFromFS(doc.name);
-                            break;
-                        }
-                        case "modified": {
-                            // TODO - need to detect filename changes, perhaps
-                            // keep map of doc id => filename in Redux Store...
-                            addFileToEMFS(change.doc.id, doc);
-                            break;
-                        }
-                    }
-                });
-            });
         }
     };
 };
@@ -184,13 +102,30 @@ export const setProject = (project: IProject) => {
     };
 };
 
-export const setProjectFiles = (projectUid: string, files) => {
-    return async (dispatch: any) =>
-        dispatch({
-            type: SET_PROJECT_FILES,
+export const addProjectDocuments = (
+    projectUid: string,
+    documents: IDocumentsMap
+) => {
+    return async (dispatch: any, getState) => {
+        const store: IStore = getState();
+        const tabIndex: number = selectTabDockIndex(store);
+        await dispatch({
+            type: ADD_PROJECT_DOCUMENTS,
             projectUid,
-            files
+            documents
         });
+        if (tabIndex < 0) {
+            const maybeDefaultTargetName:
+                | string
+                | null = selectDefaultTargetName(projectUid, store);
+            const maybeDefaultTarget: ITarget | null = maybeDefaultTargetName
+                ? selectTarget(projectUid, maybeDefaultTargetName, store)
+                : null;
+            dispatch(
+                tabDockInit(projectUid, values(documents), maybeDefaultTarget)
+            );
+        }
+    };
 };
 
 export const resetDocumentValue = (projectUid: string, documentUid: string) => {
@@ -226,15 +161,16 @@ export const saveFile = () => {
                     .collection("files")
                     .doc(doc.documentUid)
                     .update({
-                        value: doc.currentValue
+                        value: doc.currentValue,
+                        lastModified: getFirebaseTimestamp()
                     });
-                dispatch(
-                    saveDocument(
-                        project.projectUid,
-                        doc.documentUid,
-                        doc.currentValue
-                    )
-                );
+                // dispatch(
+                //     saveDocument(
+                //         project.projectUid,
+                //         doc.documentUid,
+                //         doc.currentValue
+                //     )
+                // );
             } catch (error) {}
         }
     };
@@ -260,24 +196,20 @@ export const saveAllFiles = () => {
                 d => d.isModifiedLocally === true
             );
         if (project && !isEmpty(docs)) {
+            const batch = db.batch();
             docs!.forEach(doc => {
-                try {
+                batch.update(
                     projects
                         .doc(project.projectUid)
                         .collection("files")
-                        .doc(doc.documentUid)
-                        .update({
-                            value: doc.currentValue
-                        });
-                    dispatch(
-                        saveDocument(
-                            project.projectUid,
-                            doc.documentUid,
-                            doc.currentValue
-                        )
-                    );
-                } catch (error) {}
+                        .doc(doc.documentUid),
+                    {
+                        value: doc.currentValue,
+                        lastModified: getFirebaseTimestamp()
+                    }
+                );
             });
+            batch.commit();
         }
     };
 };
@@ -344,10 +276,6 @@ export const deleteFile = (documentUid: string) => {
             if (doc) {
                 const cancelCallback = () => dispatch(closeModal());
                 const deleteCallback = () => {
-                    dispatch(tabClose(activeProjectUid, documentUid, false));
-                    dispatch(
-                        removeDocumentLocally(activeProjectUid, documentUid)
-                    );
                     projects
                         .doc(project.projectUid)
                         .collection("files")
@@ -369,14 +297,12 @@ export const deleteFile = (documentUid: string) => {
     };
 };
 
-export const saveDocument = (
+export const saveUpdatedDocument = (
     projectUid: string,
-    documentUid: string,
-    currentValue: string
+    document: IDocument
 ) => ({
     type: DOCUMENT_SAVE,
-    currentValue,
-    documentUid,
+    document,
     projectUid
 });
 
@@ -547,19 +473,18 @@ export const newDocument = (projectUid: string, val: string) => {
                     type: "txt",
                     name: filename,
                     value: val,
-                    userUid: uid
+                    userUid: uid,
+                    lastModified: getFirebaseTimestamp(),
+                    createdAt: getFirebaseTimestamp()
                 };
-                projects
+                const res = await projects
                     .doc(project.projectUid)
                     .collection("files")
-                    .add(doc)
-                    .then(res => {
-                        const documentUid = res.id;
-                        dispatch(tabOpenByDocumentUid(res.id, projectUid));
-                        dispatch(
-                            newEmptyDocument(projectUid, documentUid, filename)
-                        );
-                    });
+                    .add(doc);
+
+                const documentUid = res.id;
+                dispatch(tabOpenByDocumentUid(res.id, projectUid));
+                dispatch(newEmptyDocument(projectUid, documentUid, filename));
             }
             dispatch(closeModal());
         };
@@ -704,7 +629,10 @@ const renameDocumentLocally = (documentUid: string, newFilename: string) => {
     };
 };
 
-const removeDocumentLocally = (projectUid: string, documentUid: string) => {
+export const removeDocumentLocally = (
+    projectUid: string,
+    documentUid: string
+) => {
     return {
         type: DOCUMENT_REMOVE_LOCALLY,
         projectUid,

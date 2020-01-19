@@ -1,12 +1,13 @@
+import { Timestamp } from "@config/firestore";
 import { ICsoundOptions } from "../Csound/types";
 
 const PREFIX = "PROJECTS.";
 
 // ACTION TYPES
 export const ACTIVATE_PROJECT = PREFIX + "ACTIVATE_PROJECT";
+export const ADD_PROJECT_DOCUMENTS = PREFIX + "ADD_PROJECT_DOCUMENTS";
 export const CLOSE_PROJECT = PREFIX + "CLOSE_PROJECT";
 export const SET_PROJECT = PREFIX + "SET_PROJECT";
-export const SET_PROJECT_FILES = PREFIX + "SET_PROJECT_FILES";
 // export const SET_PROJECT_TARGETS = PREFIX + "SET_PROJECT_TARGETS";
 export const SET_PROJECT_PUBLIC = PREFIX + "SET_PROJECT_PUBLIC";
 export const DOCUMENT_INITIALIZE = PREFIX + "DOCUMENT_INITIALIZE";
@@ -23,10 +24,13 @@ export type IDocumentFileType = "txt" | "bin";
 // INTERFACES
 export interface IDocument {
     currentValue: string;
+    createdAt: Timestamp | null;
     documentUid: string;
     filename: string;
+    lastModified: Timestamp | null;
     savedValue: string;
     type: IDocumentFileType;
+    userUid: string;
     isModifiedLocally: boolean;
 }
 
