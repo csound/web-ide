@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 // import { IStore } from "@store/types";
 import { List } from "react-virtualized";
 import { withResizeDetector } from "react-resize-detector";
-import { append, pathOr } from "ramda";
+import { append, dropLast, pathOr } from "ramda";
 import * as SS from "./styles";
 import "react-virtualized/styles.css";
 
@@ -29,7 +29,7 @@ const Console = ({ width, height }: IConsoleProps) => {
     const dispatch = useDispatch();
     const consoleRef: any = useRef(null);
 
-    const [logs, setLogs] = useState([] as string[]);
+    const [logs, setLogs] = useState([""] as string[]);
 
     const csound: ICsoundObj | null = useSelector(
         pathOr(null, ["csound", "csound"])
@@ -43,7 +43,7 @@ const Console = ({ width, height }: IConsoleProps) => {
         dispatch(
             setClearConsoleCallback(() => {
                 scrollPosition = 0;
-                setLogs([]);
+                setLogs([""]);
             })
         );
         return () => {
@@ -64,7 +64,7 @@ const Console = ({ width, height }: IConsoleProps) => {
                 ) {
                     setTimeout(() => row.scrollToRow(row.props.rowCount), 9);
                 }
-                return append(msg, currentLogs);
+                return append("", append(dropLast(1, msg), currentLogs));
             });
         }
     };
