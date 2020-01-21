@@ -136,20 +136,24 @@ export const Header = ({ showMenuBar = true }) => {
         </Button>
     );
 
+    const burgerMenu = !showMenuBar ? (
+        <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={() => setIsDrawerOpen(true)}
+            edge="start"
+            css={SS.menuButton}
+        >
+            <MenuIcon />
+        </IconButton>
+    ) : <div css={SS.spacer}/>;
+
     return (
         <>
             {isLoginDialogOpen && <Login />}
             <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        onClick={() => setIsDrawerOpen(true)}
-                        edge="start"
-                        css={SS.menuButton}
-                    >
-                        <MenuIcon />
-                    </IconButton>
+                    {burgerMenu}
                     <CSLogo
                         size={38}
                         interactive={true}
