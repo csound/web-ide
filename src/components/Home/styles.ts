@@ -11,7 +11,6 @@ const homeStyles = (theme: Theme) =>
             left: 0,
             right: 0,
             position: "absolute",
-            overflowY: "auto",
             fontSize: "1rem"
         },
         main: {
@@ -28,7 +27,21 @@ const homeStyles = (theme: Theme) =>
             "& h3": {
                 margin: "40px 0 16px"
             }
-        }
+        },
+        cssOutlinedInput: {
+            "&:not(hover):not($disabled):not($cssFocused):not($error) $notchedOutline": {
+                borderColor: "#272922",
+                overflow: "hidden"
+            }
+        },
+        cssLabel: {
+            color: "green",
+            overflow: "hidden"
+        },
+        notchedOutline: { overflow: "hidden" },
+        cssFocused: { overflow: "hidden" },
+        error: { overflow: "hidden" },
+        disabled: { overflow: "hidden" }
     });
 
 export default (ClassComponent: any) => withStyles(homeStyles)(ClassComponent);
