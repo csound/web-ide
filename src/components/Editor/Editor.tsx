@@ -9,12 +9,10 @@ import { isEmpty } from "lodash";
 import { pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
-import synopsis from "csound-manual-react/lib/manual/synopsis";
 import "./modes/csound/csound"; // "./modes/csound/csound.js";
 import { filenameToCsoundType } from "@comp/Csound/utils";
 import { perfectScrollbarStyleSheet } from "@styles/_perfectScrollbar";
 import * as SS from "./styles";
-import { keys } from "ramda";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -23,8 +21,6 @@ require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
 // require("codemirror/addon/scroll/simplescrollbars")
 // require("codemirror/addon/scroll/simplescrollbars.css")
-
-const opcodes = keys(synopsis);
 
 type IPrintToConsole = ((text: string) => void) | null;
 
@@ -70,9 +66,9 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     const maybeCsoundFile = filenameToCsoundType(document.filename);
     const documentType: string = maybeCsoundFile ? maybeCsoundFile : "txt";
 
-    const manualLookupString: string = useSelector(
-        pathOr("", ["ProjectEditorReducer", "manualLookupString"])
-    );
+    // const manualLookupString: string = useSelector(
+    //     pathOr("", ["ProjectEditorReducer", "manualLookupString"])
+    // );
 
     const csound: ICsoundObj | null = useSelector(
         pathOr(null, ["csound", "csound"])
@@ -85,10 +81,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     const printToConsole: IPrintToConsole = useSelector(
         pathOr(null, ["ConsoleReducer", "printToConsole"])
     ) as IPrintToConsole;
-
-    const lookupManualString = dispatch => (
-        manualLookupString: string | null
-    ) => dispatch(projectEditorActions.lookupManualString(manualLookupString));
 
     const uncommentLine = (line: string) => {
         let uncommentedLine: any = line.split(";");
@@ -159,23 +151,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
                 to: { line: blockEnd, ch: lines[blockEnd].length },
                 evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
             };
-        }
-    };
-
-    const docAtPoint = () => {
-        if (!editorRef) return;
-        const cursor = editorRef.getCursor();
-        const token = editorRef.getTokenAt(cursor).string.replace(/:.*/, "");
-
-        if (opcodes.some(opc => opc === token)) {
-            const manualId = synopsis[token]["id"];
-            if (manualLookupString === manualId) {
-                // a way to retrigger the iframe communication
-                lookupManualString(null);
-                setTimeout(() => lookupManualString(manualId), 10);
-            } else {
-                lookupManualString(manualId);
-            }
         }
     };
 
@@ -251,7 +226,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             "Ctrl-Enter": () => editorEvalCurried(true),
             "Cmd-E": () => editorEvalCurried(false),
             "Cmd-Enter": () => editorEvalCurried(true),
-            "Ctrl-.": () => docAtPoint(),
+            // "Ctrl-.": () => docAtPoint(),
             // "Ctrl-H": insertHexplay,
             // "Ctrl-J": insertEuclidplay,
             "Ctrl-;": () => toggleComment(),

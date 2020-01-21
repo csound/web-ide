@@ -4,6 +4,7 @@ const WebIdeCssBaseline = () => (
     <style>{`
 html {
     height: 100%;
+    overflow: hidden;
 }
 html,
 body {

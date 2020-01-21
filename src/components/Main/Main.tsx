@@ -8,6 +8,8 @@ import { thirdPartyAuthSuccess } from "../Login/actions";
 import { History } from "history";
 import firebase from "firebase/app";
 import HotKeys from "../HotKeys/HotKeys";
+import PerfectScrollbar from "perfect-scrollbar";
+import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 interface IMain {
     history: History;
@@ -22,6 +24,11 @@ const Main = (props: IMain) => {
             .onAuthStateChanged(
                 user => !!user && dispatch(thirdPartyAuthSuccess(user))
             );
+        const ps = new PerfectScrollbar("body");
+        return () => {
+            console.log("DESTROY");
+            ps.destroy();
+        };
         // eslint-disable-next-line
     }, []);
 

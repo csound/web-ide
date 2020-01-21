@@ -1,6 +1,7 @@
-import React, { Component, useEffect } from "react";
-import { connect, Provider, useDispatch } from "react-redux";
-import { IStore } from "@store/types";
+import React, { useEffect } from "react";
+import { Provider, useDispatch } from "react-redux";
+import { useTheme } from "emotion-theming";
+import { CodeMirrorPainter } from "@styles/CodeMirrorPainter";
 import Home from "../Home/Home";
 import CsoundManual from "csound-manual-react";
 import Profile from "../Profile/Profile";
@@ -35,37 +36,45 @@ const EditorLayout = (props: any) => {
     );
 };
 
-class RouterComponent extends Component<IRouterComponent, any> {
-    public render() {
-        return (
-            <ConnectedRouter history={this.props.history} {...this.props}>
-                <Switch>
-                    <Route
-                        path="/editor/:id?"
-                        render={matchProps => <EditorLayout {...matchProps} />}
-                    />
-                    <Route path="/manual/" render={() => <CsoundManual />} />
-                    <Route path="/manual/:id" render={() => <CsoundManual />} />
-                    <Route path="/profile/:username?" component={Profile} />
-                    <Route
-                        path="/"
-                        exact
-                        render={matchProps => <Home {...matchProps} />}
-                    />
-                    <Route path="/documentation" render={() => <SiteDocs />} />
-                    <Route path="/404" exact component={Page404} />
-                    <Route component={Page404} />
-                </Switch>
-            </ConnectedRouter>
-        );
-    }
-}
-
-const mapStateToProps = (store: IStore, ownProp: any): IRouterComponent => {
-    return {
-        isAuthenticated: store.LoginReducer.authenticated,
-        history: ownProp.history
-    };
+const RouterComponent = (props: any) => {
+    const theme = useTheme();
+    return (
+        <ConnectedRouter history={props.history} {...props}>
+            <Switch>
+                <Route
+                    path="/editor/:id?"
+                    render={matchProps => <EditorLayout {...matchProps} />}
+                />
+                <Route
+                    path="/manual/"
+                    render={() => (
+                        <CsoundManual
+                            theme={theme}
+                            codeMirrorPainter={CodeMirrorPainter}
+                        />
+                    )}
+                />
+                <Route
+                    path="/manual/:id"
+                    render={() => (
+                        <CsoundManual
+                            theme={theme}
+                            codeMirrorPainter={CodeMirrorPainter}
+                        />
+                    )}
+                />
+                <Route path="/profile/:username?" component={Profile} />
+                <Route
+                    path="/"
+                    exact
+                    render={matchProps => <Home {...matchProps} />}
+                />
+                <Route path="/documentation" render={() => <SiteDocs />} />
+                <Route path="/404" exact component={Page404} />
+                <Route component={Page404} />
+            </Switch>
+        </ConnectedRouter>
+    );
 };
 
-export default connect(mapStateToProps, {})(RouterComponent);
+export default RouterComponent;

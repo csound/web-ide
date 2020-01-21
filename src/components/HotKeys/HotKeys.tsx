@@ -26,6 +26,8 @@ type ReadyCallbacks = {
 type CommandKey = keyof IHotKeysCallbacks;
 
 const HotKeys = props => {
+    // prevent leak into the manual iframe
+    const insideIframe = !!window.frameElement;
     const callbacks = useSelector(selectKeyCallbacks);
     const bindings: KeyMap = useSelector(selectKeyBindings) as KeyMap;
     // all callbacks that aren't bound must be noop callbacks
@@ -43,11 +45,19 @@ const HotKeys = props => {
         {},
         keys(callbacks || {})
     );
-    return (
-        <GlobalHotKeys keyMap={bindings} handlers={safeCallbacks} allowChanges>
-            {props.children}
-        </GlobalHotKeys>
-    );
+    if (insideIframe) {
+        return <>{props.children}</>;
+    } else {
+        return (
+            <GlobalHotKeys
+                keyMap={bindings}
+                handlers={safeCallbacks}
+                allowChanges
+            >
+                {props.children}
+            </GlobalHotKeys>
+        );
+    }
 };
 
 export default HotKeys;

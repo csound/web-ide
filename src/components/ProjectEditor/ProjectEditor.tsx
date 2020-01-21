@@ -22,7 +22,10 @@ import { subscribeToProjectChanges } from "@comp/Projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "@comp/Console/Console";
-import { storeProjectEditorKeyboardCallbacks } from "@comp/HotKeys/actions";
+import {
+    storeEditorKeyboardCallbacks,
+    storeProjectEditorKeyboardCallbacks
+} from "@comp/HotKeys/actions";
 import { append, reduce, pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
 import "react-splitter-layout/lib/index.css";
@@ -36,6 +39,7 @@ import {
 import { mapIndexed } from "../../utils";
 import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
+import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import * as SS from "./styles";
 
 type EditorForDocumentProps = {
@@ -206,7 +210,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const onManualMessage = evt => {};
 
     const manualWindow = (
-        <div style={{ width: "100%", height: "100%" }}>
+        <div style={{ width: "100%", height: "100%", paddingTop: 35 }}>
             <IframeComm
                 attributes={{
                     src: "/manual/main?cache=1001",
@@ -216,6 +220,9 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 postMessageData={manualLookupString || ""}
                 handleReceiveMessage={onManualMessage}
             />
+            <div css={windowHeaderStyle}>
+                <p>Csound Manual</p>
+            </div>
             {manualDrag && (
                 <div
                     style={{
@@ -245,6 +252,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
 
     useEffect(() => {
         dispatch(storeProjectEditorKeyboardCallbacks(projectUid));
+        dispatch(storeEditorKeyboardCallbacks(projectUid));
         return () => {
             dispatch(closeTabDock());
             dispatch(closeProject());

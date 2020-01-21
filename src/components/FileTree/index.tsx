@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderPlus } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
+import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import { IDocument, IDocumentsMap, IProject } from "../Projects/types";
 import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
 import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
@@ -204,7 +205,7 @@ const FileTree = () => {
 
     return (
         <>
-            <div css={SS.projectNameBar}>
+            <div css={windowHeaderStyle}>
                 <p>{project ? project.name : ""}</p>
                 <FontAwesomeIcon // TODO
                     icon={faFolderPlus}

@@ -1,6 +1,8 @@
 import "firebase/auth";
 import {
+    IEditorCallbacks,
     IProjectEditorCallbacks,
+    STORE_EDITOR_KEYBOARD_CALLBACKS,
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
 import { curry } from "ramda";
@@ -14,6 +16,8 @@ import {
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { stopCsound } from "@comp/Csound/actions";
+import { selectCurrentTab } from "@comp/ProjectEditor/selectors";
+import * as EditorActions from "@comp/Editor/actions";
 
 const withPreventDefault = curry((callback, e: KeyboardEvent) => {
     e && e.preventDefault();
@@ -50,6 +54,30 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
         };
         dispatch({
             type: STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS,
+            callbacks
+        });
+    };
+};
+
+const selectCurrentEditor = (store): any | null => {
+    const currentTab = selectCurrentTab(store);
+    if (currentTab) {
+        return currentTab.editorInstance;
+    } else {
+        return null;
+    }
+};
+
+export const storeEditorKeyboardCallbacks = (projectUid: string) => {
+    return async (dispatch: any, getStore) => {
+        const callbacks: IEditorCallbacks = {
+            doc_at_point: withPreventDefault(() => {
+                const editor = selectCurrentEditor(getStore());
+                editor && dispatch(EditorActions.docAtPoint(editor));
+            })
+        };
+        dispatch({
+            type: STORE_EDITOR_KEYBOARD_CALLBACKS,
             callbacks
         });
     };

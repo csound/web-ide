@@ -4,6 +4,7 @@ import {
     HotKeysActionTypes,
     IHotKeysCallbacks,
     BindingsMap,
+    STORE_EDITOR_KEYBOARD_CALLBACKS,
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
 
@@ -35,6 +36,13 @@ const INITIAL_STATE: IHotKeys = {
 export default (state: IHotKeys, action: HotKeysActionTypes) => {
     switch (action.type) {
         case STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS: {
+            return assoc(
+                "callbacks",
+                mergeAll([state.callbacks, action.callbacks]),
+                state
+            );
+        }
+        case STORE_EDITOR_KEYBOARD_CALLBACKS: {
             return assoc(
                 "callbacks",
                 mergeAll([state.callbacks, action.callbacks]),

@@ -10,6 +10,9 @@ const PREFIX = "HOTKEYS.";
 export const STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS =
     PREFIX + "STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS";
 
+export const STORE_EDITOR_KEYBOARD_CALLBACKS =
+    PREFIX + "STORE_EDITOR_KEYBOARD_CALLBACKS";
+
 interface StoreProjectEditorKeyboardCallbacks {
     type: typeof STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS;
     callbacks: IProjectEditorCallbacks;
