@@ -7,7 +7,7 @@ import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faWindowClose } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument } from "../Projects/types";
 import { IOpenDocument } from "./types";
@@ -221,7 +221,24 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 handleReceiveMessage={onManualMessage}
             />
             <div css={windowHeaderStyle}>
-                <p>Csound Manual</p>
+                <p>
+                    Csound Manual
+                    <span css={SS.headIconsContainer}>
+                        <Tooltip title="close window">
+                            <span
+                                onClick={() =>
+                                    dispatch(setManualPanelOpen(false))
+                                }
+                            >
+                                <FontAwesomeIcon
+                                    icon={faWindowClose}
+                                    size="sm"
+                                    color={theme.alternativeColor.primary}
+                                />
+                            </span>
+                        </Tooltip>
+                    </span>
+                </p>
             </div>
             {manualDrag && (
                 <div
@@ -237,18 +254,24 @@ const ProjectEditor = ({ activeProject, csound }) => {
         </div>
     );
 
-    const secondaryPanel = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.secondaryPanel
+    const isManualVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.manualVisible
+    );
+    const isConsoleVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.consoleVisible
+    );
+    const isFileTreeVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
     );
 
     useEffect(() => {
         return () =>
             sessionStorage.setItem(
-                projectUid + ":secondaryPanel",
-                secondaryPanel || ""
+                projectUid + ":manualVisible",
+                `${isManualVisible || false}`
             );
         // eslint-disable-next-line
-    }, [secondaryPanel]);
+    }, [isManualVisible]);
 
     useEffect(() => {
         if (projectUid) {
@@ -267,14 +290,14 @@ const ProjectEditor = ({ activeProject, csound }) => {
     }, []);
 
     useEffect(() => {
-        const lastSecondaryPanel = sessionStorage.getItem(
-            projectUid + ":secondaryPanel"
+        const lastIsManualVisible = sessionStorage.getItem(
+            projectUid + ":manualVisible"
         );
-        if (!isEmpty(lastSecondaryPanel)) {
-            if (lastSecondaryPanel === "manual") {
+        if (!isEmpty(lastIsManualVisible)) {
+            if (lastIsManualVisible === "true") {
                 dispatch(setManualPanelOpen(true));
             }
-            sessionStorage.removeItem(projectUid + ":secondaryPanel");
+            sessionStorage.removeItem(projectUid + ":manualVisible");
         }
         // eslint-disable-next-line
     }, []);
@@ -288,18 +311,24 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 secondaryInitialSize={250}
                 secondaryMinSize={250}
             >
-                <FileTree />
+                {isFileTreeVisible && <FileTree />}
+
                 <SplitterLayout
                     horizontal
                     secondaryInitialSize={500}
                     onDragStart={() => setManualDrag(true)}
                     onDragEnd={() => setManualDrag(false)}
                 >
-                    <SplitterLayout vertical secondaryInitialSize={250}>
-                        {tabDock}
-                        <Console />
-                    </SplitterLayout>
-                    {secondaryPanel === "manual" ? manualWindow : null}
+                    {!isConsoleVisible ? (
+                        tabDock
+                    ) : (
+                        <SplitterLayout vertical secondaryInitialSize={250}>
+                            {tabDock}
+                            <Console />
+                        </SplitterLayout>
+                    )}
+
+                    {isManualVisible && manualWindow}
                 </SplitterLayout>
             </SplitterLayout>
         </div>

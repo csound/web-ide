@@ -11,14 +11,18 @@ import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/EditTwoTone";
 import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
+import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolderPlus } from "@fortawesome/free-solid-svg-icons";
+import { faFolderPlus, faWindowClose } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import { IDocument, IDocumentsMap, IProject } from "../Projects/types";
 import { newDocument, deleteFile, renameDocument } from "../Projects/actions";
-import { tabOpenByDocumentUid } from "../ProjectEditor/actions";
+import {
+    setFileTreePanelOpen,
+    tabOpenByDocumentUid
+} from "@comp/ProjectEditor/actions";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import {
     assocPath,
@@ -206,13 +210,33 @@ const FileTree = () => {
     return (
         <>
             <div css={windowHeaderStyle}>
-                <p>{project ? project.name : ""}</p>
-                <FontAwesomeIcon // TODO
-                    icon={faFolderPlus}
-                    size="sm"
-                    color={theme.color.primary}
-                    style={{ display: "none" }}
-                />
+                <p>
+                    {project ? project.name : ""}
+                    <span css={SS.headIconsContainer}>
+                        <Tooltip title="create new directory">
+                            <span css={SS.newFolderIcon}>
+                                <FontAwesomeIcon
+                                    icon={faFolderPlus}
+                                    size="sm"
+                                    color={theme.alternativeColor.primary}
+                                />
+                            </span>
+                        </Tooltip>
+                        <Tooltip title="close window">
+                            <span
+                                onClick={() =>
+                                    dispatch(setFileTreePanelOpen(false))
+                                }
+                            >
+                                <FontAwesomeIcon
+                                    icon={faWindowClose}
+                                    size="sm"
+                                    color={theme.alternativeColor.primary}
+                                />
+                            </span>
+                        </Tooltip>
+                    </span>
+                </p>
             </div>
             <Tree
                 className={" MuiFileTree"}

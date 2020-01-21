@@ -132,3 +132,25 @@ export const invisibleUnClickableArea = css`
     height: 100%;
     z-index: 2;
 `;
+
+export const headIconsContainer = theme => css`
+    position: absolute;
+    right: 16px;
+
+    svg {
+        font-size: 16px;
+    }
+    height: 20px;
+    & span {
+        cursor: pointer;
+        &:hover {
+            svg {
+                color: ${theme.color.primary}!important;
+            }
+        }
+    }
+`;
+
+export const newFolderIcon = theme => css`
+    margin-right: 12px;
+`;

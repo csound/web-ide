@@ -23,3 +23,21 @@ export const closeButton = css`
     position: absolute;
     z-index: 1001;
 `;
+
+export const headIconsContainer = theme => css`
+    position: absolute;
+    right: 16px;
+
+    svg {
+        font-size: 16px;
+    }
+    height: 20px;
+    & span {
+        cursor: pointer;
+        &:hover {
+            svg {
+                color: ${theme.color.primary}!important;
+            }
+        }
+    }
+`;

@@ -1,3 +1,4 @@
+// import { IStore } from "@store/types";
 import { findIndex } from "lodash";
 import {
     MANUAL_LOOKUP_STRING,
@@ -9,11 +10,14 @@ import {
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
+    SET_CONSOLE_PANEL_OPEN,
+    SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
     ITabDock,
     IOpenDocument
 } from "./types";
 import {
+    assoc,
     assocPath,
     append,
     curry,
@@ -28,18 +32,22 @@ import {
 
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
-    secondaryPanel: "manual" | null;
+    consoleVisible: boolean;
+    fileTreeVisible: boolean;
+    manualVisible: boolean;
     manualLookupString: string;
 }
 
-const initialLayoutState: IProjectEditorReducer = {
+const initialLayoutState = (): IProjectEditorReducer => ({
     tabDock: {
         tabIndex: -1,
         openDocuments: []
     },
-    secondaryPanel: null,
+    consoleVisible: true,
+    fileTreeVisible: true,
+    manualVisible: false,
     manualLookupString: ""
-};
+});
 
 const addTabToOpenDocuments = curry((tab, state) =>
     over(lensPath(["tabDock", "openDocuments"]), append(tab), state)
@@ -58,28 +66,16 @@ const storeTabDockState = (
     }
 };
 
-export default (
-    state: IProjectEditorReducer = initialLayoutState,
-    action: any
-) => {
+export default (state: IProjectEditorReducer, action: any) => {
     switch (action.type) {
         case MANUAL_LOOKUP_STRING: {
-            return {
-                ...state,
-                secondaryPanel: "manual",
-                manualLookupString: action.manualLookupString
-            } as IProjectEditorReducer;
+            return pipe(
+                assoc("manualLookupString", action.manualLookupString),
+                assoc("manualVisible", true)
+            )(state);
         }
         case TAB_DOCK_CLOSE: {
-            return {
-                ...state,
-                tabDock: {
-                    tabIndex: -1,
-                    openDocuments: []
-                },
-                secondaryPanel: state.secondaryPanel,
-                manualLookupString: state.manualLookupString
-            };
+            return initialLayoutState();
         }
         case TAB_DOCK_INIT: {
             return pipe(
@@ -175,15 +171,22 @@ export default (
             return newState;
         }
         case TOGGLE_MANUAL_PANEL: {
-            const secondaryPanel =
-                state.secondaryPanel === "manual" ? null : "manual";
-            return { ...state, secondaryPanel } as IProjectEditorReducer;
+            return pipe(
+                assoc("manualLookupString", ""),
+                assoc("manualVisible", !state.manualVisible)
+            )(state);
         }
         case SET_MANUAL_PANEL_OPEN: {
-            return {
-                ...state,
-                secondaryPanel: action.open ? "manual" : state.secondaryPanel
-            } as IProjectEditorReducer;
+            return pipe(
+                assoc("manualLookupString", ""),
+                assoc("manualVisible", action.open)
+            )(state);
+        }
+        case SET_CONSOLE_PANEL_OPEN: {
+            return assoc("consoleVisible", action.open, state);
+        }
+        case SET_FILE_TREE_PANEL_OPEN: {
+            return assoc("fileTreeVisible", action.open, state);
         }
         case STORE_EDITOR_INSTANCE: {
             const openDocumentIndex = findIndex(
@@ -206,7 +209,7 @@ export default (
             }
         }
         default: {
-            return state || initialLayoutState;
+            return state || initialLayoutState();
         }
     }
 };

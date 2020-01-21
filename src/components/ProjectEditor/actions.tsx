@@ -15,6 +15,8 @@ import {
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
+    SET_CONSOLE_PANEL_OPEN,
+    SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
     IOpenDocument
 } from "./types";
@@ -219,6 +221,20 @@ export const toggleManualPanel = () => {
 export const setManualPanelOpen = (open: boolean) => {
     return {
         type: SET_MANUAL_PANEL_OPEN,
+        open
+    };
+};
+
+export const setConsolePanelOpen = (open: boolean) => {
+    return {
+        type: SET_CONSOLE_PANEL_OPEN,
+        open
+    };
+};
+
+export const setFileTreePanelOpen = (open: boolean) => {
+    return {
+        type: SET_FILE_TREE_PANEL_OPEN,
         open
     };
 };

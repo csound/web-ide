@@ -9,6 +9,7 @@ import { MenuItemDef } from "./types";
 import { BindingsMap } from "@comp/HotKeys/types";
 import { humanizeKeySequence } from "@comp/HotKeys/utils";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
+import { IStore } from "@store/types";
 import {
     newDocument,
     saveAllAndClose,
@@ -17,7 +18,11 @@ import {
     exportProject,
     addDocument
 } from "@comp/Projects/actions";
-import { toggleManualPanel } from "@comp/ProjectEditor/actions";
+import {
+    toggleManualPanel,
+    setConsolePanelOpen,
+    setFileTreePanelOpen
+} from "@comp/ProjectEditor/actions";
 import { pauseCsound, renderToDisk, stopCsound } from "@comp/Csound/actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
@@ -41,6 +46,19 @@ function MenuBar(props) {
 
     const selectedThemeName: string | null = useSelector(
         pathOr(null, ["ThemeReducer", "selectedThemeName"])
+    );
+
+    const isManualOpen: boolean = useSelector(
+        store =>
+            pathOr(null, ["ProjectEditorReducer", "secondaryPanel"], store) ===
+            "manual"
+    );
+
+    const isConsoleVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.consoleVisible
+    );
+    const isFileTreeVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
     );
 
     const menuBarItems: MenuItemDef[] = [
@@ -148,12 +166,30 @@ function MenuBar(props) {
             ]
         },
         {
-            label: "Help",
+            label: "View",
             submenu: [
                 {
                     label: "Csound Manual",
-                    callback: () => dispatch(toggleManualPanel())
+                    callback: () => dispatch(toggleManualPanel()),
+                    checked: isManualOpen
                 },
+                {
+                    label: "File Tree",
+                    callback: () =>
+                        dispatch(setFileTreePanelOpen(!isFileTreeVisible)),
+                    checked: isFileTreeVisible
+                },
+                {
+                    label: "Console",
+                    callback: () =>
+                        dispatch(setConsolePanelOpen(!isConsoleVisible)),
+                    checked: isConsoleVisible
+                }
+            ]
+        },
+        {
+            label: "Help",
+            submenu: [
                 {
                     label: "Csound Manual (External)",
                     callback: () => {
