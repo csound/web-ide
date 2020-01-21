@@ -15,7 +15,7 @@ import {
 } from "@comp/Projects/actions";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
-import { stopCsound } from "@comp/Csound/actions";
+import { pauseCsound, stopCsound } from "@comp/Csound/actions";
 import { selectCurrentTab } from "@comp/ProjectEditor/selectors";
 import * as EditorActions from "@comp/Editor/actions";
 
@@ -26,9 +26,6 @@ const withPreventDefault = curry((callback, e: KeyboardEvent) => {
 
 export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
     return async (dispatch: any, getStore) => {
-        const store = getStore();
-        const playAction = getPlayActionFromTarget(store);
-
         const callbacks: IProjectEditorCallbacks = {
             add_file: withPreventDefault(() =>
                 dispatch(addDocument(projectUid))
@@ -39,10 +36,11 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
             open_target_config_dialog: withPreventDefault(() =>
                 dispatch(showTargetsConfigDialog())
             ),
-            pause_playback: withPreventDefault(() =>
-                console.log("TODO: IMPLEMENT PAUSE!")
-            ),
-            run_project: withPreventDefault(() => dispatch(playAction)),
+            pause_playback: withPreventDefault(() => dispatch(pauseCsound())),
+            run_project: withPreventDefault(() => {
+                const playAction = (getPlayActionFromTarget as any)(getStore());
+                playAction && dispatch(playAction);
+            }),
             save_all_documents: withPreventDefault(() =>
                 dispatch(saveAllFiles())
             ),

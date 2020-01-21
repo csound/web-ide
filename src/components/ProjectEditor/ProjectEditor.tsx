@@ -251,8 +251,13 @@ const ProjectEditor = ({ activeProject, csound }) => {
     }, [secondaryPanel]);
 
     useEffect(() => {
-        dispatch(storeProjectEditorKeyboardCallbacks(projectUid));
-        dispatch(storeEditorKeyboardCallbacks(projectUid));
+        if (projectUid) {
+            dispatch(storeProjectEditorKeyboardCallbacks(projectUid));
+            dispatch(storeEditorKeyboardCallbacks(projectUid));
+        }
+    }, [dispatch, projectUid]);
+
+    useEffect(() => {
         return () => {
             dispatch(closeTabDock());
             dispatch(closeProject());

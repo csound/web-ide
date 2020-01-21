@@ -13,7 +13,7 @@ const defaultBindings: BindingsMap = {
     save_and_close: isMac ? "opt+command+q" : "ctrl+shift+q",
     stop_playback: isMac ? "opt+command+p" : "ctrl+shift+p",
     // editor
-    doc_at_point: isMac ? "ctrl+." : "ctrl+o"
+    doc_at_point: isMac ? "ctrl+." : "alt+."
 };
 
 export default defaultBindings;
