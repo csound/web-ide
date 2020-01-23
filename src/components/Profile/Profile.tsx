@@ -1,5 +1,6 @@
 import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
+import { useTheme } from "emotion-theming";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
@@ -82,6 +83,7 @@ const UserLink = ({ link }) => {
 
 const Profile = props => {
     const { classes } = props;
+    const theme: any = useTheme();
     const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
     const username = get(props, "match.params.username") || null;
@@ -148,6 +150,7 @@ const Profile = props => {
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
+            <style>{`main,body {background-color: ${theme.background.primary};}`}</style>
             <main>
                 <ProfileContainer
                     colorA={"rgba(30, 30, 30, 1)"}

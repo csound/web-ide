@@ -3,11 +3,13 @@ import styled from "styled-components";
 import { Gradient } from "./Gradient";
 
 export const ProfileContainer = styled.div`
-    position: absolute;
+    position: relative;
+    padding-top: 80px;
     height: 100%;
     display: grid;
     grid-template-columns: 1fr 250px 8fr;
-    grid-template-rows: 0.1fr 0.1fr 0.8fr 0.1fr;
+    grid-auto-rows: minmax(min-content, max-content);
+    // grid-template-rows: 0.1fr 0.1fr 0.8fr 0.1fr;
     width: 100%;
     background-color: black;
     ${Gradient}
@@ -42,7 +44,6 @@ export const MainContent = styled.div`
     grid-column-start: 1;
     grid-column-end: 4;
     background: ${props => props.theme.background.primary};
-    box-shadow: 0 3px 10px 0px;
 `;
 export const ProfilePictureContainer = styled.div`
     position: relative;
