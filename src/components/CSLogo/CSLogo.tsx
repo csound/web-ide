@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
-import domToImage from "dom-to-image";
+import domToImage from "dom-to-image-more";
 interface ILogoContainer {
     size: number;
     interactive?: boolean;
