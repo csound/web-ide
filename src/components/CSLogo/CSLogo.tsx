@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
+import domToImage from "dom-to-image";
 interface ILogoContainer {
     size: number;
     interactive?: boolean;
@@ -23,13 +24,25 @@ const LogoContainer = styled.div<ILogoContainer>`
 `;
 
 export default (props: ILogoContainer) => {
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        (async () => {
+            if (containerRef.current !== null) {
+                const faviconNode = document.getElementById("favicon");
+                const result = await domToImage.toPng(containerRef.current);
+                faviconNode?.setAttribute("href", result);
+            }
+        })();
+    }, [containerRef]);
     return (
         <LogoContainer
+            ref={containerRef}
             size={props.size}
             onClick={() => props.onClick && props.onClick()}
             interactive={props.interactive}
         >
-            cS
+            Cs
         </LogoContainer>
     );
 };
