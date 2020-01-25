@@ -204,6 +204,7 @@ margin-left: 9px;
 
 export const closeIcon = theme => css`
     position: absolute;
+    background-color: ${theme.highlight.primary}!important;
     right: 50px;
     width: 24px;
     height: 24px;

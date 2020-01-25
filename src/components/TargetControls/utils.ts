@@ -1,23 +1,19 @@
 import { curry, find, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
-import { IDocument, ITarget } from "@comp/Projects/types";
+import { ITarget } from "./types";
+import { IDocument } from "@comp/Projects/types";
 import { playORCFromString, playCSDFromEMFS } from "@comp/Csound/actions";
 import { filenameToCsoundType } from "@comp/Csound/utils";
 
 const getDefaultTargetName = (store, projectUid): string | null =>
-    pathOr(
-        null,
-        ["ProjectsReducer", "projects", projectUid, "defaultTarget"],
-        store
-    );
+    pathOr(null, ["TargetControlsReducer", projectUid, "defaultTarget"], store);
 
 export const getDefaultTargetDocument = curry(
     (projectUid, store): IDocument | null => {
         const maybeDefaultTarget: ITarget | null = pathOr(
             null,
             [
-                "ProjectsReducer",
-                "projects",
+                "TargetControlsReducer",
                 projectUid,
                 "targets",
                 getDefaultTargetName(store, projectUid) || ""
@@ -65,14 +61,13 @@ export const getDefaultTargetDocument = curry(
                   store
               )
             : projectCsdFallback;
-
         return targetDocument;
     }
 );
 
 export const getPlayActionFromProject = curry(
     (projectUid: string, store: IStore) => {
-        const targetDocument = getDefaultTargetDocument(store, projectUid);
+        const targetDocument = getDefaultTargetDocument(projectUid, store);
         if (!targetDocument) return;
         const csoundDocType = filenameToCsoundType(
             (targetDocument as IDocument).filename

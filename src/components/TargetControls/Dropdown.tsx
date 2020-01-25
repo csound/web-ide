@@ -3,12 +3,8 @@ import Select from "react-select";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch, useSelector } from "react-redux";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
-import {
-    ITarget,
-    ITargetMap,
-    IDocument,
-    IDocumentsMap
-} from "@comp/Projects/types";
+import { ITarget, ITargetMap } from "./types";
+import { IDocument, IDocumentsMap } from "@comp/Projects/types";
 import { setSelectedTarget } from "./actions";
 import {
     selectProjectDocuments,
@@ -56,12 +52,15 @@ const TargetDropdown = ({ activeProjectUid }) => {
         selectProjectDocuments(activeProjectUid)
     );
 
-    const selectedTargetName: string | null = useSelector(selectSelectedTarget);
+    const selectedTargetName: string | null = useSelector(
+        selectSelectedTarget(activeProjectUid)
+    );
     const selectedTarget: ITarget | null =
         targets && selectedTargetName
             ? targets[selectedTargetName] || null
             : null;
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
+
     const mainTargets: ITarget[] = targets
         ? filter(has("targetDocumentUid"), values(targets))
         : [];
@@ -153,7 +152,9 @@ const TargetDropdown = ({ activeProjectUid }) => {
                     onChange={e => {
                         e.value === "___toggle-configure"
                             ? dispatch(showTargetsConfigDialog())
-                            : dispatch(setSelectedTarget(e.value));
+                            : dispatch(
+                                  setSelectedTarget(activeProjectUid, e.value)
+                              );
                     }}
                     isSearchable={false}
                     options={options}

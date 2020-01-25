@@ -15,7 +15,6 @@ import {
     SET_PROJECT_PUBLIC
 } from "./types";
 import { generateEmptyDocument } from "./utils";
-import { UPDATE_TARGETS_LOCALLY } from "@comp/TargetControls/types";
 import {
     assoc,
     assocPath,
@@ -220,18 +219,6 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                     )(state) as IProjectsReducer)) ||
                 state
             );
-        }
-        case UPDATE_TARGETS_LOCALLY: {
-            return pipe(
-                assocPath(
-                    ["projects", action.projectUid, "targets"],
-                    action.targets
-                ),
-                assocPath(
-                    ["projects", action.projectUid, "defaultTarget"],
-                    action.defaultTarget
-                )
-            )(state);
         }
         default: {
             return (state as IProjectsReducer) || initialProjectsState;

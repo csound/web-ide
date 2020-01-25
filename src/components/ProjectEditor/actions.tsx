@@ -2,7 +2,8 @@ import React from "react";
 import Button from "@material-ui/core/Button";
 import { closeModal, openSimpleModal } from "@comp/Modal/actions";
 import { resetDocumentValue } from "@comp/Projects/actions";
-import { IDocument, ITarget } from "@comp/Projects/types";
+import { IDocument } from "@comp/Projects/types";
+import { ITarget } from "@comp/TargetControls/types";
 import { find, propEq } from "ramda";
 import { sortByStoredTabOrder } from "./utils";
 import {

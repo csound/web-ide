@@ -1,6 +1,6 @@
 import { IDocument, IDocumentsMap } from "./types";
 import { ICsoundObj } from "@comp/Csound/types";
-import { projects } from "@config/firestore";
+import { projects, targets } from "@config/firestore";
 import { addDocumentToEMFS } from "./utils";
 import {
     addProjectDocuments,
@@ -8,6 +8,7 @@ import {
     saveUpdatedDocument
 } from "./actions";
 import { tabClose } from "@comp/ProjectEditor/actions";
+import { updateAllTargetsLocally } from "@comp/TargetControls/actions";
 import {
     assoc,
     filter,
@@ -114,6 +115,26 @@ export const subscribeToProjectFilesChanges = (
     return unsubscribe;
 };
 
+export const subscribeToProjectTargetsChanges = (
+    projectUid: string,
+    dispatch: any
+) => {
+    const unsubscribe: () => void = targets.doc(projectUid).onSnapshot(
+        target => {
+            if (!target.exists) return;
+            const { defaultTarget, targets } = target.data() as any;
+            updateAllTargetsLocally(
+                dispatch,
+                defaultTarget,
+                projectUid,
+                targets
+            );
+        },
+        (error: any) => console.error(error)
+    );
+    return unsubscribe;
+};
+
 export const subscribeToProjectChanges = (
     projectUid: string,
     dispatch: any,
@@ -124,6 +145,11 @@ export const subscribeToProjectChanges = (
         dispatch,
         csound
     );
-    const unsubscribe = () => [unsubscribeFileChanges].forEach(u => u());
+    const unsubscribeTargetChanges = subscribeToProjectTargetsChanges(
+        projectUid,
+        dispatch
+    );
+    const unsubscribe = () =>
+        [unsubscribeFileChanges, unsubscribeTargetChanges].forEach(u => u());
     return unsubscribe;
 };

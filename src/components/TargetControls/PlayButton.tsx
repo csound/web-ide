@@ -23,7 +23,9 @@ const PlayButton = ({ activeProjectUid }) => {
     const csoundPlayState: string = useSelector((store: IStore) => {
         return pathOr("stopped", ["csound", "status"], store);
     });
-    const selectedTargetName: string | null = useSelector(selectSelectedTarget);
+    const selectedTargetName: string | null = useSelector(
+        selectSelectedTarget(activeProjectUid)
+    );
 
     const fallbackTargetDocument: any = useSelector(
         getDefaultTargetDocument(activeProjectUid)

@@ -3,7 +3,7 @@ import { IStore } from "@store/types";
 import TargetDropdown from "./Dropdown";
 import PlayButton from "./PlayButton";
 import { selectProjectTargets, selectSelectedTarget } from "./selectors";
-import { ITarget, ITargetMap } from "@comp/Projects/types";
+import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
 import { pathOr, values } from "ramda";
 import { useDispatch, useSelector } from "react-redux";
@@ -43,16 +43,31 @@ const TargetControls = () => {
     useEffect(() => {
         if (selectedTarget === null) {
             if (savedDefaultTarget && savedDefaultTarget.length > 0) {
-                dispatch(setSelectedTarget(savedDefaultTarget));
+                dispatch(
+                    setSelectedTarget(activeProjectUid, savedDefaultTarget)
+                );
             } else if (targetsValues && targetsValues.length > 0) {
                 if (targetsValues.some(t => t.targetName === "project.csd")) {
-                    dispatch(setSelectedTarget("project.csd"));
+                    dispatch(
+                        setSelectedTarget(activeProjectUid, "project.csd")
+                    );
                 } else {
-                    dispatch(setSelectedTarget(targetsValues[0].targetName));
+                    dispatch(
+                        setSelectedTarget(
+                            activeProjectUid,
+                            targetsValues[0].targetName
+                        )
+                    );
                 }
             }
         }
-    }, [dispatch, targetsValues, savedDefaultTarget, selectedTarget]);
+    }, [
+        activeProjectUid,
+        dispatch,
+        targetsValues,
+        savedDefaultTarget,
+        selectedTarget
+    ]);
 
     return (
         <>

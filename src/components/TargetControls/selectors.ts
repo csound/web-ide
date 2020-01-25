@@ -1,5 +1,6 @@
 import { IStore } from "@store/types";
-import { ITarget, ITargetMap, IDocumentsMap } from "@comp/Projects/types";
+import { ITarget, ITargetMap } from "./types";
+import { IDocumentsMap } from "@comp/Projects/types";
 import { curry, pathOr } from "ramda";
 
 export const selectProjectTargets = curry(
@@ -7,7 +8,7 @@ export const selectProjectTargets = curry(
         if (activeProjectUid) {
             return pathOr(
                 {} as ITargetMap,
-                ["ProjectsReducer", "projects", activeProjectUid, "targets"],
+                ["TargetControlsReducer", activeProjectUid, "targets"],
                 store
             );
         } else {
@@ -16,9 +17,17 @@ export const selectProjectTargets = curry(
     }
 );
 
-export const selectSelectedTarget = (store: IStore) => {
-    return pathOr(null, ["TargetControlsReducer", "selectedTarget"], store);
-};
+export const selectSelectedTarget = (curry as any)(
+    (activeProjectUid: string | null, store: IStore): string | null => {
+        return activeProjectUid
+            ? pathOr(
+                  null,
+                  ["TargetControlsReducer", activeProjectUid, "selectedTarget"],
+                  store
+              )
+            : null;
+    }
+);
 
 export const selectProjectDocuments = (curry as any)(
     (activeProjectUid: string | null, store: IStore) => {
@@ -39,12 +48,7 @@ export const selectDefaultTargetName = curry(
         if (activeProjectUid) {
             return pathOr(
                 null,
-                [
-                    "ProjectsReducer",
-                    "projects",
-                    activeProjectUid,
-                    "defaultTarget"
-                ],
+                ["TargetControlsReducer", activeProjectUid, "defaultTarget"],
                 store
             );
         } else {
@@ -59,8 +63,7 @@ export const selectTarget = (curry as any)(
             return pathOr(
                 null,
                 [
-                    "ProjectsReducer",
-                    "projects",
+                    "TargetControlsReducer",
                     activeProjectUid,
                     "targets",
                     targetName

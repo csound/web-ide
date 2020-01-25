@@ -6,6 +6,11 @@ import { useTheme } from "emotion-theming";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import Select from "react-select";
 import {
+    selectDefaultTargetName,
+    selectProjectDocuments,
+    selectProjectTargets
+} from "./selectors";
+import {
     Checkbox,
     Fab,
     FormControlLabel,
@@ -19,7 +24,8 @@ import SaveIcon from "@material-ui/icons/Save";
 import { ICsoundOptions } from "@comp/Csound/types";
 import { filenameToCsoundType } from "@comp/Csound/utils";
 import { IStore } from "@store/types";
-import { IDocument, IDocumentsMap, ITargetMap } from "@comp/Projects/types";
+import { ITargetMap } from "./types";
+import { IDocument, IDocumentsMap } from "@comp/Projects/types";
 import {
     append,
     ascend,
@@ -42,7 +48,8 @@ import {
     reject,
     reduce,
     sort,
-    values
+    values,
+    when
 } from "ramda";
 import { hr as hrCss } from "@styles/_common";
 import * as SS from "./styles";
@@ -52,7 +59,9 @@ interface ITargetFromInput {
     oldTargetName: string;
     targetType: string;
     isDefaultTarget: boolean;
-    isValid: boolean;
+    isNameValid: boolean;
+    isTypeValid: boolean;
+    isOtherwiseValid: boolean;
     csoundOptions?: ICsoundOptions;
     targetDocumentUid?: string;
 }
@@ -78,58 +87,44 @@ const TargetsConfigDialog = () => {
         return pathOr("", ["ProjectsReducer", "activeProjectUid"], store);
     });
 
-    const defaultTarget: string | null = useSelector((store: IStore) => {
-        return pathOr(
-            null,
-            ["ProjectsReducer", "projects", activeProjectUid, "defaultTarget"],
-            store
-        );
-    });
-
-    const documentsMap: IDocumentsMap = useSelector((store: IStore) =>
-        pathOr(
-            {} as IDocumentsMap,
-            ["ProjectsReducer", "projects", activeProjectUid, "documents"],
-            store
-        )
+    const defaultTargetName: string | null = useSelector(
+        selectDefaultTargetName(activeProjectUid)
     );
 
-    const allDocuments: IDocument[] = useSelector((store: IStore) =>
-        values(
-            pathOr(
-                {},
-                ["ProjectsReducer", "projects", activeProjectUid, "documents"],
-                store
-            )
-        )
+    const documentsMap: IDocumentsMap | null = useSelector(
+        selectProjectDocuments(activeProjectUid)
     );
 
-    const targets: ITargetMap = useSelector((store: IStore) =>
-        pathOr(
-            {} as ITargetMap,
-            ["ProjectsReducer", "projects", activeProjectUid, "targets"],
-            store
-        )
+    const allDocuments: IDocument[] | null = documentsMap
+        ? values(documentsMap)
+        : null;
+
+    const targets: ITargetMap | null = useSelector(
+        selectProjectTargets(activeProjectUid)
     );
 
     const targetsToLocalState = () =>
-        sort(
-            ascend(prop("targetName")),
-            reduce(
-                (acc: ITargetFromInput[], k: string) =>
-                    (pipe as any)(
-                        assoc("isValid", true),
-                        assoc(
-                            "isDefaultTarget",
-                            defaultTarget === targets[k].targetName
-                        ),
-                        assoc("oldTargetName", targets[k].targetName),
-                        x => append(x, acc)
-                    )(targets[k]),
-                [],
-                keys(targets) as string[]
-            )
-        ) as ITargetFromInput[];
+        targets
+            ? sort(
+                  ascend(prop("targetName")),
+                  reduce(
+                      (acc: ITargetFromInput[], k: string) =>
+                          (pipe as any)(
+                              assoc("isNameValid", true),
+                              assoc("isTypeValid", true),
+                              assoc("isOtherwiseValid", true),
+                              assoc(
+                                  "isDefaultTarget",
+                                  defaultTargetName === targets[k].targetName
+                              ),
+                              assoc("oldTargetName", targets[k].targetName),
+                              x => append(x, acc)
+                          )(targets[k]),
+                      [],
+                      keys(targets) as string[]
+                  )
+              )
+            : ([] as ITargetFromInput[]);
 
     const [storedTargets, setStoredTargets] = useState(targetsToLocalState());
 
@@ -137,7 +132,7 @@ const TargetsConfigDialog = () => {
         setStoredTargets(targetsToLocalState());
         return () => setStoredTargets(targetsToLocalState());
         // eslint-disable-next-line
-    }, [targets, defaultTarget]);
+    }, [targets, defaultTargetName]);
 
     const [newTargets, setNewTargets] = useState(storedTargets);
 
@@ -164,9 +159,35 @@ const TargetsConfigDialog = () => {
             isDefaultTarget
         } = thisTarget;
         const maybeMainTargetDocumentUid = thisTarget.targetDocumentUid;
+        const validateTargetType = targetType =>
+            typeof targetType === "string" ? !isEmpty(targetName) : false;
+
+        const validateTargetDocument = targetDocumentUid =>
+            typeof targetDocumentUid === "string"
+                ? !isEmpty(targetDocumentUid)
+                : false;
         const handleSelect = curry((field: string, e) => {
-            setNewTargets(assocPath([index, field], e.value, newTargets));
+            setNewTargets(
+                (pipe as any)(
+                    assocPath([index, field], e.value),
+                    when(
+                        () => field === "targetType",
+                        assocPath(
+                            [index, "isTypeValid"],
+                            validateTargetType(e.value)
+                        )
+                    ),
+                    when(
+                        () => field === "targetDocumentUid",
+                        assocPath(
+                            [index, "isOtherwiseValid"],
+                            validateTargetDocument(e.value)
+                        )
+                    )
+                )(newTargets)
+            );
         });
+
         const dropdownStyleWithValidation = (field: string) =>
             isEmpty(path([index, field], newTargets))
                 ? assoc(
@@ -187,10 +208,10 @@ const TargetsConfigDialog = () => {
 
         const targetNameIsValid = validateTargetName(targetName);
         const handleTargetNameInput = e => {
-            const isValid = validateTargetName(e.target.value);
+            const isNameValid = validateTargetName(e.target.value);
             (pipe as any)(
                 assocPath([index, "targetName"], e.target.value),
-                assocPath([index, "isValid"], isValid),
+                assocPath([index, "isNameValid"], isNameValid),
                 setNewTargets
             )(newTargets);
         };
@@ -343,11 +364,13 @@ const TargetsConfigDialog = () => {
                     append(
                         {
                             csoundOptions: {} as ICsoundOptions,
-                            isValid: false,
+                            isNameValid: false,
+                            isTypeValid: false,
+                            isOtherwiseValid: false,
                             isDefaultTarget: false,
                             targetDocumentUid: "",
                             targetName: "",
-                            targetType: "main"
+                            targetType: ""
                         } as ITargetFromInput,
                         newTargets as ITargetFromInput[]
                     )
@@ -359,7 +382,10 @@ const TargetsConfigDialog = () => {
         </Fab>
     );
 
-    const someErrorPresent: boolean = newTargets.some(propEq("isValid", false));
+    const someErrorPresent: boolean =
+        newTargets.some(propEq("isNameValid", false)) ||
+        newTargets.some(propEq("isTypeValid", false)) ||
+        newTargets.some(propEq("isOtherwiseValid", false));
     const someChangesMade: boolean = !equals(storedTargets, newTargets);
     const shouldDisallowSave: boolean = someErrorPresent || !someChangesMade;
 

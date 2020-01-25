@@ -1,5 +1,4 @@
 import { Timestamp } from "@config/firestore";
-import { ICsoundOptions } from "../Csound/types";
 
 const PREFIX = "PROJECTS.";
 
@@ -8,7 +7,6 @@ export const ACTIVATE_PROJECT = PREFIX + "ACTIVATE_PROJECT";
 export const ADD_PROJECT_DOCUMENTS = PREFIX + "ADD_PROJECT_DOCUMENTS";
 export const CLOSE_PROJECT = PREFIX + "CLOSE_PROJECT";
 export const SET_PROJECT = PREFIX + "SET_PROJECT";
-// export const SET_PROJECT_TARGETS = PREFIX + "SET_PROJECT_TARGETS";
 export const SET_PROJECT_PUBLIC = PREFIX + "SET_PROJECT_PUBLIC";
 export const DOCUMENT_INITIALIZE = PREFIX + "DOCUMENT_INITIALIZE";
 export const DOCUMENT_RENAME_LOCALLY = PREFIX + "DOCUMENT_RENAME_LOCALLY";
@@ -34,25 +32,13 @@ export interface IDocument {
     isModifiedLocally: boolean;
 }
 
-export interface ITarget {
-    csoundOptions: ICsoundOptions;
-    targetName: string;
-    targetType: string;
-    targetDocumentUid?: string;
-    playlistDocumentsUid?: string[];
-}
-
 export type IDocumentsMap = { [documentUid: string]: IDocument };
-
-export type ITargetMap = { [targetName: string]: ITarget };
 
 export interface IProject {
     userUid: string;
     projectUid: string;
     name: string;
     isPublic: boolean;
-    defaultTarget: string | null;
-    targets: ITargetMap;
     documents: IDocumentsMap;
     stars: string[];
 }

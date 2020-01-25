@@ -27,11 +27,11 @@ import {
     CLOSE_PROJECT,
     SET_PROJECT,
     SET_PROJECT_PUBLIC,
-    ITarget,
     IProject,
     IDocument,
     IDocumentsMap
 } from "./types";
+import { ITarget } from "@comp/TargetControls/types";
 import { textOrBinary } from "./utils";
 import { IStore } from "@store/types";
 import {
@@ -54,18 +54,16 @@ import { ThunkAction } from "redux-thunk";
 export const initializeProject = (projectUid: string) => {
     return async (dispatch: any) => {
         const projRef = projects.doc(projectUid);
-        const doc = await projRef.get();
-        if (doc && doc.exists) {
-            const data = doc.data();
+        const projDoc = await projRef.get();
+        if (projDoc && projDoc.exists) {
+            const projData = projDoc.data();
             const project: IProject = {
                 projectUid,
                 documents: {},
-                targets: propOr({}, "targets", data),
-                defaultTarget: propOr(null, "defaultTarget", data),
-                isPublic: propOr(false, "public", data),
-                name: propOr("", "name", data),
-                userUid: propOr("", "userUid", data),
-                stars: propOr([], "stars", data)
+                isPublic: propOr(false, "public", projData),
+                name: propOr("", "name", projData),
+                userUid: propOr("", "userUid", projData),
+                stars: propOr([], "stars", projData)
             };
             await dispatch(setProject(project));
         }
