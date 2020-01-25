@@ -280,6 +280,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     }, [dispatch, projectUid]);
 
     useEffect(() => {
+        document.body.scrollTo(0, 0);
         return () => {
             dispatch(closeTabDock());
             dispatch(closeProject());
@@ -301,35 +302,40 @@ const ProjectEditor = ({ activeProject, csound }) => {
     }, []);
 
     return (
-        <div css={SS.splitterLayoutContainer}>
-            {unsavedDataExitPrompt}
-            <SplitterLayout
-                primaryIndex={1}
-                primaryMinSize={400}
-                secondaryInitialSize={250}
-                secondaryMinSize={250}
-            >
-                {isFileTreeVisible && <FileTree />}
-
+        <>
+            <style>{`#root {overflow: hidden!important;}
+                     body > .ps__rail-x {display:none!important;}
+                     body > .ps__rail-y {display:none!important;}`}</style>
+            <div css={SS.splitterLayoutContainer}>
+                {unsavedDataExitPrompt}
                 <SplitterLayout
-                    horizontal
-                    secondaryInitialSize={500}
-                    onDragStart={() => setManualDrag(true)}
-                    onDragEnd={() => setManualDrag(false)}
+                    primaryIndex={1}
+                    primaryMinSize={400}
+                    secondaryInitialSize={250}
+                    secondaryMinSize={250}
                 >
-                    {!isConsoleVisible ? (
-                        tabDock
-                    ) : (
-                        <SplitterLayout vertical secondaryInitialSize={250}>
-                            {tabDock}
-                            <Console />
-                        </SplitterLayout>
-                    )}
+                    {isFileTreeVisible && <FileTree />}
 
-                    {isManualVisible && manualWindow}
+                    <SplitterLayout
+                        horizontal
+                        secondaryInitialSize={500}
+                        onDragStart={() => setManualDrag(true)}
+                        onDragEnd={() => setManualDrag(false)}
+                    >
+                        {!isConsoleVisible ? (
+                            tabDock
+                        ) : (
+                            <SplitterLayout vertical secondaryInitialSize={250}>
+                                {tabDock}
+                                <Console />
+                            </SplitterLayout>
+                        )}
+
+                        {isManualVisible && manualWindow}
+                    </SplitterLayout>
                 </SplitterLayout>
-            </SplitterLayout>
-        </div>
+            </div>
+        </>
     );
 };
 
