@@ -132,7 +132,7 @@ const TargetsConfigDialog = () => {
         setStoredTargets(targetsToLocalState());
         return () => setStoredTargets(targetsToLocalState());
         // eslint-disable-next-line
-    }, [targets, defaultTargetName]);
+    }, []);
 
     const [newTargets, setNewTargets] = useState(storedTargets);
 
@@ -372,7 +372,7 @@ const TargetsConfigDialog = () => {
                             targetName: "",
                             targetType: ""
                         } as ITargetFromInput,
-                        newTargets as ITargetFromInput[]
+                        newTargets
                     )
                 );
             }}
