@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as SS from "./styles";
 import { useSelector, useDispatch } from "react-redux";
 import { IconButton } from "@material-ui/core";
@@ -6,6 +6,7 @@ import StarIcon from "@material-ui/icons/Star";
 import OutlinedStarIcon from "@material-ui/icons/StarBorderOutlined";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import ShareIcon from "@material-ui/icons/Share";
 import styled from "styled-components";
 import {
     selectUserStarredProject,
@@ -15,6 +16,8 @@ import {
 import { getLoggedInUserStars, toggleStarProject } from "../Profile/actions";
 import { markProjectPublic } from "../Projects/actions";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
+import { openSimpleModal } from "../Modal/actions";
+import ShareDialog from "../ShareDialog";
 
 const StyledIconButton = styled(IconButton)`
     && {
@@ -28,6 +31,12 @@ const StyledStarIcon = styled(StarIcon)`
 `;
 
 const StyledOutlinedStarIcon = styled(OutlinedStarIcon)`
+    && {
+        fill: #8f9089;
+    }
+`;
+
+const StyledShareIcon = styled(ShareIcon)`
     && {
         fill: #8f9089;
     }
@@ -53,6 +62,7 @@ const StyledLabelContainer = styled.div`
     letter-spacing: 1.25px;
 `;
 
+
 const SocialControls = () => {
     const starred = useSelector(selectUserStarredProject);
     const projectUid = useSelector(selectActiveProjectUid);
@@ -65,7 +75,20 @@ const SocialControls = () => {
     }, [dispatch]);
     return (
         <>
-            <div css={SS.starButtonContainer}>
+            {isPublic && (
+                <div css={SS.buttonContainer}>
+                    <StyledIconButton
+                        size="medium"
+                        onClick={() => {
+                            dispatch(openSimpleModal(ShareDialog));
+                        }}
+                    >
+                        <StyledShareIcon fontSize="large" />
+                        <StyledLabelContainer>Share</StyledLabelContainer>
+                    </StyledIconButton>
+                </div>
+            )}
+            <div css={SS.buttonContainer}>
                 <StyledIconButton
                     size="medium"
                     onClick={() => {
@@ -82,7 +105,7 @@ const SocialControls = () => {
                 </StyledIconButton>
             </div>
             {isOwner && (
-                <div css={SS.publicButtonContainer}>
+                <div css={SS.buttonContainer}>
                     <StyledIconButton
                         size="medium"
                         onClick={() => {
