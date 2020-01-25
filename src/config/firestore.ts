@@ -34,6 +34,7 @@ if (!firebase.apps.length) {
 
 // CREATE REFERENCES FOR USE BY APP CODE
 export const db = firebase.firestore();
+export const projectLastModified = db.collection("projectLastModified");
 export const projects = db.collection("projects");
 export const profiles = db.collection("profiles");
 export const usernames = db.collection("usernames");

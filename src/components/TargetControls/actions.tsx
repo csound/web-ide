@@ -1,4 +1,5 @@
 import * as firebase from "firebase/app";
+import { updateProjectLastModified } from "@comp/ProjectLastModified/actions";
 import { openSimpleModal } from "@comp/Modal/actions";
 import { openSnackbar } from "@comp/Snackbar/actions";
 import { SnackbarType } from "@comp/Snackbar/types";
@@ -28,15 +29,6 @@ export const showTargetsConfigDialog = () => {
         dispatch(openSimpleModal(TargetsConfigDialog));
     };
 };
-
-// const updateTargetLocally = (dispatch, defaultTarget, projectUid, targets) => {
-//     dispatch({
-//         type: UPDATE_TARGET_LOCALLY,
-//         defaultTarget,
-//         projectUid,
-//         targets
-//     });
-// };
 
 export const updateAllTargetsLocally = (
     dispatch,
@@ -72,12 +64,7 @@ export const saveChangesToTarget = (
             );
             batch.set(targetsRef, { targets, defaultTarget }, { merge: true });
             await batch.commit();
-            // await updateTargetsLocally(
-            //     dispatch,
-            //     defaultTarget,
-            //     projectUid,
-            //     targets
-            // );
+            updateProjectLastModified(projectUid);
             onSuccessCallback && onSuccessCallback();
         } catch (error) {
             dispatch(openSnackbar(error.toString(), SnackbarType.Error));

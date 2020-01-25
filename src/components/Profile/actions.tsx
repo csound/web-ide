@@ -694,9 +694,7 @@ export const playListItem = (
     projectUid: string | false
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     const state = getState();
-
     const csoundStatus = selectCsoundStatus(state);
-
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");
         return;
@@ -708,6 +706,7 @@ export const playListItem = (
     } else {
         if (hasPath(["ProjectsReducer", "projects", projectUid], state)) {
             const playAction = getPlayActionFromProject(projectUid, state);
+            console.log(playAction);
             if (playAction) {
                 dispatch({
                     type: SET_LIST_PLAY_STATE,

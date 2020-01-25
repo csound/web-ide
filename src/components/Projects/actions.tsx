@@ -6,6 +6,7 @@ import {
     selectDefaultTargetName,
     selectTarget
 } from "@comp/TargetControls/selectors";
+import { updateProjectLastModified } from "@comp/ProjectLastModified/actions";
 import { selectTabDockIndex } from "@comp/ProjectEditor/selectors";
 import { closeModal, openSimpleModal } from "../Modal/actions";
 import { openSnackbar } from "@comp/Snackbar/actions";
@@ -127,6 +128,7 @@ export const addProjectDocuments = (
                 tabDockInit(projectUid, values(documents), maybeDefaultTarget)
             );
         }
+        updateProjectLastModified(projectUid);
     };
 };
 
@@ -166,13 +168,7 @@ export const saveFile = () => {
                         value: doc.currentValue,
                         lastModified: getFirebaseTimestamp()
                     });
-                // dispatch(
-                //     saveDocument(
-                //         project.projectUid,
-                //         doc.documentUid,
-                //         doc.currentValue
-                //     )
-                // );
+                updateProjectLastModified(project.projectUid);
             } catch (error) {}
         }
     };
@@ -212,6 +208,7 @@ export const saveAllFiles = () => {
                 );
             });
             batch.commit();
+            updateProjectLastModified(project.projectUid);
         }
     };
 };
@@ -286,6 +283,7 @@ export const deleteFile = (documentUid: string) => {
                         .then(res => {
                             dispatch(closeModal());
                         });
+                    updateProjectLastModified(project.projectUid);
                 };
                 const deleteDocumentPromptComp = deleteDocumentPrompt(
                     doc.filename,
@@ -491,6 +489,7 @@ export const newDocument = (projectUid: string, val: string) => {
                 const documentUid = res.id;
                 dispatch(tabOpenByDocumentUid(res.id, projectUid));
                 dispatch(newEmptyDocument(projectUid, documentUid, filename));
+                updateProjectLastModified(project.projectUid);
             }
             dispatch(closeModal());
         };
@@ -558,6 +557,7 @@ export const addDocument = (projectUid: string) => {
                                     )
                                 );
                             });
+                        updateProjectLastModified(project.projectUid);
                     };
                     reader.readAsText(file);
                 } else if (fileType === "bin") {
@@ -678,6 +678,7 @@ export const renameDocument = (
                     .then(res => {
                         dispatch(renameDocumentLocally(documentUid, filename));
                     });
+                updateProjectLastModified(activeProjectUid);
             }
             dispatch(closeModal());
         };
@@ -751,6 +752,7 @@ export const markProjectPublic = (
                     projectUid: activeProjectUid,
                     isPublic
                 });
+                updateProjectLastModified(activeProjectUid);
             }
         });
     };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
 import { simpleSwitch } from "react-tabtab/lib/helpers/move";
+import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
 import tabStyles from "./tabStyles";
 import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
@@ -77,12 +78,19 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const projectUid: string = propOr("", "projectUid", activeProject);
 
     useEffect(() => {
-        const unsubscribe = subscribeToProjectChanges(
+        const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
             dispatch,
             csound
         );
-        return unsubscribe;
+        const unsubscribeToProjectLastModified = subscribeToProjectLastModified(
+            projectUid,
+            dispatch
+        );
+        return () => {
+            unsubscribeProjectChanges();
+            unsubscribeToProjectLastModified();
+        };
         // eslint-disable-next-line
     }, []);
 

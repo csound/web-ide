@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
 import {
     Button,
     List,
@@ -177,6 +178,15 @@ export default ({ selectedSection, filteredProjects, username }) => {
     const profileRequesting = useSelector(selectUserProfileRequesting);
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const isProfileOwner = useSelector(selectIsUserProfileOwner);
+
+    useEffect(() => {
+        if (Array.isArray(filteredProjects)) {
+            const unsubArray = filteredProjects.map(proj =>
+                subscribeToProjectLastModified(proj.projectUid, dispatch)
+            );
+            return () => unsubArray.forEach(unsub => unsub());
+        }
+    }, [filteredProjects, dispatch]);
 
     return (
         <List>
