@@ -1,4 +1,6 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { subscribeToLoggedInUserProfile } from "./subscribers";
 import {
     Button,
     Dialog,
@@ -9,7 +11,6 @@ import {
     TextField,
     LinearProgress
 } from "@material-ui/core";
-import { connect } from "react-redux";
 import {
     login,
     closeLoginDialog,
@@ -17,14 +18,18 @@ import {
     createUserClearError,
     thirdPartyAuthSuccess
 } from "./actions";
-import { IStore } from "@store/types";
-import { selectLoginRequesting, selectLoginFail } from "./selectors";
-import { validateEmail } from "../../utils";
+import {
+    selectLoginRequesting,
+    selectLoginFail,
+    selectErrorCode,
+    selectErrorMessage
+} from "./selectors";
+import { validateEmail } from "@root/utils";
 import * as SS from "./styles";
-import { isEmpty, merge } from "lodash";
+import { assoc, isEmpty, pipe } from "ramda";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import * as firebase from "firebase/app";
-import { isElectron } from "../../utils";
+import { isElectron } from "@root/utils";
 
 // Configure FirebaseUI.
 const uiConfig = {
@@ -48,27 +53,13 @@ interface ILoginLocalState {
     isCreatingUser: boolean;
 }
 
-interface ILoginProps {
-    errorCode: string;
-    errorMessage: string;
-    fail: boolean;
-    requesting: boolean;
-}
-
-interface ILoginDispatchProperties {
-    closeLoginDialog: () => void;
-    createNewUser: (email: string, password: string) => void;
-    createUserClearError: () => void;
-    login: (email: string, password: string) => void;
-    thirdPartyAuthSuccess: (user: any) => void;
-}
-
-type ILogin = ILoginProps & ILoginDispatchProperties;
-
-class Login extends Component<ILogin, ILoginLocalState> {
-    protected unregisterAuthObserver: any;
-
-    public readonly state: ILoginLocalState = {
+const Login = () => {
+    const dispatch = useDispatch();
+    const errorCode = useSelector(selectErrorCode);
+    const errorMessage = useSelector(selectErrorMessage);
+    const fail = useSelector(selectLoginFail);
+    const requesting = useSelector(selectLoginRequesting);
+    const [localState, setLocalState] = useState({
         email: "",
         newEmail: "",
         newEmailValid: false,
@@ -76,261 +67,239 @@ class Login extends Component<ILogin, ILoginLocalState> {
         newPassword: "",
         newPasswordConfirm: "",
         isCreatingUser: false
+    } as ILoginLocalState);
+
+    useEffect(() => {
+        let unsubscribeLoggedInUserProfile: any = null;
+        const unsubscribeAuthObserver = firebase
+            .auth()
+            .onAuthStateChanged(user => {
+                if (user) {
+                    unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
+                        user.uid,
+                        dispatch
+                    );
+                    dispatch(thirdPartyAuthSuccess(user));
+                }
+            });
+
+        return () => {
+            unsubscribeAuthObserver();
+            unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const switchToNewUser = () => {
+        dispatch(createUserClearError());
+        setLocalState(assoc("isCreatingUser", true, localState));
     };
 
-    constructor(props: ILogin) {
-        super(props);
-        this.switchToNewUser = this.switchToNewUser.bind(this);
-        this.switchToLogin = this.switchToLogin.bind(this);
-    }
+    const switchToLogin = () => {
+        dispatch(createUserClearError());
+        setLocalState(assoc("isCreatingUser", false, localState));
+    };
 
-    componentDidMount() {
-        this.unregisterAuthObserver = firebase
-            .auth()
-            .onAuthStateChanged(
-                user => !!user && this.props.thirdPartyAuthSuccess(user)
-            );
-    }
+    const errorBox = !isEmpty(errorMessage) && (
+        <div css={SS.errorBox}>
+            <h5>{"Error " + errorCode}</h5>
+            <p>{errorMessage}</p>
+        </div>
+    );
 
-    componentWillUnmount() {
-        this.unregisterAuthObserver();
-    }
+    const disabledBool =
+        localState.newPasswordConfirm.length < 6 ||
+        localState.newPassword.length < 6 ||
+        localState.newPasswordConfirm !== localState.newPassword ||
+        !localState.newEmailValid;
 
-    public switchToNewUser() {
-        this.props.createUserClearError();
-        this.setState(
-            merge(this.state, {
-                isCreatingUser: true
-            })
-        );
-    }
-
-    public switchToLogin() {
-        this.props.createUserClearError();
-        this.setState(
-            merge(this.state, {
-                isCreatingUser: false
-            })
-        );
-    }
-
-    public render() {
-        const { closeLoginDialog } = this.props;
-        const { isCreatingUser, newEmailValid } = this.state;
-
-        const errorBox = !isEmpty(this.props.errorMessage) && (
-            <div css={SS.errorBox}>
-                <h5>{"Error " + this.props.errorCode}</h5>
-                <p>{this.props.errorMessage}</p>
-            </div>
-        );
-
-        const disabledBool =
-            this.state.newPasswordConfirm.length < 6 ||
-            this.state.newPassword.length < 6 ||
-            this.state.newPasswordConfirm !== this.state.newPassword ||
-            !newEmailValid;
-
-        const loginView = (
-            <div>
-                <DialogTitle>Login</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Please enter your email address and password
-                    </DialogContentText>
-                    <form>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="email"
-                            label="Email Address"
-                            type="email"
-                            value={this.state.email}
-                            onChange={e => {
-                                this.setState({ email: e.target.value });
-                            }}
-                            fullWidth
-                            error={this.props.fail}
-                            autoComplete="current-email"
-                        />
-                        <TextField
-                            margin="dense"
-                            id="password"
-                            label="Password"
-                            type="password"
-                            value={this.state.password}
-                            onChange={e => {
-                                this.setState({ password: e.target.value });
-                            }}
-                            fullWidth
-                            error={this.props.fail}
-                            autoComplete="current-password"
-                            onKeyPress={event =>
-                                event.key === "Enter"
-                                    ? this.props.login(
-                                          this.state.email,
-                                          this.state.password
-                                      )
-                                    : null
-                            }
-                        />
-                    </form>
-                    <div
-                        style={{
-                            transition: "opacity .1s ease-in",
-                            opacity: this.props.requesting ? 1 : 0
-                        }}
-                    >
-                        <LinearProgress />
-                    </div>
-                    <DialogActions>
-                        <Button
-                            onClick={() => {
-                                this.props.login(
-                                    this.state.email,
-                                    this.state.password
-                                );
-                            }}
-                            color="primary"
-                        >
-                            Login
-                        </Button>
-                        <Button
-                            onClick={() => this.switchToNewUser()}
-                            color="primary"
-                        >
-                            {"New User"}
-                        </Button>
-                    </DialogActions>
-                </DialogContent>
-                <StyledFirebaseAuth
-                    uiConfig={uiConfig}
-                    firebaseAuth={firebase.auth()}
-                />
-            </div>
-        );
-
-        const signupView = (
-            <div style={{ padding: "45px" }}>
-                <DialogTitle>New Account</DialogTitle>
+    const loginView = (
+        <div>
+            <DialogTitle>Login</DialogTitle>
+            <DialogContent>
                 <DialogContentText>
-                    Please provide a valid email
+                    Please enter your email address and password
                 </DialogContentText>
                 <form>
                     <TextField
                         autoFocus
                         margin="dense"
-                        id="new-email"
+                        id="email"
                         label="Email Address"
                         type="email"
-                        value={this.state.newEmail}
+                        value={localState.email}
                         onChange={e => {
-                            this.setState({
-                                newEmail: e.target.value,
-                                newEmailValid: validateEmail(e.target.value)
-                            });
+                            setLocalState(
+                                assoc("email", e.target.value, localState)
+                            );
                         }}
                         fullWidth
-                        error={!this.state.newEmailValid}
-                    />
-                    <DialogContentText style={{ marginTop: "24px" }}>
-                        Choose a good password of minimum 6 characters length
-                    </DialogContentText>
-                    <TextField
-                        margin="dense"
-                        id="new-password"
-                        label="New Password"
-                        type="password"
-                        value={this.state.newPassword}
-                        onChange={e => {
-                            this.setState({ newPassword: e.target.value });
-                        }}
-                        fullWidth
-                        error={this.state.newPassword.length < 5}
-                        autoComplete="new-password"
+                        error={fail}
+                        autoComplete="current-email"
                     />
                     <TextField
                         margin="dense"
-                        id="new-password-confirm"
-                        label="Confirm New Password"
+                        id="password"
+                        label="Password"
                         type="password"
-                        value={this.state.newPasswordConfirm}
+                        value={localState.password}
                         onChange={e => {
-                            this.setState({
-                                newPasswordConfirm: e.target.value
-                            });
+                            setLocalState(
+                                assoc("password", e.target.value, localState)
+                            );
                         }}
                         fullWidth
-                        error={
-                            this.state.newPasswordConfirm.length < 5 ||
-                            this.state.newPassword.length < 5 ||
-                            this.state.newPasswordConfirm !==
-                                this.state.newPassword
+                        error={fail}
+                        autoComplete="current-password"
+                        onKeyPress={event =>
+                            event.key === "Enter"
+                                ? dispatch(
+                                      login(
+                                          localState.email,
+                                          localState.password
+                                      )
+                                  )
+                                : null
                         }
-                        autoComplete="new-password"
                     />
                 </form>
                 <div
                     style={{
                         transition: "opacity .1s ease-in",
-                        opacity: this.props.requesting ? 1 : 0
+                        opacity: requesting ? 1 : 0
                     }}
                 >
                     <LinearProgress />
                 </div>
                 <DialogActions>
                     <Button
-                        onClick={() => this.switchToLogin()}
+                        onClick={() => {
+                            dispatch(
+                                login(localState.email, localState.password)
+                            );
+                        }}
                         color="primary"
                     >
-                        Back
+                        Login
                     </Button>
-                    <Button
-                        onClick={() =>
-                            this.props.createNewUser(
-                                this.state.newEmail,
-                                this.state.newPasswordConfirm
-                            )
-                        }
-                        color="primary"
-                        disabled={disabledBool}
-                    >
-                        {"Create"}
+                    <Button onClick={switchToNewUser} color="primary">
+                        {"New User"}
                     </Button>
                 </DialogActions>
-            </div>
-        );
-        return (
-            <Dialog
-                onClose={() => {
-                    this.props.createUserClearError();
-                    closeLoginDialog();
-                }}
-                open
-            >
-                {isCreatingUser ? signupView : loginView}
-                {errorBox}
-            </Dialog>
-        );
-    }
-}
+            </DialogContent>
+            <StyledFirebaseAuth
+                uiConfig={uiConfig}
+                firebaseAuth={firebase.auth()}
+            />
+        </div>
+    );
 
-const mapStateToProps = (store: IStore, ownProp: any): ILoginProps => {
-    return {
-        errorCode: store.LoginReducer.errorCode,
-        errorMessage: store.LoginReducer.errorMessage,
-        requesting: selectLoginRequesting(store),
-        fail: selectLoginFail(store)
-    };
+    const signupView = (
+        <div style={{ padding: "45px" }}>
+            <DialogTitle>New Account</DialogTitle>
+            <DialogContentText>Please provide a valid email</DialogContentText>
+            <form>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="new-email"
+                    label="Email Address"
+                    type="email"
+                    value={localState.newEmail}
+                    onChange={e => {
+                        setLocalState(
+                            pipe(
+                                assoc("newEmail", e.target.value),
+                                assoc(
+                                    "newEmailValid",
+                                    validateEmail(e.target.value)
+                                )
+                            )(localState)
+                        );
+                    }}
+                    fullWidth
+                    error={!localState.newEmailValid}
+                />
+                <DialogContentText style={{ marginTop: "24px" }}>
+                    Choose a good password of minimum 6 characters length
+                </DialogContentText>
+                <TextField
+                    margin="dense"
+                    id="new-password"
+                    label="New Password"
+                    type="password"
+                    value={localState.newPassword}
+                    onChange={e => {
+                        setLocalState(
+                            assoc("newPassword", e.target.value, localState)
+                        );
+                    }}
+                    fullWidth
+                    error={localState.newPassword.length < 5}
+                    autoComplete="new-password"
+                />
+                <TextField
+                    margin="dense"
+                    id="new-password-confirm"
+                    label="Confirm New Password"
+                    type="password"
+                    value={localState.newPasswordConfirm}
+                    onChange={e => {
+                        setLocalState(
+                            assoc(
+                                "newPasswordConfirm",
+                                e.target.value,
+                                localState
+                            )
+                        );
+                    }}
+                    fullWidth
+                    error={
+                        localState.newPasswordConfirm.length < 5 ||
+                        localState.newPassword.length < 5 ||
+                        localState.newPasswordConfirm !== localState.newPassword
+                    }
+                    autoComplete="new-password"
+                />
+            </form>
+            <div
+                style={{
+                    transition: "opacity .1s ease-in",
+                    opacity: requesting ? 1 : 0
+                }}
+            >
+                <LinearProgress />
+            </div>
+            <DialogActions>
+                <Button onClick={switchToLogin} color="primary">
+                    Back
+                </Button>
+                <Button
+                    onClick={() =>
+                        dispatch(
+                            createNewUser(localState.email, localState.password)
+                        )
+                    }
+                    color="primary"
+                    disabled={disabledBool}
+                >
+                    {"Create"}
+                </Button>
+            </DialogActions>
+        </div>
+    );
+    return (
+        <Dialog
+            onClose={() => {
+                dispatch(createUserClearError());
+                dispatch(closeLoginDialog());
+            }}
+            open
+        >
+            {localState.isCreatingUser ? signupView : loginView}
+            {errorBox}
+        </Dialog>
+    );
 };
 
-const mapDispatchToProps = (dispatch: any): ILoginDispatchProperties => ({
-    closeLoginDialog: () => dispatch(closeLoginDialog()),
-    createNewUser: (email, password) =>
-        dispatch(createNewUser(email, password)),
-    createUserClearError: () => dispatch(createUserClearError()),
-    login: (email, password) => dispatch(login(email, password)),
-    thirdPartyAuthSuccess: user => dispatch(thirdPartyAuthSuccess(user))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default Login;
