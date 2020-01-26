@@ -1,0 +1,12 @@
+diff --git a/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js b/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js
+index 8b8d400..6fdd60c 100644
+--- a/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js
++++ b/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js
+@@ -864,7 +864,6 @@ var wheel = function(i) {
+     shouldPrevent = shouldPrevent || shouldPreventDefault(deltaX, deltaY);
+     if (shouldPrevent && !e.ctrlKey) {
+       e.stopPropagation();
+-      e.preventDefault();
+     }
+   }
+ 

@@ -12,7 +12,7 @@ import {
 import { History } from "history";
 import firebase from "firebase/app";
 import HotKeys from "../HotKeys/HotKeys";
-import PerfectScrollbar from "perfect-scrollbar";
+import PerfectScrollbar from "perfect-scrollbar/dist/perfect-scrollbar.esm.js";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 interface IMain {
