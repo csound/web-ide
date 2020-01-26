@@ -1,5 +1,4 @@
-import React, { useEffect } from "react";
-import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
+import React from "react";
 import {
     Button,
     List,
@@ -31,8 +30,7 @@ import {
     selectListPlayState,
     selectFilteredUserFollowing,
     selectUserProfileRequesting,
-    selectCurrentlyPlayingProject,
-    selectIsUserProfileOwner
+    selectCurrentlyPlayingProject
 } from "./selectors";
 import {
     pauseListItem,
@@ -171,32 +169,27 @@ const ProjectListItem = props => {
     );
 };
 
-export default ({ selectedSection, filteredProjects, username }) => {
+export default ({
+    selectedSection,
+    isProfileOwner,
+    filteredProjects,
+    username,
+    setProfileUid,
+    setSelectedSection
+}) => {
     const dispatch = useDispatch();
     const listPlayState = useSelector(selectListPlayState);
     const filteredFollowing = useSelector(selectFilteredUserFollowing);
     const profileRequesting = useSelector(selectUserProfileRequesting);
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
-    const isProfileOwner = useSelector(selectIsUserProfileOwner);
-
-    useEffect(() => {
-        if (Array.isArray(filteredProjects)) {
-            const unsubArray = filteredProjects.map(proj =>
-                subscribeToProjectLastModified(proj.projectUid, dispatch)
-            );
-            return () => unsubArray.forEach(unsub => unsub());
-        }
-    }, [filteredProjects, dispatch]);
-
     return (
         <List>
             {selectedSection === 0 &&
                 Array.isArray(filteredProjects) &&
-                profileRequesting === false &&
                 filteredProjects.map((p, i) => {
                     return (
                         <ProjectListItem
-                            key={i}
+                            key={p.projectUid}
                             isProfileOwner={isProfileOwner}
                             project={p}
                             listPlayState={listPlayState}
@@ -214,18 +207,16 @@ export default ({ selectedSection, filteredProjects, username }) => {
                             button
                             alignItems="flex-start"
                             key={i}
-                            onClick={() => {
-                                dispatch(
-                                    push(`/profile/${p.username}`, {
-                                        fromFollowing: true
-                                    })
-                                );
+                            onClick={async () => {
+                                await dispatch(push(`/profile/${p.username}`));
+                                setProfileUid(null);
+                                setSelectedSection(0);
                             }}
                         >
                             <StyledUserListItemContainer>
                                 <StyledListItemAvatar>
                                     <ListItemAvatar>
-                                        <Avatar src={p.imageUrl} />
+                                        <Avatar src={p.photoUrl} />
                                     </ListItemAvatar>
                                 </StyledListItemAvatar>
 

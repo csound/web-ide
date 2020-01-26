@@ -1,7 +1,11 @@
 import { IDocument, IDocumentsMap } from "./types";
 import { ICsoundObj } from "@comp/Csound/types";
 import { projects, targets } from "@config/firestore";
-import { addDocumentToEMFS, fileDocDataToDocumentType } from "./utils";
+import {
+    addDocumentToEMFS,
+    convertDocSnapToDocumentsMap,
+    fileDocDataToDocumentType
+} from "./utils";
 import {
     addProjectDocuments,
     removeDocumentLocally,
@@ -15,22 +19,10 @@ import {
     forEach,
     map,
     isEmpty,
-    pipe,
     prop,
     propEq,
-    reduce,
     values
 } from "ramda";
-
-const convertToDocumentsMap = docsToAdd =>
-    (pipe as any)(
-        map(prop("doc")),
-        map((d: any) => assoc("documentUid", d.id, d.data())),
-        reduce((acc: IDocumentsMap, docData: any) => {
-            acc[docData["documentUid"]] = fileDocDataToDocumentType(docData);
-            return acc;
-        }, {})
-    )(docsToAdd);
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
@@ -53,7 +45,9 @@ export const subscribeToProjectFilesChanges = (
             );
 
             if (!isEmpty(filesToAdd)) {
-                const docs: IDocumentsMap = convertToDocumentsMap(filesToAdd);
+                const docs: IDocumentsMap = convertDocSnapToDocumentsMap(
+                    filesToAdd
+                );
                 (forEach as any)(
                     addDocumentToEMFS(projectUid, csound),
                     values(docs)

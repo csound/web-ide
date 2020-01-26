@@ -1,8 +1,6 @@
 import {
     ProfileActionTypes,
-    GET_USER_PROJECTS,
     GET_USER_PROFILE,
-    GET_USER_IMAGE_URL,
     SET_TAGS_INPUT,
     SET_CURRENT_TAG_TEXT,
     GET_TAGS,
@@ -14,9 +12,8 @@ import {
     SHOULD_REDIRECT_YES,
     SHOULD_REDIRECT_NO,
     REFRESH_USER_PROFILE,
-    GET_USER_FOLLOWING,
-    GET_LOGGED_IN_USER_FOLLOWING,
-    GET_USER_PROFILES_FOR_FOLLOWING,
+    UPDATE_LOGGED_IN_FOLLOWING,
+    UPDATE_PROFILE_FOLLOWING,
     SET_IMAGE_URL_REQUESTING,
     SET_PROFILE_REQUESTING,
     SET_FOLLOWING_FILTER_STRING,
@@ -115,22 +112,17 @@ export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
                 userImageURLRequesting: action.payload
             };
         }
-        case GET_USER_PROFILES_FOR_FOLLOWING: {
+        case UPDATE_PROFILE_FOLLOWING: {
             return {
                 ...state,
-                userProfilesForFollowing: action.payload
+                userFollowing: action.userProfileUids,
+                userProfilesForFollowing: action.userProfiles
             };
         }
-        case GET_LOGGED_IN_USER_FOLLOWING: {
+        case UPDATE_LOGGED_IN_FOLLOWING: {
             return {
                 ...state,
-                loggedInUserFollowing: action.payload
-            };
-        }
-        case GET_USER_FOLLOWING: {
-            return {
-                ...state,
-                userFollowing: action.payload
+                loggedInUserFollowing: action.userProfileUids
             };
         }
         case REFRESH_USER_PROFILE: {
@@ -194,32 +186,14 @@ export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
                 tagsInput: action.payload
             };
         }
-        case GET_USER_PROJECTS: {
-            return {
-                ...state,
-                userProjects: action.payload
-            };
-        }
         case GET_USER_PROFILE: {
             return {
                 ...state,
                 userProfile: action.payload.profile,
                 profileUid: action.payload.profileUid,
-                loggedInUid: action.payload.loggedInUid
+                loggedInUid: action.payload.loggedInUid,
+                userImageURL: action.payload.profile.photoUrl || facePng
             };
-        }
-        case GET_USER_IMAGE_URL: {
-            if (action.payload === null) {
-                return {
-                    ...state,
-                    userImageURL: facePng
-                };
-            } else {
-                return {
-                    ...state,
-                    userImageURL: action.payload
-                };
-            }
         }
         case SET_CURRENT_TAG_TEXT: {
             return {

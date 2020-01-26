@@ -9,6 +9,7 @@ export const subscribeToProjectLastModified = (
         .doc(projectUid)
         .onSnapshot(
             timestampDoc => {
+                console.log(timestampDoc);
                 if (!timestampDoc.exists) return;
                 const { timestamp } = timestampDoc.data() as any;
                 timestamp &&

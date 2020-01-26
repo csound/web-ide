@@ -1,4 +1,5 @@
 import {
+    SET_REQUESTING_STATUS,
     SIGNIN_FAIL,
     SIGNIN_SUCCESS,
     SIGNIN_REQUEST,
@@ -26,6 +27,9 @@ export default (state = INITIAL_STATE, action: any) => {
     switch (action.type) {
         case SIGNIN_REQUEST: {
             return assoc("requesting", true, state);
+        }
+        case SET_REQUESTING_STATUS: {
+            return assoc("requesting", action.status, state);
         }
         case CREATE_USER_FAIL:
         case SIGNIN_FAIL: {

@@ -37,6 +37,8 @@ export const db = firebase.firestore();
 export const projectLastModified = db.collection("projectLastModified");
 export const projects = db.collection("projects");
 export const profiles = db.collection("profiles");
+export const followers = db.collection("followers");
+export const following = db.collection("following");
 export const usernames = db.collection("usernames");
 export const targets = db.collection("targets");
 export const tags = db.collection("tags");
@@ -54,3 +56,5 @@ export const getCurrentUserPromise = () =>
 export const getFirebaseTimestamp: () => any =
     firebase.firestore.FieldValue.serverTimestamp;
 export type Timestamp = firebase.firestore.Timestamp;
+export const fieldDelete: () => any = () =>
+    firebase.firestore.FieldValue.delete();

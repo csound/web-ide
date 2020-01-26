@@ -1,8 +1,6 @@
-export const GET_USER_PROJECTS = "PROFILE.GET_USER_PROJECTS";
 export const GET_USER_PROFILE = "PROFILE.GET_USER_PROFILE";
 export const ADD_USER_PROJECT = "PROFILE.ADD_USER_PROJECT";
 export const DELETE_USER_PROJECT = "PROFILE.DELETE_USER_PROJECT";
-export const GET_USER_IMAGE_URL = "PROFILE.GET_USER_IMAGE_URL";
 export const SET_IMAGE_URL_REQUESTING = "PROFILE.SET_IMAGE_URL_REQUESTING";
 export const SET_PROFILE_REQUESTING = "PROFILE.SET_PROFILE_REQUESTING";
 export const SET_CURRENT_TAG_TEXT = "PROFILE.SET_CURRENT_TAG_TEXT";
@@ -21,9 +19,8 @@ export const SHOULD_REDIRECT_REQUEST = "PROFILE.SHOULD_REDIRECT_REQUEST";
 export const SHOULD_REDIRECT_YES = "PROFILE.SHOULD_REDIRECT_YES";
 export const SHOULD_REDIRECT_NO = "PROFILE.SHOULD_REDIRECT_NO";
 export const REFRESH_USER_PROFILE = "PROFILE.REFRESH_USER_PROFILE";
-export const GET_USER_FOLLOWING = "PROFILE.GET_USER_FOLLOWING";
-export const GET_LOGGED_IN_USER_FOLLOWING =
-    "PROFILE.GET_LOGGED_IN_USER_FOLLOWING";
+export const UPDATE_LOGGED_IN_FOLLOWING = "PROFILE.UPDATE_LOGGED_IN_FOLLOWING";
+export const UPDATE_PROFILE_FOLLOWING = "PROFILE.UPDATE_PROFILE_FOLLOWING";
 export const GET_USER_PROFILES_FOR_FOLLOWING =
     "PROFILE.GET_USER_PROFILES_FOR_FOLLOWING";
 export const SET_STAR_PROJECT_REQUESTING =
@@ -56,19 +53,20 @@ interface SetImageURLRequestingAction {
     type: typeof SET_IMAGE_URL_REQUESTING;
     payload: boolean;
 }
+interface UpdateProfileFollowingAction {
+    type: typeof UPDATE_PROFILE_FOLLOWING;
+    userProfiles: any[];
+    userProfileUids: string[];
+}
+interface UpdateLoggedInFollowingAction {
+    type: typeof UPDATE_LOGGED_IN_FOLLOWING;
+    userProfileUids: string[];
+}
 interface GetUserProfilesForFollowingAction {
     type: typeof GET_USER_PROFILES_FOR_FOLLOWING;
     payload: [];
 }
-interface GetLoggedInUserFollowingAction {
-    type: typeof GET_LOGGED_IN_USER_FOLLOWING;
-    payload: [];
-}
 
-interface GetUserFollowingAction {
-    type: typeof GET_USER_FOLLOWING;
-    payload: [];
-}
 interface SetShouldRedirectRequestAction {
     type: typeof SHOULD_REDIRECT_REQUEST;
 }
@@ -121,17 +119,6 @@ interface GetUserProfileAction {
     type: typeof GET_USER_PROFILE;
     payload: any;
 }
-
-interface GetUserImageURLAction {
-    type: typeof GET_USER_IMAGE_URL;
-    payload: string | null;
-}
-
-interface GetUserProjectsAction {
-    type: typeof GET_USER_PROJECTS;
-    payload: any;
-}
-
 interface AddUserProjectAction {
     type: typeof ADD_USER_PROJECT;
 }
@@ -147,10 +134,8 @@ interface SetCurrentTagTextAction {
 
 export type ProfileActionTypes =
     | GetUserProfileAction
-    | GetUserProjectsAction
     | AddUserProjectAction
     | DeleteUserProjectAction
-    | GetUserImageURLAction
     | SetCurrentTagTextAction
     | SetTagsInputAction
     | GetTagsAction
@@ -162,8 +147,8 @@ export type ProfileActionTypes =
     | SetShouldRedirectNoAction
     | GetUserProfilesForFollowingAction
     | SetUserProfileAction
-    | GetUserFollowingAction
-    | GetLoggedInUserFollowingAction
+    | UpdateLoggedInFollowingAction
+    | UpdateProfileFollowingAction
     | RefreshUserProfileAction
     | SetImageURLRequestingAction
     | SetProfileRequestingAction
