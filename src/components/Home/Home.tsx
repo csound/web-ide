@@ -1,18 +1,31 @@
-import React from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import Header from "../Header/Header";
-import { searchProjects } from "./actions";
-// import {
+import ProjectCard from "./ProjectCard";
+import { searchProjects, getTags } from "./actions";
 
-// } from "./selectors";
-
-// import { SET_LIST_PLAY_STATE } from "./types";
-import { HomeContainer, SearchContainer, StyledTextField } from "./HomeUI";
+import {
+    HomeContainer,
+    SearchContainer,
+    StyledTextField,
+    ProjectSectionHeader,
+    HorizontalRule,
+    FeaturedProjectsContainer,
+    ProjectSectionCardContainer
+} from "./HomeUI";
+import { selectTags } from "./selectors";
 
 const Home = props => {
     const { classes } = props;
     const dispatch = useDispatch();
+    const tags = useSelector(selectTags);
+
+    console.log(tags);
+
+    useEffect(() => {
+        dispatch(getTags());
+    }, [dispatch]);
 
     return (
         <div className={classes.root}>
@@ -50,6 +63,15 @@ const Home = props => {
                             }}
                         />
                     </SearchContainer>
+                    <FeaturedProjectsContainer>
+                        <ProjectSectionHeader row={1}>
+                            Popular Projects
+                            <HorizontalRule />
+                        </ProjectSectionHeader>
+                        <ProjectSectionCardContainer row={2}>
+                            <ProjectCard />
+                        </ProjectSectionCardContainer>
+                    </FeaturedProjectsContainer>
                 </HomeContainer>
             </main>
         </div>

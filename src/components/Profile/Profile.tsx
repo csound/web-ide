@@ -109,7 +109,7 @@ const Profile = props => {
 
     useEffect(() => {
         if (profileUid !== null) {
-            dispatch(getUserProjects(profileUid));
+            dispatch(getUserProjects(profileUid, false));
         }
     }, [dispatch, profileUid, username]);
 

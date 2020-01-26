@@ -11,6 +11,7 @@ import ModalReducer from "@comp/Modal/reducer";
 import ProfileReducer from "@comp/Profile/reducer";
 import ConsoleReducer from "@comp/Console/reducer";
 import HotKeysReducer from "@comp/HotKeys/reducer";
+import HomeReducer from "@comp/Home/reducer";
 import TargetControlsReducer from "@comp/TargetControls/reducer";
 import ProjectLastModifiedReducer from "@comp/ProjectLastModified/reducer";
 import { History } from "history";
@@ -30,5 +31,6 @@ export default (history: History) =>
         SnackbarReducer,
         HotKeysReducer,
         TargetControlsReducer,
-        ProjectLastModifiedReducer
+        ProjectLastModifiedReducer,
+        HomeReducer
     });

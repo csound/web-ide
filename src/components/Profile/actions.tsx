@@ -4,7 +4,14 @@ import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
 // import crypto from "crypto";
-import { db, projects, profiles, usernames, tags } from "@config/firestore";
+import {
+    db,
+    projects,
+    profiles,
+    stars,
+    usernames,
+    tags
+} from "@config/firestore";
 import {
     GET_USER_PROJECTS,
     ProfileActionTypes,
@@ -65,12 +72,15 @@ const getUserProjectsAction = (payload: any): ProfileActionTypes => {
 };
 
 export const getUserProjects = (
-    uid
+    uid,
+    update
 ): ThunkAction<void, any, null, Action<string>> => async (
     dispatch,
     getState
 ) => {
-    dispatch(getUserProjectsAction([]));
+    if (!update) {
+        dispatch(getUserProjectsAction([]));
+    }
     firebase.auth().onAuthStateChanged(async user => {
         const queryResult =
             uid === user?.uid
@@ -101,7 +111,10 @@ export const addUserProject = (
     name: string,
     description: string,
     currentTags: string[],
-    projectID: string
+    projectID: string,
+    iconName: string,
+    iconForegroundColor: string,
+    iconBackgroundColor: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
@@ -110,7 +123,10 @@ export const addUserProject = (
                 name,
                 description,
                 public: true,
-                tags: currentTags
+                tags: currentTags,
+                iconName,
+                iconForegroundColor,
+                iconBackgroundColor
             };
 
             try {
@@ -161,6 +177,7 @@ export const addUserProject = (
                     .add({ ...defaultSco, userUid: user.uid });
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Added", SnackbarType.Success));
+                dispatch(getUserProjects(user.uid, true));
             } catch (e) {
                 console.log(e);
 
@@ -176,7 +193,10 @@ export const editUserProject = (
     name: string,
     description: string,
     currentTags: string[],
-    projectID: string
+    projectID: string,
+    iconName: string,
+    iconForegroundColor: string,
+    iconBackgroundColor: string
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user !== null) {
@@ -185,7 +205,10 @@ export const editUserProject = (
                 name: name || "",
                 description: description || "",
                 public: false,
-                tags: currentTags || []
+                tags: currentTags || [],
+                iconName: iconName || "",
+                iconForegroundColor: iconForegroundColor || "",
+                iconBackgroundColor: iconBackgroundColor || ""
             };
 
             const state = getState();
@@ -240,6 +263,7 @@ export const editUserProject = (
                 await newProjectRef.update(newProject);
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Edited", SnackbarType.Success));
+                dispatch(getUserProjects(user.uid, true));
             } catch (e) {
                 console.log(e);
 
@@ -277,6 +301,7 @@ export const deleteUserProject = (
                 setTimeout(() => dispatch(deleteUserProjectAction()), 1);
 
                 dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
+                dispatch(getUserProjects(user.uid, true));
             } catch (e) {
                 dispatch(
                     openSnackbar("Could Not Delete Project", SnackbarType.Error)
@@ -418,6 +443,9 @@ export const addProject = () => {
                     projectAction={addUserProject}
                     label={"Create"}
                     projectID=""
+                    iconName=""
+                    iconForegroundColor=""
+                    iconBackgroundColor=""
                 />
             ))
         );
@@ -641,6 +669,9 @@ export const editProject = (project: any) => {
                     projectAction={editUserProject}
                     label={"Edit"}
                     projectID={project.projectUid}
+                    iconName={project.iconName}
+                    iconForegroundColor={project.iconForegroundColor}
+                    iconBackgroundColor={project.iconBackgroundColor}
                 />
             ))
         );
@@ -914,19 +945,29 @@ export const toggleStarProject = (
         if (user !== null) {
             const project = await projects.doc(projectUid).get();
 
-            const stars = get(project.data(), "stars") || [];
-            const starsKeys = stars.map(e => get(Object.keys(e), "0")) || [];
+            const projectStars = get(project.data(), "stars") || [];
+            const starsKeys =
+                projectStars.map(e => get(Object.keys(e), "0")) || [];
             const currentStars = selectLoggedInUserStars(state);
 
             if (starsKeys.includes(user.uid) === true) {
                 const index = starsKeys.indexOf(user.uid);
-                const starToRemove = stars[index];
+                const starToRemove = projectStars[index];
 
                 currentStars.splice(currentStars.indexOf(projectUid), 1);
                 dispatch({
                     type: GET_LOGGED_IN_USER_STARS,
                     payload: currentStars
                 });
+
+                await stars.doc(projectUid).set(
+                    {
+                        stars: firebase.firestore.FieldValue.arrayRemove(
+                            starToRemove
+                        )
+                    },
+                    { merge: true }
+                );
 
                 await projects.doc(projectUid).update({
                     stars: firebase.firestore.FieldValue.arrayRemove(
@@ -943,9 +984,15 @@ export const toggleStarProject = (
                     payload: currentStars
                 });
 
+                const date = Date.now();
+                await stars.doc(projectUid).update({
+                    stars: firebase.firestore.FieldValue.arrayUnion({
+                        [user.uid]: date
+                    })
+                });
                 await projects.doc(projectUid).update({
                     stars: firebase.firestore.FieldValue.arrayUnion({
-                        [user.uid]: Date.now()
+                        [user.uid]: date
                     })
                 });
                 await profiles.doc(user.uid).update({
