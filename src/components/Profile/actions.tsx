@@ -53,6 +53,7 @@ import {
     downloadAllProjectDocumentsOnce,
     downloadProjectOnce
 } from "@comp/Projects/actions";
+import { getProjectLastModifiedOnce } from "@comp/ProjectLastModified/actions";
 import { getPlayActionFromProject } from "@comp/TargetControls/utils";
 import { downloadTargetsOnce } from "@comp/TargetControls/actions";
 import { ProfileModal } from "./ProfileModal";
@@ -512,10 +513,11 @@ export const playListItem = (
             }
         }
 
-        if (!projectIsCached || timestampMismatch) {
+        if (!projectIsCached || timestampMismatch || !projectHasLastMod) {
             await downloadProjectOnce(projectUid)(dispatch);
             await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
             await downloadTargetsOnce(projectUid)(dispatch);
+            await getProjectLastModifiedOnce(projectUid)(dispatch);
             // recursion
             return playListItem(projectUid)(dispatch, getState, null);
         }

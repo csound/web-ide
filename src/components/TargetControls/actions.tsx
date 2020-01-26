@@ -46,7 +46,6 @@ export const updateAllTargetsLocally = (
 export const downloadTargetsOnce = (projectUid: string) => {
     return async (dispatch: any) => {
         const projTargetsRef = await targetsCollRef.doc(projectUid).get();
-        console.log(projTargetsRef);
         if (projTargetsRef.exists) {
             const data = projTargetsRef.data();
             data &&

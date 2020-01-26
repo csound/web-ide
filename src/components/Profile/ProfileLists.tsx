@@ -51,6 +51,8 @@ const ProjectListItem = props => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
     const { projectUid, name, description, tags, starred } = project;
+    const isCurrentlyPlaying =
+        listPlayState === "playing" && projectUid === currentlyPlayingProject;
 
     return (
         <div style={{ position: "relative" }}>
@@ -104,42 +106,34 @@ const ProjectListItem = props => {
                             )}
                     </StyledListItemChipsRow>
                     <StyledListPlayButtonContainer>
-                        {(listPlayState === "playing" &&
-                            projectUid === currentlyPlayingProject && (
-                                <IconButton
-                                    size="medium"
-                                    aria-label="Delete"
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        dispatch(pauseListItem(projectUid));
+                        <IconButton
+                            size="medium"
+                            aria-label="Delete"
+                            onClick={e => {
+                                e.stopPropagation();
+                                dispatch(
+                                    isCurrentlyPlaying
+                                        ? pauseListItem(projectUid)
+                                        : playListItem(projectUid)
+                                );
+                            }}
+                        >
+                            {isCurrentlyPlaying ? (
+                                <PauseIcon
+                                    fontSize="large"
+                                    style={{
+                                        color: theme.profilePlayButton.secondary
                                     }}
-                                >
-                                    <PauseIcon
-                                        fontSize="large"
-                                        style={{
-                                            color:
-                                                theme.profilePlayButton
-                                                    .secondary
-                                        }}
-                                    />
-                                </IconButton>
-                            )) || (
-                            <IconButton
-                                size="medium"
-                                aria-label="Delete"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    dispatch(playListItem(projectUid));
-                                }}
-                            >
+                                />
+                            ) : (
                                 <PlayIcon
                                     fontSize="large"
                                     style={{
                                         color: theme.profilePlayButton.primary
                                     }}
                                 />
-                            </IconButton>
-                        )}
+                            )}
+                        </IconButton>
                     </StyledListPlayButtonContainer>
                 </StyledListItemContainer>
             </ListItem>
