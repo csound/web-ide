@@ -39,7 +39,6 @@ const ShareDialog = () => {
             <div>
                 <FacebookShareButton
                     url={window.location.href}
-                    hashtag="csound"
                     quote={projectInfo}
                 >
                     <FacebookIcon />
