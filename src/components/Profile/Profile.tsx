@@ -6,9 +6,9 @@ import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
+import { subscribeToProfile } from "./subscribers";
 import {
     getUserProjects,
-    getUserProfile,
     uploadImage,
     getUserImageURL,
     addProject,
@@ -122,8 +122,17 @@ const Profile = props => {
             setSelectedSection(0);
         }
     }, [fromFollowing]);
+
     useEffect(() => {
-        dispatch(getUserProfile(username));
+        const unsubscribers = [] as any[];
+        const subscribe = async () => {
+            const unsubscribeToProfile = await subscribeToProfile(
+                username,
+                dispatch
+            );
+            unsubscribeToProfile && unsubscribers.push(unsubscribeToProfile);
+        };
+        subscribe();
         dispatch(getUserImageURL(username));
         dispatch(getTags());
         dispatch(getUserFollowing(username));
@@ -132,6 +141,7 @@ const Profile = props => {
         dispatch(setFollowingFilterString(""));
         dispatch(getLoggedInUserStars());
         return () => {
+            unsubscribers.forEach(u => u());
             dispatch(stopCsound());
         };
     }, [dispatch, username]);

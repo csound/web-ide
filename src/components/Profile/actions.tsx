@@ -10,6 +10,7 @@ import {
     profiles,
     usernames,
     tags,
+    targets,
     Timestamp
 } from "@config/firestore";
 import {
@@ -26,15 +27,11 @@ import {
     SET_LIST_PLAY_STATE,
     SET_CURRENTLY_PLAYING_PROJECT,
     SET_CSOUND_STATUS,
-    SHOULD_REDIRECT_REQUEST,
-    SHOULD_REDIRECT_YES,
-    SHOULD_REDIRECT_NO,
     REFRESH_USER_PROFILE,
     GET_USER_FOLLOWING,
     GET_USER_PROFILES_FOR_FOLLOWING,
     GET_LOGGED_IN_USER_FOLLOWING,
     SET_IMAGE_URL_REQUESTING,
-    SET_PROFILE_REQUESTING,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING,
     SET_STAR_PROJECT_REQUESTING,
@@ -46,7 +43,6 @@ import defaultSco from "@root/templates/DefaultSco.json";
 import firebase from "firebase/app";
 import { openSnackbar } from "@comp/Snackbar/actions";
 import { SnackbarType } from "@comp/Snackbar/types";
-import { push } from "connected-react-router";
 import { openSimpleModal } from "@comp/Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
@@ -150,7 +146,7 @@ export const addUserProject = (
                     .collection("files")
                     .get();
                 const defaultCsdUid = filesWithCsd.docs[0].id;
-                await newProjectRef.set(
+                await targets.doc(newProjectRef.id).set(
                     {
                         targets: {
                             "project.csd": {
@@ -789,100 +785,7 @@ export const pauseListItem = (
     dispatch(playPauseCsound());
 };
 
-export const getUserProfile = (
-    username: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    dispatch({ type: SHOULD_REDIRECT_REQUEST });
-    dispatch({ type: SET_PROFILE_REQUESTING, payload: true });
-    firebase.auth().onAuthStateChanged(async user => {
-        if (username !== null) {
-            const result = await usernames.doc(username).get();
-            if (result.data() === null) {
-                dispatch(push("/404", { message: "User not found." }));
-                dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-                return;
-            } else {
-                dispatch({ type: SHOULD_REDIRECT_NO });
-                const result = await usernames.doc(username).get();
-                const data = result.data() || null;
-
-                if (data === null) {
-                    dispatch(push("/404", { message: "Profile Not Found" }));
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-
-                    return;
-                }
-
-                const profileUid = data!.userUid;
-                const loggedInUid = user ? user!.uid : null;
-
-                if (profileUid) {
-                    const profile = await profiles.doc(profileUid).get();
-
-                    if (!profile.exists) {
-                        dispatch(push("/404"));
-                        dispatch({
-                            type: SET_PROFILE_REQUESTING,
-                            payload: false
-                        });
-
-                        openSnackbar(
-                            "User profile not found",
-                            SnackbarType.Error
-                        );
-                    } else {
-                        dispatch(
-                            getUserProfileAction({
-                                profile: profile.data(),
-                                loggedInUid,
-                                profileUid
-                            })
-                        );
-                        dispatch({
-                            type: SET_PROFILE_REQUESTING,
-                            payload: false
-                        });
-                    }
-                } else {
-                    dispatch(push("/404"));
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-
-                    openSnackbar("User profile not found", SnackbarType.Error);
-                }
-            }
-        }
-        if (user !== null) {
-            if (username === null) {
-                dispatch({ type: SHOULD_REDIRECT_NO });
-                const loggedInUid = user!.uid;
-                const profile = await profiles.doc(loggedInUid).get();
-
-                if (!profile.exists) {
-                    dispatch(push("/404"));
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-                    openSnackbar("User profile not found", SnackbarType.Error);
-                } else {
-                    dispatch(
-                        getUserProfileAction({
-                            profile: profile.data(),
-                            loggedInUid,
-                            profileUid: loggedInUid
-                        })
-                    );
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-                }
-            }
-        } else if (user === null) {
-            if (username === null) {
-                dispatch({ type: SHOULD_REDIRECT_YES });
-                dispatch(push("/"));
-                dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-            }
-        }
-    });
-};
-
-const getUserProfileAction = (payload: any): ProfileActionTypes => {
+export const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
         type: GET_USER_PROFILE,
         payload

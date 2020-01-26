@@ -42,6 +42,15 @@ export const targets = db.collection("targets");
 export const tags = db.collection("tags");
 export const projectFiles = db.collection("projectFiles");
 export const storageRef = firebase.storage().ref();
+
+// OTHER
+export const getCurrentUserPromise = () =>
+    new Promise(resolve => {
+        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+            resolve(user);
+            unsubscribe();
+        });
+    });
 export const getFirebaseTimestamp: () => any =
     firebase.firestore.FieldValue.serverTimestamp;
 export type Timestamp = firebase.firestore.Timestamp;
