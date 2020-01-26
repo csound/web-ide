@@ -40,6 +40,7 @@ export interface IProject {
     name: string;
     isPublic: boolean;
     documents: IDocumentsMap;
+    cachedProjectLastModified: Timestamp | null;
     stars: string[];
 }
 

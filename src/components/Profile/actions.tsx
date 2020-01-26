@@ -4,7 +4,14 @@ import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
 // import crypto from "crypto";
-import { db, projects, profiles, usernames, tags } from "@config/firestore";
+import {
+    db,
+    projects,
+    profiles,
+    usernames,
+    tags,
+    Timestamp
+} from "@config/firestore";
 import {
     GET_USER_PROJECTS,
     ProfileActionTypes,
@@ -51,11 +58,15 @@ import {
     selectLoggedInUserStars
 } from "./selectors";
 import { playPauseCsound } from "@comp/Csound/actions";
-// import { loadProjectFromFirestore } from "@comp/Projects/actions";
+import {
+    downloadAllProjectDocumentsOnce,
+    downloadProjectOnce
+} from "@comp/Projects/actions";
 import { getPlayActionFromProject } from "@comp/TargetControls/utils";
+import { downloadTargetsOnce } from "@comp/TargetControls/actions";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
-import { assoc, hasPath, pipe } from "ramda";
+import { assoc, hasPath, pathOr, pipe } from "ramda";
 
 const getUserProjectsAction = (payload: any): ProfileActionTypes => {
     return {
@@ -692,62 +703,80 @@ export const uploadImage = (
 
 export const playListItem = (
     projectUid: string | false
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
     const state = getState();
+    const csound = state.csound.csound;
+
     const csoundStatus = selectCsoundStatus(state);
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");
         return;
     }
-
     if (csoundStatus === "paused") {
         dispatch(playPauseCsound());
         dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
     } else {
-        if (hasPath(["ProjectsReducer", "projects", projectUid], state)) {
-            const playAction = getPlayActionFromProject(projectUid, state);
-            console.log(playAction);
-            if (playAction) {
-                dispatch({
-                    type: SET_LIST_PLAY_STATE,
-                    payload: "playing"
-                });
-                dispatch(playAction);
-                dispatch({
-                    type: SET_CSOUND_STATUS,
-                    payload: false
-                });
-                dispatch({
-                    type: SET_CURRENTLY_PLAYING_PROJECT,
-                    payload: projectUid
-                });
+        const projectIsCached = hasPath(
+            ["ProjectsReducer", "projects", projectUid],
+            state
+        );
+        const projectHasLastMod = hasPath(
+            ["ProjectLastModifiedReducer", projectUid, "timestamp"],
+            state
+        );
+        let timestampMismatch = false;
+
+        if (projectIsCached && projectHasLastMod) {
+            const cachedTimestamp: Timestamp | null = pathOr(
+                null,
+                [
+                    "ProjectsReducer",
+                    "projects",
+                    projectUid,
+                    "cachedProjectLastModified"
+                ],
+                state
+            );
+            const currentTimestamp: Timestamp | null = pathOr(
+                null,
+                ["ProjectLastModifiedReducer", projectUid, "timestamp"],
+                state
+            );
+            if (cachedTimestamp && currentTimestamp) {
+                timestampMismatch =
+                    (cachedTimestamp as Timestamp).toMillis() !==
+                    (currentTimestamp as Timestamp).toMillis();
             }
+        }
+
+        if (!projectIsCached || timestampMismatch) {
+            await downloadProjectOnce(projectUid)(dispatch);
+            await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
+            await downloadTargetsOnce(projectUid)(dispatch);
+            // recursion
+            return playListItem(projectUid)(dispatch, getState, null);
+        }
+
+        const playAction = getPlayActionFromProject(projectUid, state);
+        if (playAction) {
+            dispatch({
+                type: SET_LIST_PLAY_STATE,
+                payload: "playing"
+            });
+            dispatch(playAction);
+            dispatch({
+                type: SET_CSOUND_STATUS,
+                payload: false
+            });
+            dispatch({
+                type: SET_CURRENTLY_PLAYING_PROJECT,
+                payload: projectUid
+            });
         } else {
-            // loadProjectFromFirestore(projectUid)(dispatch).then(() => {
-            //     dispatch(
-            //         syncProjectDocumentsWithEMFS(projectUid, () => {
-            //             const playAction = getPlayActionFromProject(
-            //                 state,
-            //                 projectUid
-            //             );
-            //             if (playAction) {
-            //                 dispatch({
-            //                     type: SET_LIST_PLAY_STATE,
-            //                     payload: "playing"
-            //                 });
-            //                 dispatch(playAction);
-            //                 dispatch({
-            //                     type: SET_CSOUND_STATUS,
-            //                     payload: false
-            //                 });
-            //                 dispatch({
-            //                     type: SET_CURRENTLY_PLAYING_PROJECT,
-            //                     payload: projectUid
-            //                 });
-            //             }
-            //         })
-            //     );
-            // });
+            // handle unplayable project
         }
     }
 };

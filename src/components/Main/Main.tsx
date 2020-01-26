@@ -26,7 +26,6 @@ const Main = (props: IMain) => {
             );
         const ps = new PerfectScrollbar("body");
         return () => {
-            console.log("DESTROY");
             ps.destroy();
         };
         // eslint-disable-next-line

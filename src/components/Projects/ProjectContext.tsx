@@ -5,7 +5,7 @@ import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
 import { IProject } from "@comp/Projects/types";
 import { ICsoundObj } from "@comp/Csound/types";
 import Header from "@comp/Header/Header";
-import { activateProject, initializeProject } from "./actions";
+import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
 import { path, pathOr } from "ramda";
 
@@ -51,7 +51,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
     useEffect(() => {
         if (!projectFetchStarted && csound) {
             const initProject = async () => {
-                await initializeProject(projectUid)(dispatch);
+                await downloadProjectOnce(projectUid)(dispatch);
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };

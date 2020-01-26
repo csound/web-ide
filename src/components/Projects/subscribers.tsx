@@ -1,7 +1,7 @@
 import { IDocument, IDocumentsMap } from "./types";
 import { ICsoundObj } from "@comp/Csound/types";
 import { projects, targets } from "@config/firestore";
-import { addDocumentToEMFS } from "./utils";
+import { addDocumentToEMFS, fileDocDataToDocumentType } from "./utils";
 import {
     addProjectDocuments,
     removeDocumentLocally,
@@ -22,25 +22,12 @@ import {
     values
 } from "ramda";
 
-const docDataToDocumentMap = docData =>
-    ({
-        createdAt: docData["createdAt"] || docData["lastModified"], // migration fix
-        currentValue: docData["value"],
-        documentUid: docData["documentUid"],
-        filename: docData["name"],
-        isModifiedLocally: false,
-        lastModified: docData["lastModified"],
-        savedValue: docData["value"],
-        type: docData["type"],
-        userUid: docData["userUid"]
-    } as IDocument);
-
 const convertToDocumentsMap = docsToAdd =>
     (pipe as any)(
         map(prop("doc")),
         map((d: any) => assoc("documentUid", d.id, d.data())),
         reduce((acc: IDocumentsMap, docData: any) => {
-            acc[docData["documentUid"]] = docDataToDocumentMap(docData);
+            acc[docData["documentUid"]] = fileDocDataToDocumentType(docData);
             return acc;
         }, {})
     )(docsToAdd);
@@ -78,7 +65,7 @@ export const subscribeToProjectFilesChanges = (
                 const docsSnaps = map(prop("doc"), filesToModify);
                 const docData = map(
                     d =>
-                        docDataToDocumentMap(
+                        fileDocDataToDocumentType(
                             assoc("documentUid", d.id, d.data())
                         ),
                     docsSnaps
@@ -98,7 +85,7 @@ export const subscribeToProjectFilesChanges = (
                 const docsSnaps = map(prop("doc"), filesToRemove);
                 const docsData = map(
                     d =>
-                        docDataToDocumentMap(
+                        fileDocDataToDocumentType(
                             assoc("documentUid", d.id, d.data())
                         ),
                     docsSnaps

@@ -45,18 +45,12 @@ export const tabDockInit = (
             const tabOrder = storedTabOrder
                 ? (JSON.parse(storedTabOrder) as string[])
                 : [];
-            const initIndex = storedIndex
-                ? (parseInt(storedIndex) as number)
-                : -1;
-
+            initialIndex = storedIndex ? (parseInt(storedIndex) as number) : -1;
             if (tabOrder.length > 0) {
                 initialOpenDocuments = sortByStoredTabOrder(
                     tabOrder,
                     allDocuments
                 );
-            }
-            if (initIndex > -1 && initialOpenDocuments.length > 0) {
-                initialIndex = initIndex % initialOpenDocuments.length;
             }
         } catch (error) {
             console.error(error);
@@ -177,6 +171,7 @@ export const tabClose = (
         if (!isModified) {
             dispatch({
                 type: TAB_CLOSE,
+                projectUid: activeProjectUid,
                 documentUid
             });
         } else {

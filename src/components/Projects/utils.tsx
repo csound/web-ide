@@ -62,3 +62,16 @@ export const addDocumentToEMFS = curry(
         }
     }
 );
+
+export const fileDocDataToDocumentType = docData =>
+    ({
+        createdAt: docData["createdAt"] || docData["lastModified"], // migration fix
+        currentValue: docData["value"],
+        documentUid: docData["documentUid"],
+        filename: docData["name"],
+        isModifiedLocally: false,
+        lastModified: docData["lastModified"],
+        savedValue: docData["value"],
+        type: docData["type"],
+        userUid: docData["userUid"]
+    } as IDocument);
