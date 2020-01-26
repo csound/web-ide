@@ -1,10 +1,13 @@
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import Router from "../Router/Router";
+import Router from "@comp/Router/Router";
 import ThemeProvider from "@styles/ThemeProvider";
-import Modal from "../Modal";
-import Snackbar from "../Snackbar/Snackbar";
-import { thirdPartyAuthSuccess } from "../Login/actions";
+import Modal from "@comp/Modal";
+import Snackbar from "@comp/Snackbar/Snackbar";
+import {
+    setRequestingStatus,
+    thirdPartyAuthSuccess
+} from "@comp/Login/actions";
 import { History } from "history";
 import firebase from "firebase/app";
 import HotKeys from "../HotKeys/HotKeys";
@@ -19,11 +22,13 @@ const Main = (props: IMain) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        firebase
-            .auth()
-            .onAuthStateChanged(
-                user => !!user && dispatch(thirdPartyAuthSuccess(user))
-            );
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                dispatch(thirdPartyAuthSuccess(user));
+            } else {
+                dispatch(setRequestingStatus(false));
+            }
+        });
         const ps = new PerfectScrollbar("body");
         return () => {
             ps.destroy();

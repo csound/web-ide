@@ -396,22 +396,6 @@ export const getUserImageURL = (
 
         dispatch(getUserImageURLAction(null));
         dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
-
-        // if (imageUrl === null && photoUrl === null) {
-        //     try {
-        //         const md5Email = crypto
-        //             .createHash("md5")
-        //             .update("example@email.com")
-        //             .digest("hex");
-        //         imageUrl = `https://www.gravatar.com/avatar/${md5Email}?s=2048`;
-        //         const response = await fetch(`${imageUrl}?d=404`);
-
-        //         dispatch(getUserImageURLAction(imageUrl));
-        //         return;
-        //     } catch (e) {
-        //         console.log("no gravatar");
-        //     }
-        // }
     });
 };
 

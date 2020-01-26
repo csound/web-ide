@@ -333,7 +333,4 @@ const mapDispatchToProps = (dispatch: any): ILoginDispatchProperties => ({
     thirdPartyAuthSuccess: user => dispatch(thirdPartyAuthSuccess(user))
 });
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Login);
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

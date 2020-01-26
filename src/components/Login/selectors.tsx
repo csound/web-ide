@@ -11,3 +11,7 @@ export const selectLoginFail = ({ LoginReducer }: IStore) => {
 export const selectAuthenticated = ({ LoginReducer }: IStore) => {
     return LoginReducer.authenticated;
 };
+
+export const selectLoggedInUid = ({ LoginReducer }: IStore) => {
+    return LoginReducer.loggedInUid;
+};

@@ -3,6 +3,7 @@ import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { DebounceInput } from "react-debounce-input";
 import {
+    SET_REQUESTING_STATUS,
     SIGNIN_FAIL,
     SIGNIN_SUCCESS,
     SIGNIN_REQUEST,
@@ -277,10 +278,11 @@ export const createUserClearError = () => {
     };
 };
 
-// export const logOut = () => {
-//     return async (dispatch: any) => {
-//         dispatch({
-//             type: LOG_OUT,
-//         })
-//     }
-// }
+export const setRequestingStatus = (status: boolean) => {
+    return async (dispatch: any) => {
+        dispatch({
+            type: SET_REQUESTING_STATUS,
+            status
+        });
+    };
+};

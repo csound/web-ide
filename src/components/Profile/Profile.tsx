@@ -1,5 +1,7 @@
 import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
+import { usernames } from "@config/firestore";
+import { push } from "connected-react-router";
 import { useTheme } from "emotion-theming";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
@@ -7,8 +9,8 @@ import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
 import { subscribeToProfile } from "./subscribers";
+import { selectLoginRequesting } from "@comp/Login/selectors";
 import {
-    getUserProjects,
     uploadImage,
     getUserImageURL,
     addProject,
@@ -31,8 +33,6 @@ import {
     selectCsoundStatus,
     selectPreviousCsoundStatus,
     selectLoggedInUserFollowing,
-    selectProfileUid,
-    selectLoggedInUid,
     selectUserFollowing,
     selectUserImageURLRequesting,
     selectUserProfileRequesting,
@@ -40,6 +40,7 @@ import {
     selectProjectFilterString,
     selectFollowingFilterString
 } from "./selectors";
+import { selectLoggedInUid } from "@comp/Login/selectors";
 import { get } from "lodash";
 import { Typography, Tabs, Tab, InputAdornment } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
@@ -84,6 +85,7 @@ const UserLink = ({ link }) => {
 const Profile = props => {
     const { classes } = props;
     const theme: any = useTheme();
+    const [profileUid, setProfileUid]: [string | null, any] = useState(null);
     const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
     const username = get(props, "match.params.username") || null;
@@ -93,7 +95,6 @@ const Profile = props => {
     const csoundPlayState = useSelector(selectCsoundPlayState);
     const csoundStatus = useSelector(selectCsoundStatus);
     const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
-    const profileUid = useSelector(selectProfileUid);
     const loggedInUid = useSelector(selectLoggedInUid);
     const imageUrlRequesting = useSelector(selectUserImageURLRequesting);
     const profileRequesting = useSelector(selectUserProfileRequesting);
@@ -105,13 +106,36 @@ const Profile = props => {
     const userFollowing = useSelector(selectUserFollowing);
     const loggedInUserFollowing = useSelector(selectLoggedInUserFollowing);
     const isFollowing = loggedInUserFollowing.includes(username);
+    const isRequestingLogin = useSelector(selectLoginRequesting);
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
-
+    // usernameDocRef = await usernames.doc(username).get();
     useEffect(() => {
-        if (profileUid !== null) {
-            dispatch(getUserProjects(profileUid));
+        if (!isRequestingLogin) {
+            if (!username) {
+                loggedInUid ? setProfileUid(loggedInUid) : dispatch(push("/"));
+            } else {
+                usernames
+                    .doc(username)
+                    .get()
+                    .then(userSnap => {
+                        if (!userSnap.exists) {
+                            dispatch(
+                                push("/404", { message: "User not found" })
+                            );
+                        } else {
+                            const data = userSnap.data();
+                            data && data.userUid
+                                ? setProfileUid(data.userUid)
+                                : dispatch(
+                                      push("/404", {
+                                          message: "User not found"
+                                      })
+                                  );
+                        }
+                    });
+            }
         }
-    }, [dispatch, profileUid, username]);
+    }, [dispatch, username, loggedInUid, isRequestingLogin]);
 
     useEffect(() => {
         dispatch(getUserProfilesForFollowing(userFollowing));
@@ -124,27 +148,23 @@ const Profile = props => {
     }, [fromFollowing]);
 
     useEffect(() => {
-        const unsubscribers = [] as any[];
-        const subscribe = async () => {
-            const unsubscribeToProfile = await subscribeToProfile(
-                username,
-                dispatch
-            );
-            unsubscribeToProfile && unsubscribers.push(unsubscribeToProfile);
-        };
-        subscribe();
-        dispatch(getUserImageURL(username));
-        dispatch(getTags());
-        dispatch(getUserFollowing(username));
-        dispatch(getLoggedInUserFollowing());
-        dispatch(setProjectFilterString(""));
-        dispatch(setFollowingFilterString(""));
-        dispatch(getLoggedInUserStars());
-        return () => {
-            unsubscribers.forEach(u => u());
-            dispatch(stopCsound());
-        };
-    }, [dispatch, username]);
+        if (!isRequestingLogin && profileUid) {
+            const unsubscribers = [
+                subscribeToProfile(profileUid, dispatch)
+            ] as any[];
+            dispatch(getUserImageURL(username));
+            dispatch(getTags());
+            dispatch(getUserFollowing(username));
+            dispatch(getLoggedInUserFollowing());
+            dispatch(setProjectFilterString(""));
+            dispatch(setFollowingFilterString(""));
+            dispatch(getLoggedInUserStars());
+            return () => {
+                unsubscribers.forEach(u => u());
+                dispatch(stopCsound());
+            };
+        }
+    }, [dispatch, username, isRequestingLogin, profileUid]);
 
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));

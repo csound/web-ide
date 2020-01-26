@@ -113,16 +113,6 @@ export const selectUserProfileRequesting = (store: any) => {
     return state.userProfileRequesting;
 };
 
-export const selectProfileUid = (store: any) => {
-    const state: State = store.ProfileReducer;
-    return state.profileUid;
-};
-
-export const selectLoggedInUid = (store: any) => {
-    const state: State = store.ProfileReducer;
-    return state.loggedInUid;
-};
-
 export const selectCurrentlyPlayingProject = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.currentlyPlayingProject;
