@@ -30,7 +30,8 @@ async function hintFn(cm, callback, arg3) {
     const cur = cm.getDoc().getCursor();
     const tokenData = cm.getTokenAt(cur);
     const token = propOr(false, "string", tokenData);
-    if (!token || token.length < 3) return;
+
+    if (!token || cur.ch !== tokenData.end || token.length < 3) return;
     const start = tokenData.start;
     const end = tokenData.end;
     const list = pipe(
