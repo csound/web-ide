@@ -18,7 +18,34 @@ export const CodeMirrorPainter = ({ theme }) => (
           .CodeMirror-gutter-wrapper { left: -51px!important; }
           .CodeMirror-linenumber { color: ${theme.lineNumber.primary}; min-width: 32px; }
           .CodeMirror-cursor { border-left: 1px solid ${theme.cursor.primary}; }
-
+          .CodeMirror-hints {
+                     z-index: 3;
+                     background-color: ${theme.background.primary};
+                     position: absolute;
+                     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+                     color: ${theme.lineNumber.primary};
+                     border: 2px solid ${theme.highlight.primary};
+                     border-radius: 6px;
+                     list-style: none;
+                     font-family: ${theme.font.monospace};
+                     margin: 0;
+                     padding: 0;
+                     font-size: 16px;
+                      max-height: 138px;
+                      overflow: hidden;
+          }
+          .CodeMirror-hint {
+                      line-height: 20px;
+                      padding: 6px!important;
+                      padding-right: 6px!important;
+                      position: relative;
+                      display: block;
+                      margin: 0;}
+          .CodeMirror-hint-active {
+                   background-color: ${theme.highlightAlt.primary};
+                   color: ${theme.opcode.primary};
+                   font-weight: 500;
+          }
           .cm-attribute { color: ${theme.attribute.primary}!important; }
           .cm-variable   {color: ${theme.opcode.primary}; font-weight: 500;}
           .cm-keyword   {color: ${theme.keyword.primary}!important; font-weight: 500;}

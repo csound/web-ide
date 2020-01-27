@@ -470,7 +470,6 @@ export const playListItem = (
 ) => {
     const state = getState();
     const csound = state.csound.csound;
-
     const csoundStatus = selectCsoundStatus(state);
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");

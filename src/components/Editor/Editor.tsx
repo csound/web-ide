@@ -9,10 +9,11 @@ import { isEmpty } from "lodash";
 import { pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
-import "./modes/csound/csound"; // "./modes/csound/csound.js";
 import { filenameToCsoundType } from "@comp/Csound/utils";
 import { perfectScrollbarStyleSheet } from "@styles/_perfectScrollbar";
 import * as SS from "./styles";
+import "./modes/csound/csound";
+import "./plugins/autosuggest";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
@@ -212,6 +213,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
     const options = {
         // autoFocus: true,
+        autoSuggest: true,
         autoCloseBrackets: true,
         fullScreen: true,
         lineNumbers: true,

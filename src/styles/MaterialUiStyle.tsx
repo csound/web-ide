@@ -142,7 +142,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
             color: theme.color.primary,
             backgroundColor: theme.background.primary,
             "&:hover": {
-                backgroundColor: theme.highlightAlt.primary,
+                backgroundColor: `${theme.highlightAlt.primary}!important`,
                 borderRadius: "2px"
             }
         }),
