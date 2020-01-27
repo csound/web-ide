@@ -160,6 +160,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
 
     const editorDidMount = (editor: any) => {
+        editor.scrollIntoView = () => console.log("FIXME!");
         editor.getDoc().setValue(currentDocumentValue);
         setEditorValue(currentDocumentValue);
         setEditorRef(editor as any);
