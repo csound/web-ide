@@ -58,7 +58,7 @@ const ProjectCard = props => {
     const classes = useStyles();
     console.log(props.profile, props.project);
 
-    const {
+    let {
         description,
         iconName,
         iconBackgroundColor,
@@ -73,6 +73,11 @@ const ProjectCard = props => {
     const currentlyPlayingProject = id;
 
     const [mouseOver, setMouseOver] = useState(false);
+
+    iconName =
+        iconName === "" || typeof iconName === "undefined"
+            ? "fadwaveform"
+            : iconName;
 
     const SVGIcon = SVGComponents[`${iconName}Component`];
     return (
