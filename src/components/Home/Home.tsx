@@ -1,9 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import Header from "../Header/Header";
 import ProjectCard from "./ProjectCard";
-import { searchProjects, getTags } from "./actions";
+import {
+    searchProjects,
+    getPopularProjects,
+    getTags,
+    getStars,
+    getProjectLastModified
+} from "./actions";
+import { CSSTransition } from "react-transition-group";
 
 import {
     HomeContainer,
@@ -14,18 +21,53 @@ import {
     FeaturedProjectsContainer,
     ProjectSectionCardContainer
 } from "./HomeUI";
-import { selectTags } from "./selectors";
+import {
+    selectTags,
+    selectStars,
+    selectProjectLastModified,
+    selectDisplayedRecentProjects,
+    selectDisplayedStarredProjects,
+    selectProjectUserProfiles
+} from "./selectors";
+import { Grid, GridList, GridListTile } from "@material-ui/core";
 
 const Home = props => {
     const { classes } = props;
     const dispatch = useDispatch();
+    const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
+    const [searchValue, setSearchValue] = useState("");
     const tags = useSelector(selectTags);
+    const stars = useSelector(selectStars);
+    const projectLastModified = useSelector(selectProjectLastModified);
+    const recentProjects = useSelector(selectDisplayedRecentProjects);
+    const starredProjects = useSelector(selectDisplayedStarredProjects);
+    const projectUserProfiles = useSelector(selectProjectUserProfiles);
 
-    console.log(tags);
+    useEffect(() => {
+        if (
+            Array.isArray(tags) === true &&
+            Array.isArray(stars) === true &&
+            Array.isArray(projectLastModified) === true
+        ) {
+            dispatch(getPopularProjects(4));
+        }
+    }, [dispatch, tags, stars, projectLastModified]);
 
     useEffect(() => {
         dispatch(getTags());
+        dispatch(getStars());
+        dispatch(getProjectLastModified());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (searchValue.length > 0 && showFeaturedProjects === true) {
+            setShowFeaturedProjects(false);
+        }
+
+        if (searchValue.length === 0 && showFeaturedProjects === false) {
+            setShowFeaturedProjects(true);
+        }
+    }, [searchValue]);
 
     return (
         <div className={classes.root}>
@@ -39,6 +81,7 @@ const Home = props => {
                     <SearchContainer>
                         <StyledTextField
                             fullWidth
+                            value={searchValue}
                             variant="outlined"
                             id="standard-name"
                             label="Search Projects"
@@ -59,19 +102,50 @@ const Home = props => {
                                 inputMode: "numeric"
                             }}
                             onChange={e => {
+                                setSearchValue(e.target.value);
                                 dispatch(searchProjects(e.target.value));
                             }}
+                            onFocus={e => {}}
                         />
                     </SearchContainer>
-                    <FeaturedProjectsContainer>
-                        <ProjectSectionHeader row={1}>
-                            Popular Projects
-                            <HorizontalRule />
-                        </ProjectSectionHeader>
-                        <ProjectSectionCardContainer row={2}>
-                            <ProjectCard />
-                        </ProjectSectionCardContainer>
-                    </FeaturedProjectsContainer>
+
+                    <CSSTransition
+                        in={
+                            showFeaturedProjects &&
+                            Array.isArray(starredProjects)
+                        }
+                        classNames="fade"
+                        timeout={300}
+                        unmountOnExit
+                    >
+                        {transition => (
+                            <FeaturedProjectsContainer>
+                                <ProjectSectionHeader row={1}>
+                                    Popular Projects
+                                    <HorizontalRule />
+                                </ProjectSectionHeader>
+                                <ProjectSectionCardContainer row={2}>
+                                    <GridList cellHeight={300} cols={4}>
+                                        {Array.isArray(starredProjects) &&
+                                            starredProjects.map((e, i) => {
+                                                return (
+                                                    <GridListTile key={i}>
+                                                        <ProjectCard
+                                                            project={e}
+                                                            profile={
+                                                                projectUserProfiles[
+                                                                    e.userUid
+                                                                ]
+                                                            }
+                                                        />
+                                                    </GridListTile>
+                                                );
+                                            })}
+                                    </GridList>
+                                </ProjectSectionCardContainer>
+                            </FeaturedProjectsContainer>
+                        )}
+                    </CSSTransition>
                 </HomeContainer>
             </main>
         </div>

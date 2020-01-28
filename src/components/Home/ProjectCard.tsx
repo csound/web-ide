@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 // import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import { makeStyles } from "@material-ui/styles";
 import { red } from "@material-ui/core/colors";
-
+import { SVGComponents } from "../Profile/SVGPaths";
 import {
     Card,
     CardHeader,
@@ -17,67 +17,143 @@ import {
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import ShareIcon from "@material-ui/icons/Share";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
+import {
+    ProjectCardContainer,
+    ProjectCardSVGContainer,
+    ProjectCardContentContainer,
+    ProjectCardContentTop,
+    ProjectCardContentBottom,
+    ProjectCardContentTopHeader,
+    ProjectCardContentTopDescription,
+    ProjectCardContentMiddle,
+    ProjectCardContentBottomPhoto,
+    ProjectCardContentBottomHeader,
+    ProjectCardContentBottomDescription,
+    StyledIconButton,
+    Photo,
+    ProjectCardContentBottomID
+} from "./HomeUI";
+import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
+import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
 
 const useStyles = makeStyles(theme => ({
     card: {
-        maxWidth: 260
+        maxWidth: 360,
+        padding: 10,
+        height: 360
     },
     media: {
-        height: 0,
-        paddingTop: "56.25%" // 16:9
-    },
-    expand: {
-        transform: "rotate(0deg)",
-        marginLeft: "auto"
-    },
-    expandOpen: {
-        transform: "rotate(180deg)"
+        height: 100
     },
     avatar: {
         backgroundColor: red[500]
+    },
+    largeButton: {},
+    largeIcon: {
+        fontSize: "5em"
     }
 }));
 
 const ProjectCard = props => {
     const classes = useStyles();
+    console.log(props.profile, props.project);
 
+    const {
+        description,
+        iconName,
+        iconBackgroundColor,
+        iconForegroundColor,
+        name,
+        id
+    } = props.project;
+
+    const { photoUrl, displayName, bio } = props.profile;
+
+    const listPlayState = "paused";
+    const currentlyPlayingProject = id;
+
+    const [mouseOver, setMouseOver] = useState(false);
+
+    const SVGIcon = SVGComponents[`${iconName}Component`];
     return (
-        <Card className={classes.card}>
-            <CardHeader
-                avatar={
-                    <Avatar aria-label="recipe" className={classes.avatar}>
-                        R
-                    </Avatar>
-                }
-                action={
-                    <IconButton aria-label="settings">
-                        <MoreVertIcon />
-                    </IconButton>
-                }
-                title="Shrimp and Chorizo Paella"
-                subheader="September 14, 2016"
-            />
-            <CardMedia
-                className={classes.media}
-                image="/static/images/cards/paella.jpg"
-                title="Paella dish"
-            />
-            <CardContent>
-                <Typography variant="body2" color="textSecondary" component="p">
-                    This impressive paella is a perfect party dish and a fun
-                    meal to cook together with your guests. Add 1 cup of frozen
-                    peas along with the mussels, if you like.
-                </Typography>
-            </CardContent>
-            <CardActions disableSpacing>
-                <IconButton aria-label="add to favorites">
-                    <FavoriteIcon />
-                </IconButton>
-                <IconButton aria-label="share">
-                    <ShareIcon />
-                </IconButton>
-            </CardActions>
-        </Card>
+        <ProjectCardContainer
+            onMouseOver={() => {
+                setMouseOver(true);
+            }}
+            onMouseLeave={() => setMouseOver(false)}
+        >
+            <ProjectCardSVGContainer
+                mouseOver={mouseOver}
+                backgroundColor={iconBackgroundColor}
+            >
+                <SVGIcon
+                    height="100%"
+                    width="100%"
+                    fill={iconForegroundColor}
+                />
+            </ProjectCardSVGContainer>
+            <ProjectCardContentContainer>
+                <ProjectCardContentTop>
+                    <ProjectCardContentTopHeader>
+                        {name}
+                    </ProjectCardContentTopHeader>
+                    <ProjectCardContentTopDescription>
+                        {description}
+                    </ProjectCardContentTopDescription>
+                </ProjectCardContentTop>
+                <ProjectCardContentMiddle>
+                    {/* {(listPlayState === "playing" &&
+                        id === currentlyPlayingProject && (
+                            <IconButton
+                                size="medium"
+                                aria-label="Delete"
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    dispatch(pauseListItem(projectUid));
+                                }}
+                            >
+                                <PauseIcon
+                                    fontSize="large"
+                                    style={{
+                                        color: theme.profilePlayButton.secondary
+                                    }}
+                                />
+                            </IconButton>
+                        )) || ( */}
+                    <StyledIconButton
+                        size="medium"
+                        className={classes.largeButton}
+                        onClick={e => {
+                            e.stopPropagation();
+                            // dispatch(playListItem(projectUid));
+                        }}
+                    >
+                        <PlayIcon
+                            fontSize="large"
+                            className={classes.largeIcon}
+                            style={
+                                {
+                                    // color: theme.profilePlayButton.primary
+                                }
+                            }
+                        />
+                    </StyledIconButton>
+                </ProjectCardContentMiddle>
+                <ProjectCardContentBottom>
+                    <ProjectCardContentBottomPhoto>
+                        <Photo src={photoUrl} />
+                    </ProjectCardContentBottomPhoto>
+                    <ProjectCardContentBottomID>
+                        <ProjectCardContentBottomHeader>
+                            {displayName}
+                        </ProjectCardContentBottomHeader>
+                        <ProjectCardContentBottomDescription>
+                            {bio}
+                        </ProjectCardContentBottomDescription>
+                    </ProjectCardContentBottomID>
+                </ProjectCardContentBottom>
+            </ProjectCardContentContainer>
+        </ProjectCardContainer>
     );
 };
 
