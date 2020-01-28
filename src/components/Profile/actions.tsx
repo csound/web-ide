@@ -3,7 +3,6 @@ import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
-// import crypto from "crypto";
 import {
     db,
     stars,
@@ -60,33 +59,7 @@ import { getPlayActionFromProject } from "@comp/TargetControls/utils";
 import { downloadTargetsOnce } from "@comp/TargetControls/actions";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
-import { pathOr, assoc, hasPath, pipe } from "ramda";
-
-export const getUserProjects = (
-    uid,
-    update
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getState
-) => {
-    firebase.auth().onAuthStateChanged(async user => {
-        const queryResult =
-            uid === user?.uid
-                ? await projects.where("userUid", "==", uid).get()
-                : await projects
-                      .where("userUid", "==", uid)
-                      .where("public", "==", true)
-                      .get();
-
-        const userProjects = queryResult.docs.map(psnap =>
-            pipe(
-                p => p.data(),
-                assoc("projectUid", psnap.id),
-                p => assoc("target", p.target || "project.csd", p)
-            )(psnap)
-        );
-    });
-};
+import { pathOr, hasPath } from "ramda";
 
 const addUserProjectAction = (): ProfileActionTypes => {
     return {
@@ -164,7 +137,6 @@ export const addUserProject = (
                     .add({ ...defaultSco, userUid: user.uid });
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Added", SnackbarType.Success));
-                dispatch(getUserProjects(user.uid, true));
             } catch (e) {
                 console.log(e);
 
@@ -250,7 +222,6 @@ export const editUserProject = (
                 await newProjectRef.update(newProject);
                 dispatch(addUserProjectAction());
                 dispatch(openSnackbar("Project Edited", SnackbarType.Success));
-                dispatch(getUserProjects(user.uid, true));
             } catch (e) {
                 console.log(e);
 
@@ -288,7 +259,6 @@ export const deleteUserProject = (
                 setTimeout(() => dispatch(deleteUserProjectAction()), 1);
 
                 dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
-                dispatch(getUserProjects(user.uid, true));
             } catch (e) {
                 dispatch(
                     openSnackbar("Could Not Delete Project", SnackbarType.Error)

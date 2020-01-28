@@ -4,19 +4,7 @@ import withStyles from "./styles";
 import { makeStyles } from "@material-ui/styles";
 import { red } from "@material-ui/core/colors";
 import { SVGComponents } from "../Profile/SVGPaths";
-import {
-    Card,
-    CardHeader,
-    Avatar,
-    IconButton,
-    CardMedia,
-    CardContent,
-    Typography,
-    CardActions
-} from "@material-ui/core";
-import FavoriteIcon from "@material-ui/icons/Favorite";
-import ShareIcon from "@material-ui/icons/Share";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+
 import {
     ProjectCardContainer,
     ProjectCardSVGContainer,
@@ -34,7 +22,7 @@ import {
     ProjectCardContentBottomID
 } from "./HomeUI";
 import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
-import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
+// import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
 
 const useStyles = makeStyles(theme => ({
     card: {
@@ -56,21 +44,21 @@ const useStyles = makeStyles(theme => ({
 
 const ProjectCard = props => {
     const classes = useStyles();
-    console.log(props.profile, props.project);
+    // console.log(props.profile, props.project);
 
     let {
         description,
         iconName,
         iconBackgroundColor,
         iconForegroundColor,
-        name,
-        id
+        name
+        // id
     } = props.project;
 
     const { photoUrl, displayName, bio } = props.profile;
 
-    const listPlayState = "paused";
-    const currentlyPlayingProject = id;
+    // const listPlayState = "paused";
+    // const currentlyPlayingProject = id;
 
     const [mouseOver, setMouseOver] = useState(false);
 

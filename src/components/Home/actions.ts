@@ -20,7 +20,7 @@ import {
     GET_DISPLAYED_RECENT_PROJECTS,
     GET_PROJECT_USER_PROFILES
 } from "./types";
-import { firestore } from "firebase";
+import { firestore } from "firebase/app";
 const worker = ProjectSearch();
 
 export const searchProjects = (

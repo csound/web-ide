@@ -25,11 +25,11 @@ import {
     selectTags,
     selectStars,
     selectProjectLastModified,
-    selectDisplayedRecentProjects,
+    // selectDisplayedRecentProjects,
     selectDisplayedStarredProjects,
     selectProjectUserProfiles
 } from "./selectors";
-import { Grid, GridList, GridListTile } from "@material-ui/core";
+import { GridList, GridListTile } from "@material-ui/core";
 
 const Home = props => {
     const { classes } = props;
@@ -39,7 +39,7 @@ const Home = props => {
     const tags = useSelector(selectTags);
     const stars = useSelector(selectStars);
     const projectLastModified = useSelector(selectProjectLastModified);
-    const recentProjects = useSelector(selectDisplayedRecentProjects);
+    // const recentProjects = useSelector(selectDisplayedRecentProjects);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
     const projectUserProfiles = useSelector(selectProjectUserProfiles);
 
@@ -67,7 +67,7 @@ const Home = props => {
         if (searchValue.length === 0 && showFeaturedProjects === false) {
             setShowFeaturedProjects(true);
         }
-    }, [searchValue]);
+    }, [searchValue, setShowFeaturedProjects, showFeaturedProjects]);
 
     return (
         <div className={classes.root}>
