@@ -1,5 +1,7 @@
 import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
+import { usernames } from "@config/firestore";
+import { push } from "connected-react-router";
 import { useTheme } from "emotion-theming";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
@@ -7,19 +9,20 @@ import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
 import {
-    getUserProjects,
-    getUserProfile,
-    uploadImage,
-    getUserImageURL,
+    subscribeToLoggedInUserFollowing,
+    subscribeToFollowing,
+    subscribeToProfile,
+    subscribeToProfileProjects
+} from "./subscribers";
+import { selectLoginRequesting } from "@comp/Login/selectors";
+import {
+    uploadProfileImage,
     addProject,
-    getTags,
+    // getTags,
     setCsoundStatus,
     editProfile,
     followUser,
     unfollowUser,
-    getUserProfilesForFollowing,
-    getUserFollowing,
-    getLoggedInUserFollowing,
     setProjectFilterString,
     setFollowingFilterString,
     getLoggedInUserStars
@@ -27,19 +30,17 @@ import {
 import {
     selectUserProfile,
     selectUserImageURL,
-    selectIsUserProfileOwner,
     selectCsoundStatus,
     selectPreviousCsoundStatus,
     selectLoggedInUserFollowing,
-    selectProfileUid,
-    selectLoggedInUid,
-    selectUserFollowing,
+    // selectUserFollowing,
     selectUserImageURLRequesting,
     selectUserProfileRequesting,
     selectFilteredUserProjects,
     selectProjectFilterString,
     selectFollowingFilterString
 } from "./selectors";
+import { selectLoggedInUid } from "@comp/Login/selectors";
 import { get } from "lodash";
 import { Typography, Tabs, Tab, InputAdornment } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
@@ -84,57 +85,92 @@ const UserLink = ({ link }) => {
 const Profile = props => {
     const { classes } = props;
     const theme: any = useTheme();
-    const fromFollowing = get(props, "location.state.fromFollowing");
+    const [profileUid, setProfileUid]: [string | null, any] = useState(null);
+    // const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
     const username = get(props, "match.params.username") || null;
     const profile = useSelector(selectUserProfile);
     const imageUrl = useSelector(selectUserImageURL);
-    const isProfileOwner = useSelector(selectIsUserProfileOwner);
     const csoundPlayState = useSelector(selectCsoundPlayState);
     const csoundStatus = useSelector(selectCsoundStatus);
     const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
-    const profileUid = useSelector(selectProfileUid);
-    const loggedInUid = useSelector(selectLoggedInUid);
+    const loggedInUserUid = useSelector(selectLoggedInUid);
     const imageUrlRequesting = useSelector(selectUserImageURLRequesting);
     const profileRequesting = useSelector(selectUserProfileRequesting);
-    const filteredProjects = useSelector(selectFilteredUserProjects);
+    const filteredProjects = useSelector(
+        selectFilteredUserProjects(profileUid)
+    );
     const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
-    const userFollowing = useSelector(selectUserFollowing);
     const loggedInUserFollowing = useSelector(selectLoggedInUserFollowing);
-    const isFollowing = loggedInUserFollowing.includes(username);
+    const isFollowing = loggedInUserFollowing.includes(profileUid);
+    const isRequestingLogin = useSelector(selectLoginRequesting);
+    const isProfileOwner = loggedInUserUid === profileUid;
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
 
     useEffect(() => {
-        if (profileUid !== null) {
-            dispatch(getUserProjects(profileUid, false));
+        if (!isRequestingLogin) {
+            if (!username) {
+                loggedInUserUid
+                    ? setProfileUid(loggedInUserUid)
+                    : dispatch(push("/"));
+            } else {
+                usernames
+                    .doc(username)
+                    .get()
+                    .then(userSnap => {
+                        if (!userSnap.exists) {
+                            dispatch(
+                                push("/404", { message: "User not found" })
+                            );
+                        } else {
+                            const data = userSnap.data();
+                            data && data.userUid
+                                ? setProfileUid(data.userUid)
+                                : dispatch(
+                                      push("/404", {
+                                          message: "User not found"
+                                      })
+                                  );
+                        }
+                    });
+            }
         }
-    }, [dispatch, profileUid, username]);
+    }, [dispatch, username, loggedInUserUid, isRequestingLogin]);
 
     useEffect(() => {
-        dispatch(getUserProfilesForFollowing(userFollowing));
-    }, [dispatch, userFollowing]);
-
-    useEffect(() => {
-        if (fromFollowing === true) {
-            setSelectedSection(0);
+        if (!isRequestingLogin && profileUid) {
+            const unsubscribers = [
+                subscribeToProfile(profileUid, dispatch),
+                subscribeToFollowing(profileUid, dispatch),
+                subscribeToProfileProjects(profileUid, isProfileOwner, dispatch)
+            ] as any[];
+            if (loggedInUserUid) {
+                unsubscribers.push(
+                    subscribeToLoggedInUserFollowing(loggedInUserUid, dispatch)
+                );
+            }
+            // dispatch(getTags());
+            // dispatch(getUserFollowing(username));
+            // dispatch(getLoggedInUserFollowing());
+            dispatch(setProjectFilterString(""));
+            dispatch(setFollowingFilterString(""));
+            dispatch(getLoggedInUserStars());
+            return () => {
+                unsubscribers.forEach(u => u && u());
+                dispatch(stopCsound());
+            };
         }
-    }, [fromFollowing]);
-    useEffect(() => {
-        dispatch(getUserProfile(username));
-        dispatch(getUserImageURL(username));
-        dispatch(getTags());
-        dispatch(getUserFollowing(username));
-        dispatch(getLoggedInUserFollowing());
-        dispatch(setProjectFilterString(""));
-        dispatch(setFollowingFilterString(""));
-        dispatch(getLoggedInUserStars());
-        return () => {
-            dispatch(stopCsound());
-        };
-    }, [dispatch, username]);
+    }, [
+        dispatch,
+        username,
+        isRequestingLogin,
+        profileUid,
+        isProfileOwner,
+        loggedInUserUid
+    ]);
 
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));
@@ -180,7 +216,12 @@ const Profile = props => {
                                 onChange={e => {
                                     const file: File =
                                         get(e, "target.files.0") || null;
-                                    dispatch(uploadImage(file));
+                                    dispatch(
+                                        uploadProfileImage(
+                                            loggedInUserUid,
+                                            file
+                                        )
+                                    );
                                 }}
                             />
                             {isProfileOwner && (
@@ -223,7 +264,7 @@ const Profile = props => {
                                 </>
                             )}
                         </DescriptionSection>
-                        {isProfileOwner && (
+                        {isProfileOwner && profileUid && (
                             <EditProfileButtonSection>
                                 <AddFab
                                     color="primary"
@@ -247,42 +288,33 @@ const Profile = props => {
                                 </AddFab>
                             </EditProfileButtonSection>
                         )}
-                        {!isProfileOwner &&
-                            loggedInUid &&
-                            !isFollowing &&
-                            profileRequesting === false && (
-                                <EditProfileButtonSection>
-                                    <AddFab
-                                        color="primary"
-                                        variant="extended"
-                                        aria-label="Add"
-                                        size="medium"
-                                        onClick={() => {
-                                            dispatch(followUser(username));
-                                        }}
-                                    >
-                                        Follow
-                                    </AddFab>
-                                </EditProfileButtonSection>
-                            )}
-                        {!isProfileOwner &&
-                            loggedInUid &&
-                            isFollowing &&
-                            profileRequesting === false && (
-                                <EditProfileButtonSection>
-                                    <AddFab
-                                        color="primary"
-                                        variant="extended"
-                                        aria-label="Add"
-                                        size="medium"
-                                        onClick={() => {
-                                            dispatch(unfollowUser(username));
-                                        }}
-                                    >
-                                        Unfollow
-                                    </AddFab>
-                                </EditProfileButtonSection>
-                            )}
+                        {!isProfileOwner && profileUid && loggedInUserUid && (
+                            <EditProfileButtonSection>
+                                <AddFab
+                                    color="primary"
+                                    variant="extended"
+                                    aria-label="Add"
+                                    size="medium"
+                                    onClick={() => {
+                                        isFollowing
+                                            ? dispatch(
+                                                  unfollowUser(
+                                                      loggedInUserUid,
+                                                      profileUid
+                                                  )
+                                              )
+                                            : dispatch(
+                                                  followUser(
+                                                      loggedInUserUid,
+                                                      profileUid
+                                                  )
+                                              );
+                                    }}
+                                >
+                                    {isFollowing ? "Unfollow" : "Follow"}
+                                </AddFab>
+                            </EditProfileButtonSection>
+                        )}
                     </IDContainer>
                     <NameSectionWrapper>
                         <NameSection>
@@ -371,7 +403,10 @@ const Profile = props => {
 
                         <ListContainer>
                             <ProfileLists
+                                isProfileOwner={isProfileOwner}
                                 selectedSection={selectedSection}
+                                setSelectedSection={setSelectedSection}
+                                setProfileUid={setProfileUid}
                                 filteredProjects={filteredProjects}
                                 username={username}
                             />

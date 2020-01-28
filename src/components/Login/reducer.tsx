@@ -1,4 +1,5 @@
 import {
+    SET_REQUESTING_STATUS,
     SIGNIN_FAIL,
     SIGNIN_SUCCESS,
     SIGNIN_REQUEST,
@@ -9,75 +10,65 @@ import {
     CREATE_CLEAR_ERROR,
     LOG_OUT
 } from "./types";
-import { merge } from "lodash";
+import { assoc, pipe } from "ramda";
 
 const INITIAL_STATE = {
     authenticated: false,
-    isLoginDialogOpen: false,
-    requesting: false,
-    failed: false,
     errorCode: null,
-    errorMessage: null
+    errorMessage: null,
+    failed: false,
+    isLoginDialogOpen: false,
+    loggedInUid: null,
+    // we start always with onAuthStateChanged
+    requesting: true
 };
 
 export default (state = INITIAL_STATE, action: any) => {
     switch (action.type) {
         case SIGNIN_REQUEST: {
-            return {
-                authenticated: false,
-                requesting: true,
-                isLoginDialogOpen: true,
-                failed: false,
-                errorCode: null,
-                errorMessage: null
-            };
+            return assoc("requesting", true, state);
+        }
+        case SET_REQUESTING_STATUS: {
+            return assoc("requesting", action.status, state);
         }
         case CREATE_USER_FAIL:
         case SIGNIN_FAIL: {
-            return {
-                authenticated: false,
-                requesting: false,
-                isLoginDialogOpen: true,
-                failed: true,
-                errorCode: action.errorCode,
-                errorMessage: action.errorMessage
-            };
+            return pipe(
+                assoc("requesting", false),
+                assoc("authenticated", false),
+                assoc("failed", true)
+            )(state);
         }
         case CREATE_CLEAR_ERROR:
-            return {
-                authenticated: false,
-                requesting: false,
-                isLoginDialogOpen: true,
-                failed: false,
-                errorCode: null,
-                errorMessage: false
-            };
+            return pipe(
+                assoc("failed", false),
+                assoc("errorCode", null),
+                assoc("errorMessage", false)
+            )(state);
         case CREATE_USER_SUCCESS:
         case SIGNIN_SUCCESS: {
-            return {
-                authenticated: true,
-                isLoginDialogOpen: false,
-                requesting: false,
-                failed: false,
-                errorCode: null,
-                errorMessage: null
-            };
+            return pipe(
+                assoc("loggedInUid", action.user.uid),
+                assoc("isLoginDialogOpen", false),
+                assoc("requesting", false),
+                assoc("authenticated", true)
+            )(state);
         }
         case LOG_OUT: {
-            return {
-                authenticated: false,
-                requesting: false,
-                isLoginDialogOpen: false,
-                failed: false,
-                errorCode: null,
-                errorMessage: false
-            };
+            return pipe(
+                assoc("isLoginDialogOpen", false),
+                assoc("authenticated", false),
+                assoc("requesting", false),
+                assoc("failed", false),
+                assoc("errorCode", null),
+                assoc("errorMessage", false)
+            )(state);
         }
         case OPEN_DIALOG: {
-            return { ...merge(state, { isLoginDialogOpen: true }) };
+            return assoc("isLoginDialogOpen", true, state);
         }
         case CLOSE_DIALOG: {
-            return { ...merge(state, { isLoginDialogOpen: false }) };
+            return assoc("isLoginDialogOpen", false, state);
         }
         default: {
             return state;

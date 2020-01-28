@@ -6,19 +6,22 @@ import { Action } from "redux";
 // import crypto from "crypto";
 import {
     db,
+    stars,
+    following,
+    followers,
+    fieldDelete,
     projects,
     profiles,
-    stars,
     usernames,
-    tags
+    tags,
+    targets,
+    Timestamp
 } from "@config/firestore";
 import {
-    GET_USER_PROJECTS,
     ProfileActionTypes,
     ADD_USER_PROJECT,
     DELETE_USER_PROJECT,
     GET_USER_PROFILE,
-    GET_USER_IMAGE_URL,
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
     GET_TAGS,
@@ -26,15 +29,7 @@ import {
     SET_LIST_PLAY_STATE,
     SET_CURRENTLY_PLAYING_PROJECT,
     SET_CSOUND_STATUS,
-    SHOULD_REDIRECT_REQUEST,
-    SHOULD_REDIRECT_YES,
-    SHOULD_REDIRECT_NO,
     REFRESH_USER_PROFILE,
-    GET_USER_FOLLOWING,
-    GET_USER_PROFILES_FOR_FOLLOWING,
-    GET_LOGGED_IN_USER_FOLLOWING,
-    SET_IMAGE_URL_REQUESTING,
-    SET_PROFILE_REQUESTING,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING,
     SET_STAR_PROJECT_REQUESTING,
@@ -46,30 +41,26 @@ import defaultSco from "@root/templates/DefaultSco.json";
 import firebase from "firebase/app";
 import { openSnackbar } from "@comp/Snackbar/actions";
 import { SnackbarType } from "@comp/Snackbar/types";
-import { push } from "connected-react-router";
 import { openSimpleModal } from "@comp/Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
 import {
     selectPreviousProjectTags,
     selectCsoundStatus,
-    selectUserFollowing,
     selectStarProjectRequesting,
     selectLoggedInUserStars
 } from "./selectors";
 import { playPauseCsound } from "@comp/Csound/actions";
-// import { loadProjectFromFirestore } from "@comp/Projects/actions";
+import {
+    downloadAllProjectDocumentsOnce,
+    downloadProjectOnce
+} from "@comp/Projects/actions";
+import { getProjectLastModifiedOnce } from "@comp/ProjectLastModified/actions";
 import { getPlayActionFromProject } from "@comp/TargetControls/utils";
+import { downloadTargetsOnce } from "@comp/TargetControls/actions";
 import { ProfileModal } from "./ProfileModal";
 import { get } from "lodash";
-import { assoc, hasPath, pipe } from "ramda";
-
-const getUserProjectsAction = (payload: any): ProfileActionTypes => {
-    return {
-        type: GET_USER_PROJECTS,
-        payload
-    };
-};
+import { pathOr, assoc, hasPath, pipe } from "ramda";
 
 export const getUserProjects = (
     uid,
@@ -78,9 +69,6 @@ export const getUserProjects = (
     dispatch,
     getState
 ) => {
-    if (!update) {
-        dispatch(getUserProjectsAction([]));
-    }
     firebase.auth().onAuthStateChanged(async user => {
         const queryResult =
             uid === user?.uid
@@ -97,7 +85,6 @@ export const getUserProjects = (
                 p => assoc("target", p.target || "project.csd", p)
             )(psnap)
         );
-        dispatch(getUserProjectsAction(userProjects));
     });
 };
 
@@ -155,7 +142,7 @@ export const addUserProject = (
                     .collection("files")
                     .get();
                 const defaultCsdUid = filesWithCsd.docs[0].id;
-                await newProjectRef.set(
+                await targets.doc(newProjectRef.id).set(
                     {
                         targets: {
                             "project.csd": {
@@ -311,15 +298,6 @@ export const deleteUserProject = (
     });
 };
 
-export const getUserImageURLAction = (
-    url: string | null
-): ProfileActionTypes => {
-    return {
-        type: GET_USER_IMAGE_URL,
-        payload: url
-    };
-};
-
 export const setCurrentTagText = (text: string): ProfileActionTypes => {
     return {
         type: SET_CURRENT_TAG_TEXT,
@@ -348,10 +326,9 @@ export const setCsoundStatus = (
     }
 };
 
-export const getTags = (): ThunkAction<void, any, null, Action<string>> => (
-    dispatch,
-    getStore
-) => {
+export const getTags = (
+    loggedInUser
+): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
     firebase.auth().onAuthStateChanged(async user => {
         if (user != null) {
             tags.onSnapshot(snapshot => {
@@ -359,77 +336,6 @@ export const getTags = (): ThunkAction<void, any, null, Action<string>> => (
                 dispatch({ type: GET_TAGS, payload: result });
             });
         }
-    });
-};
-
-export const getUserImageURL = (
-    username: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
-    dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: true });
-    firebase.auth().onAuthStateChanged(async user => {
-        let imageUrl: string | null = null;
-        let profileUid: string | null = null;
-        let profile: any | null = null;
-        let photoUrl: string | null = null;
-        // let email: string | null = null;
-        if (username === null && user !== null) {
-            profileUid = user.uid;
-            profile = await profiles.doc(profileUid!).get();
-            photoUrl = get(profile.data(), "photoUrl") || null;
-        } else if (username !== null) {
-            const result = await usernames.doc(username).get();
-
-            if (result.data() !== null) {
-                profileUid = get(result.data(), "userUid") || null;
-                if (profileUid !== null) {
-                    profile = await profiles.doc(profileUid!).get();
-                    photoUrl = get(profile.data(), "photoUrl") || null;
-                    // email = get(profile.data(), "email") || null;
-                }
-            }
-        }
-
-        if (profileUid !== null) {
-            try {
-                imageUrl = await firebase
-                    .storage()
-                    .ref()
-                    .child(`images/${profileUid}/profile.jpeg`)
-                    .getDownloadURL();
-                dispatch(getUserImageURLAction(imageUrl!));
-                dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
-
-                return;
-            } catch (e) {
-                imageUrl = null;
-            }
-        }
-
-        if (imageUrl === null && photoUrl !== null) {
-            dispatch(getUserImageURLAction(photoUrl!));
-            dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
-
-            return;
-        }
-
-        dispatch(getUserImageURLAction(null));
-        dispatch({ type: SET_IMAGE_URL_REQUESTING, payload: false });
-
-        // if (imageUrl === null && photoUrl === null) {
-        //     try {
-        //         const md5Email = crypto
-        //             .createHash("md5")
-        //             .update("example@email.com")
-        //             .digest("hex");
-        //         imageUrl = `https://www.gravatar.com/avatar/${md5Email}?s=2048`;
-        //         const response = await fetch(`${imageUrl}?d=404`);
-
-        //         dispatch(getUserImageURLAction(imageUrl));
-        //         return;
-        //     } catch (e) {
-        //         console.log("no gravatar");
-        //     }
-        // }
     });
 };
 
@@ -453,137 +359,31 @@ export const addProject = () => {
 };
 
 export const followUser = (
-    username: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            const state = getState();
-            const userFollowing: String[] = selectUserFollowing(state);
-            userFollowing.push(username);
-            dispatch({
-                type: GET_USER_FOLLOWING,
-                payload: [...new Set(userFollowing)]
-            });
-            await profiles.doc(user.uid).update({
-                following: firebase.firestore.FieldValue.arrayUnion(username)
-            });
-            dispatch(getLoggedInUserFollowing());
-        }
+    loggedInUserUid: string,
+    profileUid: string
+): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+    const batch = db.batch();
+    batch.update(followers.doc(profileUid), {
+        [loggedInUserUid]: true
     });
+    batch.update(following.doc(loggedInUserUid), {
+        [profileUid]: true
+    });
+    await batch.commit();
 };
 
 export const unfollowUser = (
-    username: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            const state = getState();
-            const userFollowing: String[] = selectUserFollowing(state);
-            dispatch({
-                type: GET_USER_FOLLOWING,
-                payload: userFollowing.filter(e => e !== username)
-            });
-            await profiles.doc(user.uid).update({
-                following: firebase.firestore.FieldValue.arrayRemove(username)
-            });
-            dispatch(getLoggedInUserFollowing());
-        }
-    });
-};
-
-export const getUserProfilesForFollowing = (
-    userProfiles: string[]
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            const result = userProfiles.map(async username => {
-                const result = await usernames.doc(username).get();
-                const profileUid = get(result.data(), "userUid") || null;
-                const profile = await profiles.doc(profileUid!).get();
-                let imageUrl;
-                try {
-                    imageUrl = await firebase
-                        .storage()
-                        .ref()
-                        .child(`images/${profileUid}/profile.jpeg`)
-                        .getDownloadURL();
-                } catch (e) {
-                    imageUrl = null;
-                }
-
-                if (imageUrl === null) {
-                    imageUrl = get(profile.data(), "photoUrl") || null;
-                }
-
-                const profileData = profile.data();
-                profileData!.imageUrl = imageUrl;
-                return profileData;
-            });
-
-            const followingProfiles = await Promise.all(result);
-            dispatch({
-                type: GET_USER_PROFILES_FOR_FOLLOWING,
-                payload: followingProfiles
-            });
-        }
-    });
-};
-
-export const getUserFollowing = (
-    username: string | null
+    loggedInUserUid: string,
+    profileUid: string
 ): ThunkAction<void, any, null, Action<string>> => async dispatch => {
-    dispatch({
-        type: GET_USER_FOLLOWING,
-        payload: []
+    const batch = db.batch();
+    batch.update(followers.doc(profileUid), {
+        [loggedInUserUid]: fieldDelete()
     });
-    if (username === null) {
-        firebase.auth().onAuthStateChanged(async user => {
-            if (user !== null) {
-                const profile = await profiles.doc(user.uid).get();
-                const profileData = profile.data();
-                const following = get(profileData, "following") || [];
-
-                dispatch({
-                    type: GET_USER_FOLLOWING,
-                    payload: following
-                });
-            }
-        });
-    } else {
-        const result = await usernames.doc(username).get();
-        const profileUid = get(result.data(), "userUid") || null;
-
-        if (profileUid !== null) {
-            const profile = await profiles.doc(profileUid!).get();
-            const profileData = profile.data();
-            const following = get(profileData, "following") || [];
-
-            dispatch({
-                type: GET_USER_FOLLOWING,
-                payload: following
-            });
-        }
-    }
-};
-
-export const getLoggedInUserFollowing = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            const profile = await profiles.doc(user.uid).get();
-            const profileData = profile.data();
-            const following = get(profileData, "following") || [];
-
-            dispatch({
-                type: GET_LOGGED_IN_USER_FOLLOWING,
-                payload: following
-            });
-        }
+    batch.update(following.doc(loggedInUserUid), {
+        [profileUid]: fieldDelete()
     });
+    await batch.commit();
 };
 
 export const setUserProfile = (
@@ -685,100 +485,108 @@ export const deleteProject = (doc: any) => {
     };
 };
 
-export const uploadImage = (
+export const uploadProfileImage = (
+    loggedInUserUid: string,
     file: File
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-            try {
-                await firebase
-                    .storage()
-                    .ref()
-                    .child(`images/${user.uid}/profile.jpeg`)
-                    .put(file);
-                const imageUrl = await firebase
-                    .storage()
-                    .ref()
-                    .child(`images/${user.uid}/profile.jpeg`)
-                    .getDownloadURL();
-
-                dispatch(getUserImageURLAction(imageUrl));
-                dispatch(
-                    openSnackbar(
-                        "Profile Picture Uploaded",
-                        SnackbarType.Success
-                    )
-                );
-            } catch (e) {
-                dispatch(
-                    openSnackbar(
-                        "Profile Picture Upload Failed",
-                        SnackbarType.Error
-                    )
-                );
-            }
-        }
-    });
+): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+    try {
+        await firebase
+            .storage()
+            .ref()
+            .child(`images/${loggedInUserUid}/profile.jpeg`)
+            .put(file);
+        const imageUrl = await firebase
+            .storage()
+            .ref()
+            .child(`images/${loggedInUserUid}/profile.jpeg`)
+            .getDownloadURL();
+        await profiles.doc(loggedInUserUid).update({ photoUrl: imageUrl });
+        dispatch(
+            openSnackbar("Profile Picture Uploaded", SnackbarType.Success)
+        );
+    } catch (e) {
+        dispatch(
+            openSnackbar("Profile Picture Upload Failed", SnackbarType.Error)
+        );
+    }
 };
 
 export const playListItem = (
     projectUid: string | false
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
     const state = getState();
+    const csound = state.csound.csound;
     const csoundStatus = selectCsoundStatus(state);
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");
         return;
     }
-
     if (csoundStatus === "paused") {
         dispatch(playPauseCsound());
         dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
     } else {
-        if (hasPath(["ProjectsReducer", "projects", projectUid], state)) {
-            const playAction = getPlayActionFromProject(projectUid, state);
-            console.log(playAction);
-            if (playAction) {
-                dispatch({
-                    type: SET_LIST_PLAY_STATE,
-                    payload: "playing"
-                });
-                dispatch(playAction);
-                dispatch({
-                    type: SET_CSOUND_STATUS,
-                    payload: false
-                });
-                dispatch({
-                    type: SET_CURRENTLY_PLAYING_PROJECT,
-                    payload: projectUid
-                });
+        const projectIsCached = hasPath(
+            ["ProjectsReducer", "projects", projectUid],
+            state
+        );
+        const projectHasLastMod = hasPath(
+            ["ProjectLastModifiedReducer", projectUid, "timestamp"],
+            state
+        );
+        let timestampMismatch = false;
+
+        if (projectIsCached && projectHasLastMod) {
+            const cachedTimestamp: Timestamp | null = pathOr(
+                null,
+                [
+                    "ProjectsReducer",
+                    "projects",
+                    projectUid,
+                    "cachedProjectLastModified"
+                ],
+                state
+            );
+            const currentTimestamp: Timestamp | null = pathOr(
+                null,
+                ["ProjectLastModifiedReducer", projectUid, "timestamp"],
+                state
+            );
+            if (cachedTimestamp && currentTimestamp) {
+                timestampMismatch =
+                    (cachedTimestamp as Timestamp).toMillis() !==
+                    (currentTimestamp as Timestamp).toMillis();
             }
+        }
+
+        if (!projectIsCached || timestampMismatch || !projectHasLastMod) {
+            await downloadProjectOnce(projectUid)(dispatch);
+            await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
+            await downloadTargetsOnce(projectUid)(dispatch);
+            await getProjectLastModifiedOnce(projectUid)(dispatch);
+            // recursion
+            return playListItem(projectUid)(dispatch, getState, null);
+        }
+
+        const playAction = getPlayActionFromProject(projectUid, state);
+        if (playAction) {
+            dispatch({
+                type: SET_LIST_PLAY_STATE,
+                payload: "playing"
+            });
+            dispatch(playAction);
+            dispatch({
+                type: SET_CSOUND_STATUS,
+                payload: false
+            });
+            dispatch({
+                type: SET_CURRENTLY_PLAYING_PROJECT,
+                payload: projectUid
+            });
         } else {
-            // loadProjectFromFirestore(projectUid)(dispatch).then(() => {
-            //     dispatch(
-            //         syncProjectDocumentsWithEMFS(projectUid, () => {
-            //             const playAction = getPlayActionFromProject(
-            //                 state,
-            //                 projectUid
-            //             );
-            //             if (playAction) {
-            //                 dispatch({
-            //                     type: SET_LIST_PLAY_STATE,
-            //                     payload: "playing"
-            //                 });
-            //                 dispatch(playAction);
-            //                 dispatch({
-            //                     type: SET_CSOUND_STATUS,
-            //                     payload: false
-            //                 });
-            //                 dispatch({
-            //                     type: SET_CURRENTLY_PLAYING_PROJECT,
-            //                     payload: projectUid
-            //                 });
-            //             }
-            //         })
-            //     );
-            // });
+            // handle unplayable project
         }
     }
 };
@@ -791,100 +599,7 @@ export const pauseListItem = (
     dispatch(playPauseCsound());
 };
 
-export const getUserProfile = (
-    username: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    dispatch({ type: SHOULD_REDIRECT_REQUEST });
-    dispatch({ type: SET_PROFILE_REQUESTING, payload: true });
-    firebase.auth().onAuthStateChanged(async user => {
-        if (username !== null) {
-            const result = await usernames.doc(username).get();
-            if (result.data() === null) {
-                dispatch(push("/404", { message: "User not found." }));
-                dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-                return;
-            } else {
-                dispatch({ type: SHOULD_REDIRECT_NO });
-                const result = await usernames.doc(username).get();
-                const data = result.data() || null;
-
-                if (data === null) {
-                    dispatch(push("/404", { message: "Profile Not Found" }));
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-
-                    return;
-                }
-
-                const profileUid = data!.userUid;
-                const loggedInUid = user ? user!.uid : null;
-
-                if (profileUid) {
-                    const profile = await profiles.doc(profileUid).get();
-
-                    if (!profile.exists) {
-                        dispatch(push("/404"));
-                        dispatch({
-                            type: SET_PROFILE_REQUESTING,
-                            payload: false
-                        });
-
-                        openSnackbar(
-                            "User profile not found",
-                            SnackbarType.Error
-                        );
-                    } else {
-                        dispatch(
-                            getUserProfileAction({
-                                profile: profile.data(),
-                                loggedInUid,
-                                profileUid
-                            })
-                        );
-                        dispatch({
-                            type: SET_PROFILE_REQUESTING,
-                            payload: false
-                        });
-                    }
-                } else {
-                    dispatch(push("/404"));
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-
-                    openSnackbar("User profile not found", SnackbarType.Error);
-                }
-            }
-        }
-        if (user !== null) {
-            if (username === null) {
-                dispatch({ type: SHOULD_REDIRECT_NO });
-                const loggedInUid = user!.uid;
-                const profile = await profiles.doc(loggedInUid).get();
-
-                if (!profile.exists) {
-                    dispatch(push("/404"));
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-                    openSnackbar("User profile not found", SnackbarType.Error);
-                } else {
-                    dispatch(
-                        getUserProfileAction({
-                            profile: profile.data(),
-                            loggedInUid,
-                            profileUid: loggedInUid
-                        })
-                    );
-                    dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-                }
-            }
-        } else if (user === null) {
-            if (username === null) {
-                dispatch({ type: SHOULD_REDIRECT_YES });
-                dispatch(push("/"));
-                dispatch({ type: SET_PROFILE_REQUESTING, payload: false });
-            }
-        }
-    });
-};
-
-const getUserProfileAction = (payload: any): ProfileActionTypes => {
+export const getUserProfileAction = (payload: any): ProfileActionTypes => {
     return {
         type: GET_USER_PROFILE,
         payload

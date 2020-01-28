@@ -19,3 +19,15 @@ export const updateProjectLastModifiedLocally = (
     projectUid,
     timestamp
 });
+
+export const getProjectLastModifiedOnce = (projectUid: string) => {
+    return async dispatch => {
+        const timestampRef = await projectLastModified.doc(projectUid).get();
+        return await dispatch(
+            updateProjectLastModifiedLocally(
+                projectUid,
+                (timestampRef.data() as any).timestamp
+            )
+        );
+    };
+};

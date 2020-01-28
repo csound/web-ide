@@ -1,14 +1,18 @@
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import Router from "../Router/Router";
+import Router from "@comp/Router/Router";
 import ThemeProvider from "@styles/ThemeProvider";
-import Modal from "../Modal";
-import Snackbar from "../Snackbar/Snackbar";
-import { thirdPartyAuthSuccess } from "../Login/actions";
+import Modal from "@comp/Modal";
+import Snackbar from "@comp/Snackbar/Snackbar";
+import { subscribeToLoggedInUserProfile } from "@comp/Login/subscribers";
+import {
+    setRequestingStatus,
+    thirdPartyAuthSuccess
+} from "@comp/Login/actions";
 import { History } from "history";
 import firebase from "firebase/app";
 import HotKeys from "../HotKeys/HotKeys";
-import PerfectScrollbar from "perfect-scrollbar";
+import PerfectScrollbar from "perfect-scrollbar/dist/perfect-scrollbar.esm.js";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 interface IMain {
@@ -19,14 +23,24 @@ const Main = (props: IMain) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        firebase
+        let unsubscribeLoggedInUserProfile: any = null;
+        const unsubscribeAuthObserver = firebase
             .auth()
-            .onAuthStateChanged(
-                user => !!user && dispatch(thirdPartyAuthSuccess(user))
-            );
+            .onAuthStateChanged(user => {
+                if (user) {
+                    dispatch(thirdPartyAuthSuccess(user));
+                    unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
+                        user.uid,
+                        dispatch
+                    );
+                } else {
+                    dispatch(setRequestingStatus(false));
+                }
+            });
         const ps = new PerfectScrollbar("body");
         return () => {
-            console.log("DESTROY");
+            unsubscribeAuthObserver();
+            unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();
             ps.destroy();
         };
         // eslint-disable-next-line

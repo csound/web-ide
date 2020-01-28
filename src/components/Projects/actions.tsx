@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { push } from "connected-react-router";
+import { ICsoundObj } from "@comp/Csound/types";
 import { tabOpenByDocumentUid, tabDockInit } from "@comp/ProjectEditor/actions";
 import {
     selectDefaultTargetName,
@@ -14,7 +15,7 @@ import { SnackbarType } from "@comp/Snackbar/types";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { filter, find, isEmpty, some } from "lodash";
-import { pathOr, propOr, values } from "ramda";
+import { assoc, pathOr, reduce, values } from "ramda";
 import {
     ACTIVATE_PROJECT,
     ADD_PROJECT_DOCUMENTS,
@@ -33,7 +34,12 @@ import {
     IDocumentsMap
 } from "./types";
 import { ITarget } from "@comp/TargetControls/types";
-import { textOrBinary } from "./utils";
+import {
+    addDocumentToEMFS,
+    convertProjectSnapToProject,
+    fileDocDataToDocumentType,
+    textOrBinary
+} from "./utils";
 import { IStore } from "@store/types";
 import {
     db,
@@ -52,22 +58,45 @@ import { selectActiveProjectUid } from "../SocialControls/selectors";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
-export const initializeProject = (projectUid: string) => {
+export const downloadProjectOnce = (projectUid: string) => {
     return async (dispatch: any) => {
         const projRef = projects.doc(projectUid);
-        const projDoc = await projRef.get();
-        if (projDoc && projDoc.exists) {
-            const projData = projDoc.data();
-            const project: IProject = {
-                projectUid,
-                documents: {},
-                isPublic: propOr(false, "public", projData),
-                name: propOr("", "name", projData),
-                userUid: propOr("", "userUid", projData),
-                stars: propOr([], "stars", projData)
-            };
+        const projSnap = await projRef.get();
+        if (projSnap && projSnap.exists) {
+            const project: IProject = await convertProjectSnapToProject(
+                projSnap
+            );
             await dispatch(setProject(project));
         }
+    };
+};
+
+// TODO: optimize
+export const downloadAllProjectDocumentsOnce = (
+    projectUid: string,
+    csound: ICsoundObj
+) => {
+    return async (dispatch: any) => {
+        const filesRef = await projects
+            .doc(projectUid)
+            .collection("files")
+            .get();
+        const docsToAdd = await Promise.all(
+            filesRef.docs.map(async d => {
+                const data = await d.data();
+                const doc = fileDocDataToDocumentType(
+                    assoc("documentUid", d.id, data)
+                );
+                await addDocumentToEMFS(projectUid, csound, doc);
+                return doc;
+            })
+        );
+        const docMapToAdd = reduce(
+            (acc, doc) => assoc(doc.documentUid, doc, acc),
+            {},
+            docsToAdd
+        );
+        await dispatch(addProjectDocuments(projectUid, docMapToAdd));
     };
 };
 
@@ -128,7 +157,6 @@ export const addProjectDocuments = (
                 tabDockInit(projectUid, values(documents), maybeDefaultTarget)
             );
         }
-        updateProjectLastModified(projectUid);
     };
 };
 

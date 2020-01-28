@@ -14,6 +14,7 @@ import {
     SET_PROJECT,
     SET_PROJECT_PUBLIC
 } from "./types";
+import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "@comp/ProjectLastModified/types";
 import { generateEmptyDocument } from "./utils";
 import {
     assoc,
@@ -219,6 +220,25 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                     )(state) as IProjectsReducer)) ||
                 state
             );
+        }
+        case UPDATE_PROJECT_LAST_MODIFIED_LOCALLY: {
+            if (
+                state &&
+                action.projectUid !== null &&
+                action.projectUid === state.activeProjectUid
+            ) {
+                return (assocPath as any)(
+                    [
+                        "projects",
+                        state.activeProjectUid,
+                        "cachedProjectLastModified"
+                    ],
+                    action.timestamp,
+                    state as IProjectsReducer
+                );
+            } else {
+                return state;
+            }
         }
         default: {
             return (state as IProjectsReducer) || initialProjectsState;

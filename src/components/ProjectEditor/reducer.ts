@@ -55,12 +55,15 @@ const addTabToOpenDocuments = curry((tab, state) =>
 
 const storeTabDockState = (
     projectUid: string,
-    openDocuments: IOpenDocument[]
+    openDocuments: IOpenDocument[],
+    tabIndex: number | null = null
 ) => {
     try {
         const tabOrder: string[] = map(prop("uid"), openDocuments);
         const tabOrderStr: string = JSON.stringify(tabOrder);
         localStorage.setItem(`${projectUid}:tabOrder`, tabOrderStr);
+        tabIndex &&
+            localStorage.setItem(`${projectUid}:tabIndex`, `${tabIndex}`);
     } catch (error) {
         console.error(error);
     }
@@ -123,7 +126,8 @@ export default (state: IProjectEditorReducer, action: any) => {
                 );
                 storeTabDockState(
                     action.projectUid,
-                    newState.tabDock.openDocuments
+                    newState.tabDock.openDocuments,
+                    newState.tabDock.tabIndex
                 );
                 return newState;
             } else {
@@ -166,7 +170,8 @@ export default (state: IProjectEditorReducer, action: any) => {
             )(state);
             storeTabDockState(
                 action.projectUid,
-                newState.tabDock.openDocuments
+                newState.tabDock.openDocuments,
+                newState.tabDock.tabIndex
             );
             return newState;
         }

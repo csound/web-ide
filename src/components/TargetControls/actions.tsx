@@ -35,13 +35,28 @@ export const updateAllTargetsLocally = (
     defaultTarget,
     projectUid,
     targets
-) => {
+) =>
     dispatch({
         type: UPDATE_ALL_TARGETS_LOCALLY,
         defaultTarget,
         projectUid,
         targets
     });
+
+export const downloadTargetsOnce = (projectUid: string) => {
+    return async (dispatch: any) => {
+        const projTargetsRef = await targetsCollRef.doc(projectUid).get();
+        if (projTargetsRef.exists) {
+            const data = projTargetsRef.data();
+            data &&
+                (await updateAllTargetsLocally(
+                    dispatch,
+                    data.defaultTarget,
+                    projectUid,
+                    data.targets
+                ));
+        }
+    };
 };
 
 export const saveChangesToTarget = (

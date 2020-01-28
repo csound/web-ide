@@ -190,7 +190,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         <div />
     ) : (
         <Tabs
-            activeIndex={tabIndex}
+            activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
             onTabChange={switchTab}
             customStyle={tabStyles}
             showModalButton={false}

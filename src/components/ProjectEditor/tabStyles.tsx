@@ -84,7 +84,7 @@ ActionButtonStyle = styled(ActionButtonStyle)`
         fill: ${props => props.theme.lineNumber.primary};
         width: 100%;
         height: 100%
-        padding: 0;;
+        padding: 0;
     }
     svg:hover {
         fill: ${props => props.theme.lineNumber.secondary};

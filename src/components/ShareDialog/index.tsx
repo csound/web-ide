@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { selectActiveProject } from "../Projects/selectors";
 import { useState, useEffect } from "react";
 import { profiles } from "@root/config/firestore";
-import { FacebookShareButton, FacebookIcon, TwitterIcon, TwitterShareButton, EmailShareButton, EmailIcon } from "react-share";
+import { FacebookShareButton, FacebookIcon, TwitterIcon, TwitterShareButton, EmailIcon, EmailShareButton } from "react-share";
 
 const ShareDialog = () => {
     const project = useSelector(selectActiveProject);
@@ -39,7 +39,6 @@ const ShareDialog = () => {
             <div>
                 <FacebookShareButton
                     url={window.location.href}
-                    hashtag="csound"
                     quote={projectInfo}
                 >
                     <FacebookIcon />
@@ -56,7 +55,11 @@ const ShareDialog = () => {
                     subject={"Csound: " + projectInfo}
                     body={projectInfo}
                     separator=" "
-                    openShareDialogOnClick={true}
+                    onClick={
+                        (_, link: string) => {
+                            window.open(link, "_blank")
+                        }
+                    }
                 >
                     <EmailIcon />
                 </EmailShareButton>

@@ -1,13 +1,21 @@
 import { createSelector } from "reselect";
 import { State } from "./reducer";
+import { pickBy, propEq, values } from "ramda";
 import Fuse from "fuse.js";
+
 export const selectUserProfilesForFollowing = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userProfilesForFollowing;
 };
-export const selectUserProjects = (store: any) => {
-    const state: State = store.ProfileReducer;
-    return state.userProjects;
+export const selectUserProjects = (profileUid: string | null) => (
+    store: any
+) => {
+    if (!profileUid) {
+        return [];
+    } else {
+        const state: State = store.ProjectsReducer.projects;
+        return values((pickBy as any)(propEq("userUid", profileUid), state));
+    }
 };
 
 export const selectStarProjectRequesting = (store: any) => {
@@ -35,38 +43,39 @@ export const selectLoggedInUserStars = (store: any) => {
     return state.loggedInUserStars;
 };
 
-export const selectFilteredUserProjects = createSelector(
-    [selectUserProjects, selectProjectFilterString, selectLoggedInUserStars],
-    (userProjects, projectFilterString, stars) => {
-        let result: any = [];
+export const selectFilteredUserProjects = (profileUid: string | null) =>
+    createSelector(
+        [
+            selectUserProjects(profileUid),
+            selectProjectFilterString,
+            selectLoggedInUserStars
+        ],
+        (userProjects, projectFilterString, stars) => {
+            let result: any = [];
+            if (
+                typeof projectFilterString === "undefined" ||
+                projectFilterString === ""
+            ) {
+                result = userProjects;
+            } else {
+                const options = {
+                    shouldSort: true,
+                    keys: ["description", "name", "tags"]
+                };
 
-        if (userProjects === false) {
-            return [];
+                const fuse = new Fuse(userProjects, options);
+                result = fuse.search(projectFilterString);
+            }
+
+            result = result.map((proj: any) => {
+                const starred = stars.includes(proj.projectUid);
+                proj.starred = starred;
+                return proj;
+            });
+
+            return result;
         }
-        if (
-            typeof projectFilterString === "undefined" ||
-            projectFilterString === ""
-        ) {
-            result = userProjects;
-        } else {
-            const options = {
-                shouldSort: true,
-                keys: ["description", "name", "tags"]
-            };
-
-            const fuse = new Fuse(userProjects, options);
-            result = fuse.search(projectFilterString);
-        }
-
-        result = result.map((proj: any) => {
-            const starred = stars.includes(proj.projectUid);
-            proj.starred = starred;
-            return proj;
-        });
-
-        return result;
-    }
-);
+    );
 
 export const selectUserFollowing = (store: any) => {
     const state: any = store.ProfileReducer;
@@ -111,16 +120,6 @@ export const selectUserImageURLRequesting = (store: any) => {
 export const selectUserProfileRequesting = (store: any) => {
     const state: State = store.ProfileReducer;
     return state.userProfileRequesting;
-};
-
-export const selectProfileUid = (store: any) => {
-    const state: State = store.ProfileReducer;
-    return state.profileUid;
-};
-
-export const selectLoggedInUid = (store: any) => {
-    const state: State = store.ProfileReducer;
-    return state.loggedInUid;
 };
 
 export const selectCurrentlyPlayingProject = (store: any) => {
@@ -189,15 +188,6 @@ export const selectCurrentTagSuggestions = createSelector(
         return [...result];
     }
 );
-
-export const selectIsUserProfileOwner = (store: any) => {
-    const state: State = store.ProfileReducer;
-    const { loggedInUid, profileUid } = state;
-    if (loggedInUid === null || profileUid === null) {
-        return false;
-    }
-    return state.loggedInUid === state.profileUid;
-};
 
 export const selectTagsInput = (store: any) => {
     const state: State = store.ProfileReducer;

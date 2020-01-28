@@ -1,7 +1,8 @@
 import { storageRef, getFirebaseTimestamp } from "@config/firestore";
-import { IDocument, IDocumentFileType } from "./types";
+import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { ICsoundObj } from "@comp/Csound/types";
-import { curry } from "ramda";
+import { assoc, curry, map, pipe, prop, propOr, reduce } from "ramda";
+import { projectLastModified } from "@config/firestore";
 
 export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
@@ -62,3 +63,42 @@ export const addDocumentToEMFS = curry(
         }
     }
 );
+
+export const fileDocDataToDocumentType = docData =>
+    ({
+        createdAt: docData["createdAt"] || docData["lastModified"], // migration fix
+        currentValue: docData["value"],
+        documentUid: docData["documentUid"],
+        filename: docData["name"],
+        isModifiedLocally: false,
+        lastModified: docData["lastModified"],
+        savedValue: docData["value"],
+        type: docData["type"],
+        userUid: docData["userUid"]
+    } as IDocument);
+
+export const convertDocSnapToDocumentsMap = docsToAdd =>
+    (pipe as any)(
+        map(prop("doc")),
+        map((d: any) => assoc("documentUid", d.id, d.data())),
+        reduce((acc: IDocumentsMap, docData: any) => {
+            acc[docData["documentUid"]] = fileDocDataToDocumentType(docData);
+            return acc;
+        }, {})
+    )(docsToAdd);
+
+export const convertProjectSnapToProject = async projSnap => {
+    const projData = projSnap.data();
+    const lastModified = await projectLastModified.doc(projSnap.id).get();
+    const lastModifiedData = lastModified.exists ? lastModified.data() : null;
+    return {
+        projectUid: projSnap.id,
+        documents: {},
+        isPublic: propOr(false, "public", projData),
+        name: propOr("", "name", projData),
+        userUid: propOr("", "userUid", projData),
+        cachedProjectLastModified: lastModifiedData
+            ? lastModifiedData.target
+            : null
+    } as IProject;
+};
