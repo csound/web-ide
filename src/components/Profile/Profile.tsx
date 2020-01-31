@@ -48,7 +48,7 @@ import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors
 import { SET_LIST_PLAY_STATE } from "./types";
 import { stopCsound } from "../Csound/actions";
 import {
-    ProfileRoot,
+    ProfileMain,
     ProfileContainer,
     IDContainer,
     ProfilePictureContainer,
@@ -185,19 +185,14 @@ const Profile = props => {
 
     const { displayName, bio, link1, link2, link3 } = profile;
     return (
-        <ProfileRoot
-            className={classes.root}
-            colorA={"rgba(30, 30, 30, 1)"}
-            colorB={"rgba(40, 40, 40, 1)"}
-            colorC={"rgba(20, 20, 20, 1)"}
-        >
+        <div className={classes.root}>
             <Header showMenuBar={false} />
-            <main>
-                <ProfileContainer
-                    colorA={"rgba(30, 30, 30, 1)"}
-                    colorB={"rgba(40, 40, 40, 1)"}
-                    colorC={"rgba(20, 20, 20, 1)"}
-                >
+            <ProfileMain
+                colorA={"rgba(30, 30, 30, 1)"}
+                colorB={"rgba(40, 40, 40, 1)"}
+                colorC={"rgba(20, 20, 20, 1)"}
+            >
+                <ProfileContainer>
                     <IDContainer>
                         <ProfilePictureContainer
                             onMouseEnter={() => setImageHover(true)}
@@ -418,8 +413,8 @@ const Profile = props => {
                         </ListContainer>
                     </ContentSection>
                 </ProfileContainer>
-            </main>
-        </ProfileRoot>
+            </ProfileMain>
+        </div>
     );
 };
 

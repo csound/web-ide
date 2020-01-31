@@ -28,8 +28,11 @@ body {
 }
 
 main {
-    height: 100%;
+    position: absolute;
+    min-height: calc(100% - 64px);
+    height: auto;
     width: 100%;
+    bottom: 0;
 }
 nav,
 button {

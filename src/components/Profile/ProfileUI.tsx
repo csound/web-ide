@@ -2,18 +2,16 @@ import { Card, Fab, TextField, Chip } from "@material-ui/core";
 import { Gradient } from "./Gradient";
 import styled from "styled-components";
 
-export const ProfileRoot = styled.div`
+export const ProfileMain = styled.main`
     ${Gradient}
 `;
 
 export const ProfileContainer = styled.div`
     position: relative;
-    padding-top: 80px;
     display: grid;
     grid-template-columns: 24px 250px 8fr;
     grid-template-rows: 50px 175px 1fr 70px;
     width: 100%;
-    ${Gradient}
 `;
 export const IDContainer = styled(Card)`
     && {
