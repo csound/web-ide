@@ -112,13 +112,11 @@ export const ContentSection = styled.div`
     grid-row-end: auto;
     grid-column: 3;
     z-index: 2;
-    padding: 0 24px;
     margin: 0 24px;
     display: grid;
     grid-template-rows: 60px 50px auto;
-    grid-template-columns: 1fr 24px;
-    // min-width: 600px;
-    // max-width: 1000px;
+    grid-template-columns: 1fr;
+    overflow: hidden;
     background: ${props => props.theme.background.primary};
     border-radius: 24px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
@@ -126,11 +124,12 @@ export const ContentSection = styled.div`
 export const ContentTabsContainer = styled.div`
     grid-row: 1;
     grid-column: 1;
-    margin-left: -24px;
 `;
 export const ContentActionsContainer = styled.div`
     grid-row: 2;
     grid-column: 1;
+    padding-left: 36px;
+    padding-right: 12px;
 `;
 export const AddFab = styled(Fab)`
     float: right;
@@ -140,10 +139,15 @@ export const AddFab = styled(Fab)`
     }
 `;
 export const ListContainer = styled.div`
-    height: calc(100% - 60px);
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;
+    & > ul {
+        padding: 0 !important;
+    }
+    .MuiListItem-button {
+        padding: 8px 36px !important;
+    }
 `;
 export const SearchBox = styled(TextField)`
     && {
@@ -165,6 +169,9 @@ export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
             props.isProfileOwner ? "70px" : ""};
     width: 100%;
     padding-bottom: 2px;
+    &:last-of-type {
+        margin-bottom: 12px;
+    }
 `;
 
 export const StyledUserListItemContainer = styled.div`
