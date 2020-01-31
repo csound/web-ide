@@ -51,6 +51,7 @@ export const userMenu = css`
 
 export const menuPaper = classCss`
     top: 60px!important;
+    padding: 0!important;
 `;
 
 export const loginButton = css`

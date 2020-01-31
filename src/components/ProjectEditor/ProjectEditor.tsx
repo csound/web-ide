@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
 import { simpleSwitch } from "react-tabtab/lib/helpers/move";
@@ -76,6 +76,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = useState(false);
     const projectUid: string = propOr("", "projectUid", activeProject);
+    const tabPanelRef = useRef();
 
     useEffect(() => {
         const unsubscribeProjectChanges = subscribeToProjectChanges(
@@ -187,7 +188,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     );
 
     const tabDock = isEmpty(openDocuments) ? (
-        <div />
+        <div style={{ height: "50vh" }} />
     ) : (
         <Tabs
             activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
@@ -333,7 +334,12 @@ const ProjectEditor = ({ activeProject, csound }) => {
                         {!isConsoleVisible ? (
                             tabDock
                         ) : (
-                            <SplitterLayout vertical secondaryInitialSize={250}>
+                            <SplitterLayout
+                                vertical
+                                secondaryInitialSize={250}
+                                ref={tabPanelRef}
+                                customClassName={"panel-with-tab-dock"}
+                            >
                                 {tabDock}
                                 <Console />
                             </SplitterLayout>

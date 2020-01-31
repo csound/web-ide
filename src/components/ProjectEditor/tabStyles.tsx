@@ -97,6 +97,7 @@ PanelStyle = styled(PanelStyle)`
     height: 100%;
     position: absolute;
     padding: 0;
+    background-color: ${props => props.theme.background.primary};
 `;
 
 export default {

@@ -135,7 +135,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
                 fontWeight: 500
             },
             "& li": {
-                padding: "6px 12px!important"
+                padding: "12px 24px!important"
             }
         }),
         assocPath(["overrides", "MuiListItem", "button"], {

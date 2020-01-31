@@ -2,23 +2,33 @@ import { css } from "@emotion/core";
 
 export const splitterLayoutContainer = css`
     width: 100%;
-    height: calc(100% - 64px);
+    height: calc(100vh - 64px);
     position absolute;
     bottom: 0;
-  overflow: hidden;
     .layout-pane {
         overflow: hidden;
     }
-
     .layout-pane-primary > div {
         height: 100%;
     }
-
     & > div {
         height: 100%;
         bottom: 0;
-        overflow: hidden;
     }
+    .panel-with-tab-dock {
+        & > div {position: relative; overflow:unset;}
+        & > div > div {
+          overflow: hidden;
+        }
+        & > div > div > div:first-of-type {
+          height: 48px;
+        }
+        & > div > div > div:last-of-type {
+          height: calc(100% - 48px);
+          width: 100%;
+          position: relative;
+        }
+}
 `;
 
 export const closeButton = css`

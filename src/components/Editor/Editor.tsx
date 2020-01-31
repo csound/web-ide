@@ -21,8 +21,6 @@ require("codemirror/addon/edit/closebrackets");
 require("codemirror/keymap/vim");
 require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
-// require("codemirror/addon/scroll/simplescrollbars")
-// require("codemirror/addon/scroll/simplescrollbars.css")
 
 type IPrintToConsole = ((text: string) => void) | null;
 
@@ -168,7 +166,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
                     (window as any).editor_scroller &&
                     typeof (window as any).editor_scroller.update === "function"
                 ) {
-                    setTimeout(() => (window as any).editor_scroller.update, 0);
+                    (window as any).editor_scroller.update();
                 }
             };
             const resizeObserver = new (window as any).ResizeObserver(
@@ -303,10 +301,8 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         <ScrollBar
             ref={scrollerRef}
             windowName={"editor_scroller"}
-            options={{}}
             style={{
-                backgroundColor: theme.background.primary,
-                height: "calc(100% - 18px)"
+                backgroundColor: theme.background.primary
             }}
         >
             <CodeMirror

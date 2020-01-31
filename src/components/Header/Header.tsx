@@ -113,12 +113,19 @@ export const Header = ({ showMenuBar = true }) => {
                 open={isProfileMenuOpen}
                 onClose={handleProfileMenuClose}
             >
-                <MenuItem>
+                <MenuItem onClick={handleProfileMenuClose}>
                     <Link to="/profile" css={SS.menuItemLink}>
                         View Profile
                     </Link>
                 </MenuItem>
-                <MenuItem onClick={logout}>Logout</MenuItem>
+                <MenuItem
+                    onClick={e => {
+                        handleProfileMenuClose(e);
+                        logout();
+                    }}
+                >
+                    Logout
+                </MenuItem>
             </Menu>
         </div>
     );
