@@ -2,7 +2,7 @@ import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
-// import { useTheme } from "emotion-theming";
+import { updateBodyScroller } from "@root/utils";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
@@ -172,6 +172,18 @@ const Profile = props => {
         isProfileOwner,
         loggedInUserUid
     ]);
+
+    // Fixes white bottom when switching from scrollable to non-scrollable list
+    useEffect(() => {
+        const mainElem = document.getElementsByTagName("main");
+        const resizeObserver = new (window as any).ResizeObserver(
+            updateBodyScroller(0)
+        );
+        mainElem && mainElem.length > 0 && resizeObserver.observe(mainElem[0]);
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));

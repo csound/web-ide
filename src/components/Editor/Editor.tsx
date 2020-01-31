@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { UnControlled as CodeMirror } from "react-codemirror2";
-import { editorEvalCode, useDebounce } from "./utils";
+import { editorEvalCode } from "./utils";
+import { useDebounce } from "@root/utils";
 import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import ScrollBar from "@elem/perfect-scrollbar";
@@ -27,7 +28,7 @@ type IPrintToConsole = ((text: string) => void) | null;
 
 const CodeEditor = ({ documentUid, projectUid }) => {
     const [editorRef, setEditorRef] = useState(null as any);
-    const scrollerRef = useRef();
+    const scrollerRef: any = useRef();
     const [editorValue, setEditorValue] = useState("");
     const theme: any = useTheme();
     const debouncedEditorValue = useDebounce(editorValue, 200);
@@ -157,7 +158,27 @@ const CodeEditor = ({ documentUid, projectUid }) => {
 
     useEffect(() => {
         if (editorRef && scrollerRef.current) {
-            editorRef.display.scroller = scrollerRef.current;
+            const cmSizer = window.document.getElementsByClassName(
+                "CodeMirror-sizer"
+            );
+            const currentScroller: any = scrollerRef.current;
+            editorRef.display.scroller = currentScroller;
+            const resizeHandler = () => {
+                if (
+                    (window as any).editor_scroller &&
+                    typeof (window as any).editor_scroller.update === "function"
+                ) {
+                    setTimeout(() => (window as any).editor_scroller.update, 0);
+                }
+            };
+            const resizeObserver = new (window as any).ResizeObserver(
+                resizeHandler
+            );
+
+            cmSizer && cmSizer.length > 0 && resizeObserver.observe(cmSizer[0]);
+            return () => {
+                resizeObserver.disconnect();
+            };
         }
     }, [editorRef, scrollerRef]);
 
@@ -271,8 +292,9 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     return (
         <ScrollBar
             ref={scrollerRef}
+            windowName={"editor_scroller"}
+            options={{ scrollYMarginOffset: -100 }}
             style={{
-                height: "calc(100% - 32px)",
                 backgroundColor: theme.background.primary
             }}
         >

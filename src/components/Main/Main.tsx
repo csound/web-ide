@@ -21,7 +21,6 @@ interface IMain {
 
 const Main = (props: IMain) => {
     const dispatch = useDispatch();
-
     useEffect(() => {
         let unsubscribeLoggedInUserProfile: any = null;
         const unsubscribeAuthObserver = firebase
@@ -37,11 +36,11 @@ const Main = (props: IMain) => {
                     dispatch(setRequestingStatus(false));
                 }
             });
-        const ps = new PerfectScrollbar("body");
+        (window as any).ps_body = new PerfectScrollbar("body");
         return () => {
             unsubscribeAuthObserver();
             unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();
-            ps.destroy();
+            (window as any).ps_body.destroy();
         };
         // eslint-disable-next-line
     }, []);

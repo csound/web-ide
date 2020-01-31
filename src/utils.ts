@@ -1,5 +1,7 @@
+// eslint-disable-next-line
+import React, { useState, useEffect } from "react";
 import { addIndex, concat, isNil, mergeWith, uniq, map } from "ramda";
-
+import { debounce } from "throttle-debounce";
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
     var sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";
@@ -67,3 +69,32 @@ export const deepMerge = (v1, v2) => {
         return v2;
     }
 };
+
+// https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
+// local state throttling, use only for components needing re-render
+// for non-react actions, use import { debounce } from 'throttle-debounce';
+export function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+        // eslint-disable-next-line
+    }, [value]);
+    return debouncedValue;
+}
+
+export const updateBodyScroller = debounceTime =>
+    debounce(debounceTime, () => {
+        const maybeElement: any = (window as any).ps_body;
+        if (
+            typeof maybeElement !== "undefined" &&
+            typeof maybeElement.update === "function"
+        ) {
+            maybeElement.update();
+        }
+    });

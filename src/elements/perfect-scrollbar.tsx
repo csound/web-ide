@@ -15,12 +15,19 @@ const scrollbarContainer = theme => css`
 `;
 
 const ScrollBar = forwardRef((props: any, ref: any) => {
-    // const containerRef = useRef();
     useEffect(() => {
         if (ref) {
             const current = ref.current;
             const ps: any = new PerfectScrollbar(current, props.options || {});
-            return () => ps.destroy(current);
+            if (props.windowName) {
+                (window as any)[props.windowName] = ps;
+            }
+            return () => {
+                ps.destroy(current);
+                if (props.windowName) {
+                    delete (window as any)[props.windowName];
+                }
+            };
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ref]);

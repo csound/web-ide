@@ -82,3 +82,9 @@ export const headerRightSideGroup = css`
 export const spacer = css`
     margin-left: 12px;
 `;
+
+export const clearfixHeader = css`
+    position: relative;
+    height: 64px;
+    width: 100%;
+`;

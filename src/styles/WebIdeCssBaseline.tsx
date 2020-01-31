@@ -15,24 +15,20 @@ body {
 body {
     min-height: 100%;
     overflow-x: hidden;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
+    position: relative;
 }
 
 #root {
     position: relative;
-    height: 100%;
+    min-height: 100vh;
 }
 
 main {
-    position: absolute;
+    position: relative;
     min-height: calc(100% - 64px);
     height: auto;
     width: 100%;
-    bottom: 0;
+    top: 0;
 }
 nav,
 button {
