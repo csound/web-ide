@@ -183,6 +183,16 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     }, [editorRef, scrollerRef]);
 
     const editorDidMount = (editor: any) => {
+        editor.scrollIntoView = () => {
+            setTimeout(() => {
+                if (
+                    (window as any).editor_scroller &&
+                    typeof (window as any).editor_scroller.update === "function"
+                ) {
+                    (window as any).editor_scroller.update();
+                }
+            }, 50);
+        };
         editor.getDoc().setValue(currentDocumentValue);
         setEditorValue(currentDocumentValue);
         setEditorRef(editor as any);
@@ -293,9 +303,10 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         <ScrollBar
             ref={scrollerRef}
             windowName={"editor_scroller"}
-            options={{ scrollYMarginOffset: -100 }}
+            options={{}}
             style={{
-                backgroundColor: theme.background.primary
+                backgroundColor: theme.background.primary,
+                height: "calc(100% - 18px)"
             }}
         >
             <CodeMirror

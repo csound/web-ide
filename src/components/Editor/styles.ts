@@ -29,6 +29,7 @@ export const root = css`
     & .CodeMirror-scroll {
         overflow: visible !important;
         margin: 0 !important;
+        margin-bottom: 48px !important;
         padding: 0 !important;
         height: auto !important;
         min-height: 100%;
