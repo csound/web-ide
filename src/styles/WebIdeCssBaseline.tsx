@@ -24,8 +24,7 @@ body {
 
 #root {
     position: relative;
-    min-height: calc(100% - 64px);
-    top: 64px;
+    height: 100%;
 }
 
 main {

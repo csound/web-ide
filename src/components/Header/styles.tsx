@@ -4,6 +4,7 @@ import { css } from "@emotion/core";
 const drawerWidth = 260;
 
 export const headerRoot = theme => css`
+    height: 64px;
     background-color: ${theme.headerBackground.primary};
 `;
 

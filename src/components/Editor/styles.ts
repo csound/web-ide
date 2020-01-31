@@ -3,18 +3,13 @@ import { css } from "@emotion/core";
 export const root = css`
     font-size: 16px;
     width: 100%;
-    position: absolute;
     height: 100%;
-    bottom: 0;
-
     & > div {
         width: 100%;
         height: auto;
         min-height: 100%;
         position: absolute;
         display: flex;
-        padding-top: 12px;
-        padding-bottom: 20px;
     }
 
     & .CodeMirror-fullscreen {

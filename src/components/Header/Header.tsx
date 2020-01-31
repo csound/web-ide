@@ -146,7 +146,9 @@ export const Header = ({ showMenuBar = true }) => {
         >
             <MenuIcon />
         </IconButton>
-    ) : <div css={SS.spacer}/>;
+    ) : (
+        <div css={SS.spacer} />
+    );
 
     return (
         <>

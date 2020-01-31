@@ -6,6 +6,7 @@
             "@store": ["./store/index.ts"],
             "@store/*": ["./store/*"],
             "@comp/*": ["./components/*"],
+            "@elem/*": ["./elements/*"],
             "@config/*": ["./config/*"],
             "@styles": ["./styles/index.ts"],
             "@styles/*": ["./styles/*"]

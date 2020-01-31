@@ -2,7 +2,7 @@ import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
-import { useTheme } from "emotion-theming";
+// import { useTheme } from "emotion-theming";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
@@ -48,6 +48,7 @@ import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors
 import { SET_LIST_PLAY_STATE } from "./types";
 import { stopCsound } from "../Csound/actions";
 import {
+    ProfileRoot,
     ProfileContainer,
     IDContainer,
     ProfilePictureContainer,
@@ -84,7 +85,7 @@ const UserLink = ({ link }) => {
 
 const Profile = props => {
     const { classes } = props;
-    const theme: any = useTheme();
+    // const theme: any = useTheme();
     const [profileUid, setProfileUid]: [string | null, any] = useState(null);
     // const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
@@ -184,9 +185,13 @@ const Profile = props => {
 
     const { displayName, bio, link1, link2, link3 } = profile;
     return (
-        <div className={classes.root}>
+        <ProfileRoot
+            className={classes.root}
+            colorA={"rgba(30, 30, 30, 1)"}
+            colorB={"rgba(40, 40, 40, 1)"}
+            colorC={"rgba(20, 20, 20, 1)"}
+        >
             <Header showMenuBar={false} />
-            <style>{`main,body {background-color: ${theme.background.primary};}`}</style>
             <main>
                 <ProfileContainer
                     colorA={"rgba(30, 30, 30, 1)"}
@@ -414,7 +419,7 @@ const Profile = props => {
                     </ContentSection>
                 </ProfileContainer>
             </main>
-        </div>
+        </ProfileRoot>
     );
 };
 

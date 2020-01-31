@@ -1,6 +1,6 @@
 /* eslint-disable */
 import * as CodeMirror from "codemirror";
-import "codemirror/addon/hint/show-hint";
+import "./show-hint";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
 import {
     append,
@@ -13,6 +13,7 @@ import {
     reject,
     values
 } from "ramda";
+
 const opcodes = reject(
     s => s.includes("(") || s.includes(")"),
     Object.keys(synopsis)
@@ -30,7 +31,6 @@ async function hintFn(cm, callback, arg3) {
     const cur = cm.getDoc().getCursor();
     const tokenData = cm.getTokenAt(cur);
     const token = propOr(false, "string", tokenData);
-
     if (!token || cur.ch !== tokenData.end || token.length < 3) return;
     const start = tokenData.start;
     const end = tokenData.end;
@@ -52,8 +52,16 @@ async function hintFn(cm, callback, arg3) {
             []
         )
     )(opcodes);
-    typeof callback === "function" && callback({ list });
+    typeof callback === "function" &&
+        callback({
+            list
+        });
     // return { list };
+    return cm;
+    // cm.on("pick", codeMirr => {
+    //     console.log("END COMP", codeMirr);
+    //     codeMirr.on("pick", (x, y, z) => console.log("PICK", x, y, z));
+    // });
 }
 
 hintFn.async = true;

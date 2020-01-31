@@ -1,23 +1,24 @@
 import { Card, Fab, TextField, Chip } from "@material-ui/core";
-import styled from "styled-components";
 import { Gradient } from "./Gradient";
+import styled from "styled-components";
+
+export const ProfileRoot = styled.div`
+    ${Gradient}
+`;
 
 export const ProfileContainer = styled.div`
     position: relative;
     padding-top: 80px;
-    height: 100%;
     display: grid;
-    grid-template-columns: 1fr 250px 8fr;
-    grid-auto-rows: minmax(min-content, max-content);
-    // grid-template-rows: 0.1fr 0.1fr 0.8fr 0.1fr;
+    grid-template-columns: 24px 250px 8fr;
+    grid-template-rows: 50px 175px 1fr 70px;
     width: 100%;
-    background-color: black;
     ${Gradient}
 `;
 export const IDContainer = styled(Card)`
     && {
         grid-row-start: 2;
-        grid-row-end: 4;
+        grid-row-end: 3;
         grid-column-start: 2;
         grid-column-end: 3;
         display: grid;
@@ -25,6 +26,7 @@ export const IDContainer = styled(Card)`
         grid-template-columns: 1fr;
         z-index: 2;
         min-height: 580px;
+        box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     }
 `;
 export const DescriptionSection = styled.div`
@@ -43,7 +45,6 @@ export const MainContent = styled.div`
     grid-row-end: 6;
     grid-column-start: 1;
     grid-column-end: 4;
-    background: ${props => props.theme.background.primary};
 `;
 export const ProfilePictureContainer = styled.div`
     position: relative;
@@ -110,19 +111,24 @@ export const NameSection = styled.div`
 `;
 export const ContentSection = styled.div`
     grid-row-start: 3;
-    grid-row-end: 5;
+    grid-row-end: auto;
     grid-column: 3;
     z-index: 2;
-    padding: 0 20px;
+    padding: 0 24px;
+    margin: 0 24px;
     display: grid;
-    grid-template-rows: 60px 50px 1fr;
+    grid-template-rows: 60px 50px auto;
     grid-template-columns: 1fr 24px;
-    min-width: 600px;
-    max-width: 1000px;
+    // min-width: 600px;
+    // max-width: 1000px;
+    background: ${props => props.theme.background.primary};
+    border-radius: 24px;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 `;
 export const ContentTabsContainer = styled.div`
     grid-row: 1;
     grid-column: 1;
+    margin-left: -24px;
 `;
 export const ContentActionsContainer = styled.div`
     grid-row: 2;
@@ -136,6 +142,7 @@ export const AddFab = styled(Fab)`
     }
 `;
 export const ListContainer = styled.div`
+    height: calc(100% - 60px);
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;

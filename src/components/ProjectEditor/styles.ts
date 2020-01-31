@@ -1,6 +1,11 @@
 import { css } from "@emotion/core";
 
 export const splitterLayoutContainer = css`
+    width: 100%;
+    height: calc(100% - 64px);
+    position absolute;
+    bottom: 0;
+  overflow: hidden;
     .layout-pane {
         overflow: hidden;
     }
