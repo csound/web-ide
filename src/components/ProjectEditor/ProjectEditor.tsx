@@ -169,8 +169,8 @@ const ProjectEditor = ({ activeProject, csound }) => {
                                 size="sm"
                                 color={
                                     isActive
-                                        ? theme.color.primary
-                                        : theme.highlightAlt.primary
+                                        ? theme.textColor
+                                        : theme.unfocusedTextColor
                                 }
                             />
                         </IconButton>
@@ -266,7 +266,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                                 <FontAwesomeIcon
                                     icon={faWindowClose}
                                     size="sm"
-                                    color={theme.alternativeColor.primary}
+                                    color={theme.highlightBackgroundAlt}
                                 />
                             </span>
                         </Tooltip>

@@ -17,11 +17,11 @@ import { makeMuiTheme } from "./MaterialUiStyle";
 const ThirdPartyLibPainter = ({ theme }) => (
     <style>{`
     .splitter-layout > .layout-splitter {
-         background-color: ${theme.highlight.primary}!important;
+         background-color: ${theme.line}!important;
     }
 
     .splitter-layout .layout-splitter:hover {
-        background-color: ${theme.highlightAlt.primary}!important;
+        background-color: ${theme.lineHover}!important;
     }
 
     body > li[role=tab] {
@@ -31,9 +31,10 @@ const ThirdPartyLibPainter = ({ theme }) => (
       z-index: 10000;
    }
    .MuiButton-outlinedPrimary {
-     color: ${theme.color.primary}!important;
-     border-color: ${theme.color.primary}!important;
+     color: ${theme.textColor}!important;
+     border-color: ${theme.textColor}!important;
    }
+   .MuiDrawer {background-color: ${theme.tooltipBackground}!important;}
         `}</style>
 );
 

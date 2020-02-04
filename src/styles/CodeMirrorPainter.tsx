@@ -2,29 +2,29 @@ import React from "react";
 
 export const CodeMirrorPainter = ({ theme }) => (
     <style>
-        {`.CodeMirror { background: ${theme.background.primary};
-                        color: ${theme.color.primary}; }
-          .CodeMirror-selected { background: ${theme.highlight.primary}; }
+        {`.CodeMirror { background: ${theme.background};
+                        color: ${theme.textColor}; }
+          .CodeMirror-selected { background: ${theme.highlightBackground}; }
           .CodeMirror-focused .CodeMirror-selected,
           .CodeMirror-line::selection,
           .CodeMirror-line > span::selection,
           .CodeMirror-line > span > span::selection
-              { background: ${theme.highlightAlt.primary}; }
+              { background: ${theme.selectedTextColor}; }
           .CodeMirror-line { padding: 0!important; }
-          .CodeMirror-gutters { background: ${theme.gutterBackground.primary};
+          .CodeMirror-gutters { background: ${theme.gutterBackground};
                                 border-right: 0px; }
-          .CodeMirror-guttermarker { color: ${theme.gutterMarker.primary}; }
-          .CodeMirror-guttermarker-subtle { color: ${theme.gutterMarkerSubtle.primary}; }
+          .CodeMirror-guttermarker { color: ${theme.gutterMarker}; }
+          .CodeMirror-guttermarker-subtle { color: ${theme.gutterMarkerSubtle}; }
           .CodeMirror-gutter-wrapper { left: -51px!important; }
-          .CodeMirror-linenumber { color: ${theme.lineNumber.primary}; min-width: 32px; }
-          .CodeMirror-cursor { border-left: 1px solid ${theme.cursor.primary}; }
+          .CodeMirror-linenumber { color: ${theme.lineNumber}; min-width: 32px; }
+          .CodeMirror-cursor { border-left: 1px solid ${theme.cursor}; }
           .CodeMirror-hints {
                      z-index: 3;
-                     background-color: ${theme.background.primary};
+                     background-color: ${theme.background};
                      position: absolute;
                      box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-                     color: ${theme.lineNumber.primary};
-                     border: 2px solid ${theme.highlight.primary};
+                     color: ${theme.lineNumber};
+                     border: 2px solid ${theme.line};
                      border-radius: 6px;
                      list-style: none;
                      font-family: ${theme.font.monospace};
@@ -42,40 +42,40 @@ export const CodeMirrorPainter = ({ theme }) => (
                       display: block;
                       margin: 0;}
           .CodeMirror-hint-active {
-                   background-color: ${theme.highlightAlt.primary};
-                   color: ${theme.opcode.primary};
+                   background-color: ${theme.highlightBackgroundAlt};
+                   color: ${theme.opcode};
                    font-weight: 500;
           }
-          .cm-attribute { color: ${theme.attribute.primary}!important; }
-          .cm-variable   {color: ${theme.opcode.primary}; font-weight: 500;}
-          .cm-keyword   {color: ${theme.keyword.primary}!important; font-weight: 500;}
-          .cm-string   {color: ${theme.string.primary}!important; font-weight: 500;}
-          .cm-variable-2,.cm-tag {color: ${theme.aRateVar.primary}!important; font-weight: 500;}
-          .cm-variable-3 {color: ${theme.iRateVar.primary}!important; font-weight: 500;}
-          .cm-variable-4 {color: ${theme.kRateVar.primary}; font-weight: 500;}
-          .cm-variable-5 {color: ${theme.fRateVar.primary}; font-weight: 500;}
-          .cm-variable-6 {color: ${theme.pField.primary}; font-weight: 800;}
-          .cm-number {color: ${theme.number.primary}!important;}
-          .cm-operator {color: ${theme.operator.primary};}
+          .cm-attribute { color: ${theme.attribute}!important; }
+          .cm-variable   {color: ${theme.opcode}; font-weight: 500;}
+          .cm-keyword   {color: ${theme.keyword}!important; font-weight: 500;}
+          .cm-string   {color: ${theme.string}!important; font-weight: 500;}
+          .cm-variable-2,.cm-tag {color: ${theme.aRateVar}!important; font-weight: 500;}
+          .cm-variable-3 {color: ${theme.iRateVar}!important; font-weight: 500;}
+          .cm-variable-4 {color: ${theme.kRateVar}; font-weight: 500;}
+          .cm-variable-5 {color: ${theme.fRateVar}; font-weight: 500;}
+          .cm-variable-6 {color: ${theme.pField}; font-weight: 800;}
+          .cm-number {color: ${theme.number}!important;}
+          .cm-operator {color: ${theme.operator};}
           .cm-global {font-style: italic; font-weight: 800;}
-          .cm-s-default {color: ${theme.color.primary};}
-          .cm-bracket { color: ${theme.color.primary}; ]
+          .cm-s-default {color: ${theme.textColor};}
+          .cm-bracket { color: ${theme.textColor}; ]
 }
 
-          .cm-error { color: ${theme.error.primary}; }
-          .cm-comment { color: ${theme.comment.primary}!important; }
-          .cm-comment.cm-attribute { color: ${theme.commentAttribute.primary}; }
-          .cm-comment.cm-def { color: ${theme.commentDef.primary}; }
-          .cm-comment.cm-tag { color: ${theme.commentTag.primary}; }
-          .cm-comment.cm-type { color: ${theme.commentType.primary}; }
+          .cm-error { color: ${theme.errorText}; }
+          .cm-comment { color: ${theme.comment}!important; }
+          .cm-comment.cm-attribute { color: ${theme.commentAttribute}; }
+          .cm-comment.cm-def { color: ${theme.commentDef}; }
+          .cm-comment.cm-tag { color: ${theme.commentTag}; }
+          .cm-comment.cm-type { color: ${theme.commentType}; }
 
           /* blink eval */
           @keyframes flash-animation {
               0% {
-                 background-color: ${theme.flash.primary};
+                 background-color: ${theme.flash};
               }
               100% {
-                 background-color: ${theme.flash.secondary};
+                 background-color: ${theme.flashFade};
               }
           }
           .blinkEval {
@@ -86,7 +86,7 @@ export const CodeMirrorPainter = ({ theme }) => (
           }
           .blinkEvalError {
               z-index: 9999999;
-              background-color: ${theme.error.primary};
+              background-color: ${theme.errorText};
           }
     `}
     </style>

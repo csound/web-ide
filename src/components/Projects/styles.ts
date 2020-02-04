@@ -12,8 +12,8 @@ export const loadMain = css`
 
 export const modalSubmitButton = theme => css`
     &.MuiButton-outlinedPrimary {
-        color: ${theme.allowed.primary};
-        background-color: rgba(${rgba(theme.allowed.primary, 0.05)});
+        color: ${theme.allowed};
+        background-color: rgba(${rgba(theme.allowed, 0.05)});
     }
 `;
 

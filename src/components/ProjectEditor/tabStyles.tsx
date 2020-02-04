@@ -1,12 +1,14 @@
 import styled from "styled-components";
 import { styled as themeStyled } from "react-tabtab";
-
+import { _shadow } from "@styles/_common";
 let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
 
 TabListStyle = styled(TabListStyle)`
-    background-color: ${props => props.theme.background.primary};
+    background-color: ${props => props.theme.background};
+
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
         0 3px 1px -2px rgba(0, 0, 0, 0.2);
+
     & li::after {
         z-index: 0;
     }
@@ -15,28 +17,23 @@ TabListStyle = styled(TabListStyle)`
 TabStyle = styled(TabStyle)`
     position: relative;
     color: ${props =>
-        props.active
-            ? props.theme.color.primary
-            : props.theme.highlight.primary};
+        props.active ? props.theme.textColor : props.theme.unfocusedTextColor};
     font-weight: ${props => (props.active ? 500 : 400)};
-    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
+    // text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
     background-color: ${props =>
         props.active
-            ? props.theme.highlight.primary
-            : props.theme.background.primary};
+            ? props.theme.highlightBackground
+            : props.theme.background};
     border: 0;
     padding: 13px 19px;
     padding-right: 42px;
     margin-bottom: -1px;
     &:hover {
-        color: ${props =>
-            props.active
-                ? props.theme.color.primary
-                : props.theme.alternativeColor.primary};
+        color: ${props => props.theme.textColor};
         background-color: ${props =>
             props.active
-                ? props.theme.highlight.primary
-                : "rgba(0, 0, 0, 0.1)"};
+                ? props.theme.highlightBackground
+                : props.theme.highlightBackgroundAlt};
     }
     &::after {
         z-index: 10;
@@ -46,49 +43,41 @@ TabStyle = styled(TabStyle)`
         bottom: 0;
         right: 0;
         height: 3px;
-        background: ${props =>
+        background-color: ${props =>
             props.active
-                ? props.theme.tabHighlight.secondary
-                : props.theme.tabHighlight.primary};
+                ? props.theme.tabHighlightActive
+                : props.theme.tabHighlight};
     }
     & > button {
         display: none;
     }
 
     & > button:hover {
-        color: ${props =>
-            props.active
-                ? props.theme.color.primary
-                : props.theme.color.primary};
+        color: ${props => props.theme.textColor};
         background-color: ${props =>
             props.active
-                ? props.theme.highlightAlt.secondary
-                : props.theme.highlightAlt.primary};
+                ? props.theme.highlightBackgroundAlt
+                : props.theme.highlightBackground};
         border-radius: 50%;
-    }
-
-    &:hover::after {
-        background: ${props => props.theme.tabHighlight.secondary};
     }
 `;
 
 ActionButtonStyle = styled(ActionButtonStyle)`
-    background-color: ${props => props.theme.gutterBackground.primary};
-    border: 2px solid ${props => props.theme.highlight.primary};
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    background-color: ${props => props.theme.gutterBackground};
+    border: 2px solid ${props => props.theme.line};
+    ${_shadow}
     border-radius: 0;
     border: none !important;
-    z-index: 1;
+    z-index: 2;
     width: 42px;
     svg {
-        fill: ${props => props.theme.lineNumber.primary};
+        fill: ${props => props.theme.textColor};
         width: 100%;
         height: 100%
         padding: 0;
     }
     svg:hover {
-        fill: ${props => props.theme.lineNumber.secondary};
-        background-color: ${props => props.theme.lineNumber.primary};
+        background-color: ${props => props.theme.lineNumber};
     }
 `;
 
@@ -97,7 +86,7 @@ PanelStyle = styled(PanelStyle)`
     height: 100%;
     position: absolute;
     padding: 0;
-    background-color: ${props => props.theme.background.primary};
+    background-color: ${props => props.theme.background};
 `;
 
 export default {

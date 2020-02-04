@@ -2,15 +2,26 @@ import { css } from "@emotion/core";
 
 export const hr = theme => css`
     padding: 0;
-    background-color: ${theme.highlight.primary};
+    background-color: ${theme.line};
     height: 2px;
     border: none;
     margin: 0;
 `;
 
+export const _shadow = `
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+        0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+        0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+`;
+
+export const shadow = css`
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+        0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+        0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+`;
+
 export const windowHeader = theme => css`
-    background-color: ${theme.highlightAlt.primary};
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    background-color: ${theme.highlightBackgroundAlt};
     top: 0;
     position: absolute;
     width: 100%;
@@ -19,9 +30,10 @@ export const windowHeader = theme => css`
     justify-content: center;
     align-content: center;
     flex-direction: column;
+    ${shadow}
     & p {
         margin: 0;
         margin-left: 12px;
-        color: ${theme.lineNumber.primary};
+        color: ${theme.lineNumber};
     }
 `;

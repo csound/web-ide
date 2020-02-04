@@ -302,7 +302,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             ref={scrollerRef}
             windowName={"editor_scroller"}
             style={{
-                backgroundColor: theme.background.primary
+                backgroundColor: theme.background
             }}
         >
             <CodeMirror

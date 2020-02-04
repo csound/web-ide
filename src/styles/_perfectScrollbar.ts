@@ -7,7 +7,7 @@ export const perfectScrollbarStyleSheet = theme => css`
     & .ps__rail-y:focus,
     & .ps__rail-x.ps--clicking,
     & .ps__rail-y.ps--clicking {
-        background-color: ${theme.highlightAlt.primary};
+        background-color: ${theme.highlightBackground};
         width: 9px;
         opacity: 1;
     }
@@ -24,14 +24,14 @@ export const perfectScrollbarStyleSheet = theme => css`
         width: 9px;
     }
     .ps__thumb-y {
-        background-color: ${theme.scrollbar.primary};
+        background-color: ${theme.scrollbar};
         width: 4px;
         opacity: 1;
     }
     .ps__rail-y:hover > .ps__thumb-y,
     .ps__rail-y:focus > .ps__thumb-y,
     .ps__rail-y.ps--clicking .ps__thumb-y {
-        background-color: ${theme.scrollbarHover.primary};
+        background-color: ${theme.scrollbarHover};
         width: 8px;
     }
 `;

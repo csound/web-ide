@@ -36,7 +36,7 @@ const FileTreeHeader = ({
                                     <FontAwesomeIcon
                                         icon={faFolderPlus}
                                         size="sm"
-                                        color={theme.alternativeColor.primary}
+                                        color={theme.textColorAlt}
                                     />
                                 </span>
                             </Tooltip>
@@ -51,7 +51,7 @@ const FileTreeHeader = ({
                                 <FontAwesomeIcon
                                     icon={faWindowClose}
                                     size="sm"
-                                    color={theme.alternativeColor.primary}
+                                    color={theme.textColorAlt}
                                 />
                             </span>
                         </Tooltip>

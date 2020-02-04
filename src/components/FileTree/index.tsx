@@ -80,7 +80,7 @@ const makeTree = (
     const allDirs = filter(propEq("type", "folder"), filelist);
     const allFiles = filter(f => not(propEq("type", "folder", f)), filelist);
     const dragHoverCss = `{background-color: rgba(${rgba(
-        theme.allowed.primary,
+        theme.allowed,
         0.1
     )}) !important;}`;
 

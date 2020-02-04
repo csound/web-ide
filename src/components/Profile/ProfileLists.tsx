@@ -122,14 +122,14 @@ const ProjectListItem = props => {
                                 <PauseIcon
                                     fontSize="large"
                                     style={{
-                                        color: theme.profilePlayButton.secondary
+                                        color: theme.profilePlayButtonActive
                                     }}
                                 />
                             ) : (
                                 <PlayIcon
                                     fontSize="large"
                                     style={{
-                                        color: theme.profilePlayButton.primary
+                                        color: theme.profilePlayButton
                                     }}
                                 />
                             )}

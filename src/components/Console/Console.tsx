@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 // import { IStore } from "@store/types";
 import { List } from "react-virtualized";
 import { withResizeDetector } from "react-resize-detector";
-import { append, dropLast, pathOr } from "ramda";
+import { append, pathOr } from "ramda";
 import * as SS from "./styles";
 import "react-virtualized/styles.css";
 
@@ -43,7 +43,7 @@ const Console = ({ width, height }: IConsoleProps) => {
         dispatch(
             setClearConsoleCallback(() => {
                 scrollPosition = 0;
-                setLogs([""]);
+                setLogs([]);
             })
         );
         return () => {
@@ -64,7 +64,7 @@ const Console = ({ width, height }: IConsoleProps) => {
                 ) {
                     setTimeout(() => row.scrollToRow(row.props.rowCount), 9);
                 }
-                return append("", append(dropLast(1, msg), currentLogs));
+                return append(msg, currentLogs);
             });
         }
     };

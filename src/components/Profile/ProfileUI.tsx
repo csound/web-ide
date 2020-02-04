@@ -117,7 +117,7 @@ export const ContentSection = styled.div`
     grid-template-rows: 60px 50px auto;
     grid-template-columns: 1fr;
     overflow: hidden;
-    background: ${props => props.theme.background.primary};
+    background: ${props => props.theme.background};
     border-radius: 24px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 `;

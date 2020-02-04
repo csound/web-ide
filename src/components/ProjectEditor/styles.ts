@@ -36,7 +36,7 @@ export const closeButton = css`
     right: 8px;
     padding: 6px;
     position: absolute;
-    z-index: 1001;
+    z-index: 1;
 `;
 
 export const headIconsContainer = theme => css`
@@ -51,7 +51,7 @@ export const headIconsContainer = theme => css`
         cursor: pointer;
         &:hover {
             svg {
-                color: ${theme.color.primary}!important;
+                color: ${theme.textColor}!important;
             }
         }
     }

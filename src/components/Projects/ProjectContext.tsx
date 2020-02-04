@@ -14,7 +14,7 @@ interface IProjectContextProps {
 }
 
 const ForceBackgroundColor = ({ theme }) => (
-    <style>{`body {background-color: ${theme.background.primary}}`}</style>
+    <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
 export const ProjectContext = (props: IProjectContextProps) => {

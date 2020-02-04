@@ -1,4 +1,5 @@
 import { css } from "@emotion/core";
+import { shadow } from "@styles/_common";
 
 export const dropdownContainer = css`
     position: relative;
@@ -17,12 +18,12 @@ export const dropdownContainerForDialog = css`
 `;
 
 export const menu = theme => css`
+    ${shadow}
     z-index: 2;
     position: absolute;
-    border: 2px solid ${theme.highlight.primary};
+    border: 2px solid ${theme.line};
     border-radius: 6px;
-    background-color: ${theme.background.primary};
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    background-color: ${theme.headerBackground};
     min-width: 120px;
     width: 100%;
     margin-top: 6px;
@@ -49,7 +50,7 @@ export const menu = theme => css`
         text-align: center;
     }
     & > div > div:last-of-type {
-        border-top: 2px solid ${theme.highlight.primary};
+        border-top: 2px solid ${theme.line};
         line-height: 42px !important;
     }
 `;
@@ -73,33 +74,33 @@ export const control = theme => css`
     transition: width 2s;
     border-radius: 0;
     text-decoration: none;
-    color: ${theme.color.primary};
+    color: ${theme.headerTextColor};
     font-size: 15px;
     padding: 0px;
-    border: 2px solid ${theme.highlight.primary};
+    border: 2px solid ${theme.line};
     border-radius: 3px;
     cursor: default;
-    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
+    ${shadow}
     & span {
         display: none;
     }
     &:hover {
-        border: 2px solid ${theme.highlightAlt.primary};
+        border: 2px solid ${theme.lineColorHover};
         cursor: pointer;
     }
 `;
 
 export const controlError = theme => css`
     ${control(theme)}
-    color: ${theme.error.primary};
-    border: 2px solid ${theme.error.primary};
+    color: ${theme.errorText};
+    border: 2px solid ${theme.errorText};
     &:hover {
-        border: 2px solid ${theme.error.primary};
+        border: 2px solid ${theme.errorText};
     }
 `;
 
 export const placeholder = theme => css`
-    color: ${theme.color.primary};
+    color: ${theme.headerTextColor};
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 1.25px;
@@ -111,15 +112,15 @@ export const menuOption = theme => css`
     line-height: 36px;
     outline: none;
     cursor: pointer;
-    color: ${theme.color.primary};
+    color: ${theme.headerTextColor};
     &:hover {
-        background-color: ${theme.highlightAlt.primary} !important;
+        background-color: ${theme.buttonBackgroundHover} !important;
     }
 `;
 
 export const menuOptionDisabled = theme => css`
     ${menuOption(theme)}
-    color: ${theme.disabledColor.primary};
+    color: ${theme.disabledTextColor};
     cursor: initial;
     &:hover {
         background-color: unset!important;
@@ -131,16 +132,16 @@ export const groupHeading = theme => css`
     cursor: default;
     line-height: 36px;
     margin: 0;
-    color: ${theme.alternativeColor.primary};
+    color: ${theme.headerTextColor};
     font-size: 15px;
     font-weight: 500;
 `;
 
 export const indicatorContainer = theme => css`
-    background-color: ${theme.highlight.primary};
+    background-color: ${theme.highlightBackground};
     width: 18px;
     & > div {
-        color: ${theme.alternativeColor.primary} !important;
+        color: ${theme.altTextColor} !important;
         padding: 0;
     }
     & svg {
@@ -157,19 +158,18 @@ export const indicatorSeparator = css`
 export const playButtonContainer = theme => css`
     position: relative;
     overflow: hidden;
-    border: 2px solid ${theme.highlight.primary};
+    border: 2px solid ${theme.highlightBackground};
     cursor: pointer;
     border-radius: 3px;
-    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
+    ${shadow}
     height: 100%;
     width: 42px;
     margin-right: 6px;
     &:hover {
         cursor: pointer;
-        border: 2px solid ${theme.highlightAlt.primary};
+        border: 2px solid ${theme.line};
         & > button {
-            border-color: transparent transparent transparent
-                ${theme.highlightAlt.primary};
+            border-color: transparent transparent transparent ${theme.line};
         }
     }
 `;
@@ -181,8 +181,7 @@ export const playButtonStyle = (playing: boolean) => theme => css`
     width: 0;
     height: 12px;
     cursor: pointer;
-    border-color: transparent transparent transparent
-        ${theme.alternativeColor.primary};
+    border-color: transparent transparent transparent ${theme.playIcon};
     transition: 100ms all ease;
 
     // play state
@@ -204,7 +203,7 @@ margin-left: 9px;
 
 export const closeIcon = theme => css`
     position: absolute;
-    background-color: ${theme.highlight.primary}!important;
+    background-color: ${theme.highlightBackground}!important;
     right: 50px;
     width: 24px;
     height: 24px;
@@ -237,15 +236,16 @@ export const targetsDialogBottom = theme => css`
 `;
 
 export const targetsDialogMain = theme => css`
+    ${shadow}
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     margin-bottom: 12px;
-    border: 2px solid ${theme.highlight.primary};
+    border: 2px solid ${theme.line};
     border-radius: 6px;
     padding: 12px;
 `;
 
 export const targetLabel = theme => css`
-    color: ${theme.alternativeColor.primary};
+    color: ${theme.altTextColor};
     position: absolute;
     font-size: 12px;
     font-weight: 400;

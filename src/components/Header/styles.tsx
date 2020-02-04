@@ -5,7 +5,10 @@ const drawerWidth = 260;
 
 export const headerRoot = theme => css`
     height: 64px;
-    background-color: ${theme.headerBackground.primary};
+    background-color: ${theme.headerBackground};
+    & > div {
+       height 64px;
+    }
 `;
 
 export const drawer = css`
@@ -25,7 +28,6 @@ export const menuButton = css`
 
 export const menuItemLink = theme => css`
     text-decoration: none;
-    color: ${theme.color.black};
 `;
 
 export const toolbar = css`

@@ -27,31 +27,31 @@ const StyledIconButton = styled(IconButton)`
 `;
 const StyledStarIcon = styled(StarIcon)`
     && {
-        fill: #8f9089;
+        fill: ${props => props.theme.starActive};
     }
 `;
 
 const StyledOutlinedStarIcon = styled(OutlinedStarIcon)`
     && {
-        fill: #8f9089;
+        fill: ${props => props.theme.starInactive};
     }
 `;
 
 const StyledShareIcon = styled(ShareIcon)`
     && {
-        fill: #8f9089;
+        fill: ${props => props.theme.socialIcon};
     }
 `;
 
 const StyledPublicIcon = styled(VisibilityIcon)`
     && {
-        fill: #8f9089;
+        fill: ${props => props.theme.publicIcon};
     }
 `;
 
 const StyledPublicOffIcon = styled(VisibilityOffIcon)`
     && {
-        fill: #8f9089;
+        fill: ${props => props.theme.publicIcon};
     }
 `;
 
@@ -59,7 +59,7 @@ const StyledLabelContainer = styled.div`
     padding: 2px;
     font-size: 15px;
     font-weight: 500;
-    color: ${props => props.theme.color.primary};
+    color: ${props => props.theme.headerTextColor};
     letter-spacing: 1.25px;
 `;
 

@@ -1,7 +1,8 @@
 import { css } from "@emotion/core";
+import { shadow } from "@styles/_common";
 
 export const root = theme => css`
-    color: ${theme.color.primary};
+    color: ${theme.headerTextColor};
     font-size: 15px;
     display: inline-block;
     position: relative;
@@ -17,7 +18,7 @@ export const root = theme => css`
 
 export const selectedIcon = theme => css`
     position: absolute;
-    fill: ${theme.color.primary};
+    fill: ${theme.headerTextColor};
     height: auto;
     width: 18px;
     margin-top: 8px;
@@ -43,18 +44,17 @@ export const dropdownButtonWrapper = css`
 `;
 
 export const dropdownButton = theme => css`
+    $[shadow];
     z-index: 2;
     display: inline;
-    border: 2px solid ${theme.highlight.primary};
+    border: 2px solid ${theme.line};
     border-radius: 6px;
     padding: 5px 9px;
+   margin: 2px;
     &:hover {
         cursor: pointer;
-        background-color: ${theme.highlightAlt.primary};
+        background-color: ${theme.buttonBackgroundHover};
         z-index: 3;
-        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
-            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
     }
     & > span {
         font-size: 14px;
@@ -66,9 +66,9 @@ export const dropdownButton = theme => css`
 export const dropdownList = theme => css`
     z-index: 10000;
     width: fit-content;
-    border: 2px solid ${theme.highlight.primary};
+    border: 2px solid ${theme.line};
     border-radius: 6px;
-    background-color: ${theme.background.primary};
+    background-color: ${theme.headerBackground};
     opacity: 1;
     position: absolute;
     list-style: none !important;
@@ -79,7 +79,7 @@ export const dropdownList = theme => css`
     margin-top: 24px;
     left: 0;
     top: 5px;
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    ${shadow}
 `;
 
 export const dropdownListNested = theme => css`
@@ -100,15 +100,13 @@ export const listItem = theme => css`
     width: 100%;
     display: flex;
     justify-content: space-between;
-    background-color: ${theme.background.primary};
+    background-color: ${theme.headerBackground};
     position: relative;
     &:hover {
         cursor: pointer;
-        background-color: ${theme.highlightAlt.primary};
+        background-color: ${theme.buttonBackgroundHover};
         border-radius: 2px;
-        box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-            0px 4px 5px 0px rgba(0, 0, 0, 0.14),
-            0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+        ${shadow};
     }
     & > p,
     span {
@@ -126,7 +124,7 @@ export const listItemDisabled = theme => css`
     & > p,
     span,
     i {
-        color: ${theme.disabledColor.primary};
+        color: ${theme.disabledTextColor};
     }
 `;
 
