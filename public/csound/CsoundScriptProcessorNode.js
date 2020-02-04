@@ -44,6 +44,15 @@ const printMessages = t => {
     messageCallback(t);
 };
 
+// FS helpers
+const pathToArr = path => {
+    if (!path) return [];
+    const minusPrefix = path.replace(/^\//i, "");
+    const minusPostfix = minusPrefix.replace(/\/$/i, "");
+    return minusPostfix.split("/");
+};
+const ensureRootPrefix = path => (/^\//i.test(path) ? path : `/${path}`);
+
 /** This E6 class is used to setup scripts and
     allow the creation of new CsoundScriptProcessorNode objects
     *  @hideconstructor
@@ -72,7 +81,7 @@ class CsoundScriptProcessorNodeFactory {
                 script_base + "libcsound.js",
                 () => {
                     AudioWorkletGlobalScope.CSMOD = {};
-                    let CSMOD = AudioWorkletGlobalScope.CSMOD;
+                    const CSMOD = AudioWorkletGlobalScope.CSMOD;
 
                     //CSMOD["ENVIRONMENT"] = "WEB";
                     CSMOD["print"] = printMessages;
@@ -245,6 +254,10 @@ class CsoundScriptProcessorNodeFactory {
  *   @returns {object} A new CsoundScriptProcessorNode
  */
 CsoundScriptProcessorNode = function(context, options) {
+    const CSMOD = AudioWorkletGlobalScope.CSMOD;
+    const FS = CSMOD["FS"];
+    const MEMFS = CSMOD["FS"].filesystems.MEMFS;
+
     var spn = context.createScriptProcessor(
         0,
         options.numberOfInputs,
@@ -293,6 +306,64 @@ CsoundScriptProcessorNode = function(context, options) {
         playState: "stopped",
         playStateListeners: new Set(),
 
+        dirExists(path) {
+            const pathArr = pathToArr(path);
+            const result = pathArr.reduce(
+                ([currMount, bool], item, index) => {
+                    const curPath = ensureRootPrefix(
+                        pathArr.slice(0, index + 1).join("/")
+                    );
+                    if (!bool) return [null, false];
+                    if (currMount.some(m => m.mountpoint === curPath)) {
+                        return [
+                            currMount.find(m => m.mountpoint === curPath)
+                                .mounts,
+                            true
+                        ];
+                    } else {
+                        return [null, false];
+                    }
+                },
+                [FS.root.mount.mounts, true]
+            );
+            return result[1];
+        },
+
+        mkdir(dirPath) {
+            const pathArr = pathToArr(dirPath);
+            const maybeParentPathArr = pathArr.slice(0, -2);
+            const parentPathArr =
+                maybeParentPathArr.length === 0 ? ["/"] : maybeParentPathArr;
+            FS.createFolder(FS.root, ensureRootPrefix(dirPath), true, true);
+            FS.mount(
+                MEMFS,
+                { root: ensureRootPrefix(parentPathArr.join("/")) },
+                ensureRootPrefix(dirPath)
+            );
+        },
+
+        mkdirRecursive(dirPath) {
+            const pathArr = pathToArr(dirPath);
+            pathArr.reduce((__x, __y, index) => {
+                const currPath = ensureRootPrefix(
+                    pathArr.slice(0, index + 1).join("/")
+                );
+                !this.dirExists(currPath) && this.mkdir(currPath);
+            }, null);
+        },
+
+        /** Calls FS.chdir and changes the current directory root
+         * @param {string} a path to set cwd to
+         */
+        setCurrentDirFS(dirPath) {
+            if (!this.dirExists(dirPath)) {
+                this.mkdirRecursive(dirPath);
+            }
+            FS.chdir(ensureRootPrefix(dirPath));
+            return new Promise(resolve => {
+                resolve(true);
+            });
+        },
         /**
          *
          *  Writes data to a file in the WASM filesystem for
@@ -302,13 +373,22 @@ CsoundScriptProcessorNode = function(context, options) {
          * @param {blob}   blobData The data to write to file.
          * @memberof CsoundMixin
          */
-
-        writeToFS(filePath, blobData) {
-            let FS = CSMOD["FS"];
-            let stream = FS.open(filePath, "w+");
+        writeToFS(rawName, blobData) {
+            let name = "";
+            let path;
+            if (rawName.includes("/")) {
+                let patharr = rawName.split("/");
+                let parentToPath = patharr.slice(0, -2).join("/");
+                path = patharr.slice(0, -1).join("/");
+                name = patharr.slice(-1)[0];
+                if (!this.dirExists(path)) {
+                    this.mkdirRecursive(path);
+                }
+            } else {
+                name = rawName;
+            }
             let buf = new Uint8Array(blobData);
-            FS.write(stream, buf, 0, buf.length, 0);
-            FS.close(stream);
+            FS.writeFile(ensureRootPrefix(rawName), buf, { flags: "w+" });
         },
 
         /**
@@ -319,7 +399,6 @@ CsoundScriptProcessorNode = function(context, options) {
          * @memberof CsoundMixin
          */
         unlinkFromFS(filePath) {
-            let FS = CSMOD["FS"];
             FS.unlink(filePath);
         },
 
@@ -375,7 +454,12 @@ CsoundScriptProcessorNode = function(context, options) {
          */
 
         evaluateCode(codeString) {
-            return "??" + CSOUND.evaluateCode(this.csound, codeString);
+            return CSOUND.evaluateCode(this.csound, codeString);
+        },
+        evaluateCodePromise(codeString) {
+            return new Promise(resolve => {
+                resolve(CSOUND.evaluateCode(this.csound, codeString));
+            });
         },
         /** Reads a numeric score string.
          *
@@ -725,7 +809,6 @@ CsoundScriptProcessorNode = function(context, options) {
         }
     };
 
-    let CSMOD = AudioWorkletGlobalScope.CSMOD;
     //CSMOD["print"] = printMessages;
     //CSMOD["printErr"] = printMessages;
 

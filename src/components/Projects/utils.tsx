@@ -1,7 +1,17 @@
 import { storageRef, getFirebaseTimestamp } from "@config/firestore";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { ICsoundObj } from "@comp/Csound/types";
-import { assoc, curry, map, pipe, prop, propOr, reduce } from "ramda";
+import {
+    assoc,
+    curry,
+    isNil,
+    map,
+    pipe,
+    prop,
+    propOr,
+    reduce,
+    reject
+} from "ramda";
 import { projectLastModified } from "@config/firestore";
 
 export function textOrBinary(filename: string): IDocumentFileType {
@@ -30,11 +40,18 @@ export const generateEmptyDocument = (documentUid, filename): IDocument => ({
     savedValue: "",
     type: "txt",
     userUid: "",
-    isModifiedLocally: false
+    isModifiedLocally: false,
+    path: []
 });
 
 export const addDocumentToEMFS = curry(
-    (projectUid: string, csound: ICsoundObj, document: IDocument) => {
+    (
+        projectUid: string,
+        csound: ICsoundObj,
+        document: IDocument,
+        absolutePath: string
+    ) => {
+        if (document.type === "folder") return;
         if (document.type === "bin") {
             let path = `${document.userUid}/${projectUid}/${document.documentUid}`;
             return storageRef
@@ -46,7 +63,7 @@ export const addDocumentToEMFS = curry(
                     xhr.responseType = "arraybuffer";
                     xhr.onload = function(event) {
                         let blob = xhr.response;
-                        csound.writeToFS(document.filename, blob);
+                        csound.writeToFS(absolutePath, blob);
                     };
                     xhr.open("GET", url);
                     xhr.send();
@@ -56,10 +73,7 @@ export const addDocumentToEMFS = curry(
                 });
         } else {
             const encoder = new TextEncoder();
-            csound.writeToFS(
-                document.filename,
-                encoder.encode(document.savedValue)
-            );
+            csound.writeToFS(absolutePath, encoder.encode(document.savedValue));
         }
     }
 );
@@ -74,7 +88,8 @@ export const fileDocDataToDocumentType = docData =>
         lastModified: docData["lastModified"],
         savedValue: docData["value"],
         type: docData["type"],
-        userUid: docData["userUid"]
+        userUid: docData["userUid"],
+        path: reject(isNil, docData["path"] || [])
     } as IDocument);
 
 export const convertDocSnapToDocumentsMap = docsToAdd =>

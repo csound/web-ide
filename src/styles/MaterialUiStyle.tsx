@@ -40,12 +40,8 @@ export const makeMuiTheme = (muiTheme, theme) => {
             color: `${theme.color.primary}!important`
         }),
         assocPath(["overrides", "MuiButtonBase", "root"], {
-            color: `${theme.button.primary}`,
             "&:hover": {
-                backgroundColor: `rgba(${rgba(
-                    theme.button.primary,
-                    0.1
-                )})!important`
+                backgroundColor: `${theme.buttonHover.primary}!important`
             }
         }),
         assocPath(["overrides", "MuiFab", "primary"], {
@@ -66,11 +62,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
             color: `${theme.color.primary}!important`,
             opacity: 0.95,
             "&:hover": {
-                backgroundColor: `rgba(${rgba(
-                    theme.button.secondary,
-                    0.1
-                )})!important`,
-                opacity: 1
+                backgroundColor: `${theme.buttonHover.primary}!important`
             }
         }),
         assocPath(["overrides", "MuiButton", "textSecondary"], {
@@ -138,14 +130,14 @@ export const makeMuiTheme = (muiTheme, theme) => {
                 padding: "12px 24px!important"
             }
         }),
-        assocPath(["overrides", "MuiListItem", "button"], {
-            color: theme.color.primary,
-            backgroundColor: theme.background.primary,
-            "&:hover": {
-                backgroundColor: `${theme.highlightAlt.primary}!important`,
-                borderRadius: "2px"
-            }
-        }),
+        // assocPath(["overrides", "MuiListItem", "button"], {
+        //     color: theme.color.primary,
+        //     backgroundColor: theme.background.primary,
+        //     "&:hover": {
+        //         backgroundColor: `${theme.highlightAlt.primary}`,
+        //         borderRadius: "2px"
+        //     }
+        // }),
         assocPath(["overrides", "MuiMenu", "list"], {
             color: theme.color.primary
         })

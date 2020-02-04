@@ -1,4 +1,5 @@
 import { IDocument, IDocumentsMap } from "./types";
+import { store } from "@store/index";
 import { ICsoundObj } from "@comp/Csound/types";
 import { projects, targets } from "@config/firestore";
 import {
@@ -14,11 +15,14 @@ import {
 import { tabClose } from "@comp/ProjectEditor/actions";
 import { updateAllTargetsLocally } from "@comp/TargetControls/actions";
 import {
+    append,
     assoc,
+    concat,
     filter,
     forEach,
     map,
     isEmpty,
+    path,
     prop,
     propEq,
     values
@@ -48,14 +52,26 @@ export const subscribeToProjectFilesChanges = (
                 const docs: IDocumentsMap = convertDocSnapToDocumentsMap(
                     filesToAdd
                 );
-                (forEach as any)(
-                    addDocumentToEMFS(projectUid, csound),
-                    values(docs)
-                );
+                forEach(d => {
+                    if (d.type !== "folder") {
+                        const pathPrefix = (d.path || [])
+                            .filter(p => typeof p === "string")
+                            .map(docUid => path([docUid, "filename"], docs));
+                        const absolutePath = concat(
+                            [`/${projectUid}`],
+                            append(d.filename, pathPrefix)
+                        ).join("/");
+                        addDocumentToEMFS(projectUid, csound, d, absolutePath);
+                    }
+                }, values(docs));
                 dispatch(addProjectDocuments(projectUid, docs));
             }
 
             if (!isEmpty(filesToModify)) {
+                const currentReduxDocuments = path(
+                    ["ProjectsReducer", "projects", projectUid, "documents"],
+                    store.getState()
+                );
                 const docsSnaps = map(prop("doc"), filesToModify);
                 const docData = map(
                     d =>
@@ -70,12 +86,53 @@ export const subscribeToProjectFilesChanges = (
                 // it will be null the first time and immedietly not-null
                 const docDataReady = docData.filter(d => !!d.lastModified);
                 docDataReady.forEach(doc => {
-                    dispatch(saveUpdatedDocument(projectUid, doc));
-                    csound.unlinkFromFS(doc.filename);
-                    addDocumentToEMFS(projectUid, csound, doc);
+                    if (doc.type !== "folder") {
+                        const oldFile = currentReduxDocuments[doc.documentUid];
+                        const lastPathPrefix = (oldFile.path || [])
+                            .filter(p => typeof p === "string")
+                            .map(docUid =>
+                                path(
+                                    [docUid, "filename"],
+                                    currentReduxDocuments
+                                )
+                            );
+                        const lastAbsolutePath = concat(
+                            [`/${projectUid}`],
+                            append(oldFile.filename, lastPathPrefix)
+                        ).join("/");
+                        const newPathPrefix = (doc.path || [])
+                            .filter(p => typeof p === "string")
+                            .map(docUid =>
+                                path(
+                                    [docUid, "filename"],
+                                    currentReduxDocuments
+                                )
+                            );
+                        const newAbsolutePath = concat(
+                            [`/${projectUid}`],
+                            append(doc.filename, newPathPrefix)
+                        ).join("/");
+                        // Handle file moved
+                        if (newAbsolutePath !== lastAbsolutePath) {
+                            csound.unlinkFromFS(lastAbsolutePath);
+                        } else {
+                            csound.unlinkFromFS(newAbsolutePath);
+                        }
+                        addDocumentToEMFS(
+                            projectUid,
+                            csound,
+                            doc,
+                            newAbsolutePath
+                        );
+                        dispatch(saveUpdatedDocument(projectUid, doc));
+                    }
                 });
             }
             if (!isEmpty(filesToRemove)) {
+                const currentReduxDocuments = path(
+                    ["ProjectsReducer", "projects", projectUid, "documents"],
+                    store.getState()
+                );
                 const docsSnaps = map(prop("doc"), filesToRemove);
                 const docsData = map(
                     d =>
@@ -85,12 +142,28 @@ export const subscribeToProjectFilesChanges = (
                     docsSnaps
                 ) as IDocument[];
                 const uids = map(prop("documentUid"), docsData);
-                const names = map(prop("filename"), docsData);
                 uids.forEach(uid => {
                     dispatch(tabClose(projectUid, uid, false));
                     dispatch(removeDocumentLocally(projectUid, uid));
                 });
-                names.forEach(name => csound.unlinkFromFS(name));
+
+                docsData.forEach(doc => {
+                    if (doc.type !== "folder") {
+                        const pathPrefix = (doc.path || [])
+                            .filter(p => typeof p === "string")
+                            .map(docUid =>
+                                path(
+                                    [docUid, "filename"],
+                                    currentReduxDocuments
+                                )
+                            );
+                        const absolutePath = concat(
+                            [`/${projectUid}`],
+                            append(doc.filename, pathPrefix)
+                        ).join("/");
+                        csound.unlinkFromFS(absolutePath);
+                    }
+                });
             }
         });
     return unsubscribe;

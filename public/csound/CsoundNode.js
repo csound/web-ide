@@ -54,6 +54,7 @@ class CsoundNode extends AudioWorkletNode {
         this.port.start();
         this.channels = {};
         this.evaluateCodePromises = {};
+        this.setCurrentDirFSPromise = null;
         this.channelCallbacks = {};
         this.stringChannels = {};
         this.stringChannelCallbacks = {};
@@ -74,6 +75,11 @@ class CsoundNode extends AudioWorkletNode {
                         this.evaluateCodePromises[data[1]] = null;
                     }
                     break;
+                case "setCurrentDirFSDone":
+                    if (this.setCurrentDirFSPromise) {
+                        this.setCurrentDirFSPromise(true);
+                        this.setCurrentDirFSPromise = null;
+                    }
                 case "control":
                     this.channels[data[1]] = data[2];
                     if (typeof this.channelCallbacks[data[1]] != "undefined")
@@ -102,13 +108,22 @@ class CsoundNode extends AudioWorkletNode {
         };
     }
 
+    /** Calls FS.chdir and changes the current directory root
+     * @param {string} a path to set cwd to
+     */
+    setCurrentDirFS(dirPath) {
+        return new Promise(resolve => {
+            this.setCurrentDirFSPromise = resolve;
+            this.port.postMessage(["setCurrentDirFS", dirPath]);
+        });
+    }
+
     /** Writes data to a file in the WASM filesystem for
      *  use with csound.
      *
      * @param {string} filePath A string containing the path to write to.
      * @param {blob}   blobData The data to write to file.
      */
-
     writeToFS(filePath, blobData) {
         this.port.postMessage(["writeToFS", filePath, blobData]);
     }

@@ -1,7 +1,29 @@
 // eslint-disable-next-line
 import React, { useState, useEffect } from "react";
-import { addIndex, concat, isNil, mergeWith, uniq, map } from "ramda";
+import {
+    addIndex,
+    append,
+    assoc,
+    concat,
+    isNil,
+    keys,
+    mergeWith,
+    uniq,
+    map,
+    pipe,
+    reduce
+} from "ramda";
 import { debounce } from "throttle-debounce";
+
+// {a: 1, b: 2} => [{key: "a", val: 1}, {key: "b", val: 2}]
+export const listifyObject = obj =>
+    reduce(
+        (acc, k) =>
+            append(pipe(assoc("key", k), assoc("val", obj[k]))({}), acc),
+        [],
+        keys(obj)
+    );
+
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
     var sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";

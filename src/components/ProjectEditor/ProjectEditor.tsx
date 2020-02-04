@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DnDProvider } from "@comp/FileTree/context";
 import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
 import { simpleSwitch } from "react-tabtab/lib/helpers/move";
 import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
@@ -127,30 +128,54 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const openTabList = mapIndexed((document: any, index) => {
         const isActive: boolean = index === tabIndex;
         const isModified: boolean = document.isModifiedLocally;
-
+        const docPathHuman = append(
+            document.filename,
+            (document.path || []).map(docUid =>
+                pathOr(
+                    "<unknown>",
+                    ["documents", docUid, "filename"],
+                    activeProject
+                )
+            )
+        ).join("/");
         return (
             <DragTab closable={true} key={index}>
-                {document!.filename + (isModified ? "*" : "")}
-                <Tooltip title={"close"} placement="right-end">
-                    <IconButton
-                        size="small"
-                        css={SS.closeButton}
-                        onClick={e => {
-                            e.stopPropagation();
-                            closeTab(document.documentUid, isModified);
-                        }}
+                <>
+                    <Tooltip
+                        placement="right-end"
+                        title={
+                            document.path
+                                ? document.path.length > 0
+                                    ? docPathHuman
+                                    : document!.filename
+                                : ""
+                        }
                     >
-                        <FontAwesomeIcon
-                            icon={faTimes}
-                            size="sm"
-                            color={
-                                isActive
-                                    ? theme.color.primary
-                                    : theme.highlightAlt.primary
-                            }
-                        />
-                    </IconButton>
-                </Tooltip>
+                        <p style={{ margin: 0 }}>
+                            {document!.filename + (isModified ? "*" : "")}
+                        </p>
+                    </Tooltip>
+                    <Tooltip title={"close"} placement="right-end">
+                        <IconButton
+                            size="small"
+                            css={SS.closeButton}
+                            onClick={e => {
+                                e.stopPropagation();
+                                closeTab(document.documentUid, isModified);
+                            }}
+                        >
+                            <FontAwesomeIcon
+                                icon={faTimes}
+                                size="sm"
+                                color={
+                                    isActive
+                                        ? theme.color.primary
+                                        : theme.highlightAlt.primary
+                                }
+                            />
+                        </IconButton>
+                    </Tooltip>
+                </>
             </DragTab>
         );
     }, openDocuments as IDocument[]);
@@ -311,7 +336,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     }, []);
 
     return (
-        <>
+        <DnDProvider project={activeProject}>
             <style>{`#root {overflow: hidden!important;}
                      body > .ps__rail-x {display:none!important;}
                      body > .ps__rail-y {display:none!important;}`}</style>
@@ -349,7 +374,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                     </SplitterLayout>
                 </SplitterLayout>
             </div>
-        </>
+        </DnDProvider>
     );
 };
 

@@ -17,7 +17,7 @@ export const DOCUMENT_UPDATE_VALUE = PREFIX + "DOCUMENT_UPDATE_VALUE";
 export const DOCUMENT_UPDATE_MODIFIED_LOCALLY =
     PREFIX + "DOCUMENT_UPDATE_MODIFIED_LOCALLY";
 
-export type IDocumentFileType = "txt" | "bin";
+export type IDocumentFileType = "txt" | "bin" | "folder";
 
 // INTERFACES
 export interface IDocument {
@@ -30,6 +30,7 @@ export interface IDocument {
     type: IDocumentFileType;
     userUid: string;
     isModifiedLocally: boolean;
+    path: string[];
 }
 
 export type IDocumentsMap = { [documentUid: string]: IDocument };

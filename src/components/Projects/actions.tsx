@@ -1,8 +1,12 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
 import { push } from "connected-react-router";
 import { ICsoundObj } from "@comp/Csound/types";
 import { tabOpenByDocumentUid, tabDockInit } from "@comp/ProjectEditor/actions";
+import {
+    addDocumentPrompt,
+    deleteDocumentPrompt,
+    newDocumentPrompt,
+    newFolderPrompt
+} from "./modals";
 import {
     selectDefaultTargetName,
     selectTarget
@@ -12,10 +16,19 @@ import { selectTabDockIndex } from "@comp/ProjectEditor/selectors";
 import { closeModal, openSimpleModal } from "../Modal/actions";
 import { openSnackbar } from "@comp/Snackbar/actions";
 import { SnackbarType } from "@comp/Snackbar/types";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import { filter, find, isEmpty, some } from "lodash";
-import { assoc, pathOr, reduce, values } from "ramda";
+import { filter as _filter, find, isEmpty } from "lodash";
+import {
+    append,
+    assoc,
+    concat,
+    filter,
+    map,
+    path,
+    pathOr,
+    prop,
+    reduce,
+    values
+} from "ramda";
 import {
     ACTIVATE_PROJECT,
     ADD_PROJECT_DOCUMENTS,
@@ -51,9 +64,7 @@ import { store } from "@root/store";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase/app";
-import { formatFileSize } from "@root/utils";
 import uuidv4 from "uuid/v4";
-import * as SS from "./styles";
 import { selectActiveProjectUid } from "../SocialControls/selectors";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
@@ -81,26 +92,38 @@ export const downloadAllProjectDocumentsOnce = (
             .doc(projectUid)
             .collection("files")
             .get();
-        const docsToAdd = await Promise.all(
+        const allDocuments = await Promise.all(
             filesRef.docs.map(async d => {
                 const data = await d.data();
-                const doc = fileDocDataToDocumentType(
+                return fileDocDataToDocumentType(
                     assoc("documentUid", d.id, data)
                 );
-                await addDocumentToEMFS(projectUid, csound, doc);
-                return doc;
             })
         );
-        const docMapToAdd = reduce(
+        const allDocsMap = reduce(
             (acc, doc) => assoc(doc.documentUid, doc, acc),
             {},
-            docsToAdd
+            allDocuments
         );
-        await dispatch(addProjectDocuments(projectUid, docMapToAdd));
+
+        await allDocuments.forEach(async doc => {
+            if (doc.type !== "folder") {
+                const pathPrefix = (doc.path || [])
+                    .filter(p => typeof p === "string")
+                    .map(docUid => path([docUid, "filename"], allDocsMap));
+                const absolutePath = concat(
+                    [`/${projectUid}`],
+                    append(doc.filename, pathPrefix)
+                ).join("/");
+                await addDocumentToEMFS(projectUid, csound, doc, absolutePath);
+            }
+        });
+
+        await dispatch(addProjectDocuments(projectUid, allDocsMap));
     };
 };
 
-export const newEmptyDocument = (
+export const newEmptyDocumentAction = (
     projectUid: string,
     documentUid: string,
     filename: string
@@ -108,9 +131,7 @@ export const newEmptyDocument = (
     type: DOCUMENT_INITIALIZE,
     filename,
     documentUid,
-    projectUid,
-    lastModified: getFirebaseTimestamp(),
-    createdAt: getFirebaseTimestamp()
+    projectUid
 });
 
 export const closeProject = () => {
@@ -119,12 +140,14 @@ export const closeProject = () => {
     };
 };
 
-export const activateProject = (projectUid: string) => {
-    return async (dispatch: any) =>
+export const activateProject = (projectUid: string, csound) => {
+    return async (dispatch: any) => {
+        await csound.setCurrentDirFS(projectUid);
         dispatch({
             type: ACTIVATE_PROJECT,
             projectUid
         });
+    };
 };
 
 export const setProject = (project: IProject) => {
@@ -217,7 +240,7 @@ export const saveAllFiles = () => {
         );
         const docs =
             project &&
-            filter(
+            _filter(
                 Object.values(project.documents),
                 d => d.isModifiedLocally === true
             );
@@ -250,77 +273,80 @@ export const saveAllAndClose = (goTo: string) => {
     };
 };
 
-const deleteDocumentPrompt = (
-    filename: string,
-    cancelCallback: () => void,
-    deleteCallback: () => void
-) => {
-    return (() => {
-        return (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-                <h2>{"Confirm deletion of file: " + filename}</h2>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => cancelCallback()}
-                    style={{ marginTop: 12 }}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => deleteCallback()}
-                    style={{ marginTop: 12 }}
-                >
-                    Delete
-                </Button>
-            </div>
-        );
-    }) as React.FC;
-};
-
-export const deleteFile = (documentUid: string) => {
-    return async (dispatch: any) => {
-        const state = store.getState() as IStore;
-        const activeProjectUid = pathOr(
-            "",
-            ["ProjectsReducer", "activeProjectUid"],
-            state
-        );
+export const deleteFile = (projectUid: string, documentUid: string) => {
+    return async (dispatch: any, getState) => {
+        const state = getState() as IStore;
         const project: IProject = pathOr(
             {} as IProject,
-            ["ProjectsReducer", "projects", activeProjectUid],
+            ["ProjectsReducer", "projects", projectUid],
             state
         );
-
-        if (!!project) {
-            const doc = find(
-                project.documents,
-                d => d.documentUid === documentUid
-            );
-
-            if (doc) {
+        if (project) {
+            const doc = project.documents[documentUid];
+            if (doc && doc.type === "folder") {
                 const cancelCallback = () => dispatch(closeModal());
+                const allNestedFiles = filter(
+                    d => (d.path || []).includes(documentUid),
+                    project.documents
+                );
+                const allNestedFilenames = map(
+                    prop("filename"),
+                    values(allNestedFiles)
+                );
                 const deleteCallback = () => {
-                    projects
-                        .doc(project.projectUid)
-                        .collection("files")
-                        .doc(doc.documentUid)
-                        .delete()
-                        .then(res => {
-                            dispatch(closeModal());
-                        });
-                    updateProjectLastModified(project.projectUid);
+                    const allFilesToDelete = append(
+                        doc,
+                        values(allNestedFiles)
+                    );
+                    const batch = db.batch();
+                    allFilesToDelete.forEach(doc => {
+                        batch.delete(
+                            projects
+                                .doc(project.projectUid)
+                                .collection("files")
+                                .doc(doc.documentUid)
+                        );
+                    });
+                    batch.commit().then(() => {
+                        dispatch(closeModal());
+                        updateProjectLastModified(projectUid);
+                    });
                 };
                 const deleteDocumentPromptComp = deleteDocumentPrompt(
                     doc.filename,
+                    true,
+                    allNestedFilenames,
+                    cancelCallback,
+                    deleteCallback
+                );
+                dispatch(openSimpleModal(deleteDocumentPromptComp));
+            } else if (doc) {
+                const cancelCallback = () => dispatch(closeModal());
+                const deleteCallback = () => {
+                    projects
+                        .doc(projectUid)
+                        .collection("files")
+                        .doc(documentUid)
+                        .delete()
+                        .then(() => {
+                            dispatch(closeModal());
+                        });
+                    updateProjectLastModified(projectUid);
+                };
+                const deleteDocumentPromptComp = deleteDocumentPrompt(
+                    doc.filename,
+                    false,
+                    [],
                     cancelCallback,
                     deleteCallback
                 );
 
                 dispatch(openSimpleModal(deleteDocumentPromptComp));
+            } else {
+                console.error("No document found with id", projectUid);
             }
+        } else {
+            console.error("No project found with id", projectUid);
         }
     };
 };
@@ -364,124 +390,43 @@ export const updateDocumentModifiedLocally = (
     };
 };
 
-const newDocumentPrompt = (
-    callback: (fileName: string) => void,
-    renameAction: boolean,
-    initFilename: string
-) => {
-    return (() => {
-        const [input, setInput] = useState(renameAction ? initFilename : "");
-        const [nameCollides, setNameCollides] = useState(false);
-
-        const activeProjectUid = useSelector(
-            pathOr("", ["ProjectsReducer", "activeProjectUid"])
+export const newFolder = (projectUid: string) => {
+    return async (dispatch: any, getState) => {
+        const state = store.getState() as IStore;
+        const project: IProject = pathOr(
+            {} as IProject,
+            ["ProjectsReducer", "projects", projectUid],
+            state
         );
-        const project: IProject = useSelector(
-            pathOr({} as IProject, [
-                "ProjectsReducer",
-                "projects",
-                activeProjectUid
-            ])
+        const userUid: string = pathOr(
+            {} as IProject,
+            ["LoginReducer", "loggedInUid"],
+            state
         );
-
-        const reservedFilenames = project.documents
-            ? (values(project.documents) as IDocument[]).map(
-                  doc => doc.filename
-              )
-            : [];
-
-        const shouldDisable = isEmpty(input);
-        return (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-                <TextField
-                    label={
-                        nameCollides
-                            ? input + " already exists!"
-                            : "New filename"
-                    }
-                    onKeyDown={evt =>
-                        evt.key === "Enter" && !shouldDisable && callback(input)
-                    }
-                    error={nameCollides}
-                    value={input}
-                    onChange={e => {
-                        setInput(e.target.value);
-                        setNameCollides(
-                            some(reservedFilenames, fn => fn === e.target.value)
-                        );
-                    }}
-                />
-                <Button
-                    css={SS.modalSubmitButton}
-                    variant="outlined"
-                    color={shouldDisable ? undefined : "primary"}
-                    disabled={shouldDisable || nameCollides}
-                    onClick={() => callback(input)}
-                    style={{ marginTop: 11 }}
-                >
-                    {renameAction ? "Rename" : "Create"}
-                </Button>
-            </div>
+        const newFolderSuccessCallback = async (filename: string) => {
+            if (!isEmpty(project)) {
+                const doc = {
+                    type: "folder",
+                    name: filename,
+                    userUid,
+                    path: [],
+                    lastModified: getFirebaseTimestamp(),
+                    createdAt: getFirebaseTimestamp()
+                };
+                await projects
+                    .doc(projectUid)
+                    .collection("files")
+                    .add(doc);
+                updateProjectLastModified(projectUid);
+            }
+            dispatch(closeModal());
+        };
+        const newFolderPromptComp = newFolderPrompt(
+            newFolderSuccessCallback,
+            project
         );
-    }) as React.FC;
-};
-
-const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
-    return (() => {
-        const [files, setFiles] = useState(null as FileList | null);
-        const [nameCollides, setNameCollides] = useState(false);
-
-        const activeProjectUid = useSelector(
-            pathOr("", ["ProjectsReducer", "activeProjectUid"])
-        );
-        const project: IProject = useSelector(
-            pathOr({} as IProject, [
-                "ProjectsReducer",
-                "projects",
-                activeProjectUid
-            ])
-        );
-
-        const reservedFilenames = (values(
-            project.documents
-        ) as IDocument[]).map(doc => doc.filename);
-
-        const megabyte = Math.pow(10, 6);
-        const shouldDisable =
-            files == null || isEmpty(files) || files[0].size > megabyte;
-        const filesize =
-            files == null ? "Select file" : formatFileSize(files[0].size);
-        return (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-                <Button variant="contained" color="primary" component="label">
-                    {files ? `${files[0].name}` : "Choose file..."}
-                    <input
-                        id="fileSelector"
-                        type="file"
-                        style={{ display: "none" }}
-                        onChange={e => {
-                            let files = e.target.files;
-                            let fileName = files ? files[0].name : "";
-                            setFiles(files);
-                            setNameCollides(
-                                some(reservedFilenames, fn => fn === fileName)
-                            );
-                        }}
-                    ></input>
-                </Button>
-                <p>File Size: {filesize} (Max file size is 1MB)</p>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    disabled={shouldDisable || nameCollides}
-                    onClick={() => callback(files!)}
-                    style={{ marginTop: 11 }}
-                >
-                    Upload
-                </Button>
-            </div>
-        );
-    }) as React.FC;
+        dispatch(openSimpleModal(newFolderPromptComp));
+    };
 };
 
 export const newDocument = (projectUid: string, val: string) => {
@@ -507,7 +452,8 @@ export const newDocument = (projectUid: string, val: string) => {
                     value: val,
                     userUid: uid,
                     lastModified: getFirebaseTimestamp(),
-                    createdAt: getFirebaseTimestamp()
+                    createdAt: getFirebaseTimestamp(),
+                    path: []
                 };
                 const res = await projects
                     .doc(project.projectUid)
@@ -516,7 +462,9 @@ export const newDocument = (projectUid: string, val: string) => {
 
                 const documentUid = res.id;
                 dispatch(tabOpenByDocumentUid(res.id, projectUid));
-                dispatch(newEmptyDocument(projectUid, documentUid, filename));
+                dispatch(
+                    newEmptyDocumentAction(projectUid, documentUid, filename)
+                );
                 updateProjectLastModified(project.projectUid);
             }
             dispatch(closeModal());
@@ -578,7 +526,7 @@ export const addDocument = (projectUid: string) => {
                                     )
                                 );
                                 dispatch(
-                                    newEmptyDocument(
+                                    newEmptyDocumentAction(
                                         project.projectUid,
                                         documentUid,
                                         filename
@@ -679,35 +627,32 @@ export const removeDocumentLocally = (
     };
 };
 
-export const renameDocument = (
-    documentUid: string,
-    currentFilename: string
-) => {
-    return async (dispatch: any) => {
+export const renameDocument = (projectUid: string, documentUid: string) => {
+    return async (dispatch: any, getState) => {
+        const state = getState() as IStore;
+        const project: IProject = pathOr(
+            {} as IProject,
+            ["ProjectsReducer", "projects", projectUid],
+            state
+        );
+        if (!project) {
+            console.error("Project", projectUid, "was not found!");
+            return;
+        }
+        const currentFilename = pathOr(
+            "",
+            ["documents", documentUid, "filename"],
+            project
+        );
         const renameDocumentSuccessCallback = async (filename: string) => {
-            const state = store.getState() as IStore;
-            const activeProjectUid = pathOr(
-                "",
-                ["ProjectsReducer", "activeProjectUid"],
-                state
-            );
-            const project: IProject = pathOr(
-                {} as IProject,
-                ["ProjectsReducer", "projects", activeProjectUid],
-                state
-            );
+            await projects
+                .doc(projectUid)
+                .collection("files")
+                .doc(documentUid)
+                .update({ name: filename } as any);
 
-            if (!isEmpty(project)) {
-                projects
-                    .doc(project.projectUid)
-                    .collection("files")
-                    .doc(documentUid)
-                    .update({ name: filename } as any)
-                    .then(res => {
-                        dispatch(renameDocumentLocally(documentUid, filename));
-                    });
-                updateProjectLastModified(activeProjectUid);
-            }
+            dispatch(renameDocumentLocally(documentUid, filename));
+            updateProjectLastModified(projectUid);
             dispatch(closeModal());
         };
         const renameDocumentPromptComp = newDocumentPrompt(

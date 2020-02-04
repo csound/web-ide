@@ -19,7 +19,7 @@ export const setCsound = (csound: ICsoundObj) => {
     };
 };
 
-export const playCSDFromEMFS = (emfsPath: string) => {
+export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
     return async (dispatch: any) => {
         const state = store.getState();
         const cs = pathOr(
@@ -33,6 +33,7 @@ export const playCSDFromEMFS = (emfsPath: string) => {
             state
         );
         if (cs) {
+            await cs.setCurrentDirFS(projectUid);
             if (cs.getPlayState() === "paused") {
                 cs.play();
             } else {
@@ -49,7 +50,7 @@ export const playCSDFromEMFS = (emfsPath: string) => {
     };
 };
 
-export const playCSDFromString = (csd: string) => {
+export const playCSDFromString = (projectUid: string, csd: string) => {
     return async (dispatch: any) => {
         const cs = pathOr(
             null,
@@ -57,6 +58,7 @@ export const playCSDFromString = (csd: string) => {
             store.getState()
         ) as ICsoundObj | null;
         if (cs) {
+            await cs.setCurrentDirFS(projectUid);
             if (cs.getPlayState() === "paused") {
                 cs.play();
             } else {
@@ -71,7 +73,7 @@ export const playCSDFromString = (csd: string) => {
     };
 };
 
-export const playORCFromString = (orc: string) => {
+export const playORCFromString = (projectUid: string, orc: string) => {
     return async (dispatch: any) => {
         const cs = pathOr(
             null,
@@ -79,6 +81,7 @@ export const playORCFromString = (orc: string) => {
             store.getState()
         ) as ICsoundObj | null;
         if (cs) {
+            await cs.setCurrentDirFS(projectUid);
             if (cs.getPlayState() === "paused") {
                 cs.play();
             } else {
@@ -138,12 +141,6 @@ export const setCsoundPlayState = (playState: ICsoundStatus) => {
         type: SET_CSOUND_PLAY_STATE,
         status: playState
     };
-};
-
-export const writeDocumentToEMFS = (path: string, text: string): void => {
-    // const storeState = store.getState() as IStore;
-    // const csound = pathOr(null, ["csound", "csound"], storeState);
-    // console.log(csound);
 };
 
 export const renderToDisk = () => {

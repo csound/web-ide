@@ -21,6 +21,7 @@ import ShareDialog from "../ShareDialog";
 
 const StyledIconButton = styled(IconButton)`
     && {
+        border-radius: 0;
         padding: 2px;
     }
 `;
@@ -61,7 +62,6 @@ const StyledLabelContainer = styled.div`
     color: ${props => props.theme.color.primary};
     letter-spacing: 1.25px;
 `;
-
 
 const SocialControls = () => {
     const starred = useSelector(selectUserStarredProject);

@@ -90,6 +90,13 @@ class CsoundObj {
         return this.node;
     }
 
+    /** Calls FS.chdir and changes the current directory root
+     * @param {string} a path to set cwd to
+     */
+    setCurrentDirFS(dirPath) {
+        this.node.setCurrentDirFS(dirPath);
+    }
+
     /** Writes data to a file in the WASM filesystem for
      *  use with csound.
      *

@@ -74,10 +74,14 @@ export const getPlayActionFromProject = curry(
         );
         switch (csoundDocType) {
             case "csd": {
-                return playCSDFromEMFS((targetDocument as IDocument).filename);
+                return playCSDFromEMFS(
+                    projectUid,
+                    (targetDocument as IDocument).filename
+                );
             }
             case "orc": {
                 return playORCFromString(
+                    projectUid,
                     (targetDocument as IDocument).savedValue
                 );
             }
@@ -151,10 +155,14 @@ export const getPlayActionFromTarget = (store: IStore) => {
         );
         switch (csoundDocType) {
             case "csd": {
-                return playCSDFromEMFS((targetDocument as IDocument).filename);
+                return playCSDFromEMFS(
+                    activeProjectUid,
+                    (targetDocument as IDocument).filename
+                );
             }
             case "orc": {
                 return playORCFromString(
+                    activeProjectUid,
                     (targetDocument as IDocument).savedValue
                 );
             }

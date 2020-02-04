@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { rgba } from "./utils";
 
 // Monokai
 // https://www.colourlovers.com/palette/1718713/Monokai
@@ -77,6 +78,10 @@ const theme = {
     button: {
         primary: monokaiBlueHighContrast,
         secondary: monokaiBlueHighContrast
+    },
+    buttonHover: {
+        primary: `rgba(${rgba(monokaiBlueHighContrast, 0.1)})`,
+        secondary: `rgba(${rgba(monokaiBlueHighContrast, 0.1)})`
     },
     profilePlayButton: {
         primary: henn1nk,
