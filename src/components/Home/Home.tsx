@@ -10,6 +10,7 @@ import {
     getStars,
     getProjectLastModified
 } from "./actions";
+import { BulletList } from "react-content-loader";
 import { CSSTransition } from "react-transition-group";
 
 import {
@@ -19,7 +20,8 @@ import {
     ProjectSectionHeader,
     HorizontalRule,
     FeaturedProjectsContainer,
-    ProjectSectionCardContainer
+    ProjectSectionCardContainer,
+    ProjectCardContainer
 } from "./HomeUI";
 import {
     selectTags,
@@ -42,7 +44,8 @@ const Home = props => {
     // const recentProjects = useSelector(selectDisplayedRecentProjects);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
     const projectUserProfiles = useSelector(selectProjectUserProfiles);
-
+    const columnCount = 4;
+    const columnPlaceHolderArray = new Array(columnCount).fill(0);
     useEffect(() => {
         if (
             Array.isArray(tags) === true &&
@@ -109,43 +112,43 @@ const Home = props => {
                         />
                     </SearchContainer>
 
-                    <CSSTransition
-                        in={
-                            showFeaturedProjects &&
-                            Array.isArray(starredProjects)
-                        }
-                        classNames="fade"
-                        timeout={300}
-                        unmountOnExit
-                    >
-                        {transition => (
-                            <FeaturedProjectsContainer>
-                                <ProjectSectionHeader row={1}>
-                                    Popular Projects
-                                    <HorizontalRule />
-                                </ProjectSectionHeader>
-                                <ProjectSectionCardContainer row={2}>
-                                    <GridList cellHeight={300} cols={4}>
-                                        {Array.isArray(starredProjects) &&
-                                            starredProjects.map((e, i) => {
-                                                return (
-                                                    <GridListTile key={i}>
-                                                        <ProjectCard
-                                                            project={e}
-                                                            profile={
-                                                                projectUserProfiles[
-                                                                    e.userUid
-                                                                ]
-                                                            }
-                                                        />
-                                                    </GridListTile>
-                                                );
-                                            })}
-                                    </GridList>
-                                </ProjectSectionCardContainer>
-                            </FeaturedProjectsContainer>
-                        )}
-                    </CSSTransition>
+                    <FeaturedProjectsContainer>
+                        <ProjectSectionHeader row={1}>
+                            Popular Projects
+                            <HorizontalRule />
+                        </ProjectSectionHeader>
+                        <ProjectSectionCardContainer row={2}>
+                            <GridList cellHeight={300} cols={4}>
+                                {(Array.isArray(starredProjects) &&
+                                    starredProjects.length !== 0 &&
+                                    starredProjects.map((e, i) => {
+                                        return (
+                                            <GridListTile key={i}>
+                                                <ProjectCard
+                                                    project={e}
+                                                    profile={
+                                                        projectUserProfiles[
+                                                            e.userUid
+                                                        ]
+                                                    }
+                                                />
+                                            </GridListTile>
+                                        );
+                                    })) ||
+                                    columnPlaceHolderArray.map((e, i) => {
+                                        console.log(i);
+
+                                        return (
+                                            <GridListTile key={i}>
+                                                <ProjectCardContainer>
+                                                    <BulletList />
+                                                </ProjectCardContainer>
+                                            </GridListTile>
+                                        );
+                                    })}
+                            </GridList>
+                        </ProjectSectionCardContainer>
+                    </FeaturedProjectsContainer>
                 </HomeContainer>
             </main>
         </div>
