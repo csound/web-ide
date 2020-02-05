@@ -3,6 +3,7 @@ import { IStore } from "@store/types";
 import TargetDropdown from "./Dropdown";
 import PlayButton from "./PlayButton";
 import { selectProjectTargets, selectSelectedTarget } from "./selectors";
+import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
 import { pathOr, values } from "ramda";
@@ -16,6 +17,8 @@ const TargetControls = () => {
     const activeProjectUid: string | null = useSelector((store: IStore) => {
         return pathOr(null, ["ProjectsReducer", "activeProjectUid"], store);
     });
+
+    const isOwner = useSelector(selectIsOwner(activeProjectUid));
 
     const targets: ITargetMap | null = useSelector((store: IStore) =>
         (selectProjectTargets as any)(activeProjectUid)
@@ -72,7 +75,7 @@ const TargetControls = () => {
     return (
         <>
             <PlayButton activeProjectUid={activeProjectUid} />
-            <TargetDropdown activeProjectUid={activeProjectUid} />
+            {isOwner && <TargetDropdown activeProjectUid={activeProjectUid} />}
         </>
     );
 };

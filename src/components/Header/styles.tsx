@@ -66,10 +66,10 @@ export const accountTooltip = classCss`
 `;
 
 export const headerRightSideGroup = css`
-    position: absolute;
-    right: 72px;
+    position: relative;
+    right: 0px;
+    top: 0px;
     height: 42px;
-    top: 11px;
     display: flex;
     justify-content: space-between;
 

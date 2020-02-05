@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import * as SS from "./styles";
+import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IconButton } from "@material-ui/core";
 import StarIcon from "@material-ui/icons/Star";
@@ -76,34 +77,39 @@ const SocialControls = () => {
     return (
         <>
             {isPublic && (
+                <Tooltip title={`Share this project`} placement="bottom-end">
+                    <div css={SS.buttonContainer}>
+                        <StyledIconButton
+                            size="medium"
+                            onClick={() => {
+                                dispatch(openSimpleModal(ShareDialog));
+                            }}
+                        >
+                            <StyledShareIcon fontSize="large" />
+                        </StyledIconButton>
+                    </div>
+                </Tooltip>
+            )}
+            <Tooltip
+                title={`${starred ? "un" : ""}star`}
+                placement="bottom-end"
+            >
                 <div css={SS.buttonContainer}>
                     <StyledIconButton
                         size="medium"
                         onClick={() => {
-                            dispatch(openSimpleModal(ShareDialog));
+                            if (projectUid !== null) {
+                                dispatch(toggleStarProject(projectUid));
+                            }
                         }}
                     >
-                        <StyledShareIcon fontSize="large" />
-                        <StyledLabelContainer>Share</StyledLabelContainer>
+                        {starred && <StyledStarIcon fontSize="large" />}
+                        {!starred && (
+                            <StyledOutlinedStarIcon fontSize="large" />
+                        )}
                     </StyledIconButton>
                 </div>
-            )}
-            <div css={SS.buttonContainer}>
-                <StyledIconButton
-                    size="medium"
-                    onClick={() => {
-                        if (projectUid !== null) {
-                            dispatch(toggleStarProject(projectUid));
-                        }
-                    }}
-                >
-                    {starred && <StyledStarIcon fontSize="large" />}
-                    {!starred && <StyledOutlinedStarIcon fontSize="large" />}
-                    <StyledLabelContainer>
-                        {starred && "un"}star
-                    </StyledLabelContainer>
-                </StyledIconButton>
-            </div>
+            </Tooltip>
             {isOwner && (
                 <div css={SS.buttonContainer}>
                     <StyledIconButton

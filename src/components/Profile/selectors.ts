@@ -1,10 +1,10 @@
 import { createSelector } from "reselect";
-import { State } from "./reducer";
+import { ProfileReducer } from "./reducer";
 import { pickBy, propEq, values } from "ramda";
 import Fuse from "fuse.js";
 
 export const selectUserProfilesForFollowing = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.userProfilesForFollowing;
 };
 export const selectUserProjects = (profileUid: string | null) => (
@@ -13,33 +13,33 @@ export const selectUserProjects = (profileUid: string | null) => (
     if (!profileUid) {
         return [];
     } else {
-        const state: State = store.ProjectsReducer.projects;
+        const state: ProfileReducer = store.ProjectsReducer.projects;
         return values((pickBy as any)(propEq("userUid", profileUid), state));
     }
 };
 
 export const selectStarProjectRequesting = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.starProjectRequesting;
 };
 
 export const selectProjectFilterString = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.projectFilterString;
 };
 
 export const selectFollowingFilterString = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.followingFilterString;
 };
 
 export const selectUserProfile = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.userProfile;
 };
 
 export const selectLoggedInUserStars = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.loggedInUserStars;
 };
 
@@ -108,37 +108,37 @@ export const selectFilteredUserFollowing = createSelector(
 );
 
 export const selectUserImageURL = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.userImageURL;
 };
 
 export const selectUserImageURLRequesting = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.userImageURLRequesting;
 };
 
 export const selectUserProfileRequesting = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.userProfileRequesting;
 };
 
 export const selectCurrentlyPlayingProject = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.currentlyPlayingProject;
 };
 
 export const selectListPlayState = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.listPlayState;
 };
 
 export const selectCsoundStatus = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.csoundStatus;
 };
 
 export const selectPreviousCsoundStatus = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.previousCsoundStatus;
 };
 
@@ -153,12 +153,12 @@ export const selectOAuthPhotoURL = (store: any) => {
 };
 
 export const selectCurrentTagText = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.currentTagText;
 };
 
 export const selectTags = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.tags;
 };
 
@@ -190,18 +190,18 @@ export const selectCurrentTagSuggestions = createSelector(
 );
 
 export const selectTagsInput = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
 
     return state.tagsInput;
 };
 
 export const selectPreviousProjectTags = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
 
     return state.previousProjectTags;
 };
 
 export const selectShouldRedirect = (store: any) => {
-    const state: State = store.ProfileReducer;
+    const state: ProfileReducer = store.ProfileReducer;
     return state.shouldRedirect;
 };

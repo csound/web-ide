@@ -22,7 +22,8 @@ import {
     GET_LOGGED_IN_USER_STARS
 } from "./types";
 import facePng from "./face.png";
-export interface State {
+
+export interface ProfileReducer {
     readonly userProjects: any;
     readonly userProfile: any;
     readonly userProfileRequesting: boolean;
@@ -48,7 +49,7 @@ export interface State {
     readonly loggedInUserStars: string[];
 }
 
-const INITIAL_STATE: State = {
+const INITIAL_STATE: ProfileReducer = {
     userProjects: false,
     userProfile: false,
     userProfileRequesting: false,
@@ -74,7 +75,10 @@ const INITIAL_STATE: State = {
     loggedInUserStars: []
 };
 
-export default (state = INITIAL_STATE, action: ProfileActionTypes) => {
+export default (
+    state: ProfileReducer = INITIAL_STATE,
+    action: ProfileActionTypes
+) => {
     switch (action.type) {
         case GET_LOGGED_IN_USER_STARS: {
             return {

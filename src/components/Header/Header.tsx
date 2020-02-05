@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import AppBar from "@material-ui/core/AppBar";
 import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
@@ -56,7 +57,10 @@ export const Header = ({ showMenuBar = true }) => {
     const authenticated = useSelector(
         (store: IStore) => store.LoginReducer.authenticated
     );
-
+    const activeProjectUid = useSelector(
+        (store: IStore) => store.ProjectsReducer.activeProjectUid
+    );
+    const isOwner = useSelector(selectIsOwner(activeProjectUid));
     const avatarUrl = useSelector(
         (store: IStore) => store.userProfile && store.userProfile.photoUrl
     );
@@ -175,7 +179,7 @@ export const Header = ({ showMenuBar = true }) => {
                         interactive={true}
                         onClick={handleIconClick}
                     />
-                    {showMenuBar && <MenuBar />}
+                    {showMenuBar && activeProjectUid && isOwner && <MenuBar />}
                     <div style={{ flexGrow: 1 }} />
                     <div css={SS.headerRightSideGroup}>
                         {showMenuBar && <TargetControls />}
