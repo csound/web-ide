@@ -44,6 +44,7 @@ export interface IProject {
     documents: IDocumentsMap;
     cachedProjectLastModified: Timestamp | null;
     stars: string[];
+    tags: string[];
 }
 
 export interface IProjectsReducer {

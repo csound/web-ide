@@ -1,10 +1,11 @@
 import { store } from "@store/index";
-import { following, profiles, projects } from "@config/firestore";
+import { following, profiles, projects, tags } from "@config/firestore";
 import { setProject, unsetProject } from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
 import { getUserProfileAction } from "./actions";
 import { UPDATE_LOGGED_IN_FOLLOWING, UPDATE_PROFILE_FOLLOWING } from "./types";
 import {
+    assoc,
     difference,
     filter,
     isEmpty,
@@ -96,8 +97,12 @@ export const subscribeToProfileProjects = (
         );
         if (!projectSnaps.empty) {
             await projectSnaps.docs.forEach(async projSnap => {
+                const projTags = await tags
+                    .where("projectUids", "array-contains", projSnap.id)
+                    .get()
+                    .then(d => d.docs.map(prop("id")));
                 const proj = await convertProjectSnapToProject(projSnap);
-                await dispatch(setProject(proj));
+                await dispatch(setProject(assoc("tags", projTags, proj)));
             });
         }
 
