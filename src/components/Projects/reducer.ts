@@ -12,7 +12,8 @@ import {
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     CLOSE_PROJECT,
     SET_PROJECT,
-    SET_PROJECT_PUBLIC
+    SET_PROJECT_PUBLIC,
+    UNSET_PROJECT
 } from "./types";
 import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "@comp/ProjectLastModified/types";
 import { generateEmptyDocument } from "./utils";
@@ -81,6 +82,9 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                       ["projects", action.project.projectUid],
                       action.project
                   )(state as IProjectsReducer) as IProjectsReducer);
+        }
+        case UNSET_PROJECT: {
+            return dissocPath(["projects", action.projectUid], state);
         }
         case ADD_PROJECT_DOCUMENTS: {
             const path = ["projects", action.projectUid, "documents"];

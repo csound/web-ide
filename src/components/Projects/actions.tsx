@@ -42,6 +42,7 @@ import {
     CLOSE_PROJECT,
     SET_PROJECT,
     SET_PROJECT_PUBLIC,
+    UNSET_PROJECT,
     IProject,
     IDocument,
     IDocumentsMap
@@ -154,6 +155,13 @@ export const setProject = (project: IProject) => {
     return {
         type: SET_PROJECT,
         project
+    };
+};
+
+export const unsetProject = (projectUid: string) => {
+    return {
+        type: UNSET_PROJECT,
+        projectUid
     };
 };
 
