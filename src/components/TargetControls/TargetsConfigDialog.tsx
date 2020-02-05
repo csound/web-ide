@@ -221,9 +221,7 @@ const TargetsConfigDialog = () => {
                 key={index}
                 css={SS.targetsDialogMain}
                 style={{
-                    borderColor: targetNameIsValid
-                        ? "inherit"
-                        : theme.error.primary
+                    borderColor: targetNameIsValid ? "inherit" : theme.errorText
                 }}
             >
                 <FormGroup row>
@@ -475,7 +473,7 @@ const TargetsConfigDialog = () => {
     const fallbackText = (
         <p
             style={{
-                color: theme.alternativeColor.primary,
+                color: theme.altTextColor,
                 userSelect: "none"
             }}
         >

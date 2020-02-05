@@ -14,7 +14,7 @@ interface IProjectContextProps {
 }
 
 const ForceBackgroundColor = ({ theme }) => (
-    <style>{`body {background-color: ${theme.background.primary}}`}</style>
+    <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
 export const ProjectContext = (props: IProjectContextProps) => {
@@ -52,7 +52,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
         if (!projectFetchStarted && csound) {
             const initProject = async () => {
                 await downloadProjectOnce(projectUid)(dispatch);
-                await activateProject(projectUid)(dispatch);
+                await activateProject(projectUid, csound)(dispatch);
                 setProjectIsReady(true);
             };
             setProjectFetchStarted(true);

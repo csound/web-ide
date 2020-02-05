@@ -6,7 +6,8 @@ export const listWrapper = theme => css`
     width: 100%;
     white-space: nowrap;
     font-family: ${theme.font.monospace};
-    color: ${theme.console.primary};
+    background-color: ${theme.background};
+    color: ${theme.console};
     padding: 6px;
     outline: none;
     & li {
@@ -27,7 +28,7 @@ export const listWrapper = theme => css`
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: ${theme.scrollbar.primary};
+        background-color: ${theme.scrollbar};
         width: 6px;
         border-radius: 6px;
         border: 3px solid transparent;
@@ -39,13 +40,13 @@ export const listWrapper = theme => css`
         &::-webkit-scrollbar {
         }
         &::-webkit-scrollbar-thumb {
-            background-color: ${theme.scrollbarHover.primary};
+            background-color: ${theme.scrollbarHover};
             width: 6px;
             border-radius: 6px;
             border: 3px solid transparent;
         }
         &::-webkit-scrollbar-track {
-            background: ${theme.highlightAlt.primary};
+            background: ${theme.highlightBackgroundAlt};
         }
     }
 `;

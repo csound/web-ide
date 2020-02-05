@@ -14,6 +14,7 @@ export const SET_CSOUND_PLAY_STATE = PREFIX + "SET_CSOUND_PLAY_STATE";
 // INTERFACES
 export interface ICsoundObj {
     audioContext: any;
+    setCurrentDirFS: (dirPath: string) => void;
     writeToFS: (filepath: string, data: any) => void;
     unlinkFromFS: (filepath: string) => void;
     compileCSD: (csd: string) => void;

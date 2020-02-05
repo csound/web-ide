@@ -1,25 +1,6 @@
 import { curry } from "ramda";
 import { isEmpty } from "lodash";
 
-// eslint-disable-next-line
-import React, { useState, useEffect } from "react";
-
-// https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
-export function useDebounce(value, delay) {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(handler);
-        };
-        // eslint-disable-next-line
-    }, [value]);
-    return debouncedValue;
-}
-
 export const editorEvalCode = curry(
     (
         csound,

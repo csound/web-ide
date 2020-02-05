@@ -1,21 +1,24 @@
 import { css } from "@emotion/core";
+import { shadow } from "@styles/_common";
+
 export const buttonContainer = theme => css`
     position: relative;
     top: 0;
-    border: 2px solid ${theme.highlight.primary};
+    color: ${theme.headerTextColor};
+    border: 2px solid ${theme.line};
     cursor: pointer;
     border-radius: 3px;
-    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
+    ${shadow}
     height: 42px;
     width: auto;
     margin: 0;
     margin-right: 6px;
     &:hover {
         cursor: pointer;
-        border: 2px solid ${theme.highlightAlt.primary};
+        border: 2px solid ${theme.lineColorHover};
         & > button {
             border-color: transparent transparent transparent
-                ${theme.highlightAlt.primary};
+                ${theme.lineColorHover};
         }
     }
 `;

@@ -1,19 +1,34 @@
 import { css } from "@emotion/core";
 
 export const splitterLayoutContainer = css`
+    width: 100%;
+    height: calc(100vh - 64px);
+    position absolute;
+    bottom: 0;
     .layout-pane {
         overflow: hidden;
     }
-
     .layout-pane-primary > div {
         height: 100%;
     }
-
     & > div {
         height: 100%;
         bottom: 0;
-        overflow: hidden;
     }
+    .panel-with-tab-dock {
+        & > div {position: relative; overflow:unset;}
+        & > div > div {
+          overflow: hidden;
+        }
+        & > div > div > div:first-of-type {
+          height: 48px;
+        }
+        & > div > div > div:last-of-type {
+          height: calc(100% - 48px);
+          width: 100%;
+          position: relative;
+        }
+}
 `;
 
 export const closeButton = css`
@@ -21,7 +36,7 @@ export const closeButton = css`
     right: 8px;
     padding: 6px;
     position: absolute;
-    z-index: 1001;
+    z-index: 1;
 `;
 
 export const headIconsContainer = theme => css`
@@ -36,7 +51,7 @@ export const headIconsContainer = theme => css`
         cursor: pointer;
         &:hover {
             svg {
-                color: ${theme.color.primary}!important;
+                color: ${theme.textColor}!important;
             }
         }
     }

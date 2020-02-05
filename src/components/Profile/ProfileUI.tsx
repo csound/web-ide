@@ -1,23 +1,22 @@
 import { Card, Fab, TextField, Chip } from "@material-ui/core";
-import styled from "styled-components";
 import { Gradient } from "./Gradient";
+import styled from "styled-components";
+
+export const ProfileMain = styled.main`
+    ${Gradient}
+`;
 
 export const ProfileContainer = styled.div`
     position: relative;
-    padding-top: 80px;
-    height: 100%;
     display: grid;
-    grid-template-columns: 1fr 250px 8fr;
-    grid-auto-rows: minmax(min-content, max-content);
-    // grid-template-rows: 0.1fr 0.1fr 0.8fr 0.1fr;
+    grid-template-columns: 24px 250px 8fr;
+    grid-template-rows: 50px 175px 1fr 70px;
     width: 100%;
-    background-color: black;
-    ${Gradient}
 `;
 export const IDContainer = styled(Card)`
     && {
         grid-row-start: 2;
-        grid-row-end: 4;
+        grid-row-end: 3;
         grid-column-start: 2;
         grid-column-end: 3;
         display: grid;
@@ -25,6 +24,7 @@ export const IDContainer = styled(Card)`
         grid-template-columns: 1fr;
         z-index: 2;
         min-height: 580px;
+        box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     }
 `;
 export const DescriptionSection = styled.div`
@@ -43,7 +43,6 @@ export const MainContent = styled.div`
     grid-row-end: 6;
     grid-column-start: 1;
     grid-column-end: 4;
-    background: ${props => props.theme.background.primary};
 `;
 export const ProfilePictureContainer = styled.div`
     position: relative;
@@ -110,15 +109,17 @@ export const NameSection = styled.div`
 `;
 export const ContentSection = styled.div`
     grid-row-start: 3;
-    grid-row-end: 5;
+    grid-row-end: auto;
     grid-column: 3;
     z-index: 2;
-    padding: 0 20px;
+    margin: 0 24px;
     display: grid;
-    grid-template-rows: 60px 50px 1fr;
-    grid-template-columns: 1fr 24px;
-    min-width: 600px;
-    max-width: 1000px;
+    grid-template-rows: 60px 50px auto;
+    grid-template-columns: 1fr;
+    overflow: hidden;
+    background: ${props => props.theme.background};
+    border-radius: 24px;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 `;
 export const ContentTabsContainer = styled.div`
     grid-row: 1;
@@ -127,6 +128,8 @@ export const ContentTabsContainer = styled.div`
 export const ContentActionsContainer = styled.div`
     grid-row: 2;
     grid-column: 1;
+    padding-left: 36px;
+    padding-right: 12px;
 `;
 export const AddFab = styled(Fab)`
     float: right;
@@ -139,6 +142,12 @@ export const ListContainer = styled.div`
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;
+    & > ul {
+        padding: 0 !important;
+    }
+    .MuiListItem-button {
+        padding: 8px 36px !important;
+    }
 `;
 export const SearchBox = styled(TextField)`
     && {
@@ -160,6 +169,9 @@ export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
             props.isProfileOwner ? "70px" : ""};
     width: 100%;
     padding-bottom: 2px;
+    &:last-of-type {
+        margin-bottom: 12px;
+    }
 `;
 
 export const StyledUserListItemContainer = styled.div`

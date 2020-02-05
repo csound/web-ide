@@ -1,99 +1,18 @@
 import { css } from "@emotion/core";
+import { rgba } from "@styles/utils";
 
 export const container = theme => css`
     width: 100%;
     height: 100%;
-    background-color: ${theme.fileTreeBackground.primary};
-    color: ${theme.color.primary} !important;
-    padding: 0 !important;
-    margin-top: 40px;
-    border-radius: 0px !important;
-    button {
-        width: 100%;
-    }
-    & p {
-        color: ${theme.color.primary} !important;
-    }
-    & > .MuiList-root {
-        padding: 0 !important;
-    }
-    & > .MuiList-root > .MuiButtonBase-root {
-        display: none;
-        transition: none !important;
-        pointer-events: none !important;
-        left: 12px;
-    }
-
-    & div.MuiButtonBase-root {
-        padding-right: 0px;
-        min-width: 150px;
-        position: relative;
-    }
-
-    .MuiButtonBase-root button {
-        margin: 0;
-        color: rgb(222, 222, 222) !important;
-        top: 0px;
-        width: 24px;
-        right: 30px;
-        top: -2px;
-    }
-
-    .MuiButtonBase-root button:first-of-type {
-        margin: 0;
-        margin-right: 32px;
-    }
-
-    .MuiListItem-button {
-        background-color: ${theme.fileTreeBackground.primary};
-    }
-
-    .MuiListItemText-root {
-        width: 100%;
-        padding: 0 !important;
-        position: relative;
-    }
-
-    .MuiIconButton-root {
-        position: absolute;
-        right: 24px;
-    }
-
-    .MuiListItemIcon-root {
-        display: none;
-    }
-
-    .MuiButtonBase-root .MuiButton-label {
-        position: absolute;
-        right: 4px;
-    }
-`;
-
-export const fileTreeNode = css`
-    position: relative;
-    display: flex;
-    align-content: center;
-    width: 100%;
-`;
-
-export const fileTreeNodeText = css`
-    color: rgb(222, 222, 222);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    font-size: 0.875rem;
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-    font-weight: 400;
-    line-height: 1.43;
-    letter-spacing: 0.01071em;
-    margin 0;
-    margin-left: 6px;
-    padding: 0;
+    background-color: ${theme.fileTreeBackground};
+    color: ${theme.textColor} !important;
+    margin-top: 32px;
 `;
 
 export const fileIcon = theme => css`
     z-index: 0;
     margin-right: 6px;
-    color: ${theme.color.primary};
+    color: ${theme.textColor};
     align-self: center;
     position: absolute;
     width: 20px;
@@ -102,35 +21,40 @@ export const fileIcon = theme => css`
     pointer-events: none;
 `;
 
-export const editIcon = css`
-    margin-top: 5px;
-    zoom: 80%;
-`;
-
-export const deleteIcon = css`
-    zoom: 106%;
-    margin-top: 1px;
-    color: rgb(222, 222, 222) !important;
-`;
-
-export const invisibleClickableArea = css`
-    // background-color: blue !important;
+export const editIcon = theme => css`
     position: absolute;
-    top: 0px;
-    left: 0;
-    width: calc(100% - 66px);
-    height: 100%;
+    cursor: pointer;
+    color: ${theme.textColor};
+    width: 16px;
+    height: 16px;
     z-index: 2;
+    right: 36px;
+    margin-top: -22px;
+    border-radius: 50%;
+    background-clip: content-box;
+    border-radius: 50%;
+    background-clip: content-box;
+    &:hover {
+        background-color: ${theme.buttonBackgroundHover}!important;
+        color: ${theme.buttonTextColorHover}!important;
+    }
 `;
 
-export const invisibleUnClickableArea = css`
-    cursor: initial !important;
+export const deleteIcon = theme => css`
     position: absolute;
-    top: -1px;
-    left: 0;
-    width: calc(100% - 2px);
-    height: 100%;
+    cursor: pointer;
+    color: ${theme.textColor};
+    width: 18px;
+    height: 18px;
     z-index: 2;
+    right: 12px;
+    margin-top: -23px;
+    border-radius: 50%;
+    background-clip: content-box;
+    &:hover {
+        background-color: ${theme.buttonBackgroundHover}!important;
+        color: ${theme.buttonTextColorHover}!important;
+    }
 `;
 
 export const headIconsContainer = theme => css`
@@ -145,12 +69,74 @@ export const headIconsContainer = theme => css`
         cursor: pointer;
         &:hover {
             svg {
-                color: ${theme.color.primary}!important;
+                color: ${theme.textColor}!important;
             }
         }
     }
 `;
 
+export const listContainer = theme => css`
+    margin-top: -3px;
+`;
+
+export const listItem = theme => css`
+    padding-left: 32px;
+`;
+
+export const draggingOver = theme => css`
+    ${listItem(theme)}
+    & .MuiTouchRipple-root {
+        background-color: rgba(${rgba(theme.allowed, 0.1)}) !important;
+    }
+`;
+
+export const listItemIcon = theme => css`
+    top: 6px;
+    left: 22px;
+    position: absolute;
+`;
+
+export const listItemIconMui = theme => css`
+    ${listItemIcon(theme)}
+    left: 12px;
+    top: 4px;
+`;
+
+export const muiIcon = theme => css`
+    fill: ${theme.textColor} !important;
+    width: 16px;
+    height: 16px;
+`;
+
 export const newFolderIcon = theme => css`
     margin-right: 12px;
+`;
+
+const musicIconBase = theme => css`
+    position: absolute;
+    width: 32px;
+    height: 24px;
+    left: -18px;
+    top: -6px;
+`;
+
+export const mediaIcon = theme => css`
+    ${musicIconBase(theme)}
+    margin-top: 2px;
+    zoom: 90%;
+    fill: ${theme.aRateVar};
+`;
+
+export const directoryCloseIcon = theme => css`
+    ${musicIconBase(theme)}
+    & > g > path:first-of-type {
+        fill: ${theme.textColor};
+    }
+    & > g > path:last-of-type {
+        fill: ${theme.highlightBackground};
+    }
+`;
+
+export const directoryOpenIcon = theme => css`
+    ${musicIconBase(theme)}
 `;

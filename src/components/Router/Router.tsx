@@ -36,6 +36,13 @@ const EditorLayout = (props: any) => {
     );
 };
 
+const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => (
+    <div>
+        <style>{`#root {position: absolute!important;}`}</style>
+        <CsoundManual theme={theme} codeMirrorPainter={CodeMirrorPainter} />
+    </div>
+);
+
 const RouterComponent = (props: any) => {
     const theme = useTheme();
     return (
@@ -48,19 +55,13 @@ const RouterComponent = (props: any) => {
                 <Route
                     path="/manual/"
                     render={() => (
-                        <CsoundManual
-                            theme={theme}
-                            codeMirrorPainter={CodeMirrorPainter}
-                        />
+                        <CsoundManualWithStyleOverrides theme={theme} />
                     )}
                 />
                 <Route
                     path="/manual/:id"
                     render={() => (
-                        <CsoundManual
-                            theme={theme}
-                            codeMirrorPainter={CodeMirrorPainter}
-                        />
+                        <CsoundManualWithStyleOverrides theme={theme} />
                     )}
                 />
                 <Route path="/profile/:username?" component={Profile} />

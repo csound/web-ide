@@ -1,15 +1,16 @@
 import { css } from "@emotion/core";
+import { shadow } from "@styles/_common";
 
 export const content = theme => css`
     position: absolute;
     outline: none;
     & > div {
-        color: ${theme.color.primary};
+        color: ${theme.textColor};
         position: relative;
-        border: 2px solid ${theme.highlight.primary};
+        border: 2px solid ${theme.line};
         border-radius: 6px;
-        background-color: ${theme.background.primary};
-        box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+        background-color: ${theme.background};
+        ${shadow}
         box-sizing: content-box;
         padding: 16px 32px 24px;
     }

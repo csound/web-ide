@@ -8,6 +8,7 @@ export const ADD_PROJECT_DOCUMENTS = PREFIX + "ADD_PROJECT_DOCUMENTS";
 export const CLOSE_PROJECT = PREFIX + "CLOSE_PROJECT";
 export const SET_PROJECT = PREFIX + "SET_PROJECT";
 export const SET_PROJECT_PUBLIC = PREFIX + "SET_PROJECT_PUBLIC";
+export const UNSET_PROJECT = PREFIX + "UNSET_PROJECT";
 export const DOCUMENT_INITIALIZE = PREFIX + "DOCUMENT_INITIALIZE";
 export const DOCUMENT_RENAME_LOCALLY = PREFIX + "DOCUMENT_RENAME_LOCALLY";
 export const DOCUMENT_REMOVE_LOCALLY = PREFIX + "DOCUMENT_REMOVE_LOCALLY";
@@ -17,7 +18,7 @@ export const DOCUMENT_UPDATE_VALUE = PREFIX + "DOCUMENT_UPDATE_VALUE";
 export const DOCUMENT_UPDATE_MODIFIED_LOCALLY =
     PREFIX + "DOCUMENT_UPDATE_MODIFIED_LOCALLY";
 
-export type IDocumentFileType = "txt" | "bin";
+export type IDocumentFileType = "txt" | "bin" | "folder";
 
 // INTERFACES
 export interface IDocument {
@@ -30,6 +31,7 @@ export interface IDocument {
     type: IDocumentFileType;
     userUid: string;
     isModifiedLocally: boolean;
+    path: string[];
 }
 
 export type IDocumentsMap = { [documentUid: string]: IDocument };

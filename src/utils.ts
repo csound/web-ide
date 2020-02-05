@@ -1,4 +1,28 @@
-import { addIndex, concat, isNil, mergeWith, uniq, map } from "ramda";
+// eslint-disable-next-line
+import React, { useState, useEffect } from "react";
+import {
+    addIndex,
+    append,
+    assoc,
+    concat,
+    isNil,
+    keys,
+    mergeWith,
+    uniq,
+    map,
+    pipe,
+    reduce
+} from "ramda";
+import { debounce } from "throttle-debounce";
+
+// {a: 1, b: 2} => [{key: "a", val: 1}, {key: "b", val: 2}]
+export const listifyObject = obj =>
+    reduce(
+        (acc, k) =>
+            append(pipe(assoc("key", k), assoc("val", obj[k]))({}), acc),
+        [],
+        keys(obj)
+    );
 
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
@@ -67,3 +91,32 @@ export const deepMerge = (v1, v2) => {
         return v2;
     }
 };
+
+// https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
+// local state throttling, use only for components needing re-render
+// for non-react actions, use import { debounce } from 'throttle-debounce';
+export function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+        // eslint-disable-next-line
+    }, [value]);
+    return debouncedValue;
+}
+
+export const updateBodyScroller = debounceTime =>
+    debounce(debounceTime, () => {
+        const maybeElement: any = (window as any).ps_body;
+        if (
+            typeof maybeElement !== "undefined" &&
+            typeof maybeElement.update === "function"
+        ) {
+            maybeElement.update();
+        }
+    });

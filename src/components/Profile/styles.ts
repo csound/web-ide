@@ -4,11 +4,11 @@ import { createStyles, withStyles } from "@material-ui/styles";
 const profileStyles = (theme: Theme) =>
     createStyles({
         root: {
-            backgroundColor: "#e8e8e8",
+            position: "absolute",
             fontFamily: "'Space Mono', monospace",
             width: "100%",
             height: "100%",
-            bottom: "0px",
+            bottom: 0,
             top: 0,
             left: 0
         },

@@ -23,11 +23,10 @@ export const updateProjectLastModifiedLocally = (
 export const getProjectLastModifiedOnce = (projectUid: string) => {
     return async dispatch => {
         const timestampRef = await projectLastModified.doc(projectUid).get();
+        const timestampData = timestampRef.data() as any;
+        const timestampOrNull = timestampData ? timestampData.timestamp : null;
         return await dispatch(
-            updateProjectLastModifiedLocally(
-                projectUid,
-                (timestampRef.data() as any).timestamp
-            )
+            updateProjectLastModifiedLocally(projectUid, timestampOrNull)
         );
     };
 };

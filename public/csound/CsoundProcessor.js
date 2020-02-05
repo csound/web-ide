@@ -40,9 +40,90 @@ CSMOD["printErr"] = printMessages;
 libcsound(CSMOD);
 
 // SETUP FS
+const FS = CSMOD["FS"];
+const MEMFS = CSMOD["FS"].filesystems.MEMFS;
+const pointerStringify = CSMOD["Pointer_stringify"];
+// FS Helpers
+const pathToArr = path => {
+    if (!path) return [];
+    const minusPrefix = path.replace(/^\//i, "");
+    const minusPostfix = minusPrefix.replace(/\/$/i, "");
+    return minusPostfix.split("/");
+};
+const ensureRootPrefix = path => (/^\//i.test(path) ? path : `/${path}`);
+const lsRoot = () => Object.values(FS.nameTable.map(t => t.name));
 
-let FS = CSMOD["FS"];
-let pointerStringify = CSMOD["Pointer_stringify"];
+const dirExists = path => {
+    const pathArr = pathToArr(path);
+    const result = pathArr.reduce(
+        ([currMount, bool], item, index) => {
+            const curPath = ensureRootPrefix(
+                pathArr.slice(0, index + 1).join("/")
+            );
+            if (!bool) return [null, false];
+            if (currMount.some(m => m.mountpoint === curPath)) {
+                return [
+                    currMount.find(m => m.mountpoint === curPath).mounts,
+                    true
+                ];
+            } else {
+                return [null, false];
+            }
+        },
+        [FS.root.mount.mounts, true]
+    );
+    return result[1];
+};
+
+const mkdir = dirPath => {
+    const pathArr = pathToArr(dirPath);
+    const maybeParentPathArr = pathArr.slice(0, -2);
+    const parentPathArr =
+        maybeParentPathArr.length === 0 ? ["/"] : maybeParentPathArr;
+
+    FS.createFolder(FS.root, ensureRootPrefix(dirPath), true, true);
+    FS.mount(
+        MEMFS,
+        { root: ensureRootPrefix(parentPathArr.join("/")) },
+        ensureRootPrefix(dirPath)
+    );
+};
+
+const mkdirRecursive = dirPath => {
+    const pathArr = pathToArr(dirPath);
+    pathArr.reduce((__x, __y, index) => {
+        const currPath = ensureRootPrefix(
+            pathArr.slice(0, index + 1).join("/")
+        );
+        !dirExists(currPath) && mkdir(currPath);
+    }, null);
+};
+
+const fileExists = path => {
+    const pathArr = pathToArr(path);
+    const result = pathArr.reduce(
+        ([currMount, bool], item, index) => {
+            const curPath = ensureRootPrefix(
+                pathArr.slice(0, index + 1).join("/")
+            );
+            if (!bool) return [null, false];
+            if (
+                Object.values(currMount.root.contents || {}).some(
+                    f => f.name === item
+                )
+            ) {
+                return [
+                    currMount.mounts.find(m => m.mountpoint === curPath),
+                    true
+                ];
+            } else {
+                return [null, false];
+            }
+        },
+        [FS.root.mount, true]
+    );
+    return result[1];
+};
 
 // Get cwrap-ed functions
 const Csound = {
@@ -357,14 +438,32 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 this.zerodBFS = null;
                 this.firePlayStateChange();
                 break;
+            case "setCurrentDirFS":
+                let dirPath = data[1];
+                if (!dirExists(dirPath)) {
+                    mkdirRecursive(dirPath);
+                }
+                FS.chdir(ensureRootPrefix(dirPath));
+                p.postMessage(["setCurrentDirFSDone"]);
+                break;
             case "writeToFS":
-                let name = data[1];
+                let name = "";
+                let path;
+                let rawName = data[1];
                 let blobData = data[2];
+                if (rawName.includes("/")) {
+                    let patharr = rawName.split("/");
+                    let parentToPath = patharr.slice(0, -2).join("/");
+                    path = patharr.slice(0, -1).join("/");
+                    name = patharr.slice(-1)[0];
+                    if (!dirExists(path)) {
+                        mkdirRecursive(path);
+                    }
+                } else {
+                    name = rawName;
+                }
                 let buf = new Uint8Array(blobData);
-                let stream = FS.open(name, "w+");
-                FS.write(stream, buf, 0, buf.length, 0);
-                FS.close(stream);
-
+                FS.writeFile(ensureRootPrefix(rawName), buf, { flags: "w+" });
                 break;
             case "unlinkFromFS":
                 let filePath = data[1];

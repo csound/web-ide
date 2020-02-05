@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { UnControlled as CodeMirror } from "react-codemirror2";
-import { editorEvalCode, useDebounce } from "./utils";
+import { editorEvalCode } from "./utils";
+import { useDebounce } from "@root/utils";
 import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
-import PerfectScrollbar from "react-perfect-scrollbar";
+import ScrollBar from "@elem/perfect-scrollbar";
 import { isEmpty } from "lodash";
 import { pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import { filenameToCsoundType } from "@comp/Csound/utils";
-import { perfectScrollbarStyleSheet } from "@styles/_perfectScrollbar";
+import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
 import "./modes/csound/csound";
 import "./plugins/autosuggest";
@@ -20,16 +21,14 @@ require("codemirror/addon/edit/closebrackets");
 require("codemirror/keymap/vim");
 require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
-// require("codemirror/addon/scroll/simplescrollbars")
-// require("codemirror/addon/scroll/simplescrollbars.css")
 
 type IPrintToConsole = ((text: string) => void) | null;
 
 const CodeEditor = ({ documentUid, projectUid }) => {
     const [editorRef, setEditorRef] = useState(null as any);
-    const [scrollerRef, setScrollerRef] = useState(null as any);
+    const scrollerRef: any = useRef();
     const [editorValue, setEditorValue] = useState("");
-
+    const theme: any = useTheme();
     const debouncedEditorValue = useDebounce(editorValue, 200);
 
     const dispatch = useDispatch();
@@ -66,10 +65,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     const currentDocumentValue: string = propOr("", "currentValue", document);
     const maybeCsoundFile = filenameToCsoundType(document.filename);
     const documentType: string = maybeCsoundFile ? maybeCsoundFile : "txt";
-
-    // const manualLookupString: string = useSelector(
-    //     pathOr("", ["ProjectEditorReducer", "manualLookupString"])
-    // );
 
     const csound: ICsoundObj | null = useSelector(
         pathOr(null, ["csound", "csound"])
@@ -159,8 +154,43 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         editorRef && editorRef.toggleComment();
     };
 
+    useEffect(() => {
+        if (editorRef && scrollerRef.current) {
+            const cmSizer = window.document.getElementsByClassName(
+                "CodeMirror-sizer"
+            );
+            const currentScroller: any = scrollerRef.current;
+            editorRef.display.scroller = currentScroller;
+            const resizeHandler = () => {
+                if (
+                    (window as any).editor_scroller &&
+                    typeof (window as any).editor_scroller.update === "function"
+                ) {
+                    (window as any).editor_scroller.update();
+                }
+            };
+            const resizeObserver = new (window as any).ResizeObserver(
+                resizeHandler
+            );
+
+            cmSizer && cmSizer.length > 0 && resizeObserver.observe(cmSizer[0]);
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }
+    }, [editorRef, scrollerRef]);
+
     const editorDidMount = (editor: any) => {
-        editor.scrollIntoView = () => console.log("FIXME!");
+        editor.scrollIntoView = () => {
+            setTimeout(() => {
+                if (
+                    (window as any).editor_scroller &&
+                    typeof (window as any).editor_scroller.update === "function"
+                ) {
+                    (window as any).editor_scroller.update();
+                }
+            }, 50);
+        };
         editor.getDoc().setValue(currentDocumentValue);
         setEditorValue(currentDocumentValue);
         setEditorRef(editor as any);
@@ -268,9 +298,12 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
 
     return (
-        <PerfectScrollbar
-            css={perfectScrollbarStyleSheet}
-            containerRef={setScrollerRef}
+        <ScrollBar
+            ref={scrollerRef}
+            windowName={"editor_scroller"}
+            style={{
+                backgroundColor: theme.background
+            }}
         >
             <CodeMirror
                 key={lastModified ? `${(lastModified as any).seconds}` : "_"}
@@ -280,7 +313,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
                 options={options}
                 onChange={onChange}
             />
-        </PerfectScrollbar>
+        </ScrollBar>
     );
 };
 

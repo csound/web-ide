@@ -2,7 +2,7 @@ import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
-import { useTheme } from "emotion-theming";
+import { updateBodyScroller } from "@root/utils";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
@@ -48,6 +48,7 @@ import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors
 import { SET_LIST_PLAY_STATE } from "./types";
 import { stopCsound } from "../Csound/actions";
 import {
+    ProfileMain,
     ProfileContainer,
     IDContainer,
     ProfilePictureContainer,
@@ -84,7 +85,7 @@ const UserLink = ({ link }) => {
 
 const Profile = props => {
     const { classes } = props;
-    const theme: any = useTheme();
+    // const theme: any = useTheme();
     const [profileUid, setProfileUid]: [string | null, any] = useState(null);
     // const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
@@ -172,6 +173,18 @@ const Profile = props => {
         loggedInUserUid
     ]);
 
+    // Fixes white bottom when switching from scrollable to non-scrollable list
+    useEffect(() => {
+        const mainElem = document.getElementsByTagName("main");
+        const resizeObserver = new (window as any).ResizeObserver(
+            updateBodyScroller(0)
+        );
+        mainElem && mainElem.length > 0 && resizeObserver.observe(mainElem[0]);
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
+
     useEffect(() => {
         dispatch(setCsoundStatus(csoundPlayState));
     }, [dispatch, csoundPlayState]);
@@ -186,13 +199,12 @@ const Profile = props => {
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
-            <style>{`main,body {background-color: ${theme.background.primary};}`}</style>
-            <main>
-                <ProfileContainer
-                    colorA={"rgba(30, 30, 30, 1)"}
-                    colorB={"rgba(40, 40, 40, 1)"}
-                    colorC={"rgba(20, 20, 20, 1)"}
-                >
+            <ProfileMain
+                colorA={"rgba(30, 30, 30, 1)"}
+                colorB={"rgba(40, 40, 40, 1)"}
+                colorC={"rgba(20, 20, 20, 1)"}
+            >
+                <ProfileContainer>
                     <IDContainer>
                         <ProfilePictureContainer
                             onMouseEnter={() => setImageHover(true)}
@@ -413,7 +425,7 @@ const Profile = props => {
                         </ListContainer>
                     </ContentSection>
                 </ProfileContainer>
-            </main>
+            </ProfileMain>
         </div>
     );
 };

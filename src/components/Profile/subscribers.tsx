@@ -1,9 +1,20 @@
+import { store } from "@store/index";
 import { following, profiles, projects } from "@config/firestore";
-import { setProject } from "@comp/Projects/actions";
+import { setProject, unsetProject } from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
 import { getUserProfileAction } from "./actions";
 import { UPDATE_LOGGED_IN_FOLLOWING, UPDATE_PROFILE_FOLLOWING } from "./types";
-import { keys } from "ramda";
+import {
+    difference,
+    filter,
+    isEmpty,
+    keys,
+    map,
+    pathOr,
+    pipe,
+    prop,
+    propEq
+} from "ramda";
 
 export const subscribeToProfile = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
@@ -75,10 +86,24 @@ export const subscribeToProfileProjects = (
               .where("userUid", "==", profileUid)
               .where("public", "==", true)
     ).onSnapshot(async projectSnaps => {
+        const currentProfileProjects = pipe(
+            pathOr([], ["ProjectsReducer", "projects"]),
+            filter(propEq("userUid", profileUid))
+        )(store.getState());
+        const projectsDeleted = difference(
+            keys(currentProfileProjects).sort(),
+            map(prop("id"), projectSnaps.docs).sort()
+        );
         if (!projectSnaps.empty) {
             await projectSnaps.docs.forEach(async projSnap => {
                 const proj = await convertProjectSnapToProject(projSnap);
                 await dispatch(setProject(proj));
+            });
+        }
+
+        if (!isEmpty(projectsDeleted)) {
+            projectsDeleted.forEach(async projectUid => {
+                await dispatch(unsetProject(projectUid));
             });
         }
     });

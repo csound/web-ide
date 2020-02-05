@@ -4,7 +4,11 @@ import { css } from "@emotion/core";
 const drawerWidth = 260;
 
 export const headerRoot = theme => css`
-    background-color: ${theme.headerBackground.primary};
+    height: 64px;
+    background-color: ${theme.headerBackground};
+    & > div {
+       height 64px;
+    }
 `;
 
 export const drawer = css`
@@ -24,7 +28,6 @@ export const menuButton = css`
 
 export const menuItemLink = theme => css`
     text-decoration: none;
-    color: ${theme.color.black};
 `;
 
 export const toolbar = css`
@@ -50,6 +53,7 @@ export const userMenu = css`
 
 export const menuPaper = classCss`
     top: 60px!important;
+    padding: 0!important;
 `;
 
 export const loginButton = css`
@@ -80,4 +84,10 @@ export const headerRightSideGroup = css`
 
 export const spacer = css`
     margin-left: 12px;
+`;
+
+export const clearfixHeader = css`
+    position: relative;
+    height: 64px;
+    width: 100%;
 `;

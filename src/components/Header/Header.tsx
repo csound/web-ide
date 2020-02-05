@@ -81,6 +81,7 @@ export const Header = ({ showMenuBar = true }) => {
     const logout = () => dispatch(loginActions.logOut());
     const openLoginDialog = () => dispatch(loginActions.openLoginDialog());
     const handleIconClick = () => dispatch(push("/"));
+    const handleProfileClick = () => dispatch(push("/profile"));
 
     const avatar = isEmpty(avatarUrl) ? (
         <AccountBox />
@@ -113,12 +114,24 @@ export const Header = ({ showMenuBar = true }) => {
                 open={isProfileMenuOpen}
                 onClose={handleProfileMenuClose}
             >
-                <MenuItem>
+                <MenuItem
+                    onClick={e => {
+                        handleProfileMenuClose(e);
+                        handleProfileClick();
+                    }}
+                >
                     <Link to="/profile" css={SS.menuItemLink}>
                         View Profile
                     </Link>
                 </MenuItem>
-                <MenuItem onClick={logout}>Logout</MenuItem>
+                <MenuItem
+                    onClick={e => {
+                        handleProfileMenuClose(e);
+                        logout();
+                    }}
+                >
+                    Logout
+                </MenuItem>
             </Menu>
         </div>
     );
@@ -146,10 +159,13 @@ export const Header = ({ showMenuBar = true }) => {
         >
             <MenuIcon />
         </IconButton>
-    ) : <div css={SS.spacer}/>;
+    ) : (
+        <div css={SS.spacer} />
+    );
 
     return (
         <>
+            <div css={SS.clearfixHeader} />
             {isLoginDialogOpen && <Login />}
             <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>

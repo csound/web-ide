@@ -125,10 +125,15 @@ function MenuBar(props) {
                             checked: selectedThemeName === "monokai"
                         },
                         {
-                            label: "BluePunk",
-                            callback: () => dispatch(changeTheme("bluepunk")),
-                            checked: selectedThemeName === "bluepunk"
+                            label: "Github",
+                            callback: () => dispatch(changeTheme("github")),
+                            checked: selectedThemeName === "github"
                         }
+                        // {
+                        //     label: "BluePunk",
+                        //     callback: () => dispatch(changeTheme("bluepunk")),
+                        //     checked: selectedThemeName === "bluepunk"
+                        // }
                     ]
                 }
             ]
