@@ -82,6 +82,7 @@ export const fileDocDataToDocumentType = docData =>
     ({
         createdAt: docData["createdAt"] || docData["lastModified"], // migration fix
         currentValue: docData["value"],
+        description: docData["description"],
         documentUid: docData["documentUid"],
         filename: docData["name"],
         isModifiedLocally: false,
@@ -108,6 +109,7 @@ export const convertProjectSnapToProject = async projSnap => {
     const lastModifiedData = lastModified.exists ? lastModified.data() : null;
     return {
         projectUid: projSnap.id,
+        description: propOr("", "description", projData),
         documents: {},
         isPublic: propOr(false, "public", projData),
         name: propOr("", "name", projData),

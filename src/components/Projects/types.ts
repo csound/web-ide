@@ -37,6 +37,7 @@ export interface IDocument {
 export type IDocumentsMap = { [documentUid: string]: IDocument };
 
 export interface IProject {
+    description: string;
     userUid: string;
     projectUid: string;
     name: string;
