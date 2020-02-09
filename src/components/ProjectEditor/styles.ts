@@ -21,10 +21,10 @@ export const splitterLayoutContainer = css`
           overflow: hidden;
         }
         & > div > div > div:first-of-type {
-          height: 48px;
+          height: 45px;
         }
         & > div > div > div:last-of-type {
-          height: calc(100% - 48px);
+          height: calc(100% - 45px);
           width: 100%;
           position: relative;
         }
