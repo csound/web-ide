@@ -115,7 +115,7 @@ export const convertProjectSnapToProject = async projSnap => {
         name: propOr("", "name", projData),
         userUid: propOr("", "userUid", projData),
         tags: [],
-        stars: [],
+        stars: {},
         cachedProjectLastModified: lastModifiedData
             ? lastModifiedData.target
             : null

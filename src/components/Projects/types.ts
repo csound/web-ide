@@ -8,6 +8,7 @@ export const ADD_PROJECT_DOCUMENTS = PREFIX + "ADD_PROJECT_DOCUMENTS";
 export const CLOSE_PROJECT = PREFIX + "CLOSE_PROJECT";
 export const SET_PROJECT = PREFIX + "SET_PROJECT";
 export const SET_PROJECT_PUBLIC = PREFIX + "SET_PROJECT_PUBLIC";
+export const STORE_PROJECT_STARS = PREFIX + "STORE_PROJECT_STARS";
 export const UNSET_PROJECT = PREFIX + "UNSET_PROJECT";
 export const DOCUMENT_INITIALIZE = PREFIX + "DOCUMENT_INITIALIZE";
 export const DOCUMENT_RENAME_LOCALLY = PREFIX + "DOCUMENT_RENAME_LOCALLY";
@@ -36,6 +37,8 @@ export interface IDocument {
 
 export type IDocumentsMap = { [documentUid: string]: IDocument };
 
+type IStar = { [userUid: string]: Timestamp };
+
 export interface IProject {
     description: string;
     userUid: string;
@@ -44,7 +47,7 @@ export interface IProject {
     isPublic: boolean;
     documents: IDocumentsMap;
     cachedProjectLastModified: Timestamp | null;
-    stars: string[];
+    stars: IStar;
     tags: string[];
 }
 

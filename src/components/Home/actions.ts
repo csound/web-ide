@@ -9,7 +9,7 @@ import {
     tags
 } from "@config/firestore";
 import {
-    selectOrderedStars,
+    // selectOrderedStars,
     selectOrderedProjectLastModified
 } from "./selectors";
 import {
@@ -78,9 +78,11 @@ export const getPopularProjects = (
     getStore
 ) => {
     const state = getStore();
-    const orderedStars = selectOrderedStars(state);
+    const orderedStars = []; //FIXME (hlolli 10/02) selectOrderedStars(state);
     const orderedProjectLastModified = selectOrderedProjectLastModified(state);
-    const splitStars = orderedStars.splice(0, count).map(e => e.projectID);
+    const splitStars = orderedStars
+        .splice(0, count)
+        .map(e => (e as any).projectID);
     const splitLastModified = orderedProjectLastModified
         .splice(0, count)
         .map(e => e.projectID);

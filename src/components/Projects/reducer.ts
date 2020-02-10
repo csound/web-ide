@@ -13,6 +13,7 @@ import {
     CLOSE_PROJECT,
     SET_PROJECT,
     SET_PROJECT_PUBLIC,
+    STORE_PROJECT_STARS,
     UNSET_PROJECT
 } from "./types";
 import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "@comp/ProjectLastModified/types";
@@ -104,7 +105,13 @@ export default (state: IProjectsReducer | undefined, action: any) => {
         case CLOSE_PROJECT: {
             return assoc("activeProjectUid", null, state);
         }
-
+        case STORE_PROJECT_STARS: {
+            return assocPath(
+                ["projects", action.projectUid, "stars"],
+                action.stars,
+                state
+            );
+        }
         case DOCUMENT_INITIALIZE: {
             const newDocument = generateEmptyDocument(
                 action.documentUid,

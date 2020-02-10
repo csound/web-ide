@@ -26,18 +26,17 @@ import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import StarIcon from "@material-ui/icons/Star";
 import OutlinedStarIcon from "@material-ui/icons/StarBorder";
+import { selectCsoundStatus } from "@comp/Csound/selectors";
 import {
-    selectListPlayState,
     selectFilteredUserFollowing,
-    selectUserProfileRequesting,
     selectCurrentlyPlayingProject
 } from "./selectors";
 import {
     pauseListItem,
     playListItem,
     editProject,
-    deleteProject,
-    toggleStarProject
+    deleteProject
+    // toggleStarProject
 } from "./actions";
 import { useTheme } from "emotion-theming";
 
@@ -45,14 +44,14 @@ const ProjectListItem = props => {
     const {
         isProfileOwner,
         project,
-        listPlayState,
+        csoundStatus,
         currentlyPlayingProject
     } = props;
     const dispatch = useDispatch();
     const theme: any = useTheme();
     const { projectUid, name, description, tags, starred } = project;
     const isCurrentlyPlaying =
-        listPlayState === "playing" && projectUid === currentlyPlayingProject;
+        csoundStatus === "playing" && projectUid === currentlyPlayingProject;
 
     return (
         <div style={{ position: "relative" }}>
@@ -75,8 +74,8 @@ const ProjectListItem = props => {
                         <IconButton
                             size="small"
                             onClick={e => {
-                                dispatch(toggleStarProject(projectUid));
-                                e.stopPropagation();
+                                // dispatch(toggleStarProject(projectUid));
+                                // e.stopPropagation();
                             }}
                         >
                             {starred && <StarIcon />}
@@ -164,6 +163,7 @@ const ProjectListItem = props => {
 };
 
 export default ({
+    profileUid,
     selectedSection,
     isProfileOwner,
     filteredProjects,
@@ -172,9 +172,11 @@ export default ({
     setSelectedSection
 }) => {
     const dispatch = useDispatch();
-    const listPlayState = useSelector(selectListPlayState);
-    const filteredFollowing = useSelector(selectFilteredUserFollowing);
-    const profileRequesting = useSelector(selectUserProfileRequesting);
+    const csoundStatus = useSelector(selectCsoundStatus);
+    const filteredFollowing = useSelector(
+        selectFilteredUserFollowing(profileUid)
+    );
+
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     return (
         <List>
@@ -186,7 +188,7 @@ export default ({
                             key={p.projectUid}
                             isProfileOwner={isProfileOwner}
                             project={p}
-                            listPlayState={listPlayState}
+                            csoundStatus={csoundStatus}
                             currentlyPlayingProject={currentlyPlayingProject}
                             username={username}
                         />
@@ -194,7 +196,6 @@ export default ({
                 })}
             {selectedSection === 1 &&
                 Array.isArray(filteredFollowing) &&
-                profileRequesting === false &&
                 filteredFollowing.map((p: any, i) => {
                     return (
                         <ListItem

@@ -35,7 +35,7 @@ export const selectOrderedStars = createSelector([selectStars], stars => {
     if (!Array.isArray(stars)) {
         return [];
     }
-    return stars.sort((a, b) => a.stars.length - b.stars.length);
+    // return stars.sort((a, b) => a.length - b.length);
 });
 
 export const selectOrderedProjectLastModified = createSelector(

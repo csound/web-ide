@@ -5,13 +5,14 @@ import React from "react";
 import { Action } from "redux";
 import {
     db,
-    stars,
     following,
     followers,
     fieldDelete,
+    getFirebaseTimestamp,
     projects,
     profiles,
     usernames,
+    stars,
     tags,
     targets,
     Timestamp
@@ -20,19 +21,15 @@ import {
     ProfileActionTypes,
     ADD_USER_PROJECT,
     DELETE_USER_PROJECT,
-    GET_USER_PROFILE,
+    STORE_USER_PROFILE,
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
-    GET_TAGS,
-    SET_PREVIOUS_PROJECT_TAGS,
+    GET_ALL_TAGS,
     SET_LIST_PLAY_STATE,
     SET_CURRENTLY_PLAYING_PROJECT,
-    SET_CSOUND_STATUS,
     REFRESH_USER_PROFILE,
     SET_FOLLOWING_FILTER_STRING,
-    SET_PROJECT_FILTER_STRING,
-    SET_STAR_PROJECT_REQUESTING,
-    GET_LOGGED_IN_USER_STARS
+    SET_PROJECT_FILTER_STRING
 } from "./types";
 import defaultCsd from "@root/templates/DefaultCsd.json";
 import defaultOrc from "@root/templates/DefaultOrc.json";
@@ -43,12 +40,8 @@ import { SnackbarType } from "@comp/Snackbar/types";
 import { openSimpleModal } from "@comp/Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import {
-    selectPreviousProjectTags,
-    selectCsoundStatus,
-    selectStarProjectRequesting,
-    selectLoggedInUserStars
-} from "./selectors";
+import { selectCsoundStatus } from "@comp/Csound/selectors";
+import { selectLoggedInUid } from "@comp/Login/selectors";
 import { playPauseCsound } from "@comp/Csound/actions";
 import {
     downloadAllProjectDocumentsOnce,
@@ -58,8 +51,17 @@ import { getProjectLastModifiedOnce } from "@comp/ProjectLastModified/actions";
 import { getPlayActionFromProject } from "@comp/TargetControls/utils";
 import { downloadTargetsOnce } from "@comp/TargetControls/actions";
 import { ProfileModal } from "./ProfileModal";
-import { get } from "lodash";
-import { pathOr, hasPath } from "ramda";
+import {
+    assoc,
+    concat,
+    difference,
+    equals,
+    keys,
+    reject,
+    pathOr,
+    hasPath,
+    reduce
+} from "ramda";
 
 const addUserProjectAction = (): ProfileActionTypes => {
     return {
@@ -67,170 +69,153 @@ const addUserProjectAction = (): ProfileActionTypes => {
     };
 };
 
+const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
+    const currentProjTagsRef = await tags
+        .where(projectUid, "==", loggedInUserUid)
+        .get();
+    const currentProjTags = currentProjTagsRef.docs.reduce(
+        (acc, doc) => assoc(doc.id, doc.data(), acc),
+        {}
+    );
+    const newTags = reject(
+        t => keys(currentProjTags).some(ts => ts === t),
+        currentTags
+    );
+    const deletedTags = difference(
+        keys(currentProjTags).sort(),
+        currentTags.sort()
+    );
+    console.log("NEW TAGS", newTags, "DEL TAGS", deletedTags);
+    const batch = db.batch();
+    // console.log(currentProjTagsRef, currentProjTags, newTags);
+    await Promise.all(
+        newTags.map(async newTag => {
+            // const tagData = (await tags.doc(newTag).get()).data();
+            batch.set(
+                tags.doc(newTag),
+                { [projectUid]: loggedInUserUid },
+                { merge: true }
+            );
+        })
+    );
+    await Promise.all(
+        deletedTags.map(async delTag => {
+            const tagData = (await tags.doc(delTag).get()).data();
+            if (
+                tagData &&
+                keys(tagData).length === 1 &&
+                keys(tagData)[0] === projectUid
+            ) {
+                batch.delete(tags.doc(delTag));
+            } else if (tagData && keys(tagData).length > 0) {
+                batch.update(tags.doc(delTag), { [projectUid]: fieldDelete() });
+            }
+        })
+    );
+    await batch.commit();
+};
+
 export const addUserProject = (
     name: string,
     description: string,
     currentTags: string[],
-    projectID: string,
+    projectUid: string,
     iconName: string,
     iconForegroundColor: string,
     iconBackgroundColor: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-            const newProject = {
-                userUid: user.uid,
-                name,
-                description,
-                public: true,
-                tags: currentTags,
-                iconName,
-                iconForegroundColor,
-                iconBackgroundColor
-            };
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
+    const currentState = getState();
+    const loggedInUserUid = selectLoggedInUid(currentState);
+    if (loggedInUserUid) {
+        const newProject = {
+            userUid: loggedInUserUid,
+            name,
+            description,
+            public: true,
+            iconName,
+            iconForegroundColor,
+            iconBackgroundColor
+        };
 
-            try {
-                const newProjectRef = await projects.add(newProject);
-                const tagsResult = currentTags.map(async tag => {
-                    const result = await tags.doc(tag).get();
-                    if (result.exists) {
-                        return tags.doc(tag).update({
-                            projectUids: firebase.firestore.FieldValue.arrayUnion(
-                                newProjectRef.id
-                            )
-                        });
-                    } else {
-                        return tags.doc(tag).set({
-                            projectUids: firebase.firestore.FieldValue.arrayUnion(
-                                newProjectRef.id
-                            )
-                        });
-                    }
-                });
-                await Promise.all(tagsResult);
-                await newProjectRef
-                    .collection("files")
-                    .add({ ...defaultCsd, userUid: user.uid });
-                const filesWithCsd = await newProjectRef
-                    .collection("files")
-                    .get();
-                const defaultCsdUid = filesWithCsd.docs[0].id;
-                await targets.doc(newProjectRef.id).set(
-                    {
-                        targets: {
-                            "project.csd": {
-                                csoundOptions: {},
-                                targetName: "project.csd",
-                                targetType: "main",
-                                targetDocumentUid: defaultCsdUid
-                            }
-                        },
-                        defaultTarget: "project.csd"
+        try {
+            const newProjectRef = await projects.add(newProject);
+            await newProjectRef
+                .collection("files")
+                .add({ ...defaultCsd, userUid: loggedInUserUid });
+            const filesWithCsd = await newProjectRef.collection("files").get();
+            const defaultCsdUid = filesWithCsd.docs[0].id;
+            await targets.doc(newProjectRef.id).set(
+                {
+                    targets: {
+                        "project.csd": {
+                            csoundOptions: {},
+                            targetName: "project.csd",
+                            targetType: "main",
+                            targetDocumentUid: defaultCsdUid
+                        }
                     },
-                    { merge: true }
-                );
-                await newProjectRef
-                    .collection("files")
-                    .add({ ...defaultOrc, userUid: user.uid });
-                await newProjectRef
-                    .collection("files")
-                    .add({ ...defaultSco, userUid: user.uid });
-                dispatch(addUserProjectAction());
-                dispatch(openSnackbar("Project Added", SnackbarType.Success));
-            } catch (e) {
-                console.log(e);
-
-                dispatch(
-                    openSnackbar("Could not add Project", SnackbarType.Error)
-                );
-            }
+                    defaultTarget: "project.csd"
+                },
+                { merge: true }
+            );
+            await newProjectRef
+                .collection("files")
+                .add({ ...defaultOrc, userUid: loggedInUserUid });
+            await newProjectRef
+                .collection("files")
+                .add({ ...defaultSco, userUid: loggedInUserUid });
+            await handleProjectTags(projectUid, loggedInUserUid, currentTags);
+            dispatch(addUserProjectAction());
+            dispatch(openSnackbar("Project Added", SnackbarType.Success));
+        } catch (e) {
+            console.log(e);
+            dispatch(openSnackbar("Could not add Project", SnackbarType.Error));
         }
-    });
+    }
 };
 
 export const editUserProject = (
     name: string,
     description: string,
     currentTags: string[],
-    projectID: string,
+    projectUid: string,
     iconName: string,
     iconForegroundColor: string,
     iconBackgroundColor: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            const newProject = {
-                userUid: user.uid,
-                name: name || "",
-                description: description || "",
-                public: false,
-                tags: currentTags || [],
-                iconName: iconName || "",
-                iconForegroundColor: iconForegroundColor || "",
-                iconBackgroundColor: iconBackgroundColor || ""
-            };
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
+    const currentState = getState();
+    const loggedInUserUid = selectLoggedInUid(currentState);
+    if (loggedInUserUid) {
+        const newProject = {
+            userUid: loggedInUserUid,
+            name: name || "",
+            description: description || "",
+            public: false,
+            iconName: iconName || "",
+            iconForegroundColor: iconForegroundColor || "",
+            iconBackgroundColor: iconBackgroundColor || ""
+        };
 
-            const state = getState();
-            const previousProjectTags = selectPreviousProjectTags(state);
-            const deletedTags = previousProjectTags.filter(
-                e => !currentTags.includes(e)
+        try {
+            const newProjectRef = await projects.doc(projectUid);
+            await newProjectRef.update(newProject);
+            await handleProjectTags(projectUid, loggedInUserUid, currentTags);
+            dispatch(addUserProjectAction());
+            dispatch(openSnackbar("Project modified", SnackbarType.Success));
+        } catch (e) {
+            console.log(e);
+
+            dispatch(
+                openSnackbar("Could not edit Project", SnackbarType.Error)
             );
-
-            try {
-                const newProjectRef = await projects.doc(projectID);
-
-                let tagsResult = deletedTags.map(async tag => {
-                    const result = await tags.doc(tag).get();
-                    if (result.exists) {
-                        return tags.doc(tag).update({
-                            projectUids: firebase.firestore.FieldValue.arrayRemove(
-                                newProjectRef.id
-                            )
-                        });
-                    }
-                });
-                await Promise.all(tagsResult);
-
-                tagsResult = deletedTags.map(async tag => {
-                    const result = await tags.doc(tag).get();
-                    const obj = result.data() || {
-                        projectUids: []
-                    };
-
-                    if (obj.projectUids.length === 0) {
-                        await tags.doc(tag).delete();
-                    }
-                });
-                await Promise.all(tagsResult);
-
-                tagsResult = currentTags.map(async tag => {
-                    const result = await tags.doc(tag).get();
-                    if (result.exists) {
-                        return tags.doc(tag).update({
-                            projectUids: firebase.firestore.FieldValue.arrayUnion(
-                                newProjectRef.id
-                            )
-                        });
-                    } else {
-                        return tags.doc(tag).set({
-                            projectUids: firebase.firestore.FieldValue.arrayUnion(
-                                newProjectRef.id
-                            )
-                        });
-                    }
-                });
-                await newProjectRef.update(newProject);
-                dispatch(addUserProjectAction());
-                dispatch(openSnackbar("Project Edited", SnackbarType.Success));
-            } catch (e) {
-                console.log(e);
-
-                dispatch(
-                    openSnackbar("Could not edit Project", SnackbarType.Error)
-                );
-            }
         }
-    });
+    }
 };
 
 const deleteUserProjectAction = (): ProfileActionTypes => {
@@ -282,31 +267,36 @@ export const setTagsInput = (tags: any[]): ProfileActionTypes => {
     };
 };
 
-export const setCsoundStatus = (
-    status: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
-    const state = getStore();
-    const csoundStatus = selectCsoundStatus(state);
+export const getAllTagsFromUser = (
+    loggedInUserUid,
+    allUserProjectsUids
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getStore
+) => {
+    const store = getStore();
 
-    if (status !== csoundStatus) {
-        dispatch({
-            type: SET_CSOUND_STATUS,
-            payload: status
-        });
-    }
-};
-
-export const getTags = (
-    loggedInUser
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getStore) => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-            tags.onSnapshot(snapshot => {
-                const result = snapshot.docs.map(doc => doc.id);
-                dispatch({ type: GET_TAGS, payload: result });
-            });
+    const currentAllTags = pathOr(
+        {},
+        ["ProfiledReducer", "profiles", loggedInUserUid, "allTags"],
+        store
+    );
+    // const allTagsRef = await tags.where("id", "==", loggedInUserUid).get();
+    // .where("profileUids", "array-contains", loggedInUserUid)
+    if (allUserProjectsUids) {
+        const allTags = reduce(
+            (acc, item) => concat(item.tags || [], acc),
+            [],
+            allUserProjectsUids
+        );
+        // console.log();
+        if (!equals(currentAllTags, allTags)) {
+            dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
         }
-    });
+    }
+
+    // const result = snapshot.docs.map(doc => doc.id);
+    //
 };
 
 export const addProject = () => {
@@ -316,8 +306,8 @@ export const addProject = () => {
                 <ProjectModal
                     name={"New Project"}
                     description={""}
-                    projectAction={addUserProject}
-                    label={"Create"}
+                    label={"Create Project"}
+                    newProject={true}
                     projectID=""
                     iconName=""
                     iconForegroundColor=""
@@ -333,12 +323,31 @@ export const followUser = (
     profileUid: string
 ): ThunkAction<void, any, null, Action<string>> => async dispatch => {
     const batch = db.batch();
-    batch.update(followers.doc(profileUid), {
-        [loggedInUserUid]: true
-    });
-    batch.update(following.doc(loggedInUserUid), {
-        [profileUid]: true
-    });
+    const followersRef = followers.doc(profileUid);
+    const followersData = await followersRef.get();
+
+    if (followersData.exists) {
+        batch.update(followersRef, {
+            [loggedInUserUid]: true
+        });
+    } else {
+        batch.set(followersRef, {
+            [loggedInUserUid]: true
+        });
+    }
+
+    const followingRef = following.doc(loggedInUserUid);
+    const followingData = await followingRef.get();
+    if (followingData.exists) {
+        batch.update(followingRef, {
+            [profileUid]: true
+        });
+    } else {
+        batch.set(followingRef, {
+            [profileUid]: true
+        });
+    }
+
     await batch.commit();
 };
 
@@ -426,22 +435,17 @@ export const editProfile = (
 
 export const editProject = (project: any) => {
     return async (dispatch: any) => {
-        dispatch({ type: SET_TAGS_INPUT, payload: project.tags || [] });
-        dispatch({
-            type: SET_PREVIOUS_PROJECT_TAGS,
-            payload: project.tags || []
-        });
         dispatch(
             openSimpleModal(() => (
                 <ProjectModal
                     name={project.name}
                     description={project.description}
-                    projectAction={editUserProject}
-                    label={"Edit"}
+                    label={"Apply changes"}
                     projectID={project.projectUid}
                     iconName={project.iconName}
                     iconForegroundColor={project.iconForegroundColor}
                     iconBackgroundColor={project.iconBackgroundColor}
+                    newProject={false}
                 />
             ))
         );
@@ -548,10 +552,6 @@ export const playListItem = (
             });
             dispatch(playAction);
             dispatch({
-                type: SET_CSOUND_STATUS,
-                payload: false
-            });
-            dispatch({
                 type: SET_CURRENTLY_PLAYING_PROJECT,
                 payload: projectUid
             });
@@ -569,10 +569,11 @@ export const pauseListItem = (
     dispatch(playPauseCsound());
 };
 
-export const getUserProfileAction = (payload: any): ProfileActionTypes => {
+export const storeUserProfile = (profile: any, profileUid: string) => {
     return {
-        type: GET_USER_PROFILE,
-        payload
+        type: STORE_USER_PROFILE,
+        profile,
+        profileUid
     };
 };
 
@@ -592,110 +593,29 @@ export const setFollowingFilterString = (
     };
 };
 
-export const getLoggedInUserStars = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user !== null) {
-            const profile = await profiles.doc(user.uid).get();
-            const stars = get(profile.data(), "stars") || [];
+export const starOrUnstarProject = (
+    projectUid: string,
+    loggedInUserUid: string
+) => {
+    return async () => {
+        if (!projectUid || !loggedInUserUid) return;
+        const currentProjectStarsRef = await stars.doc(projectUid).get();
+        const currentProjectStars = currentProjectStarsRef.exists
+            ? currentProjectStarsRef.data()
+            : {};
+        const currentlyStarred = keys(currentProjectStars || []).includes(
+            loggedInUserUid
+        );
 
-            dispatch({
-                type: GET_LOGGED_IN_USER_STARS,
-                payload: stars
-            });
-        }
-    });
-};
-
-export const toggleStarProject = (
-    projectUid: string
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    const state = getState();
-    const starProjectRequesting = selectStarProjectRequesting(state);
-
-    if (starProjectRequesting.includes(projectUid) === true) {
-        return;
-    }
-
-    firebase.auth().onAuthStateChanged(async user => {
-        starProjectRequesting.push(projectUid);
-        dispatch({
-            type: SET_STAR_PROJECT_REQUESTING,
-            payload: starProjectRequesting
-        });
-        if (user !== null) {
-            const project = await projects.doc(projectUid).get();
-
-            const projectStars = get(project.data(), "stars") || [];
-            const starsKeys =
-                projectStars.map(e => get(Object.keys(e), "0")) || [];
-            const currentStars = selectLoggedInUserStars(state);
-
-            if (starsKeys.includes(user.uid) === true) {
-                const index = starsKeys.indexOf(user.uid);
-                const starToRemove = projectStars[index];
-
-                currentStars.splice(currentStars.indexOf(projectUid), 1);
-                dispatch({
-                    type: GET_LOGGED_IN_USER_STARS,
-                    payload: currentStars
-                });
-
-                await stars.doc(projectUid).set(
-                    {
-                        stars: firebase.firestore.FieldValue.arrayRemove(
-                            starToRemove
-                        )
-                    },
+        if (!currentlyStarred) {
+            stars
+                .doc(projectUid)
+                .set(
+                    { [loggedInUserUid]: getFirebaseTimestamp() },
                     { merge: true }
                 );
-
-                await projects.doc(projectUid).update({
-                    stars: firebase.firestore.FieldValue.arrayRemove(
-                        starToRemove
-                    )
-                });
-                await profiles.doc(user.uid).update({
-                    stars: firebase.firestore.FieldValue.arrayRemove(projectUid)
-                });
-            } else {
-                currentStars.push(projectUid);
-                dispatch({
-                    type: GET_LOGGED_IN_USER_STARS,
-                    payload: currentStars
-                });
-
-                const date = Date.now();
-                await stars.doc(projectUid).update({
-                    stars: firebase.firestore.FieldValue.arrayUnion({
-                        [user.uid]: date
-                    })
-                });
-                await projects.doc(projectUid).update({
-                    stars: firebase.firestore.FieldValue.arrayUnion({
-                        [user.uid]: date
-                    })
-                });
-                await profiles.doc(user.uid).update({
-                    stars: firebase.firestore.FieldValue.arrayUnion(projectUid)
-                });
-            }
-
-            starProjectRequesting.splice(
-                starProjectRequesting.indexOf(projectUid),
-                1
-            );
-
-            dispatch({
-                type: SET_STAR_PROJECT_REQUESTING,
-                payload: starProjectRequesting
-            });
-
-            dispatch(getLoggedInUserStars());
+        } else {
+            stars.doc(projectUid).update({ [loggedInUserUid]: fieldDelete() });
         }
-    });
+    };
 };
