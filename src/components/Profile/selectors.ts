@@ -1,6 +1,6 @@
 import { createSelector } from "reselect";
 import { ProfileReducer } from "./reducer";
-import { pathOr, pickBy, propEq, values } from "ramda";
+import { pathOr, pickBy, propEq, propOr, values } from "ramda";
 import Fuse from "fuse.js";
 
 export const selectUserFollowing = (profileUid: string | null) => (
@@ -215,45 +215,11 @@ export const selectAllTagsFromUser = (profileUid: string) => (store: any) => {
     );
 };
 
-// export const selectCurrentTagSuggestions = (loggedInUserUid: string) => createSelector(
-//     [selectCurrentTagText, selectAllTagsFromUser(loggedInUserUid)],
-//     (tagText, allTags) => {
-//         const inputValue = tagText.trim().toLowerCase();
-//         const inputLength = inputValue.length;
-//         let count = 0;
-
-//         const result =
-//             inputLength === 0
-//                 ? []
-//                 : allTags.filter(suggestion => {
-//                       const keep =
-//                           count < 5 &&
-//                           suggestion.toLowerCase().slice(0, inputLength) ===
-//                               inputValue;
-
-//                       if (keep) {
-//                           count += 1;
-//                       }
-
-//                       return keep;
-//                   });
-
-//         return [...result];
-//     }
-// );
-
-// export const selectTagsInput = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-
-//     return state.tagsInput;
-// };
-
-// export const selectPreviousProjectTags = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.previousProjectTags;
-// };
-
-// export const selectShouldRedirect = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.shouldRedirect;
-// };
+export const selectProjectIconStyle = (projectUid: string) => (store: any) => {
+    const proj = pathOr({}, ["ProjectsReducer", "projects", projectUid], store);
+    return {
+        iconBackgroundColor: propOr(null, "iconBackgroundColor", proj),
+        iconForegroundColor: propOr(null, "iconForegroundColor", proj),
+        iconName: propOr(null, "iconName", proj)
+    };
+};

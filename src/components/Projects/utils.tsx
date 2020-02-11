@@ -114,6 +114,9 @@ export const convertProjectSnapToProject = async projSnap => {
         isPublic: propOr(false, "public", projData),
         name: propOr("", "name", projData),
         userUid: propOr("", "userUid", projData),
+        iconBackgroundColor: propOr(null, "iconBackgroundColor", projData),
+        iconForegroundColor: propOr(null, "iconForegroundColor", projData),
+        iconName: propOr(null, "iconName", projData),
         tags: [],
         stars: {},
         cachedProjectLastModified: lastModifiedData

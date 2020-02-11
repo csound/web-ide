@@ -8,10 +8,7 @@ import {
     projectLastModified,
     tags
 } from "@config/firestore";
-import {
-    // selectOrderedStars,
-    selectOrderedProjectLastModified
-} from "./selectors";
+import { selectOrderedProjectLastModified } from "./selectors";
 import {
     GET_TAGS,
     GET_STARS,

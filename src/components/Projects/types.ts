@@ -47,6 +47,10 @@ export interface IProject {
     isPublic: boolean;
     documents: IDocumentsMap;
     cachedProjectLastModified: Timestamp | null;
+    iconBackgroundColor: string | null;
+    iconForegroundColor: string | null;
+    iconName: string | null;
+    // only local path, NOT stored there on firestore
     stars: IStar;
     tags: string[];
 }

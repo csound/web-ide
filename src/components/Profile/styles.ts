@@ -1,5 +1,6 @@
 import { Theme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
+import { css } from "@emotion/core";
 
 const profileStyles = (theme: Theme) =>
     createStyles({
@@ -37,3 +38,62 @@ const profileStyles = (theme: Theme) =>
 
 export default (ClassComponent: any) =>
     withStyles(profileStyles)(ClassComponent);
+
+export const iconPreviewBox = css`
+    margin-left: -16px;
+    margin-top: -16px;
+    border-radius: 50%;
+    width: 62px;
+    height: 62px;
+    padding: 28px;
+    justify-content: center;
+    cursor: pointer;
+`;
+
+export const avatar = css`
+    align-self: center;
+    pointer-events: visible;
+    width: 64px;
+    height: 64px;
+
+    .listPlayIcon {
+        opacity: 0;
+        transition: opacity 1s ease-out;
+        transform: translate(0px, -3px) rotate(-90deg);
+    }
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
+    &:after {
+        content: "";
+        width: 100%;
+        height: 100%;
+        transform: scale(0.8);
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    &:hover:after {
+        transform: scale(2);
+        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.19),
+            6px 0 6px rgba(0, 0, 0, 0.23);
+    }
+    &:hover {
+        background-color: black !important;
+        transform: rotate(90deg);
+        cursor: pointer;
+        box-shadow: none;
+        .projectIcon {
+            opacity: 0;
+        }
+        .listPlayIcon {
+            opacity: 1;
+        }
+    }
+`;
+
+export const avatarIcon = css`
+    width: calc(100% - 32px);
+    height: calc(100% - 32px);
+`;

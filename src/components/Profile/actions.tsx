@@ -1,4 +1,3 @@
-// import firebase from "firebase/app";
 import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import React from "react";
@@ -85,12 +84,10 @@ const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
         keys(currentProjTags).sort(),
         currentTags.sort()
     );
-    console.log("NEW TAGS", newTags, "DEL TAGS", deletedTags);
+
     const batch = db.batch();
-    // console.log(currentProjTagsRef, currentProjTags, newTags);
     await Promise.all(
         newTags.map(async newTag => {
-            // const tagData = (await tags.doc(newTag).get()).data();
             batch.set(
                 tags.doc(newTag),
                 { [projectUid]: loggedInUserUid },
@@ -309,9 +306,9 @@ export const addProject = () => {
                     label={"Create Project"}
                     newProject={true}
                     projectID=""
-                    iconName=""
-                    iconForegroundColor=""
-                    iconBackgroundColor=""
+                    iconName={null}
+                    iconForegroundColor={null}
+                    iconBackgroundColor={null}
                 />
             ))
         );

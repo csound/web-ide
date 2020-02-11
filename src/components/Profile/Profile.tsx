@@ -9,7 +9,6 @@ import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
 import {
-    // subscribeToLoggedInUserFollowing,
     subscribeToFollowing,
     subscribeToProfile,
     subscribeToProfileProjects
@@ -166,15 +165,6 @@ const Profile = props => {
                     subscribeToFollowing(loggedInUserUid, dispatch)
                 );
             }
-
-            // dispatch(getAllTagsFromUser());
-            //     unsubscribers.push(subscribeToFollowing(profileUid, dispatch));
-            // }
-            // dispatch(getUserFollowing(username));
-            // dispatch(getLoggedInUserFollowing());
-            // dispatch(setProjectFilterString(""));
-            // dispatch(setFollowingFilterString(""));
-            // dispatch(getLoggedInUserStars());
             return () => {
                 unsubscribers.forEach(u => u && u());
                 dispatch(stopCsound());
@@ -201,17 +191,8 @@ const Profile = props => {
         };
     }, []);
 
-    // useEffect(() => {
-    //     dispatch(setCsoundStatus(csoundPlayStatus));
-    // }, [dispatch, csoundPlayStatus]);
-
-    // useEffect(() => {
-    //     if (csoundStatus === "stopped" && previousCsoundStatus === "playing") {
-    //         dispatch({ type: SET_LIST_PLAY_STATE, payload: "stopped" });
-    //     }
-    // }, [dispatch, csoundStatus, previousCsoundStatus]);
-
     const { displayName, bio, link1, link2, link3 } = profile || {};
+
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />

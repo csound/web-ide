@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Tooltip from "@material-ui/core/Tooltip";
 import { addUserProject, editUserProject } from "./actions";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
@@ -7,14 +8,20 @@ import { SliderPicker } from "react-color";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import AssignmentIcon from "@material-ui/icons/Assignment";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
+import * as SS from "./styles";
 import IconButton from "@material-ui/core/IconButton";
 import ReactAutosuggestExample from "./TagAutoSuggest";
 import { selectTags } from "./selectors";
 import SVGPaths, { SVGComponents } from "./SVGPaths";
 import { equals, isEmpty, not } from "ramda";
+
+const FallbackIcon = ({ fill }) => (
+    <AssignmentIcon style={{ height: 62, width: 62, fill }} />
+);
 
 const ModalContainer = styled.div`
     display: grid;
@@ -32,6 +39,7 @@ const FieldRow = styled.div<IFieldRow>`
 
 const IconPickerContainer = styled.div`
     display: grid;
+    position: relative;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr;
     grid-gap: 10px;
@@ -43,17 +51,17 @@ type IIconPickerIconButton = {
     bgcolor: string;
 };
 
-const IconPickerIconButton = styled(IconButton)<IIconPickerIconButton>`
-    grid-column: 1;
-    grid-row: 1;
-    && {
-        border-radius: 4px;
-        border: 2px solid black;
-        background-color: ${props => props.bgcolor};
-        fill: #dfa234;
-        padding: 0px;
-    }
-`;
+// const IconPickerIconButton = styled(IconButton)<IIconPickerIconButton>`
+//     grid-column: 1;
+//     grid-row: 1;
+//     && {
+//         border-radius: 4px;
+//         border: 2px solid black;
+//         background-color: ${props => props.bgcolor};
+//         fill: #dfa234;
+//         padding: 0px;
+//     }
+// `;
 
 const StyledSketchPicker = styled(SliderPicker)`
     grid-column: 2;
@@ -76,9 +84,9 @@ interface IProjectModal {
     description: string;
     label: string;
     projectID: string;
-    iconName: string;
-    iconForegroundColor: string;
-    iconBackgroundColor: string;
+    iconForegroundColor: string | null;
+    iconBackgroundColor: string | null;
+    iconName: string | null;
     newProject: boolean;
 }
 
@@ -118,18 +126,18 @@ export const ProjectModal = (props: IProjectModal) => {
                           description,
                           modifiedTags,
                           props.projectID,
-                          iconName,
-                          iconForegroundColor,
-                          iconBackgroundColor
+                          iconName || "default",
+                          iconForegroundColor || "#000000",
+                          iconBackgroundColor || "#FFF"
                       )
                     : editUserProject(
                           name,
                           description,
                           modifiedTags,
                           props.projectID,
-                          iconName,
-                          iconForegroundColor,
-                          iconBackgroundColor
+                          iconName || "default",
+                          iconForegroundColor || "#000000",
+                          iconBackgroundColor || "#FFF"
                       )
             );
             dispatch(closeModal());
@@ -154,11 +162,11 @@ export const ProjectModal = (props: IProjectModal) => {
         setPopupState(false);
     };
 
-    let isIconComponent = false;
     let IconComponent: React.ElementType = SVGComponents[`fadADRComponent`];
-    if (SVGPaths[iconName]) {
+    if (iconName && iconName !== "default" && SVGPaths[iconName]) {
         IconComponent = SVGComponents[`${iconName}Component`];
-        isIconComponent = true;
+    } else {
+        IconComponent = FallbackIcon;
     }
     return (
         <ModalContainer>
@@ -204,22 +212,24 @@ export const ProjectModal = (props: IProjectModal) => {
                     label={"Tags"}
                 />
             </FieldRow>
-
             <FieldRow row={5}>
                 <IconPickerContainer>
-                    <IconPickerIconButton
-                        aria-label="delete"
-                        onClick={handleProfileDropDown}
-                        bgcolor={iconBackgroundColor}
-                    >
-                        {isIconComponent !== false && (
-                            <IconComponent
-                                width={"100%"}
-                                height={"100%"}
-                                fill={iconForegroundColor}
-                            />
-                        )}
-                    </IconPickerIconButton>
+                    {IconComponent && (
+                        <Tooltip title={"select an icon for your project"}>
+                            <div
+                                css={SS.iconPreviewBox}
+                                style={{ backgroundColor: iconBackgroundColor }}
+                                onClick={handleProfileDropDown}
+                            >
+                                <IconComponent
+                                    width={"100%"}
+                                    height={"100%"}
+                                    fill={iconForegroundColor}
+                                    aria-label="change"
+                                />
+                            </div>
+                        </Tooltip>
+                    )}
                     <Popover
                         open={popupState}
                         anchorEl={anchorElement}
