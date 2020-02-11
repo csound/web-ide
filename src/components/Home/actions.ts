@@ -81,11 +81,7 @@ export const getPopularProjects = (
     const orderedStars = selectOrderedStars(state);
     const orderedProjectLastModified = selectOrderedProjectLastModified(state);
     const splitStars = orderedStars.splice(0, count).map(e => e.projectID);
-    const splitLastModified = orderedProjectLastModified
-        .splice(0, count)
-        .map(e => e.projectID);
-
-    if (splitStars.length < 1 || splitLastModified.length < 1) {
+    if (splitStars.length < 1) {
         return;
     }
 
@@ -94,19 +90,10 @@ export const getPopularProjects = (
         .where(firestore.FieldPath.documentId(), "in", splitStars)
         .get();
 
-    const splitLastModifiedProjectsQuery = await projects
-        .where("public", "==", true)
-        .where(firestore.FieldPath.documentId(), "in", splitLastModified)
-        .get();
-
     const starProjects: any[] = [];
     const lastModifiedProjects: any[] = [];
     splitStarProjectsQuery.forEach(snapshot => {
         starProjects.push({ id: snapshot.id, ...snapshot.data() });
-    });
-
-    splitLastModifiedProjectsQuery.forEach(snapshot => {
-        lastModifiedProjects.push({ id: snapshot.id, ...snapshot.data() });
     });
 
     const userIDs = [

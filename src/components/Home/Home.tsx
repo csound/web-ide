@@ -46,6 +46,8 @@ const Home = props => {
     const projectUserProfiles = useSelector(selectProjectUserProfiles);
     const columnCount = 4;
     const columnPlaceHolderArray = new Array(columnCount).fill(0);
+    console.log(starredProjects);
+
     useEffect(() => {
         if (
             Array.isArray(tags) === true &&
