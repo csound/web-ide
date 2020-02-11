@@ -1,13 +1,14 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
     Button,
     List,
     ListItem,
     ListItemAvatar,
     Avatar,
-    ListItemText,
-    IconButton
+    ListItemText
 } from "@material-ui/core";
+import ListPlayButton from "./ListPlayButton";
 import { useDispatch, useSelector } from "react-redux";
 import { push } from "connected-react-router";
 import {
@@ -18,152 +19,100 @@ import {
     StyledUserListItemContainer,
     StyledChip,
     StyledListPlayButtonContainer,
-    StyledListStarButtonContainer,
+    // StyledListStarButtonContainer,
     StyledListButtonsContainer
 } from "./ProfileUI";
-import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
-import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
-import AssignmentIcon from "@material-ui/icons/Assignment";
-import StarIcon from "@material-ui/icons/Star";
-import OutlinedStarIcon from "@material-ui/icons/StarBorder";
+// import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
+// import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
+// import StarIcon from "@material-ui/icons/Star";
+// import OutlinedStarIcon from "@material-ui/icons/StarBorder";
+import { selectCsoundStatus } from "@comp/Csound/selectors";
 import {
-    selectListPlayState,
     selectFilteredUserFollowing,
-    selectUserProfileRequesting,
     selectCurrentlyPlayingProject
 } from "./selectors";
 import {
-    pauseListItem,
-    playListItem,
+    // pauseListItem,
+    // playListItem,
     editProject,
-    deleteProject,
-    toggleStarProject
+    deleteProject
+    // toggleStarProject
 } from "./actions";
-import { useTheme } from "emotion-theming";
 
 const ProjectListItem = props => {
     const {
         isProfileOwner,
-        project,
-        listPlayState,
-        currentlyPlayingProject
+        project
+        // csoundStatus,
+        // currentlyPlayingProject
     } = props;
     const dispatch = useDispatch();
-    const theme: any = useTheme();
-    const { projectUid, name, description, tags, starred } = project;
-    const isCurrentlyPlaying =
-        listPlayState === "playing" && projectUid === currentlyPlayingProject;
+    const { projectUid, name, description, tags } = project;
+    // const isCurrentlyPlaying =
+    //     csoundStatus === "playing" && projectUid === currentlyPlayingProject;
 
     return (
         <div style={{ position: "relative" }}>
-            <ListItem
-                button
-                alignItems="flex-start"
-                onClick={e => {
-                    dispatch(push("/editor/" + projectUid));
-                }}
-            >
-                <StyledListItemContainer isProfileOwner={isProfileOwner}>
-                    <StyledListItemAvatar>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <AssignmentIcon />
-                            </Avatar>
-                        </ListItemAvatar>
-                    </StyledListItemAvatar>
-                    <StyledListStarButtonContainer>
-                        <IconButton
-                            size="small"
+            <Link to={"/editor/" + projectUid}>
+                <ListItem button alignItems="flex-start">
+                    <StyledListItemContainer isProfileOwner={isProfileOwner}>
+                        <StyledListItemTopRowText>
+                            <ListItemText
+                                primary={name}
+                                secondary={description}
+                            />
+                        </StyledListItemTopRowText>
+                        <StyledListItemChipsRow>
+                            {Array.isArray(tags) &&
+                                tags.map(
+                                    (
+                                        t: React.ReactNode,
+                                        i: string | number | undefined
+                                    ) => {
+                                        return (
+                                            <StyledChip
+                                                color="primary"
+                                                key={i}
+                                                label={t}
+                                            />
+                                        );
+                                    }
+                                )}
+                        </StyledListItemChipsRow>
+                    </StyledListItemContainer>
+                </ListItem>
+                {isProfileOwner && (
+                    <StyledListButtonsContainer>
+                        <Button
+                            color="primary"
                             onClick={e => {
-                                dispatch(toggleStarProject(projectUid));
+                                dispatch(editProject(project));
                                 e.stopPropagation();
                             }}
                         >
-                            {starred && <StarIcon />}
-                            {!starred && <OutlinedStarIcon />}
-                        </IconButton>
-                    </StyledListStarButtonContainer>
-
-                    <StyledListItemTopRowText>
-                        <ListItemText primary={name} secondary={description} />
-                    </StyledListItemTopRowText>
-
-                    <StyledListItemChipsRow>
-                        {Array.isArray(tags) &&
-                            tags.map(
-                                (
-                                    t: React.ReactNode,
-                                    i: string | number | undefined
-                                ) => {
-                                    return (
-                                        <StyledChip
-                                            color="primary"
-                                            key={i}
-                                            label={t}
-                                        />
-                                    );
-                                }
-                            )}
-                    </StyledListItemChipsRow>
-                    <StyledListPlayButtonContainer>
-                        <IconButton
-                            size="medium"
-                            aria-label="Delete"
+                            Edit
+                        </Button>
+                        <Button
+                            color="secondary"
                             onClick={e => {
+                                dispatch(deleteProject(project));
                                 e.stopPropagation();
-                                dispatch(
-                                    isCurrentlyPlaying
-                                        ? pauseListItem(projectUid)
-                                        : playListItem(projectUid)
-                                );
                             }}
                         >
-                            {isCurrentlyPlaying ? (
-                                <PauseIcon
-                                    fontSize="large"
-                                    style={{
-                                        color: theme.profilePlayButtonActive
-                                    }}
-                                />
-                            ) : (
-                                <PlayIcon
-                                    fontSize="large"
-                                    style={{
-                                        color: theme.profilePlayButton
-                                    }}
-                                />
-                            )}
-                        </IconButton>
-                    </StyledListPlayButtonContainer>
-                </StyledListItemContainer>
-            </ListItem>
-            {isProfileOwner && (
-                <StyledListButtonsContainer>
-                    <Button
-                        color="primary"
-                        onClick={e => {
-                            dispatch(editProject(project));
-                            e.stopPropagation();
-                        }}
-                    >
-                        Edit
-                    </Button>
-                    <Button
-                        color="secondary"
-                        onClick={e => {
-                            dispatch(deleteProject(project));
-                            e.stopPropagation();
-                        }}
-                    >
-                        delete
-                    </Button>
-                </StyledListButtonsContainer>
-            )}
+                            delete
+                        </Button>
+                    </StyledListButtonsContainer>
+                )}
+                <StyledListPlayButtonContainer>
+                    <ListPlayButton projectUid={projectUid} />
+                </StyledListPlayButtonContainer>
+            </Link>
         </div>
     );
 };
 
 export default ({
+    profileUid,
     selectedSection,
     isProfileOwner,
     filteredProjects,
@@ -172,9 +121,11 @@ export default ({
     setSelectedSection
 }) => {
     const dispatch = useDispatch();
-    const listPlayState = useSelector(selectListPlayState);
-    const filteredFollowing = useSelector(selectFilteredUserFollowing);
-    const profileRequesting = useSelector(selectUserProfileRequesting);
+    const csoundStatus = useSelector(selectCsoundStatus);
+    const filteredFollowing = useSelector(
+        selectFilteredUserFollowing(profileUid)
+    );
+
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     return (
         <List>
@@ -186,7 +137,7 @@ export default ({
                             key={p.projectUid}
                             isProfileOwner={isProfileOwner}
                             project={p}
-                            listPlayState={listPlayState}
+                            csoundStatus={csoundStatus}
                             currentlyPlayingProject={currentlyPlayingProject}
                             username={username}
                         />
@@ -194,7 +145,6 @@ export default ({
                 })}
             {selectedSection === 1 &&
                 Array.isArray(filteredFollowing) &&
-                profileRequesting === false &&
                 filteredFollowing.map((p: any, i) => {
                     return (
                         <ListItem

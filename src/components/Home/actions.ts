@@ -8,10 +8,7 @@ import {
     projectLastModified,
     tags
 } from "@config/firestore";
-import {
-    selectOrderedStars,
-    selectOrderedProjectLastModified
-} from "./selectors";
+import { selectOrderedProjectLastModified } from "./selectors";
 import {
     GET_TAGS,
     GET_STARS,
@@ -78,10 +75,16 @@ export const getPopularProjects = (
     getStore
 ) => {
     const state = getStore();
-    const orderedStars = selectOrderedStars(state);
+    const orderedStars = []; //FIXME (hlolli 10/02) selectOrderedStars(state);
     const orderedProjectLastModified = selectOrderedProjectLastModified(state);
-    const splitStars = orderedStars.splice(0, count).map(e => e.projectID);
-    if (splitStars.length < 1) {
+    const splitStars = orderedStars
+        .splice(0, count)
+        .map(e => (e as any).projectID);
+    const splitLastModified = orderedProjectLastModified
+        .splice(0, count)
+        .map(e => e.projectID);
+
+    if (splitStars.length < 1 || splitLastModified.length < 1) {
         return;
     }
 

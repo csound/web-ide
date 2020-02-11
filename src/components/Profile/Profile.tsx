@@ -9,7 +9,6 @@ import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
 import {
-    subscribeToLoggedInUserFollowing,
     subscribeToFollowing,
     subscribeToProfile,
     subscribeToProfileProjects
@@ -18,34 +17,29 @@ import { selectLoginRequesting } from "@comp/Login/selectors";
 import {
     uploadProfileImage,
     addProject,
+    getAllTagsFromUser,
     // getTags,
-    setCsoundStatus,
     editProfile,
     followUser,
     unfollowUser,
     setProjectFilterString,
-    setFollowingFilterString,
-    getLoggedInUserStars
+    setFollowingFilterString
+    // getLoggedInUserStars
 } from "./actions";
 import {
+    selectUserFollowing,
     selectUserProfile,
     selectUserImageURL,
-    selectCsoundStatus,
-    selectPreviousCsoundStatus,
-    selectLoggedInUserFollowing,
-    // selectUserFollowing,
-    selectUserImageURLRequesting,
-    selectUserProfileRequesting,
+    selectAllUserProjectUids,
     selectFilteredUserProjects,
     selectProjectFilterString,
     selectFollowingFilterString
 } from "./selectors";
 import { selectLoggedInUid } from "@comp/Login/selectors";
 import { get } from "lodash";
+import { equals } from "ramda";
 import { Typography, Tabs, Tab, InputAdornment } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
-import { selectCsoundStatus as selectCsoundPlayState } from "../Csound/selectors";
-import { SET_LIST_PLAY_STATE } from "./types";
 import { stopCsound } from "../Csound/actions";
 import {
     ProfileMain,
@@ -85,19 +79,18 @@ const UserLink = ({ link }) => {
 
 const Profile = props => {
     const { classes } = props;
-    // const theme: any = useTheme();
     const [profileUid, setProfileUid]: [string | null, any] = useState(null);
-    // const fromFollowing = get(props, "location.state.fromFollowing");
     const dispatch = useDispatch();
     const username = get(props, "match.params.username") || null;
-    const profile = useSelector(selectUserProfile);
-    const imageUrl = useSelector(selectUserImageURL);
-    const csoundPlayState = useSelector(selectCsoundPlayState);
-    const csoundStatus = useSelector(selectCsoundStatus);
-    const previousCsoundStatus = useSelector(selectPreviousCsoundStatus);
+    const profile = useSelector(selectUserProfile(profileUid));
+    const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
-    const imageUrlRequesting = useSelector(selectUserImageURLRequesting);
-    const profileRequesting = useSelector(selectUserProfileRequesting);
+    const allUserProjectsUids = useSelector(
+        selectAllUserProjectUids(loggedInUserUid)
+    );
+    const [lastAllUserProjectUids, setLastAllUserProjectUids] = useState(
+        allUserProjectsUids
+    );
     const filteredProjects = useSelector(
         selectFilteredUserProjects(profileUid)
     );
@@ -105,11 +98,28 @@ const Profile = props => {
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
-    const loggedInUserFollowing = useSelector(selectLoggedInUserFollowing);
-    const isFollowing = loggedInUserFollowing.includes(profileUid);
+    const loggedInUserFollowing: string[] = useSelector(
+        selectUserFollowing(loggedInUserUid)
+    );
+
+    const isFollowing = profileUid
+        ? loggedInUserFollowing.includes(profileUid)
+        : false;
     const isRequestingLogin = useSelector(selectLoginRequesting);
     const isProfileOwner = loggedInUserUid === profileUid;
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
+
+    useEffect(() => {
+        if (
+            loggedInUserUid &&
+            isProfileOwner &&
+            !equals(lastAllUserProjectUids, allUserProjectsUids)
+        ) {
+            dispatch(getAllTagsFromUser(loggedInUserUid, allUserProjectsUids));
+            setLastAllUserProjectUids(allUserProjectsUids);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allUserProjectsUids]);
 
     useEffect(() => {
         if (!isRequestingLogin) {
@@ -148,17 +158,13 @@ const Profile = props => {
                 subscribeToFollowing(profileUid, dispatch),
                 subscribeToProfileProjects(profileUid, isProfileOwner, dispatch)
             ] as any[];
-            if (loggedInUserUid) {
+            // make sure the logged in user's following is listed
+            // when viewing another profile, for un/follow state
+            if (loggedInUserUid && !isProfileOwner) {
                 unsubscribers.push(
-                    subscribeToLoggedInUserFollowing(loggedInUserUid, dispatch)
+                    subscribeToFollowing(loggedInUserUid, dispatch)
                 );
             }
-            // dispatch(getTags());
-            // dispatch(getUserFollowing(username));
-            // dispatch(getLoggedInUserFollowing());
-            dispatch(setProjectFilterString(""));
-            dispatch(setFollowingFilterString(""));
-            dispatch(getLoggedInUserStars());
             return () => {
                 unsubscribers.forEach(u => u && u());
                 dispatch(stopCsound());
@@ -185,17 +191,8 @@ const Profile = props => {
         };
     }, []);
 
-    useEffect(() => {
-        dispatch(setCsoundStatus(csoundPlayState));
-    }, [dispatch, csoundPlayState]);
+    const { displayName, bio, link1, link2, link3 } = profile || {};
 
-    useEffect(() => {
-        if (csoundStatus === "stopped" && previousCsoundStatus === "playing") {
-            dispatch({ type: SET_LIST_PLAY_STATE, payload: "stopped" });
-        }
-    }, [dispatch, csoundStatus, previousCsoundStatus]);
-
-    const { displayName, bio, link1, link2, link3 } = profile;
     return (
         <div className={classes.root}>
             <Header showMenuBar={false} />
@@ -211,9 +208,9 @@ const Profile = props => {
                             onMouseLeave={() => setImageHover(false)}
                         >
                             <ProfilePictureDiv>
-                                {imageUrlRequesting === false && (
+                                {imageUrl && (
                                     <ProfilePicture
-                                        src={imageUrl!}
+                                        src={imageUrl}
                                         width={"100%"}
                                         height={"100%"}
                                         alt="User Profile"
@@ -263,12 +260,12 @@ const Profile = props => {
                                 color="textSecondary"
                                 gutterBottom
                             >
-                                {profileRequesting === false && profile.bio}
+                                {profile && profile.bio}
                             </Typography>
                             <Typography variant="h5" component="h4">
                                 Links
                             </Typography>
-                            {profileRequesting === false && (
+                            {profile && (
                                 <>
                                     <UserLink link={link1} />
                                     <UserLink link={link2} />
@@ -331,7 +328,7 @@ const Profile = props => {
                     <NameSectionWrapper>
                         <NameSection>
                             <Typography variant="h3" component="h3">
-                                {profileRequesting === false && displayName}
+                                {profile && displayName}
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
@@ -415,6 +412,7 @@ const Profile = props => {
 
                         <ListContainer>
                             <ProfileLists
+                                profileUid={profileUid}
                                 isProfileOwner={isProfileOwner}
                                 selectedSection={selectedSection}
                                 setSelectedSection={setSelectedSection}

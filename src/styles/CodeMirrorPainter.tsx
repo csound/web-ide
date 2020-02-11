@@ -11,6 +11,7 @@ export const CodeMirrorPainter = ({ theme }) => (
           .CodeMirror-line > span > span::selection
               { background: ${theme.selectedTextColor}; }
           .CodeMirror-line { padding: 0!important; }
+          .CodeMirror-gutter { background: ${theme.gutterBackground}; }
           .CodeMirror-gutters { background: ${theme.gutterBackground};
                                 border-right: 0px; }
           .CodeMirror-guttermarker { color: ${theme.gutterMarker}; }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Autosuggest from "react-autosuggest";
 import match from "autosuggest-highlight/match";
@@ -7,12 +7,11 @@ import Paper from "@material-ui/core/Paper";
 import MenuItem from "@material-ui/core/MenuItem";
 import { withStyles } from "@material-ui/core/styles";
 import ChipInput from "material-ui-chip-input";
-import {
-    selectCurrentTagText,
-    selectTagsInput,
-    selectCurrentTagSuggestions
-} from "./selectors";
-import { setCurrentTagText, setTagsInput } from "./actions";
+import { selectLoggedInUid } from "@comp/Login/selectors";
+import { selectAllTagsFromUser, selectCurrentTagText } from "./selectors";
+import { setCurrentTagText } from "./actions";
+import { append, equals, pickAll, reject, values } from "ramda";
+import Fuse from "fuse.js";
 
 const styles = theme => ({
     container: {
@@ -41,13 +40,26 @@ const styles = theme => ({
 });
 
 const TagAutosuggest = props => {
+    const {
+        classes,
+        projectUid,
+        modifiedTags,
+        setModifiedTags,
+        ...other
+    } = props;
     const dispatch = useDispatch();
-    const value = useSelector(selectTagsInput);
+    const loggedInUserUid = useSelector(selectLoggedInUid);
+    const allTags = useSelector(selectAllTagsFromUser(loggedInUserUid));
+    const [suggestions, setSuggestions] = useState([]);
     const textFieldInput = useSelector(selectCurrentTagText);
-    const suggestions = useSelector(selectCurrentTagSuggestions);
-
-    const handleSuggestionsFetchRequested = ({ value }) => {
-        dispatch(setCurrentTagText(value));
+    const handleSuggestionsFetchRequested = ({ value, ...rest }) => {
+        const options = {
+            shouldSort: true
+        };
+        const fuse = new Fuse(allTags, options);
+        const matches = fuse.search(value);
+        const suggest = values(pickAll(matches, allTags));
+        setSuggestions(suggest);
     };
 
     const handleSuggestionsClearRequested = () => {
@@ -55,25 +67,23 @@ const TagAutosuggest = props => {
     };
 
     const handletextFieldInputChange = (event, { newValue }) => {
-        // dispatch(setCurrentTagText(newValue));
+        dispatch(setCurrentTagText(newValue));
     };
 
     const handleAddChip = chip => {
-        if (props.allowDuplicates || value.indexOf(chip) < 0) {
-            dispatch(setTagsInput([...value, chip]));
+        if (props.allowDuplicates || allTags.indexOf(chip) < 0) {
+            setModifiedTags(append(chip, modifiedTags));
             dispatch(setCurrentTagText(""));
         }
     };
 
-    const handleDeleteChip = (chip, index) => {
-        const temp = value.slice();
-        temp.splice(index, 1);
-        dispatch(setTagsInput(temp));
+    const handleDeleteChip = chip => {
+        setModifiedTags(reject(equals(chip), modifiedTags));
     };
 
-    const { classes, ...other } = props;
     return (
         <Autosuggest
+            alwaysRenderSuggestions={true}
             theme={{
                 container: classes.container,
                 suggestionsContainerOpen: classes.suggestionsContainerOpen,
@@ -87,7 +97,7 @@ const TagAutosuggest = props => {
             }}
             focusInputOnSuggestionClick={false}
             inputProps={{
-                chips: value,
+                chips: modifiedTags,
                 value: textFieldInput,
                 onChange: handletextFieldInputChange,
                 onAdd: chip => handleAddChip(chip),

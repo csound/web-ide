@@ -2,8 +2,8 @@ import { store } from "@store/index";
 import { following, profiles, projects, tags } from "@config/firestore";
 import { setProject, unsetProject } from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
-import { getUserProfileAction } from "./actions";
-import { UPDATE_LOGGED_IN_FOLLOWING, UPDATE_PROFILE_FOLLOWING } from "./types";
+import { storeUserProfile } from "./actions";
+import { UPDATE_PROFILE_FOLLOWING } from "./types";
 import {
     assoc,
     difference,
@@ -20,12 +20,7 @@ import {
 export const subscribeToProfile = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
         profile => {
-            dispatch(
-                getUserProfileAction({
-                    profile: profile.data(),
-                    profileUid
-                })
-            );
+            dispatch(storeUserProfile(profile.data(), profileUid));
         },
         (error: any) => console.error(error)
     );
@@ -50,6 +45,7 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
             );
             dispatch({
                 type: UPDATE_PROFILE_FOLLOWING,
+                profileUid,
                 userProfiles,
                 userProfileUids
             });
@@ -59,22 +55,22 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToLoggedInUserFollowing = (
-    loggedInUid: string,
-    dispatch: any
-) => {
-    const unsubscribe: () => void = following.doc(loggedInUid).onSnapshot(
-        async followingRef => {
-            const userProfileUids = keys(followingRef.data() || {}) as string[];
-            dispatch({
-                type: UPDATE_LOGGED_IN_FOLLOWING,
-                userProfileUids
-            });
-        },
-        (error: any) => console.error(error)
-    );
-    return unsubscribe;
-};
+// export const subscribeToLoggedInUserFollowing = (
+//     loggedInUid: string,
+//     dispatch: any
+// ) => {
+//     const unsubscribe: () => void = following.doc(loggedInUid).onSnapshot(
+//         async followingRef => {
+//             const userProfileUids = keys(followingRef.data() || {}) as string[];
+//             dispatch({
+//                 type: UPDATE_LOGGED_IN_FOLLOWING,
+//                 userProfileUids
+//             });
+//         },
+//         (error: any) => console.error(error)
+//     );
+//     return unsubscribe;
+// };
 
 export const subscribeToProfileProjects = (
     profileUid: string,
@@ -98,7 +94,7 @@ export const subscribeToProfileProjects = (
         if (!projectSnaps.empty) {
             await projectSnaps.docs.forEach(async projSnap => {
                 const projTags = await tags
-                    .where("projectUids", "array-contains", projSnap.id)
+                    .where(projSnap.id, "==", profileUid)
                     .get()
                     .then(d => d.docs.map(prop("id")));
                 const proj = await convertProjectSnapToProject(projSnap);

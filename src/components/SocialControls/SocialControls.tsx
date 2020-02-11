@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import * as SS from "./styles";
+import { subscribeToProjectStars } from "./subscribers";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IconButton } from "@material-ui/core";
@@ -14,8 +15,10 @@ import {
     selectActiveProjectUid,
     selectProjectPublic
 } from "./selectors";
-import { getLoggedInUserStars, toggleStarProject } from "../Profile/actions";
+import { selectLoggedInUid } from "@comp/Login/selectors";
+import { selectLoginRequesting } from "@comp/Login/selectors";
 import { markProjectPublic } from "../Projects/actions";
+import { starOrUnstarProject } from "@comp/Profile/actions";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { openSimpleModal } from "../Modal/actions";
 import ShareDialog from "../ShareDialog";
@@ -56,24 +59,24 @@ const StyledPublicOffIcon = styled(VisibilityOffIcon)`
     }
 `;
 
-const StyledLabelContainer = styled.div`
-    padding: 2px;
-    font-size: 15px;
-    font-weight: 500;
-    color: ${props => props.theme.headerTextColor};
-    letter-spacing: 1.25px;
-`;
-
 const SocialControls = () => {
-    const starred = useSelector(selectUserStarredProject);
     const projectUid = useSelector(selectActiveProjectUid);
+    const loggedInUserUid = useSelector(selectLoggedInUid);
+    const starred = useSelector(
+        selectUserStarredProject(loggedInUserUid, projectUid)
+    );
+    const isRequestingLogin = useSelector(selectLoginRequesting);
     const isOwner = useSelector(selectIsOwner(projectUid as any));
     const isPublic = useSelector(selectProjectPublic);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(getLoggedInUserStars());
-    }, [dispatch]);
+        if (projectUid && !isRequestingLogin && loggedInUserUid) {
+            const unsubscribe = subscribeToProjectStars(projectUid, dispatch);
+            return unsubscribe;
+        }
+    }, [projectUid, isRequestingLogin, loggedInUserUid, dispatch]);
+
     return (
         <>
             {isPublic && (
@@ -99,7 +102,12 @@ const SocialControls = () => {
                         size="medium"
                         onClick={() => {
                             if (projectUid !== null) {
-                                dispatch(toggleStarProject(projectUid));
+                                dispatch(
+                                    starOrUnstarProject(
+                                        projectUid,
+                                        loggedInUserUid
+                                    )
+                                );
                             }
                         }}
                     >
@@ -111,23 +119,24 @@ const SocialControls = () => {
                 </div>
             </Tooltip>
             {isOwner && (
-                <div css={SS.buttonContainer}>
-                    <StyledIconButton
-                        size="medium"
-                        onClick={() => {
-                            if (projectUid !== null) {
-                                dispatch(markProjectPublic(!isPublic));
-                            }
-                        }}
-                    >
-                        {isPublic ? (
-                            <StyledPublicIcon fontSize="large" />
-                        ) : (
-                            <StyledPublicOffIcon fontSize="large" />
-                        )}
-                        <StyledLabelContainer>Public</StyledLabelContainer>
-                    </StyledIconButton>
-                </div>
+                <Tooltip title={isPublic ? "Hide project" : "Unhide project"}>
+                    <div css={SS.buttonContainer}>
+                        <StyledIconButton
+                            size="medium"
+                            onClick={() => {
+                                if (projectUid !== null) {
+                                    dispatch(markProjectPublic(!isPublic));
+                                }
+                            }}
+                        >
+                            {isPublic ? (
+                                <StyledPublicIcon fontSize="large" />
+                            ) : (
+                                <StyledPublicOffIcon fontSize="large" />
+                            )}
+                        </StyledIconButton>
+                    </div>
+                </Tooltip>
             )}
         </>
     );

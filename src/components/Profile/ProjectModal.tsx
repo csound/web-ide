@@ -1,21 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Tooltip from "@material-ui/core/Tooltip";
+import { addUserProject, editUserProject } from "./actions";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
-import { isEmpty } from "lodash";
 import { closeModal } from "../Modal/actions";
 import { SliderPicker } from "react-color";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import AssignmentIcon from "@material-ui/icons/Assignment";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
+import * as SS from "./styles";
 import IconButton from "@material-ui/core/IconButton";
 import ReactAutosuggestExample from "./TagAutoSuggest";
-import { ThunkAction } from "redux-thunk";
-import { Action } from "redux";
-import { selectTagsInput } from "./selectors";
+import { selectTags } from "./selectors";
 import SVGPaths, { SVGComponents } from "./SVGPaths";
+import { equals, isEmpty, not } from "ramda";
+
+const FallbackIcon = ({ fill }) => (
+    <AssignmentIcon style={{ height: 62, width: 62, fill }} />
+);
+
 const ModalContainer = styled.div`
     display: grid;
     grid-template-rows: 60px 60px 140px 90px 120px 60px;
@@ -32,6 +39,7 @@ const FieldRow = styled.div<IFieldRow>`
 
 const IconPickerContainer = styled.div`
     display: grid;
+    position: relative;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr;
     grid-gap: 10px;
@@ -42,17 +50,18 @@ const IconPickerContainer = styled.div`
 type IIconPickerIconButton = {
     bgcolor: string;
 };
-const IconPickerIconButton = styled(IconButton)<IIconPickerIconButton>`
-    grid-column: 1;
-    grid-row: 1;
-    && {
-        border-radius: 4px;
-        border: 2px solid black;
-        background-color: ${props => props.bgcolor};
-        fill: #dfa234;
-        padding: 0px;
-    }
-`;
+
+// const IconPickerIconButton = styled(IconButton)<IIconPickerIconButton>`
+//     grid-column: 1;
+//     grid-row: 1;
+//     && {
+//         border-radius: 4px;
+//         border: 2px solid black;
+//         background-color: ${props => props.bgcolor};
+//         fill: #dfa234;
+//         padding: 0px;
+//     }
+// `;
 
 const StyledSketchPicker = styled(SliderPicker)`
     grid-column: 2;
@@ -71,22 +80,14 @@ const PopoverContainer = styled.div`
 `;
 
 interface IProjectModal {
-    projectAction(
-        name: string,
-        description: string,
-        currentTags: string[],
-        projectID: string,
-        iconName: string,
-        iconForegroundColor: string,
-        iconBackgroundColor: string
-    ): ThunkAction<void, any, null, Action<string>>;
     name: string;
     description: string;
     label: string;
     projectID: string;
-    iconName: string;
-    iconForegroundColor: string;
-    iconBackgroundColor: string;
+    iconForegroundColor: string | null;
+    iconBackgroundColor: string | null;
+    iconName: string | null;
+    newProject: boolean;
 }
 
 export const ProjectModal = (props: IProjectModal) => {
@@ -104,21 +105,40 @@ export const ProjectModal = (props: IProjectModal) => {
     const [popupState, setPopupState] = useState(false);
     const [anchorElement, setAnchorElement] = useState(null);
     const dispatch = useDispatch();
+    const currentTags = useSelector(selectTags(props.projectID));
+    const [modifiedTags, setModifiedTags] = useState([]);
     const shouldDisable =
         isEmpty(name) || !name.match(/^[A-Za-z0-9 _]*[A-Za-z]+[A-Za-z0-9 _]*$/);
-    const currentTags = useSelector(selectTagsInput);
+
+    useEffect(() => {
+        if (not(equals(currentTags, modifiedTags)) && !isEmpty(currentTags)) {
+            setModifiedTags(currentTags);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTags]);
+
     const handleOnSubmit = async () => {
         try {
             dispatch(
-                props.projectAction(
-                    name,
-                    description,
-                    currentTags,
-                    props.projectID,
-                    iconName,
-                    iconForegroundColor,
-                    iconBackgroundColor
-                )
+                props.newProject
+                    ? addUserProject(
+                          name,
+                          description,
+                          modifiedTags,
+                          props.projectID,
+                          iconName || "default",
+                          iconForegroundColor || "#000000",
+                          iconBackgroundColor || "#FFF"
+                      )
+                    : editUserProject(
+                          name,
+                          description,
+                          modifiedTags,
+                          props.projectID,
+                          iconName || "default",
+                          iconForegroundColor || "#000000",
+                          iconBackgroundColor || "#FFF"
+                      )
             );
             dispatch(closeModal());
         } catch (e) {
@@ -142,16 +162,20 @@ export const ProjectModal = (props: IProjectModal) => {
         setPopupState(false);
     };
 
-    let isIconComponent = false;
     let IconComponent: React.ElementType = SVGComponents[`fadADRComponent`];
-    if (SVGPaths[iconName]) {
+    if (iconName && iconName !== "default" && SVGPaths[iconName]) {
         IconComponent = SVGComponents[`${iconName}Component`];
-        isIconComponent = true;
+    } else {
+        IconComponent = FallbackIcon;
     }
     return (
         <ModalContainer>
             <FieldRow row={1}>
-                <h2>Please Name Your Project</h2>
+                {props.newProject ? (
+                    <h2>Please Name Your Project</h2>
+                ) : (
+                    <h2>Editing "{name}"</h2>
+                )}
             </FieldRow>
 
             <FieldRow row={2}>
@@ -180,24 +204,32 @@ export const ProjectModal = (props: IProjectModal) => {
                 />
             </FieldRow>
             <FieldRow row={4}>
-                <ReactAutosuggestExample fullWidth label={"Tags"} />
+                <ReactAutosuggestExample
+                    projectUid={props.projectID}
+                    modifiedTags={modifiedTags}
+                    setModifiedTags={setModifiedTags}
+                    fullWidth
+                    label={"Tags"}
+                />
             </FieldRow>
-
             <FieldRow row={5}>
                 <IconPickerContainer>
-                    <IconPickerIconButton
-                        aria-label="delete"
-                        onClick={handleProfileDropDown}
-                        bgcolor={iconBackgroundColor}
-                    >
-                        {isIconComponent !== false && (
-                            <IconComponent
-                                width={"100%"}
-                                height={"100%"}
-                                fill={iconForegroundColor}
-                            />
-                        )}
-                    </IconPickerIconButton>
+                    {IconComponent && (
+                        <Tooltip title={"select an icon for your project"}>
+                            <div
+                                css={SS.iconPreviewBox}
+                                style={{ backgroundColor: iconBackgroundColor }}
+                                onClick={handleProfileDropDown}
+                            >
+                                <IconComponent
+                                    width={"100%"}
+                                    height={"100%"}
+                                    fill={iconForegroundColor}
+                                    aria-label="change"
+                                />
+                            </div>
+                        </Tooltip>
+                    )}
                     <Popover
                         open={popupState}
                         anchorEl={anchorElement}
@@ -286,7 +318,7 @@ export const ProjectModal = (props: IProjectModal) => {
                     onClick={handleOnSubmit}
                     style={{ marginTop: 11 }}
                 >
-                    {props.label} Project
+                    {props.label}
                 </Button>
             </FieldRow>
         </ModalContainer>

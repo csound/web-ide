@@ -11,7 +11,7 @@ import {
     getProjectLastModified
 } from "./actions";
 import { BulletList } from "react-content-loader";
-import { CSSTransition } from "react-transition-group";
+// import { CSSTransition } from "react-transition-group";
 
 import {
     HomeContainer,

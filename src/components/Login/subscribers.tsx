@@ -7,7 +7,11 @@ export const subscribeToLoggedInUserProfile = (
 ) => {
     const unsubscribe: () => void = profiles.doc(userUid).onSnapshot(
         profile => {
-            dispatch({ type: UPDATE_USER_PROFILE, profile: profile.data() });
+            dispatch({
+                type: UPDATE_USER_PROFILE,
+                profile: profile.data(),
+                userUid
+            });
         },
         (error: any) => console.error(error)
     );

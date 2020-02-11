@@ -118,7 +118,7 @@ export const ContentSection = styled.div`
     grid-template-columns: 1fr;
     overflow: hidden;
     background: ${props => props.theme.background};
-    border-radius: 24px;
+    border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 `;
 export const ContentTabsContainer = styled.div`
@@ -185,7 +185,7 @@ export const StyledUserListItemContainer = styled.div`
 export const StyledListItemAvatar = styled.div`
     grid-row-start: 1;
     grid-row-end: 2;
-    grid-column: 1;
+    grid-column: 2;
     margin: auto;
     width: 50%;
 `;
@@ -194,15 +194,20 @@ export const StyledListItemTopRowText = styled.div`
     grid-column: 2;
 `;
 export const StyledListItemChipsRow = styled.div`
+    margin-top: 12px;
     grid-row: 2;
     grid-column-start: 2;
     grid-column-end: 3;
 `;
 export const StyledListPlayButtonContainer = styled.div`
-    grid-row-start: 1;
-    grid-row-end: 3;
-    grid-column-start: 3;
-    grid-column-end: 4;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 120px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
 `;
 export const StyledListButtonsContainer = styled.div`
     position: absolute;
