@@ -356,8 +356,9 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 this.hasStarted = true;
             }
             this.firePlayStateChange();
+        } else {
+            this.firePlayStateChange();
         }
-        this.firePlayStateChange();
     }
 
     compileOrc(orcString) {
@@ -422,6 +423,8 @@ class CsoundProcessor extends AudioWorkletProcessor {
             case "stop":
                 this.running = false;
                 this.started = false;
+                // we need to start all over after stopping
+                this.hasStarted = false;
                 this.firePlayStateChange();
                 break;
             case "play":
@@ -441,7 +444,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 Csound.setOption(this.csObj, data[1]);
                 break;
             case "resetIfNeeded":
-                if (this.hasStarted) {
+                if (this.hasStarted || this.getPlayState() === "stopped") {
                     muteMessages = true;
                     this.running = false;
                     this.started = false;
