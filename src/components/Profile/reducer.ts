@@ -5,6 +5,7 @@ import {
     ProfileActionTypes,
     SET_CURRENTLY_PLAYING_PROJECT,
     SET_FOLLOWING_FILTER_STRING,
+    SET_PROJECT_FILTER_STRING,
     STORE_USER_PROFILE,
     GET_ALL_TAGS,
     UPDATE_PROFILE_FOLLOWING
@@ -37,7 +38,10 @@ export default (
 ) => {
     switch (action.type) {
         case SET_FOLLOWING_FILTER_STRING: {
-            return state;
+            return assoc("followingFilterString", action.payload, state);
+        }
+        case SET_PROJECT_FILTER_STRING: {
+            return assoc("projectFilterString", action.payload, state);
         }
         case UPDATE_USER_PROFILE: {
             return assocPath(
