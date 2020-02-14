@@ -41,6 +41,7 @@ export interface ICsoundObj {
     getNode: () => AudioNode;
     start: () => void;
     reset: () => void;
+    resetIfNeeded: () => void;
     destroy: () => void;
     pause: () => void;
     play: () => void;

@@ -24,11 +24,13 @@
 import libcsound from "./libcsound-worklet.js";
 
 const CSMOD = {};
-
+let muteMessages = false;
 let printCallbacks = [];
 let printMessages = t => {
-    for (let i = 0; i < printCallbacks.length; i++) {
-        printCallbacks[i](t);
+    if (!muteMessages) {
+        for (let i = 0; i < printCallbacks.length; i++) {
+            printCallbacks[i](t);
+        }
     }
 };
 
@@ -230,6 +232,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
     constructor(options) {
         super(options);
+        this.options = options;
         let p = this.port;
         printCallbacks.push(t => {
             p.postMessage(["log", t]);
@@ -241,23 +244,10 @@ class CsoundProcessor extends AudioWorkletProcessor {
         this.result = 0;
         this.running = false;
         this.started = false;
+        this.hasStarted = false;
         this.sampleRate = sampleRate;
-
-        Csound.setMidiCallbacks(csObj);
-        Csound.setOption(csObj, "-odac");
-        Csound.setOption(csObj, "-iadc");
-        Csound.setOption(csObj, "-M0");
-        Csound.setOption(csObj, "-+rtaudio=null");
-        Csound.setOption(csObj, "-+rtmidi=null");
-        Csound.setOption(csObj, "--sample-rate=" + sampleRate);
-        Csound.prepareRT(csObj);
-        this.nchnls = options.outputChannelCount[0];
-        this.nchnls_i = options.numberOfInputs;
-        Csound.setOption(csObj, "--nchnls=" + this.nchnls);
-        Csound.setOption(csObj, "--nchnls_i=" + this.nchnls_i);
-
         this.port.onmessage = this.handleMessage.bind(this);
-        this.port.start();
+        this.firePlayStateChange();
     }
 
     process(inputs, outputs, parameters) {
@@ -326,6 +316,23 @@ class CsoundProcessor extends AudioWorkletProcessor {
     start() {
         if (this.started === false) {
             let csObj = this.csObj;
+
+            this.nchnls = this.options.outputChannelCount[0];
+            this.nchnls_i = this.options.numberOfInputs;
+
+            Csound.setMidiCallbacks(csObj);
+            Csound.setOption(csObj, "-odac");
+            Csound.setOption(csObj, "-iadc");
+            Csound.setOption(csObj, "-M0");
+            Csound.setOption(csObj, "-+rtaudio=null");
+            Csound.setOption(csObj, "-+rtmidi=null");
+            Csound.setOption(csObj, "--sample-rate=" + sampleRate);
+            Csound.prepareRT(csObj);
+
+            this.zerodBFS = Csound.getZerodBFS(csObj);
+            Csound.setOption(csObj, "--nchnls=" + this.nchnls);
+            Csound.setOption(csObj, "--nchnls_i=" + this.nchnls_i);
+
             let ksmps = Csound.getKsmps(csObj);
             this.ksmps = ksmps;
             this.cnt = ksmps;
@@ -342,10 +349,14 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 inputPointer,
                 ksmps * this.nchnls_i
             );
-            this.zerodBFS = Csound.getZerodBFS(csObj);
+
+            this.running = true;
             this.started = true;
+            if (!this.hasStarted) {
+                this.hasStarted = true;
+            }
+            this.firePlayStateChange();
         }
-        this.running = true;
         this.firePlayStateChange();
     }
 
@@ -416,27 +427,19 @@ class CsoundProcessor extends AudioWorkletProcessor {
             case "setOption":
                 Csound.setOption(this.csObj, data[1]);
                 break;
+            case "resetIfNeeded":
+                if (this.hasStarted) {
+                    muteMessages = true;
+                    this.running = false;
+                    this.started = false;
+                    Csound.reset(this.csObj);
+                    muteMessages = false;
+                }
+                break;
             case "reset":
-                let csObj = this.csObj;
-                this.started = false;
                 this.running = false;
-                Csound.reset(csObj);
-                Csound.setMidiCallbacks(csObj);
-                Csound.setOption(csObj, "-odac");
-                Csound.setOption(csObj, "-iadc");
-                Csound.setOption(csObj, "-M0");
-                Csound.setOption(csObj, "-+rtaudio=null");
-                Csound.setOption(csObj, "-+rtmidi=null");
-                Csound.setOption(csObj, "--sample-rate=" + this.sampleRate);
-                Csound.prepareRT(csObj);
-                //this.nchnls = options.numberOfOutputs;
-                //this.nchnls_i = options.numberOfInputs;
-                Csound.setOption(csObj, "--nchnls=" + this.nchnls);
-                Csound.setOption(csObj, "--nchnls_i=" + this.nchnls_i);
-                this.csoundOutputBuffer = null;
-                this.ksmps = null;
-                this.zerodBFS = null;
-                this.firePlayStateChange();
+                this.started = false;
+                Csound.reset(this.csObj);
                 break;
             case "setCurrentDirFS":
                 let dirPath = data[1];

@@ -27,10 +27,7 @@ import {
 // import StarIcon from "@material-ui/icons/Star";
 // import OutlinedStarIcon from "@material-ui/icons/StarBorder";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
-import {
-    selectFilteredUserFollowing,
-    selectCurrentlyPlayingProject
-} from "./selectors";
+import { selectFilteredUserFollowing } from "./selectors";
 import {
     // pauseListItem,
     // playListItem,
@@ -40,16 +37,9 @@ import {
 } from "./actions";
 
 const ProjectListItem = props => {
-    const {
-        isProfileOwner,
-        project
-        // csoundStatus,
-        // currentlyPlayingProject
-    } = props;
+    const { isProfileOwner, project } = props;
     const dispatch = useDispatch();
     const { projectUid, name, description, tags } = project;
-    // const isCurrentlyPlaying =
-    //     csoundStatus === "playing" && projectUid === currentlyPlayingProject;
 
     return (
         <div style={{ position: "relative" }}>
@@ -103,10 +93,10 @@ const ProjectListItem = props => {
                         </Button>
                     </StyledListButtonsContainer>
                 )}
-                <StyledListPlayButtonContainer>
-                    <ListPlayButton projectUid={projectUid} />
-                </StyledListPlayButtonContainer>
             </Link>
+            <StyledListPlayButtonContainer>
+                <ListPlayButton projectUid={projectUid} />
+            </StyledListPlayButtonContainer>
         </div>
     );
 };
@@ -126,7 +116,6 @@ export default ({
         selectFilteredUserFollowing(profileUid)
     );
 
-    const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     return (
         <List>
             {selectedSection === 0 &&
@@ -138,7 +127,6 @@ export default ({
                             isProfileOwner={isProfileOwner}
                             project={p}
                             csoundStatus={csoundStatus}
-                            currentlyPlayingProject={currentlyPlayingProject}
                             username={username}
                         />
                     );

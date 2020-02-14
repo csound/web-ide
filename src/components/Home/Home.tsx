@@ -136,8 +136,6 @@ const Home = props => {
                                         );
                                     })) ||
                                     columnPlaceHolderArray.map((e, i) => {
-                                        console.log(i);
-
                                         return (
                                             <GridListTile key={i}>
                                                 <ProjectCardContainer>

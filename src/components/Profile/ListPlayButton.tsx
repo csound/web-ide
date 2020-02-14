@@ -1,7 +1,12 @@
-import React from "react";
-import { selectProjectIconStyle } from "./selectors";
+import React, { useEffect, useState } from "react";
+import { playListItem } from "./actions";
+import { selectCsoundStatus } from "@comp/Csound/selectors";
+import {
+    selectCurrentlyPlayingProject,
+    selectProjectIconStyle
+} from "./selectors";
 import SVGPaths, { SVGComponents } from "./SVGPaths";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
@@ -62,9 +67,15 @@ const SvgPlayIcon = () => {
 };
 
 const ListPlayButton = ({ projectUid }) => {
+    const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
+    const csoundStatus = useSelector(selectCsoundStatus);
     const { iconName, iconBackgroundColor } = useSelector(
         selectProjectIconStyle(projectUid)
     );
+    const isPlaying = currentlyPlayingProject === projectUid;
+    const [isStartingUp, setIsStartingUp] = useState(false);
+    const dispatch = useDispatch();
+
     let IconComponent;
     if (iconName && iconName !== "default" && SVGPaths[iconName]) {
         IconComponent = SVGComponents[`${iconName}Component`];
@@ -72,13 +83,39 @@ const ListPlayButton = ({ projectUid }) => {
         IconComponent = AssignmentIcon;
     }
 
+    useEffect(() => {
+        if (isStartingUp && csoundStatus === "playing") {
+            setIsStartingUp(false);
+        }
+    }, [csoundStatus, currentlyPlayingProject, isStartingUp]);
+
     return (
         <Avatar
-            css={SS.avatar}
-            style={{ backgroundColor: iconBackgroundColor }}
+            css={
+                isPlaying && !isStartingUp
+                    ? [SS.avatar, SS.showAvatarPlayButton]
+                    : SS.avatar
+            }
+            style={{
+                backgroundColor:
+                    isPlaying || isStartingUp ? "black" : iconBackgroundColor
+            }}
+            onClick={() => {
+                !isPlaying && !isStartingUp && setIsStartingUp(true);
+                dispatch(playListItem(projectUid));
+            }}
         >
-            <IconComponent className={"projectIcon"} css={SS.avatarIcon} />
-            <SvgPlayIcon />
+            {!isPlaying && !isStartingUp && (
+                <IconComponent className={"projectIcon"} css={SS.avatarIcon} />
+            )}
+            {!isPlaying && !isStartingUp && <SvgPlayIcon />}
+            {isStartingUp && (
+                <span css={SS.loadingSpinner}>
+                    <span />
+                    <span />
+                </span>
+            )}
+            {isPlaying && <span css={SS.pauseIcon} />}
         </Avatar>
     );
 };

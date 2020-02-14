@@ -301,6 +301,12 @@ class CsoundObj {
         this.node.reset();
     }
 
+    /** Resets the Csound engine if Csound is already started
+     */
+    resetIfNeeded() {
+        this.node.resetIfNeeded();
+    }
+
     destroy() {}
 
     /** Pauses performance

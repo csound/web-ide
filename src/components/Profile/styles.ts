@@ -50,6 +50,19 @@ export const iconPreviewBox = css`
     cursor: pointer;
 `;
 
+export const showAvatarPlayButton = css`
+    .projectIcon {
+        opacity: 0;
+    }
+    .listPlayIcon {
+        opacity: 1;
+    }
+    background-color: black !important;
+    transform: rotate(90deg);
+    cursor: pointer;
+    box-shadow: none;
+`;
+
 export const avatar = css`
     align-self: center;
     pointer-events: visible;
@@ -80,20 +93,50 @@ export const avatar = css`
             6px 0 6px rgba(0, 0, 0, 0.23);
     }
     &:hover {
-        background-color: black !important;
-        transform: rotate(90deg);
-        cursor: pointer;
-        box-shadow: none;
-        .projectIcon {
-            opacity: 0;
-        }
-        .listPlayIcon {
-            opacity: 1;
-        }
+        ${showAvatarPlayButton}
     }
 `;
 
 export const avatarIcon = css`
     width: calc(100% - 32px);
     height: calc(100% - 32px);
+`;
+
+export const loadingSpinner = theme => css`
+@keyframes cricle {
+  from {
+    transform: rotate(-25deg);
+  }
+  to {
+    transform: rotate(335deg);
+  }
+}
+    padding-right: 25px;
+    padding-bottom: 25px;
+    position: absolute;
+
+    & > span {
+      display: inline-block;
+      position: absolute;
+      border-radius: 100px;
+      padding: 8px;
+      border: 5px solid transparent;
+
+      animation: cricle 1s ease-in-out infinite;
+      border-top: 5px solid ${theme.allowed};
+
+      &:nth-of-type(1) {
+        animation-delay: -0.15s;
+      }
+
+`;
+
+export const pauseIcon = theme => css`
+    position: absolute;
+    transform: rotate(90deg);
+    cursor: pointer;
+    border-color: ${theme.allowed};
+    border-style: double;
+    border-width: 0px 0 0px 20px;
+    height: 26px;
 `;

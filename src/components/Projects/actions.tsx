@@ -11,6 +11,7 @@ import {
     selectDefaultTargetName,
     selectTarget
 } from "@comp/TargetControls/selectors";
+import { selectLoggedInUid } from "@comp/Login/selectors";
 import { updateProjectLastModified } from "@comp/ProjectLastModified/actions";
 import { selectTabDockIndex } from "@comp/ProjectEditor/selectors";
 import { closeModal, openSimpleModal } from "../Modal/actions";
@@ -120,7 +121,11 @@ export const downloadAllProjectDocumentsOnce = (
             }
         });
 
-        await dispatch(addProjectDocuments(projectUid, allDocsMap));
+        await dispatch({
+            type: ADD_PROJECT_DOCUMENTS,
+            projectUid,
+            documents: allDocsMap
+        });
     };
 };
 
@@ -143,7 +148,6 @@ export const closeProject = () => {
 
 export const activateProject = (projectUid: string, csound) => {
     return async (dispatch: any) => {
-        await csound.setCurrentDirFS(projectUid);
         dispatch({
             type: ACTIVATE_PROJECT,
             projectUid
@@ -716,25 +720,21 @@ export const exportProject = () => {
 export const markProjectPublic = (
     isPublic: boolean
 ): ThunkAction<void, any, null, Action<string>> => {
-    return (dispatch, getState) => {
-        console.log("setting project to " + isPublic);
+    return async (dispatch, getState) => {
         const state = getState();
         const activeProjectUid = selectActiveProjectUid(state);
-        if (activeProjectUid == null) {
+        const loggedInUserUid = selectLoggedInUid(state);
+        if (loggedInUserUid === null || activeProjectUid === null) {
             return;
         }
-        firebase.auth().onAuthStateChanged(async user => {
-            if (user !== null) {
-                await projects.doc(activeProjectUid).update({
-                    public: isPublic
-                });
-                dispatch({
-                    type: SET_PROJECT_PUBLIC,
-                    projectUid: activeProjectUid,
-                    isPublic
-                });
-                updateProjectLastModified(activeProjectUid);
-            }
+        await projects.doc(activeProjectUid).update({
+            public: isPublic
         });
+        dispatch({
+            type: SET_PROJECT_PUBLIC,
+            projectUid: activeProjectUid,
+            isPublic
+        });
+        updateProjectLastModified(activeProjectUid);
     };
 };

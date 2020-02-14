@@ -1,3 +1,5 @@
+import { SET_CSOUND_PLAY_STATE } from "@comp/Csound/types";
+
 export const STORE_USER_PROFILE = "PROFILE.STORE_USER_PROFILE";
 export const ADD_USER_PROJECT = "PROFILE.ADD_USER_PROJECT";
 export const DELETE_USER_PROJECT = "PROFILE.DELETE_USER_PROJECT";
@@ -17,98 +19,32 @@ export const UPDATE_PROFILE_FOLLOWING = "PROFILE.UPDATE_PROFILE_FOLLOWING";
 export const GET_USER_PROFILES_FOR_FOLLOWING =
     "PROFILE.GET_USER_PROFILES_FOR_FOLLOWING";
 
-interface SetFollowingFilterStringAction {
-    type: typeof SET_FOLLOWING_FILTER_STRING;
-    payload: string;
-}
+type ProfileActionTypeValue =
+    | typeof SET_CURRENT_TAG_TEXT
+    | typeof DELETE_USER_PROJECT
+    | typeof ADD_USER_PROJECT
+    | typeof STORE_USER_PROFILE
+    | typeof GET_ALL_TAGS
+    | typeof SET_TAGS_INPUT
+    | typeof SET_CSOUND_PLAY_STATE
+    | typeof SET_CURRENTLY_PLAYING_PROJECT
+    | typeof SET_LIST_PLAY_STATE
+    | typeof SET_USER_PROFILE
+    | typeof REFRESH_USER_PROFILE
+    | typeof GET_USER_PROFILES_FOR_FOLLOWING
+    | typeof UPDATE_LOGGED_IN_FOLLOWING
+    | typeof UPDATE_PROFILE_FOLLOWING
+    | typeof SET_PROJECT_FILTER_STRING
+    | typeof SET_FOLLOWING_FILTER_STRING;
 
-interface SetProjectFilterStringAction {
-    type: typeof SET_PROJECT_FILTER_STRING;
-    payload: string;
-}
-
-interface UpdateProfileFollowingAction {
-    type: typeof UPDATE_PROFILE_FOLLOWING;
-    profileUid: string;
-    userProfiles: any[];
-    userProfileUids: string[];
-}
-interface UpdateLoggedInFollowingAction {
-    type: typeof UPDATE_LOGGED_IN_FOLLOWING;
-    userProfileUids: string[];
-}
-interface GetUserProfilesForFollowingAction {
-    type: typeof GET_USER_PROFILES_FOR_FOLLOWING;
-    payload: [];
-}
-
-interface RefreshUserProfileAction {
-    type: typeof REFRESH_USER_PROFILE;
-    payload: any;
-}
-
-interface SetUserProfileAction {
-    type: typeof SET_USER_PROFILE;
-}
-
-interface SetListPlayStateAction {
-    type: typeof SET_LIST_PLAY_STATE;
-    payload: string;
-}
-
-interface SetCurrentlyPlayingProjectAction {
-    type: typeof SET_CURRENTLY_PLAYING_PROJECT;
-    payload: string;
-}
-
-interface SetTagsInputAction {
-    type: typeof SET_TAGS_INPUT;
-    payload: any[];
-}
-
-interface GetAllTagsAction {
-    type: typeof GET_ALL_TAGS;
-    loggedInUserUid: string;
-    allTags: string[];
-}
-interface StoreUserProfileAction {
-    type: typeof STORE_USER_PROFILE;
-    profile: any;
-    profileUid: string;
-}
-interface AddUserProjectAction {
-    type: typeof ADD_USER_PROJECT;
-}
-
-interface DeleteUserProjectAction {
-    type: typeof DELETE_USER_PROJECT;
-}
-
-interface SetCurrentTagTextAction {
-    type: typeof SET_CURRENT_TAG_TEXT;
-    payload: string;
-}
+export type ProfileActionTypes = {
+    type: ProfileActionTypeValue;
+    [payload: string]: any;
+};
 
 export interface IProfile {
-    readonly allTags: any[];
-    readonly profileUid: string | null;
-    readonly userFollowing: [];
-    readonly userImageURL: string | null | undefined;
+    allTags?: any[];
+    profileUid?: string | null;
+    userFollowing?: [];
+    userImageURL?: string | null | undefined;
 }
-
-export type ProfileActionTypes =
-    | StoreUserProfileAction
-    | AddUserProjectAction
-    | DeleteUserProjectAction
-    | SetCurrentTagTextAction
-    | SetTagsInputAction
-    | GetAllTagsAction
-    | SetListPlayStateAction
-    | SetCurrentlyPlayingProjectAction
-    | GetUserProfilesForFollowingAction
-    | SetUserProfileAction
-    | UpdateLoggedInFollowingAction
-    | UpdateProfileFollowingAction
-    | RefreshUserProfileAction
-    | SetFollowingFilterStringAction
-    | SetProjectFilterStringAction;

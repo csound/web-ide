@@ -320,6 +320,12 @@ class CsoundNode extends AudioWorkletNode {
         this.port.postMessage(["reset"]);
     }
 
+    /** Resets the Csound engine if Csound is already started
+     */
+    resetIfNeeded() {
+        this.port.postMessage(["resetIfNeeded"]);
+    }
+
     destroy() {}
 
     pause() {

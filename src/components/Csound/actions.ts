@@ -32,17 +32,18 @@ export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
             ["ConsoleReducer", "clearConsole"],
             state
         );
+
         if (cs) {
-            await cs.setCurrentDirFS(projectUid);
             if (cs.getPlayState() === "paused") {
                 cs.play();
             } else {
                 typeof clearConsoleCallback === "function" &&
                     clearConsoleCallback();
                 cs.audioContext.resume();
-                cs.reset();
+                cs.resetIfNeeded();
                 cs.setOption("-odac");
                 cs.setOption("-+msg_color=false");
+                await cs.setCurrentDirFS(projectUid);
                 cs.compileCSD(emfsPath);
                 cs.start();
             }
@@ -63,7 +64,7 @@ export const playCSDFromString = (projectUid: string, csd: string) => {
                 cs.play();
             } else {
                 cs.audioContext.resume();
-                cs.reset();
+                // cs.reset();
                 cs.setOption("-odac");
                 cs.setOption("-+msg_color=false");
                 cs.compileCSD(csd);
@@ -86,7 +87,7 @@ export const playORCFromString = (projectUid: string, orc: string) => {
                 cs.play();
             } else {
                 cs.audioContext.resume();
-                cs.reset();
+                // cs.reset();
                 cs.setOption("-odac");
                 cs.setOption("-+msg_color=false");
                 cs.setOption("-d");

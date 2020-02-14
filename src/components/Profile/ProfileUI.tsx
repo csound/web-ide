@@ -165,7 +165,7 @@ interface IStyledListItemContainer {
 export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
     display: grid;
     grid-template-rows: 1fr 0.5fr;
-    grid-template-columns: 1fr 8fr 70px ${props =>
+    grid-template-columns: 82px 8fr 70px ${props =>
             props.isProfileOwner ? "70px" : ""};
     width: 100%;
     padding-bottom: 2px;

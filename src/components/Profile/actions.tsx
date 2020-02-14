@@ -24,7 +24,7 @@ import {
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
     GET_ALL_TAGS,
-    SET_LIST_PLAY_STATE,
+    // SET_LIST_PLAY_STATE,
     SET_CURRENTLY_PLAYING_PROJECT,
     REFRESH_USER_PROFILE,
     SET_FOLLOWING_FILTER_STRING,
@@ -39,9 +39,8 @@ import { SnackbarType } from "@comp/Snackbar/types";
 import { openSimpleModal } from "@comp/Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
-import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { selectLoggedInUid } from "@comp/Login/selectors";
-import { playPauseCsound } from "@comp/Csound/actions";
+// import { playCSDFromEMFS } from "@comp/Csound/actions";
 import {
     downloadAllProjectDocumentsOnce,
     downloadProjectOnce
@@ -223,31 +222,34 @@ const deleteUserProjectAction = (): ProfileActionTypes => {
 
 export const deleteUserProject = (
     doc: any
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-            const files = await projects
-                .doc(doc.projectUid)
-                .collection("files")
-                .get();
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
+    const currentState = getState();
+    const loggedInUserUid = selectLoggedInUid(currentState);
+    if (loggedInUserUid != null) {
+        const files = await projects
+            .doc(doc.projectUid)
+            .collection("files")
+            .get();
 
-            const batch = db.batch();
-            const docRef = projects.doc(doc.projectUid);
-            batch.delete(docRef);
-            files.forEach(d => batch.delete(d.ref));
+        const batch = db.batch();
+        const docRef = projects.doc(doc.projectUid);
+        batch.delete(docRef);
+        files.forEach(d => batch.delete(d.ref));
 
-            try {
-                await batch.commit();
-                setTimeout(() => dispatch(deleteUserProjectAction()), 1);
+        try {
+            await batch.commit();
+            setTimeout(() => dispatch(deleteUserProjectAction()), 1);
 
-                dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
-            } catch (e) {
-                dispatch(
-                    openSnackbar("Could Not Delete Project", SnackbarType.Error)
-                );
-            }
+            dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
+        } catch (e) {
+            dispatch(
+                openSnackbar("Could Not Delete Project", SnackbarType.Error)
+            );
         }
-    });
+    }
 };
 
 export const setCurrentTagText = (text: string): ProfileActionTypes => {
@@ -257,7 +259,7 @@ export const setCurrentTagText = (text: string): ProfileActionTypes => {
     };
 };
 
-export const setTagsInput = (tags: any[]): ProfileActionTypes => {
+export const setTagsInput = (tags): ProfileActionTypes => {
     return {
         type: SET_TAGS_INPUT,
         payload: tags
@@ -278,8 +280,7 @@ export const getAllTagsFromUser = (
         ["ProfiledReducer", "profiles", loggedInUserUid, "allTags"],
         store
     );
-    // const allTagsRef = await tags.where("id", "==", loggedInUserUid).get();
-    // .where("profileUids", "array-contains", loggedInUserUid)
+
     if (allUserProjectsUids) {
         const allTags = reduce(
             (acc, item) => concat(item.tags || [], acc),
@@ -291,9 +292,6 @@ export const getAllTagsFromUser = (
             dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
         }
     }
-
-    // const result = snapshot.docs.map(doc => doc.id);
-    //
 };
 
 export const addProject = () => {
@@ -362,7 +360,7 @@ export const unfollowUser = (
     await batch.commit();
 };
 
-export const setUserProfile = (
+export const updateUserProfile = (
     originalUsername: string,
     username: string,
     displayName: string,
@@ -370,26 +368,29 @@ export const setUserProfile = (
     link1: string,
     link2: string,
     link3: string
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
-    firebase.auth().onAuthStateChanged(async user => {
-        if (user != null) {
-            await profiles.doc(user.uid).update({
-                username,
-                displayName,
-                bio,
-                link1,
-                link2,
-                link3
-            });
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getState
+) => {
+    const currentState = getState();
+    const loggedInUserUid = selectLoggedInUid(currentState);
+    if (loggedInUserUid != null) {
+        await profiles.doc(loggedInUserUid).update({
+            username,
+            displayName,
+            bio,
+            link1,
+            link2,
+            link3
+        });
 
-            await usernames.doc(originalUsername).delete();
-            await usernames.doc(username).set({ userUid: user.uid });
-            dispatch({
-                type: REFRESH_USER_PROFILE,
-                payload: { username, displayName, bio, link1, link2, link3 }
-            });
-        }
-    });
+        await usernames.doc(originalUsername).delete();
+        await usernames.doc(username).set({ userUid: loggedInUserUid });
+        dispatch({
+            type: REFRESH_USER_PROFILE,
+            payload: { username, displayName, bio, link1, link2, link3 }
+        });
+    }
 };
 
 export const editProfile = (
@@ -400,33 +401,32 @@ export const editProfile = (
     link2: string,
     link3: string
 ) => {
-    return async (dispatch: any) => {
-        firebase.auth().onAuthStateChanged(async user => {
-            if (user != null) {
-                const names = await usernames.get();
-                const existingNames: string[] = [];
-                names.forEach(e => {
-                    if (e.id !== username) {
-                        existingNames.push(e.id);
-                    }
-                });
+    return async (dispatch: any, getState) => {
+        const currentState = getState();
+        const loggedInUserUid = selectLoggedInUid(currentState);
+        if (loggedInUserUid != null) {
+            const names = await usernames.get();
+            const existingNames: string[] = [];
+            names.forEach(e => {
+                if (e.id !== username) {
+                    existingNames.push(e.id);
+                }
+            });
 
-                dispatch(
-                    openSimpleModal(() => (
-                        <ProfileModal
-                            existingNames={existingNames}
-                            username={username}
-                            displayName={displayName}
-                            bio={bio}
-                            link1={link1}
-                            link2={link2}
-                            link3={link3}
-                            profileAction={setUserProfile}
-                        />
-                    ))
-                );
-            }
-        });
+            dispatch(
+                openSimpleModal(() => (
+                    <ProfileModal
+                        existingNames={existingNames}
+                        username={username}
+                        displayName={displayName}
+                        bio={bio}
+                        link1={link1}
+                        link2={link2}
+                        link3={link3}
+                    />
+                ))
+            );
+        }
     };
 };
 
@@ -490,80 +490,71 @@ export const playListItem = (
 ) => {
     const state = getState();
     const csound = state.csound.csound;
-    const csoundStatus = selectCsoundStatus(state);
+
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");
         return;
     }
-    if (csoundStatus === "paused") {
-        dispatch(playPauseCsound());
-        dispatch({ type: SET_LIST_PLAY_STATE, payload: "playing" });
-    } else {
-        const projectIsCached = hasPath(
-            ["ProjectsReducer", "projects", projectUid],
+
+    const projectIsCached = hasPath(
+        ["ProjectsReducer", "projects", projectUid],
+        state
+    );
+    const projectHasLastMod = hasPath(
+        ["ProjectLastModifiedReducer", projectUid, "timestamp"],
+        state
+    );
+    let timestampMismatch = false;
+
+    if (projectIsCached && projectHasLastMod) {
+        const cachedTimestamp: Timestamp | null = pathOr(
+            null,
+            [
+                "ProjectsReducer",
+                "projects",
+                projectUid,
+                "cachedProjectLastModified"
+            ],
             state
         );
-        const projectHasLastMod = hasPath(
+        const currentTimestamp: Timestamp | null = pathOr(
+            null,
             ["ProjectLastModifiedReducer", projectUid, "timestamp"],
             state
         );
-        let timestampMismatch = false;
-
-        if (projectIsCached && projectHasLastMod) {
-            const cachedTimestamp: Timestamp | null = pathOr(
-                null,
-                [
-                    "ProjectsReducer",
-                    "projects",
-                    projectUid,
-                    "cachedProjectLastModified"
-                ],
-                state
-            );
-            const currentTimestamp: Timestamp | null = pathOr(
-                null,
-                ["ProjectLastModifiedReducer", projectUid, "timestamp"],
-                state
-            );
-            if (cachedTimestamp && currentTimestamp) {
-                timestampMismatch =
-                    (cachedTimestamp as Timestamp).toMillis() !==
-                    (currentTimestamp as Timestamp).toMillis();
-            }
+        if (cachedTimestamp && currentTimestamp) {
+            timestampMismatch =
+                (cachedTimestamp as Timestamp).toMillis() !==
+                (currentTimestamp as Timestamp).toMillis();
         }
+    }
 
-        if (!projectIsCached || timestampMismatch || !projectHasLastMod) {
-            await downloadProjectOnce(projectUid)(dispatch);
-            await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
-            await downloadTargetsOnce(projectUid)(dispatch);
-            await getProjectLastModifiedOnce(projectUid)(dispatch);
-            // recursion
-            return playListItem(projectUid)(dispatch, getState, null);
-        }
+    if (!projectIsCached || timestampMismatch || !projectHasLastMod) {
+        await downloadProjectOnce(projectUid)(dispatch);
+        await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
+        await downloadTargetsOnce(projectUid)(dispatch);
+        await getProjectLastModifiedOnce(projectUid)(dispatch);
+        // recursion
+        return playListItem(projectUid)(dispatch, getState, null);
+    }
 
-        const playAction = getPlayActionFromProject(projectUid, state);
-        if (playAction) {
-            dispatch({
-                type: SET_LIST_PLAY_STATE,
-                payload: "playing"
-            });
-            dispatch(playAction);
-            dispatch({
-                type: SET_CURRENTLY_PLAYING_PROJECT,
-                payload: projectUid
-            });
-        } else {
-            // handle unplayable project
-        }
+    const playAction = getPlayActionFromProject(projectUid, state);
+    if (playAction) {
+        dispatch(playAction);
+        dispatch({
+            type: SET_CURRENTLY_PLAYING_PROJECT,
+            projectUid
+        });
+    } else {
+        // handle unplayable project
     }
 };
 
 export const pauseListItem = (
     projectUid: string | false
 ): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    dispatch({ type: SET_LIST_PLAY_STATE, payload: "paused" });
-
-    dispatch(playPauseCsound());
+    // dispatch({ type: SET_LIST_PLAY_STATE, payload: "paused" });
+    // dispatch(playCSDFromEMFS());
 };
 
 export const storeUserProfile = (profile: any, profileUid: string) => {

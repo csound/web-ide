@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
+import { updateUserProfile } from "./actions";
 import { closeModal } from "../Modal/actions";
 import { TextField, Button } from "@material-ui/core";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
-import { ThunkAction } from "redux-thunk";
-import { Action } from "redux";
+
 const ModalContainer = styled.div`
     display: grid;
     grid-template-rows: 80px 80px 60px 140px 60px 60px 60px 60px;
@@ -23,15 +23,6 @@ const FieldRow = styled.div<IFieldRow>`
 `;
 
 interface IProfileModal {
-    profileAction(
-        originalUsername: string,
-        username: string,
-        displayName: string,
-        bio: string,
-        link1: string,
-        link2: string,
-        link3: string
-    ): ThunkAction<void, any, null, Action<string>>;
     username: string;
     displayName: string;
     bio: string;
@@ -67,7 +58,7 @@ export const ProfileModal = (props: IProfileModal) => {
     const handleOnSubmit = async () => {
         try {
             dispatch(
-                props.profileAction(
+                updateUserProfile(
                     props.username,
                     username,
                     displayName,
