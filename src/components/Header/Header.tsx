@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
+import { selectUserImageURL } from "@comp/Profile/selectors";
+import { selectLoggedInUid } from "@comp/Login/selectors";
 import AppBar from "@material-ui/core/AppBar";
 import Login from "../Login/Login";
 import * as loginActions from "../Login/actions";
@@ -61,9 +63,11 @@ export const Header = ({ showMenuBar = true }) => {
         (store: IStore) => store.ProjectsReducer.activeProjectUid
     );
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
-    const avatarUrl = useSelector(
-        (store: IStore) => store.userProfile && store.userProfile.photoUrl
-    );
+
+    const loggedInUid = useSelector(selectLoggedInUid);
+
+    const avatarUrl = useSelector(selectUserImageURL(loggedInUid || ""));
+
     const isLoginDialogOpen = useSelector(
         (store: IStore) => store.LoginReducer.isLoginDialogOpen
     );

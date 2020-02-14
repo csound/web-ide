@@ -121,7 +121,7 @@ export const selectUserImageURL = (profileUid: string | null) => (
         return null;
     } else {
         const state: ProfileReducer = store.ProfileReducer;
-        return pathOr([], ["profiles", profileUid, "photoUrl"], state);
+        return pathOr("", ["profiles", profileUid, "photoUrl"], state);
     }
 };
 
@@ -130,10 +130,10 @@ export const selectCurrentlyPlayingProject = (store: any) => {
     return state.currentlyPlayingProject;
 };
 
-export const selectOAuthPhotoURL = (store: any) => {
-    const state: any = store.userProfile;
-    return state.photoUrl;
-};
+// export const selectOAuthPhotoURL = (store: any) => {
+//     const state: any = store.userProfile;
+//     return state.photoUrl;
+// };
 
 export const selectCurrentTagText = (store: any) => {
     const state: ProfileReducer = store.ProfileReducer;

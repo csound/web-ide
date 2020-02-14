@@ -4,7 +4,6 @@ import {
     Button,
     List,
     ListItem,
-    ListItemAvatar,
     Avatar,
     ListItemText
 } from "@material-ui/core";
@@ -19,22 +18,11 @@ import {
     StyledUserListItemContainer,
     StyledChip,
     StyledListPlayButtonContainer,
-    // StyledListStarButtonContainer,
     StyledListButtonsContainer
 } from "./ProfileUI";
-// import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
-// import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
-// import StarIcon from "@material-ui/icons/Star";
-// import OutlinedStarIcon from "@material-ui/icons/StarBorder";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { selectFilteredUserFollowing } from "./selectors";
-import {
-    // pauseListItem,
-    // playListItem,
-    editProject,
-    deleteProject
-    // toggleStarProject
-} from "./actions";
+import { editProject, deleteProject } from "./actions";
 
 const ProjectListItem = props => {
     const { isProfileOwner, project } = props;
@@ -147,9 +135,7 @@ export default ({
                         >
                             <StyledUserListItemContainer>
                                 <StyledListItemAvatar>
-                                    <ListItemAvatar>
-                                        <Avatar src={p.photoUrl} />
-                                    </ListItemAvatar>
+                                    <Avatar src={p.photoUrl} />
                                 </StyledListItemAvatar>
 
                                 <StyledListItemTopRowText>
