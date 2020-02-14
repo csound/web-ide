@@ -10,7 +10,7 @@ import {
     GET_ALL_TAGS,
     UPDATE_PROFILE_FOLLOWING
 } from "./types";
-import { assoc, assocPath, pipe, reduce } from "ramda";
+import { assoc, assocPath, hasPath, mergeAll, pick, pipe, reduce } from "ramda";
 
 type ProfileMap = { [profileUid: string]: IProfile };
 
@@ -32,6 +32,17 @@ const INITIAL_STATE: ProfileReducer = {
     followingFilterString: ""
 };
 
+const profileKeys = [
+    "bio",
+    "displayName",
+    "link1",
+    "link2",
+    "link3",
+    "photoUrl",
+    "userUid",
+    "username"
+];
+
 export default (
     state: ProfileReducer = INITIAL_STATE,
     action: ProfileActionTypes
@@ -46,16 +57,23 @@ export default (
         case UPDATE_USER_PROFILE: {
             return assocPath(
                 ["profiles", (action as any).userUid],
-                action.profile,
+                mergeAll([
+                    state.profiles[(action as any).userUid] || {},
+                    pick(profileKeys, action.profile || {})
+                ]),
                 state
             );
         }
         case STORE_USER_PROFILE: {
-            return assocPath(
-                ["profiles", (action as any).profileUid],
-                action.profile,
-                state
-            );
+            if (!hasPath(["profiles", (action as any).profileUid], state)) {
+                return assocPath(
+                    ["profiles", (action as any).profileUid],
+                    action.profile,
+                    state
+                );
+            } else {
+                return state;
+            }
         }
         case GET_ALL_TAGS: {
             return assocPath(
