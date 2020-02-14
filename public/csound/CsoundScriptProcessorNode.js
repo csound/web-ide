@@ -403,6 +403,11 @@ CsoundScriptProcessorNode = function(context, options) {
         compileCSD(csd) {
             this.result = CSOUND.compileCSD(this.csound, csd);
         },
+        compileCSDPromise(csd) {
+            return new Promise(resolve => {
+                resolve(CSOUND.compileCSD(this.csound, csd));
+            });
+        },
 
         /** Compiles Csound orchestra code.
          *
@@ -447,6 +452,7 @@ CsoundScriptProcessorNode = function(context, options) {
         evaluateCode(codeString) {
             return CSOUND.evaluateCode(this.csound, codeString);
         },
+
         evaluateCodePromise(codeString) {
             return new Promise(resolve => {
                 resolve(CSOUND.evaluateCode(this.csound, codeString));
@@ -659,6 +665,10 @@ CsoundScriptProcessorNode = function(context, options) {
 
         pause() {
             this.running = false;
+        },
+
+        resume() {
+            this.running = true;
         },
 
         /** Starts performance, same as start()

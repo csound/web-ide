@@ -562,13 +562,6 @@ export const playListItem = (
     }
 };
 
-export const pauseListItem = (
-    projectUid: string | false
-): ThunkAction<void, any, null, Action<string>> => (dispatch, getState) => {
-    // dispatch({ type: SET_LIST_PLAY_STATE, payload: "paused" });
-    // dispatch(playCSDFromEMFS());
-};
-
 export const storeUserProfile = (profile: any, profileUid: string) => {
     return {
         type: STORE_USER_PROFILE,

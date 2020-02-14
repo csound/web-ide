@@ -35,25 +35,21 @@ export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
 
         if (cs) {
             const playState = cs.getPlayState();
-            if (playState === "paused") {
-                cs.play();
+            if (playState === "error") {
+                dispatch(setCsoundPlayState("stopped"));
+            }
+            typeof clearConsoleCallback === "function" &&
+                clearConsoleCallback();
+            cs.audioContext.resume();
+            cs.resetIfNeeded();
+            cs.setOption("-odac");
+            cs.setOption("-+msg_color=false");
+            await cs.setCurrentDirFS(projectUid);
+            const result = await cs.compileCSDPromise(emfsPath);
+            if (result === 0) {
+                cs.start();
             } else {
-                if (playState === "error") {
-                    dispatch(setCsoundPlayState("stopped"));
-                }
-                typeof clearConsoleCallback === "function" &&
-                    clearConsoleCallback();
-                cs.audioContext.resume();
-                cs.resetIfNeeded();
-                cs.setOption("-odac");
-                cs.setOption("-+msg_color=false");
-                await cs.setCurrentDirFS(projectUid);
-                const result = await cs.compileCSDPromise(emfsPath);
-                if (result === 0) {
-                    cs.start();
-                } else {
-                    dispatch(setCsoundPlayState("error"));
-                }
+                dispatch(setCsoundPlayState("error"));
             }
         }
     };
@@ -68,16 +64,11 @@ export const playCSDFromString = (projectUid: string, csd: string) => {
         ) as ICsoundObj | null;
         if (cs) {
             await cs.setCurrentDirFS(projectUid);
-            if (cs.getPlayState() === "paused") {
-                cs.play();
-            } else {
-                cs.audioContext.resume();
-                // cs.reset();
-                cs.setOption("-odac");
-                cs.setOption("-+msg_color=false");
-                cs.compileCSD(csd);
-                cs.start();
-            }
+            cs.audioContext.resume();
+            cs.setOption("-odac");
+            cs.setOption("-+msg_color=false");
+            cs.compileCSD(csd);
+            cs.start();
         }
     };
 };
@@ -117,13 +108,24 @@ export const stopCsound = () => {
 };
 
 export const pauseCsound = () => {
-    return async (dispatch: any) => {
+    return async (dispatch: any, getState) => {
         const cs = pathOr(
             null,
             ["csound", "csound"],
-            store.getState()
+            getState()
         ) as ICsoundObj | null;
         cs && cs.getPlayState() && cs.pause();
+    };
+};
+
+export const resumePausedCsound = () => {
+    return async (dispatch: any, getState) => {
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            getState()
+        ) as ICsoundObj | null;
+        cs && cs.getPlayState() === "paused" && cs.resume();
     };
 };
 

@@ -88,7 +88,11 @@ export default (state: IProjectsReducer | undefined, action: any) => {
                     path,
                     mergeAll([
                         pathOr({}, path, state),
-                        pipe(dissoc("tags"), dissoc("stars"))(action.project)
+                        pipe(
+                            dissoc("tags"),
+                            dissoc("stars"),
+                            dissoc("documents")
+                        )(action.project)
                     ])
                 )(state as IProjectsReducer) as IProjectsReducer;
             } else {

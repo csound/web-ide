@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { playListItem } from "./actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
+import { pauseCsound, resumePausedCsound } from "@comp/Csound/actions";
 import {
     selectCurrentlyPlayingProject,
     selectProjectIconStyle
@@ -45,6 +46,7 @@ const ListPlayButton = ({ projectUid }) => {
     );
     const isPlaying = currentlyPlayingProject === projectUid;
     const hasError = isPlaying && csoundStatus === "error";
+    const isPaused = isPlaying && csoundStatus === "paused";
     const [isStartingUp, setIsStartingUp] = useState(false);
     const dispatch = useDispatch();
 
@@ -68,7 +70,7 @@ const ListPlayButton = ({ projectUid }) => {
     return (
         <Avatar
             css={
-                isPlaying && !hasError && !isStartingUp
+                (isPlaying && !hasError && !isStartingUp) || isPaused
                     ? [SS.avatar, SS.showAvatarPlayButton]
                     : SS.avatar
             }
@@ -81,37 +83,47 @@ const ListPlayButton = ({ projectUid }) => {
             }}
             onClick={() => {
                 !isPlaying && !isStartingUp && setIsStartingUp(true);
-                dispatch(playListItem(projectUid));
+                isPaused
+                    ? dispatch(resumePausedCsound())
+                    : isPlaying && !hasError
+                    ? dispatch(pauseCsound())
+                    : dispatch(playListItem(projectUid));
             }}
         >
-            {!isPlaying && !isStartingUp && (
-                <IconComponent
-                    className={"projectIcon"}
-                    css={SS.avatarIcon(iconForegroundColor)}
-                    style={{
-                        fill: `${iconForegroundColor}!important`
-                    }}
-                />
-            )}
-            {(!isPlaying || hasError) && !isStartingUp && <SvgPlayIcon />}
-            {hasError && (
-                <AlertIcon
-                    className={"projectIcon"}
-                    style={{
-                        fill: "white",
-                        fontSize: 40
-                    }}
-                    fontSize="large"
-                    color="error"
-                />
-            )}
-            {isStartingUp && (
-                <span css={SS.loadingSpinner}>
-                    <span />
-                    <span />
-                </span>
-            )}
-            {isPlaying && !hasError && <span css={SS.pauseIcon} />}
+            <>
+                {!isPlaying && !isStartingUp && (
+                    <IconComponent
+                        className={"projectIcon"}
+                        css={SS.avatarIcon(iconForegroundColor)}
+                        style={{
+                            fill: `${iconForegroundColor}!important`
+                        }}
+                    />
+                )}
+                {(isPaused || !isPlaying || hasError) && !isStartingUp && (
+                    <SvgPlayIcon />
+                )}
+                {hasError && (
+                    <AlertIcon
+                        className={"projectIcon"}
+                        style={{
+                            fill: "white",
+                            fontSize: 40
+                        }}
+                        fontSize="large"
+                        color="error"
+                    />
+                )}
+                {isStartingUp && (
+                    <span css={SS.loadingSpinner}>
+                        <span />
+                        <span />
+                    </span>
+                )}
+                {isPlaying && !hasError && !isPaused && (
+                    <span css={SS.pauseIcon} />
+                )}
+            </>
         </Avatar>
     );
 };

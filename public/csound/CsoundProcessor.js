@@ -361,7 +361,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
     }
 
     compileOrc(orcString) {
-        console.log(Csound.compileOrc(this.csObj, orcString));
+        Csound.compileOrc(this.csObj, orcString);
     }
 
     getPlayState() {
@@ -429,6 +429,11 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 break;
             case "pause":
                 this.running = false;
+                this.started = true;
+                this.firePlayStateChange();
+                break;
+            case "resume":
+                this.running = true;
                 this.started = true;
                 this.firePlayStateChange();
                 break;

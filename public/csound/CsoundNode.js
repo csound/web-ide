@@ -349,6 +349,12 @@ class CsoundNode extends AudioWorkletNode {
         this.port.postMessage(["pause"]);
     }
 
+    /** Resumes a paused performance
+     */
+    resume() {
+        this.port.postMessage(["resume"]);
+    }
+
     /** Starts performance, same as start()
      */
     play() {

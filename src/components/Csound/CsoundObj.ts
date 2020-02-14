@@ -319,6 +319,12 @@ class CsoundObj {
         this.node.pause();
     }
 
+    /** Pauses performance
+     */
+    resume() {
+        this.node.resume();
+    }
+
     /** Starts performance, same as start()
      */
     play() {
