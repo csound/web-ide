@@ -100,9 +100,28 @@ export const avatar = css`
     }
 `;
 
-export const avatarIcon = css`
+export const avatarIconForeground = (foregroundColor: string) => css`
+    & path {
+        fill: ${foregroundColor};
+    }
+    & path:first-of-type {
+        fill: black;
+    }
+    & path:last-of-type {
+        fill: ${foregroundColor};
+    }
+`;
+
+export const avatarIcon = (foregroundColor: string) => css`
     width: calc(100% - 32px);
     height: calc(100% - 32px);
+    ${avatarIconForeground(foregroundColor)}
+`;
+
+export const previewAvatarColor = (foregroundColor: string) => css`
+    & > svg {
+        ${avatarIconForeground(foregroundColor)}
+    }
 `;
 
 export const loadingSpinner = theme => css`

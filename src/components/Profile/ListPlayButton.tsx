@@ -40,7 +40,7 @@ const ListPlayButton = ({ projectUid }) => {
     const theme: any = useTheme();
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
-    const { iconName, iconBackgroundColor } = useSelector(
+    const { iconName, iconBackgroundColor, iconForegroundColor } = useSelector(
         selectProjectIconStyle(projectUid)
     );
     const isPlaying = currentlyPlayingProject === projectUid;
@@ -85,7 +85,13 @@ const ListPlayButton = ({ projectUid }) => {
             }}
         >
             {!isPlaying && !isStartingUp && (
-                <IconComponent className={"projectIcon"} css={SS.avatarIcon} />
+                <IconComponent
+                    className={"projectIcon"}
+                    css={SS.avatarIcon(iconForegroundColor)}
+                    style={{
+                        fill: `${iconForegroundColor}!important`
+                    }}
+                />
             )}
             {(!isPlaying || hasError) && !isStartingUp && <SvgPlayIcon />}
             {hasError && (

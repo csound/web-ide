@@ -163,7 +163,11 @@ export const addUserProject = (
             await newProjectRef
                 .collection("files")
                 .add({ ...defaultSco, userUid: loggedInUserUid });
-            await handleProjectTags(projectUid, loggedInUserUid, currentTags);
+            await handleProjectTags(
+                newProjectRef.id,
+                loggedInUserUid,
+                currentTags
+            );
             dispatch(addUserProjectAction());
             dispatch(openSnackbar("Project Added", SnackbarType.Success));
         } catch (e) {

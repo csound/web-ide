@@ -51,18 +51,6 @@ type IIconPickerIconButton = {
     bgcolor: string;
 };
 
-// const IconPickerIconButton = styled(IconButton)<IIconPickerIconButton>`
-//     grid-column: 1;
-//     grid-row: 1;
-//     && {
-//         border-radius: 4px;
-//         border: 2px solid black;
-//         background-color: ${props => props.bgcolor};
-//         fill: #dfa234;
-//         padding: 0px;
-//     }
-// `;
-
 const StyledSketchPicker = styled(SliderPicker)`
     grid-column: 2;
     grid-row: 1;
@@ -217,14 +205,16 @@ export const ProjectModal = (props: IProjectModal) => {
                     {IconComponent && (
                         <Tooltip title={"select an icon for your project"}>
                             <div
-                                css={SS.iconPreviewBox}
+                                css={[
+                                    SS.iconPreviewBox,
+                                    SS.previewAvatarColor(iconForegroundColor)
+                                ]}
                                 style={{ backgroundColor: iconBackgroundColor }}
                                 onClick={handleProfileDropDown}
                             >
                                 <IconComponent
                                     width={"100%"}
                                     height={"100%"}
-                                    fill={iconForegroundColor}
                                     aria-label="change"
                                 />
                             </div>

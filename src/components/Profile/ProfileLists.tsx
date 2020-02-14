@@ -65,6 +65,7 @@ const ProjectListItem = props => {
                             color="primary"
                             onClick={e => {
                                 dispatch(editProject(project));
+                                e.preventDefault();
                                 e.stopPropagation();
                             }}
                         >
@@ -74,6 +75,7 @@ const ProjectListItem = props => {
                             color="secondary"
                             onClick={e => {
                                 dispatch(deleteProject(project));
+                                e.preventDefault();
                                 e.stopPropagation();
                             }}
                         >
