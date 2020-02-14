@@ -34,9 +34,13 @@ export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
         );
 
         if (cs) {
-            if (cs.getPlayState() === "paused") {
+            const playState = cs.getPlayState();
+            if (playState === "paused") {
                 cs.play();
             } else {
+                if (playState === "error") {
+                    dispatch(setCsoundPlayState("stopped"));
+                }
                 typeof clearConsoleCallback === "function" &&
                     clearConsoleCallback();
                 cs.audioContext.resume();
@@ -44,8 +48,12 @@ export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
                 cs.setOption("-odac");
                 cs.setOption("-+msg_color=false");
                 await cs.setCurrentDirFS(projectUid);
-                cs.compileCSD(emfsPath);
-                cs.start();
+                const result = await cs.compileCSDPromise(emfsPath);
+                if (result === 0) {
+                    cs.start();
+                } else {
+                    dispatch(setCsoundPlayState("error"));
+                }
             }
         }
     };

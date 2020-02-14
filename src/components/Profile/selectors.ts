@@ -25,11 +25,6 @@ export const selectUserProjects = (profileUid: string | null) => (
     }
 };
 
-// export const selectStarProjectRequesting = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.starProjectRequesting;
-// };
-
 export const selectProjectFilterString = (store: any) => {
     const state: ProfileReducer = store.ProfileReducer;
     return state.projectFilterString;
@@ -85,20 +80,9 @@ export const selectFilteredUserProjects = (profileUid: string | null) =>
                 result = fuse.search(projectFilterString);
             }
 
-            // result = result.map((proj: any) => {
-            //     const starred = stars.includes(proj.projectUid);
-            //     proj.starred = starred;
-            //     return proj;
-            // });
             return result;
-            // return result;
         }
     );
-
-// export const selectUserFollowing = (store: any) => {
-//     const state: any = store.ProfileReducer;
-//     return state.userFollowing;
-// };
 
 export const selectFilteredUserFollowing = (profileUid: string) => store =>
     createSelector(
@@ -141,40 +125,10 @@ export const selectUserImageURL = (profileUid: string | null) => (
     }
 };
 
-// export const selectUserImageURLRequesting = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.userImageURLRequesting;
-// };
-
-// export const selectUserProfileRequesting = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.userProfileRequesting;
-// };
-
 export const selectCurrentlyPlayingProject = (store: any) => {
     const state: ProfileReducer = store.ProfileReducer;
     return state.currentlyPlayingProject;
 };
-
-// export const selectListPlayState = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.listPlayState;
-// };
-
-// export const selectCsoundStatus = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.csoundStatus;
-// };
-
-// export const selectPreviousCsoundStatus = (store: any) => {
-//     const state: ProfileReducer = store.ProfileReducer;
-//     return state.previousCsoundStatus;
-// };
-
-// export const selectLoggedInUserFollowing = (store: any) => {
-//     const state: any = store.ProfileReducer;
-//     return state.loggedInUserFollowing;
-// };
 
 export const selectOAuthPhotoURL = (store: any) => {
     const state: any = store.userProfile;

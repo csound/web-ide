@@ -8,40 +8,10 @@ import {
 import SVGPaths, { SVGComponents } from "./SVGPaths";
 import { useDispatch, useSelector } from "react-redux";
 import AssignmentIcon from "@material-ui/icons/Assignment";
+import AlertIcon from "@material-ui/icons/ErrorOutline";
 import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
 import { Avatar } from "@material-ui/core";
-
-/*
-                <IconButton
-                    size="medium"
-                    aria-label="Delete"
-                    onClick={e => {
-                        e.stopPropagation();
-                        dispatch(
-                            isCurrentlyPlaying
-                                ? pauseListItem(projectUid)
-                                : playListItem(projectUid)
-                        );
-                    }}
-                >
-                    {isCurrentlyPlaying ? (
-                        <PauseIcon
-                            fontSize="large"
-                            style={{
-                                color: theme.profilePlayButtonActive
-                            }}
-                        />
-                    ) : (
-                        <PlayIcon
-                            fontSize="large"
-                            style={{
-                                color: theme.profilePlayButton
-                            }}
-                        />
-                    )}
-                </IconButton>
-*/
 
 const SvgPlayIcon = () => {
     const theme = useTheme();
@@ -67,12 +37,14 @@ const SvgPlayIcon = () => {
 };
 
 const ListPlayButton = ({ projectUid }) => {
+    const theme: any = useTheme();
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
     const { iconName, iconBackgroundColor } = useSelector(
         selectProjectIconStyle(projectUid)
     );
     const isPlaying = currentlyPlayingProject === projectUid;
+    const hasError = isPlaying && csoundStatus === "error";
     const [isStartingUp, setIsStartingUp] = useState(false);
     const dispatch = useDispatch();
 
@@ -84,21 +56,28 @@ const ListPlayButton = ({ projectUid }) => {
     }
 
     useEffect(() => {
-        if (isStartingUp && csoundStatus === "playing") {
+        if (
+            (isPlaying && isStartingUp && csoundStatus === "playing") ||
+            (isPlaying && isStartingUp && csoundStatus === "error")
+        ) {
             setIsStartingUp(false);
         }
+        // eslint-disable-next-line
     }, [csoundStatus, currentlyPlayingProject, isStartingUp]);
 
     return (
         <Avatar
             css={
-                isPlaying && !isStartingUp
+                isPlaying && !hasError && !isStartingUp
                     ? [SS.avatar, SS.showAvatarPlayButton]
                     : SS.avatar
             }
             style={{
-                backgroundColor:
-                    isPlaying || isStartingUp ? "black" : iconBackgroundColor
+                backgroundColor: hasError
+                    ? theme.errorText
+                    : isPlaying || isStartingUp
+                    ? "black"
+                    : iconBackgroundColor
             }}
             onClick={() => {
                 !isPlaying && !isStartingUp && setIsStartingUp(true);
@@ -108,14 +87,25 @@ const ListPlayButton = ({ projectUid }) => {
             {!isPlaying && !isStartingUp && (
                 <IconComponent className={"projectIcon"} css={SS.avatarIcon} />
             )}
-            {!isPlaying && !isStartingUp && <SvgPlayIcon />}
+            {(!isPlaying || hasError) && !isStartingUp && <SvgPlayIcon />}
+            {hasError && (
+                <AlertIcon
+                    className={"projectIcon"}
+                    style={{
+                        fill: "white",
+                        fontSize: 40
+                    }}
+                    fontSize="large"
+                    color="error"
+                />
+            )}
             {isStartingUp && (
                 <span css={SS.loadingSpinner}>
                     <span />
                     <span />
                 </span>
             )}
-            {isPlaying && <span css={SS.pauseIcon} />}
+            {isPlaying && !hasError && <span css={SS.pauseIcon} />}
         </Avatar>
     );
 };

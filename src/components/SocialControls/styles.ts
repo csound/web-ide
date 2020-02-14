@@ -5,7 +5,7 @@ export const buttonContainer = theme => css`
     position: relative;
     top: 0;
     color: ${theme.headerTextColor};
-    border: 2px solid ${theme.line};
+    border: 2px solid ${theme.highlightBackground};
     cursor: pointer;
     border-radius: 3px;
     ${shadow}
@@ -15,10 +15,9 @@ export const buttonContainer = theme => css`
     margin-right: 6px;
     &:hover {
         cursor: pointer;
-        border: 2px solid ${theme.lineColorHover};
+        border: 2px solid ${theme.line};
         & > button {
-            border-color: transparent transparent transparent
-                ${theme.lineColorHover};
+            border-color: transparent transparent transparent ${theme.line};
         }
     }
 `;

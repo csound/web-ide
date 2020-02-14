@@ -77,15 +77,18 @@ export const control = theme => css`
     color: ${theme.headerTextColor};
     font-size: 15px;
     padding: 0px;
-    border: 2px solid ${theme.line};
+    border: 2px solid ${theme.highlightBackground};
     border-radius: 3px;
     cursor: default;
     ${shadow}
     & span {
         display: none;
     }
+    & div:hover {
+        background-color: ${theme.line};
+    }
     &:hover {
-        border: 2px solid ${theme.lineColorHover};
+        border: 2px solid ${theme.line};
         cursor: pointer;
     }
 `;
@@ -104,6 +107,9 @@ export const placeholder = theme => css`
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 1.25px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: 35px;
 `;
 
 export const menuOption = theme => css`
@@ -168,9 +174,7 @@ export const playButtonContainer = theme => css`
     &:hover {
         cursor: pointer;
         border: 2px solid ${theme.line};
-        & > button {
-            border-color: transparent transparent transparent ${theme.line};
-        }
+        background-color: ${theme.buttonBackgroundHover};
     }
 `;
 

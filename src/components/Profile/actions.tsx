@@ -40,7 +40,7 @@ import { openSimpleModal } from "@comp/Modal/actions";
 import { ProjectModal } from "./ProjectModal";
 import { getDeleteProjectModal } from "./DeleteProjectModal";
 import { selectLoggedInUid } from "@comp/Login/selectors";
-// import { playCSDFromEMFS } from "@comp/Csound/actions";
+import { selectCurrentlyPlayingProject } from "./selectors";
 import {
     downloadAllProjectDocumentsOnce,
     downloadProjectOnce
@@ -490,10 +490,18 @@ export const playListItem = (
 ) => {
     const state = getState();
     const csound = state.csound.csound;
+    const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
 
     if (projectUid === false) {
         console.log("playListItem: projectUid is false");
         return;
+    }
+
+    if (projectUid !== currentlyPlayingProject) {
+        await dispatch({
+            type: SET_CURRENTLY_PLAYING_PROJECT,
+            projectUid: null
+        });
     }
 
     const projectIsCached = hasPath(
@@ -541,7 +549,7 @@ export const playListItem = (
     const playAction = getPlayActionFromProject(projectUid, state);
     if (playAction) {
         dispatch(playAction);
-        dispatch({
+        await dispatch({
             type: SET_CURRENTLY_PLAYING_PROJECT,
             projectUid
         });

@@ -145,6 +145,10 @@ class CsoundObj {
         this.node.compileCSD(csd);
     }
 
+    compileCSDPromise(csd: any) {
+        return this.node.compileCSDPromise(csd);
+    }
+
     /** Compiles Csound orchestra code.
      *
      * @param {string} orcString A string containing the orchestra code.

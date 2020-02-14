@@ -94,7 +94,7 @@ class CsoundObj {
      * @param {string} a path to set cwd to
      */
     setCurrentDirFS(dirPath) {
-        this.node.setCurrentDirFS(dirPath);
+        return this.node.setCurrentDirFS(dirPath);
     }
 
     /** Writes data to a file in the WASM filesystem for
@@ -122,6 +122,10 @@ class CsoundObj {
      */
     compileCSD(csd) {
         this.node.compileCSD(csd);
+    }
+
+    compileCSDPromise(csd) {
+        return this.node.compileCSDPromise(csd);
     }
 
     /** Compiles Csound orchestra code.

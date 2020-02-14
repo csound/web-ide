@@ -5,7 +5,8 @@ export type ICsoundStatus =
     | "stopped"
     | "paused"
     | "playing"
-    | "rendering";
+    | "rendering"
+    | "error";
 
 // ACTION TYPES
 export const SET_CSOUND = PREFIX + "SET_CSOUND";
@@ -18,6 +19,7 @@ export interface ICsoundObj {
     writeToFS: (filepath: string, data: any) => void;
     unlinkFromFS: (filepath: string) => void;
     compileCSD: (csd: string) => void;
+    compileCSDPromise: (code: string) => any;
     compileOrc: (orc: string) => void;
     setOption: (option: string) => void;
     render: (filepath: string) => void;

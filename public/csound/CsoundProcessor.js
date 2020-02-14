@@ -324,7 +324,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
             Csound.setOption(csObj, "-odac");
             Csound.setOption(csObj, "-iadc");
             Csound.setOption(csObj, "-M0");
-            Csound.setOption(csObj, "-+rtaudio=null");
+            Csound.setOption(csObj, "-+rtaudio=dummy");
             Csound.setOption(csObj, "-+rtmidi=null");
             Csound.setOption(csObj, "--sample-rate=" + sampleRate);
             Csound.prepareRT(csObj);
@@ -361,7 +361,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
     }
 
     compileOrc(orcString) {
-        Csound.compileOrc(this.csObj, orcString);
+        console.log(Csound.compileOrc(this.csObj, orcString));
     }
 
     getPlayState() {
@@ -383,8 +383,16 @@ class CsoundProcessor extends AudioWorkletProcessor {
         let p = this.port;
 
         switch (data[0]) {
-            case "compileCSD":
+            case "compileCSD": {
                 this.result = Csound.compileCSD(this.csObj, data[1]);
+                break;
+            }
+            case "compileCSDPromise":
+                p.postMessage([
+                    "compileCSDPromise",
+                    data[1],
+                    Csound.compileCSD(this.csObj, data[2])
+                ]);
                 break;
             case "compileOrc":
                 Csound.compileOrc(this.csObj, data[1]);
@@ -442,12 +450,12 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 Csound.reset(this.csObj);
                 break;
             case "setCurrentDirFS":
-                let dirPath = data[1];
+                let dirPath = data[2];
                 if (!dirExists(dirPath)) {
                     mkdirRecursive(dirPath);
                 }
                 FS.chdir(ensureRootPrefix(dirPath));
-                p.postMessage(["setCurrentDirFSDone"]);
+                p.postMessage(["setCurrentDirFSDone", data[1]]);
                 break;
             case "writeToFS":
                 let name = "";

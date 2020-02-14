@@ -57,7 +57,6 @@ export const showAvatarPlayButton = css`
     .listPlayIcon {
         opacity: 1;
     }
-    background-color: black !important;
     transform: rotate(90deg);
     cursor: pointer;
     box-shadow: none;
@@ -73,6 +72,9 @@ export const avatar = css`
         opacity: 0;
         transition: opacity 1s ease-out;
         transform: translate(0px, -3px) rotate(-90deg);
+        &:hover {
+            z-index: 10;
+        }
     }
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
@@ -94,6 +96,7 @@ export const avatar = css`
     }
     &:hover {
         ${showAvatarPlayButton}
+        background-color: black!important;
     }
 `;
 

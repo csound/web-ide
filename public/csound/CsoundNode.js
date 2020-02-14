@@ -34,6 +34,12 @@ var CSOUND_AUDIO_CONTEXT =
         return null;
     })();
 
+let gensymCnt = 0;
+const gensym = () => {
+    gensymCnt += 1;
+    return `sym:${gensymCnt}`;
+};
+
 /** This ES6 Class defines a Custom Node as an AudioWorkletNode
  *  that holds a Csound engine.
  */
@@ -53,8 +59,7 @@ class CsoundNode extends AudioWorkletNode {
 
         this.port.start();
         this.channels = {};
-        this.evaluateCodePromises = {};
-        this.setCurrentDirFSPromise = null;
+        this.promiseBuffer = {};
         this.channelCallbacks = {};
         this.stringChannels = {};
         this.stringChannelCallbacks = {};
@@ -69,17 +74,23 @@ class CsoundNode extends AudioWorkletNode {
                     this.msgCallback(data[1]);
                     break;
                 case "evalCodePromise":
-                    let promize = this.evaluateCodePromises[data[1]];
-                    if (promize) {
-                        promize(data[2]);
-                        this.evaluateCodePromises[data[1]] = null;
+                    if (typeof this.promiseBuffer[data[1]] === "function") {
+                        this.promiseBuffer[data[1]](data[2]);
+                        delete this.promiseBuffer[data[1]];
+                    }
+                    break;
+                case "compileCSDPromise":
+                    if (typeof this.promiseBuffer[data[1]] === "function") {
+                        this.promiseBuffer[data[1]](data[2]);
+                        delete this.promiseBuffer[data[1]];
                     }
                     break;
                 case "setCurrentDirFSDone":
-                    if (this.setCurrentDirFSPromise) {
-                        this.setCurrentDirFSPromise(true);
-                        this.setCurrentDirFSPromise = null;
+                    if (typeof this.promiseBuffer[data[1]] === "function") {
+                        this.promiseBuffer[data[1]](true);
+                        delete this.promiseBuffer[data[1]];
                     }
+                    break;
                 case "control":
                     this.channels[data[1]] = data[2];
                     if (typeof this.channelCallbacks[data[1]] != "undefined")
@@ -113,8 +124,9 @@ class CsoundNode extends AudioWorkletNode {
      */
     setCurrentDirFS(dirPath) {
         return new Promise(resolve => {
-            this.setCurrentDirFSPromise = resolve;
-            this.port.postMessage(["setCurrentDirFS", dirPath]);
+            const promiseId = gensym();
+            this.promiseBuffer[promiseId] = resolve;
+            this.port.postMessage(["setCurrentDirFS", promiseId, dirPath]);
         });
     }
 
@@ -146,6 +158,13 @@ class CsoundNode extends AudioWorkletNode {
      */
     compileCSD(filePath) {
         this.port.postMessage(["compileCSD", filePath]);
+    }
+    compileCSDPromise(filePath) {
+        return new Promise((resolve, reject) => {
+            const promiseId = gensym();
+            this.promiseBuffer[promiseId] = resolve;
+            this.port.postMessage(["compileCSDPromise", promiseId, filePath]);
+        });
     }
 
     /** Compiles Csound orchestra code.
@@ -180,10 +199,8 @@ class CsoundNode extends AudioWorkletNode {
 
     evaluateCodePromise(codeString) {
         return new Promise((resolve, reject) => {
-            const promiseId = Math.random()
-                .toString(36)
-                .substring(2, 15);
-            this.evaluateCodePromises[promiseId] = resolve;
+            const promiseId = gensym();
+            this.promiseBuffer[promiseId] = resolve;
             this.port.postMessage(["evalCodePromise", promiseId, codeString]);
         });
     }
