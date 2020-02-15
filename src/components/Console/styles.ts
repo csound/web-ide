@@ -10,6 +10,8 @@ export const listWrapper = theme => css`
     color: ${theme.console};
     padding: 6px;
     outline: none;
+    scrollbar-width: thin;
+    scrollbar-color: ${theme.scrollbar} transparent;
     & li {
         height: 16px;
         line-height: 16px;
@@ -23,6 +25,7 @@ export const listWrapper = theme => css`
         width: 8px;
     }
 
+    &:scrollbar-track,
     &::-webkit-scrollbar-track {
         background: transparent;
     }
@@ -35,8 +38,7 @@ export const listWrapper = theme => css`
     }
 
     &:hover {
-        scrollbar-color: red red;
-        scrollbar-width: thin;
+        scrollbar-color: ${theme.scrollbarHover} ${theme.highlightBackgroundAlt};
         &::-webkit-scrollbar {
         }
         &::-webkit-scrollbar-thumb {

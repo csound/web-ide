@@ -165,7 +165,7 @@ interface IStyledListItemContainer {
 export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
     display: grid;
     grid-template-rows: 1fr 0.5fr;
-    grid-template-columns: 1fr 8fr 70px ${props =>
+    grid-template-columns: 82px 8fr 70px ${props =>
             props.isProfileOwner ? "70px" : ""};
     width: 100%;
     padding-bottom: 2px;
@@ -176,28 +176,39 @@ export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
 
 export const StyledUserListItemContainer = styled.div`
     display: grid;
-    grid-template-rows: 1fr 0.5fr;
-    grid-template-columns: 1fr 8fr;
+    grid-template-rows: 1fr;
+    grid-template-columns: 72px auto;
     width: 100%;
+    height: 100%;
+    min-height: 80px;
     padding-bottom: 2px;
 `;
 
 export const StyledListItemAvatar = styled.div`
-    grid-row-start: 1;
-    grid-row-end: 2;
-    grid-column: 2;
-    margin: auto;
-    width: 50%;
+    position: absolute;
+    left: 24px;
+    top: 0px;
+    margin: auto 0;
+    margin-right: 12px;
+    height: 100%;
+    display: flex;
+    & > div {
+        align-self: center;
+        width: 55px;
+        height: 55px;
+    }
 `;
 export const StyledListItemTopRowText = styled.div`
     grid-row: 1;
     grid-column: 2;
+    text-align: left;
 `;
 export const StyledListItemChipsRow = styled.div`
     margin-top: 12px;
     grid-row: 2;
     grid-column-start: 2;
-    grid-column-end: 3;
+    grid-column-end: 4;
+    min-width: 140px;
 `;
 export const StyledListPlayButtonContainer = styled.div`
     position: absolute;

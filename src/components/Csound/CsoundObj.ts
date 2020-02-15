@@ -145,6 +145,10 @@ class CsoundObj {
         this.node.compileCSD(csd);
     }
 
+    compileCSDPromise(csd: any) {
+        return this.node.compileCSDPromise(csd);
+    }
+
     /** Compiles Csound orchestra code.
      *
      * @param {string} orcString A string containing the orchestra code.
@@ -301,12 +305,24 @@ class CsoundObj {
         this.node.reset();
     }
 
+    /** Resets the Csound engine if Csound is already started
+     */
+    resetIfNeeded() {
+        this.node.resetIfNeeded();
+    }
+
     destroy() {}
 
     /** Pauses performance
      */
     pause() {
         this.node.pause();
+    }
+
+    /** Pauses performance
+     */
+    resume() {
+        this.node.resume();
     }
 
     /** Starts performance, same as start()

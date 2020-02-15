@@ -11,8 +11,8 @@ import {
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     CLOSE_PROJECT,
-    SET_PROJECT,
     SET_PROJECT_PUBLIC,
+    STORE_PROJECT_LOCALLY,
     STORE_PROJECT_STARS,
     UNSET_PROJECT
 } from "./types";
@@ -22,8 +22,10 @@ import {
     assoc,
     assocPath,
     curry,
+    dissoc,
     dissocPath,
     mergeAll,
+    hasPath,
     pathOr,
     pipe
 } from "ramda";
@@ -76,13 +78,26 @@ const resetDocumentToSavedValue = curry(
 
 export default (state: IProjectsReducer | undefined, action: any) => {
     switch (action.type) {
-        case SET_PROJECT: {
-            return isEmpty(action.project)
-                ? state
-                : (assocPath(
-                      ["projects", action.project.projectUid],
-                      action.project
-                  )(state as IProjectsReducer) as IProjectsReducer);
+        case STORE_PROJECT_LOCALLY: {
+            if (isEmpty(action.project)) {
+                return state;
+            }
+            const path = ["projects", action.project.projectUid];
+            if (hasPath(path, state)) {
+                return assocPath(
+                    path,
+                    mergeAll([
+                        pathOr({}, path, state),
+                        pipe(
+                            dissoc("tags"),
+                            dissoc("stars"),
+                            dissoc("documents")
+                        )(action.project)
+                    ])
+                )(state as IProjectsReducer) as IProjectsReducer;
+            } else {
+                return assocPath(path, action.project, state);
+            }
         }
         case UNSET_PROJECT: {
             return dissocPath(["projects", action.projectUid], state);

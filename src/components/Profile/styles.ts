@@ -50,6 +50,18 @@ export const iconPreviewBox = css`
     cursor: pointer;
 `;
 
+export const showAvatarPlayButton = css`
+    .projectIcon {
+        opacity: 0;
+    }
+    .listPlayIcon {
+        opacity: 1;
+    }
+    transform: rotate(90deg);
+    cursor: pointer;
+    box-shadow: none;
+`;
+
 export const avatar = css`
     align-self: center;
     pointer-events: visible;
@@ -60,6 +72,9 @@ export const avatar = css`
         opacity: 0;
         transition: opacity 1s ease-out;
         transform: translate(0px, -3px) rotate(-90deg);
+        &:hover {
+            z-index: 10;
+        }
     }
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
@@ -80,20 +95,70 @@ export const avatar = css`
             6px 0 6px rgba(0, 0, 0, 0.23);
     }
     &:hover {
-        background-color: black !important;
-        transform: rotate(90deg);
-        cursor: pointer;
-        box-shadow: none;
-        .projectIcon {
-            opacity: 0;
-        }
-        .listPlayIcon {
-            opacity: 1;
-        }
+        ${showAvatarPlayButton}
+        background-color: black!important;
     }
 `;
 
-export const avatarIcon = css`
+export const avatarIconForeground = (foregroundColor: string) => css`
+    & path {
+        fill: ${foregroundColor};
+    }
+    & path:first-of-type {
+        fill: black;
+    }
+    & path:last-of-type {
+        fill: ${foregroundColor};
+    }
+`;
+
+export const avatarIcon = (foregroundColor: string) => css`
     width: calc(100% - 32px);
     height: calc(100% - 32px);
+    ${avatarIconForeground(foregroundColor)}
+`;
+
+export const previewAvatarColor = (foregroundColor: string) => css`
+    & > svg {
+        ${avatarIconForeground(foregroundColor)}
+    }
+`;
+
+export const loadingSpinner = theme => css`
+@keyframes cricle {
+  from {
+    transform: rotate(-25deg);
+  }
+  to {
+    transform: rotate(335deg);
+  }
+}
+    padding-right: 25px;
+    padding-bottom: 25px;
+    position: absolute;
+
+    & > span {
+      display: inline-block;
+      position: absolute;
+      border-radius: 100px;
+      padding: 8px;
+      border: 5px solid transparent;
+
+      animation: cricle 1s ease-in-out infinite;
+      border-top: 5px solid ${theme.allowed};
+
+      &:nth-of-type(1) {
+        animation-delay: -0.15s;
+      }
+
+`;
+
+export const pauseIcon = theme => css`
+    position: absolute;
+    transform: rotate(90deg);
+    cursor: pointer;
+    border-color: ${theme.allowed};
+    border-style: double;
+    border-width: 0px 0 0px 20px;
+    height: 26px;
 `;

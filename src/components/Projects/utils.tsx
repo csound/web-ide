@@ -63,7 +63,9 @@ export const addDocumentToEMFS = curry(
                     xhr.responseType = "arraybuffer";
                     xhr.onload = function(event) {
                         let blob = xhr.response;
-                        csound.writeToFS(absolutePath, blob);
+                        csound &&
+                            typeof csound.writeToFS === "function" &&
+                            csound.writeToFS(absolutePath, blob);
                     };
                     xhr.open("GET", url);
                     xhr.send();
@@ -73,7 +75,12 @@ export const addDocumentToEMFS = curry(
                 });
         } else {
             const encoder = new TextEncoder();
-            csound.writeToFS(absolutePath, encoder.encode(document.savedValue));
+            csound &&
+                typeof csound.writeToFS === "function" &&
+                csound.writeToFS(
+                    absolutePath,
+                    encoder.encode(document.savedValue)
+                );
         }
     }
 );

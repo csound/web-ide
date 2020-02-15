@@ -36,7 +36,7 @@ export default function GlobalModal() {
             if (focus) {
                 const maybeInput = elem.getElementsByTagName("input");
                 if (maybeInput && maybeInput.length > 0) {
-                    setTimeout(() => maybeInput[0].focus(), 1);
+                    setTimeout(() => maybeInput[0] && maybeInput[0].focus(), 1);
                 }
             }
         }

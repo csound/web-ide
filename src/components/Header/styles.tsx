@@ -91,3 +91,48 @@ export const clearfixHeader = css`
     height: 64px;
     width: 100%;
 `;
+
+export const projectProfileMetaContainer = css`
+    display: flex;
+    flex-direction: row;
+`;
+
+export const projectProfileMetaTextContainer = theme => css`
+    align-self: center;
+    font-family: ${theme.font.regular};
+    display: flex;
+    flex-direction: column;
+`;
+
+export const projectProfileMetaH1 = theme => css`
+    color: ${theme.color};
+    font-weight: 500;
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+`;
+
+export const projectProfileMetaP = theme => css`
+    color: ${theme.color};
+    font-weight: 400;
+    font-size: 13px;
+    padding: 0;
+    margin: 0;
+`;
+
+export const projectIcon = css`
+    & > div {
+        box-sizing: content-box;
+        height: 34px;
+        width: 34px;
+        padding: 5px;
+        margin: 0 9px;
+        cursor: default;
+        & svg {
+            height: 20px !important;
+            width: 20px !important;
+            margin-top: 7px;
+            margin-left: 7px;
+        }
+    }
+`;

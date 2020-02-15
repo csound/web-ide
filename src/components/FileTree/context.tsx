@@ -76,7 +76,6 @@ const reducer = curry((state, action) => {
         // WIP
         case "reorder": {
             // const docUid = pathOr(null, ["payload", "draggableId"], action);
-
             const sourceIndex = pathOr(
                 0,
                 ["payload", "source", "index"],

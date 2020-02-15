@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Tooltip from "@material-ui/core/Tooltip";
+import SVGPaths from "./SVGPaths";
 import { addUserProject, editUserProject } from "./actions";
 import { openSnackbar } from "../Snackbar/actions";
 import { SnackbarType } from "../Snackbar/types";
@@ -8,20 +9,14 @@ import { SliderPicker } from "react-color";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import AssignmentIcon from "@material-ui/icons/Assignment";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import * as SS from "./styles";
 import IconButton from "@material-ui/core/IconButton";
 import ReactAutosuggestExample from "./TagAutoSuggest";
 import { selectTags } from "./selectors";
-import SVGPaths, { SVGComponents } from "./SVGPaths";
 import { equals, isEmpty, not } from "ramda";
-
-const FallbackIcon = ({ fill }) => (
-    <AssignmentIcon style={{ height: 62, width: 62, fill }} />
-);
+import ProjectIcon from "./ProjectIcon";
 
 const ModalContainer = styled.div`
     display: grid;
@@ -50,18 +45,6 @@ const IconPickerContainer = styled.div`
 type IIconPickerIconButton = {
     bgcolor: string;
 };
-
-// const IconPickerIconButton = styled(IconButton)<IIconPickerIconButton>`
-//     grid-column: 1;
-//     grid-row: 1;
-//     && {
-//         border-radius: 4px;
-//         border: 2px solid black;
-//         background-color: ${props => props.bgcolor};
-//         fill: #dfa234;
-//         padding: 0px;
-//     }
-// `;
 
 const StyledSketchPicker = styled(SliderPicker)`
     grid-column: 2;
@@ -162,12 +145,6 @@ export const ProjectModal = (props: IProjectModal) => {
         setPopupState(false);
     };
 
-    let IconComponent: React.ElementType = SVGComponents[`fadADRComponent`];
-    if (iconName && iconName !== "default" && SVGPaths[iconName]) {
-        IconComponent = SVGComponents[`${iconName}Component`];
-    } else {
-        IconComponent = FallbackIcon;
-    }
     return (
         <ModalContainer>
             <FieldRow row={1}>
@@ -214,22 +191,14 @@ export const ProjectModal = (props: IProjectModal) => {
             </FieldRow>
             <FieldRow row={5}>
                 <IconPickerContainer>
-                    {IconComponent && (
-                        <Tooltip title={"select an icon for your project"}>
-                            <div
-                                css={SS.iconPreviewBox}
-                                style={{ backgroundColor: iconBackgroundColor }}
-                                onClick={handleProfileDropDown}
-                            >
-                                <IconComponent
-                                    width={"100%"}
-                                    height={"100%"}
-                                    fill={iconForegroundColor}
-                                    aria-label="change"
-                                />
-                            </div>
-                        </Tooltip>
-                    )}
+                    <Tooltip title={"select an icon for your project"}>
+                        <ProjectIcon
+                            iconName={iconName}
+                            iconBackgroundColor={iconBackgroundColor}
+                            iconForegroundColor={iconForegroundColor}
+                            onClick={handleProfileDropDown}
+                        />
+                    </Tooltip>
                     <Popover
                         open={popupState}
                         anchorEl={anchorElement}

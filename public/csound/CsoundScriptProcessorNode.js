@@ -39,9 +39,10 @@ var AudioWorkletGlobalScope = AudioWorkletGlobalScope || {};
 var CSOUND;
 
 // Single-global message callback, needs reworking...
+let muteMessages = false;
 let messageCallback = msg => console.log(msg);
 const printMessages = t => {
-    messageCallback(t);
+    !muteMessages && messageCallback(t);
 };
 
 // FS helpers
@@ -267,18 +268,7 @@ CsoundScriptProcessorNode = function(context, options) {
     spn.outputCount = options.numberOfOutputs;
 
     let cs = CSOUND.new();
-    CSOUND.setMidiCallbacks(cs);
-    CSOUND.setOption(cs, "-odac");
-    CSOUND.setOption(cs, "-iadc");
-    CSOUND.setOption(cs, "-M0");
-    CSOUND.setOption(cs, "-+rtaudio=null");
-    CSOUND.setOption(cs, "-+rtmidi=null");
-    CSOUND.prepareRT(cs);
     var sampleRate = CSOUND_AUDIO_CONTEXT.sampleRate;
-    CSOUND.setOption(cs, "--sample-rate=" + sampleRate);
-    CSOUND.setOption(cs, "--nchnls=" + this.nchnls);
-    CSOUND.setOption(cs, "--nchnls_i=" + this.nchnls_i);
-
     /**
      *   @mixin CsoundMixin
      *   @ignore
@@ -293,6 +283,7 @@ CsoundScriptProcessorNode = function(context, options) {
         ksmps: 32,
         running: false,
         started: false,
+        hasStarted: false,
         cnt: 0,
         result: 0,
         nchnls_i: options.numberOfInputs,
@@ -412,6 +403,11 @@ CsoundScriptProcessorNode = function(context, options) {
         compileCSD(csd) {
             this.result = CSOUND.compileCSD(this.csound, csd);
         },
+        compileCSDPromise(csd) {
+            return new Promise(resolve => {
+                resolve(CSOUND.compileCSD(this.csound, csd));
+            });
+        },
 
         /** Compiles Csound orchestra code.
          *
@@ -456,6 +452,7 @@ CsoundScriptProcessorNode = function(context, options) {
         evaluateCode(codeString) {
             return CSOUND.evaluateCode(this.csound, codeString);
         },
+
         evaluateCodePromise(codeString) {
             return new Promise(resolve => {
                 resolve(CSOUND.evaluateCode(this.csound, codeString));
@@ -605,6 +602,20 @@ CsoundScriptProcessorNode = function(context, options) {
 
         start() {
             if (this.started == false) {
+                if (!this.hasStarted) {
+                    this.hasStarted = true;
+                }
+                CSOUND.setMidiCallbacks(cs);
+                CSOUND.setOption(cs, "-odac");
+                CSOUND.setOption(cs, "-iadc");
+                CSOUND.setOption(cs, "-M0");
+                CSOUND.setOption(cs, "-+rtaudio=null");
+                CSOUND.setOption(cs, "-+rtmidi=null");
+                CSOUND.prepareRT(cs);
+                CSOUND.setOption(cs, "--sample-rate=" + sampleRate);
+                CSOUND.setOption(cs, "--nchnls=" + this.nchnls);
+                CSOUND.setOption(cs, "--nchnls_i=" + this.nchnls_i);
+
                 let ksmps = CSOUND.getKsmps(this.csound);
                 this.ksmps = ksmps;
                 this.cnt = ksmps;
@@ -622,6 +633,7 @@ CsoundScriptProcessorNode = function(context, options) {
                     ksmps * this.nchnls_i
                 );
                 this.zerodBFS = CSOUND.getZerodBFS(this.csound);
+                this.result = 0;
                 this.started = true;
             }
             this.running = true;
@@ -631,27 +643,24 @@ CsoundScriptProcessorNode = function(context, options) {
         /** Resets the Csound engine.
          *  @memberof CsoundMixin
          */
-
         reset() {
             this.started = false;
             this.running = false;
             CSOUND.reset(this.csound);
-            CSOUND.setMidiCallbacks(this.csound);
-            CSOUND.setOption(this.csound, "-odac");
-            CSOUND.setOption(this.csound, "-iadc");
-            CSOUND.setOption(this.csound, "-M0");
-            CSOUND.setOption(this.csound, "-+rtaudio=null");
-            CSOUND.setOption(this.csound, "-+rtmidi=null");
-            var sampleRate = CSOUND_AUDIO_CONTEXT.sampleRate;
-            CSOUND.setOption(this.csound, "--sample-rate=" + sampleRate);
-            CSOUND.prepareRT(this.csound);
-            CSOUND.setOption(this.csound, "--nchnls=" + this.nchnls);
-            CSOUND.setOption(this.csound, "--nchnls_i=" + this.nchnls_i);
-            this.csoundOutputBuffer = null;
-            this.ksmps = null;
-            this.zerodBFS = null;
-
             this.firePlayStateChange();
+        },
+
+        resetIfNeeded() {
+            if (
+                this.hasStarted ||
+                (!this.hasStarted && this.getPlayState() === "stopped")
+            ) {
+                muteMessages = true;
+                this.running = false;
+                this.started = false;
+                CSOUND.reset(this.csound);
+                muteMessages = false;
+            }
         },
 
         destroy() {
@@ -660,6 +669,10 @@ CsoundScriptProcessorNode = function(context, options) {
 
         pause() {
             this.running = false;
+        },
+
+        resume() {
+            this.running = true;
         },
 
         /** Starts performance, same as start()
@@ -677,6 +690,7 @@ CsoundScriptProcessorNode = function(context, options) {
         stop() {
             this.running = false;
             this.started = false;
+            this.hasStarted = false;
             this.firePlayStateChange();
         },
 

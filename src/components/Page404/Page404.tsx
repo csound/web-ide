@@ -53,7 +53,7 @@ const Page404 = props => {
 
     return (
         <div className={classes.root}>
-            <Header showMenuBar={false} />
+            <Header />
             <main>
                 <MainContainer
                     colorA={"rgba(30, 30, 30, 1)"}

@@ -40,8 +40,7 @@ const ThirdPartyLibPainter = ({ theme }) => (
 
 const CsoundWebIdeThemeProvider = props => {
     const monospaceFont = `"Fira Mono", monospace`;
-    // const regularFont = `"Roboto", sans-serif`;
-    const regularFont = `"Times New Roman"`;
+    const regularFont = `"Roboto", sans-serif`;
 
     const theme: ITheme = pipe(
         assocPath(["font", "monospace"], monospaceFont),
