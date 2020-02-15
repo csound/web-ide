@@ -5,9 +5,12 @@ import {
     append,
     assoc,
     concat,
+    compose,
+    isEmpty,
     isNil,
     keys,
     mergeWith,
+    not,
     uniq,
     map,
     pipe,
@@ -58,6 +61,8 @@ export function filterUndef<T>(ts: (T | undefined)[]): T[] {
 }
 
 export const mapIndexed = addIndex(map);
+
+export const notEmpty = compose(not, isEmpty);
 
 export function isMacintosh(): boolean {
     return navigator.platform.indexOf("Mac") > -1;

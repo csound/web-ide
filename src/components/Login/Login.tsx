@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { subscribeToLoggedInUserProfile } from "./subscribers";
 import {
     Button,
     Dialog,
@@ -15,8 +14,7 @@ import {
     login,
     closeLoginDialog,
     createNewUser,
-    createUserClearError,
-    thirdPartyAuthSuccess
+    createUserClearError
 } from "./actions";
 import {
     selectLoginRequesting,
@@ -68,27 +66,6 @@ const Login = () => {
         newPasswordConfirm: "",
         isCreatingUser: false
     } as ILoginLocalState);
-
-    useEffect(() => {
-        let unsubscribeLoggedInUserProfile: any = null;
-        const unsubscribeAuthObserver = firebase
-            .auth()
-            .onAuthStateChanged(user => {
-                if (user) {
-                    unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
-                        user.uid,
-                        dispatch
-                    );
-                    dispatch(thirdPartyAuthSuccess(user));
-                }
-            });
-
-        return () => {
-            unsubscribeAuthObserver();
-            unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const switchToNewUser = () => {
         dispatch(createUserClearError());

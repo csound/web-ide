@@ -21,17 +21,18 @@ interface IMain {
 
 const Main = (props: IMain) => {
     const dispatch = useDispatch();
+
     useEffect(() => {
         let unsubscribeLoggedInUserProfile: any = null;
         const unsubscribeAuthObserver = firebase
             .auth()
             .onAuthStateChanged(user => {
                 if (user) {
-                    dispatch(thirdPartyAuthSuccess(user));
                     unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
                         user.uid,
                         dispatch
                     );
+                    dispatch(thirdPartyAuthSuccess(user));
                 } else {
                     dispatch(setRequestingStatus(false));
                 }
@@ -42,7 +43,7 @@ const Main = (props: IMain) => {
             unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();
             (window as any).ps_body.destroy();
         };
-        // eslint-disable-next-line
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

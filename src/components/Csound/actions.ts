@@ -100,9 +100,8 @@ export const playORCFromString = (projectUid: string, orc: string) => {
 export const stopCsound = () => {
     return async (dispatch: any) => {
         const cs = pathOr(null, ["csound", "csound"], store.getState());
-        if (cs !== null) {
-            const safeCs = cs as ICsoundObj;
-            safeCs.stop();
+        if (cs && typeof cs.stop === "function") {
+            cs.stop();
         }
     };
 };

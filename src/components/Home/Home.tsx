@@ -74,7 +74,7 @@ const Home = props => {
 
     return (
         <div className={classes.root}>
-            <Header showMenuBar={false} />
+            <Header />
             <main>
                 <HomeContainer
                     colorA={"rgba(30, 30, 30, 1)"}

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/FileTree/context";
 import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
 import { simpleSwitch } from "react-tabtab/lib/helpers/move";
 import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
+import { subscribeToProfile } from "@comp/Profile/subscribers";
 import tabStyles from "./tabStyles";
 import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
@@ -77,6 +79,8 @@ const ProjectEditor = ({ activeProject, csound }) => {
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = useState(false);
     const projectUid: string = propOr("", "projectUid", activeProject);
+    const projectOwnerUid: string = propOr("", "userUid", activeProject);
+    const isOwner = useSelector(selectIsOwner(projectUid));
     const tabPanelRef = useRef();
 
     useEffect(() => {
@@ -89,9 +93,15 @@ const ProjectEditor = ({ activeProject, csound }) => {
             projectUid,
             dispatch
         );
+
+        // get some metadata from other people's projects
+        const unsubscribeToProfile = !isOwner
+            ? subscribeToProfile(projectOwnerUid, dispatch)
+            : () => {};
         return () => {
             unsubscribeProjectChanges();
             unsubscribeToProjectLastModified();
+            unsubscribeToProfile();
         };
         // eslint-disable-next-line
     }, []);

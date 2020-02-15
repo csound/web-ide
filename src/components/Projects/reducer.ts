@@ -11,8 +11,8 @@ import {
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     CLOSE_PROJECT,
-    SET_PROJECT,
     SET_PROJECT_PUBLIC,
+    STORE_PROJECT_LOCALLY,
     STORE_PROJECT_STARS,
     UNSET_PROJECT
 } from "./types";
@@ -78,7 +78,7 @@ const resetDocumentToSavedValue = curry(
 
 export default (state: IProjectsReducer | undefined, action: any) => {
     switch (action.type) {
-        case SET_PROJECT: {
+        case STORE_PROJECT_LOCALLY: {
             if (isEmpty(action.project)) {
                 return state;
             }

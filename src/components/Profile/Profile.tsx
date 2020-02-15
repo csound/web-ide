@@ -195,7 +195,7 @@ const Profile = props => {
 
     return (
         <div className={classes.root}>
-            <Header showMenuBar={false} />
+            <Header />
             <ProfileMain
                 colorA={"rgba(30, 30, 30, 1)"}
                 colorB={"rgba(40, 40, 40, 1)"}

@@ -1,6 +1,6 @@
 import { store } from "@store/index";
 import { following, profiles, projects, tags } from "@config/firestore";
-import { setProject, unsetProject } from "@comp/Projects/actions";
+import { storeProjectLocally, unsetProject } from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
 import { storeUserProfile } from "./actions";
 import { UPDATE_PROFILE_FOLLOWING } from "./types";
@@ -98,7 +98,9 @@ export const subscribeToProfileProjects = (
                     .get()
                     .then(d => d.docs.map(prop("id")));
                 const proj = await convertProjectSnapToProject(projSnap);
-                await dispatch(setProject(assoc("tags", projTags, proj)));
+                await dispatch(
+                    storeProjectLocally(assoc("tags", projTags, proj))
+                );
             });
         }
 

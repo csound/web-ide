@@ -41,8 +41,8 @@ import {
     DOCUMENT_UPDATE_VALUE,
     DOCUMENT_UPDATE_MODIFIED_LOCALLY,
     CLOSE_PROJECT,
-    SET_PROJECT,
     SET_PROJECT_PUBLIC,
+    STORE_PROJECT_LOCALLY,
     UNSET_PROJECT,
     IProject,
     IDocument,
@@ -79,7 +79,7 @@ export const downloadProjectOnce = (projectUid: string) => {
             const project: IProject = await convertProjectSnapToProject(
                 projSnap
             );
-            await dispatch(setProject(project));
+            await dispatch(storeProjectLocally(project));
         }
     };
 };
@@ -155,9 +155,9 @@ export const activateProject = (projectUid: string, csound) => {
     };
 };
 
-export const setProject = (project: IProject) => {
+export const storeProjectLocally = (project: IProject) => {
     return {
-        type: SET_PROJECT,
+        type: STORE_PROJECT_LOCALLY,
         project
     };
 };

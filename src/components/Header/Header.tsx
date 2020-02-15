@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { selectCurrentRoute } from "@comp/Router/selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { selectUserImageURL } from "@comp/Profile/selectors";
 import { selectLoggedInUid } from "@comp/Login/selectors";
@@ -34,26 +35,11 @@ import { IStore } from "@store/types";
 import { isEmpty } from "lodash";
 // import { hasPath } from "ramda";
 import MenuBar from "../MenuBar/MenuBar";
+import ProjectProfileMeta from "./ProjectProfileMeta";
 import TargetControls from "../TargetControls";
 import SocialControls from "../SocialControls/SocialControls";
 
-interface IHeaderProps {
-    showMenuBar: boolean;
-}
-
-interface IHeaderDispatchProperties {
-    logOut: () => void;
-    openLoginDialog: () => void;
-    handleIconClick: () => void;
-}
-
-interface IHeaderLocalState {
-    isProfileMenuOpen: boolean;
-}
-
-type IHeader = IHeaderProps & IHeaderDispatchProperties;
-
-export const Header = ({ showMenuBar = true }) => {
+export const Header = () => {
     const dispatch = useDispatch();
 
     const authenticated = useSelector(
@@ -62,6 +48,13 @@ export const Header = ({ showMenuBar = true }) => {
     const activeProjectUid = useSelector(
         (store: IStore) => store.ProjectsReducer.activeProjectUid
     );
+
+    const currentRoute = useSelector(selectCurrentRoute);
+
+    const routeIsHome = currentRoute === "home";
+
+    const routeIsEditor = currentRoute === "editor";
+
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
 
     const loggedInUid = useSelector(selectLoggedInUid);
@@ -157,7 +150,7 @@ export const Header = ({ showMenuBar = true }) => {
         </Button>
     );
 
-    const burgerMenu = !showMenuBar ? (
+    const burgerMenu = routeIsHome ? (
         <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -178,16 +171,22 @@ export const Header = ({ showMenuBar = true }) => {
             <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     {burgerMenu}
-                    <CSLogo
-                        size={38}
-                        interactive={true}
-                        onClick={handleIconClick}
-                    />
-                    {showMenuBar && activeProjectUid && isOwner && <MenuBar />}
+                    {!(routeIsEditor && !isOwner) && (
+                        <CSLogo
+                            size={38}
+                            interactive={true}
+                            onClick={handleIconClick}
+                        />
+                    )}
+
+                    {routeIsEditor && activeProjectUid && isOwner && (
+                        <MenuBar />
+                    )}
+                    {routeIsEditor && !isOwner && <ProjectProfileMeta />}
                     <div style={{ flexGrow: 1 }} />
                     <div css={SS.headerRightSideGroup}>
-                        {showMenuBar && <TargetControls />}
-                        {showMenuBar && <SocialControls />}
+                        {routeIsEditor && <TargetControls />}
+                        {routeIsEditor && <SocialControls />}
                     </div>
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
