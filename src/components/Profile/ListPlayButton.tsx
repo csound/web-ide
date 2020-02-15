@@ -25,7 +25,7 @@ const SvgPlayIcon = () => {
                 width: "calc(100% - 24px)",
                 height: "calc(100% - 24px)",
                 position: "absolute",
-                marginRight: -26,
+                right: 12,
                 fill: (theme as any).allowed
             }}
             enableBackground="new 0 0 58.752 58.752"

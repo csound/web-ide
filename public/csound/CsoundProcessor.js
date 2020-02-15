@@ -350,6 +350,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 ksmps * this.nchnls_i
             );
 
+            this.result = 0;
             this.running = true;
             this.started = true;
             if (!this.hasStarted) {
@@ -444,7 +445,10 @@ class CsoundProcessor extends AudioWorkletProcessor {
                 Csound.setOption(this.csObj, data[1]);
                 break;
             case "resetIfNeeded":
-                if (this.hasStarted || this.getPlayState() === "stopped") {
+                if (
+                    this.hasStarted ||
+                    (!this.hasStarted && this.getPlayState() === "stopped")
+                ) {
                     muteMessages = true;
                     this.running = false;
                     this.started = false;

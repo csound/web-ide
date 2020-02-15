@@ -633,6 +633,7 @@ CsoundScriptProcessorNode = function(context, options) {
                     ksmps * this.nchnls_i
                 );
                 this.zerodBFS = CSOUND.getZerodBFS(this.csound);
+                this.result = 0;
                 this.started = true;
             }
             this.running = true;
@@ -650,7 +651,10 @@ CsoundScriptProcessorNode = function(context, options) {
         },
 
         resetIfNeeded() {
-            if (this.hasStarted) {
+            if (
+                this.hasStarted ||
+                (!this.hasStarted && this.getPlayState() === "stopped")
+            ) {
                 muteMessages = true;
                 this.running = false;
                 this.started = false;
@@ -686,6 +690,7 @@ CsoundScriptProcessorNode = function(context, options) {
         stop() {
             this.running = false;
             this.started = false;
+            this.hasStarted = false;
             this.firePlayStateChange();
         },
 
