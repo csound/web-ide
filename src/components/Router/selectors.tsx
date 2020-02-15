@@ -7,6 +7,6 @@ export const selectCurrentRoute = ({ router }: IStore) => {
         [equals("/"), always("home")],
         [x => notEmpty(match(/^\/editor\/+/g, x)), always("editor")],
         [x => notEmpty(match(/^\/profile/g, x)), always("profile")],
-        [T, "404"]
+        [T, always("404")]
     ])(router.location.pathname);
 };

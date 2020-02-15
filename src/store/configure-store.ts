@@ -13,10 +13,13 @@ interface ICreatedStore extends Store {
 export const configureStore = () => {
     const history: History = createBrowserHistory();
     const composeEnhancer =
-        (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
-            actionSanitizer: devToolsActionSanitizer,
-            stateSanitizer: devToolsStateSanitizer
-        }) || compose;
+        typeof (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ===
+        "function"
+            ? (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
+                  actionSanitizer: devToolsActionSanitizer,
+                  stateSanitizer: devToolsStateSanitizer
+              })
+            : compose;
 
     const store: ICreatedStore = createStore(
         rootReducer(history),

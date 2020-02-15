@@ -59,6 +59,7 @@ export const menuPaper = classCss`
 export const loginButton = css`
     position: relative;
     right: 12px;
+    margin-left: 12px;
 `;
 
 export const accountTooltip = classCss`

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { push } from "connected-react-router";
 import { useTheme } from "emotion-theming";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
@@ -7,7 +8,7 @@ import { ICsoundObj } from "@comp/Csound/types";
 import Header from "@comp/Header/Header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
-import { path, pathOr } from "ramda";
+import { isEmpty, path, pathOr } from "ramda";
 
 interface IProjectContextProps {
     match: any;
@@ -24,15 +25,22 @@ export const ProjectContext = (props: IProjectContextProps) => {
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
     const projectUid = props.match.params.id;
+    const invalidUrl = !projectUid || isEmpty(projectUid);
+    // this is true when /editor path is missing projectUid
+    invalidUrl && dispatch(push("/404", { message: "Project not found" }));
 
     const activeProjectUid: string | null = useSelector(
         store =>
-            (path(["ProjectsReducer", "activeProjectUid"], store) as string) ||
+            (!invalidUrl &&
+                (path(
+                    ["ProjectsReducer", "activeProjectUid"],
+                    store
+                ) as string)) ||
             null
     );
 
     const project: IProject | null = useSelector(store =>
-        activeProjectUid
+        activeProjectUid && !invalidUrl
             ? (path(
                   ["ProjectsReducer", "projects", activeProjectUid],
                   store
@@ -51,7 +59,16 @@ export const ProjectContext = (props: IProjectContextProps) => {
     useEffect(() => {
         if (!projectFetchStarted && csound) {
             const initProject = async () => {
-                await downloadProjectOnce(projectUid)(dispatch);
+                try {
+                    await downloadProjectOnce(projectUid)(dispatch);
+                } catch (e) {
+                    if (typeof e === "object" && typeof e.code === "string") {
+                        e.code === "permission-denied" &&
+                            dispatch(
+                                push("/404", { message: "Project not found" })
+                            );
+                    }
+                }
                 await activateProject(projectUid, csound)(dispatch);
                 setProjectIsReady(true);
             };
@@ -72,7 +89,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
         tabIndex
     ]);
 
-    if (!needsLoading) {
+    if (!needsLoading && !invalidUrl) {
         return (
             <>
                 <ForceBackgroundColor theme={theme} />
