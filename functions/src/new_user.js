@@ -2,6 +2,7 @@
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
 const log = require("./logger.js")("new_user_callback");
+const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
 
 // For every new user, let's create a queryable firestore profile document
 const createProfileDocument = async user => {
@@ -18,7 +19,7 @@ const createProfileDocument = async user => {
         link3: "",
         photoUrl: user.photoURL,
         userUid: user.uid,
-        userJoinDate: new Date(),
+        userJoinDate: newTimestamp(),
         username: ""
     };
 
@@ -29,15 +30,11 @@ const createProfileDocument = async user => {
         .doc(user.uid)
         .set({ all: 0, public: 0 });
 
-    return await admin
+    return admin
         .firestore()
         .collection(`profiles`)
         .doc(user.uid)
-        .set(profileDoc, { merge: true })
-        .catch(err => {
-            log("error", err);
-            return;
-        });
+        .set(profileDoc);
 };
 
 exports.new_user_callback = functions.auth.user().onCreate(async user => {
@@ -45,6 +42,11 @@ exports.new_user_callback = functions.auth.user().onCreate(async user => {
         "new_user_callback",
         `Creating new user: ${user.displayName}, with uid ${user.uid}`
     );
-    await createProfileDocument(user);
+    try {
+        await createProfileDocument(user);
+    } catch (err) {
+        log("error", err);
+    }
+
     return true;
 });
