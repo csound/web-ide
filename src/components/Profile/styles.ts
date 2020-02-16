@@ -162,3 +162,63 @@ export const pauseIcon = theme => css`
     border-width: 0px 0 0px 20px;
     height: 26px;
 `;
+
+export const settingsIconContainer = css`
+    position: absolute;
+    pointer-events: visible;
+    top: 0;
+    right: 12px;
+    height: 100%;
+    display: flex;
+`;
+
+export const settingsIcon = theme => css`
+    align-self: center;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 1px 3px black, 0 1px 2px black;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
+    background-color: ${theme.highlightBackgroundAlt};
+    color: ${theme.settingsIcon};
+    position: relative;
+    border-radius: 50%;
+    padding: 6px;
+    margin: 4px;
+
+    &:after {
+        content: "";
+        width: 100%;
+        height: 100%;
+        border: solid 2px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    &:hover {
+        background-color: ${theme.settingsIcon};
+        color: ${theme.settingsIcon};
+        border-color: ${theme.highlightBackgroundAlt};
+        background-color: transparent;
+        transform: rotate(90deg);
+        cursor: pointer;
+        box-shadow: none;
+    }
+    &:hover:after {
+        transform: scale(1);
+        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
+            6px 0 6px rgba(0, 0, 0, 0.53);
+    }
+    &:active {
+        bottom: -2px;
+    }
+
+    & > svg {
+        align-self: center;
+        width: 100%;
+        height: 100%;
+    }
+`;

@@ -327,11 +327,11 @@ export const followUser = (
 
     if (followersData.exists) {
         batch.update(followersRef, {
-            [loggedInUserUid]: true
+            [loggedInUserUid]: getFirebaseTimestamp()
         });
     } else {
         batch.set(followersRef, {
-            [loggedInUserUid]: true
+            [loggedInUserUid]: getFirebaseTimestamp()
         });
     }
 
@@ -339,11 +339,11 @@ export const followUser = (
     const followingData = await followingRef.get();
     if (followingData.exists) {
         batch.update(followingRef, {
-            [profileUid]: true
+            [profileUid]: getFirebaseTimestamp()
         });
     } else {
         batch.set(followingRef, {
-            [profileUid]: true
+            [profileUid]: getFirebaseTimestamp()
         });
     }
 
