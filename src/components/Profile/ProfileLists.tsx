@@ -1,13 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-    Button,
-    List,
-    ListItem,
-    Avatar,
-    ListItemText
-} from "@material-ui/core";
+import { List, ListItem, Avatar, ListItemText } from "@material-ui/core";
+import Tooltip from "@material-ui/core/Tooltip";
 import ListPlayButton from "./ListPlayButton";
+import SettingsIcon from "@material-ui/icons/Settings";
 import { useDispatch, useSelector } from "react-redux";
 import { push } from "connected-react-router";
 import {
@@ -22,7 +18,8 @@ import {
 } from "./ProfileUI";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { selectFilteredUserFollowing } from "./selectors";
-import { editProject, deleteProject } from "./actions";
+import { editProject } from "./actions";
+import * as SS from "./styles";
 
 const ProjectListItem = props => {
     const { isProfileOwner, project } = props;
@@ -59,34 +56,27 @@ const ProjectListItem = props => {
                         </StyledListItemChipsRow>
                     </StyledListItemContainer>
                 </ListItem>
-                {isProfileOwner && (
-                    <StyledListButtonsContainer>
-                        <Button
-                            color="primary"
+                {isProfileOwner && <StyledListButtonsContainer />}
+            </Link>
+            <StyledListPlayButtonContainer>
+                <ListPlayButton projectUid={projectUid} />
+            </StyledListPlayButtonContainer>
+            {isProfileOwner && (
+                <div css={SS.settingsIconContainer}>
+                    <Tooltip title="Toggle project settings">
+                        <div
+                            css={SS.settingsIcon}
                             onClick={e => {
                                 dispatch(editProject(project));
                                 e.preventDefault();
                                 e.stopPropagation();
                             }}
                         >
-                            Edit
-                        </Button>
-                        <Button
-                            color="secondary"
-                            onClick={e => {
-                                dispatch(deleteProject(project));
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                        >
-                            delete
-                        </Button>
-                    </StyledListButtonsContainer>
-                )}
-            </Link>
-            <StyledListPlayButtonContainer>
-                <ListPlayButton projectUid={projectUid} />
-            </StyledListPlayButtonContainer>
+                            <SettingsIcon />
+                        </div>
+                    </Tooltip>
+                </div>
+            )}
         </div>
     );
 };

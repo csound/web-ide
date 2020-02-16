@@ -167,7 +167,7 @@ export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
     grid-template-rows: 1fr 0.5fr;
     grid-template-columns: 82px 8fr 70px ${props =>
             props.isProfileOwner ? "70px" : ""};
-    width: 100%;
+    min-width: 70px;
     padding-bottom: 2px;
     &:last-of-type {
         margin-bottom: 12px;
