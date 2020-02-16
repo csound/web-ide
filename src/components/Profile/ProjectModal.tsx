@@ -192,12 +192,14 @@ export const ProjectModal = (props: IProjectModal) => {
             <FieldRow row={5}>
                 <IconPickerContainer>
                     <Tooltip title={"select an icon for your project"}>
-                        <ProjectIcon
-                            iconName={iconName}
-                            iconBackgroundColor={iconBackgroundColor}
-                            iconForegroundColor={iconForegroundColor}
-                            onClick={handleProfileDropDown}
-                        />
+                        <>
+                            <ProjectIcon
+                                iconName={iconName}
+                                iconBackgroundColor={iconBackgroundColor}
+                                iconForegroundColor={iconForegroundColor}
+                                onClick={handleProfileDropDown}
+                            />
+                        </>
                     </Tooltip>
                     <Popover
                         open={popupState}

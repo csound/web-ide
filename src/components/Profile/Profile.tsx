@@ -10,10 +10,12 @@ import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
 import {
     subscribeToFollowing,
+    subscribeToFollowers,
     subscribeToProfile,
     subscribeToProfileProjects
 } from "./subscribers";
 import { selectLoginRequesting } from "@comp/Login/selectors";
+import { selectCurrentProfileRoute } from "@comp/Router/selectors";
 import {
     uploadProfileImage,
     addProject,
@@ -81,7 +83,7 @@ const Profile = props => {
     const { classes } = props;
     const [profileUid, setProfileUid]: [string | null, any] = useState(null);
     const dispatch = useDispatch();
-    const username = get(props, "match.params.username") || null;
+    const [username, profileUriPath] = useSelector(selectCurrentProfileRoute);
     const profile = useSelector(selectUserProfile(profileUid));
     const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
@@ -108,6 +110,26 @@ const Profile = props => {
     const isRequestingLogin = useSelector(selectLoginRequesting);
     const isProfileOwner = loggedInUserUid === profileUid;
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
+
+    useEffect(() => {
+        if (!isProfileOwner || username) {
+            if (profileUriPath === null && selectedSection !== 0) {
+                setSelectedSection(0);
+            } else if (
+                profileUriPath === "following" &&
+                selectedSection !== 1
+            ) {
+                setSelectedSection(1);
+            } else if (
+                profileUriPath === "followers" &&
+                selectedSection !== 2
+            ) {
+                setSelectedSection(2);
+            } else if (profileUriPath === "stars" && selectedSection !== 3) {
+                setSelectedSection(3);
+            }
+        }
+    }, [profileUriPath, selectedSection, isProfileOwner, username]);
 
     useEffect(() => {
         if (
@@ -156,6 +178,7 @@ const Profile = props => {
             const unsubscribers = [
                 subscribeToProfile(profileUid, dispatch),
                 subscribeToFollowing(profileUid, dispatch),
+                subscribeToFollowers(profileUid, dispatch),
                 subscribeToProfileProjects(profileUid, isProfileOwner, dispatch)
             ] as any[];
             // make sure the logged in user's following is listed
@@ -338,12 +361,45 @@ const Profile = props => {
                             <Tabs
                                 value={selectedSection}
                                 onChange={(e, index) => {
-                                    setSelectedSection(index);
+                                    if (isProfileOwner) {
+                                        setSelectedSection(index);
+                                    } else {
+                                        switch (index) {
+                                            case 0:
+                                                dispatch(
+                                                    push(`/profile/${username}`)
+                                                );
+                                                break;
+                                            case 1:
+                                                dispatch(
+                                                    push(
+                                                        `/profile/${username}/following`
+                                                    )
+                                                );
+                                                break;
+                                            case 2:
+                                                dispatch(
+                                                    push(
+                                                        `/profile/${username}/followers`
+                                                    )
+                                                );
+                                                break;
+                                            case 3:
+                                                dispatch(
+                                                    push(
+                                                        `/profile/${username}/stars`
+                                                    )
+                                                );
+                                                break;
+                                        }
+                                    }
                                 }}
                                 indicatorColor={"primary"}
                             >
                                 <Tab label="Projects" />
                                 <Tab label="Following" />
+                                <Tab label="Followers" />
+                                <Tab label="Stars" />
                             </Tabs>
                         </ContentTabsContainer>
 
@@ -395,7 +451,7 @@ const Profile = props => {
                                 />
                             )}
 
-                            {isProfileOwner && (
+                            {isProfileOwner && selectedSection === 0 && (
                                 <AddFab
                                     color="primary"
                                     variant="extended"
@@ -415,7 +471,6 @@ const Profile = props => {
                                 profileUid={profileUid}
                                 isProfileOwner={isProfileOwner}
                                 selectedSection={selectedSection}
-                                setSelectedSection={setSelectedSection}
                                 setProfileUid={setProfileUid}
                                 filteredProjects={filteredProjects}
                                 username={username}

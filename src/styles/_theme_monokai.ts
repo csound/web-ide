@@ -72,6 +72,7 @@ const theme = {
     socialIcon: monokaiGray,
     publicIcon: monokaiGray,
     playIcon: monokaiGray,
+    settingsIcon: monokaiViolet,
     profilePlayButton: henn1nk,
     profilePlayButtonActive: monokaiOrange,
     scrollbar: monokaiHighlight,

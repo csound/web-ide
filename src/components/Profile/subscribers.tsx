@@ -1,6 +1,7 @@
 import { store } from "@store/index";
 import {
     following,
+    followers,
     profiles,
     projects,
     projectsCount,
@@ -9,7 +10,7 @@ import {
 import { storeProjectLocally, unsetProject } from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
 import { storeUserProfile, storeProfileProjectsCount } from "./actions";
-import { UPDATE_PROFILE_FOLLOWING } from "./types";
+import { UPDATE_PROFILE_FOLLOWING, UPDATE_PROFILE_FOLLOWERS } from "./types";
 import {
     assoc,
     difference,
@@ -45,7 +46,7 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
                     if (profPromise.exists) {
                         return profPromise.data();
                     } else {
-                        return { displayName: "Deleter user" };
+                        return { displayName: "Deleted user" };
                     }
                 })
             );
@@ -61,22 +62,40 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-// export const subscribeToLoggedInUserFollowing = (
-//     loggedInUid: string,
-//     dispatch: any
-// ) => {
-//     const unsubscribe: () => void = following.doc(loggedInUid).onSnapshot(
-//         async followingRef => {
-//             const userProfileUids = keys(followingRef.data() || {}) as string[];
-//             dispatch({
-//                 type: UPDATE_LOGGED_IN_FOLLOWING,
-//                 userProfileUids
-//             });
-//         },
-//         (error: any) => console.error(error)
-//     );
-//     return unsubscribe;
-// };
+export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
+    const unsubscribe: () => void = followers.doc(profileUid).onSnapshot(
+        async followersRef => {
+            const state = store.getState();
+            const userProfileUids = keys(followersRef.data() || {}) as string[];
+            const cachedProfileUids = keys(state.ProfileReducer.profiles);
+            const missingProfileUids = difference(
+                userProfileUids,
+                cachedProfileUids
+            );
+
+            const missingProfiles = await Promise.all(
+                missingProfileUids.map(async followerProfileUid => {
+                    const profPromise = await profiles
+                        .doc(followerProfileUid)
+                        .get();
+                    if (profPromise.exists) {
+                        return profPromise.data();
+                    } else {
+                        return { displayName: "Deleted user" };
+                    }
+                })
+            );
+            dispatch({
+                type: UPDATE_PROFILE_FOLLOWERS,
+                profileUid,
+                missingProfiles,
+                userProfileUids
+            });
+        },
+        (error: any) => console.error(error)
+    );
+    return unsubscribe;
+};
 
 export const subscribeToProjectsCount = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = projectsCount.doc(profileUid).onSnapshot(

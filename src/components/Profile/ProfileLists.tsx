@@ -1,23 +1,25 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { List, ListItem, Avatar, ListItemText } from "@material-ui/core";
+import { List, ListItem, ListItemText } from "@material-ui/core";
+import FollowingList from "./tabs/FollowingList";
+import FollowersList from "./tabs/FollowersList";
 import Tooltip from "@material-ui/core/Tooltip";
 import ListPlayButton from "./ListPlayButton";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { useDispatch, useSelector } from "react-redux";
-import { push } from "connected-react-router";
 import {
     StyledListItemContainer,
-    StyledListItemAvatar,
     StyledListItemTopRowText,
     StyledListItemChipsRow,
-    StyledUserListItemContainer,
     StyledChip,
     StyledListPlayButtonContainer,
     StyledListButtonsContainer
 } from "./ProfileUI";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
-import { selectFilteredUserFollowing } from "./selectors";
+import {
+    selectFilteredUserFollowing,
+    selectFilteredUserFollowers
+} from "./selectors";
 import { editProject } from "./actions";
 import * as SS from "./styles";
 
@@ -87,13 +89,14 @@ export default ({
     isProfileOwner,
     filteredProjects,
     username,
-    setProfileUid,
-    setSelectedSection
+    setProfileUid
 }) => {
-    const dispatch = useDispatch();
     const csoundStatus = useSelector(selectCsoundStatus);
     const filteredFollowing = useSelector(
         selectFilteredUserFollowing(profileUid)
+    );
+    const filteredFollowers = useSelector(
+        selectFilteredUserFollowers(profileUid)
     );
 
     return (
@@ -111,35 +114,12 @@ export default ({
                         />
                     );
                 })}
-            {selectedSection === 1 &&
-                Array.isArray(filteredFollowing) &&
-                filteredFollowing.map((p: any, i) => {
-                    return (
-                        <ListItem
-                            button
-                            alignItems="flex-start"
-                            key={i}
-                            onClick={async () => {
-                                await dispatch(push(`/profile/${p.username}`));
-                                setProfileUid(null);
-                                setSelectedSection(0);
-                            }}
-                        >
-                            <StyledUserListItemContainer>
-                                <StyledListItemAvatar>
-                                    <Avatar src={p.photoUrl} />
-                                </StyledListItemAvatar>
-
-                                <StyledListItemTopRowText>
-                                    <ListItemText
-                                        primary={p.displayName}
-                                        secondary={p.bio}
-                                    />
-                                </StyledListItemTopRowText>
-                            </StyledUserListItemContainer>
-                        </ListItem>
-                    );
-                })}
+            {selectedSection === 1 && Array.isArray(filteredFollowing) && (
+                <FollowingList filteredFollowing={filteredFollowing} />
+            )}
+            {selectedSection === 2 && Array.isArray(filteredFollowing) && (
+                <FollowersList filteredFollowers={filteredFollowers} />
+            )}
         </List>
     );
 };

@@ -66,6 +66,8 @@ const theme = {
     starInactive: border,
     socialIcon: border,
     publicIcon: border,
+    playIcon: border,
+    settingsIcon: diffChangedHighlight,
     profilePlayButton: diffAddedHighlight,
     profilePlayButtonActive: diffChangedHighlight,
     scrollbar: highlight,

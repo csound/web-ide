@@ -7,6 +7,7 @@ import { IThemeReducer } from "@comp/Themes/reducer";
 import { IUserProfile } from "@root/db/types";
 import { ITargetControlsReducer } from "@comp/TargetControls/reducer";
 import { IProjectLastModifiedReducer } from "@comp/ProjectLastModified/reducer";
+import { IProfileReducer } from "@comp/Profile/reducer";
 
 export interface IStore {
     ProjectsReducer: IProjectsReducer;
@@ -20,6 +21,7 @@ export interface IStore {
     ConsoleReducer: IConsoleReducer;
     TargetControlsReducer: ITargetControlsReducer;
     ProjectLastModifiedReducer: IProjectLastModifiedReducer;
+    ProfileReducer: IProfileReducer;
 }
 
 export type Selector = (x: IStore) => any;

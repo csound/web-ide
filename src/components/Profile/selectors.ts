@@ -1,5 +1,5 @@
 import { createSelector } from "reselect";
-import { ProfileReducer } from "./reducer";
+import { IProfileReducer } from "./reducer";
 import { pathOr, pickBy, propEq, propOr, values } from "ramda";
 import Fuse from "fuse.js";
 
@@ -9,7 +9,7 @@ export const selectUserFollowing = (profileUid: string | null) => (
     if (!profileUid) {
         return [];
     } else {
-        const state: ProfileReducer = store.ProfileReducer;
+        const state: IProfileReducer = store.ProfileReducer;
         return pathOr([], ["profiles", profileUid, "following"], state);
     }
 };
@@ -20,18 +20,18 @@ export const selectUserProjects = (profileUid: string | null) => (
     if (!profileUid) {
         return [];
     } else {
-        const state: ProfileReducer = store.ProjectsReducer.projects;
+        const state: IProfileReducer = store.ProjectsReducer.projects;
         return values((pickBy as any)(propEq("userUid", profileUid), state));
     }
 };
 
 export const selectProjectFilterString = (store: any) => {
-    const state: ProfileReducer = store.ProfileReducer;
+    const state: IProfileReducer = store.ProfileReducer;
     return state.projectFilterString;
 };
 
 export const selectFollowingFilterString = (store: any) => {
-    const state: ProfileReducer = store.ProfileReducer;
+    const state: IProfileReducer = store.ProfileReducer;
     return state.followingFilterString;
 };
 
@@ -41,7 +41,7 @@ export const selectUserProfile = (profileUid: string | null) => (
     if (!profileUid) {
         return null;
     } else {
-        const state: ProfileReducer = store.ProfileReducer;
+        const state: IProfileReducer = store.ProfileReducer;
         return pathOr(null, ["profiles", profileUid], state);
     }
 };
@@ -49,7 +49,7 @@ export const selectUserProfile = (profileUid: string | null) => (
 export const selectLoggedInUserStars = (store: any) => {
     const loggedInUid: string | null = store.LoginReducer.loggedInUid;
     if (loggedInUid) {
-        const state: ProfileReducer = store.ProfileReducer;
+        const state: IProfileReducer = store.ProfileReducer;
         return pathOr([], ["profiles", loggedInUid, "starred"], state);
     } else {
         return [];
@@ -114,19 +114,31 @@ export const selectFilteredUserFollowing = (profileUid: string) => store =>
         }
     )(store);
 
+export const selectFilteredUserFollowers = (profileUid: string) => store => {
+    const state: IProfileReducer = store.ProfileReducer;
+    const followerUids = pathOr(
+        [],
+        ["profiles", profileUid, "followers"],
+        state
+    );
+    return (followerUids || []).map(followerUid =>
+        pathOr(null, ["profiles", followerUid], state)
+    );
+};
+
 export const selectUserImageURL = (profileUid: string | null) => (
     store: any
 ) => {
     if (!profileUid) {
         return null;
     } else {
-        const state: ProfileReducer = store.ProfileReducer;
+        const state: IProfileReducer = store.ProfileReducer;
         return pathOr("", ["profiles", profileUid, "photoUrl"], state);
     }
 };
 
 export const selectCurrentlyPlayingProject = (store: any) => {
-    const state: ProfileReducer = store.ProfileReducer;
+    const state: IProfileReducer = store.ProfileReducer;
     return state.currentlyPlayingProject;
 };
 
@@ -136,7 +148,7 @@ export const selectCurrentlyPlayingProject = (store: any) => {
 // };
 
 export const selectCurrentTagText = (store: any) => {
-    const state: ProfileReducer = store.ProfileReducer;
+    const state: IProfileReducer = store.ProfileReducer;
     return state.currentTagText;
 };
 

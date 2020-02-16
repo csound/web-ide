@@ -9,13 +9,14 @@ import {
     STORE_USER_PROFILE,
     STORE_PROFILE_PROJECTS_COUNT,
     GET_ALL_TAGS,
-    UPDATE_PROFILE_FOLLOWING
+    UPDATE_PROFILE_FOLLOWING,
+    UPDATE_PROFILE_FOLLOWERS
 } from "./types";
 import { assoc, assocPath, hasPath, mergeAll, pick, pipe, reduce } from "ramda";
 
 type ProfileMap = { [profileUid: string]: IProfile };
 
-export interface ProfileReducer {
+export interface IProfileReducer {
     profiles: ProfileMap;
     readonly currentTagText: string;
     readonly tagsInput: any[];
@@ -24,7 +25,7 @@ export interface ProfileReducer {
     readonly followingFilterString: string;
 }
 
-const INITIAL_STATE: ProfileReducer = {
+const INITIAL_STATE: IProfileReducer = {
     profiles: {},
     currentTagText: "",
     tagsInput: [],
@@ -45,7 +46,7 @@ const profileKeys = [
 ];
 
 export default (
-    state: ProfileReducer = INITIAL_STATE,
+    state: IProfileReducer = INITIAL_STATE,
     action: ProfileActionTypes
 ) => {
     switch (action.type) {
@@ -102,6 +103,22 @@ export default (
                 ),
                 assocPath(
                     ["profiles", action.profileUid, "following"],
+                    (action as any).userProfileUids
+                )
+            )(state);
+        }
+        case UPDATE_PROFILE_FOLLOWERS: {
+            return pipe(
+                assoc(
+                    "profiles",
+                    reduce(
+                        (acc, item) => assoc(item.userUid, item, acc),
+                        state.profiles,
+                        action.missingProfiles
+                    )
+                ),
+                assocPath(
+                    ["profiles", action.profileUid, "followers"],
                     (action as any).userProfileUids
                 )
             )(state);
