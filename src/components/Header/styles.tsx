@@ -106,15 +106,24 @@ export const projectProfileMetaTextContainer = theme => css`
 `;
 
 export const projectProfileMetaH1 = theme => css`
-    color: ${theme.color};
+    color: ${theme.headerTextColor};
     font-weight: 500;
     font-size: 16px;
     padding: 0;
     margin: 0;
 `;
 
+export const projectProfileBySpan = theme => css`
+    color: ${theme.altTextColor};
+`;
+
+export const projectProfileLink = theme => css`
+    color: ${theme.headerTextColor};
+    text-decoration: underline;
+`;
+
 export const projectProfileMetaP = theme => css`
-    color: ${theme.color};
+    color: ${theme.headerTextColor};
     font-weight: 400;
     font-size: 13px;
     padding: 0;
@@ -135,5 +144,29 @@ export const projectIcon = css`
             margin-top: 7px;
             margin-left: 7px;
         }
+    }
+`;
+
+export const projectProfileTooltipContainer = css`
+    display: flex;
+    flex-direction: row;
+`;
+
+export const projectProfileImgContainer = css`
+    height: 100%;
+    align-self: center;
+`;
+
+export const projectProfileTooltip = css`
+    margin-left: 12px;
+    & > h2 {
+        font-size: 16px;
+        font-weight: 500;
+        padding: 3px 0;
+        margin: 0;
+    }
+    & > p {
+        font-size: 12px;
+        margin: 0;
     }
 `;

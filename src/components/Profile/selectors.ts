@@ -169,6 +169,16 @@ export const selectAllTagsFromUser = (profileUid: string) => (store: any) => {
     );
 };
 
+export const selectProfileProjectsCount = (profileUid: string) => (
+    store: any
+) => {
+    return pathOr(
+        { all: 0, default: 0 },
+        ["ProfileReducer", "profiles", profileUid, "projectsCount"],
+        store
+    );
+};
+
 export const selectProjectIconStyle = (projectUid: string) => (store: any) => {
     const proj = pathOr({}, ["ProjectsReducer", "projects", projectUid], store);
     return {

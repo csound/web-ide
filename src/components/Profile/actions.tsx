@@ -21,6 +21,7 @@ import {
     ADD_USER_PROJECT,
     DELETE_USER_PROJECT,
     STORE_USER_PROFILE,
+    STORE_PROFILE_PROJECTS_COUNT,
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
     GET_ALL_TAGS,
@@ -559,6 +560,17 @@ export const playListItem = (
     } else {
         // handle unplayable project
     }
+};
+
+export const storeProfileProjectsCount = (
+    projectsCount: any,
+    profileUid: string
+) => {
+    return {
+        type: STORE_PROFILE_PROJECTS_COUNT,
+        projectsCount,
+        profileUid
+    };
 };
 
 export const storeUserProfile = (profile: any, profileUid: string) => {

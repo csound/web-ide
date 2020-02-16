@@ -22,6 +22,13 @@ const createProfileDocument = async user => {
         username: ""
     };
 
+    // initialize projectsCountColl
+    await admin
+        .firestore()
+        .collection("projectsCount")
+        .doc(user.uid)
+        .set({ all: 0, public: 0 });
+
     return await admin
         .firestore()
         .collection(`profiles`)

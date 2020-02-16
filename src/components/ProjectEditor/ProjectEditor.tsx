@@ -5,7 +5,10 @@ import { DnDProvider } from "@comp/FileTree/context";
 import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
 import { simpleSwitch } from "react-tabtab/lib/helpers/move";
 import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
-import { subscribeToProfile } from "@comp/Profile/subscribers";
+import {
+    subscribeToProfile,
+    subscribeToProjectsCount
+} from "@comp/Profile/subscribers";
 import tabStyles from "./tabStyles";
 import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
@@ -98,10 +101,14 @@ const ProjectEditor = ({ activeProject, csound }) => {
         const unsubscribeToProfile = !isOwner
             ? subscribeToProfile(projectOwnerUid, dispatch)
             : () => {};
+        const unsubscribeToProjectsCount = !isOwner
+            ? subscribeToProjectsCount(projectOwnerUid, dispatch)
+            : () => {};
         return () => {
             unsubscribeProjectChanges();
             unsubscribeToProjectLastModified();
             unsubscribeToProfile();
+            unsubscribeToProjectsCount();
         };
         // eslint-disable-next-line
     }, []);
