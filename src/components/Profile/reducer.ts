@@ -7,6 +7,7 @@ import {
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING,
     STORE_USER_PROFILE,
+    STORE_PROFILE_PROJECTS_COUNT,
     GET_ALL_TAGS,
     UPDATE_PROFILE_FOLLOWING
 } from "./types";
@@ -77,8 +78,15 @@ export default (
         }
         case GET_ALL_TAGS: {
             return assocPath(
-                ["profiles", (action as any).loggedInUserUid, "allTags"],
+                ["profiles", action.loggedInUserUid, "allTags"],
                 action.allTags,
+                state
+            );
+        }
+        case STORE_PROFILE_PROJECTS_COUNT: {
+            return assocPath(
+                ["profiles", action.profileUid, "projectsCount"],
+                action.projectsCount,
                 state
             );
         }

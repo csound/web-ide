@@ -61,29 +61,48 @@ const deleteUserProjects = async user => {
     // First delete the subcollections
     const batch = admin.firestore().batch();
 
-    await admin
+    const allProjectsRef = await admin
         .firestore()
         .collection(`projects`)
         .where("userUid", "==", user.uid)
-        .get()
-        .then(querySnapshot => {
-            querySnapshot.forEach(doc => {
-                // first delete subcollections
-                const docRef = admin.firestore().doc(doc.ref.path);
-                docRef.listCollections().then(collections => {
-                    collections.forEach(coll => {
-                        coll.listDocuments().then(subDocs => {
-                            subDocs.forEach(subDoc => {
-                                batch.delete(subDoc);
-                            });
-                            batch.delete(docRef);
-                            batch.commit();
-                        });
-                    });
-                });
+        .get();
+
+    await allProjectsRef.forEach(async projectSnapshot => {
+        // first delete subcollections
+        const projectRef = admin.firestore().doc(doc.ref.path);
+        const projectSubcolls = await docRef.listCollections();
+        await projectSubcolls.forEach(async subcoll => {
+            await subcoll.forEach(async subcollDoc => {
+                batch.delete(subcollDoc);
             });
+            batch.delete(subcoll);
         });
+        const projectLastModifiedRef = admin
+            .firestore()
+            .collection(`projectLastModified`)
+            .doc(projectRef.id);
+        batch.delete(projectLastModifiedRef);
+        batch.delete(projectRef);
+    });
+    batch.commit();
     return;
+};
+
+const deleteProjectsCount = async user => {
+    log(
+        "deleteProjectsCount",
+        `Deleting prjectsCount for: ` + `${user.displayName} under ${user.id}`
+    );
+    return await admin
+        .firestore()
+        .collection(`projectsCount`)
+        .doc(user.uid)
+        .delete()
+        .then(() => {})
+        .catch(err => {
+            log("error", err);
+            return;
+        });
 };
 
 exports.delete_user_callback = functions.auth.user().onDelete(async user => {
@@ -95,5 +114,6 @@ exports.delete_user_callback = functions.auth.user().onDelete(async user => {
     await deleteProfileDocument(user);
     await deleteUserDocument(user);
     await deleteUsernameDocument(user);
+    await deleteProjectsCount(user);
     return true;
 });

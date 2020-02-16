@@ -36,6 +36,7 @@ if (!firebase.apps.length) {
 export const db = firebase.firestore();
 export const projectLastModified = db.collection("projectLastModified");
 export const projects = db.collection("projects");
+export const projectsCount = db.collection("projectsCount");
 export const profiles = db.collection("profiles");
 export const followers = db.collection("followers");
 export const following = db.collection("following");

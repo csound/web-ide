@@ -1,8 +1,14 @@
 import { store } from "@store/index";
-import { following, profiles, projects, tags } from "@config/firestore";
+import {
+    following,
+    profiles,
+    projects,
+    projectsCount,
+    tags
+} from "@config/firestore";
 import { storeProjectLocally, unsetProject } from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
-import { storeUserProfile } from "./actions";
+import { storeUserProfile, storeProfileProjectsCount } from "./actions";
 import { UPDATE_PROFILE_FOLLOWING } from "./types";
 import {
     assoc,
@@ -71,6 +77,18 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
 //     );
 //     return unsubscribe;
 // };
+
+export const subscribeToProjectsCount = (profileUid: string, dispatch: any) => {
+    const unsubscribe: () => void = projectsCount.doc(profileUid).onSnapshot(
+        projectsCount => {
+            dispatch(
+                storeProfileProjectsCount(projectsCount.data(), profileUid)
+            );
+        },
+        (error: any) => console.error(error)
+    );
+    return unsubscribe;
+};
 
 export const subscribeToProfileProjects = (
     profileUid: string,
