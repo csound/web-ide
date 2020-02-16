@@ -170,3 +170,7 @@ export const projectProfileTooltip = css`
         margin: 0;
     }
 `;
+
+export const drawerIcon = css`
+    fill: #fff;
+`;

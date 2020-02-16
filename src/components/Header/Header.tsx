@@ -206,7 +206,7 @@ export const Header = () => {
                             }
                         >
                             <ListItemIcon>
-                                <HelpIcon />
+                                <HelpIcon css={SS.drawerIcon}/>
                             </ListItemIcon>
                             <ListItemText primary="Site Documentation" />
                         </ListItem>
@@ -220,7 +220,7 @@ export const Header = () => {
                             }
                         >
                             <ListItemIcon>
-                                <ReportProblemIcon />
+                                <ReportProblemIcon css={SS.drawerIcon}/>
                             </ListItemIcon>
                             <ListItemText primary="Report an Issue" />
                         </ListItem>
@@ -237,7 +237,7 @@ export const Header = () => {
                             }
                         >
                             <ListItemIcon>
-                                <GitHubIcon />
+                                <GitHubIcon css={SS.drawerIcon}/>
                             </ListItemIcon>
                             <ListItemText primary="Github Project" />
                         </ListItem>
