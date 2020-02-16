@@ -114,6 +114,7 @@ const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
 export const addUserProject = (
     name: string,
     description: string,
+    created: getFirebaseTimestamp(),
     currentTags: string[],
     projectUid: string,
     iconName: string,
@@ -210,7 +211,6 @@ export const editUserProject = (
             dispatch(openSnackbar("Project modified", SnackbarType.Success));
         } catch (e) {
             console.log(e);
-
             dispatch(
                 openSnackbar("Could not edit Project", SnackbarType.Error)
             );

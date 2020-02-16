@@ -1,5 +1,9 @@
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
+const R = require("ramda");
+
+const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
+
 const serviceAccountCredentials = require(process.env
     .GOOGLE_APPLICATION_CREDENTIALS);
 
@@ -95,4 +99,40 @@ const migration2020_2 = async () => {
     await batch.commit();
 };
 
-// migration2020_2().then(() => process.exit(0));
+// projectCreated timestamp
+const migration2020_3 = async () => {
+    const batch = admin.firestore().batch();
+    const allProjectsRef = await admin
+        .firestore()
+        .collection("projects")
+        .get();
+
+    await asyncForEach(allProjectsRef.docs, async projectSnap => {
+        const projectUid = projectSnap.id;
+        const data = projectSnap.data();
+
+        const projectRef = await admin
+            .firestore()
+            .collection("projects")
+            .doc(projectUid);
+
+        batch.set(
+            projectRef,
+            R.pipe(
+                R.pick([
+                    "description",
+                    "iconName",
+                    "userUid",
+                    "iconBackgroundColor",
+                    "iconForegroundColor",
+                    "public",
+                    "name"
+                ]),
+                R.assoc("created", newTimestamp())
+            )(data)
+        );
+    });
+    await batch.commit();
+};
+
+// migration2020_3().then(() => process.exit(0));
