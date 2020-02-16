@@ -70,7 +70,6 @@ import uuidv4 from "uuid/v4";
 import { selectActiveProjectUid } from "../SocialControls/selectors";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
-import { pathExists } from "fs-extra";
 
 export const downloadProjectOnce = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -678,7 +677,7 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
 };
 
 const createExportPath = (folders, doc) => {
-    if(folders == null || pathOr([], ["path"], doc).length == 0) {
+    if(folders == null || pathOr([], ["path"], doc).length === 0) {
         return doc.filename;
     }
     const paths = doc.path.map(d => folders[d].filename);
