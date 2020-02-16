@@ -114,7 +114,6 @@ const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
 export const addUserProject = (
     name: string,
     description: string,
-    created: getFirebaseTimestamp(),
     currentTags: string[],
     projectUid: string,
     iconName: string,
@@ -130,6 +129,7 @@ export const addUserProject = (
         const newProject = {
             userUid: loggedInUserUid,
             name,
+            created: getFirebaseTimestamp(),
             description,
             public: true,
             iconName,
