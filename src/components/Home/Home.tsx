@@ -78,6 +78,22 @@ const Home = props => {
         <div className={classes.root}>
             <Header />
             <main>
+
+                    {/* TEMP CODE - Remove later */}
+                    <div style={{width: '70%',
+                                marginLeft: 'auto',
+                                marginRight: 'auto', 
+                                height: '200px'}}>
+                        <h2>Welcome to the Csound Web-IDE!</h2>
+                        <p>We are nearing a beta state but invite you to
+                        start exploring the site today. For now, create a new
+                        account, create new projects, and work with the
+                        editor. View the <a href="/documentation">documentation</a> and let us know if you
+                        have questions on using the site. Your <a href="https://github.com/csound/web-ide/issues">feedback</a> is very much appreciated at this time to help get us
+                        to the final release.
+                        </p>
+                    </div>
+                { false &&
                 <HomeContainer
                     colorA={"rgba(30, 30, 30, 1)"}
                     colorB={"rgba(40, 40, 40, 1)"}
@@ -150,6 +166,7 @@ const Home = props => {
                         </ProjectSectionCardContainer>
                     </FeaturedProjectsContainer>
                 </HomeContainer>
+                }}
             </main>
         </div>
     );
