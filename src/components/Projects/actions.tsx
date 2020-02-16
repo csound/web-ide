@@ -70,6 +70,7 @@ import uuidv4 from "uuid/v4";
 import { selectActiveProjectUid } from "../SocialControls/selectors";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
+import { pathExists } from "fs-extra";
 
 export const downloadProjectOnce = (projectUid: string) => {
     return async (dispatch: any) => {
@@ -676,6 +677,14 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
     };
 };
 
+const createExportPath = (folders, doc) => {
+    if(folders == null || pathOr([], ["path"], doc).length == 0) {
+        return doc.filename;
+    }
+    const paths = doc.path.map(d => folders[d].filename);
+    return `${paths.join("/")}/${doc.filename}`;
+}
+
 export const exportProject = () => {
     return async (dispatch: any) => {
         const state = store.getState() as IStore;
@@ -691,11 +700,15 @@ export const exportProject = () => {
         );
 
         if (!isEmpty(project)) {
-            // FIXME: does not handle binaries...
             const zip = new JSZip();
             const folder = zip.folder("project");
             const docs = Object.values(project.documents);
 
+            const folders = docs.filter(d => d.type === 'folder')
+                                .reduce((m, f) => { 
+                                    return {...m, [f.documentUid]: f}; 
+                                }, {});
+ 
             for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
                 if (doc.type === "bin") {
@@ -704,9 +717,11 @@ export const exportProject = () => {
 
                     const response = await fetch(url);
                     const blob = await response.arrayBuffer();
-                    folder.file(doc.filename, blob, { binary: true });
-                } else {
-                    folder.file(doc.filename, doc.savedValue);
+                    const exportPath = createExportPath(folders, doc);
+                    folder.file(exportPath, blob, { binary: true });
+                } else if(doc.type === "txt") {
+                    const exportPath = createExportPath(folders, doc);
+                    folder.file(exportPath, doc.savedValue);
                 }
             }
 
