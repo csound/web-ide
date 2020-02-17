@@ -9,7 +9,6 @@ export const root = css`
         height: auto;
         min-height: 100%;
         position: absolute;
-        display: flex;
     }
 
     & .CodeMirror-fullscreen {
@@ -36,6 +35,7 @@ export const root = css`
         position: static !important;
     }
 
-    & .CodeMirror-sizer {
+    & .CodeMirror-sizer > div {
+        left: 3px;
     }
 `;

@@ -3,6 +3,7 @@ import { css } from "@emotion/core";
 export const splitterLayoutContainer = css`
     width: 100%;
     height: calc(100vh - 64px);
+
     position absolute;
     bottom: 0;
     .layout-pane {
@@ -25,6 +26,7 @@ export const splitterLayoutContainer = css`
         }
         & > div > div > div:last-of-type {
           height: calc(100% - 45px);
+          min-height: 360px;
           width: 100%;
           position: relative;
         }
