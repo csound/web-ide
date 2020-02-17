@@ -27,3 +27,7 @@ yarn-error.log*
 
 # Tmp files
 *#
+
+# Search app
+search/service-key.json
+search/node_modules
