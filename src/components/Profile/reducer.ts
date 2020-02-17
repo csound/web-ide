@@ -8,11 +8,22 @@ import {
     SET_PROJECT_FILTER_STRING,
     STORE_USER_PROFILE,
     STORE_PROFILE_PROJECTS_COUNT,
+    STORE_PROFILE_STARS,
     GET_ALL_TAGS,
     UPDATE_PROFILE_FOLLOWING,
     UPDATE_PROFILE_FOLLOWERS
 } from "./types";
-import { assoc, assocPath, hasPath, mergeAll, pick, pipe, reduce } from "ramda";
+import {
+    assoc,
+    assocPath,
+    hasPath,
+    keys,
+    mergeAll,
+    pick,
+    pipe,
+    reduce,
+    sort
+} from "ramda";
 
 type ProfileMap = { [profileUid: string]: IProfile };
 
@@ -91,6 +102,20 @@ export default (
                 state
             );
         }
+        case STORE_PROFILE_STARS: {
+            const sortedStars = sort(
+                x => x.timestamp,
+                keys(action.stars).map(p => ({
+                    timestamp: action.stars[p].toDate,
+                    projectUid: p
+                }))
+            );
+            return assocPath(
+                ["profiles", action.profileUid, "stars"],
+                sortedStars.map(x => x.projectUid),
+                state
+            );
+        }
         case UPDATE_PROFILE_FOLLOWING: {
             return pipe(
                 assoc(
@@ -114,7 +139,7 @@ export default (
                     reduce(
                         (acc, item) => assoc(item.userUid, item, acc),
                         state.profiles,
-                        action.missingProfiles
+                        action.userProfiles
                     )
                 ),
                 assocPath(

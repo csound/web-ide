@@ -22,6 +22,7 @@ import {
     DELETE_USER_PROJECT,
     STORE_USER_PROFILE,
     STORE_PROFILE_PROJECTS_COUNT,
+    STORE_PROFILE_STARS,
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
     GET_ALL_TAGS,
@@ -578,6 +579,14 @@ export const storeUserProfile = (profile: any, profileUid: string) => {
         type: STORE_USER_PROFILE,
         profile,
         profileUid
+    };
+};
+
+export const storeProfileStars = (stars: any, profileUid: string) => {
+    return {
+        type: STORE_PROFILE_STARS,
+        profileUid,
+        stars
     };
 };
 

@@ -12,6 +12,7 @@ import {
     subscribeToFollowing,
     subscribeToFollowers,
     subscribeToProfile,
+    subscribeToProfileStars,
     subscribeToProfileProjects
 } from "./subscribers";
 import { selectLoginRequesting } from "@comp/Login/selectors";
@@ -24,8 +25,8 @@ import {
     editProfile,
     followUser,
     unfollowUser,
-    setProjectFilterString,
-    setFollowingFilterString
+    setProjectFilterString
+    // setFollowingFilterString
     // getLoggedInUserStars
 } from "./actions";
 import {
@@ -34,8 +35,8 @@ import {
     selectUserImageURL,
     selectAllUserProjectUids,
     selectFilteredUserProjects,
-    selectProjectFilterString,
-    selectFollowingFilterString
+    selectProjectFilterString
+    // selectFollowingFilterString
 } from "./selectors";
 import { selectLoggedInUid } from "@comp/Login/selectors";
 import { get } from "lodash";
@@ -96,7 +97,7 @@ const Profile = props => {
     const filteredProjects = useSelector(
         selectFilteredUserProjects(profileUid)
     );
-    const followingFilterString = useSelector(selectFollowingFilterString);
+    // const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
     const [selectedSection, setSelectedSection] = useState(0);
@@ -179,7 +180,12 @@ const Profile = props => {
                 subscribeToProfile(profileUid, dispatch),
                 subscribeToFollowing(profileUid, dispatch),
                 subscribeToFollowers(profileUid, dispatch),
-                subscribeToProfileProjects(profileUid, isProfileOwner, dispatch)
+                subscribeToProfileProjects(
+                    profileUid,
+                    isProfileOwner,
+                    dispatch
+                ),
+                subscribeToProfileStars(profileUid, dispatch)
             ] as any[];
             // make sure the logged in user's following is listed
             // when viewing another profile, for un/follow state
@@ -356,7 +362,7 @@ const Profile = props => {
                         </NameSection>
                     </NameSectionWrapper>
                     <MainContent />
-                    <ContentSection>
+                    <ContentSection showSearch={selectedSection === 0}>
                         <ContentTabsContainer>
                             <Tabs
                                 value={selectedSection}
@@ -421,29 +427,6 @@ const Profile = props => {
                                     onChange={e => {
                                         dispatch(
                                             setProjectFilterString(
-                                                e.target.value
-                                            )
-                                        );
-                                    }}
-                                />
-                            )}
-                            {selectedSection === 1 && (
-                                <SearchBox
-                                    id="input-with-icon-adornment"
-                                    label="Search Following"
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <SearchIcon />
-                                            </InputAdornment>
-                                        )
-                                    }}
-                                    value={followingFilterString}
-                                    variant="outlined"
-                                    margin="dense"
-                                    onChange={e => {
-                                        dispatch(
-                                            setFollowingFilterString(
                                                 e.target.value
                                             )
                                         );

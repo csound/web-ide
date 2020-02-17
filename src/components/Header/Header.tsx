@@ -55,6 +55,8 @@ export const Header = () => {
 
     const routeIsEditor = currentRoute === "editor";
 
+    const routeIsProfile = currentRoute === "profile";
+
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
 
     const loggedInUid = useSelector(selectLoggedInUid);
@@ -150,19 +152,20 @@ export const Header = () => {
         </Button>
     );
 
-    const burgerMenu = routeIsHome ? (
-        <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={() => setIsDrawerOpen(true)}
-            edge="start"
-            css={SS.menuButton}
-        >
-            <MenuIcon />
-        </IconButton>
-    ) : (
-        <div css={SS.spacer} />
-    );
+    const burgerMenu =
+        routeIsHome || routeIsProfile ? (
+            <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={() => setIsDrawerOpen(true)}
+                edge="start"
+                css={SS.menuButton}
+            >
+                <MenuIcon />
+            </IconButton>
+        ) : (
+            <div css={SS.spacer} />
+        );
 
     return (
         <>
@@ -206,7 +209,7 @@ export const Header = () => {
                             }
                         >
                             <ListItemIcon>
-                                <HelpIcon css={SS.drawerIcon}/>
+                                <HelpIcon css={SS.drawerIcon} />
                             </ListItemIcon>
                             <ListItemText primary="Site Documentation" />
                         </ListItem>
@@ -220,7 +223,7 @@ export const Header = () => {
                             }
                         >
                             <ListItemIcon>
-                                <ReportProblemIcon css={SS.drawerIcon}/>
+                                <ReportProblemIcon css={SS.drawerIcon} />
                             </ListItemIcon>
                             <ListItemText primary="Report an Issue" />
                         </ListItem>
@@ -237,7 +240,7 @@ export const Header = () => {
                             }
                         >
                             <ListItemIcon>
-                                <GitHubIcon css={SS.drawerIcon}/>
+                                <GitHubIcon css={SS.drawerIcon} />
                             </ListItemIcon>
                             <ListItemText primary="Github Project" />
                         </ListItem>

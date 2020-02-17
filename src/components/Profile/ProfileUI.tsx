@@ -107,14 +107,15 @@ export const NameSection = styled.div`
     color: white;
     padding: 20px;
 `;
-export const ContentSection = styled.div`
+export const ContentSection = styled.div<any>`
     grid-row-start: 3;
     grid-row-end: auto;
     grid-column: 3;
     z-index: 2;
     margin: 0 24px;
     display: grid;
-    grid-template-rows: 60px 50px auto;
+    grid-template-rows: ${props =>
+        props.showSearch ? "60px 50px auto" : "60px 0px auto"};
     grid-template-columns: 1fr;
     overflow: hidden;
     background: ${props => props.theme.background};

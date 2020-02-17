@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { List, ListItem, ListItemText } from "@material-ui/core";
 import FollowingList from "./tabs/FollowingList";
 import FollowersList from "./tabs/FollowersList";
+import StarsList from "./tabs/StarsList";
 import Tooltip from "@material-ui/core/Tooltip";
 import ListPlayButton from "./ListPlayButton";
 import SettingsIcon from "@material-ui/icons/Settings";
@@ -120,6 +121,7 @@ export default ({
             {selectedSection === 2 && Array.isArray(filteredFollowing) && (
                 <FollowersList filteredFollowers={filteredFollowers} />
             )}
+            {selectedSection === 3 && <StarsList profileUid={profileUid} />}
         </List>
     );
 };

@@ -160,6 +160,14 @@ export const selectTags = (projectUid: string) => (store: any) => {
     );
 };
 
+export const selectProfileStars = (profileUid: string) => (store: any) => {
+    return pathOr(
+        [],
+        ["ProfileReducer", "profiles", profileUid, "stars"],
+        store
+    );
+};
+
 export const selectAllUserProjectUids = (profileUid: string | null) => (
     store: any
 ) => {

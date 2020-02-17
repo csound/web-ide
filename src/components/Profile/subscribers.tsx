@@ -5,11 +5,20 @@ import {
     profiles,
     projects,
     projectsCount,
+    profileStars,
     tags
 } from "@config/firestore";
-import { storeProjectLocally, unsetProject } from "@comp/Projects/actions";
+import {
+    downloadProjectOnce,
+    storeProjectLocally,
+    unsetProject
+} from "@comp/Projects/actions";
 import { convertProjectSnapToProject } from "@comp/Projects/utils";
-import { storeUserProfile, storeProfileProjectsCount } from "./actions";
+import {
+    storeUserProfile,
+    storeProfileProjectsCount,
+    storeProfileStars
+} from "./actions";
 import { UPDATE_PROFILE_FOLLOWING, UPDATE_PROFILE_FOLLOWERS } from "./types";
 import {
     assoc,
@@ -37,9 +46,16 @@ export const subscribeToProfile = (profileUid: string, dispatch: any) => {
 export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = following.doc(profileUid).onSnapshot(
         async followingRef => {
+            const state = store.getState();
             const userProfileUids = keys(followingRef.data() || {}) as string[];
-            const userProfiles = await Promise.all(
-                userProfileUids.map(async followingProfileUid => {
+            const cachedProfileUids = keys(state.ProfileReducer.profiles);
+            const missingProfileUids = difference(
+                userProfileUids,
+                cachedProfileUids
+            );
+
+            const missingProfiles = await Promise.all(
+                missingProfileUids.map(async followingProfileUid => {
                     const profPromise = await profiles
                         .doc(followingProfileUid)
                         .get();
@@ -53,7 +69,7 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
             dispatch({
                 type: UPDATE_PROFILE_FOLLOWING,
                 profileUid,
-                userProfiles,
+                userProfiles: missingProfiles,
                 userProfileUids
             });
         },
@@ -88,7 +104,7 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
             dispatch({
                 type: UPDATE_PROFILE_FOLLOWERS,
                 profileUid,
-                missingProfiles,
+                userProfiles: missingProfiles,
                 userProfileUids
             });
         },
@@ -103,6 +119,24 @@ export const subscribeToProjectsCount = (profileUid: string, dispatch: any) => {
             dispatch(
                 storeProfileProjectsCount(projectsCount.data(), profileUid)
             );
+        },
+        (error: any) => console.error(error)
+    );
+    return unsubscribe;
+};
+
+export const subscribeToProfileStars = (profileUid: string, dispatch: any) => {
+    const unsubscribe: () => void = profileStars.doc(profileUid).onSnapshot(
+        starsRef => {
+            const starsData = starsRef.data();
+            const state = store.getState();
+            const starredProjects = keys(starsData);
+            const cachedProjects = keys(state.ProjectsReducer.projects);
+            const missingProjects = difference(starredProjects, cachedProjects);
+            missingProjects.forEach(projectUid =>
+                dispatch(downloadProjectOnce(projectUid))
+            );
+            dispatch(storeProfileStars(starsData, profileUid));
         },
         (error: any) => console.error(error)
     );

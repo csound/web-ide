@@ -135,4 +135,40 @@ const migration2020_3 = async () => {
     await batch.commit();
 };
 
-// migration2020_3().then(() => process.exit(0));
+// profileStars
+const migration2020_4 = async () => {
+    const batch = admin.firestore().batch();
+    const allStarsRef = await admin
+        .firestore()
+        .collection("stars")
+        .get();
+
+    const allStars = allStarsRef.docs.reduce((a, doc) => {
+        const data = doc.data();
+        const projectUid = doc.id;
+        const allUserIds = R.keys(data);
+        return R.reduce(
+            (acc, userid) =>
+                R.assoc(
+                    userid,
+                    R.assoc(projectUid, data[userid], acc[userid] || {}),
+                    acc
+                ),
+            a,
+            allUserIds
+        );
+    }, {});
+    await asyncForEach(R.keys(allStars), async userID => {
+        const starsMap = allStars[userID];
+        const profileStarsRef = await admin
+            .firestore()
+            .collection("profileStars")
+            .doc(userID);
+        // console.log(userID, starsMap);
+        batch.set(profileStarsRef, starsMap);
+    });
+
+    await batch.commit();
+};
+
+// migration2020_4().then(() => process.exit(0));
