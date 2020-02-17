@@ -32,10 +32,13 @@ export const selectProjectUserProfiles = (store: any) => {
 };
 
 export const selectOrderedStars = createSelector([selectStars], stars => {
+    console.log(stars);
+
     if (!Array.isArray(stars)) {
         return [];
     }
-    // return stars.sort((a, b) => a.length - b.length);
+    const sortedStars = stars.sort((a, b) => a.stars.length - b.stars.length);
+    return sortedStars;
 });
 
 export const selectOrderedProjectLastModified = createSelector(

@@ -38,21 +38,25 @@ const useStyles = makeStyles(theme => ({
     },
     largeButton: {},
     largeIcon: {
-        fontSize: "5em"
+        fontSize: "4em"
     }
 }));
 
 const ProjectCard = props => {
     const classes = useStyles();
-    // console.log(props.profile, props.project);
-
+    const [project, setProject] = useState();
+    const {
+        duration,
+        projectIndex,
+        projectColumnCount,
+        transitionStatus
+    } = props;
     let {
         description,
         iconName,
         iconBackgroundColor,
         iconForegroundColor,
         name
-        // id
     } = props.project;
 
     const { photoUrl, displayName, bio } = props.profile;
@@ -70,10 +74,14 @@ const ProjectCard = props => {
     const SVGIcon = SVGComponents[`${iconName}Component`];
     return (
         <ProjectCardContainer
+            duration={duration}
+            projectIndex={projectIndex}
+            projectColumnCount={projectColumnCount}
             onMouseOver={() => {
                 setMouseOver(true);
             }}
             onMouseLeave={() => setMouseOver(false)}
+            className={transitionStatus}
         >
             <ProjectCardSVGContainer
                 mouseOver={mouseOver}
@@ -95,26 +103,8 @@ const ProjectCard = props => {
                     </ProjectCardContentTopDescription>
                 </ProjectCardContentTop>
                 <ProjectCardContentMiddle>
-                    {/* {(listPlayState === "playing" &&
-                        id === currentlyPlayingProject && (
-                            <IconButton
-                                size="medium"
-                                aria-label="Delete"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    dispatch(pauseListItem(projectUid));
-                                }}
-                            >
-                                <PauseIcon
-                                    fontSize="large"
-                                    style={{
-                                        color: theme.profilePlayButton.secondary
-                                    }}
-                                />
-                            </IconButton>
-                        )) || ( */}
                     <StyledIconButton
-                        size="medium"
+                        size="small"
                         className={classes.largeButton}
                         onClick={e => {
                             e.stopPropagation();

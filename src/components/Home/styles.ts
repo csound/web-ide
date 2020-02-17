@@ -11,7 +11,8 @@ const homeStyles = (theme: Theme) =>
             left: 0,
             right: 0,
             position: "absolute",
-            fontSize: "1rem"
+            fontSize: "1rem",
+            overflow: "hidden"
         },
         main: {
             maxWidth: "1024px",
