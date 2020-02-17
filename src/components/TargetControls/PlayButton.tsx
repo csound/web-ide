@@ -10,7 +10,7 @@ import {
     getPlayActionFromTarget
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
-import { stopCsound } from "@comp/Csound/actions";
+import { pauseCsound, resumePausedCsound } from "@comp/Csound/actions";
 
 const PlayButton = ({ activeProjectUid }) => {
     // const getPlayAction = (getPlayActionFromTarget as any)(activeProjectUid);
@@ -23,6 +23,7 @@ const PlayButton = ({ activeProjectUid }) => {
     const csoundPlayState: string = useSelector((store: IStore) => {
         return pathOr("stopped", ["csound", "status"], store);
     });
+
     const selectedTargetName: string | null = useSelector(
         selectSelectedTarget(activeProjectUid)
     );
@@ -38,6 +39,8 @@ const PlayButton = ({ activeProjectUid }) => {
             ? ""
             : csoundPlayState === "playing"
             ? "pause playback"
+            : csoundPlayState === "paused"
+            ? "resume playback"
             : `run ${selectedTargetName || fallbackTargetDocument.filename}`;
 
     const playAction = playActionDefault || playActionFallback;
@@ -46,11 +49,21 @@ const PlayButton = ({ activeProjectUid }) => {
         <Tooltip title={tooltipText}>
             <div
                 css={SS.playButtonContainer}
-                onClick={e =>
-                    csoundPlayState === "playing"
-                        ? dispatch(stopCsound())
-                        : playAction && dispatch(playAction)
-                }
+                onClick={() => {
+                    switch (csoundPlayState) {
+                        case "playing": {
+                            dispatch(pauseCsound());
+                            break;
+                        }
+                        case "paused": {
+                            dispatch(resumePausedCsound());
+                            break;
+                        }
+                        case "stopped": {
+                            dispatch(playAction);
+                        }
+                    }
+                }}
             >
                 <button
                     css={SS.playButtonStyle(csoundPlayState === "playing")}
