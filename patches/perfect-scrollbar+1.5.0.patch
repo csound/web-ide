@@ -2,24 +2,10 @@ diff --git a/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js b/node
 index 3a4c392..c8ebea5 100644
 --- a/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js
 +++ b/node_modules/perfect-scrollbar/dist/perfect-scrollbar.esm.js
-@@ -885,7 +885,6 @@ function wheel(i) {
+@@ -885,6 +885,5 @@ function wheel(i) {
      shouldPrevent = shouldPrevent || shouldPreventDefault(deltaX, deltaY);
      if (shouldPrevent && !e.ctrlKey) {
        e.stopPropagation();
 -      e.preventDefault();
      }
    }
- 
-diff --git a/node_modules/perfect-scrollbar/src/handlers/drag-thumb.js b/node_modules/perfect-scrollbar/src/handlers/drag-thumb.js
-index ed0a90d..b66717d 100644
---- a/node_modules/perfect-scrollbar/src/handlers/drag-thumb.js
-+++ b/node_modules/perfect-scrollbar/src/handlers/drag-thumb.js
-@@ -73,7 +73,7 @@ function bindMouseScrollHandler(
- 
-   function bindMoves(e, touchMode) {
-     startingScrollTop = element[scrollTop];
--    if (touchMode && e.touches) {
-+    if (touchMode && e.touches && !e.readOnly) {
-       e[pageY] = e.touches[0].pageY;
-     }
-     startingMousePageY = e[pageY];
