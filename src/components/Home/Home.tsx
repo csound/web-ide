@@ -69,6 +69,8 @@ const Home = props => {
         }
     }, [searchValue, setShowFeaturedProjects, showFeaturedProjects]);
 
+    console.log(starredProjects);
+
     return (
         <div className={classes.root}>
             <Header />

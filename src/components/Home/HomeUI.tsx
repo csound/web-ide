@@ -24,7 +24,6 @@ export const ProjectsContainer = styled.div`
     grid-column: 2;
     width: 100%;
     height: 100%;
-    position: relative;
 `;
 
 export const StyledTextField = styled(TextField)`
@@ -40,12 +39,9 @@ interface IFeaturedProjectsContainer {
 
 export const FeaturedProjectsContainer = styled.div<IFeaturedProjectsContainer>`
     display: grid;
-    height: 115%;
+    height: 100%;
     width: 100%;
-    position: absolute;
-    grid-row: 2;
-    grid-column: 2;
-    grid-template-rows: 0.08fr 0.42fr 0.08fr 0.42fr;
+    grid-template-rows: 0.01fr auto 0.01fr auto 0.1fr;
     grid-template-columns: 1fr;
     transition: all ${props => props.duration}ms;
 
@@ -84,12 +80,12 @@ interface IProjectCard {
 export const ProjectCardContainer = styled.div<IProjectCard>`
     width: 25%;
     height: calc(100% - 10px);
-    background-color: black;
     border-radius: 8px;
     overflow: hidden;
     z-index: 1;
     position: relative;
     margin: 5px;
+    background-color: black;
 
     transition-delay: ${props => props.projectIndex * 50}ms;
     transition: all ${props => props.duration}ms;
@@ -109,20 +105,66 @@ export const ProjectCardContainer = styled.div<IProjectCard>`
 interface IProjectCardSVGContainer {
     backgroundColor: string;
     mouseOver: boolean;
+    duration: number;
 }
+
+interface IProjectCardSpinnerContainer {
+    duration: number;
+}
+
+export const ProjectCardSpinnerContainer = styled.div<
+    IProjectCardSpinnerContainer
+>`
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+    grid-row: 1;
+    grid-column: 1;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all ${props => props.duration}ms;
+    &.entering {
+        opacity: 0;
+    }
+    &.entered {
+        opacity: 1;
+    }
+    &.exiting {
+        opacity: 1;
+    }
+`;
+
 export const ProjectCardSVGContainer = styled.div<IProjectCardSVGContainer>`
     position: absolute;
     height: 100%;
     width: 100%;
     background-color: ${props => props.backgroundColor};
-    opacity: ${props => (props.mouseOver ? 0.8 : 0.5)};
+    opacity: ${props => (props.mouseOver ? 1 : 0.5)};
     z-index: 2;
     transition: opacity 0.3s;
     grid-row: 1;
     grid-column: 1;
+    transition: all ${props => props.duration}ms;
+    &.entering {
+        opacity: 0;
+    }
+    &.entered {
+        opacity: 1;
+    }
+    &.exiting {
+        opacity: 0;
+    }
 `;
 
-export const ProjectCardContentContainer = styled.div`
+interface IProjectCardContentContainer {
+    duration: number;
+}
+export const ProjectCardContentContainer = styled.div<
+    IProjectCardContentContainer
+>`
     position: absolute;
     height: 100%;
     width: 100%;
@@ -136,6 +178,16 @@ export const ProjectCardContentContainer = styled.div`
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    transition: all ${props => props.duration}ms;
+    &.entering {
+        opacity: 0;
+    }
+    &.entered {
+        opacity: 1;
+    }
+    &.exiting {
+        opacity: 0;
+    }
 `;
 
 export const ProjectCardContentTop = styled.div`

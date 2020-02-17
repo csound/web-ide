@@ -3,7 +3,8 @@ import {
     FeaturedProjectsContainer,
     FeaturedProjectsRowContainer,
     ProjectSectionHeader,
-    HorizontalRule
+    HorizontalRule,
+    ProjectCardContainer
 } from "./HomeUI";
 import { Transition, TransitionGroup } from "react-transition-group";
 import ProjectCard from "./ProjectCard";
@@ -47,7 +48,6 @@ const FeaturedProjectsRow = ({
                         return (
                             <Transition key={i} appear timeout={duration}>
                                 {transitionStatus => {
-                                    console.log(transitionStatus);
                                     return (
                                         <ProjectCard
                                             event={e}
@@ -59,7 +59,7 @@ const FeaturedProjectsRow = ({
                                             }
                                             project={e}
                                             key={i}
-                                            profile={profiles[e.userUid]}
+                                            profiles={profiles}
                                         />
                                     );
                                 }}
