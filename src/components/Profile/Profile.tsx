@@ -8,6 +8,8 @@ import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
+import ResizeObserver from "resize-observer-polyfill";
+
 import {
     subscribeToFollowing,
     subscribeToFollowers,
@@ -211,9 +213,7 @@ const Profile = props => {
     // Fixes white bottom when switching from scrollable to non-scrollable list
     useEffect(() => {
         const mainElem = document.getElementsByTagName("main");
-        const resizeObserver = new (window as any).ResizeObserver(
-            updateBodyScroller(0)
-        );
+        const resizeObserver = new ResizeObserver(updateBodyScroller(0));
         mainElem && mainElem.length > 0 && resizeObserver.observe(mainElem[0]);
         return () => {
             resizeObserver.disconnect();

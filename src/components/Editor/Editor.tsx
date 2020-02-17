@@ -5,6 +5,7 @@ import { editorEvalCode } from "./utils";
 import { useDebounce } from "@root/utils";
 import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
+import ResizeObserver from "resize-observer-polyfill";
 import ScrollBar from "@elem/perfect-scrollbar";
 import { isEmpty } from "lodash";
 import { pathOr, propOr } from "ramda";
@@ -169,9 +170,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
                     (window as any).editor_scroller.update();
                 }
             };
-            const resizeObserver = new (window as any).ResizeObserver(
-                resizeHandler
-            );
+            const resizeObserver = new ResizeObserver(resizeHandler);
 
             cmSizer && cmSizer.length > 0 && resizeObserver.observe(cmSizer[0]);
             return () => {

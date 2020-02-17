@@ -5,6 +5,7 @@ import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import { IStore } from "@store/types";
+import ResizeObserver from "resize-observer-polyfill";
 
 function getModalStyle(width, height) {
     if (!width || !height) return {};
@@ -49,11 +50,13 @@ export default function GlobalModal() {
                 updateDimensions(false);
             }
         }
-        const resizeObserver = new (window as any).ResizeObserver(handleResize);
+        const resizeObserver = new ResizeObserver(handleResize);
         let copiedRef;
         setTimeout(() => {
             if (modalRef.current) {
-                resizeObserver.observe(modalRef.current);
+                resizeObserver.observe(
+                    (modalRef.current as unknown) as Element
+                );
                 copiedRef = modalRef.current;
             }
         }, 100);
