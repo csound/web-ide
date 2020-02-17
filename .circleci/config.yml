@@ -63,7 +63,7 @@ jobs:
             - attach_workspace:
                   at: .
             - run: cd functions && npm install
-            - run: yarn deploy
+            - run: yarn deploy || true
             - persist_to_workspace:
                   root: .
                   paths:
