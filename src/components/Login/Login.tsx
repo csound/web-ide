@@ -77,7 +77,7 @@ const Login = () => {
         setLocalState(assoc("isCreatingUser", false, localState));
     };
 
-    const errorBox = !isEmpty(errorMessage) && (
+    const errorBox = !isEmpty(errorMessage) && errorMessage && (
         <div css={SS.errorBox}>
             <h5>{"Error " + errorCode}</h5>
             <p>{errorMessage}</p>
