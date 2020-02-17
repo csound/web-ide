@@ -7,6 +7,7 @@ import StarsList from "./tabs/StarsList";
 import Tooltip from "@material-ui/core/Tooltip";
 import ListPlayButton from "./ListPlayButton";
 import SettingsIcon from "@material-ui/icons/Settings";
+import DeleteIcon from "@material-ui/icons/DeleteOutline";
 import { useDispatch, useSelector } from "react-redux";
 import {
     StyledListItemContainer,
@@ -21,7 +22,7 @@ import {
     selectFilteredUserFollowing,
     selectFilteredUserFollowers
 } from "./selectors";
-import { editProject } from "./actions";
+import { editProject, deleteProject } from "./actions";
 import * as SS from "./styles";
 
 const ProjectListItem = props => {
@@ -65,19 +66,35 @@ const ProjectListItem = props => {
                 <ListPlayButton projectUid={projectUid} />
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
-                <div css={SS.settingsIconContainer}>
-                    <Tooltip title="Toggle project settings">
-                        <div
-                            css={SS.settingsIcon}
-                            onClick={e => {
-                                dispatch(editProject(project));
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                        >
-                            <SettingsIcon />
-                        </div>
-                    </Tooltip>
+                <div>
+                    <div css={SS.settingsIconContainer}>
+                        <Tooltip title="Toggle project settings">
+                            <div
+                                css={SS.settingsIcon}
+                                onClick={e => {
+                                    dispatch(editProject(project));
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                            >
+                                <SettingsIcon />
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <div css={SS.deleteIconContainer}>
+                        <Tooltip title={`Delete ${project.name}`}>
+                            <div
+                                css={SS.deleteIcon}
+                                onClick={e => {
+                                    dispatch(deleteProject(project));
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                            >
+                                <DeleteIcon />
+                            </div>
+                        </Tooltip>
+                    </div>
                 </div>
             )}
         </div>

@@ -50,7 +50,7 @@ ReactDOM.render(
     document.getElementById("root")
 );
 
-serviceWorker.register();
+serviceWorker.unregister();
 
 // ADD LISTENING TO REDUX STORE FOR SYNCHRONIZING PROJECT FILES TO EMFS
 CsoundObj.importScripts("/csound/").then(() => {
