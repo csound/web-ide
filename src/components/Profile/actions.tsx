@@ -10,6 +10,7 @@ import {
     getFirebaseTimestamp,
     projects,
     profiles,
+    profileStars,
     usernames,
     stars,
     tags,
@@ -612,6 +613,7 @@ export const starOrUnstarProject = (
 ) => {
     return async () => {
         if (!projectUid || !loggedInUserUid) return;
+        const batch = db.batch();
         const currentProjectStarsRef = await stars.doc(projectUid).get();
         const currentProjectStars = currentProjectStarsRef.exists
             ? currentProjectStarsRef.data()
@@ -621,14 +623,24 @@ export const starOrUnstarProject = (
         );
 
         if (!currentlyStarred) {
-            stars
-                .doc(projectUid)
-                .set(
-                    { [loggedInUserUid]: getFirebaseTimestamp() },
-                    { merge: true }
-                );
+            batch.set(
+                stars.doc(projectUid),
+                { [loggedInUserUid]: getFirebaseTimestamp() },
+                { merge: true }
+            );
+            batch.set(
+                profileStars.doc(loggedInUserUid),
+                { [projectUid]: getFirebaseTimestamp() },
+                { merge: true }
+            );
         } else {
-            stars.doc(projectUid).update({ [loggedInUserUid]: fieldDelete() });
+            batch.update(stars.doc(projectUid), {
+                [loggedInUserUid]: fieldDelete()
+            });
+            batch.update(profileStars.doc(loggedInUserUid), {
+                [projectUid]: fieldDelete()
+            });
         }
+        await batch.commit();
     };
 };
