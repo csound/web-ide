@@ -51,4 +51,5 @@ export interface IProfile {
     profileUid?: string | null;
     userFollowing?: [];
     userImageURL?: string | null | undefined;
+    backgroundIndex: number;
 }

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { isMobile } from "@root/utils";
 import Router from "@comp/Router/Router";
 import ThemeProvider from "@styles/ThemeProvider";
 import Modal from "@comp/Modal";
@@ -37,7 +38,10 @@ const Main = (props: IMain) => {
                     dispatch(setRequestingStatus(false));
                 }
             });
-        (window as any).ps_body = new PerfectScrollbar("body");
+        if (!isMobile()) {
+            (window as any).ps_body = new PerfectScrollbar("body");
+        }
+
         return () => {
             unsubscribeAuthObserver();
             unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();

@@ -1,16 +1,13 @@
 import { Card, Fab, TextField, Chip } from "@material-ui/core";
-import { Gradient } from "./Gradient";
+import { isMobile } from "@root/utils";
 import styled from "styled-components";
-
-export const ProfileMain = styled.main`
-    ${Gradient}
-`;
 
 export const ProfileContainer = styled.div`
     position: relative;
     display: grid;
-    grid-template-columns: 24px 250px 8fr;
-    grid-template-rows: 50px 175px 1fr 70px;
+    ${!isMobile() &&
+        `grid-template-columns: 24px 250px 8fr;
+    grid-template-rows: 50px 175px 1fr 70px;`}
     width: 100%;
 `;
 export const IDContainer = styled(Card)`
@@ -39,10 +36,15 @@ export const EditProfileButtonSection = styled.div`
     margin: auto;
 `;
 export const MainContent = styled.div`
-    grid-row-start: 3;
-    grid-row-end: 6;
-    grid-column-start: 1;
-    grid-column-end: 4;
+    ${isMobile()
+        ? `grid-row-start: 0;
+grid-row-end: 3;
+grid-column-start: 0;
+    grid-column-end: 5;`
+        : `grid-row-start: 3;
+grid-row-end: 6;
+grid-column-start: 1;
+    grid-column-end: 4;`}
 `;
 export const ProfilePictureContainer = styled.div`
     position: relative;
@@ -98,7 +100,7 @@ export const NameSectionWrapper = styled.div`
     grid-row: 2;
     grid-column: 3;
     display: grid;
-    grid-template-rows: 1fr 120px;
+    grid-template-rows: 1fr auto;
     grid-template-columns: 1fr;
 `;
 export const NameSection = styled.div`
@@ -112,7 +114,7 @@ export const ContentSection = styled.div<any>`
     grid-row-end: auto;
     grid-column: 3;
     z-index: 2;
-    margin: 0 24px;
+    ${!isMobile() && "margin: 0 24px;"}
     display: grid;
     grid-template-rows: ${props =>
         props.showSearch ? "60px 50px auto" : "60px 0px auto"};

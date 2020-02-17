@@ -373,7 +373,8 @@ export const updateUserProfile = (
     bio: string,
     link1: string,
     link2: string,
-    link3: string
+    link3: string,
+    backgroundIndex: number
 ): ThunkAction<void, any, null, Action<string>> => async (
     dispatch,
     getState
@@ -387,7 +388,8 @@ export const updateUserProfile = (
             bio,
             link1,
             link2,
-            link3
+            link3,
+            backgroundIndex
         });
 
         await usernames.doc(originalUsername).delete();
@@ -405,7 +407,8 @@ export const editProfile = (
     bio: string,
     link1: string,
     link2: string,
-    link3: string
+    link3: string,
+    backgroundIndex: number
 ) => {
     return async (dispatch: any, getState) => {
         const currentState = getState();
@@ -429,6 +432,7 @@ export const editProfile = (
                         link1={link1}
                         link2={link2}
                         link3={link3}
+                        backgroundIndex={backgroundIndex}
                     />
                 ))
             );

@@ -5,7 +5,9 @@ import { updateUserProfile } from "./actions";
 import { closeModal } from "../Modal/actions";
 import { TextField, Button } from "@material-ui/core";
 import { useDispatch } from "react-redux";
+import * as TargetSS from "@comp/TargetControls/styles";
 import styled from "styled-components";
+import Select from "react-select";
 
 const ModalContainer = styled.div`
     display: grid;
@@ -29,8 +31,17 @@ interface IProfileModal {
     link1: string;
     link2: string;
     link3: string;
+    backgroundIndex: number;
     existingNames: string[];
 }
+
+const backgroundOptions = [
+    { label: "carbon", value: 0 },
+    { label: "stripes", value: 1 },
+    { label: "microbial", value: 2 },
+    { label: "tartan", value: 3 },
+    { label: "yin yang", value: 4 }
+];
 
 export const ProfileModal = (props: IProfileModal) => {
     const [username, setUsername] = useState(props.username);
@@ -39,6 +50,9 @@ export const ProfileModal = (props: IProfileModal) => {
     const [link1, setLink1] = useState(props.link1);
     const [link2, setLink2] = useState(props.link2);
     const [link3, setLink3] = useState(props.link3);
+    const [backgroundIndex, setBackgroundIndex] = useState(
+        props.backgroundIndex || 0
+    );
     const dispatch = useDispatch();
 
     const existingName = props.existingNames.includes(username);
@@ -65,7 +79,8 @@ export const ProfileModal = (props: IProfileModal) => {
                     bio,
                     link1,
                     link2,
-                    link3
+                    link3,
+                    backgroundIndex
                 )
             );
             dispatch(closeModal());
@@ -162,7 +177,35 @@ export const ProfileModal = (props: IProfileModal) => {
                     fullWidth
                 />
             </FieldRow>
-            <FieldRow row={8}>
+            <FieldRow row={8} style={{ marginTop: 24 }}>
+                <div>
+                    <strong>{"Profile page background shape"}</strong>
+                    <Select
+                        value={backgroundIndex}
+                        placeholder={backgroundOptions[backgroundIndex].label}
+                        isSearchable={false}
+                        onChange={e => setBackgroundIndex(e.value)}
+                        options={backgroundOptions}
+                        styles={{
+                            control: (provided, state) => TargetSS.control,
+                            container: (provided, state) =>
+                                TargetSS.dropdownContainer,
+                            groupHeading: (provided, state) =>
+                                TargetSS.groupHeading,
+                            placeholder: (provided, state) =>
+                                TargetSS.placeholder,
+                            menu: (provided, state) => TargetSS.menu,
+                            menuList: (provided, state) => TargetSS.menuList,
+                            option: (provided, state) => TargetSS.menuOption,
+                            indicatorsContainer: (provided, state) =>
+                                TargetSS.indicatorContainer,
+                            indicatorSeparator: (provided, state) =>
+                                TargetSS.indicatorSeparator
+                        }}
+                    />
+                </div>
+            </FieldRow>
+            <FieldRow row={9} style={{ marginTop: 24 }}>
                 <Button
                     variant="outlined"
                     color="primary"

@@ -51,6 +51,7 @@ const profileKeys = [
     "link1",
     "link2",
     "link3",
+    "backgroundIndex",
     "photoUrl",
     "userUid",
     "username"

@@ -1,5 +1,7 @@
 import ProfileLists from "./ProfileLists";
 import React, { useEffect, useState, RefObject } from "react";
+import { isMobile } from "@root/utils";
+import { gradient } from "./Gradient";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
 import { updateBodyScroller } from "@root/utils";
@@ -47,7 +49,6 @@ import { Typography, Tabs, Tab, InputAdornment } from "@material-ui/core";
 import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { stopCsound } from "../Csound/actions";
 import {
-    ProfileMain,
     ProfileContainer,
     IDContainer,
     ProfilePictureContainer,
@@ -220,140 +221,140 @@ const Profile = props => {
         };
     }, []);
 
-    const { displayName, bio, link1, link2, link3 } = profile || {};
+    const { displayName, bio, link1, link2, link3, backgroundIndex } =
+        profile || {};
 
     return (
         <div className={classes.root}>
             <Header />
-            <ProfileMain
-                colorA={"rgba(30, 30, 30, 1)"}
-                colorB={"rgba(40, 40, 40, 1)"}
-                colorC={"rgba(20, 20, 20, 1)"}
-            >
+            <div css={gradient(backgroundIndex || 0)}>
                 <ProfileContainer>
-                    <IDContainer>
-                        <ProfilePictureContainer
-                            onMouseEnter={() => setImageHover(true)}
-                            onMouseLeave={() => setImageHover(false)}
-                        >
-                            <ProfilePictureDiv>
-                                {imageUrl && (
-                                    <ProfilePicture
-                                        src={imageUrl}
-                                        width={"100%"}
-                                        height={"100%"}
-                                        alt="User Profile"
-                                    />
-                                )}
-                            </ProfilePictureDiv>
-                            <input
-                                type="file"
-                                ref={uploadRef}
-                                style={{ display: "none" }}
-                                accept={"image/jpeg"}
-                                onChange={e => {
-                                    const file: File =
-                                        get(e, "target.files.0") || null;
-                                    dispatch(
-                                        uploadProfileImage(
-                                            loggedInUserUid,
-                                            file
-                                        )
-                                    );
-                                }}
-                            />
-                            {isProfileOwner && (
-                                <UploadProfilePicture
-                                    onClick={() => {
-                                        const input = uploadRef.current;
-                                        input!.click();
-                                    }}
-                                    imageHover={imageHover}
-                                >
-                                    <UploadProfilePictureText>
-                                        Upload New Image
-                                    </UploadProfilePictureText>
-                                    <UploadProfilePictureIcon>
-                                        <CameraIcon />
-                                    </UploadProfilePictureIcon>
-                                </UploadProfilePicture>
-                            )}
-                        </ProfilePictureContainer>
-                        <DescriptionSection>
-                            <Typography variant="h5" component="h4">
-                                Bio
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                component="p"
-                                color="textSecondary"
-                                gutterBottom
+                    {!isMobile() && (
+                        <IDContainer>
+                            <ProfilePictureContainer
+                                onMouseEnter={() => setImageHover(true)}
+                                onMouseLeave={() => setImageHover(false)}
                             >
-                                {profile && profile.bio}
-                            </Typography>
-                            <Typography variant="h5" component="h4">
-                                Links
-                            </Typography>
-                            {profile && (
-                                <>
-                                    <UserLink link={link1} />
-                                    <UserLink link={link2} />
-                                    <UserLink link={link3} />
-                                </>
-                            )}
-                        </DescriptionSection>
-                        {isProfileOwner && profileUid && (
-                            <EditProfileButtonSection>
-                                <AddFab
-                                    color="primary"
-                                    variant="extended"
-                                    aria-label="Add"
-                                    size="medium"
-                                    onClick={() =>
+                                <ProfilePictureDiv>
+                                    {imageUrl && (
+                                        <ProfilePicture
+                                            src={imageUrl}
+                                            width={"100%"}
+                                            height={"100%"}
+                                            alt="User Profile"
+                                        />
+                                    )}
+                                </ProfilePictureDiv>
+                                <input
+                                    type="file"
+                                    ref={uploadRef}
+                                    style={{ display: "none" }}
+                                    accept={"image/jpeg"}
+                                    onChange={e => {
+                                        const file: File =
+                                            get(e, "target.files.0") || null;
                                         dispatch(
-                                            editProfile(
-                                                profile.username,
-                                                displayName,
-                                                bio,
-                                                link1,
-                                                link2,
-                                                link3
+                                            uploadProfileImage(
+                                                loggedInUserUid,
+                                                file
                                             )
-                                        )
-                                    }
-                                >
-                                    Edit Profile
-                                </AddFab>
-                            </EditProfileButtonSection>
-                        )}
-                        {!isProfileOwner && profileUid && loggedInUserUid && (
-                            <EditProfileButtonSection>
-                                <AddFab
-                                    color="primary"
-                                    variant="extended"
-                                    aria-label="Add"
-                                    size="medium"
-                                    onClick={() => {
-                                        isFollowing
-                                            ? dispatch(
-                                                  unfollowUser(
-                                                      loggedInUserUid,
-                                                      profileUid
-                                                  )
-                                              )
-                                            : dispatch(
-                                                  followUser(
-                                                      loggedInUserUid,
-                                                      profileUid
-                                                  )
-                                              );
+                                        );
                                     }}
+                                />
+                                {isProfileOwner && (
+                                    <UploadProfilePicture
+                                        onClick={() => {
+                                            const input = uploadRef.current;
+                                            input!.click();
+                                        }}
+                                        imageHover={imageHover}
+                                    >
+                                        <UploadProfilePictureText>
+                                            Upload New Image
+                                        </UploadProfilePictureText>
+                                        <UploadProfilePictureIcon>
+                                            <CameraIcon />
+                                        </UploadProfilePictureIcon>
+                                    </UploadProfilePicture>
+                                )}
+                            </ProfilePictureContainer>
+                            <DescriptionSection>
+                                <Typography variant="h5" component="h4">
+                                    Bio
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    component="p"
+                                    color="textSecondary"
+                                    gutterBottom
                                 >
-                                    {isFollowing ? "Unfollow" : "Follow"}
-                                </AddFab>
-                            </EditProfileButtonSection>
-                        )}
-                    </IDContainer>
+                                    {profile && profile.bio}
+                                </Typography>
+                                <Typography variant="h5" component="h4">
+                                    Links
+                                </Typography>
+                                {profile && (
+                                    <>
+                                        <UserLink link={link1} />
+                                        <UserLink link={link2} />
+                                        <UserLink link={link3} />
+                                    </>
+                                )}
+                            </DescriptionSection>
+                            {isProfileOwner && profileUid && (
+                                <EditProfileButtonSection>
+                                    <AddFab
+                                        color="primary"
+                                        variant="extended"
+                                        aria-label="Add"
+                                        size="medium"
+                                        onClick={() =>
+                                            dispatch(
+                                                editProfile(
+                                                    profile.username,
+                                                    displayName,
+                                                    bio,
+                                                    link1,
+                                                    link2,
+                                                    link3,
+                                                    backgroundIndex
+                                                )
+                                            )
+                                        }
+                                    >
+                                        Edit Profile
+                                    </AddFab>
+                                </EditProfileButtonSection>
+                            )}
+                            {!isProfileOwner && profileUid && loggedInUserUid && (
+                                <EditProfileButtonSection>
+                                    <AddFab
+                                        color="primary"
+                                        variant="extended"
+                                        aria-label="Add"
+                                        size="medium"
+                                        onClick={() => {
+                                            isFollowing
+                                                ? dispatch(
+                                                      unfollowUser(
+                                                          loggedInUserUid,
+                                                          profileUid
+                                                      )
+                                                  )
+                                                : dispatch(
+                                                      followUser(
+                                                          loggedInUserUid,
+                                                          profileUid
+                                                      )
+                                                  );
+                                        }}
+                                    >
+                                        {isFollowing ? "Unfollow" : "Follow"}
+                                    </AddFab>
+                                </EditProfileButtonSection>
+                            )}
+                        </IDContainer>
+                    )}
                     <NameSectionWrapper>
                         <NameSection>
                             <Typography variant="h3" component="h3">
@@ -461,7 +462,7 @@ const Profile = props => {
                         </ListContainer>
                     </ContentSection>
                 </ProfileContainer>
-            </ProfileMain>
+            </div>
         </div>
     );
 };
