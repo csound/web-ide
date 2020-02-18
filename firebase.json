@@ -4,8 +4,8 @@
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
         "rewrites": [
             {
-                "source": "/search/**",
-                "destination": "http://116.203.30.230"
+                "source": "/manual_main.js",
+                "destination": "/manual/main.js"
             },
             {
                 "source": "**",
