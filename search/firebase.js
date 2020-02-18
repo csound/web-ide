@@ -7,30 +7,46 @@ firebase.initializeApp({
 });
 
 const db = firebase.firestore();
-const projectLastModified = db.collection("projectLastModified");
-const projects = db.collection("projects");
-const projectsCount = db.collection("projectsCount");
-const profiles = db.collection("profiles");
-const followers = db.collection("followers");
-const following = db.collection("following");
-const usernames = db.collection("usernames");
-const targets = db.collection("targets");
-const tags = db.collection("tags");
-const stars = db.collection("stars");
-const profileStars = db.collection("profileStars");
-const projectFiles = db.collection("projectFiles");
+
+const getData = async (collectionName, whereArguments) => {
+    const result = [];
+    let query;
+
+    try {
+        if (Array.isArray(whereArguments)) {
+            query = await db
+                .collection(collectionName)
+                .where(...whereArguments)
+                .get();
+        } else {
+            query = await db.collection(collectionName).get();
+        }
+
+        query.forEach(doc => {
+            result.push({ id: doc.id, ...doc.data() });
+        });
+    } catch (e) {
+        console.error(e);
+    }
+
+    return result;
+};
+
+const getFirebaseData = async () => {
+    const projects = await getData("projects", ["public", "==", true]);
+    const profiles = await getData("profiles");
+    const tags = await getData("tags");
+    const stars = await getData("stars");
+    const timestamp = Date.now();
+    return {
+        projects,
+        profiles,
+        tags,
+        stars,
+        timestamp
+    };
+};
 
 module.exports = {
-    projectLastModified,
-    projects,
-    projectsCount,
-    profiles,
-    followers,
-    following,
-    usernames,
-    targets,
-    tags,
-    stars,
-    profileStars,
-    projectFiles
+    getFirebaseData
 };
