@@ -19,7 +19,7 @@ class SiteDocs extends Component<any, {}> {
                         music computing system that has its roots in the
                         earliest of computer software, the MUSIC-N series by{" "}
                         <a href="https://en.wikipedia.org/wiki/Max_Mathews">
-                            Max Matthews
+                            Max Mathews
                         </a>
                         . Csound was originally released in 1986 by{" "}
                         <a href="http://web.media.mit.edu/~bv/">Barry Vercoe</a>{" "}
