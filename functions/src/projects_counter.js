@@ -52,10 +52,10 @@ exports.projects_counter = functions.firestore
         } else if (!change.after.exists) {
             // Deleting project : subtract one from count
             const oldProjectData = change.before.data();
-            const isPublic = newProjectData.public;
-            const ownerUid = newProjectData.userUid;
+            const isPublic = oldProjectData.public;
+            const ownerUid = oldProjectData.userUid;
             if (!ownerUid || ownerUid.length === 0) {
-                console.error("INVALID PROJECT DETECTED: " + newProjectData.id);
+                console.error("INVALID PROJECT DETECTED: " + oldProjectData.id);
                 return;
             }
 
