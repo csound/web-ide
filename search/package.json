@@ -10,6 +10,7 @@
         "date-fns": "^2.9.0",
         "express": "^4.17.1",
         "firebase-admin": "^8.9.2",
+        "fuse.js": "^3.4.6",
         "node-cron": "^2.0.3"
     }
 }

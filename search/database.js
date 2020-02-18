@@ -1,13 +1,13 @@
 const fs = require("fs");
 const { getFirebaseData } = require("./firebase");
 const databaseName = "database.json";
-const databaseFolder = "/Users/eddyc/Desktop";
-const { isSameDay } = require("date-fns");
+const databaseFolder = "./";
+const { isSameHour } = require("date-fns");
 
-const checkDatabaseFileWrittenSameDay = () => {
+const checkDatabaseFileWrittenSameHour = () => {
     try {
         const { timestamp } = openDatabaseFile();
-        return isSameDay(new Date(timestamp), new Date());
+        return isSameHour(new Date(timestamp), new Date());
     } catch (e) {
         return false;
     }
@@ -29,9 +29,9 @@ const writeFirebaseDataToDatabaseFile = async () => {
 };
 
 const getDatabase = async () => {
-    const sameDay = checkDatabaseFileWrittenSameDay();
+    const sameHour = checkDatabaseFileWrittenSameHour();
 
-    if (sameDay === false) {
+    if (sameHour === false) {
         await writeFirebaseDataToDatabaseFile();
     }
     return openDatabaseFile();

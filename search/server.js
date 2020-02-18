@@ -1,11 +1,12 @@
 const express = require("express");
 const port = 4000;
-const startServer = () => {
+const startServer = searchCallback => {
     const app = express();
-    app.get("/search/:document/:query", (req, res) => {
-        console.log(req.params);
+    app.get("/search/:collection/:query", (req, res) => {
+        const { collection, query } = req.params;
+        const result = searchCallback(collection, query);
 
-        return res.send({ name: "edward" });
+        return res.send(result);
     });
 
     app.listen(port, () =>

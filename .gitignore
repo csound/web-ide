@@ -31,3 +31,4 @@ yarn-error.log*
 # Search app
 search/service-key.json
 search/node_modules
+database.json
