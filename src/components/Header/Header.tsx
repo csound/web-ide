@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectCurrentRoute } from "@comp/Router/selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
-import { selectUserImageURL } from "@comp/Profile/selectors";
+import { selectUserImageURL, selectUserName } from "@comp/Profile/selectors";
 import { selectLoggedInUid } from "@comp/Login/selectors";
 import AppBar from "@material-ui/core/AppBar";
 import Login from "../Login/Login";
@@ -61,6 +61,8 @@ export const Header = () => {
 
     const loggedInUid = useSelector(selectLoggedInUid);
 
+    const loggedInUserName = useSelector(selectUserName(loggedInUid || null));
+
     const avatarUrl = useSelector(selectUserImageURL(loggedInUid || ""));
 
     const isLoginDialogOpen = useSelector(
@@ -84,7 +86,6 @@ export const Header = () => {
     const logout = () => dispatch(loginActions.logOut());
     const openLoginDialog = () => dispatch(loginActions.openLoginDialog());
     const handleIconClick = () => dispatch(push("/"));
-    const handleProfileClick = () => dispatch(push("/profile"));
 
     const avatar = isEmpty(avatarUrl) ? (
         <AccountBox />
@@ -117,16 +118,15 @@ export const Header = () => {
                 open={isProfileMenuOpen}
                 onClose={handleProfileMenuClose}
             >
-                <MenuItem
-                    onClick={e => {
-                        handleProfileMenuClose(e);
-                        handleProfileClick();
-                    }}
-                >
-                    <Link to="/profile" css={SS.menuItemLink}>
+                <Link to={`/profile/${loggedInUserName}`} css={SS.menuItemLink}>
+                    <MenuItem
+                        onClick={e => {
+                            handleProfileMenuClose(e);
+                        }}
+                    >
                         View Profile
-                    </Link>
-                </MenuItem>
+                    </MenuItem>
+                </Link>
                 <MenuItem
                     onClick={e => {
                         handleProfileMenuClose(e);

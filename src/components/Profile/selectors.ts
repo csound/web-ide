@@ -46,6 +46,15 @@ export const selectUserProfile = (profileUid: string | null) => (
     }
 };
 
+export const selectUserName = (profileUid: string | null) => (store: any) => {
+    if (!profileUid) {
+        return null;
+    } else {
+        const state: IProfileReducer = store.ProfileReducer;
+        return pathOr(null, ["profiles", profileUid, "username"], state);
+    }
+};
+
 export const selectLoggedInUserStars = (store: any) => {
     const loggedInUid: string | null = store.LoginReducer.loggedInUid;
     if (loggedInUid) {

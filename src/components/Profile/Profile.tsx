@@ -116,7 +116,7 @@ const Profile = props => {
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
 
     useEffect(() => {
-        if (!isProfileOwner || username) {
+        if (username) {
             if (profileUriPath === null && selectedSection !== 0) {
                 setSelectedSection(0);
             } else if (
@@ -133,7 +133,7 @@ const Profile = props => {
                 setSelectedSection(3);
             }
         }
-    }, [profileUriPath, selectedSection, isProfileOwner, username]);
+    }, [profileUriPath, selectedSection, username]);
 
     useEffect(() => {
         if (
@@ -149,11 +149,22 @@ const Profile = props => {
 
     useEffect(() => {
         if (!isRequestingLogin) {
-            if (!username) {
-                loggedInUserUid
-                    ? setProfileUid(loggedInUserUid)
-                    : dispatch(push("/"));
-            } else {
+            if (!username && !loggedInUserUid) {
+                dispatch(push("/"));
+            }
+            if (!username && loggedInUserUid) {
+                usernames
+                    .where("userUid", "==", loggedInUserUid)
+                    .get()
+                    .then(({ docs }) => {
+                        try {
+                            dispatch(push(`/profile/${docs[0].id}`));
+                            setProfileUid(loggedInUserUid);
+                        } catch (e) {
+                            dispatch(push("/"));
+                        }
+                    });
+            } else if (username) {
                 usernames
                     .doc(username)
                     .get()
@@ -368,37 +379,33 @@ const Profile = props => {
                             <Tabs
                                 value={selectedSection}
                                 onChange={(e, index) => {
-                                    if (isProfileOwner) {
-                                        setSelectedSection(index);
-                                    } else {
-                                        switch (index) {
-                                            case 0:
-                                                dispatch(
-                                                    push(`/profile/${username}`)
-                                                );
-                                                break;
-                                            case 1:
-                                                dispatch(
-                                                    push(
-                                                        `/profile/${username}/following`
-                                                    )
-                                                );
-                                                break;
-                                            case 2:
-                                                dispatch(
-                                                    push(
-                                                        `/profile/${username}/followers`
-                                                    )
-                                                );
-                                                break;
-                                            case 3:
-                                                dispatch(
-                                                    push(
-                                                        `/profile/${username}/stars`
-                                                    )
-                                                );
-                                                break;
-                                        }
+                                    switch (index) {
+                                        case 0:
+                                            dispatch(
+                                                push(`/profile/${username}`)
+                                            );
+                                            break;
+                                        case 1:
+                                            dispatch(
+                                                push(
+                                                    `/profile/${username}/following`
+                                                )
+                                            );
+                                            break;
+                                        case 2:
+                                            dispatch(
+                                                push(
+                                                    `/profile/${username}/followers`
+                                                )
+                                            );
+                                            break;
+                                        case 3:
+                                            dispatch(
+                                                push(
+                                                    `/profile/${username}/stars`
+                                                )
+                                            );
+                                            break;
                                     }
                                 }}
                                 indicatorColor={"primary"}
