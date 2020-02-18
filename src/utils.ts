@@ -128,3 +128,6 @@ export const updateBodyScroller = debounceTime =>
 
 export const isMobile = () =>
     /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent);
+
+export const isIOS = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;

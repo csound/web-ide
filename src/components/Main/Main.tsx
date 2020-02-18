@@ -4,6 +4,7 @@ import { isMobile } from "@root/utils";
 import Router from "@comp/Router/Router";
 import ThemeProvider from "@styles/ThemeProvider";
 import Modal from "@comp/Modal";
+import IosWarning from "./IosWarning";
 import Snackbar from "@comp/Snackbar/Snackbar";
 import { subscribeToLoggedInUserProfile } from "@comp/Login/subscribers";
 import {
@@ -54,6 +55,7 @@ const Main = (props: IMain) => {
         <HotKeys>
             <ThemeProvider>
                 <Modal />
+                <IosWarning />
                 <Snackbar />
                 <Router history={props.history} />
             </ThemeProvider>
