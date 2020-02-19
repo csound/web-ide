@@ -285,7 +285,16 @@ class CsoundProcessor extends AudioWorkletProcessor {
         for (let i = 0; i < bufferLen; i++, cnt++) {
             if (cnt == ksmps && result == 0) {
                 // if we need more samples from Csound
-                result = Csound.performKsmps(this.csObj);
+                try {
+                    result = Csound.performKsmps(this.csObj);
+                } catch (e) {
+                    if (e.toString().includes("RuntimeError:")) {
+                        this.port &&
+                            this.port.postMessage(["segfault", e.toString()]);
+                    }
+                    console.error(e);
+                }
+
                 cnt = 0;
 
                 if (result != 0) {

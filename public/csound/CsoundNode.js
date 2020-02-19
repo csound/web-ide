@@ -67,6 +67,7 @@ class CsoundNode extends AudioWorkletNode {
         this.tableCallbacks = {};
         this.playState = "stopped";
         this.playStateListeners = new Set();
+        this.segfault = false;
         this.port.onmessage = event => {
             let data = event.data;
             switch (data[0]) {
@@ -112,6 +113,22 @@ class CsoundNode extends AudioWorkletNode {
                 case "playState":
                     this.playState = data[1];
                     this.firePlayStateChange();
+                    break;
+                case "segfault":
+                    if (!this.segfault) {
+                        this.segfault = true;
+                        window.confirm(
+                            `Csound crashed :(` +
+                                "\n\n" +
+                                data[1] +
+                                "\n\n" +
+                                "Please report this error to \n https://github.com/csound/csound/issues" +
+                                "\n" +
+                                "preferably with a reproduceable example so we may faster fix this." +
+                                "\n\n" +
+                                "To continue using the Web-Ide you will need to reload the page, \n is that ok for you? (you can also reload yourself later)"
+                        ) && location.reload();
+                    }
                     break;
                 default:
                     console.log('[CsoundNode] Invalid Message: "' + event.data);
