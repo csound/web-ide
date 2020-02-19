@@ -1,4 +1,5 @@
 import { css } from "@emotion/core";
+import { isMobile } from "@root/utils";
 
 export const root = css`
     font-size: 16px;
@@ -22,15 +23,17 @@ export const root = css`
     }
 
     & .CodeMirror-vscrollbar {
-        overflow: hidden !important;
+        ${!isMobile() ? "overflow: hidden !important;" : ""}
     }
 
     & .CodeMirror-scroll {
-        overflow: visible !important;
+        ${!isMobile() ? "overflow: visible !important;" : ""}
+        ${!isMobile()
+            ? "min-height: 100%;"
+            : "min-height: calc(100vh - 160px); max-height: calc(100vh - 160px);"}
         margin: 0 !important;
         padding: 0 !important;
         height: auto !important;
-        min-height: 100%;
         width: 100%;
         position: static !important;
     }

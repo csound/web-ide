@@ -28,6 +28,7 @@ import { subscribeToProjectChanges } from "@comp/Projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
 import Console from "@comp/Console/Console";
+import MobileNavigation from "./MobileNavigation";
 import {
     storeEditorKeyboardCallbacks,
     storeProjectEditorKeyboardCallbacks
@@ -42,7 +43,7 @@ import {
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
-import { mapIndexed } from "../../utils";
+import { mapIndexed, isMobile } from "@root/utils";
 import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
@@ -76,7 +77,7 @@ function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
 const ProjectEditor = ({ activeProject, csound }) => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
-
+    const [mobileTabIndex, setMobileTabIndex] = useState(0);
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
@@ -230,7 +231,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     );
 
     const tabDock = isEmpty(openDocuments) ? (
-        <div style={{ height: "50vh" }} />
+        <div style={{ height: "50vh", display: "flex" }} />
     ) : (
         <Tabs
             activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
@@ -352,47 +353,83 @@ const ProjectEditor = ({ activeProject, csound }) => {
         // eslint-disable-next-line
     }, []);
 
-    return (
-        <DnDProvider project={activeProject}>
-            <style>{`#root {overflow: hidden!important;}
+    if (isMobile()) {
+        const MobileFileTree = (
+            <div css={SS.mobileFileTree}>
+                <FileTree />
+            </div>
+        );
+        const MobileConsole = (
+            <div
+                css={SS.mobileConsole}
+                style={{
+                    display: mobileTabIndex === 2 ? "inherit" : "none"
+                }}
+            >
+                <Console />
+            </div>
+        );
+        const MobileManual = <div css={SS.mobileManual}>{manualWindow}</div>;
+        return (
+            <DnDProvider project={activeProject}>
+                <style>{`body {overflow: hidden!important;}`}</style>
+                {MobileConsole}
+                {mobileTabIndex === 0
+                    ? tabDock
+                    : mobileTabIndex === 1
+                    ? MobileFileTree
+                    : mobileTabIndex === 3
+                    ? MobileManual
+                    : null}
+                <MobileNavigation
+                    mobileTabIndex={mobileTabIndex}
+                    setMobileTabIndex={setMobileTabIndex}
+                />
+            </DnDProvider>
+        );
+    } else {
+        return (
+            <DnDProvider project={activeProject}>
+                <style>{`#root {overflow: hidden!important;}
                      body > .ps__rail-x {display:none!important;}
                      body > .ps__rail-y {display:none!important;}`}</style>
-            <div css={SS.splitterLayoutContainer}>
-                {unsavedDataExitPrompt}
-                <SplitterLayout
-                    primaryIndex={1}
-                    primaryMinSize={400}
-                    secondaryInitialSize={250}
-                    secondaryMinSize={250}
-                >
-                    {isFileTreeVisible && <FileTree />}
-
+                <div css={SS.splitterLayoutContainer}>
+                    {unsavedDataExitPrompt}
                     <SplitterLayout
-                        horizontal
-                        secondaryInitialSize={500}
-                        onDragStart={() => setManualDrag(true)}
-                        onDragEnd={() => setManualDrag(false)}
+                        primaryIndex={1}
+                        primaryMinSize={400}
+                        secondaryInitialSize={250}
+                        secondaryMinSize={250}
                     >
-                        {!isConsoleVisible ? (
-                            tabDock
-                        ) : (
-                            <SplitterLayout
-                                vertical
-                                secondaryInitialSize={250}
-                                ref={tabPanelRef}
-                                customClassName={"panel-with-tab-dock"}
-                            >
-                                {tabDock}
-                                <Console />
-                            </SplitterLayout>
-                        )}
+                        {isFileTreeVisible && <FileTree />}
 
-                        {isManualVisible && manualWindow}
+                        <SplitterLayout
+                            horizontal
+                            secondaryInitialSize={500}
+                            onDragStart={() => setManualDrag(true)}
+                            onDragEnd={() => setManualDrag(false)}
+                        >
+                            {!isConsoleVisible ? (
+                                tabDock
+                            ) : (
+                                <SplitterLayout
+                                    vertical
+                                    secondaryInitialSize={250}
+                                    ref={tabPanelRef}
+                                    customClassName={"panel-with-tab-dock"}
+                                >
+                                    {tabDock}
+                                    <Console />
+                                </SplitterLayout>
+                            )}
+
+                            {isManualVisible && manualWindow}
+                        </SplitterLayout>
                     </SplitterLayout>
-                </SplitterLayout>
-            </div>
-        </DnDProvider>
-    );
+                </div>
+            </DnDProvider>
+        );
+    }
 };
 
 export default ProjectEditor;

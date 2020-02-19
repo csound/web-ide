@@ -46,7 +46,9 @@ const Main = (props: IMain) => {
         return () => {
             unsubscribeAuthObserver();
             unsubscribeLoggedInUserProfile && unsubscribeLoggedInUserProfile();
-            (window as any).ps_body.destroy();
+            !isMobile() &&
+                (window as any).ps_body &&
+                (window as any).ps_body.destroy();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

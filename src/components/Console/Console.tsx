@@ -64,7 +64,7 @@ const Console = ({ width, height }: IConsoleProps) => {
                 ) {
                     setTimeout(() => row.scrollToRow(row.props.rowCount), 9);
                 }
-                return append(msg + '\n', currentLogs);
+                return append(msg + "\n", currentLogs);
             });
         }
     };
@@ -85,7 +85,7 @@ const Console = ({ width, height }: IConsoleProps) => {
     function rowRenderer({ key, index, style }) {
         return (
             <li key={key} style={style}>
-               <pre>{logs[index]}</pre>
+                <pre>{logs[index]}</pre>
             </li>
         );
     }
