@@ -59,7 +59,8 @@ const PlayButton = ({ activeProjectUid }) => {
                             dispatch(resumePausedCsound());
                             break;
                         }
-                        case "stopped": {
+                        case "stopped":
+                        case "initialized": {
                             dispatch(playAction);
                         }
                     }
