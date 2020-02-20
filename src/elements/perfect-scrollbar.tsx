@@ -22,18 +22,34 @@ const ScrollBar = forwardRef((props: any, ref: any) => {
             if (props.windowName) {
                 (window as any)[props.windowName] = ps;
             }
+            if (props.onScroll) {
+                ps.onScroll = props.onScroll;
+            }
+            const container = document.getElementById(props.windowName);
+            if (typeof props.initialScrollTop === "number" && container) {
+                container.scrollTop = props.initialScrollTop;
+            }
             return () => {
-                ps.destroy(current);
-                if (props.windowName) {
-                    delete (window as any)[props.windowName];
-                }
+                setTimeout(() => {
+                    try {
+                        ps.destroy(current);
+                        if (props.windowName) {
+                            delete (window as any)[props.windowName];
+                        }
+                    } catch (e) {}
+                }, 100);
             };
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ref]);
 
     return (
-        <div ref={ref} css={scrollbarContainer} style={props.style || {}}>
+        <div
+            ref={ref}
+            css={scrollbarContainer}
+            id={props.windowName}
+            style={props.style || {}}
+        >
             {props.children}
         </div>
     );

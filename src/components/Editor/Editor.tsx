@@ -7,7 +7,6 @@ import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import ResizeObserver from "resize-observer-polyfill";
 import ScrollBar from "@elem/perfect-scrollbar";
-import { isEmpty } from "lodash";
 import { pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
@@ -25,13 +24,14 @@ require("codemirror/lib/codemirror.css");
 
 type IPrintToConsole = ((text: string) => void) | null;
 
+const cursorState = {};
+
 const CodeEditor = ({ documentUid, projectUid }) => {
     const [editorRef, setEditorRef] = useState(null as any);
     const scrollerRef: any = useRef();
     const [editorValue, setEditorValue] = useState("");
     const theme: any = useTheme();
     const debouncedEditorValue = useDebounce(editorValue, 200);
-
     const dispatch = useDispatch();
     const activeProjectUid = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
@@ -164,10 +164,11 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             editorRef.display.scroller = currentScroller;
             const resizeHandler = () => {
                 if (
-                    (window as any).editor_scroller &&
-                    typeof (window as any).editor_scroller.update === "function"
+                    (window as any)[`editor_scroller`] &&
+                    typeof (window as any)[`editor_scroller`].update ===
+                        "function"
                 ) {
-                    (window as any).editor_scroller.update();
+                    (window as any)[`editor_scroller`].update();
                 }
             };
             const resizeObserver = new ResizeObserver(resizeHandler);
@@ -183,10 +184,11 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         editor.scrollIntoView = () => {
             setTimeout(() => {
                 if (
-                    (window as any).editor_scroller &&
-                    typeof (window as any).editor_scroller.update === "function"
+                    (window as any)[`editor_scroller`] &&
+                    typeof (window as any)[`editor_scroller`].update ===
+                        "function"
                 ) {
-                    (window as any).editor_scroller.update();
+                    (window as any)[`editor_scroller`].update();
                 }
             }, 50);
         };
@@ -201,14 +203,17 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             )
         );
         editor.focus();
-        const lastCursorPos = localStorage.getItem(documentUid + ":cursorPos");
-        if (!isEmpty(lastCursorPos)) {
-            const storedScrollPos = JSON.parse(lastCursorPos || "");
-            editor.setCursor(storedScrollPos);
-            editor.scrollIntoView(storedScrollPos);
-        } else {
-            editor.setCursor({ line: 1, ch: 1 });
-        }
+        const lastLine = pathOr(
+            0,
+            [`${documentUid}:cursor_pos`, "line"],
+            cursorState
+        );
+        const lastColumn = pathOr(
+            0,
+            [`${documentUid}:cursor_pos`, "ch"],
+            cursorState
+        );
+        editor.setCursor({ line: lastLine, ch: lastColumn });
     };
 
     const editorEvalCurried = editorEvalCode(
@@ -222,16 +227,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
 
     const editorWillUnmount = () => {
         if (editorRef) {
-            localStorage.setItem(
-                documentUid + ":cursorPos",
-                JSON.stringify(editorRef.getCursor())
-            );
-        }
-        if (scrollerRef) {
-            localStorage.setItem(
-                documentUid + ":scrollPos",
-                (scrollerRef as any).scrollTop
-            );
+            cursorState[`${documentUid}:cursor_pos`] = editorRef.getCursor();
         }
         dispatch(
             projectEditorActions.storeEditorInstance(
@@ -242,7 +238,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         );
     };
     const options = {
-        // autoFocus: true,
         autoSuggest: true,
         autoCloseBrackets: true,
         fullScreen: true,
@@ -258,9 +253,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             "Ctrl-Enter": () => editorEvalCurried(true),
             "Cmd-E": () => editorEvalCurried(false),
             "Cmd-Enter": () => editorEvalCurried(true),
-            // "Ctrl-.": () => docAtPoint(),
-            // "Ctrl-H": insertHexplay,
-            // "Ctrl-J": insertEuclidplay,
             "Ctrl-;": () => toggleComment(),
             "Cmd-;": () => toggleComment()
         }
@@ -299,7 +291,16 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     return (
         <ScrollBar
             ref={scrollerRef}
-            windowName={"editor_scroller"}
+            windowName={`editor_scroller`}
+            initialScrollTop={pathOr(
+                0,
+                [`${documentUid}:scroll_top`],
+                cursorState
+            )}
+            onScroll={e => {
+                cursorState[`${documentUid}:scroll_top`] =
+                    e.srcElement.scrollTop;
+            }}
             style={{
                 backgroundColor: theme.background
             }}

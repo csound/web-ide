@@ -104,7 +104,6 @@ export default (state: IProjectEditorReducer, action: any) => {
                 ["tabDock", "openDocuments"],
                 state
             );
-
             const documentAlreadyOpenIndex = findIndex(
                 currentOpenDocs,
                 (od: IOpenDocument) => od.uid === action.documentUid

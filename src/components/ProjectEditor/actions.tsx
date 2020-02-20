@@ -56,7 +56,6 @@ export const tabDockInit = (
             console.error(error);
         }
     }
-
     if (
         defaultTarget &&
         defaultTarget.targetDocumentUid &&
@@ -88,6 +87,10 @@ export const tabDockInit = (
             allDocuments
         );
         projectCsd &&
+            !find(
+                propEq("uid", projectCsd.documentUid),
+                initialOpenDocuments
+            ) &&
             initialOpenDocuments.push({
                 uid: projectCsd.documentUid,
                 editorInstance: null
