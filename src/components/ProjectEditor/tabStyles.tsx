@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { styled as themeStyled } from "react-tabtab";
 import { _shadow } from "@styles/_common";
+import { isMobile } from "@root/utils";
 let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
 
 TabListStyle = styled(TabListStyle)`
@@ -13,6 +14,7 @@ TabListStyle = styled(TabListStyle)`
     & li::after {
         z-index: 0;
     }
+    ${!isMobile() ? "" : "display: none;"}
 `;
 
 TabStyle = styled(TabStyle)`

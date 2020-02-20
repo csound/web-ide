@@ -249,7 +249,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 );
             }}
         >
-            <DragTabList>{openTabList}</DragTabList>
+            <DragTabList id="drag-tab-list">{openTabList}</DragTabList>
             <PanelList>{openTabPanels}</PanelList>
         </Tabs>
     );
@@ -372,7 +372,10 @@ const ProjectEditor = ({ activeProject, csound }) => {
         const MobileManual = <div css={SS.mobileManual}>{manualWindow}</div>;
         return (
             <DnDProvider project={activeProject}>
-                <style>{`body {overflow: hidden!important;}`}</style>
+                <style>
+                    {`body {overflow: hidden!important;}` +
+                        `#drag-tab-list {display: none;}`}
+                </style>
                 {MobileConsole}
                 {mobileTabIndex === 0
                     ? tabDock

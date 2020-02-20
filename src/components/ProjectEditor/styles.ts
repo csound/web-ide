@@ -1,5 +1,6 @@
 import { css } from "@emotion/core";
 import { shadow } from "@styles/_common";
+import { isMobile } from "@root/utils";
 
 export const splitterLayoutContainer = css`
     width: 100%;
@@ -23,13 +24,15 @@ export const splitterLayoutContainer = css`
           overflow: hidden;
         }
         & > div > div > div:first-of-type {
-          height: 45px;
+          height: ${isMobile() ? "0px" : "45px"};
         }
         & > div > div > div:last-of-type {
-          height: calc(100% - 45px);
+          height: ${isMobile() ? "auto" : "calc(100% - 45px)"};
           min-height: 360px;
           width: 100%;
           position: relative;
+top: 0;
+
         }
 }
 `;
@@ -64,7 +67,7 @@ export const headIconsContainer = theme => css`
 
 export const mobileNavigationContainer = theme => css`
     background-color: ${theme.headerBackground};
-    position: absolute;
+    position: fixed;
     width: 100%;
     bottom: 0;
     z-index: 10;
