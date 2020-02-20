@@ -101,7 +101,6 @@ export const getPlayActionFromTarget = (store: IStore) => {
         ["TargetControlsReducer", "selectedTargetPlaylistIndex"],
         store
     );
-
     const activeProjectUid = pathOr(
         null,
         ["ProjectsReducer", "activeProjectUid"],

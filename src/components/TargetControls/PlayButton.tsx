@@ -13,7 +13,6 @@ import { selectSelectedTarget } from "./selectors";
 import { pauseCsound, resumePausedCsound } from "@comp/Csound/actions";
 
 const PlayButton = ({ activeProjectUid }) => {
-    // const getPlayAction = (getPlayActionFromTarget as any)(activeProjectUid);
     const playActionDefault = useSelector(getPlayActionFromTarget);
 
     const playActionFallback = useSelector(

@@ -5,7 +5,7 @@ import {
     STORE_EDITOR_KEYBOARD_CALLBACKS,
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
-import { curry } from "ramda";
+import { curry, pathOr } from "ramda";
 import {
     newDocument,
     saveAllAndClose,
@@ -14,7 +14,10 @@ import {
     addDocument
 } from "@comp/Projects/actions";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
-import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
+import {
+    getPlayActionFromProject,
+    getPlayActionFromTarget
+} from "@comp/TargetControls/utils";
 import { pauseCsound, stopCsound } from "@comp/Csound/actions";
 import { selectCurrentTab } from "@comp/ProjectEditor/selectors";
 import * as EditorActions from "@comp/Editor/actions";
@@ -38,7 +41,14 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
             ),
             pause_playback: withPreventDefault(() => dispatch(pauseCsound())),
             run_project: withPreventDefault(() => {
-                const playAction = (getPlayActionFromTarget as any)(getStore());
+                const playActionDefault = (getPlayActionFromTarget as any)(
+                    getStore()
+                );
+                const playActionFallback = getPlayActionFromProject(
+                    projectUid,
+                    getStore()
+                );
+                const playAction = playActionDefault || playActionFallback;
                 playAction && dispatch(playAction);
             }),
             save_all_documents: withPreventDefault(() =>
@@ -78,5 +88,19 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
             type: STORE_EDITOR_KEYBOARD_CALLBACKS,
             callbacks
         });
+    };
+};
+
+export const invokeHotKeyCallback = (hotKey: string) => {
+    return async (dispatch: any, getState) => {
+        const state = getState();
+        const maybeCallback = pathOr(
+            null,
+            ["HotKeysReducer", "callbacks", hotKey],
+            state
+        );
+        if (maybeCallback) {
+            maybeCallback(null);
+        }
     };
 };

@@ -6,28 +6,21 @@ import NestedMenuIcon from "@material-ui/icons/ArrowRightSharp";
 import * as SS from "./styles";
 import { hr as hrCss } from "@styles/_common";
 import { MenuItemDef } from "./types";
+import { invokeHotKeyCallback } from "@comp/HotKeys/actions";
 import { BindingsMap } from "@comp/HotKeys/types";
 import { humanizeKeySequence } from "@comp/HotKeys/utils";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import { IStore } from "@store/types";
-import {
-    newDocument,
-    saveAllAndClose,
-    saveAllFiles,
-    saveFile,
-    exportProject,
-    addDocument
-} from "@comp/Projects/actions";
+import { exportProject } from "@comp/Projects/actions";
 import {
     toggleManualPanel,
     setConsolePanelOpen,
     setFileTreePanelOpen
 } from "@comp/ProjectEditor/actions";
-import { pauseCsound, renderToDisk, stopCsound } from "@comp/Csound/actions";
+import { renderToDisk } from "@comp/Csound/actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { changeTheme } from "@comp/Themes/action";
-import { getPlayActionFromTarget } from "@comp/TargetControls/utils";
 import { append, equals, isEmpty, pathOr, propOr, reduce, slice } from "ramda";
 import { showKeyboardShortcuts } from "@comp/SiteDocs/actions";
 
@@ -39,7 +32,6 @@ function MenuBar(props) {
     const dispatch = useDispatch();
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
     const csoundStatus = useSelector(selectCsoundStatus);
-    const playAction = useSelector(getPlayActionFromTarget);
     const keyBindings: BindingsMap | null = useSelector(
         pathOr(null, ["HotKeysReducer", "bindings"])
     );
@@ -57,6 +49,7 @@ function MenuBar(props) {
     const isConsoleVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.consoleVisible
     );
+
     const isFileTreeVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
     );
@@ -68,25 +61,21 @@ function MenuBar(props) {
                 {
                     label: "New File…",
                     hotKey: "new_document",
-                    callback: () => dispatch(newDocument(activeProjectUid, "")),
                     disabled: !isOwner
                 },
                 {
                     label: "Add File…",
                     hotKey: "add_file",
-                    callback: () => dispatch(addDocument(activeProjectUid)),
                     disabled: !isOwner
                 },
                 {
                     label: "Save Document",
                     hotKey: "save_document",
-                    callback: () => dispatch(saveFile()),
                     disabled: !isOwner
                 },
                 {
                     label: "Save All",
                     hotKey: "save_all_documents",
-                    callback: () => dispatch(saveAllFiles()),
                     disabled: !isOwner
                 },
                 {
@@ -105,9 +94,7 @@ function MenuBar(props) {
                 },
                 {
                     label: isOwner ? "Save and Close" : "Close",
-                    hotKey: "save_and_close",
-                    callback: () =>
-                        isOwner && dispatch(saveAllAndClose("/profile"))
+                    hotKey: "save_and_close"
                 }
             ]
         },
@@ -144,20 +131,17 @@ function MenuBar(props) {
                 {
                     label: csoundStatus === "paused" ? "Resume" : "Run/Play",
                     hotKey: "run_project",
-                    callback: () => dispatch(playAction),
                     disabled: csoundStatus === "playing"
                 },
                 {
                     label: "Stop",
                     hotKey: "stop_playback",
-                    callback: () => dispatch(stopCsound()),
                     disabled:
                         csoundStatus !== "playing" && csoundStatus !== "paused"
                 },
                 {
                     label: "Pause",
                     hotKey: "pause_playback",
-                    callback: () => dispatch(pauseCsound()),
                     disabled: csoundStatus !== "playing"
                 },
                 {
@@ -252,10 +236,14 @@ function MenuBar(props) {
                         <div
                             key={index}
                             onClick={e => {
-                                item.callback &&
-                                    !item.disabled &&
-                                    item.callback();
-                                e.preventDefault();
+                                if (item.hotKey) {
+                                    dispatch(invokeHotKeyCallback(item.hotKey));
+                                } else {
+                                    item.callback &&
+                                        !item.disabled &&
+                                        item.callback();
+                                    e.preventDefault();
+                                }
                             }}
                             css={hasChild && SS.nestedWrapper}
                             onMouseOver={() => {
