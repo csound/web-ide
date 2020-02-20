@@ -125,7 +125,9 @@ const SocialControls = () => {
                             size="medium"
                             onClick={() => {
                                 if (projectUid !== null) {
-                                    dispatch(markProjectPublic(!isPublic));
+                                    dispatch(
+                                        markProjectPublic(projectUid, !isPublic)
+                                    );
                                 }
                             }}
                         >

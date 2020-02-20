@@ -20,8 +20,10 @@ import {
     storeProfileStars
 } from "./actions";
 import { UPDATE_PROFILE_FOLLOWING, UPDATE_PROFILE_FOLLOWERS } from "./types";
+import { listifyObject } from "@root/utils";
 import {
     assoc,
+    descend,
     difference,
     filter,
     isEmpty,
@@ -30,7 +32,9 @@ import {
     pathOr,
     pipe,
     prop,
-    propEq
+    propEq,
+    propOr,
+    sort
 } from "ramda";
 
 export const subscribeToProfile = (profileUid: string, dispatch: any) => {
@@ -47,7 +51,12 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = following.doc(profileUid).onSnapshot(
         async followingRef => {
             const state = store.getState();
-            const userProfileUids = keys(followingRef.data() || {}) as string[];
+            const userProfileData = followingRef.data();
+            const userProfileDataSorted = sort(
+                descend(propOr(-Infinity, "val")),
+                listifyObject(userProfileData)
+            );
+            const userProfileUids = map(prop("key"), userProfileDataSorted);
             const cachedProfileUids = keys(state.ProfileReducer.profiles);
             const missingProfileUids = difference(
                 userProfileUids,
@@ -82,7 +91,12 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = followers.doc(profileUid).onSnapshot(
         async followersRef => {
             const state = store.getState();
-            const userProfileUids = keys(followersRef.data() || {}) as string[];
+            const userProfileData = followersRef.data();
+            const userProfileDataSorted = sort(
+                descend(propOr(-Infinity, "val")),
+                listifyObject(userProfileData)
+            );
+            const userProfileUids = map(prop("key"), userProfileDataSorted);
             const cachedProfileUids = keys(state.ProfileReducer.profiles);
             const missingProfileUids = difference(
                 userProfileUids,

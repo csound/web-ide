@@ -34,7 +34,7 @@ export function isAudioFile(fileName: string) {
 export const generateEmptyDocument = (documentUid, filename): IDocument => ({
     filename,
     currentValue: "",
-    createdAt: getFirebaseTimestamp(),
+    created: getFirebaseTimestamp(),
     documentUid,
     lastModified: getFirebaseTimestamp(),
     savedValue: "",
@@ -87,7 +87,7 @@ export const addDocumentToEMFS = curry(
 
 export const fileDocDataToDocumentType = docData =>
     ({
-        createdAt: docData["createdAt"] || docData["lastModified"], // migration fix
+        created: docData["created"],
         currentValue: docData["value"],
         description: docData["description"],
         documentUid: docData["documentUid"],
@@ -117,6 +117,7 @@ export const convertProjectSnapToProject = async projSnap => {
     return {
         projectUid: projSnap.id,
         description: propOr("", "description", projData),
+        created: propOr(null, "created", projData),
         documents: {},
         isPublic: propOr(false, "public", projData),
         name: propOr("", "name", projData),

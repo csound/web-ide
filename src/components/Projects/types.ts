@@ -24,7 +24,7 @@ export type IDocumentFileType = "txt" | "bin" | "folder";
 // INTERFACES
 export interface IDocument {
     currentValue: string;
-    createdAt: Timestamp | null;
+    created: Timestamp | null;
     documentUid: string;
     filename: string;
     lastModified: Timestamp | null;

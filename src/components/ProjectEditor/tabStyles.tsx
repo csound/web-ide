@@ -22,7 +22,6 @@ TabStyle = styled(TabStyle)`
     color: ${props =>
         props.active ? props.theme.textColor : props.theme.unfocusedTextColor};
     font-weight: ${props => (props.active ? 500 : 400)};
-    // text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
     background-color: ${props =>
         props.active
             ? props.theme.highlightBackground

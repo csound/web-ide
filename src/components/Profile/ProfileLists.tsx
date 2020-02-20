@@ -8,6 +8,8 @@ import Tooltip from "@material-ui/core/Tooltip";
 import ListPlayButton from "./ListPlayButton";
 import SettingsIcon from "@material-ui/icons/Settings";
 import DeleteIcon from "@material-ui/icons/DeleteOutline";
+import VisibilityIcon from "@material-ui/icons/Visibility";
+import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import { useDispatch, useSelector } from "react-redux";
 import {
     StyledListItemContainer,
@@ -23,6 +25,8 @@ import {
     selectFilteredUserFollowers
 } from "./selectors";
 import { editProject, deleteProject } from "./actions";
+import { markProjectPublic } from "@comp/Projects/actions";
+import { descend, sort, propOr } from "ramda";
 import * as SS from "./styles";
 
 const ProjectListItem = props => {
@@ -68,7 +72,10 @@ const ProjectListItem = props => {
             {isProfileOwner && (
                 <div>
                     <div css={SS.settingsIconContainer}>
-                        <Tooltip title="Toggle project settings">
+                        <Tooltip
+                            title="Toggle project settings"
+                            placement="top-end"
+                        >
                             <div
                                 css={SS.settingsIcon}
                                 onClick={e => {
@@ -82,7 +89,10 @@ const ProjectListItem = props => {
                         </Tooltip>
                     </div>
                     <div css={SS.deleteIconContainer}>
-                        <Tooltip title={`Delete ${project.name}`}>
+                        <Tooltip
+                            title={`Delete ${project.name}`}
+                            placement="top-end"
+                        >
                             <div
                                 css={SS.deleteIcon}
                                 onClick={e => {
@@ -92,6 +102,37 @@ const ProjectListItem = props => {
                                 }}
                             >
                                 <DeleteIcon />
+                            </div>
+                        </Tooltip>
+                    </div>
+                    <div css={SS.publicIconContainer}>
+                        <Tooltip
+                            title={
+                                project.isPublic
+                                    ? "Make the project private"
+                                    : "Make the project public"
+                            }
+                            placement="top-end"
+                        >
+                            <div
+                                css={SS.publicIcon}
+                                style={{ opacity: !project.isPublic ? 0.6 : 1 }}
+                                onClick={e => {
+                                    dispatch(
+                                        markProjectPublic(
+                                            project.projectUid,
+                                            !project.isPublic
+                                        )
+                                    );
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                            >
+                                {project.isPublic ? (
+                                    <VisibilityIcon />
+                                ) : (
+                                    <VisibilityOffIcon />
+                                )}
                             </div>
                         </Tooltip>
                     </div>
@@ -121,7 +162,10 @@ export default ({
         <List>
             {selectedSection === 0 &&
                 Array.isArray(filteredProjects) &&
-                filteredProjects.map((p, i) => {
+                sort(
+                    descend(propOr(-Infinity, "created")),
+                    filteredProjects
+                ).map((p, i) => {
                     return (
                         <ProjectListItem
                             key={p.projectUid}

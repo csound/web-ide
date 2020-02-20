@@ -28,7 +28,7 @@ exports.add_project_file_on_storage_upload_callback = functions.storage
                         type: "bin",
                         userUid,
                         value: "",
-                        createdAt: newTimestamp(),
+                        created: newTimestamp(),
                         lastModified: newTimestamp()
                     });
             }

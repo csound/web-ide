@@ -31,7 +31,6 @@ export const splitterLayoutContainer = css`
           min-height: 360px;
           width: 100%;
           position: relative;
-top: 0;
 
         }
 }

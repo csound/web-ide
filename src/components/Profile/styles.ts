@@ -282,3 +282,23 @@ export const deleteIcon = theme => css`
         height: 100%;
     }
 `;
+
+export const publicIconContainer = css`
+    position: absolute;
+    pointer-events: visible;
+    top: 0;
+    right: 128px;
+    height: 100%;
+    display: flex;
+`;
+
+export const publicIcon = theme => css`
+    ${deleteIcon(theme)}
+    color: ${theme.altButtonBackground};
+    &:hover {
+      color: ${theme.altButtonBackground};
+        & svg {
+            transform: scale(1.1, 0.9) ;
+        }
+    }
+`;

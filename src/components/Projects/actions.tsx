@@ -67,7 +67,6 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase/app";
 import uuidv4 from "uuid/v4";
-import { selectActiveProjectUid } from "../SocialControls/selectors";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
@@ -423,7 +422,7 @@ export const newFolder = (projectUid: string) => {
                     userUid,
                     path: [],
                     lastModified: getFirebaseTimestamp(),
-                    createdAt: getFirebaseTimestamp()
+                    created: getFirebaseTimestamp()
                 };
                 await projects
                     .doc(projectUid)
@@ -464,7 +463,7 @@ export const newDocument = (projectUid: string, val: string) => {
                     value: val,
                     userUid: uid,
                     lastModified: getFirebaseTimestamp(),
-                    createdAt: getFirebaseTimestamp(),
+                    created: getFirebaseTimestamp(),
                     path: []
                 };
                 const res = await projects
@@ -523,7 +522,7 @@ export const addDocument = (projectUid: string) => {
                             value: txt,
                             userUid: uid,
                             lastModified: getFirebaseTimestamp(),
-                            createdAt: getFirebaseTimestamp()
+                            created: getFirebaseTimestamp()
                         };
                         projects
                             .doc(project.projectUid)
@@ -677,12 +676,12 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
 };
 
 const createExportPath = (folders, doc) => {
-    if(folders == null || pathOr([], ["path"], doc).length === 0) {
+    if (folders == null || pathOr([], ["path"], doc).length === 0) {
         return doc.filename;
     }
     const paths = doc.path.map(d => folders[d].filename);
     return `${paths.join("/")}/${doc.filename}`;
-}
+};
 
 export const exportProject = () => {
     return async (dispatch: any) => {
@@ -703,11 +702,12 @@ export const exportProject = () => {
             const folder = zip.folder("project");
             const docs = Object.values(project.documents);
 
-            const folders = docs.filter(d => d.type === 'folder')
-                                .reduce((m, f) => { 
-                                    return {...m, [f.documentUid]: f}; 
-                                }, {});
- 
+            const folders = docs
+                .filter(d => d.type === "folder")
+                .reduce((m, f) => {
+                    return { ...m, [f.documentUid]: f };
+                }, {});
+
             for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
                 if (doc.type === "bin") {
@@ -718,7 +718,7 @@ export const exportProject = () => {
                     const blob = await response.arrayBuffer();
                     const exportPath = createExportPath(folders, doc);
                     folder.file(exportPath, blob, { binary: true });
-                } else if(doc.type === "txt") {
+                } else if (doc.type === "txt") {
                     const exportPath = createExportPath(folders, doc);
                     folder.file(exportPath, doc.savedValue);
                 }
@@ -732,23 +732,23 @@ export const exportProject = () => {
 };
 
 export const markProjectPublic = (
+    projectUid: string,
     isPublic: boolean
 ): ThunkAction<void, any, null, Action<string>> => {
     return async (dispatch, getState) => {
         const state = getState();
-        const activeProjectUid = selectActiveProjectUid(state);
         const loggedInUserUid = selectLoggedInUid(state);
-        if (loggedInUserUid === null || activeProjectUid === null) {
+        if (loggedInUserUid === null || projectUid === null) {
             return;
         }
-        await projects.doc(activeProjectUid).update({
+        await projects.doc(projectUid).update({
             public: isPublic
         });
         dispatch({
             type: SET_PROJECT_PUBLIC,
-            projectUid: activeProjectUid,
+            projectUid,
             isPublic
         });
-        updateProjectLastModified(activeProjectUid);
+        updateProjectLastModified(projectUid);
     };
 };
