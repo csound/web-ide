@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import withStyles from "./styles";
 import Header from "../Header/Header";
-import ProjectCard from "./ProjectCard";
+import withStyles from "./styles";
 import {
     searchProjects,
     getPopularProjects,
@@ -10,28 +9,28 @@ import {
     getStars,
     getProjectLastModified
 } from "./actions";
-import { BulletList } from "react-content-loader";
-// import { CSSTransition } from "react-transition-group";
-
 import {
     HomeContainer,
-    SearchContainer,
     StyledTextField,
     ProjectSectionHeader,
     HorizontalRule,
-    FeaturedProjectsContainer,
-    ProjectSectionCardContainer,
-    ProjectCardContainer
+    AnimatedGridContainer
 } from "./HomeUI";
+
 import {
     selectTags,
     selectStars,
     selectProjectLastModified,
-    // selectDisplayedRecentProjects,
     selectDisplayedStarredProjects,
     selectProjectUserProfiles
 } from "./selectors";
-import { GridList, GridListTile } from "@material-ui/core";
+import FeaturedProjects from "./FeaturedProjects";
+import SearchResults from "./SearchResults";
+import { Transition, TransitionGroup } from "react-transition-group";
+import { Grid, Paper } from "@material-ui/core";
+import ProjectCard from "./ProjectCard";
+
+const duration = 200;
 
 const Home = props => {
     const { classes } = props;
@@ -41,13 +40,11 @@ const Home = props => {
     const tags = useSelector(selectTags);
     const stars = useSelector(selectStars);
     const projectLastModified = useSelector(selectProjectLastModified);
-    // const recentProjects = useSelector(selectDisplayedRecentProjects);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
     const projectUserProfiles = useSelector(selectProjectUserProfiles);
     const columnCount = 4;
     const columnPlaceHolderArray = new Array(columnCount).fill(0);
-    // console.log(starredProjects);
-
+    let projectColumnCount = 4;
     useEffect(() => {
         if (
             Array.isArray(tags) === true &&
@@ -74,109 +71,159 @@ const Home = props => {
         }
     }, [searchValue, setShowFeaturedProjects, showFeaturedProjects]);
 
+    console.log(starredProjects);
+
     return (
         <div className={classes.root}>
             <Header />
-            <main>
-                {/* TEMP CODE - Remove later */}
-                <div
-                    style={{
-                        width: "70%",
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                        height: "200px"
-                    }}
-                >
-                    <h2>Welcome to the Csound Web-IDE!</h2>
-                    <p>
-                        We are nearing a beta state but invite you to start
-                        exploring the site today. For now, create a new account,
-                        create new projects, and work with the editor. View the{" "}
-                        <a href="/documentation">documentation</a> and let us
-                        know if you have questions on using the site. Your{" "}
-                        <a href="https://github.com/csound/web-ide/issues">
-                            feedback
-                        </a>{" "}
-                        is very much appreciated at this time to help get us to
-                        the final release.
-                    </p>
-                </div>
-                {false && (
-                    <HomeContainer
-                        colorA={"rgba(30, 30, 30, 1)"}
-                        colorB={"rgba(40, 40, 40, 1)"}
-                        colorC={"rgba(20, 20, 20, 1)"}
-                    >
-                        <SearchContainer>
-                            <StyledTextField
-                                fullWidth
-                                value={searchValue}
-                                variant="outlined"
-                                id="standard-name"
-                                label="Search Projects"
-                                className={classes.textField}
-                                margin="normal"
-                                InputLabelProps={{
-                                    classes: {
-                                        root: classes.cssLabel,
-                                        focused: classes.cssFocused
-                                    }
-                                }}
-                                InputProps={{
-                                    classes: {
-                                        root: classes.cssOutlinedInput,
-                                        focused: classes.cssFocused,
-                                        notchedOutline: classes.notchedOutline
-                                    },
-                                    inputMode: "numeric"
-                                }}
-                                onChange={e => {
-                                    setSearchValue(e.target.value);
-                                    dispatch(searchProjects(e.target.value));
-                                }}
-                                onFocus={e => {}}
-                            />
-                        </SearchContainer>
+            <HomeContainer
+                colorA={"rgba(30, 30, 30, 1)"}
+                colorB={"rgba(40, 40, 40, 1)"}
+                colorC={"rgba(20, 20, 20, 1)"}
+            >
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <StyledTextField
+                            fullWidth
+                            value={searchValue}
+                            variant="outlined"
+                            id="standard-name"
+                            label="Search Projects"
+                            className={classes.textField}
+                            margin="normal"
+                            InputLabelProps={{
+                                classes: {
+                                    root: classes.cssLabel,
+                                    focused: classes.cssFocused
+                                }
+                            }}
+                            InputProps={{
+                                classes: {
+                                    root: classes.cssOutlinedInput,
+                                    focused: classes.cssFocused,
+                                    notchedOutline: classes.notchedOutline
+                                },
+                                inputMode: "numeric"
+                            }}
+                            onChange={e => {
+                                setSearchValue(e.target.value);
+                                // dispatch(searchProjects(e.target.value));
+                            }}
+                        />
+                    </Grid>
+                </Grid>
+                <TransitionGroup component={null}>
+                    {searchValue === "" && (
+                        <Transition appear timeout={duration}>
+                            {transitionState => {
+                                return (
+                                    <AnimatedGridContainer
+                                        duration={duration}
+                                        container
+                                        spacing={3}
+                                        className={transitionState}
+                                    >
+                                        <Grid item xs={12}>
+                                            <ProjectSectionHeader>
+                                                Popular Projects
+                                                <HorizontalRule />
+                                            </ProjectSectionHeader>
+                                        </Grid>
+                                        {Array.isArray(starredProjects) &&
+                                            starredProjects.map((e, i) => {
+                                                return (
+                                                    <Grid item xs={6} sm={3}>
+                                                        <ProjectCard
+                                                            key={i}
+                                                            event={e}
+                                                            projectIndex={i}
+                                                            duration={duration}
+                                                            projectColumnCount={
+                                                                projectColumnCount
+                                                            }
+                                                            project={e}
+                                                            profiles={
+                                                                projectUserProfiles
+                                                            }
+                                                        />
+                                                    </Grid>
+                                                );
+                                            })}
 
-                        <FeaturedProjectsContainer>
-                            <ProjectSectionHeader row={1}>
-                                Popular Projects
-                                <HorizontalRule />
-                            </ProjectSectionHeader>
-                            <ProjectSectionCardContainer row={2}>
-                                <GridList cellHeight={300} cols={4}>
-                                    {(Array.isArray(starredProjects) &&
-                                        starredProjects.length !== 0 &&
-                                        starredProjects.map((e, i) => {
-                                            return (
-                                                <GridListTile key={i}>
-                                                    <ProjectCard
-                                                        project={e}
-                                                        profile={
-                                                            projectUserProfiles[
-                                                                e.userUid
-                                                            ]
-                                                        }
-                                                    />
-                                                </GridListTile>
-                                            );
-                                        })) ||
-                                        columnPlaceHolderArray.map((e, i) => {
-                                            return (
-                                                <GridListTile key={i}>
-                                                    <ProjectCardContainer>
-                                                        <BulletList />
-                                                    </ProjectCardContainer>
-                                                </GridListTile>
-                                            );
-                                        })}
-                                </GridList>
-                            </ProjectSectionCardContainer>
-                        </FeaturedProjectsContainer>
-                    </HomeContainer>
-                )}
-                }
-            </main>
+                                        <Grid item xs={12}>
+                                            <ProjectSectionHeader>
+                                                Other Projects
+                                                <HorizontalRule />
+                                            </ProjectSectionHeader>
+                                        </Grid>
+                                        {Array.isArray(starredProjects) &&
+                                            starredProjects.map((e, i) => {
+                                                return (
+                                                    <Grid item xs={6} sm={3}>
+                                                        <ProjectCard
+                                                            key={i}
+                                                            event={e}
+                                                            projectIndex={i}
+                                                            duration={duration}
+                                                            projectColumnCount={
+                                                                projectColumnCount
+                                                            }
+                                                            project={e}
+                                                            profiles={
+                                                                projectUserProfiles
+                                                            }
+                                                        />
+                                                    </Grid>
+                                                );
+                                            })}
+                                    </AnimatedGridContainer>
+                                );
+                            }}
+                        </Transition>
+                    )}
+                    {searchValue !== "" && (
+                        <Transition appear timeout={duration}>
+                            {transitionState => {
+                                return (
+                                    <AnimatedGridContainer
+                                        duration={duration}
+                                        container
+                                        spacing={3}
+                                        className={transitionState}
+                                    >
+                                        <Grid item xs={12}>
+                                            <ProjectSectionHeader>
+                                                Search Results
+                                                <HorizontalRule />
+                                            </ProjectSectionHeader>
+                                        </Grid>
+                                        {Array.isArray(starredProjects) &&
+                                            starredProjects.map((e, i) => {
+                                                return (
+                                                    <Grid item xs={6} sm={3}>
+                                                        <ProjectCard
+                                                            key={i}
+                                                            event={e}
+                                                            projectIndex={i}
+                                                            duration={duration}
+                                                            projectColumnCount={
+                                                                projectColumnCount
+                                                            }
+                                                            project={e}
+                                                            profiles={
+                                                                projectUserProfiles
+                                                            }
+                                                        />
+                                                    </Grid>
+                                                );
+                                            })}
+                                    </AnimatedGridContainer>
+                                );
+                            }}
+                        </Transition>
+                    )}
+                </TransitionGroup>
+            </HomeContainer>
         </div>
     );
 };
