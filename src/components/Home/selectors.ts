@@ -3,7 +3,12 @@ import { createSelector } from "reselect";
 
 export const selectDisplayedStarredProjects = (store: any) => {
     const state: State = store.HomeReducer;
-    return state.displayedStarredProjects;
+    const displayedStarredProjects = state.displayedStarredProjects;
+    if (displayedStarredProjects === false) {
+        return [null, null, null, null];
+    } else {
+        return displayedStarredProjects;
+    }
 };
 
 export const selectDisplayedRecentProjects = (store: any) => {
@@ -35,7 +40,8 @@ export const selectOrderedStars = createSelector([selectStars], stars => {
     if (!Array.isArray(stars)) {
         return [];
     }
-    // return stars.sort((a, b) => a.length - b.length);
+    const sortedStars = stars.sort((a, b) => a.stars.length - b.stars.length);
+    return sortedStars;
 });
 
 export const selectOrderedProjectLastModified = createSelector(

@@ -8,7 +8,10 @@ import {
     projectLastModified,
     tags
 } from "@config/firestore";
-import { selectOrderedProjectLastModified } from "./selectors";
+import {
+    selectOrderedProjectLastModified,
+    selectOrderedStars
+} from "./selectors";
 import {
     GET_TAGS,
     GET_STARS,
@@ -62,8 +65,16 @@ export const getStars = (): ThunkAction<
 > => async dispatch => {
     stars.onSnapshot(snapshot => {
         const result = snapshot.docs.map(doc => {
-            return { projectID: doc.id, stars: doc.data().stars };
+            const data = doc.data();
+            let stars = {};
+            if (typeof data !== "undefined" || data !== null) {
+                stars = Object.entries(data).map(e => {
+                    return { [e[0]]: e[1] };
+                });
+            }
+            return { projectID: doc.id, stars };
         });
+
         dispatch({ type: GET_STARS, payload: result });
     });
 };
@@ -75,18 +86,16 @@ export const getPopularProjects = (
     getStore
 ) => {
     const state = getStore();
-    const orderedStars = []; //FIXME (hlolli 10/02) selectOrderedStars(state);
-    const orderedProjectLastModified = selectOrderedProjectLastModified(state);
-    const splitStars = orderedStars
+    const orderedStars = selectOrderedStars(state);
+    const reverseOrderedStars = orderedStars.reverse();
+    const splitStars = reverseOrderedStars
         .splice(0, count)
         .map(e => (e as any).projectID);
-    const splitLastModified = orderedProjectLastModified
-        .splice(0, count)
-        .map(e => e.projectID);
 
-    if (splitStars.length < 1 || splitLastModified.length < 1) {
+    if (orderedStars.length === 0) {
         return;
     }
+    console.log(orderedStars);
 
     const splitStarProjectsQuery = await projects
         .where("public", "==", true)
@@ -94,17 +103,13 @@ export const getPopularProjects = (
         .get();
 
     const starProjects: any[] = [];
-    const lastModifiedProjects: any[] = [];
     splitStarProjectsQuery.forEach(snapshot => {
         starProjects.push({ id: snapshot.id, ...snapshot.data() });
     });
 
-    const userIDs = [
-        ...new Set([
-            ...starProjects.map(e => e.userUid),
-            ...lastModifiedProjects.map(e => e.userUid)
-        ])
-    ];
+    console.log(starProjects);
+
+    const userIDs = [...new Set([...starProjects.map(e => e.userUid)])];
 
     const projectProfiles = {};
 
@@ -118,8 +123,4 @@ export const getPopularProjects = (
 
     dispatch({ type: GET_PROJECT_USER_PROFILES, payload: projectProfiles });
     dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: starProjects });
-    dispatch({
-        type: GET_DISPLAYED_RECENT_PROJECTS,
-        payload: lastModifiedProjects
-    });
 };
