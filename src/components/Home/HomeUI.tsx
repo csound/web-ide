@@ -1,29 +1,14 @@
-import { TextField, IconButton } from "@material-ui/core";
+import { TextField, IconButton, Grid } from "@material-ui/core";
 import styled, { css } from "styled-components";
 import { Gradient } from "./Gradient";
 
 export const HomeContainer = styled.div`
-    height: calc(100%);
-    display: grid;
-    grid-template-columns: 250px auto;
-    overflow: hidden;
-    grid-template-rows: 0.1fr 0.9fr;
+    height: calc(100vh - 50px);
     width: 100%;
+    overflow-y: scroll;
     background-color: black;
+    padding: 20px;
     ${Gradient}
-`;
-
-export const SearchContainer = styled.div`
-    grid-row: 1;
-    grid-column: 2;
-    padding: 5px;
-`;
-
-export const ProjectsContainer = styled.div`
-    grid-row: 2;
-    grid-column: 2;
-    width: 100%;
-    height: 100%;
 `;
 
 export const StyledTextField = styled(TextField)`
@@ -33,18 +18,16 @@ export const StyledTextField = styled(TextField)`
     }
 `;
 
-interface IFeaturedProjectsContainer {
+interface IAnimatedGridContainer {
     duration: number;
 }
 
-export const FeaturedProjectsContainer = styled.div<IFeaturedProjectsContainer>`
-    display: grid;
-    height: 100%;
-    width: 100%;
-    grid-template-rows: 0.01fr auto 0.01fr auto 0.1fr;
-    grid-template-columns: 1fr;
+export const AnimatedGridContainer = styled(Grid)<IAnimatedGridContainer>`
+    position: absolute;
     transition: all ${props => props.duration}ms;
-
+    && {
+        width: 99vw;
+    }
     &.entering {
         opacity: 0;
         transform: translate(30px);
@@ -78,10 +61,8 @@ interface IProjectCard {
 }
 
 export const ProjectCardContainer = styled.div<IProjectCard>`
-    width: 25%;
-    height: calc(100% - 10px);
+    height: 25vh;
     border-radius: 8px;
-    overflow: hidden;
     z-index: 1;
     position: relative;
     margin: 5px;
@@ -289,31 +270,11 @@ export const ProjectCardContentBottomDescription = styled.div`
     font-size: 12px;
 `;
 
-interface IProjectSectionHeader {
-    row: number;
-    duration: number;
-}
-
-export const ProjectSectionHeader = styled.div<IProjectSectionHeader>`
-    grid-row: ${props => props.row};
-    grid-column: 1;
+export const ProjectSectionHeader = styled.div`
     font-family: "Merriweather", serif;
     font-size: 2em;
     padding-right: 5px;
     color: white;
-    transition: all ${props => props.duration}ms;
-
-    &.entering {
-        opacity: 0;
-        transform: translate(30px);
-    }
-    &.entered {
-        opacity: 1;
-    }
-    &.exiting {
-        opacity: 0;
-        transform: translate(30px);
-    }
 `;
 
 export const HorizontalRule = styled.hr`
