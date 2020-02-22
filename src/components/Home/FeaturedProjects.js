@@ -6,7 +6,6 @@ import {
     HorizontalRule,
     ProjectCardContainer
 } from "./HomeUI";
-import { Transition, TransitionGroup } from "react-transition-group";
 import ProjectCard from "./ProjectCard";
 
 const FeaturedProjectsRow = ({
@@ -19,26 +18,12 @@ const FeaturedProjectsRow = ({
 }) => {
     return (
         <>
-            <TransitionGroup component={null}>
-                {projectColumnCount !== 0 && (
-                    <Transition appear timeout={duration}>
-                        {transitionStatus => {
-                            return (
-                                <ProjectSectionHeader
-                                    className={transitionStatus}
-                                    row={row}
-                                    duration={duration}
-                                >
-                                    {heading}
-                                    <HorizontalRule />
-                                </ProjectSectionHeader>
-                            );
-                        }}
-                    </Transition>
-                )}
-            </TransitionGroup>
-            <TransitionGroup
-                component={FeaturedProjectsRowContainer}
+            <ProjectSectionHeader row={row} duration={duration}>
+                {heading}
+                <HorizontalRule />
+            </ProjectSectionHeader>
+
+            <FeaturedProjectsRowContainer
                 cellHeight={300}
                 cols={projectColumnCount}
                 row={row + 1}
@@ -46,27 +31,19 @@ const FeaturedProjectsRow = ({
                 {Array.isArray(projects) &&
                     projects.map((e, i) => {
                         return (
-                            <Transition key={i} appear timeout={duration}>
-                                {transitionStatus => {
-                                    return (
-                                        <ProjectCard
-                                            event={e}
-                                            projectIndex={i}
-                                            duration={duration}
-                                            transitionStatus={transitionStatus}
-                                            projectColumnCount={
-                                                projectColumnCount
-                                            }
-                                            project={e}
-                                            key={i}
-                                            profiles={profiles}
-                                        />
-                                    );
-                                }}
-                            </Transition>
+                            <ProjectCard
+                                key={i}
+                                event={e}
+                                projectIndex={i}
+                                duration={duration}
+                                projectColumnCount={projectColumnCount}
+                                project={e}
+                                key={i}
+                                profiles={profiles}
+                            />
                         );
                     })}
-            </TransitionGroup>
+            </FeaturedProjectsRowContainer>
         </>
     );
 };
