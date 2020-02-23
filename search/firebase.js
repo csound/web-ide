@@ -36,7 +36,14 @@ const getFirebaseData = async () => {
     const projects = await getData("projects", ["public", "==", true]);
     const profiles = await getData("profiles");
     const tags = await getData("tags");
-    const stars = await getData("stars");
+    let stars = await getData("stars");
+
+    stars = stars.map(e => {
+        return {
+            ...e,
+            count: Object.keys(e).length - 1
+        };
+    });
     const timestamp = Date.now();
     return {
         projects,
