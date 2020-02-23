@@ -1,5 +1,6 @@
 const firebase = require("firebase-admin");
 const serviceAccount = require("/etc/firebase-service-key.json");
+// const serviceAccount = require("./service-key.json");
 
 firebase.initializeApp({
     credential: firebase.credential.cert(serviceAccount),
@@ -8,7 +9,11 @@ firebase.initializeApp({
 
 const db = firebase.firestore();
 
-const getData = async (collectionName, whereArguments) => {
+const getData = async (
+    collectionName,
+    whereArguments,
+    condition = e => true
+) => {
     const result = [];
     let query;
 
@@ -22,8 +27,11 @@ const getData = async (collectionName, whereArguments) => {
             query = await db.collection(collectionName).get();
         }
 
+        debugger;
         query.forEach(doc => {
-            result.push({ id: doc.id, ...doc.data() });
+            if (condition(doc) === true) {
+                result.push({ id: doc.id, ...doc.data() });
+            }
         });
     } catch (e) {
         console.error(e);
@@ -34,9 +42,18 @@ const getData = async (collectionName, whereArguments) => {
 
 const getFirebaseData = async () => {
     const projects = await getData("projects", ["public", "==", true]);
+    const projectsMap = projects.reduce((acc, curr) => {
+        acc[curr.id] = curr;
+        return acc;
+    });
     const profiles = await getData("profiles");
     const tags = await getData("tags");
-    let stars = await getData("stars");
+    let stars = await getData("stars", false, doc => {
+        if (typeof projectsMap[doc.id] === "undefined") {
+            return false;
+        }
+        return projectsMap[doc.id].public === true;
+    });
 
     stars = stars.map(e => {
         return {

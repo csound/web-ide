@@ -11,6 +11,7 @@ import {
 export interface State {
     readonly tags: any;
     readonly stars: any;
+    readonly starsTotal: number;
     readonly projectLastModified: any;
     readonly displayedStarredProjects: any;
     readonly displayedRecentProjects: any;
@@ -20,6 +21,7 @@ export interface State {
 const INITIAL_STATE: State = {
     tags: false,
     stars: false,
+    starsTotal: 0,
     projectLastModified: false,
     displayedStarredProjects: false,
     displayedRecentProjects: false,
@@ -61,7 +63,8 @@ export default (state = INITIAL_STATE, action: HomeActionTypes) => {
         case GET_STARS: {
             return {
                 ...state,
-                stars: action.payload
+                stars: action.payload.data,
+                starsTotal: action.payload.totalRecords
             };
         }
         default: {

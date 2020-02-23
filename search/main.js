@@ -35,6 +35,24 @@ const main = async () => {
                 data: result,
                 totalRecords
             };
+        },
+        (collection, count) => {
+            count = parseInt(count);
+            let result = [...databaseList(collection)];
+            result = [...Array(count)]
+                .map(
+                    () =>
+                        result.splice(
+                            Math.floor(Math.random() * result.length),
+                            1
+                        )[0]
+                )
+                .filter(e => typeof e !== "undefined" && e !== null);
+
+            return {
+                data: result,
+                totalRecords: result.length
+            };
         }
     );
 };

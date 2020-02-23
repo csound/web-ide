@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const port = 4000;
-const startServer = (searchCallback, listCallback) => {
+const startServer = (searchCallback, listCallback, randomCallback) => {
     const app = express();
     app.use(cors());
     app.get(
@@ -44,6 +44,12 @@ const startServer = (searchCallback, listCallback) => {
             return res.send(result);
         }
     );
+
+    app.get("/search/random/:collection/:count", (req, res) => {
+        const { collection, count } = req.params;
+        const result = randomCallback(collection, count);
+        return res.send(result);
+    });
 
     app.listen(port, () =>
         console.log(`Search app listening on port ${port}!`)

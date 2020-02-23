@@ -6,8 +6,7 @@ import {
     searchProjects,
     getPopularProjects,
     getTags,
-    getStars,
-    getProjectLastModified
+    getStars
 } from "./actions";
 import {
     HomeContainer,
@@ -46,19 +45,14 @@ const Home = props => {
     const columnPlaceHolderArray = new Array(columnCount).fill(0);
     let projectColumnCount = 4;
     useEffect(() => {
-        if (
-            Array.isArray(tags) === true &&
-            Array.isArray(stars) === true &&
-            Array.isArray(projectLastModified) === true
-        ) {
-            dispatch(getPopularProjects(4));
+        if (Array.isArray(tags) === true && Array.isArray(stars) === true) {
+            dispatch(getPopularProjects(8));
         }
     }, [dispatch, tags, stars, projectLastModified]);
 
     useEffect(() => {
         dispatch(getTags());
         dispatch(getStars());
-        dispatch(getProjectLastModified());
     }, [dispatch]);
 
     useEffect(() => {

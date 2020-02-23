@@ -10,7 +10,8 @@ import {
 } from "@config/firestore";
 import {
     selectOrderedProjectLastModified,
-    selectOrderedStars
+    selectOrderedStars,
+    selectStars
 } from "./selectors";
 import {
     GET_TAGS,
@@ -21,26 +22,14 @@ import {
     GET_PROJECT_USER_PROFILES
 } from "./types";
 import { firestore } from "firebase/app";
+
+const searchURL = "https://web-ide-search-api.csound.com/search";
 const worker = ProjectSearch();
 
 export const searchProjects = (
     query: string
 ): ThunkAction<void, any, null, Action<string>> => dispatch => {
     worker.projectSearch(query);
-};
-
-export const getProjectLastModified = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => async dispatch => {
-    projectLastModified.onSnapshot(snapshot => {
-        const result = snapshot.docs.map(doc => {
-            return { projectID: doc.id, timestamp: doc.data().timestamp };
-        });
-        dispatch({ type: GET_PROJECT_LAST_MODIFIED, payload: result });
-    });
 };
 
 export const getTags = (): ThunkAction<
@@ -63,20 +52,11 @@ export const getStars = (): ThunkAction<
     null,
     Action<string>
 > => async dispatch => {
-    stars.onSnapshot(snapshot => {
-        const result = snapshot.docs.map(doc => {
-            const data = doc.data();
-            let stars = {};
-            if (typeof data !== "undefined" || data !== null) {
-                stars = Object.entries(data).map(e => {
-                    return { [e[0]]: e[1] };
-                });
-            }
-            return { projectID: doc.id, stars };
-        });
+    const starsRequest = await fetch(`${searchURL}/list/stars/8/0/count/desc`);
+    const starredProjects = await starsRequest.json();
+    console.log(starredProjects);
 
-        dispatch({ type: GET_STARS, payload: result });
-    });
+    dispatch({ type: GET_STARS, payload: starredProjects });
 };
 
 export const getPopularProjects = (
@@ -86,11 +66,8 @@ export const getPopularProjects = (
     getStore
 ) => {
     const state = getStore();
-    const orderedStars = selectOrderedStars(state);
-    const reverseOrderedStars = orderedStars.reverse();
-    const splitStars = reverseOrderedStars
-        .splice(0, count)
-        .map(e => (e as any).projectID);
+    const orderedStars = selectStars(state);
+    const starsIDs = orderedStars.map(e => (e as any).id);
 
     if (orderedStars.length === 0) {
         return;
@@ -99,7 +76,7 @@ export const getPopularProjects = (
 
     const splitStarProjectsQuery = await projects
         .where("public", "==", true)
-        .where(firestore.FieldPath.documentId(), "in", splitStars)
+        .where(firestore.FieldPath.documentId(), "in", starsIDs)
         .get();
 
     const starProjects: any[] = [];
