@@ -64,7 +64,7 @@ const ProjectCard = props => {
         displayName = "",
         bio = "";
 
-    if (props.project !== null) {
+    if (props.project !== null || typeof profiles[userUid] !== "undefined") {
         description = project.description;
         iconName = project.iconName;
         iconBackgroundColor = project.iconBackgroundColor;
@@ -82,11 +82,14 @@ const ProjectCard = props => {
     const [mouseOver, setMouseOver] = useState(false);
 
     iconName =
-        iconName === "" || typeof iconName === "undefined"
+        iconName === "" ||
+        typeof iconName === "undefined" ||
+        iconName === "default"
             ? "fadwaveform"
             : iconName;
 
     const SVGIcon = SVGComponents[`${iconName}Component`];
+
     return (
         <ProjectCardContainer
             duration={duration}

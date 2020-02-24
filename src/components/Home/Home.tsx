@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../Header/Header";
 import withStyles from "./styles";
-import {
-    searchProjects,
-    getPopularProjects,
-    getTags,
-    getStars
-} from "./actions";
+import { getPopularProjects, getStars, searchProjects } from "./actions";
+import { debounce } from "lodash";
+
 import {
     HomeContainer,
     StyledTextField,
@@ -17,17 +14,19 @@ import {
 } from "./HomeUI";
 
 import {
-    selectTags,
     selectStars,
     selectProjectLastModified,
     selectDisplayedStarredProjects,
-    selectProjectUserProfiles
+    selectFeaturedProjectUserProfiles,
+    selectSearchedProjectUserProfiles,
+    selectDisplayedRandomProjects,
+    selectSearchedProjects,
+    selectSearchedProjectsTotal
 } from "./selectors";
-import FeaturedProjects from "./FeaturedProjects";
-import SearchResults from "./SearchResults";
 import { Transition, TransitionGroup } from "react-transition-group";
-import { Grid, Paper } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import ProjectCard from "./ProjectCard";
+import { SEARCH_PROJECTS } from "./types";
 
 const duration = 200;
 
@@ -36,24 +35,34 @@ const Home = props => {
     const dispatch = useDispatch();
     const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
     const [searchValue, setSearchValue] = useState("");
-    const tags = useSelector(selectTags);
+    const [searchOffset, setSearchOffset] = useState(0);
     const stars = useSelector(selectStars);
     const projectLastModified = useSelector(selectProjectLastModified);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
-    const projectUserProfiles = useSelector(selectProjectUserProfiles);
-    const columnCount = 4;
-    const columnPlaceHolderArray = new Array(columnCount).fill(0);
-    let projectColumnCount = 4;
+    const randomProjects = useSelector(selectDisplayedRandomProjects);
+    const searchedProjects = useSelector(selectSearchedProjects);
+    const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);
+    const featuredProjectUserProfiles = useSelector(
+        selectFeaturedProjectUserProfiles
+    );
+    const searchedProjectUserProfiles = useSelector(
+        selectSearchedProjectUserProfiles
+    );
     useEffect(() => {
-        if (Array.isArray(tags) === true && Array.isArray(stars) === true) {
-            dispatch(getPopularProjects(8));
+        if (Array.isArray(stars) === true) {
+            dispatch(getPopularProjects());
         }
-    }, [dispatch, tags, stars, projectLastModified]);
+    }, [dispatch, stars, projectLastModified]);
 
     useEffect(() => {
-        dispatch(getTags());
         dispatch(getStars());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (searchValue === "" && searchedProjects !== false) {
+            dispatch({ type: SEARCH_PROJECTS, payload: false });
+        }
+    }, [dispatch, searchValue, searchedProjects]);
 
     useEffect(() => {
         if (searchValue.length > 0 && showFeaturedProjects === true) {
@@ -65,7 +74,14 @@ const Home = props => {
         }
     }, [searchValue, setShowFeaturedProjects, showFeaturedProjects]);
 
-    console.log(starredProjects);
+    const handler = useCallback(
+        debounce((query: string, offset: number) => {
+            if (query !== "") {
+                dispatch(searchProjects(query, offset));
+            }
+        }, 200),
+        []
+    );
 
     return (
         <div className={classes.root}>
@@ -100,8 +116,10 @@ const Home = props => {
                                 inputMode: "numeric"
                             }}
                             onChange={e => {
-                                setSearchValue(e.target.value);
-                                // dispatch(searchProjects(e.target.value));
+                                const query = e.target.value;
+                                setSearchValue(query);
+
+                                handler(query, searchOffset);
                             }}
                         />
                     </Grid>
@@ -123,21 +141,23 @@ const Home = props => {
                                                 <HorizontalRule />
                                             </ProjectSectionHeader>
                                         </Grid>
+
                                         {Array.isArray(starredProjects) &&
                                             starredProjects.map((e, i) => {
                                                 return (
-                                                    <Grid item xs={6} sm={3}>
+                                                    <Grid
+                                                        item
+                                                        xs={6}
+                                                        sm={3}
+                                                        key={i}
+                                                    >
                                                         <ProjectCard
-                                                            key={i}
                                                             event={e}
                                                             projectIndex={i}
                                                             duration={duration}
-                                                            projectColumnCount={
-                                                                projectColumnCount
-                                                            }
                                                             project={e}
                                                             profiles={
-                                                                projectUserProfiles
+                                                                featuredProjectUserProfiles
                                                             }
                                                         />
                                                     </Grid>
@@ -150,21 +170,22 @@ const Home = props => {
                                                 <HorizontalRule />
                                             </ProjectSectionHeader>
                                         </Grid>
-                                        {Array.isArray(starredProjects) &&
-                                            starredProjects.map((e, i) => {
+                                        {Array.isArray(randomProjects) &&
+                                            randomProjects.map((e, i) => {
                                                 return (
-                                                    <Grid item xs={6} sm={3}>
+                                                    <Grid
+                                                        item
+                                                        xs={6}
+                                                        sm={3}
+                                                        key={i}
+                                                    >
                                                         <ProjectCard
-                                                            key={i}
                                                             event={e}
                                                             projectIndex={i}
                                                             duration={duration}
-                                                            projectColumnCount={
-                                                                projectColumnCount
-                                                            }
                                                             project={e}
                                                             profiles={
-                                                                projectUserProfiles
+                                                                featuredProjectUserProfiles
                                                             }
                                                         />
                                                     </Grid>
@@ -191,23 +212,45 @@ const Home = props => {
                                                 <HorizontalRule />
                                             </ProjectSectionHeader>
                                         </Grid>
-                                        {Array.isArray(starredProjects) &&
-                                            starredProjects.map((e, i) => {
+
+                                        {Array.isArray(searchedProjects) &&
+                                            searchedProjects.map((e, i) => {
                                                 return (
-                                                    <Grid item xs={6} sm={3}>
-                                                        <ProjectCard
-                                                            key={i}
-                                                            event={e}
-                                                            projectIndex={i}
-                                                            duration={duration}
-                                                            projectColumnCount={
-                                                                projectColumnCount
-                                                            }
-                                                            project={e}
-                                                            profiles={
-                                                                projectUserProfiles
-                                                            }
-                                                        />
+                                                    <Grid
+                                                        item
+                                                        xs={6}
+                                                        sm={3}
+                                                        key={i}
+                                                    >
+                                                        <Transition
+                                                            appear
+                                                            timeout={duration}
+                                                        >
+                                                            {transitionState => {
+                                                                return (
+                                                                    <ProjectCard
+                                                                        event={
+                                                                            e
+                                                                        }
+                                                                        projectIndex={
+                                                                            i
+                                                                        }
+                                                                        duration={
+                                                                            duration
+                                                                        }
+                                                                        project={
+                                                                            e
+                                                                        }
+                                                                        profiles={
+                                                                            searchedProjectUserProfiles
+                                                                        }
+                                                                        transitionStatus={
+                                                                            transitionState
+                                                                        }
+                                                                    />
+                                                                );
+                                                            }}
+                                                        </Transition>
                                                     </Grid>
                                                 );
                                             })}
