@@ -5,13 +5,11 @@ const homeStyles = (theme: Theme) =>
     createStyles({
         root: {
             backgroundColor: "#e8e8e8",
-            // fontFamily: "'Space Mono', monospace",
-            bottom: "0px",
-            top: 0,
-            left: 0,
-            right: 0,
-            position: "absolute",
-            fontSize: "1rem"
+            height: "100%",
+            width: "100%",
+            fontSize: "1rem",
+            margin: 0,
+            padding: 0
         },
         main: {
             maxWidth: "1024px",

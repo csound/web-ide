@@ -37,13 +37,28 @@ const SvgPlayIcon = () => {
     );
 };
 
-const ListPlayButton = ({ projectUid }) => {
+const ListPlayButton = ({
+    projectUid,
+    iconNameProp,
+    iconBackgroundColorProp,
+    iconForegroundColorProp
+}) => {
     const theme: any = useTheme();
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
     const { iconName, iconBackgroundColor, iconForegroundColor } = useSelector(
         selectProjectIconStyle(projectUid)
     );
+
+    iconNameProp = iconNameProp === false ? iconName : iconNameProp;
+    iconBackgroundColorProp =
+        iconBackgroundColorProp === false
+            ? iconBackgroundColor
+            : iconBackgroundColorProp;
+    iconForegroundColorProp =
+        iconForegroundColorProp === false
+            ? iconForegroundColor
+            : iconForegroundColorProp;
     const isPlaying = currentlyPlayingProject === projectUid;
     const hasError = isPlaying && csoundStatus === "error";
     const isPaused = isPlaying && csoundStatus === "paused";
@@ -51,8 +66,8 @@ const ListPlayButton = ({ projectUid }) => {
     const dispatch = useDispatch();
 
     let IconComponent;
-    if (iconName && iconName !== "default" && SVGPaths[iconName]) {
-        IconComponent = SVGComponents[`${iconName}Component`];
+    if (iconNameProp && iconNameProp !== "default" && SVGPaths[iconNameProp]) {
+        IconComponent = SVGComponents[`${iconNameProp}Component`];
     } else {
         IconComponent = AssignmentIcon;
     }
@@ -79,24 +94,26 @@ const ListPlayButton = ({ projectUid }) => {
                     ? theme.errorText
                     : isPlaying || isStartingUp
                     ? "black"
-                    : iconBackgroundColor
+                    : iconBackgroundColorProp
             }}
-            onClick={() => {
+            onClick={e => {
                 !isPlaying && !isStartingUp && setIsStartingUp(true);
                 isPaused
                     ? dispatch(resumePausedCsound())
                     : isPlaying && !hasError
                     ? dispatch(pauseCsound())
                     : dispatch(playListItem(projectUid));
+
+                e.stopPropagation();
             }}
         >
             <>
                 {!isPlaying && !isStartingUp && (
                     <IconComponent
                         className={"projectIcon"}
-                        css={SS.avatarIcon(iconForegroundColor)}
+                        css={SS.avatarIcon(iconForegroundColorProp)}
                         style={{
-                            fill: `${iconForegroundColor}!important`
+                            fill: `${iconForegroundColorProp}!important`
                         }}
                     />
                 )}

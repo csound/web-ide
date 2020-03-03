@@ -5,9 +5,32 @@ export const GET_DISPLAYED_STARRED_PROJECTS =
     "HOME.GET_DISPLAYED_STARRED_PROJECTS";
 export const GET_DISPLAYED_RECENT_PROJECTS =
     "HOME.GET_DISPLAYED_RECENT_PROJECTS";
-export const GET_PROJECT_USER_PROFILES = "HOME.GET_PROJECT_USER_PROFILES";
-interface GetProjectUserProfiles {
-    type: typeof GET_PROJECT_USER_PROFILES;
+export const GET_FEATURED_PROJECT_USER_PROFILES =
+    "HOME.GET_FEATURED_PROJECT_USER_PROFILES";
+export const GET_DISPLAYED_RANDOM_PROJECTS =
+    "HOME.GET_DISPLAYED_RANDOM_PROJECTS";
+export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
+export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
+
+export const GET_SEARCHED_PROJECT_USER_PROFILES =
+    "HOME.GET_SEARCHED_PROJECT_USER_PROFILES";
+interface SearchProjectsRequest {
+    type: typeof SEARCH_PROJECTS_REQUEST;
+    payload: any;
+}
+
+interface SearchProjectsSuccess {
+    type: typeof SEARCH_PROJECTS_SUCCESS;
+    payload: any;
+}
+
+interface GetFeaturedProjectUserProfiles {
+    type: typeof GET_FEATURED_PROJECT_USER_PROFILES;
+    payload: any;
+}
+
+interface GetSearchedProjectUserProfiles {
+    type: typeof GET_SEARCHED_PROJECT_USER_PROFILES;
     payload: any;
 }
 
@@ -18,6 +41,11 @@ interface GetDisplayedStarredProjects {
 
 interface GetDisplayedRecentProjects {
     type: typeof GET_DISPLAYED_RECENT_PROJECTS;
+    payload: any;
+}
+
+interface GetDisplayedRandomProjects {
+    type: typeof GET_DISPLAYED_RANDOM_PROJECTS;
     payload: any;
 }
 interface GetProjectLastModified {
@@ -40,4 +68,8 @@ export type HomeActionTypes =
     | GetProjectLastModified
     | GetDisplayedStarredProjects
     | GetDisplayedRecentProjects
-    | GetProjectUserProfiles;
+    | GetDisplayedRandomProjects
+    | GetSearchedProjectUserProfiles
+    | GetFeaturedProjectUserProfiles
+    | SearchProjectsRequest
+    | SearchProjectsSuccess;

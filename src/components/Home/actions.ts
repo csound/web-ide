@@ -1,57 +1,60 @@
-import ProjectSearch from "./ProjectSearchShim";
-import { ThunkAction } from "redux-thunk";
-import { Action } from "redux";
-import {
-    projects,
-    profiles,
-    stars,
-    projectLastModified,
-    tags
-} from "@config/firestore";
-import { selectOrderedProjectLastModified } from "./selectors";
-import {
-    GET_TAGS,
-    GET_STARS,
-    GET_PROJECT_LAST_MODIFIED,
-    GET_DISPLAYED_STARRED_PROJECTS,
-    GET_DISPLAYED_RECENT_PROJECTS,
-    GET_PROJECT_USER_PROFILES
-} from "./types";
+import { profiles, projects } from "@config/firestore";
 import { firestore } from "firebase/app";
-const worker = ProjectSearch();
+import { Action } from "redux";
+import { ThunkAction } from "redux-thunk";
+import { selectStars } from "./selectors";
+import {
+    GET_DISPLAYED_STARRED_PROJECTS,
+    GET_FEATURED_PROJECT_USER_PROFILES,
+    GET_SEARCHED_PROJECT_USER_PROFILES,
+    GET_STARS,
+    GET_DISPLAYED_RANDOM_PROJECTS,
+    SEARCH_PROJECTS_REQUEST,
+    SEARCH_PROJECTS_SUCCESS
+} from "./types";
+
+const searchURL = "https://web-ide-search-api.csound.com/search";
 
 export const searchProjects = (
-    query: string
-): ThunkAction<void, any, null, Action<string>> => dispatch => {
-    worker.projectSearch(query);
-};
+    query: string,
+    offset: number
+): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+    dispatch({ type: SEARCH_PROJECTS_REQUEST });
 
-export const getProjectLastModified = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => async dispatch => {
-    projectLastModified.onSnapshot(snapshot => {
-        const result = snapshot.docs.map(doc => {
-            return { projectID: doc.id, timestamp: doc.data().timestamp };
-        });
-        dispatch({ type: GET_PROJECT_LAST_MODIFIED, payload: result });
-    });
-};
+    const searchRequest = await fetch(
+        `${searchURL}/query/projects/${query}/8/${offset}/name/desc`
+    );
+    let projects = await searchRequest.json();
+    projects.data = projects.data.slice(0, 8);
 
-export const getTags = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => async dispatch => {
-    tags.onSnapshot(snapshot => {
-        const result = snapshot.docs.map(doc => {
-            return { tag: doc.id, uids: doc.data() };
+    const userIDs = [...new Set([...projects.data.map(e => e.userUid)])];
+
+    if (userIDs.length === 0) {
+        dispatch({
+            type: GET_SEARCHED_PROJECT_USER_PROFILES,
+            payload: false
         });
-        dispatch({ type: GET_TAGS, payload: result });
+        dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
+
+        return;
+    }
+
+    const projectProfiles = {};
+
+    const profilesQuery = await profiles
+        .where(firestore.FieldPath.documentId(), "in", userIDs)
+        .get();
+
+    profilesQuery.forEach(snapshot => {
+        projectProfiles[snapshot.id] = snapshot.data();
     });
+
+    dispatch({
+        type: GET_SEARCHED_PROJECT_USER_PROFILES,
+        payload: projectProfiles
+    });
+
+    dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: projects });
 };
 
 export const getStars = (): ThunkAction<
@@ -60,49 +63,50 @@ export const getStars = (): ThunkAction<
     null,
     Action<string>
 > => async dispatch => {
-    stars.onSnapshot(snapshot => {
-        const result = snapshot.docs.map(doc => {
-            return { projectID: doc.id, stars: doc.data().stars };
-        });
-        dispatch({ type: GET_STARS, payload: result });
-    });
+    const starsRequest = await fetch(`${searchURL}/list/stars/8/0/count/desc`);
+    let starredProjects = await starsRequest.json();
+    starredProjects.data = starredProjects.data.slice(0, 4);
+
+    dispatch({ type: GET_STARS, payload: starredProjects });
 };
 
-export const getPopularProjects = (
-    count: number
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getStore
-) => {
+export const getPopularProjects = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => async (dispatch, getStore) => {
     const state = getStore();
-    const orderedStars = []; //FIXME (hlolli 10/02) selectOrderedStars(state);
-    const orderedProjectLastModified = selectOrderedProjectLastModified(state);
-    const splitStars = orderedStars
-        .splice(0, count)
-        .map(e => (e as any).projectID);
-    const splitLastModified = orderedProjectLastModified
-        .splice(0, count)
-        .map(e => e.projectID);
+    const orderedStars = selectStars(state);
+    const starsIDs = orderedStars.map(e => (e as any).id);
 
-    if (splitStars.length < 1 || splitLastModified.length < 1) {
+    if (orderedStars.length === 0) {
         return;
     }
-
     const splitStarProjectsQuery = await projects
         .where("public", "==", true)
-        .where(firestore.FieldPath.documentId(), "in", splitStars)
+        .where(firestore.FieldPath.documentId(), "in", starsIDs)
         .get();
 
     const starProjects: any[] = [];
-    const lastModifiedProjects: any[] = [];
     splitStarProjectsQuery.forEach(snapshot => {
         starProjects.push({ id: snapshot.id, ...snapshot.data() });
     });
 
+    const starProjectsIDs = starProjects.map(e => e.id);
+
+    const randomProjectsRequest = await fetch(`${searchURL}/random/projects/8`);
+    let randomProjects = await randomProjectsRequest.json();
+    randomProjects = randomProjects.data
+        .filter(e => {
+            return starProjectsIDs.includes(e.id) === false;
+        })
+        .slice(0, 4);
+
     const userIDs = [
         ...new Set([
             ...starProjects.map(e => e.userUid),
-            ...lastModifiedProjects.map(e => e.userUid)
+            ...randomProjects.map(e => e.userUid)
         ])
     ];
 
@@ -116,10 +120,10 @@ export const getPopularProjects = (
         projectProfiles[snapshot.id] = snapshot.data();
     });
 
-    dispatch({ type: GET_PROJECT_USER_PROFILES, payload: projectProfiles });
-    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: starProjects });
     dispatch({
-        type: GET_DISPLAYED_RECENT_PROJECTS,
-        payload: lastModifiedProjects
+        type: GET_FEATURED_PROJECT_USER_PROFILES,
+        payload: projectProfiles
     });
+    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: starProjects });
+    dispatch({ type: GET_DISPLAYED_RANDOM_PROJECTS, payload: randomProjects });
 };

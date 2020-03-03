@@ -1,68 +1,61 @@
-import React, { useEffect, useState } from "react";
+import SearchProjects from "./SearchProjects";
+import FeaturedProjects from "./FeaturedProjects";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import withStyles from "./styles";
 import Header from "../Header/Header";
-import ProjectCard from "./ProjectCard";
+import withStyles from "./styles";
+import { getPopularProjects, getStars, searchProjects } from "./actions";
+import { debounce } from "lodash";
+import { HomeContainer, StyledTextField } from "./HomeUI";
 import {
-    searchProjects,
-    getPopularProjects,
-    getTags,
-    getStars,
-    getProjectLastModified
-} from "./actions";
-import { BulletList } from "react-content-loader";
-// import { CSSTransition } from "react-transition-group";
-
-import {
-    HomeContainer,
-    SearchContainer,
-    StyledTextField,
-    ProjectSectionHeader,
-    HorizontalRule,
-    FeaturedProjectsContainer,
-    ProjectSectionCardContainer,
-    ProjectCardContainer
-} from "./HomeUI";
-import {
-    selectTags,
     selectStars,
     selectProjectLastModified,
-    // selectDisplayedRecentProjects,
     selectDisplayedStarredProjects,
-    selectProjectUserProfiles
+    selectFeaturedProjectUserProfiles,
+    selectSearchedProjectUserProfiles,
+    selectDisplayedRandomProjects,
+    selectSearchedProjects,
+    selectSearchProjectsRequest
 } from "./selectors";
-import { GridList, GridListTile } from "@material-ui/core";
+import { TransitionGroup, Transition } from "react-transition-group";
+import { Grid } from "@material-ui/core";
+import { SEARCH_PROJECTS_SUCCESS } from "./types";
+
+const duration = 200;
 
 const Home = props => {
     const { classes } = props;
     const dispatch = useDispatch();
     const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
     const [searchValue, setSearchValue] = useState("");
-    const tags = useSelector(selectTags);
     const stars = useSelector(selectStars);
     const projectLastModified = useSelector(selectProjectLastModified);
-    // const recentProjects = useSelector(selectDisplayedRecentProjects);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
-    const projectUserProfiles = useSelector(selectProjectUserProfiles);
-    const columnCount = 4;
-    const columnPlaceHolderArray = new Array(columnCount).fill(0);
-    // console.log(starredProjects);
-
+    const randomProjects = useSelector(selectDisplayedRandomProjects);
+    const searchedProjects = useSelector(selectSearchedProjects);
+    const searchProjectsRequest = useSelector(selectSearchProjectsRequest);
+    // const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);
+    const featuredProjectUserProfiles = useSelector(
+        selectFeaturedProjectUserProfiles
+    );
+    const searchedProjectUserProfiles = useSelector(
+        selectSearchedProjectUserProfiles
+    );
     useEffect(() => {
-        if (
-            Array.isArray(tags) === true &&
-            Array.isArray(stars) === true &&
-            Array.isArray(projectLastModified) === true
-        ) {
-            dispatch(getPopularProjects(4));
+        if (Array.isArray(stars) === true) {
+            dispatch(getPopularProjects());
         }
-    }, [dispatch, tags, stars, projectLastModified]);
+    }, [dispatch, stars, projectLastModified]);
 
     useEffect(() => {
-        dispatch(getTags());
         dispatch(getStars());
-        dispatch(getProjectLastModified());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (searchValue === "" && searchedProjects !== false) {
+            dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
+        }
+    }, [dispatch, searchValue, searchedProjects]);
 
     useEffect(() => {
         if (searchValue.length > 0 && showFeaturedProjects === true) {
@@ -74,109 +67,94 @@ const Home = props => {
         }
     }, [searchValue, setShowFeaturedProjects, showFeaturedProjects]);
 
+    const handler = useCallback(
+        debounce((query: string, offset: number) => {
+            if (query !== "") {
+                dispatch(searchProjects(query, offset));
+            }
+        }, 200),
+        []
+    );
+
     return (
         <div className={classes.root}>
             <Header />
-            <main>
-                {/* TEMP CODE - Remove later */}
-                <div
-                    style={{
-                        width: "70%",
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                        height: "200px"
-                    }}
-                >
-                    <h2>Welcome to the Csound Web-IDE!</h2>
-                    <p>
-                        We are nearing a beta state but invite you to start
-                        exploring the site today. For now, create a new account,
-                        create new projects, and work with the editor. View the{" "}
-                        <a href="/documentation">documentation</a> and let us
-                        know if you have questions on using the site. Your{" "}
-                        <a href="https://github.com/csound/web-ide/issues">
-                            feedback
-                        </a>{" "}
-                        is very much appreciated at this time to help get us to
-                        the final release.
-                    </p>
-                </div>
-                {false && (
-                    <HomeContainer
-                        colorA={"rgba(30, 30, 30, 1)"}
-                        colorB={"rgba(40, 40, 40, 1)"}
-                        colorC={"rgba(20, 20, 20, 1)"}
-                    >
-                        <SearchContainer>
-                            <StyledTextField
-                                fullWidth
-                                value={searchValue}
-                                variant="outlined"
-                                id="standard-name"
-                                label="Search Projects"
-                                className={classes.textField}
-                                margin="normal"
-                                InputLabelProps={{
-                                    classes: {
-                                        root: classes.cssLabel,
-                                        focused: classes.cssFocused
-                                    }
-                                }}
-                                InputProps={{
-                                    classes: {
-                                        root: classes.cssOutlinedInput,
-                                        focused: classes.cssFocused,
-                                        notchedOutline: classes.notchedOutline
-                                    },
-                                    inputMode: "numeric"
-                                }}
-                                onChange={e => {
-                                    setSearchValue(e.target.value);
-                                    dispatch(searchProjects(e.target.value));
-                                }}
-                                onFocus={e => {}}
-                            />
-                        </SearchContainer>
+            <HomeContainer
+                colorA={"rgba(30, 30, 30, 1)"}
+                colorB={"rgba(40, 40, 40, 1)"}
+                colorC={"rgba(20, 20, 20, 1)"}
+            >
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <StyledTextField
+                            fullWidth
+                            value={searchValue}
+                            variant="outlined"
+                            id="standard-name"
+                            label="Search Projects"
+                            className={classes.textField}
+                            margin="normal"
+                            InputLabelProps={{
+                                classes: {
+                                    root: classes.cssLabel,
+                                    focused: classes.cssFocused
+                                }
+                            }}
+                            InputProps={{
+                                classes: {
+                                    root: classes.cssOutlinedInput,
+                                    focused: classes.cssFocused,
+                                    notchedOutline: classes.notchedOutline
+                                },
+                                inputMode: "numeric"
+                            }}
+                            onChange={e => {
+                                const query = e.target.value;
+                                setSearchValue(query);
 
-                        <FeaturedProjectsContainer>
-                            <ProjectSectionHeader row={1}>
-                                Popular Projects
-                                <HorizontalRule />
-                            </ProjectSectionHeader>
-                            <ProjectSectionCardContainer row={2}>
-                                <GridList cellHeight={300} cols={4}>
-                                    {(Array.isArray(starredProjects) &&
-                                        starredProjects.length !== 0 &&
-                                        starredProjects.map((e, i) => {
-                                            return (
-                                                <GridListTile key={i}>
-                                                    <ProjectCard
-                                                        project={e}
-                                                        profile={
-                                                            projectUserProfiles[
-                                                                e.userUid
-                                                            ]
-                                                        }
-                                                    />
-                                                </GridListTile>
-                                            );
-                                        })) ||
-                                        columnPlaceHolderArray.map((e, i) => {
-                                            return (
-                                                <GridListTile key={i}>
-                                                    <ProjectCardContainer>
-                                                        <BulletList />
-                                                    </ProjectCardContainer>
-                                                </GridListTile>
-                                            );
-                                        })}
-                                </GridList>
-                            </ProjectSectionCardContainer>
-                        </FeaturedProjectsContainer>
-                    </HomeContainer>
-                )}
-                }
-            </main>
+                                handler(query, 0);
+                            }}
+                        />
+                    </Grid>
+                </Grid>
+                <TransitionGroup component={null}>
+                    {searchValue === "" && (
+                        <Transition appear timeout={duration}>
+                            {transitionState => {
+                                return (
+                                    <FeaturedProjects
+                                        duration={duration}
+                                        starredProjects={starredProjects}
+                                        featuredProjectUserProfiles={
+                                            featuredProjectUserProfiles
+                                        }
+                                        randomProjects={randomProjects}
+                                        transitionState={transitionState}
+                                    />
+                                );
+                            }}
+                        </Transition>
+                    )}
+                    {searchValue !== "" && (
+                        <Transition appear timeout={duration}>
+                            {transitionState => {
+                                return (
+                                    <SearchProjects
+                                        duration={duration}
+                                        searchedProjects={searchedProjects}
+                                        searchedProjectUserProfiles={
+                                            searchedProjectUserProfiles
+                                        }
+                                        transitionState={transitionState}
+                                        requesting={searchProjectsRequest}
+                                        query={searchValue}
+                                    />
+                                );
+                            }}
+                        </Transition>
+                    )}
+                </TransitionGroup>
+            </HomeContainer>
         </div>
     );
 };
