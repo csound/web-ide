@@ -11,6 +11,12 @@ export const selectDisplayedStarredProjects = (store: any) => {
     }
 };
 
+export const selectSearchProjectsRequest = (store: any) => {
+    const state: State = store.HomeReducer;
+    const request = state.searchProjectsRequest;
+    return request;
+};
+
 export const selectSearchedProjects = (store: any) => {
     const state: State = store.HomeReducer;
     const searchedProjects = state.searchedProjects;

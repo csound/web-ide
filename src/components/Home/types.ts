@@ -9,11 +9,18 @@ export const GET_FEATURED_PROJECT_USER_PROFILES =
     "HOME.GET_FEATURED_PROJECT_USER_PROFILES";
 export const GET_DISPLAYED_RANDOM_PROJECTS =
     "HOME.GET_DISPLAYED_RANDOM_PROJECTS";
-export const SEARCH_PROJECTS = "HOME.SEARCH_PROJECTS";
+export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
+export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
+
 export const GET_SEARCHED_PROJECT_USER_PROFILES =
     "HOME.GET_SEARCHED_PROJECT_USER_PROFILES";
-interface SearchProjects {
-    type: typeof SEARCH_PROJECTS;
+interface SearchProjectsRequest {
+    type: typeof SEARCH_PROJECTS_REQUEST;
+    payload: any;
+}
+
+interface SearchProjectsSuccess {
+    type: typeof SEARCH_PROJECTS_SUCCESS;
     payload: any;
 }
 
@@ -64,4 +71,5 @@ export type HomeActionTypes =
     | GetDisplayedRandomProjects
     | GetSearchedProjectUserProfiles
     | GetFeaturedProjectUserProfiles
-    | SearchProjects;
+    | SearchProjectsRequest
+    | SearchProjectsSuccess;

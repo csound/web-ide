@@ -9,7 +9,8 @@ import {
     GET_SEARCHED_PROJECT_USER_PROFILES,
     GET_STARS,
     GET_DISPLAYED_RANDOM_PROJECTS,
-    SEARCH_PROJECTS
+    SEARCH_PROJECTS_REQUEST,
+    SEARCH_PROJECTS_SUCCESS
 } from "./types";
 
 const searchURL = "https://web-ide-search-api.csound.com/search";
@@ -18,6 +19,8 @@ export const searchProjects = (
     query: string,
     offset: number
 ): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+    dispatch({ type: SEARCH_PROJECTS_REQUEST });
+
     const searchRequest = await fetch(
         `${searchURL}/query/projects/${query}/8/${offset}/name/desc`
     );
@@ -31,7 +34,8 @@ export const searchProjects = (
             type: GET_SEARCHED_PROJECT_USER_PROFILES,
             payload: false
         });
-        dispatch({ type: SEARCH_PROJECTS, payload: false });
+        dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
+
         return;
     }
 
@@ -49,7 +53,8 @@ export const searchProjects = (
         type: GET_SEARCHED_PROJECT_USER_PROFILES,
         payload: projectProfiles
     });
-    dispatch({ type: SEARCH_PROJECTS, payload: projects });
+
+    dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: projects });
 };
 
 export const getStars = (): ThunkAction<

@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
-import { makeStyles } from "@material-ui/styles";
-import { red } from "@material-ui/core/colors";
 import { SVGComponents } from "../Profile/SVGPaths";
 import { Transition, TransitionGroup } from "react-transition-group";
-import { Wave } from "better-react-spinkit";
+import { ThreeBounce } from "better-react-spinkit";
+import { get } from "lodash";
+import ListPlayButton from "../Profile/ListPlayButton";
 import {
     ProjectCardContainer,
     ProjectCardSVGContainer,
@@ -18,34 +17,14 @@ import {
     ProjectCardContentBottomPhoto,
     ProjectCardContentBottomHeader,
     ProjectCardContentBottomDescription,
-    StyledIconButton,
     Photo,
     ProjectCardContentBottomID,
     ProjectCardSpinnerContainer
 } from "./HomeUI";
-import PlayIcon from "@material-ui/icons/PlayCircleFilledRounded";
-// import PauseIcon from "@material-ui/icons/PauseCircleFilledRounded";
-
-const useStyles = makeStyles(theme => ({
-    card: {
-        maxWidth: 360,
-        padding: 10,
-        height: 360
-    },
-    media: {
-        height: 100
-    },
-    avatar: {
-        backgroundColor: red[500]
-    },
-    largeButton: {},
-    largeIcon: {
-        fontSize: "4em"
-    }
-}));
+import { push } from "connected-react-router";
+import { useDispatch } from "react-redux";
 
 const ProjectCard = props => {
-    const classes = useStyles();
     const {
         duration,
         projectIndex,
@@ -62,6 +41,7 @@ const ProjectCard = props => {
         userUid = "",
         photoUrl = "",
         displayName = "",
+        username = "",
         bio = "";
 
     if (props.project !== null || typeof profiles[userUid] !== "undefined") {
@@ -71,13 +51,11 @@ const ProjectCard = props => {
         iconForegroundColor = project.iconForegroundColor;
         name = project.name;
         userUid = project.userUid;
-        photoUrl = profiles[userUid].photoUrl;
-        displayName = profiles[userUid].displayName;
-        bio = profiles[userUid].bio;
+        photoUrl = get(profiles, `${userUid}.photoUrl`) || "";
+        displayName = get(profiles, `${userUid}.displayName`) || "";
+        username = get(profiles, `${userUid}.username`) || "";
+        bio = get(profiles, `${userUid}.bio`) || "";
     }
-
-    // const listPlayState = "paused";
-    // const currentlyPlayingProject = id;
 
     const [mouseOver, setMouseOver] = useState(false);
 
@@ -89,7 +67,7 @@ const ProjectCard = props => {
             : iconName;
 
     const SVGIcon = SVGComponents[`${iconName}Component`];
-
+    const dispatch = useDispatch();
     return (
         <ProjectCardContainer
             duration={duration}
@@ -106,7 +84,7 @@ const ProjectCard = props => {
                                     className={transitionStatus}
                                     duration={duration}
                                 >
-                                    <Wave size={100} color={"white"} />
+                                    <ThreeBounce size={20} color={"white"} />
                                 </ProjectCardSpinnerContainer>
                             );
                         }}
@@ -137,7 +115,13 @@ const ProjectCard = props => {
                                         }}
                                         onMouseLeave={() => setMouseOver(false)}
                                     >
-                                        <ProjectCardContentTop>
+                                        <ProjectCardContentTop
+                                            onClick={() => {
+                                                dispatch(
+                                                    push(`editor/${project.id}`)
+                                                );
+                                            }}
+                                        >
                                             <ProjectCardContentTopHeader>
                                                 {name}
                                             </ProjectCardContentTopHeader>
@@ -145,29 +129,31 @@ const ProjectCard = props => {
                                                 {description}
                                             </ProjectCardContentTopDescription>
                                         </ProjectCardContentTop>
-                                        <ProjectCardContentMiddle>
-                                            <StyledIconButton
-                                                size="small"
-                                                className={classes.largeButton}
-                                                onClick={e => {
-                                                    e.stopPropagation();
-                                                    // dispatch(playListItem(projectUid));
-                                                }}
-                                            >
-                                                <PlayIcon
-                                                    fontSize="large"
-                                                    className={
-                                                        classes.largeIcon
-                                                    }
-                                                    style={
-                                                        {
-                                                            // color: theme.profilePlayButton.primary
-                                                        }
-                                                    }
-                                                />
-                                            </StyledIconButton>
+                                        <ProjectCardContentMiddle
+                                            onClick={() => {
+                                                dispatch(
+                                                    push(`editor/${project.id}`)
+                                                );
+                                            }}
+                                        >
+                                            <ListPlayButton
+                                                projectUid={project.id}
+                                                iconNameProp={iconName}
+                                                iconBackgroundColorProp={
+                                                    iconBackgroundColor
+                                                }
+                                                iconForegroundColorProp={
+                                                    iconForegroundColor
+                                                }
+                                            />
                                         </ProjectCardContentMiddle>
-                                        <ProjectCardContentBottom>
+                                        <ProjectCardContentBottom
+                                            onClick={() => {
+                                                dispatch(
+                                                    push(`profile/${username}`)
+                                                );
+                                            }}
+                                        >
                                             <ProjectCardContentBottomPhoto>
                                                 <Photo src={photoUrl} />
                                             </ProjectCardContentBottomPhoto>

@@ -1,18 +1,12 @@
+import SearchProjects from "./SearchProjects";
+import FeaturedProjects from "./FeaturedProjects";
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../Header/Header";
 import withStyles from "./styles";
 import { getPopularProjects, getStars, searchProjects } from "./actions";
 import { debounce } from "lodash";
-
-import {
-    HomeContainer,
-    StyledTextField,
-    ProjectSectionHeader,
-    HorizontalRule,
-    AnimatedGridContainer
-} from "./HomeUI";
-
+import { HomeContainer, StyledTextField } from "./HomeUI";
 import {
     selectStars,
     selectProjectLastModified,
@@ -21,12 +15,11 @@ import {
     selectSearchedProjectUserProfiles,
     selectDisplayedRandomProjects,
     selectSearchedProjects,
-    selectSearchedProjectsTotal
+    selectSearchProjectsRequest
 } from "./selectors";
-import { Transition, TransitionGroup } from "react-transition-group";
+import { TransitionGroup, Transition } from "react-transition-group";
 import { Grid } from "@material-ui/core";
-import ProjectCard from "./ProjectCard";
-import { SEARCH_PROJECTS } from "./types";
+import { SEARCH_PROJECTS_SUCCESS } from "./types";
 
 const duration = 200;
 
@@ -35,13 +28,13 @@ const Home = props => {
     const dispatch = useDispatch();
     const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
     const [searchValue, setSearchValue] = useState("");
-    const [searchOffset, setSearchOffset] = useState(0);
     const stars = useSelector(selectStars);
     const projectLastModified = useSelector(selectProjectLastModified);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
     const randomProjects = useSelector(selectDisplayedRandomProjects);
     const searchedProjects = useSelector(selectSearchedProjects);
-    const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);
+    const searchProjectsRequest = useSelector(selectSearchProjectsRequest);
+    // const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);
     const featuredProjectUserProfiles = useSelector(
         selectFeaturedProjectUserProfiles
     );
@@ -60,7 +53,7 @@ const Home = props => {
 
     useEffect(() => {
         if (searchValue === "" && searchedProjects !== false) {
-            dispatch({ type: SEARCH_PROJECTS, payload: false });
+            dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
         }
     }, [dispatch, searchValue, searchedProjects]);
 
@@ -119,7 +112,7 @@ const Home = props => {
                                 const query = e.target.value;
                                 setSearchValue(query);
 
-                                handler(query, searchOffset);
+                                handler(query, 0);
                             }}
                         />
                     </Grid>
@@ -129,69 +122,15 @@ const Home = props => {
                         <Transition appear timeout={duration}>
                             {transitionState => {
                                 return (
-                                    <AnimatedGridContainer
+                                    <FeaturedProjects
                                         duration={duration}
-                                        container
-                                        spacing={3}
-                                        className={transitionState}
-                                    >
-                                        <Grid item xs={12}>
-                                            <ProjectSectionHeader>
-                                                Popular Projects
-                                                <HorizontalRule />
-                                            </ProjectSectionHeader>
-                                        </Grid>
-
-                                        {Array.isArray(starredProjects) &&
-                                            starredProjects.map((e, i) => {
-                                                return (
-                                                    <Grid
-                                                        item
-                                                        xs={6}
-                                                        sm={3}
-                                                        key={i}
-                                                    >
-                                                        <ProjectCard
-                                                            event={e}
-                                                            projectIndex={i}
-                                                            duration={duration}
-                                                            project={e}
-                                                            profiles={
-                                                                featuredProjectUserProfiles
-                                                            }
-                                                        />
-                                                    </Grid>
-                                                );
-                                            })}
-
-                                        <Grid item xs={12}>
-                                            <ProjectSectionHeader>
-                                                Other Projects
-                                                <HorizontalRule />
-                                            </ProjectSectionHeader>
-                                        </Grid>
-                                        {Array.isArray(randomProjects) &&
-                                            randomProjects.map((e, i) => {
-                                                return (
-                                                    <Grid
-                                                        item
-                                                        xs={6}
-                                                        sm={3}
-                                                        key={i}
-                                                    >
-                                                        <ProjectCard
-                                                            event={e}
-                                                            projectIndex={i}
-                                                            duration={duration}
-                                                            project={e}
-                                                            profiles={
-                                                                featuredProjectUserProfiles
-                                                            }
-                                                        />
-                                                    </Grid>
-                                                );
-                                            })}
-                                    </AnimatedGridContainer>
+                                        starredProjects={starredProjects}
+                                        featuredProjectUserProfiles={
+                                            featuredProjectUserProfiles
+                                        }
+                                        randomProjects={randomProjects}
+                                        transitionState={transitionState}
+                                    />
                                 );
                             }}
                         </Transition>
@@ -200,61 +139,16 @@ const Home = props => {
                         <Transition appear timeout={duration}>
                             {transitionState => {
                                 return (
-                                    <AnimatedGridContainer
+                                    <SearchProjects
                                         duration={duration}
-                                        container
-                                        spacing={3}
-                                        className={transitionState}
-                                    >
-                                        <Grid item xs={12}>
-                                            <ProjectSectionHeader>
-                                                Search Results
-                                                <HorizontalRule />
-                                            </ProjectSectionHeader>
-                                        </Grid>
-
-                                        {Array.isArray(searchedProjects) &&
-                                            searchedProjects.map((e, i) => {
-                                                return (
-                                                    <Grid
-                                                        item
-                                                        xs={6}
-                                                        sm={3}
-                                                        key={i}
-                                                    >
-                                                        <Transition
-                                                            appear
-                                                            timeout={duration}
-                                                        >
-                                                            {transitionState => {
-                                                                return (
-                                                                    <ProjectCard
-                                                                        event={
-                                                                            e
-                                                                        }
-                                                                        projectIndex={
-                                                                            i
-                                                                        }
-                                                                        duration={
-                                                                            duration
-                                                                        }
-                                                                        project={
-                                                                            e
-                                                                        }
-                                                                        profiles={
-                                                                            searchedProjectUserProfiles
-                                                                        }
-                                                                        transitionStatus={
-                                                                            transitionState
-                                                                        }
-                                                                    />
-                                                                );
-                                                            }}
-                                                        </Transition>
-                                                    </Grid>
-                                                );
-                                            })}
-                                    </AnimatedGridContainer>
+                                        searchedProjects={searchedProjects}
+                                        searchedProjectUserProfiles={
+                                            searchedProjectUserProfiles
+                                        }
+                                        transitionState={transitionState}
+                                        requesting={searchProjectsRequest}
+                                        query={searchValue}
+                                    />
                                 );
                             }}
                         </Transition>

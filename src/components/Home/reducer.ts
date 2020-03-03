@@ -8,7 +8,8 @@ import {
     GET_FEATURED_PROJECT_USER_PROFILES,
     GET_SEARCHED_PROJECT_USER_PROFILES,
     GET_DISPLAYED_RANDOM_PROJECTS,
-    SEARCH_PROJECTS
+    SEARCH_PROJECTS_REQUEST,
+    SEARCH_PROJECTS_SUCCESS
 } from "./types";
 
 export interface State {
@@ -22,6 +23,7 @@ export interface State {
     readonly searchedProjectUserProfiles: any;
     readonly searchedProjects: any;
     readonly searchedProjectsTotal: any;
+    readonly searchProjectsRequest: boolean;
 }
 
 const INITIAL_STATE: State = {
@@ -34,16 +36,24 @@ const INITIAL_STATE: State = {
     featuredProjectUserProfiles: false,
     searchedProjectUserProfiles: false,
     searchedProjects: false,
-    searchedProjectsTotal: 0
+    searchedProjectsTotal: 0,
+    searchProjectsRequest: false
 };
 
 export default (state = INITIAL_STATE, action: HomeActionTypes) => {
     switch (action.type) {
-        case SEARCH_PROJECTS: {
+        case SEARCH_PROJECTS_REQUEST: {
             return {
                 ...state,
-                searchedProjects: action.payload.data,
-                searchedProjectsTotal: action.payload.totalRecords
+                searchProjectsRequest: true
+            };
+        }
+        case SEARCH_PROJECTS_SUCCESS: {
+            return {
+                ...state,
+                searchedProjects: action.payload.data || false,
+                searchedProjectsTotal: action.payload.totalRecords || 0,
+                searchProjectsRequest: false
             };
         }
         case GET_FEATURED_PROJECT_USER_PROFILES: {

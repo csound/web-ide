@@ -155,7 +155,7 @@ export const ProjectCardContentContainer = styled.div<
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-template-rows: 70px auto 70px;
+    grid-template-rows: 60px auto 60px;
     grid-template-columns: 1fr;
     z-index: 3;
     font-family: "Merriweather", serif;
@@ -178,7 +178,7 @@ export const ProjectCardContentTop = styled.div`
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1.2fr 0.8fr;
     grid-template-columns: 1fr;
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
@@ -194,6 +194,7 @@ export const ProjectCardContentMiddle = styled.div`
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    cursor: pointer;
 `;
 
 export const ProjectCardContentTopHeader = styled.div`
@@ -202,6 +203,7 @@ export const ProjectCardContentTopHeader = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 18px;
+    cursor: pointer;
 `;
 
 export const ProjectCardContentTopDescription = styled.div`
@@ -209,12 +211,13 @@ export const ProjectCardContentTopDescription = styled.div`
     grid-column: 1;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 14px;
+    font-size: 12px;
 `;
 
 export const ProjectCardContentBottom = styled.div`
     grid-row: 3;
     grid-column: 1;
+    z-index: 4;
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
     box-shadow: 0px 3px 8px 3px rgba(0, 0, 0, 0.4);
@@ -222,6 +225,7 @@ export const ProjectCardContentBottom = styled.div`
     grid-template-rows: 1fr;
     grid-template-columns: 60px auto;
     overflow: hidden;
+    cursor: pointer;
 `;
 
 export const ProjectCardContentBottomPhoto = styled.div`
@@ -256,6 +260,12 @@ export const StyledIconButton = styled(IconButton)`
     }
 `;
 
+export const PaginationIconButton = styled(IconButton)`
+    && {
+        color: white;
+    }
+`;
+
 export const ProjectCardContentBottomHeader = styled.div`
     grid-row: 1;
     grid-column: 1;
@@ -273,11 +283,13 @@ export const ProjectCardContentBottomDescription = styled.div`
     font-size: 12px;
 `;
 
-export const ProjectSectionHeader = styled.div`
+export const ProjectSectionHeader = styled(Grid)`
     font-family: "Merriweather", serif;
     font-size: 2em;
     padding-right: 5px;
     color: white;
+
+    flex: 1;
 `;
 
 export const HorizontalRule = styled.hr`
@@ -311,5 +323,25 @@ export const SearchProjectContainer = styled.div<ISearchProjectContainer>`
     &.exiting {
         opacity: 0;
         transform: translate(30px);
+    }
+`;
+
+export const SearchProjectWaitContainer = styled(Grid)<ISearchProjectContainer>`
+    position: absolute;
+    width: 100%;
+    padding-top: 100px;
+    color: white;
+    transition: all ${props => props.duration}ms;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &.entering {
+        opacity: 0;
+    }
+    &.entered {
+        opacity: 1;
+    }
+    &.exiting {
+        opacity: 0;
     }
 `;
