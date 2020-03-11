@@ -1,10 +1,17 @@
 const firebase = require("firebase-admin");
-const serviceAccount = require("/etc/firebase-service-key.json");
+const serviceAccountDev = require("/etc/firebase-service-key-dev.json");
+const serviceAccountProd = require("/etc/firebase-service-key-prod.json");
 // const serviceAccount = require("./service-key.json");
 
 firebase.initializeApp({
-    credential: firebase.credential.cert(serviceAccount),
-    databaseURL: "https://csound-ide-dev.firebaseio.com"
+    credential:
+        process.env.NODE_ENV === "production"
+            ? firebase.credential.cert(serviceAccountProd)
+            : firebase.credential.cert(serviceAccountDev),
+    databaseURL:
+        process.env.NODE_ENV === "production"
+            ? "https://csound-ide.firebaseio.com"
+            : "https://csound-ide-dev.firebaseio.com"
 });
 
 const db = firebase.firestore();
