@@ -83,14 +83,13 @@ export const getPopularProjects = (): ThunkAction<
     if (orderedStars.length === 0) {
         return;
     }
-    const splitStarProjectsQuery = await projects
-        .where("public", "==", true)
-        .where(firestore.FieldPath.documentId(), "in", starsIDs)
-        .get();
 
-    const starProjects: any[] = [];
-    splitStarProjectsQuery.forEach(snapshot => {
-        starProjects.push({ id: snapshot.id, ...snapshot.data() });
+    const starProjects: any = [];
+    await starsIDs.forEach(async projectId => {
+        const maybeDoc = await projects.doc(projectId).get();
+        if (maybeDoc.exists) {
+            starProjects.push(maybeDoc.data());
+        }
     });
 
     const starProjectsIDs = starProjects.map(e => e.id);
