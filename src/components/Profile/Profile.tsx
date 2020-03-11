@@ -83,8 +83,7 @@ const UserLink = ({ link }) => {
     return null;
 };
 
-const Profile = props => {
-    const { classes } = props;
+const Profile = ({ classes, ...props }) => {
     const [profileUid, setProfileUid]: [string | null, any] = useState(null);
     const dispatch = useDispatch();
     const [username, profileUriPath] = useSelector(selectCurrentProfileRoute);
@@ -151,19 +150,6 @@ const Profile = props => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
                 dispatch(push("/"));
-            }
-            if (!username && loggedInUserUid) {
-                usernames
-                    .where("userUid", "==", loggedInUserUid)
-                    .get()
-                    .then(({ docs }) => {
-                        try {
-                            dispatch(push(`/profile/${docs[0].id}`));
-                            setProfileUid(loggedInUserUid);
-                        } catch (e) {
-                            dispatch(push("/"));
-                        }
-                    });
             } else if (username) {
                 usernames
                     .doc(username)
