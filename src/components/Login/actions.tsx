@@ -286,3 +286,12 @@ export const setRequestingStatus = (status: boolean) => {
         });
     };
 };
+
+
+export const resetPassword = (email: string) => {
+    return async (dispatch: any) => {
+        firebase
+            .auth()
+            .sendPasswordResetEmail(email);
+    };
+};
