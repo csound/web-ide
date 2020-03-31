@@ -4,6 +4,7 @@ import { SVGComponents } from "../Profile/SVGPaths";
 import { Transition, TransitionGroup } from "react-transition-group";
 import { ThreeBounce } from "better-react-spinkit";
 import { get } from "lodash";
+import { pathOr } from "ramda";
 import ListPlayButton from "../Profile/ListPlayButton";
 import {
     ProjectCardContainer,
@@ -51,8 +52,8 @@ const ProjectCard = props => {
         iconForegroundColor = project.iconForegroundColor;
         name = project.name;
         userUid = project.userUid;
-        photoUrl = get(profiles, `${userUid}.photoUrl`) || "";
-        displayName = get(profiles, `${userUid}.displayName`) || "";
+        photoUrl = pathOr(null, [userUid, "photoUrl"], profiles);
+        displayName = pathOr(null, [userUid, "displayName"], profiles);
         username = get(profiles, `${userUid}.username`) || "";
         bio = get(profiles, `${userUid}.bio`) || "";
     }
@@ -155,11 +156,13 @@ const ProjectCard = props => {
                                             }}
                                         >
                                             <ProjectCardContentBottomPhoto>
-                                                <Photo src={photoUrl} />
+                                                {photoUrl && (
+                                                    <Photo src={photoUrl} />
+                                                )}
                                             </ProjectCardContentBottomPhoto>
                                             <ProjectCardContentBottomID>
                                                 <ProjectCardContentBottomHeader>
-                                                    {displayName}
+                                                    {displayName || username}
                                                 </ProjectCardContentBottomHeader>
                                                 <ProjectCardContentBottomDescription>
                                                     {bio}
