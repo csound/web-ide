@@ -1,20 +1,23 @@
 const fs = require("fs");
 const { getFirebaseData } = require("./firebase");
-const databaseName = "database.json";
+const databaseName = { dev: "dev-database.json", prod: "prod-database.json" };
 const databaseFolder = "./";
 const { isSameHour } = require("date-fns");
 
 const checkDatabaseFileWrittenSameHour = () => {
     try {
-        const { timestamp } = openDatabaseFile();
+        const { timestamp } = openDatabaseFile(databaseID);
         return isSameHour(new Date(timestamp), new Date());
     } catch (e) {
         return false;
     }
 };
 
-const openDatabaseFile = () => {
-    const file = fs.readFileSync(`${databaseFolder}/${databaseName}`, "utf8");
+const openDatabaseFile = databaseID => {
+    const file = fs.readFileSync(
+        `${databaseFolder}/${databaseName[databaseID]}`,
+        "utf8"
+    );
     return JSON.parse(file);
 };
 
@@ -23,18 +26,21 @@ const writeDatabaseFile = (object, path) => {
     fs.writeFileSync(path, fileJSON);
 };
 
-const writeFirebaseDataToDatabaseFile = async () => {
-    const fireBaseData = await getFirebaseData();
-    writeDatabaseFile(fireBaseData, `${databaseFolder}/${databaseName}`);
+const writeFirebaseDataToDatabaseFile = async databaseID => {
+    const fireBaseData = await getFirebaseData(databaseID);
+    writeDatabaseFile(
+        fireBaseData,
+        `${databaseFolder}/${databaseName[databaseID]}`
+    );
 };
 
-const getDatabase = async () => {
-    const sameHour = checkDatabaseFileWrittenSameHour();
+const getDatabase = async databaseID => {
+    const sameHour = checkDatabaseFileWrittenSameHour(databaseID);
 
     if (sameHour === false) {
-        await writeFirebaseDataToDatabaseFile();
+        await writeFirebaseDataToDatabaseFile(databaseID);
     }
-    return openDatabaseFile();
+    return openDatabaseFile(databaseID);
 };
 
 module.exports = {

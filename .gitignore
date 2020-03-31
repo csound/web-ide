@@ -31,3 +31,8 @@ yarn-error.log*
 # Search app
 search/service-key.json
 search/node_modules
+dev-database.json
+prod-database.json
+database.json
+service-key-dev.json
+service-key-prod.json

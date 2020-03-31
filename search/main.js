@@ -7,19 +7,34 @@ const {
     createDatabaseList
 } = require("./search");
 
+const getDatabaseType = async databaseID => {
+    let database = await getDatabase(databaseID);
+    let search = createDatabaseSearch(database);
+    let list = createDatabaseList(database);
+
+    return {
+        database,
+        search,
+        list
+    };
+};
+
 const main = async () => {
-    let database = await getDatabase();
-    let databaseSearch = createDatabaseSearch(database);
-    let databaseList = createDatabaseList(database);
+    let databases = {
+        dev: await getDatabaseType("dev"),
+        prod: await getDatabaseType("prod")
+    };
+
     cron.schedule("0 */2 * * *", async () => {
-        database = await getDatabase();
-        databaseSearch = createDatabaseSearch(database);
-        databaseList = createDatabaseList(database);
+        databases = {
+            dev: await getDatabaseType("dev"),
+            prod: await getDatabaseType("prod")
+        };
     });
 
     startServer(
-        (collection, query, count, offset, orderKey, order) => {
-            let result = databaseSearch(collection, query);
+        (databaseID, collection, query, count, offset, orderKey, order) => {
+            let result = databases[databaseID].search(collection, query);
             const totalRecords = result.length;
             result = searchResultFilter(result, count, offset, orderKey, order);
             return {
@@ -27,8 +42,8 @@ const main = async () => {
                 totalRecords
             };
         },
-        (collection, count, offset, orderKey, order) => {
-            let result = databaseList(collection);
+        (databaseID, collection, count, offset, orderKey, order) => {
+            let result = databases[databaseID].list(collection);
             const totalRecords = result.length;
             result = searchResultFilter(result, count, offset, orderKey, order);
             return {
@@ -36,9 +51,10 @@ const main = async () => {
                 totalRecords
             };
         },
-        (collection, count) => {
+        (databaseID, collection, count) => {
             count = parseInt(count);
-            let result = [...databaseList(collection)];
+
+            let result = [...databases[databaseID].list(collection)];
             result = [...Array(count)]
                 .map(
                     () =>

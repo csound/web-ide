@@ -6,9 +6,10 @@ const startServer = (searchCallback, listCallback, randomCallback) => {
     const app = express();
     app.use(cors());
     app.get(
-        "/search/query/:collection/:query/:count/:offset/:orderKey/:order",
+        "/search/:databaseID/query/:collection/:query/:count/:offset/:orderKey/:order",
         (req, res) => {
             const {
+                databaseID,
                 collection,
                 query,
                 count,
@@ -17,6 +18,7 @@ const startServer = (searchCallback, listCallback, randomCallback) => {
                 order
             } = req.params;
             const result = searchCallback(
+                databaseID,
                 collection,
                 query,
                 count,
@@ -30,10 +32,18 @@ const startServer = (searchCallback, listCallback, randomCallback) => {
     );
 
     app.get(
-        "/search/list/:collection/:count/:offset/:orderKey/:order",
+        "/search/:databaseID/list/:collection/:count/:offset/:orderKey/:order",
         (req, res) => {
-            const { collection, count, offset, orderKey, order } = req.params;
+            const {
+                databaseID,
+                collection,
+                count,
+                offset,
+                orderKey,
+                order
+            } = req.params;
             const result = listCallback(
+                databaseID,
                 collection,
                 count,
                 offset,
@@ -45,9 +55,9 @@ const startServer = (searchCallback, listCallback, randomCallback) => {
         }
     );
 
-    app.get("/search/random/:collection/:count", (req, res) => {
-        const { collection, count } = req.params;
-        const result = randomCallback(collection, count);
+    app.get("/search/:databaseID/random/:collection/:count", (req, res) => {
+        const { databaseID, collection, count } = req.params;
+        const result = randomCallback(databaseID, collection, count);
         return res.send(result);
     });
 
