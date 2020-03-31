@@ -170,9 +170,11 @@ const Login = () => {
                 uiConfig={uiConfig}
                 firebaseAuth={firebase.auth()}
             />
-            <Link onClick={() => switchLoginMode("reset")}>
-                Forgot password?
-            </Link>
+            <div css={SS.centerLink}>
+                <Link onClick={() => switchLoginMode("reset")}>
+                    Forgot password?
+                </Link>
+            </div>
         </div>
     );
 
