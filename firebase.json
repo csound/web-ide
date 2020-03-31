@@ -11,6 +11,26 @@
                 "source": "**",
                 "destination": "/index.html"
             }
+        ],
+        "headers": [
+            {
+                "source": "**",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=0,public,must-revalidate"
+                    }
+                ]
+            },
+            {
+                "source": "**/*.@(js|jpg|svg|jpeg|png|eot|otf|ttf|ttc|woff|css|wasm|ico)",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=31536000,public,immutable"
+                    }
+                ]
+            }
         ]
     },
     "functions": {
