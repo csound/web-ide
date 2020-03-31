@@ -117,11 +117,7 @@ const ProjectCard = props => {
                                         onMouseLeave={() => setMouseOver(false)}
                                     >
                                         <ProjectCardContentTop
-                                            onClick={() => {
-                                                dispatch(
-                                                    push(`editor/${project.id}`)
-                                                );
-                                            }}
+                                            to={`editor/${project.id}`}
                                         >
                                             <ProjectCardContentTopHeader>
                                                 {name}
@@ -130,11 +126,13 @@ const ProjectCard = props => {
                                                 {description}
                                             </ProjectCardContentTopDescription>
                                         </ProjectCardContentTop>
-                                        <ProjectCardContentMiddle
-                                            onClick={() => {
-                                                dispatch(
-                                                    push(`editor/${project.id}`)
-                                                );
+                                        <span
+                                            style={{
+                                                position: "absolute",
+                                                margin: "0 auto",
+                                                top: "calc(50% - 32px)",
+                                                left: "calc(50% - 32px)",
+                                                zIndex: 2
                                             }}
                                         >
                                             <ListPlayButton
@@ -147,13 +145,12 @@ const ProjectCard = props => {
                                                     iconForegroundColor
                                                 }
                                             />
-                                        </ProjectCardContentMiddle>
+                                        </span>
+                                        <ProjectCardContentMiddle
+                                            to={`editor/${project.id}`}
+                                        ></ProjectCardContentMiddle>
                                         <ProjectCardContentBottom
-                                            onClick={() => {
-                                                dispatch(
-                                                    push(`profile/${username}`)
-                                                );
-                                            }}
+                                            to={`profile/${username}`}
                                         >
                                             <ProjectCardContentBottomPhoto>
                                                 {photoUrl && (

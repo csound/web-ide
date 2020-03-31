@@ -1,4 +1,5 @@
 import { TextField, IconButton, Grid } from "@material-ui/core";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Gradient } from "./Gradient";
 
@@ -173,7 +174,7 @@ export const ProjectCardContentContainer = styled.div<
     }
 `;
 
-export const ProjectCardContentTop = styled.div`
+export const ProjectCardContentTop = styled(Link)`
     grid-row: 1;
     grid-column: 1;
     display: grid;
@@ -186,7 +187,7 @@ export const ProjectCardContentTop = styled.div`
     overflow: hidden;
 `;
 
-export const ProjectCardContentMiddle = styled.div`
+export const ProjectCardContentMiddle = styled(Link)`
     grid-row: 2;
     grid-column: 1;
     display: flex;
@@ -194,6 +195,10 @@ export const ProjectCardContentMiddle = styled.div`
     align-items: center;
     overflow: hidden;
     cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.2);
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 `;
 
 export const ProjectCardContentTopHeader = styled.div`
@@ -213,7 +218,7 @@ export const ProjectCardContentTopDescription = styled.div`
     font-size: 12px;
 `;
 
-export const ProjectCardContentBottom = styled.div`
+export const ProjectCardContentBottom = styled(Link)`
     grid-row: 3;
     grid-column: 1;
     z-index: 4;
@@ -225,6 +230,9 @@ export const ProjectCardContentBottom = styled.div`
     grid-template-columns: 60px auto;
     overflow: hidden;
     cursor: pointer;
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
 `;
 
 export const ProjectCardContentBottomPhoto = styled.div`
