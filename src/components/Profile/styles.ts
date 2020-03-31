@@ -5,13 +5,7 @@ import { css } from "@emotion/core";
 const profileStyles = (theme: Theme) =>
     createStyles({
         root: {
-            position: "absolute",
-            fontFamily: "'Space Mono', monospace",
-            width: "100%",
-            height: "100%",
-            bottom: 0,
-            top: 0,
-            left: 0
+            fontFamily: "'Space Mono', monospace"
         },
         centerBox: {
             position: "absolute",
@@ -165,11 +159,8 @@ export const pauseIcon = theme => css`
 
 export const settingsIconContainer = css`
     position: absolute;
-    pointer-events: visible;
-    top: 0;
-    right: 70px;
-    height: 100%;
-    display: flex;
+    top: calc(50% - 24px);
+    right: 66px;
 `;
 
 export const settingsIcon = theme => css`
@@ -285,11 +276,8 @@ export const deleteIcon = theme => css`
 
 export const publicIconContainer = css`
     position: absolute;
-    pointer-events: visible;
-    top: 0;
-    right: 128px;
-    height: 100%;
-    display: flex;
+    top: calc(50% - 24px);
+    right: 120px;
 `;
 
 export const publicIcon = theme => css`

@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import ReactTooltip from "react-tooltip";
 import { List, ListItem, ListItemText } from "@material-ui/core";
 import FollowingList from "./tabs/FollowingList";
 import FollowersList from "./tabs/FollowersList";
 import StarsList from "./tabs/StarsList";
-import Tooltip from "@material-ui/core/Tooltip";
 import ListPlayButton from "./ListPlayButton";
 import SettingsIcon from "@material-ui/icons/Settings";
 import DeleteIcon from "@material-ui/icons/DeleteOutline";
@@ -33,6 +33,7 @@ const ProjectListItem = props => {
     const { isProfileOwner, project } = props;
     const dispatch = useDispatch();
     const { projectUid, name, description, tags } = project;
+    useEffect(ReactTooltip.rebuild);
 
     return (
         <div style={{ position: "relative" }}>
@@ -75,73 +76,71 @@ const ProjectListItem = props => {
                 />
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
-                <div>
-                    <div css={SS.settingsIconContainer}>
-                        <Tooltip
-                            title="Toggle project settings"
-                            placement="top-end"
+                <>
+                    <div
+                        css={SS.settingsIconContainer}
+                        data-tip={"Toggle project settings"}
+                    >
+                        <div
+                            css={SS.settingsIcon}
+                            key={projectUid}
+                            onMouseOver={() => {
+                                ReactTooltip.rebuild();
+                            }}
+                            onClick={e => {
+                                dispatch(editProject(project));
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
                         >
-                            <div
-                                css={SS.settingsIcon}
-                                onClick={e => {
-                                    dispatch(editProject(project));
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                            >
-                                <SettingsIcon />
-                            </div>
-                        </Tooltip>
+                            <SettingsIcon />
+                        </div>
                     </div>
-                    <div css={SS.deleteIconContainer}>
-                        <Tooltip
-                            title={`Delete ${project.name}`}
-                            placement="top-end"
+                    <div
+                        css={SS.deleteIconContainer}
+                        data-tip={`Delete ${project.name}`}
+                    >
+                        <div
+                            css={SS.deleteIcon}
+                            onClick={e => {
+                                dispatch(deleteProject(project));
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
                         >
-                            <div
-                                css={SS.deleteIcon}
-                                onClick={e => {
-                                    dispatch(deleteProject(project));
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                            >
-                                <DeleteIcon />
-                            </div>
-                        </Tooltip>
+                            <DeleteIcon />
+                        </div>
                     </div>
-                    <div css={SS.publicIconContainer}>
-                        <Tooltip
-                            title={
-                                project.isPublic
-                                    ? "Make the project private"
-                                    : "Make the project public"
-                            }
-                            placement="top-end"
+                    <div
+                        css={SS.publicIconContainer}
+                        data-tip={
+                            project.isPublic
+                                ? "Make the project private"
+                                : "Make the project public"
+                        }
+                    >
+                        <div
+                            css={SS.publicIcon}
+                            style={{ opacity: !project.isPublic ? 0.6 : 1 }}
+                            onClick={e => {
+                                dispatch(
+                                    markProjectPublic(
+                                        project.projectUid,
+                                        !project.isPublic
+                                    )
+                                );
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
                         >
-                            <div
-                                css={SS.publicIcon}
-                                style={{ opacity: !project.isPublic ? 0.6 : 1 }}
-                                onClick={e => {
-                                    dispatch(
-                                        markProjectPublic(
-                                            project.projectUid,
-                                            !project.isPublic
-                                        )
-                                    );
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                }}
-                            >
-                                {project.isPublic ? (
-                                    <VisibilityIcon />
-                                ) : (
-                                    <VisibilityOffIcon />
-                                )}
-                            </div>
-                        </Tooltip>
+                            {project.isPublic ? (
+                                <VisibilityIcon />
+                            ) : (
+                                <VisibilityOffIcon />
+                            )}
+                        </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
     );

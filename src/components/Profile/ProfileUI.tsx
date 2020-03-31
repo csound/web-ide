@@ -3,12 +3,12 @@ import { isMobile } from "@root/utils";
 import styled from "styled-components";
 
 export const ProfileContainer = styled.div`
-    position: relative;
     display: grid;
     ${!isMobile() &&
-        `grid-template-columns: 24px 250px 8fr;
+        `grid-template-columns: 24px 250px minmax(0, auto);
     grid-template-rows: 50px 175px 1fr 70px;`}
     width: 100%;
+    grid-auto-rows: minmax(90px, auto);
 `;
 export const IDContainer = styled(Card)`
     && {
@@ -35,17 +35,7 @@ export const EditProfileButtonSection = styled.div`
     grid-column: 1;
     margin: auto;
 `;
-export const MainContent = styled.div`
-    ${isMobile()
-        ? `grid-row-start: 0;
-grid-row-end: 3;
-grid-column-start: 0;
-    grid-column-end: 5;`
-        : `grid-row-start: 3;
-grid-row-end: 6;
-grid-column-start: 1;
-    grid-column-end: 4;`}
-`;
+
 export const ProfilePictureContainer = styled.div`
     position: relative;
     grid-row: 1;
@@ -119,7 +109,6 @@ export const ContentSection = styled.div<any>`
     grid-template-rows: ${props =>
         props.showSearch ? "60px 50px auto" : "60px 0px auto"};
     grid-template-columns: 1fr;
-    overflow: hidden;
     background: ${props => props.theme.background};
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
@@ -167,7 +156,7 @@ interface IStyledListItemContainer {
 }
 export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
     display: grid;
-    grid-template-rows: 1fr 0.5fr;
+    grid-auto-rows: minmax(10px, auto);
     grid-template-columns: 82px 8fr 70px ${props =>
             props.isProfileOwner ? "70px" : ""};
     min-width: 70px;
@@ -205,6 +194,11 @@ export const StyledListItemTopRowText = styled.div`
     grid-row: 1;
     grid-column: 2;
     text-align: left;
+    & p {
+        white-space: pre-line;
+        padding-right: 6px;
+        padding-top: 6px;
+    }
 `;
 export const StyledListItemChipsRow = styled.div`
     margin-top: 12px;

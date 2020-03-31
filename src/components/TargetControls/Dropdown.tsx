@@ -170,7 +170,7 @@ const TargetDropdown = ({ activeProjectUid }) => {
                         menuList: (provided, state) => SS.menuList(theme),
                         option: (provided, state) => SS.menuOption,
                         indicatorsContainer: (provided, state) =>
-                            SS.indicatorContainer,
+                            SS.indicatorContainer(theme),
                         indicatorSeparator: (provided, state) =>
                             SS.indicatorSeparator
                     }}

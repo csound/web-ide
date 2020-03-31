@@ -4,6 +4,8 @@ import { shadow } from "@styles/_common";
 export const content = theme => css`
     position: absolute;
     outline: none;
+    max-height: 100vh;
+    overflow: auto;
     & > div {
         color: ${theme.textColor};
         position: relative;

@@ -13,6 +13,7 @@ body {
 }
 
 body {
+height: inherit;
     min-height: 100%;
     overflow-x: hidden;
     position: relative;

@@ -10,6 +10,7 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
+import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import IconButton from "@material-ui/core/IconButton";
@@ -20,7 +21,7 @@ import ProjectIcon from "./ProjectIcon";
 
 const ModalContainer = styled.div`
     display: grid;
-    grid-template-rows: 60px 60px 140px 90px 120px 60px;
+    grid-auto-rows: minmax(90px, auto);
     grid-template-columns: 400px;
     border-radius: 5px;
 `;
@@ -171,8 +172,11 @@ export const ProjectModal = (props: IProjectModal) => {
                     style={textFieldStyle}
                     label={"Description"}
                     value={description}
+                    InputProps={{
+                        inputComponent: TextareaAutosize,
+                        rows: 4
+                    }}
                     multiline={true}
-                    rows="4"
                     onChange={e => {
                         setDescription(e.target.value);
                     }}

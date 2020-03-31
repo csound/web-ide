@@ -11,7 +11,6 @@ import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../Header/Header";
 import ResizeObserver from "resize-observer-polyfill";
-
 import {
     subscribeToFollowing,
     subscribeToFollowers,
@@ -60,7 +59,6 @@ import {
     DescriptionSection,
     NameSectionWrapper,
     NameSection,
-    MainContent,
     ContentSection,
     ContentTabsContainer,
     ContentActionsContainer,
@@ -359,7 +357,7 @@ const Profile = ({ classes, ...props }) => {
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
-                    <MainContent />
+
                     <ContentSection showSearch={selectedSection === 0}>
                         <ContentTabsContainer>
                             <Tabs
@@ -436,6 +434,7 @@ const Profile = ({ classes, ...props }) => {
                                     size="medium"
                                     className={classes.margin}
                                     onClick={() => dispatch(addProject())}
+                                    data-tip={"Create new project"}
                                 >
                                     Create
                                     <AddIcon className={classes.extendedIcon} />

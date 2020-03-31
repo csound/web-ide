@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { isMobile } from "@root/utils";
 import Router from "@comp/Router/Router";
 import ThemeProvider from "@styles/ThemeProvider";
+import ReactTooltip from "react-tooltip";
 import Modal from "@comp/Modal";
 import IosWarning from "./IosWarning";
 import Snackbar from "@comp/Snackbar/Snackbar";
@@ -59,6 +60,7 @@ const Main = (props: IMain) => {
                 <Modal />
                 <IosWarning />
                 <Snackbar />
+                <ReactTooltip />
                 <Router history={props.history} />
             </ThemeProvider>
         </HotKeys>

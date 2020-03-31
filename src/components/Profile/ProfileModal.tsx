@@ -4,14 +4,16 @@ import { SnackbarType } from "../Snackbar/types";
 import { updateUserProfile } from "./actions";
 import { closeModal } from "../Modal/actions";
 import { TextField, Button } from "@material-ui/core";
+import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import { useDispatch } from "react-redux";
+import { useTheme } from "emotion-theming";
 import * as TargetSS from "@comp/TargetControls/styles";
 import styled from "styled-components";
 import Select from "react-select";
 
 const ModalContainer = styled.div`
     display: grid;
-    grid-template-rows: 80px 80px 60px 140px 60px 60px 60px 60px;
+    grid-auto-rows: minmax(60px, auto);
     grid-template-columns: 400px;
     border-radius: 5px;
 `;
@@ -54,7 +56,7 @@ export const ProfileModal = (props: IProfileModal) => {
         props.backgroundIndex || 0
     );
     const dispatch = useDispatch();
-
+    const theme = useTheme();
     const existingName = props.existingNames.includes(username);
     const nonAlphaNumeric = !/^[a-zA-Z0-9\-_]{5,40}$/.test(username);
     const emptyString = username.length === 0;
@@ -127,10 +129,13 @@ export const ProfileModal = (props: IProfileModal) => {
             <FieldRow row={4}>
                 <TextField
                     style={textFieldStyle}
+                    InputProps={{
+                        inputComponent: TextareaAutosize,
+                        rows: 4
+                    }}
                     label={"Bio"}
                     value={bio}
                     multiline={true}
-                    rows="4"
                     onChange={e => {
                         setBio(e.target.value);
                     }}
@@ -189,16 +194,17 @@ export const ProfileModal = (props: IProfileModal) => {
                         styles={{
                             control: (provided, state) => TargetSS.control,
                             container: (provided, state) =>
-                                TargetSS.dropdownContainer,
+                                TargetSS.dropdownContainer(theme),
                             groupHeading: (provided, state) =>
                                 TargetSS.groupHeading,
                             placeholder: (provided, state) =>
                                 TargetSS.placeholder,
                             menu: (provided, state) => TargetSS.menu,
-                            menuList: (provided, state) => TargetSS.menuList,
+                            menuList: (provided, state) =>
+                                TargetSS.menuList(theme),
                             option: (provided, state) => TargetSS.menuOption,
                             indicatorsContainer: (provided, state) =>
-                                TargetSS.indicatorContainer,
+                                TargetSS.indicatorContainer(theme),
                             indicatorSeparator: (provided, state) =>
                                 TargetSS.indicatorSeparator
                         }}
