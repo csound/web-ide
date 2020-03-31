@@ -5,7 +5,7 @@ import styled from "styled-components";
 export const ProfileContainer = styled.div`
     display: grid;
     ${!isMobile() &&
-        `grid-template-columns: 24px 250px minmax(0, auto);
+        `grid-template-columns: 24px 250px minmax(0,1100px);
     grid-template-rows: 50px 175px 1fr 70px;`}
     width: 100%;
     grid-auto-rows: minmax(90px, auto);

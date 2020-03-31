@@ -70,6 +70,9 @@ export const makeMuiTheme = (muiTheme, theme) => {
                 backgroundColor: `${theme.buttonHover}!important`
             }
         }),
+        assocPath(["overrides", "MuiTouchRipple", "rippleVisible"], {
+            color: "#005d83 !important"
+        }),
         assocPath(["overrides", "MuiButton", "textSecondary"], {
             backgroundColor: `${theme.altButtonBackground}`,
             color: `${theme.buttonTextColor}!important`,
