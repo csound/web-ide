@@ -23,6 +23,7 @@ export const configureStore = () => {
 
     const store: ICreatedStore = createStore(
         rootReducer(history),
+        undefined,
         compose(
             composeEnhancer(applyMiddleware(routerMiddleware(history), thunk))
         )

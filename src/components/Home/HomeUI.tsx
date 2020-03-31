@@ -3,15 +3,14 @@ import styled from "styled-components";
 import { Gradient } from "./Gradient";
 
 export const HomeContainer = styled.div`
-    height: calc(100% - 64px);
     width: 100%;
-    overflow-y: scroll;
+    height: 100%;
+    overflow: hidden;
     background-color: black;
     position: absolute;
     padding: 20px;
     ${Gradient}
     background-repeat: repeat;
-    overflow-x: scroll;
 `;
 
 export const StyledTextField = styled(TextField)`

@@ -23,8 +23,7 @@ import { SEARCH_PROJECTS_SUCCESS } from "./types";
 
 const duration = 200;
 
-const Home = props => {
-    const { classes } = props;
+const Home = ({ classes }) => {
     const dispatch = useDispatch();
     const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
     const [searchValue, setSearchValue] = useState("");

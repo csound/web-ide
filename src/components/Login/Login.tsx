@@ -8,13 +8,15 @@ import {
     DialogContentText,
     DialogActions,
     TextField,
-    LinearProgress
+    LinearProgress,
+    Link
 } from "@material-ui/core";
 import {
     login,
     closeLoginDialog,
     createNewUser,
-    createUserClearError
+    createUserClearError,
+    resetPassword
 } from "./actions";
 import {
     selectLoginRequesting,
@@ -41,6 +43,8 @@ const uiConfig = {
     }
 };
 
+type LoginMode = "login" | "create" | "reset";
+
 interface ILoginLocalState {
     email: string;
     newEmail: string;
@@ -48,7 +52,7 @@ interface ILoginLocalState {
     password: string;
     newPassword: string;
     newPasswordConfirm: string;
-    isCreatingUser: boolean;
+    loginMode: LoginMode;
 }
 
 const Login = () => {
@@ -64,17 +68,12 @@ const Login = () => {
         password: "",
         newPassword: "",
         newPasswordConfirm: "",
-        isCreatingUser: false
+        loginMode: "login"
     } as ILoginLocalState);
 
-    const switchToNewUser = () => {
+    const switchLoginMode = (loginMode: LoginMode) => {
         dispatch(createUserClearError());
-        setLocalState(assoc("isCreatingUser", true, localState));
-    };
-
-    const switchToLogin = () => {
-        dispatch(createUserClearError());
-        setLocalState(assoc("isCreatingUser", false, localState));
+        setLocalState(assoc("loginMode", loginMode, localState));
     };
 
     const errorBox = !isEmpty(errorMessage) && errorMessage && (
@@ -90,7 +89,7 @@ const Login = () => {
         localState.newPasswordConfirm !== localState.newPassword ||
         !localState.newEmailValid;
 
-    const loginView = (
+    const loginView = () => (
         <div>
             <DialogTitle>Login</DialogTitle>
             <DialogContent>
@@ -159,7 +158,10 @@ const Login = () => {
                     >
                         Login
                     </Button>
-                    <Button onClick={switchToNewUser} color="primary">
+                    <Button
+                        onClick={() => switchLoginMode("create")}
+                        color="primary"
+                    >
                         {"New User"}
                     </Button>
                 </DialogActions>
@@ -168,10 +170,76 @@ const Login = () => {
                 uiConfig={uiConfig}
                 firebaseAuth={firebase.auth()}
             />
+            <div css={SS.centerLink}>
+                <Link onClick={() => switchLoginMode("reset")}>
+                    Forgot password?
+                </Link>
+            </div>
         </div>
     );
 
-    const signupView = (
+    const resetView = () => (
+        <div>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    Please enter your email address
+                </DialogContentText>
+                <form>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="email"
+                        label="Email Address"
+                        type="email"
+                        value={localState.email}
+                        onChange={e => {
+                            setLocalState(
+                                pipe(
+                                    assoc("email", e.target.value),
+                                    assoc(
+                                        "newEmailValid",
+                                        validateEmail(e.target.value)
+                                    )
+                                )(localState)
+                            );
+                        }}
+                        fullWidth
+                        error={fail}
+                        autoComplete="current-email"
+                    />
+                </form>
+                <div
+                    style={{
+                        transition: "opacity .1s ease-in",
+                        opacity: requesting ? 1 : 0
+                    }}
+                >
+                    <LinearProgress />
+                </div>
+                <DialogActions>
+                    <Button
+                        onClick={() => switchLoginMode("login")}
+                        color="primary"
+                    >
+                        Back
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            dispatch(resetPassword(localState.email));
+                            switchLoginMode("login");
+                        }}
+                        color="primary"
+                        disabled={!localState.newEmailValid}
+                    >
+                        {"Reset"}
+                    </Button>
+                </DialogActions>
+            </DialogContent>
+        </div>
+    );
+
+    const signupView = () => (
         <div style={{ padding: "45px" }}>
             <DialogTitle>New Account</DialogTitle>
             <DialogContentText>Please provide a valid email</DialogContentText>
@@ -248,7 +316,10 @@ const Login = () => {
                 <LinearProgress />
             </div>
             <DialogActions>
-                <Button onClick={switchToLogin} color="primary">
+                <Button
+                    onClick={() => switchLoginMode("login")}
+                    color="primary"
+                >
                     Back
                 </Button>
                 <Button
@@ -265,6 +336,18 @@ const Login = () => {
             </DialogActions>
         </div>
     );
+
+    const renderView = (loginMode: LoginMode) => {
+        switch (loginMode) {
+            case "login":
+                return loginView();
+            case "create":
+                return signupView();
+            case "reset":
+                return resetView();
+        }
+    };
+
     return (
         <Dialog
             onClose={() => {
@@ -273,7 +356,7 @@ const Login = () => {
             }}
             open
         >
-            {localState.isCreatingUser ? signupView : loginView}
+            {renderView(localState.loginMode)}
             {errorBox}
         </Dialog>
     );
