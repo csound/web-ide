@@ -22,8 +22,6 @@ import {
     ProjectCardContentBottomID,
     ProjectCardSpinnerContainer
 } from "./HomeUI";
-import { push } from "connected-react-router";
-import { useDispatch } from "react-redux";
 
 const ProjectCard = props => {
     const {
@@ -68,7 +66,7 @@ const ProjectCard = props => {
             : iconName;
 
     const SVGIcon = SVGComponents[`${iconName}Component`];
-    const dispatch = useDispatch();
+
     return (
         <ProjectCardContainer
             duration={duration}
