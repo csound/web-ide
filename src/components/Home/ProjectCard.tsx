@@ -146,9 +146,7 @@ const ProjectCard = props => {
                                                 }
                                             />
                                         </span>
-                                        <ProjectCardContentMiddle
-                                            to={`editor/${project.id}`}
-                                        ></ProjectCardContentMiddle>
+                                        <ProjectCardContentMiddle />
                                         <ProjectCardContentBottom
                                             to={`profile/${username}`}
                                         >

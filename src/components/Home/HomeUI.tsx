@@ -185,20 +185,19 @@ export const ProjectCardContentTop = styled(Link)`
     padding: 10px;
     box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
     overflow: hidden;
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
 `;
 
-export const ProjectCardContentMiddle = styled(Link)`
+export const ProjectCardContentMiddle = styled.div`
     grid-row: 2;
     grid-column: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    cursor: pointer;
     background-color: rgba(0, 0, 0, 0.2);
-    &:hover {
-        background-color: rgba(0, 0, 0, 0.5);
-    }
 `;
 
 export const ProjectCardContentTopHeader = styled.div`
