@@ -1,16 +1,22 @@
 import { css } from "@emotion/core";
 import { shadow } from "@styles/_common";
 
-export const dropdownContainer = css`
+export const dropdownContainer = theme => css`
     position: relative;
     width: auto;
     height: 42px;
     margin-right: 6px;
     box-sizing: content-box;
+    & > div {
+        border: 2px solid ${theme.highlightBackground};
+        &:hover {
+            border: 2px solid ${theme.line};
+        }
+    }
 `;
 
-export const dropdownContainerForDialog = css`
-    ${dropdownContainer}
+export const dropdownContainerForDialog = theme => css`
+    ${dropdownContainer(theme)}
     display: inline-flex;
     min-width: 180px;
     flex-direction: column;
@@ -64,7 +70,12 @@ export const dropdownTooltip = theme => css`
     }
 `;
 
-export const menuList = css``;
+export const menuList = theme => css`
+    & div {
+        border-color: ${theme.highlightBackground}!important;
+        background-color: ${theme.headerBackground}!important;
+    }
+`;
 
 export const control = theme => css`
     overflow: hidden;

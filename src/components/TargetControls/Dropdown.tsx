@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Select from "react-select";
+import { useTheme } from "emotion-theming";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch, useSelector } from "react-redux";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
@@ -44,6 +45,7 @@ const titleTooltip = ({ documents, selectedTarget }) => {
 
 const TargetDropdown = ({ activeProjectUid }) => {
     const dispatch = useDispatch();
+    const theme = useTheme();
     const targets: ITargetMap | null = useSelector(
         selectProjectTargets(activeProjectUid)
     );
@@ -160,11 +162,12 @@ const TargetDropdown = ({ activeProjectUid }) => {
                     options={options}
                     styles={{
                         control: (provided, state) => SS.control,
-                        container: (provided, state) => SS.dropdownContainer,
+                        container: (provided, state) =>
+                            SS.dropdownContainer(theme),
                         groupHeading: (provided, state) => SS.groupHeading,
                         placeholder: (provided, state) => SS.placeholder,
                         menu: (provided, state) => SS.menu,
-                        menuList: (provided, state) => SS.menuList,
+                        menuList: (provided, state) => SS.menuList(theme),
                         option: (provided, state) => SS.menuOption,
                         indicatorsContainer: (provided, state) =>
                             SS.indicatorContainer,

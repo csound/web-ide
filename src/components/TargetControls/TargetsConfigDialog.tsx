@@ -66,22 +66,22 @@ interface ITargetFromInput {
     targetDocumentUid?: string;
 }
 
-const dropdownStyle = {
-    control: (provided, state) => SS.control,
-    container: (provided, state) => SS.dropdownContainerForDialog,
-    groupHeading: (provided, state) => SS.groupHeading,
-    placeholder: (provided, state) => SS.placeholder,
-    menu: (provided, state) => SS.menuForDialog,
-    menuList: (provided, state) => SS.menuList,
-    option: (provided, { isDisabled }) =>
-        isDisabled ? SS.menuOptionDisabled : SS.menuOption,
-    indicatorsContainer: (provided, state) => SS.indicatorContainer,
-    indicatorSeparator: (provided, state) => SS.indicatorSeparator
-};
-
 const TargetsConfigDialog = () => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
+
+    const dropdownStyle = {
+        control: (provided, state) => SS.control,
+        container: (provided, state) => SS.dropdownContainerForDialog(theme),
+        groupHeading: (provided, state) => SS.groupHeading,
+        placeholder: (provided, state) => SS.placeholder,
+        menu: (provided, state) => SS.menuForDialog,
+        menuList: (provided, state) => SS.menuList,
+        option: (provided, { isDisabled }) =>
+            isDisabled ? SS.menuOptionDisabled : SS.menuOption,
+        indicatorsContainer: (provided, state) => SS.indicatorContainer,
+        indicatorSeparator: (provided, state) => SS.indicatorSeparator
+    };
 
     const activeProjectUid: string = useSelector((store: IStore) => {
         return pathOr("", ["ProjectsReducer", "activeProjectUid"], store);
