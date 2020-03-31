@@ -108,7 +108,9 @@ export const stopCsound = () => {
             dispatch(setCsoundPlayState("stopped"));
             cs.stop();
         } else {
-            dispatch(setCsoundPlayState(cs.getPlayState()));
+            if (cs && typeof cs.getPlayState === "function") {
+                dispatch(setCsoundPlayState(cs.getPlayState()));
+            }
         }
     };
 };

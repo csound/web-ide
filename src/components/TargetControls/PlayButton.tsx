@@ -11,8 +11,9 @@ import {
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
 import { pauseCsound, resumePausedCsound } from "@comp/Csound/actions";
+import { saveAllFiles } from "@comp/Projects/actions";
 
-const PlayButton = ({ activeProjectUid }) => {
+const PlayButton = ({ activeProjectUid, isOwner }) => {
     const playActionDefault = useSelector(getPlayActionFromTarget);
 
     const playActionFallback = useSelector(
@@ -61,6 +62,7 @@ const PlayButton = ({ activeProjectUid }) => {
                         case "stopped":
                         case "initialized": {
                             dispatch(playAction);
+                            isOwner && dispatch(saveAllFiles());
                         }
                     }
                 }}

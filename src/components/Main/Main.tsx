@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { isMobile } from "@root/utils";
 import Router from "@comp/Router/Router";
@@ -24,9 +24,14 @@ interface IMain {
 
 const Main = (props: IMain) => {
     const dispatch = useDispatch();
+    const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 
     useEffect(() => {
         let unsubscribeLoggedInUserProfile: any = null;
+        // the observer doesn't know if the login state
+        // change is a result of manual login or autologin
+        // we determine this from a timeout
+        !autoLoginTimeout && setTimeout(() => setAutoLoginTimeout(true), 1000);
         const unsubscribeAuthObserver = firebase
             .auth()
             .onAuthStateChanged(user => {
@@ -35,7 +40,7 @@ const Main = (props: IMain) => {
                         user.uid,
                         dispatch
                     );
-                    dispatch(thirdPartyAuthSuccess(user));
+                    dispatch(thirdPartyAuthSuccess(user, !autoLoginTimeout));
                 } else {
                     dispatch(setRequestingStatus(false));
                 }

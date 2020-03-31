@@ -203,7 +203,7 @@ const profileFinalize = (user: any, dispatch: any) => {
     }) as React.FC;
 };
 
-export const thirdPartyAuthSuccess = (user: any) => {
+export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
     return async (dispatch: any) => {
         const profile = await profiles.doc(user.uid).get();
         if (!profile.exists || isEmpty(profile.data()!.username)) {
@@ -215,7 +215,9 @@ export const thirdPartyAuthSuccess = (user: any) => {
                 type: SIGNIN_SUCCESS,
                 user
             });
-            profileData && dispatch(push(`/profile/${profileData.username}`));
+            !fromAutoLogin &&
+                profileData &&
+                dispatch(push(`/profile/${profileData.username}`));
         }
     };
 };

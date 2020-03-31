@@ -74,7 +74,7 @@ const TargetControls = () => {
 
     return (
         <>
-            <PlayButton activeProjectUid={activeProjectUid} />
+            <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             {isOwner && <TargetDropdown activeProjectUid={activeProjectUid} />}
         </>
     );
