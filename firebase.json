@@ -8,6 +8,18 @@
                 "destination": "/manual/main.js"
             },
             {
+                "source": "/robots.txt",
+                "destination": "/robots.txt"
+            },
+            {
+                "source": "/sitemap.xml",
+                "destination": "/sitemap.xml"
+            },
+            {
+                "source": "/sitemap.xml.gz",
+                "destination": "/sitemap.xml.gz"
+            },
+            {
                 "source": "**",
                 "destination": "/index.html"
             }

@@ -121,6 +121,8 @@
         "firebase-tools": "^7.16.2",
         "react-app-rewired": "^2.1.5",
         "react-scripts": "3.4.1",
+        "robotstxt-webpack-plugin": "^7.0.0",
+        "sitemap-webpack-plugin": "^0.7.1",
         "wait-on": "^4.0.1"
     },
     "config-overrides-path": "config-overrides.ts",

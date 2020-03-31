@@ -54,6 +54,8 @@ jobs:
                       - build
     deploy:
         <<: *defaults
+        environment:
+          PRODUCTION: 1
         filters:
             branches:
                 only:
@@ -70,6 +72,8 @@ jobs:
                       - build
     deploy_dev:
         <<: *defaults
+        environment:
+          PRODUCTION: 0
         filters:
             branches:
                 only:
