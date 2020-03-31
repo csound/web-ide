@@ -37,7 +37,6 @@ export const login = (email: string, password: string) => {
                 type: SIGNIN_SUCCESS,
                 user
             });
-            // dispatch(push("/"));
         } catch (e) {
             dispatch({
                 type: SIGNIN_FAIL
@@ -211,10 +210,12 @@ export const thirdPartyAuthSuccess = (user: any) => {
             const profileFinalizeComp = profileFinalize(user, dispatch);
             dispatch(openSimpleModal(profileFinalizeComp));
         } else {
+            const profileData = profile.data();
             dispatch({
                 type: SIGNIN_SUCCESS,
                 user
             });
+            profileData && dispatch(push(`/profile/${profileData.username}`));
         }
     };
 };
@@ -287,11 +288,8 @@ export const setRequestingStatus = (status: boolean) => {
     };
 };
 
-
 export const resetPassword = (email: string) => {
     return async (dispatch: any) => {
-        firebase
-            .auth()
-            .sendPasswordResetEmail(email);
+        firebase.auth().sendPasswordResetEmail(email);
     };
 };
