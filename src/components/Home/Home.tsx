@@ -6,7 +6,7 @@ import Header from "../Header/Header";
 import withStyles from "./styles";
 import { getPopularProjects, getStars, searchProjects } from "./actions";
 import { debounce } from "lodash";
-import { HomeContainer, StyledTextField } from "./HomeUI";
+import { HomeContainer, StyledTextField, GlobalStyle } from "./HomeUI";
 import {
     selectStars,
     selectProjectLastModified,
@@ -76,13 +76,14 @@ const Home = ({ classes }) => {
     );
 
     return (
-        <div className={classes.root}>
+        <>
             <Header />
-            <HomeContainer
+            <GlobalStyle
                 colorA={"rgba(30, 30, 30, 1)"}
                 colorB={"rgba(40, 40, 40, 1)"}
                 colorC={"rgba(20, 20, 20, 1)"}
-            >
+            />
+            <HomeContainer>
                 <Grid container spacing={3}>
                     <Grid item xs={12}>
                         <StyledTextField
@@ -107,7 +108,7 @@ const Home = ({ classes }) => {
                                 },
                                 inputMode: "numeric"
                             }}
-                            onChange={e => {
+                            onChange={(e) => {
                                 const query = e.target.value;
                                 setSearchValue(query);
 
@@ -119,7 +120,7 @@ const Home = ({ classes }) => {
                 <TransitionGroup component={null}>
                     {searchValue === "" && (
                         <Transition appear timeout={duration}>
-                            {transitionState => {
+                            {(transitionState) => {
                                 return (
                                     <FeaturedProjects
                                         duration={duration}
@@ -136,7 +137,7 @@ const Home = ({ classes }) => {
                     )}
                     {searchValue !== "" && (
                         <Transition appear timeout={duration}>
-                            {transitionState => {
+                            {(transitionState) => {
                                 return (
                                     <SearchProjects
                                         duration={duration}
@@ -154,7 +155,7 @@ const Home = ({ classes }) => {
                     )}
                 </TransitionGroup>
             </HomeContainer>
-        </div>
+        </>
     );
 };
 
