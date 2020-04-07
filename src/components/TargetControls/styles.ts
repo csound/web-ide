@@ -1,7 +1,7 @@
 import { css } from "@emotion/core";
 import { shadow } from "@styles/_common";
 
-export const dropdownContainer = theme => css`
+export const dropdownContainer = (theme) => css`
     position: relative;
     width: auto;
     height: 42px;
@@ -15,7 +15,7 @@ export const dropdownContainer = theme => css`
     }
 `;
 
-export const dropdownContainerForDialog = theme => css`
+export const dropdownContainerForDialog = (theme) => css`
     ${dropdownContainer(theme)}
     display: inline-flex;
     min-width: 180px;
@@ -23,7 +23,7 @@ export const dropdownContainerForDialog = theme => css`
     margin: 12px 0;
 `;
 
-export const menu = theme => css`
+export const menu = (theme) => css`
     ${shadow}
     z-index: 2;
     position: absolute;
@@ -61,7 +61,7 @@ export const menu = theme => css`
     }
 `;
 
-export const dropdownTooltip = theme => css`
+export const dropdownTooltip = (theme) => css`
     padding: 12px;
     & h4 {
         font-size: 15px;
@@ -70,14 +70,14 @@ export const dropdownTooltip = theme => css`
     }
 `;
 
-export const menuList = theme => css`
+export const menuList = (theme) => css`
     & div {
         border-color: ${theme.highlightBackground}!important;
         background-color: ${theme.headerBackground}!important;
     }
 `;
 
-export const control = theme => css`
+export const control = (theme) => css`
     overflow: hidden;
     display: flex;
     height: 38px;
@@ -104,7 +104,7 @@ export const control = theme => css`
     }
 `;
 
-export const controlError = theme => css`
+export const controlError = (theme) => css`
     ${control(theme)}
     color: ${theme.errorText};
     border: 2px solid ${theme.errorText};
@@ -113,7 +113,7 @@ export const controlError = theme => css`
     }
 `;
 
-export const placeholder = theme => css`
+export const placeholder = (theme) => css`
     color: ${theme.headerTextColor};
     font-size: 14px;
     font-weight: 500;
@@ -123,7 +123,7 @@ export const placeholder = theme => css`
     line-height: 35px;
 `;
 
-export const menuOption = theme => css`
+export const menuOption = (theme) => css`
     background-color: unset !important;
     font-size: 15px;
     line-height: 36px;
@@ -135,7 +135,7 @@ export const menuOption = theme => css`
     }
 `;
 
-export const menuOptionDisabled = theme => css`
+export const menuOptionDisabled = (theme) => css`
     ${menuOption(theme)}
     color: ${theme.disabledTextColor};
     cursor: initial;
@@ -144,7 +144,7 @@ export const menuOptionDisabled = theme => css`
     }
 `;
 
-export const groupHeading = theme => css`
+export const groupHeading = (theme) => css`
     text-transformation: none;
     cursor: default;
     line-height: 36px;
@@ -154,7 +154,7 @@ export const groupHeading = theme => css`
     font-weight: 500;
 `;
 
-export const indicatorContainer = theme => css`
+export const indicatorContainer = (theme) => css`
     background-color: ${theme.highlightBackground};
     width: 18px;
     & > div {
@@ -172,7 +172,7 @@ export const indicatorSeparator = css`
     color: white;
 `;
 
-export const playButtonContainer = theme => css`
+export const playButtonContainer = (theme) => css`
     position: relative;
     overflow: hidden;
     border: 2px solid ${theme.highlightBackground};
@@ -189,7 +189,7 @@ export const playButtonContainer = theme => css`
     }
 `;
 
-export const playButtonStyle = (playing: boolean) => theme => css`
+export const playButtonStyle = (playing: boolean) => (theme) => css`
     border: 0;
     background: transparent;
     box-sizing: border-box;
@@ -206,7 +206,7 @@ export const playButtonStyle = (playing: boolean) => theme => css`
     border-width: 12px 0 12px 20px;
 
     ${playing &&
-        `
+    `
 cursor: pointer;
 border-style: double;
 border-width: 0px 0 0px 20px;
@@ -216,7 +216,37 @@ margin-left: 9px;
 `}
 `;
 
-export const closeIcon = theme => css`
+export const buttonContainer = (theme) => css`
+    position: relative;
+    top: 0;
+    color: ${theme.headerTextColor};
+    border: 2px solid ${theme.highlightBackground};
+    cursor: pointer;
+    border-radius: 3px;
+    ${shadow}
+    height: 42px;
+    width: auto;
+    margin: 0;
+    margin-right: 6px;
+    &:hover {
+        cursor: pointer;
+        border: 2px solid ${theme.line};
+        & > button {
+            border-color: transparent transparent transparent ${theme.line};
+        }
+    }
+`;
+
+export const iconButton = (theme) => css`
+    border-radius: 0;
+    padding: 2px;
+`;
+
+export const stopIcon = (theme) => css`
+    fill: ${theme.publicIcon}
+`;
+
+export const closeIcon = (theme) => css`
     position: absolute;
     background-color: ${theme.highlightBackground}!important;
     right: 50px;
@@ -229,18 +259,18 @@ export const closeIcon = theme => css`
     }
 `;
 
-export const menuForDialog = theme => css`
+export const menuForDialog = (theme) => css`
     ${menu(theme)}
     top: 44px;
     margin: 0;
 `;
 
-export const targetsDialog = theme => css`
+export const targetsDialog = (theme) => css`
     min-width: 400px;
     max-heigh: 80vh;
 `;
 
-export const targetsDialogBottom = theme => css`
+export const targetsDialogBottom = (theme) => css`
     padding-top: 12px;
     & button {
         padding: 0 18px !important;
@@ -250,7 +280,7 @@ export const targetsDialogBottom = theme => css`
     }
 `;
 
-export const targetsDialogMain = theme => css`
+export const targetsDialogMain = (theme) => css`
     ${shadow}
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     margin-bottom: 12px;
@@ -259,7 +289,7 @@ export const targetsDialogMain = theme => css`
     padding: 12px;
 `;
 
-export const targetLabel = theme => css`
+export const targetLabel = (theme) => css`
     color: ${theme.altTextColor};
     position: absolute;
     font-size: 12px;

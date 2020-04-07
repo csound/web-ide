@@ -8,6 +8,7 @@ import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
 import { pathOr, values } from "ramda";
 import { useDispatch, useSelector } from "react-redux";
+import StopButton from "./StopButton";
 
 const TargetControls = () => {
     const dispatch = useDispatch();
@@ -75,6 +76,7 @@ const TargetControls = () => {
     return (
         <>
             <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
+            <StopButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             {isOwner && <TargetDropdown activeProjectUid={activeProjectUid} />}
         </>
     );
