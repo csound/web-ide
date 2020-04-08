@@ -68,7 +68,7 @@ jobs:
                 cp build/index.html functions &&
                 cd functions &&
                 npm install &&
-                npx firebase deploy --only functions
+                npx firebase deploy -P default --only functions
             - run: yarn deploy
             - persist_to_workspace:
                   root: .
@@ -90,7 +90,7 @@ jobs:
                 cp build/index.html functions &&
                 cd functions &&
                 npm install &&
-                npx firebase deploy --only functions
+                npx firebase deploy -P develop --only functions
             - run: yarn deploy-dev
             - persist_to_workspace:
                   root: .
