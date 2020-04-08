@@ -7,7 +7,7 @@ const R = require("ramda");
 exports.host = functions.https.onRequest(async (req, res) => {
     let indexHTML = fs.readFileSync("./index.html").toString();
     const path = req.path ? req.path.split("/") : req.path;
-    const ogPlaceholder = '<meta name="functions-insert-dynamic-og" />';
+    const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
 
     if (
         //isBot(req.headers["user-agent"]) &&
