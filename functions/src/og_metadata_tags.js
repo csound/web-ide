@@ -5,6 +5,9 @@ const isBot = require("isbot");
 const fs = require("fs");
 const R = require("ramda");
 
+// Workaround https://github.com/firebase/firebase-functions/issues/606
+functions.https.onRequest = handler => handler;
+
 exports.host = functions.https.onRequest(async (req, res) => {
     let indexHTML = fs.readFileSync("./index.html").toString();
     log("debug", `indexHTML: ${indexHTML}`);
