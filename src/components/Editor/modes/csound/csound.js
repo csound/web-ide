@@ -38,7 +38,7 @@ CodeMirror.defineMode("csound", function(config) {
     ];
     var opcodes = Object.keys(synopsis);
     var indentWords = wordObj(["opcode", "instr", "while", "until"]);
-    var dedentWords = wordObj(["endif", "endop", "endin"]);
+    var dedentWords = wordObj(["endif", "endop", "endin", "od"]);
     var matching = { "[": "]", "{": "}", "(": ")" };
     var curPunc;
 
@@ -330,7 +330,7 @@ CodeMirror.defineMode("csound", function(config) {
                           //   state.varList
                           // ? "def"
                           style;
-                if (style == "keyword") {
+                if (style == "keyword" || style == "attribute") {
                     thisTok = word;
                     if (indentWords.propertyIsEnumerable(word))
                         kwtype = "indent";
@@ -377,8 +377,8 @@ CodeMirror.defineMode("csound", function(config) {
             var ct = state.context;
             var closing =
                 ct.type == matching[firstChar] ||
-                (ct.type == "attribute" &&
-                    /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter));
+                ((ct.type == "attribute" || ct.type == "keyword") &&
+                    /^(?:end|else|elseif|od)\b/.test(textAfter));
             return (
                 ct.indented +
                 (closing ? 0 : config.indentUnit) +
@@ -386,7 +386,7 @@ CodeMirror.defineMode("csound", function(config) {
             );
         },
 
-        electricInput: /^\s*(?:end|rescue|elsif|else|\})$/,
+        electricInput: /^\s*(?:end|rescue|elsif|else|od|\})$/,
         // lineComment: /;|\/\//,
         fold: "indent"
     };
