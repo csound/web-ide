@@ -64,7 +64,10 @@ jobs:
             - checkout
             - attach_workspace:
                   at: .
-            - run: cd functions && npm install
+            - run: >
+                cp build/index.html functions
+                cd functions
+                npm install
             - run: yarn deploy || true
             - persist_to_workspace:
                   root: .
@@ -82,7 +85,10 @@ jobs:
             - checkout
             - attach_workspace:
                   at: .
-            - run: cd functions && npm install
+            - run: >
+                cp build/index.html functions
+                cd functions
+                npm install
             - run: yarn deploy-dev
             - persist_to_workspace:
                   root: .
