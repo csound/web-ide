@@ -9,6 +9,7 @@ class SiteDocs extends Component<any, {}> {
             <div className={classes.root}>
                 <Header />
                 <main className={classes.main}>
+                    <section>
                     <h1>Csound Web-IDE</h1>
 
                     <p>Welcome to the Csound Web-IDE!</p>
@@ -37,10 +38,20 @@ class SiteDocs extends Component<any, {}> {
                         features to compose, live code, share, and discover
                         Csound work will help power your musical endeavors.
                     </p>
+                    </section>
 
+                    <section>
                     <h2>Getting Started</h2>
 
                     <h3>Searching and Browsing Projects</h3>
+
+                    <p>
+                        The home page provides a search option for finding public projects. Enter in search 
+                        terms to find projects matching the search terms.  You can click on the project to view 
+                        and run the project as well as click on the author to look at their profile. On the 
+                        author's profile you will find a list of public projects they have shared as well as have 
+                        the opportunity to follow that user (if you are logged in).   
+                    </p>
 
                     <h3>Sign up for an account</h3>
 
@@ -67,7 +78,7 @@ class SiteDocs extends Component<any, {}> {
                     <p>
                         The profile page is also where you will be creating and
                         modifying project details. You can also audition
-                        projects using play button as well as select the project
+                        projects using the play button on the project as well as select the project
                         to view/edit the project in the main IDE editor.
                     </p>
 
@@ -78,7 +89,7 @@ class SiteDocs extends Component<any, {}> {
                         the{" "}
                         <a href="https://csound.com/community.html">
                             Csound Slack
-                        </a>
+                        </a>{" "} 
                         and ask questions in the #web-ide channel.
                     </p>
 
@@ -96,7 +107,9 @@ class SiteDocs extends Component<any, {}> {
                         to address the issue. We look forward to hearing from
                         you!
                     </p>
+                    </section>
 
+                    <section>
                     <h2>Creating a New Project</h2>
 
                     <p>
@@ -113,17 +126,66 @@ class SiteDocs extends Component<any, {}> {
 
                     <h2>Editing a Project</h2>
 
-                    <p>Within the project editor you will see:</p>
+                    <img src="img/project_editor.png" alt="Project Editor" width="100%"></img>
+
+                    <p>The project editor is made up of a number of components:</p>
 
                     <ul>
                         <li>Menu Bar</li>
                         <li>Project File Tree</li>
-                        <li>Editors</li>
+                        <li>File Editors</li>
                         <li>Console Output</li>
-                        <li>Csound Manual Panel</li>
+                        <li>Play Controls</li>
+                        <li>Social Controls</li>
+                        <li>Csound Manual Panel (not shown in screenshot above)</li>
                     </ul>
 
-                    <h2>Sharing Projects</h2>
+
+                    <h3>Menu Bar</h3>
+
+                    <p>The menu bar contains dropdown menus for various operations in the Web-IDE such as saving files, 
+                        opening and closing views (i.e., Project File Tree, Console Ouptput, Csound Manual Panel), and more.
+                    </p>
+
+                    <h3>Project File Tree</h3>
+
+                    <p>Projects are made up of files laid out in a directory structure much like they would be when 
+                        working with Csound on a desktop operating system. Click on a file in the file tree to open up 
+                        its editor. Organize your code and resource files and use relative paths in the same way as you 
+                        would if using Csound on the desktop. 
+                    </p>
+
+                    <h3>File Editors</h3>
+
+                    <p>Editors appear for editing code and working with resource files. Code editors provide syntax highlighting, 
+                        shortcuts for code evaluation (i.e., live coding), and code completion. 
+                    </p>
+
+                    <h3>Console Output</h3>
+
+                    <p>The Console Output shows the output messages generated when Csound runs. </p>
+
+                    <h3>Play Controls</h3>
+
+                    <p>The Play controls include a Play/Pause button, Stop button, and target selection. Each Web-IDE supports using 
+                        different CSDs as Run targets. This allows you to create a project with multiple CSDs that share code. Use the 
+                        "Configure" command in the target dropdown to manage targets for your project. 
+                    </p>
+
+                    <h3>Social Controls</h3>
+
+                    <p>The social controls provide a button to share the project via Facebook, Twitter, and Email; a Star button to like the project; 
+                        and an eye button to mark the project as public or private. If you are not the author of the project the eye button will not be 
+                        available, but you may still share or like the project. 
+                    </p>
+
+                    <h3>Csound Manual Panel</h3>
+
+                    <p>The Web-IDE provides a built-in version of the Csound Manual that you can search through.  Examples found in manual 
+                        entries can also be auditioned directly in the manual panel. 
+                    </p>
+
+                    </section>
                 </main>
             </div>
         );
