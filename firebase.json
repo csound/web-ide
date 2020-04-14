@@ -21,7 +21,7 @@
             },
             {
                 "source": "**",
-                "destination": "/index.html"
+                "function": "host"
             }
         ],
         "headers": [
