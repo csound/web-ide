@@ -193,7 +193,9 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             }, 50);
         };
         editor.getDoc().setValue(currentDocumentValue);
+        editor.getDoc().clearHistory();
         setEditorValue(currentDocumentValue);
+        
         setEditorRef(editor as any);
         dispatch(
             projectEditorActions.storeEditorInstance(
