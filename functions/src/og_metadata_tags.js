@@ -5,51 +5,53 @@ const isBot = require("isbot");
 const fs = require("fs");
 const R = require("ramda");
 
-// Workaround https://github.com/firebase/firebase-functions/issues/606
-functions.https.onRequest = handler => handler;
-
 exports.host = functions.https.onRequest(async (req, res) => {
-    let indexHTML = fs.readFileSync("./index.html").toString();
-    log("debug", `indexHTML: ${indexHTML}`);
-    const path = req.path ? req.path.split("/") : req.path;
-    const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
-    log("debug", `path: ${path}`);
-    if (
-        //isBot(req.headers["user-agent"]) &&
-        path &&
-        path.length > 1 &&
-        path[1] === "editor"
-    ) {
-        const projectUid = path[2];
-        log("debug", `projectUid: ${projectUid}`);
-        const project = await admin
-            .firestore()
-            .collection("projects")
-            .doc(projectUid);
-        log("debug", `project: ${project}`);
-        if (R.isNil(project)) {
-            return res.status(404).send();
+    try {
+        let indexHTML = fs.readFileSync("./index.html").toString();
+        log("debug", `indexHTML: ${indexHTML}`);
+        const path = req.path ? req.path.split("/") : req.path;
+        const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
+        log("debug", `path: ${path}`);
+        if (
+            //isBot(req.headers["user-agent"]) &&
+            path &&
+            path.length > 1 &&
+            path[1] === "editor"
+        ) {
+            const projectUid = path[2];
+            log("debug", `projectUid: ${projectUid}`);
+            const project = await admin
+                .firestore()
+                .collection("projects")
+                .doc(projectUid);
+            log("debug", `project: ${project}`);
+            if (R.isNil(project)) {
+                res.status(404).send();
+            }
+            const profile = await admin
+                .firestore()
+                .collection("profiles")
+                .doc(projectUid.username);
+            log("debug", `profile: ${profile}`);
+            if (R.isNil(profile)) {
+                return res.status(404).send();
+            }
+            const projectWithUid = R.assoc("projectUid", projectUid, project);
+            indexHTML = indexHTML.replace(
+                ogPlaceholder,
+                getProjectOg(projectWithUid, profile)
+            );
+        } else {
+            log("debug", `ELSE`);
+            indexHTML = indexHTML.replace(ogPlaceholder, "");
+            res.status(200).send(indexHTML);
         }
-        const profile = await admin
-            .firestore()
-            .collection("profiles")
-            .doc(projectUid.username);
-        log("debug", `profile: ${profile}`);
-        if (R.isNil(profile)) {
-            return res.status(404).send();
-        }
-        const projectWithUid = R.assoc("projectUid", projectUid, project);
-        indexHTML = indexHTML.replace(
-            ogPlaceholder,
-            getProjectOg(projectWithUid, profile)
-        );
-    } else {
-        log("debug", `ELSE`);
-        indexHTML = indexHTML.replace(ogPlaceholder, "");
-        // res.status(200).send(indexHTML);
+    } catch (e) {
+        console.error("Unexpected error:", e);
+        res.status(500).send("An error occurred");
     }
-    log("debug", `return 200`);
-    res.status(200).send(indexHTML);
+    // log("debug", `return 200`);
+    // res.status(200).send(indexHTML);
 });
 
 const defaultDesc =
