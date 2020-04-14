@@ -22,24 +22,39 @@ exports.host = functions.https.onRequest(async (req, res) => {
             const project = await admin
                 .firestore()
                 .collection("projects")
-                .doc(projectUid);
-            console.log("debug", `project: ${project}`);
-            if (R.isNil(project)) {
+                .doc(projectUid)
+                .get();
+
+            if (R.isNil(project) || !project.exists) {
                 res.status(404).send();
+                return;
             }
-            const profile = await admin
+            const projectData = await project.data();
+            const userUid = R.pathOr(null, ["userUid"], projectData || {});
+
+            if (R.isNil(project) || R.isNil(userUid)) {
+                res.status(404).send();
+                return;
+            }
+
+            const profileSnap = await admin
                 .firestore()
                 .collection("profiles")
-                .doc(projectUid.username);
-            console.log("debug", `profile: ${profile}`);
-            if (R.isNil(profile)) {
-                return res.status(404).send();
+                .doc(userUid)
+                .get();
+
+            if (R.isNil(profileSnap) || !profileSnap.exists) {
+                res.status(404).send();
+                return;
             }
+            const profile = await profileSnap.data();
+            console.log("objK Profile", Object.keys(profile));
             const projectWithUid = R.assoc("projectUid", projectUid, project);
             indexHTML = indexHTML.replace(
                 ogPlaceholder,
                 getProjectOg(projectWithUid, profile)
             );
+            res.status(200).send(indexHTML);
         } else {
             console.log("debug", `ELSE`);
             indexHTML = indexHTML.replace(ogPlaceholder, "");
@@ -49,8 +64,6 @@ exports.host = functions.https.onRequest(async (req, res) => {
         console.error("Unexpected error:", e);
         res.status(500).send("An error occurred");
     }
-    // log("debug", `return 200`);
-    // res.status(200).send(indexHTML);
 });
 
 const defaultDesc =

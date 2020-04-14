@@ -20,8 +20,20 @@
                 "destination": "/sitemap.xml.gz"
             },
             {
-                "source": "**",
+                "source": "/",
                 "function": "host"
+            },
+            {
+                "source": "/editor/**",
+                "function": "host"
+            },
+            {
+                "source": "/profile/**",
+                "function": "host"
+            },
+            {
+                "source": "!/@(static|manual)/**",
+                "destination": "/index.html"
             }
         ],
         "headers": [
