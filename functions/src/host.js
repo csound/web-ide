@@ -7,18 +7,16 @@ const R = require("ramda");
 exports.host = functions.https.onRequest(async (req, res) => {
     try {
         let indexHTML = fs.readFileSync("./index.html").toString();
-        console.log("debug", `indexHTML: ${indexHTML}`);
         const path = req.path ? req.path.split("/") : req.path;
         const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
-        console.log("debug", `path: ${path}`);
         if (
-            //isBot(req.headers["user-agent"]) &&
+            isBot(req.headers["user-agent"]) &&
             path &&
             path.length > 1 &&
             path[1] === "editor"
         ) {
             const projectUid = path[2];
-            console.log("debug", `projectUid: ${projectUid}`);
+
             const project = await admin
                 .firestore()
                 .collection("projects")
@@ -48,15 +46,17 @@ exports.host = functions.https.onRequest(async (req, res) => {
                 return;
             }
             const profile = await profileSnap.data();
-            console.log("objK Profile", Object.keys(profile));
-            const projectWithUid = R.assoc("projectUid", projectUid, project);
+            const projectWithUid = R.assoc(
+                "projectUid",
+                projectUid,
+                projectData
+            );
             indexHTML = indexHTML.replace(
                 ogPlaceholder,
                 getProjectOg(projectWithUid, profile)
             );
             res.status(200).send(indexHTML);
         } else {
-            console.log("debug", `ELSE`);
             indexHTML = indexHTML.replace(ogPlaceholder, "");
             res.status(200).send(indexHTML);
         }
