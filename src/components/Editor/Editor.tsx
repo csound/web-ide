@@ -193,7 +193,17 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             }, 50);
         };
         editor.getDoc().setValue(currentDocumentValue);
-        editor.getDoc().clearHistory();
+
+        const editorHistory = pathOr(
+            null,
+            [`${documentUid}:history`],
+            cursorState
+        );
+        if(editorHistory) {
+            editor.getDoc().setHistory(editorHistory);
+        } else {
+            editor.getDoc().clearHistory();
+        }
         setEditorValue(currentDocumentValue);
         
         setEditorRef(editor as any);
@@ -230,6 +240,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     const editorWillUnmount = () => {
         if (editorRef) {
             cursorState[`${documentUid}:cursor_pos`] = editorRef.getCursor();
+            cursorState[`${documentUid}:history`] = editorRef.getHistory();
         }
         dispatch(
             projectEditorActions.storeEditorInstance(
