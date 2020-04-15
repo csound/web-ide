@@ -75,10 +75,10 @@ const getProjectOg = (project, profile) => {
     let og = `<meta property="fb:app_id" content="428548837960735" />`;
     og += `<meta property="og:type" content="website" />`;
     og += `<meta property="og:title" content="${R.propOr(
-        defaultTitle,
-        "name",
-        project
-    )}" />`;
+        profile.username,
+        "displayName",
+        profile
+    )} - ${R.propOr(defaultTitle, "name", project)}" />`;
     og += `<meta property="og:description" content="${R.propOr(
         defaultDesc,
         "description",
