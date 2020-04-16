@@ -6,7 +6,7 @@ import { selectProjectTargets, selectSelectedTarget } from "./selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
-import { pathOr, values } from "ramda";
+import { isEmpty, keys, pathOr, values } from "ramda";
 import { useDispatch, useSelector } from "react-redux";
 import StopButton from "./StopButton";
 
@@ -21,8 +21,8 @@ const TargetControls = () => {
 
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
 
-    const targets: ITargetMap | null = useSelector((store: IStore) =>
-        (selectProjectTargets as any)(activeProjectUid)
+    const targets: ITargetMap | null = useSelector(
+        selectProjectTargets(activeProjectUid)
     );
 
     const targetsValues: ITarget[] | null = targets ? values(targets) : null;
@@ -73,7 +73,7 @@ const TargetControls = () => {
         selectedTarget
     ]);
 
-    return (
+    return isEmpty(keys(targets)) ? null : (
         <>
             <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             <StopButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
