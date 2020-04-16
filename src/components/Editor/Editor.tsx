@@ -7,7 +7,7 @@ import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
 import ResizeObserver from "resize-observer-polyfill";
 import ScrollBar from "@elem/perfect-scrollbar";
-import { pathOr, propOr } from "ramda";
+import { isNil, pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import { filenameToCsoundType } from "@comp/Csound/utils";
@@ -93,7 +93,10 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     const findOrcBlock = () => {
         const val = editorRef ? editorRef.doc.getValue() : "";
         const lines = val.split("\n");
-        const cursorLine = editorRef ? editorRef.getCursor().line : 0;
+        const cursorLine = editorRef
+            ? propOr(0, "line", editorRef.getCursor())
+            : 0;
+
         const currentLineEndOfBound: boolean = uncommentLine(
             lines[cursorLine]
         ).match(/endin|endop/g);
@@ -102,6 +105,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             cursorLine + (currentLineEndOfBound ? 0 : 1),
             lines.length
         );
+
         let lastBlockLine, lineNumber;
 
         for (lineNumber = 0; lineNumber < cursorBoundry; lineNumber++) {
@@ -113,7 +117,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             }
         }
 
-        if (!lastBlockLine) {
+        if (isNil(lastBlockLine)) {
             return {
                 from: { line: cursorLine, ch: 0 },
                 to: { line: cursorLine, ch: lines[cursorLine].length },
@@ -199,13 +203,13 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             [`${documentUid}:history`],
             cursorState
         );
-        if(editorHistory) {
+        if (editorHistory) {
             editor.getDoc().setHistory(editorHistory);
         } else {
             editor.getDoc().clearHistory();
         }
         setEditorValue(currentDocumentValue);
-        
+
         setEditorRef(editor as any);
         dispatch(
             projectEditorActions.storeEditorInstance(
