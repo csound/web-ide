@@ -6,7 +6,7 @@ import { createGlobalStyle } from "styled-components";
 
 export const GlobalStyle = createGlobalStyle`
   body {
-   
+
     ${Gradient}
   }
 `;
@@ -35,7 +35,7 @@ interface IAnimatedGridContainer {
 
 export const AnimatedGridContainer = styled(Grid)<IAnimatedGridContainer>`
     position: absolute;
-    transition: all ${(props) => props.duration}ms;
+    transition: all ${props => props.duration}ms;
     && {
         width: 99vw;
     }
@@ -59,7 +59,7 @@ interface IFeaturedProjectsRowContainer {
 export const FeaturedProjectsRowContainer = styled.div<
     IFeaturedProjectsRowContainer
 >`
-    grid-row: ${(props) => props.row};
+    grid-row: ${props => props.row};
     grid-column: 1;
     display: flex;
     justify-content: space-between;
@@ -79,8 +79,8 @@ export const ProjectCardContainer = styled.div<IProjectCard>`
     margin: 5px;
     background-color: black;
 
-    transition-delay: ${(props) => props.projectIndex * 50}ms;
-    transition: all ${(props) => props.duration}ms;
+    transition-delay: ${props => props.projectIndex * 50}ms;
+    transition: all ${props => props.duration}ms;
     &.entering {
         opacity: 0;
         transform: translate(10px);
@@ -117,7 +117,7 @@ export const ProjectCardSpinnerContainer = styled.div<
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all ${(props) => props.duration}ms;
+    transition: all ${props => props.duration}ms;
     &.entering {
         opacity: 0;
     }
@@ -133,13 +133,13 @@ export const ProjectCardSVGContainer = styled.div<IProjectCardSVGContainer>`
     position: absolute;
     height: 100%;
     width: 100%;
-    background-color: ${(props) => props.backgroundColor};
-    opacity: ${(props) => (props.mouseOver ? 1 : 0.5)};
+    background-color: ${props => props.backgroundColor};
+    opacity: ${props => (props.mouseOver ? 1 : 0.5)};
     z-index: 2;
     transition: opacity 0.3s;
     grid-row: 1;
     grid-column: 1;
-    transition: all ${(props) => props.duration}ms;
+    transition: all ${props => props.duration}ms;
     &.entering {
         opacity: 0;
     }
@@ -170,7 +170,7 @@ export const ProjectCardContentContainer = styled.div<
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    transition: all ${(props) => props.duration}ms;
+    transition: all ${props => props.duration}ms;
     &.entering {
         opacity: 0;
     }
@@ -263,8 +263,8 @@ export const ProjectCardContentBottomID = styled.div`
 export const Photo = styled.img`
     vertical-align: middle;
     width: 50px;
-    height: 50px;
     border-radius: 50%;
+    overflow: hidden;
     box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
 `;
 
@@ -325,7 +325,7 @@ export const SearchProjectContainer = styled.div<ISearchProjectContainer>`
     grid-template-columns: 1fr;
     width: 100%;
     height: 100%;
-    transition: all ${(props) => props.duration}ms;
+    transition: all ${props => props.duration}ms;
 
     &.entering {
         opacity: 0;
@@ -345,7 +345,7 @@ export const SearchProjectWaitContainer = styled(Grid)<ISearchProjectContainer>`
     width: 100%;
     padding-top: 100px;
     color: white;
-    transition: all ${(props) => props.duration}ms;
+    transition: all ${props => props.duration}ms;
     display: flex;
     justify-content: center;
     align-items: center;
