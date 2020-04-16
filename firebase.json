@@ -32,7 +32,11 @@
                 "function": "host"
             },
             {
-                "source": "!/@(static|manual)/**",
+                "source": "/@(manual|documentation)",
+                "destination": "/index.html"
+            },
+            {
+                "source": "/@(manual|documentation)/**",
                 "destination": "/index.html"
             }
         ],
