@@ -605,17 +605,7 @@ CsoundScriptProcessorNode = function(context, options) {
                 if (!this.hasStarted) {
                     this.hasStarted = true;
                 }
-                CSOUND.setMidiCallbacks(cs);
-                CSOUND.setOption(cs, "-odac");
-                CSOUND.setOption(cs, "-iadc");
-                CSOUND.setOption(cs, "-M0");
-                CSOUND.setOption(cs, "-+rtaudio=null");
-                CSOUND.setOption(cs, "-+rtmidi=null");
-                CSOUND.prepareRT(cs);
-                CSOUND.setOption(cs, "--sample-rate=" + sampleRate);
-                CSOUND.setOption(cs, "--nchnls=" + this.nchnls);
-                CSOUND.setOption(cs, "--nchnls_i=" + this.nchnls_i);
-
+                
                 let ksmps = CSOUND.getKsmps(this.csound);
                 this.ksmps = ksmps;
                 this.cnt = ksmps;
@@ -660,6 +650,17 @@ CsoundScriptProcessorNode = function(context, options) {
                 this.started = false;
                 CSOUND.reset(this.csound);
                 muteMessages = false;
+
+                CSOUND.setMidiCallbacks(cs);
+                CSOUND.setOption(cs, "-odac");
+                CSOUND.setOption(cs, "-iadc");
+                CSOUND.setOption(cs, "-M0");
+                CSOUND.setOption(cs, "-+rtaudio=null");
+                CSOUND.setOption(cs, "-+rtmidi=null");
+                CSOUND.prepareRT(cs);
+                CSOUND.setOption(cs, "--sample-rate=" + sampleRate);
+                CSOUND.setOption(cs, "--nchnls=" + this.nchnls);
+                CSOUND.setOption(cs, "--nchnls_i=" + this.nchnls_i);
             }
         },
 
