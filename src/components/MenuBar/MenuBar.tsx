@@ -189,7 +189,7 @@ function MenuBar(props) {
                     label: "Csound FLOSS Manual",
                     callback: () => {
                         window.open(
-                            "https://csound-floss.firebaseapp.com/",
+                            "https://flossmanual.csound.com/",
                             "_blank"
                         );
                     }
