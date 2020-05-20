@@ -26,6 +26,7 @@
         "chalk": "^3.0.0",
         "codemirror": "^5.52.2",
         "connected-react-router": "^6.8.0",
+        "cross-env": "^7.0.2",
         "csound-manual-react": "^1.0.0-alpha12",
         "dom-to-image-more": "^2.8.0",
         "electron-is-dev": "^1.1.0",
@@ -84,9 +85,9 @@
         "workerize-loader": "^1.1.0"
     },
     "scripts": {
-        "start": "REACT_APP_DATABASE=DEV react-app-rewired start",
-        "build": "REACT_APP_DATABASE=PROD react-app-rewired build",
-        "build-dev": "REACT_APP_DATABASE=DEV react-app-rewired build",
+        "start": "cross-env REACT_APP_DATABASE=DEV react-app-rewired start",
+        "build": "cross-env REACT_APP_DATABASE=PROD react-app-rewired build",
+        "build-dev": "cross-env REACT_APP_DATABASE=DEV react-app-rewired build",
         "test": "react-app-rewired test",
         "eject": "react-app-rewired eject",
         "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
