@@ -17,7 +17,7 @@ import {
     setConsolePanelOpen,
     setFileTreePanelOpen
 } from "@comp/ProjectEditor/actions";
-import { renderToDisk } from "@comp/Csound/actions";
+import { renderToDisk, enableMidiInput, enableAudioInput } from "@comp/Csound/actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { changeTheme } from "@comp/Themes/action";
@@ -174,6 +174,23 @@ function MenuBar(props) {
                         dispatch(setConsolePanelOpen(!isConsoleVisible)),
                     checked: isConsoleVisible
                 }
+            ]
+        },
+        {
+            label: "I/O",
+            submenu: [
+                {
+                    label: "Refresh MIDI Input",
+                    callback: () => {
+                        dispatch(enableMidiInput());
+                    }
+                },
+                {
+                    label: "Refresh Audio Input",
+                    callback: () => {
+                        dispatch(enableAudioInput());
+                    }
+                },
             ]
         },
         {

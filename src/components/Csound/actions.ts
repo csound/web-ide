@@ -227,3 +227,29 @@ export const renderToDisk = () => {
         // }
     };
 };
+
+export const enableMidiInput = () => {
+    return async (dispatch: any, getState) => {
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            getState()
+        ) as ICsoundObj | null;
+        cs?.enableMidiInput(() => {
+            console.log("enableMidiInput done");
+        });
+    }
+};
+
+export const enableAudioInput = () => {
+    return async (dispatch: any, getState) => {
+        const cs = pathOr(
+            null,
+            ["csound", "csound"],
+            getState()
+        ) as ICsoundObj | null;
+        cs?.enableAudioInput(() => {
+            console.log("enableMidiInput done");
+        });
+    }
+};

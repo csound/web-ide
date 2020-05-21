@@ -48,6 +48,7 @@ import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import * as SS from "./styles";
+import { enableMidiInput, enableAudioInput } from "../Csound/actions";
 
 type EditorForDocumentProps = {
     uid: any;
@@ -113,6 +114,11 @@ const ProjectEditor = ({ activeProject, csound }) => {
         };
         // eslint-disable-next-line
     }, []);
+
+    useEffect(() => {
+        dispatch(enableMidiInput());
+        dispatch(enableAudioInput());
+    }, [dispatch]);
 
     const tabDockDocuments: IOpenDocument[] = useSelector(
         pathOr([] as IOpenDocument[], [
