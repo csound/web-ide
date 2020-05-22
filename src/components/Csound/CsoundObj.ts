@@ -365,14 +365,9 @@ class CsoundObj {
      * or false if the microphone cannot be enabled
      */
     enableAudioInput(audioInputCallback: any) {
-        navigator.getUserMedia =
-            (window as any).navigator.getUserMedia ||
-            (window as any).navigator.webkitGetUserMedia ||
-            (window as any).navigator.mozGetUserMedia ||
-            null;
         let that = this;
 
-        if (navigator.getUserMedia === null) {
+        if (navigator.mediaDevices === null || navigator.mediaDevices.getUserMedia == null) {
             console.log("Audio Input not supported in this browser");
             audioInputCallback(false);
         } else {
@@ -388,14 +383,13 @@ class CsoundObj {
                 console.log("Could not initialise audio input, error:" + error);
                 audioInputCallback(false);
             };
-            navigator.getUserMedia(
+            (window as any).navigator.mediaDevices.getUserMedia(
                 {
-                    audio: true,
-                    video: false
-                },
-                onSuccess,
-                onFailure
-            );
+                    audio: true
+                })
+                .then(onSuccess)
+                .catch(onFailure);
+            
         }
     }
 
