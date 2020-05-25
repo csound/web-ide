@@ -270,7 +270,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         <div style={{ width: "100%", height: "100%", paddingTop: 35 }}>
             <IframeComm
                 attributes={{
-                    src: "/manual/main?cache=1001",
+                    src: "/manual/main?cache=1002",
                     width: "100%",
                     height: "100%"
                 }}
