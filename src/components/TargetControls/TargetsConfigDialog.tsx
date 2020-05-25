@@ -71,15 +71,15 @@ const TargetsConfigDialog = () => {
     const theme: any = useTheme();
 
     const dropdownStyle = {
-        control: (provided, state) => SS.control,
+        control: (provided, state) => SS.control(theme),
         container: (provided, state) => SS.dropdownContainerForDialog(theme),
         groupHeading: (provided, state) => SS.groupHeading,
         placeholder: (provided, state) => SS.placeholder,
-        menu: (provided, state) => SS.menuForDialog,
-        menuList: (provided, state) => SS.menuList,
+        menu: (provided, state) => SS.menuForDialog(theme),
+        menuList: (provided, state) => SS.menuList(theme),
         option: (provided, { isDisabled }) =>
-            isDisabled ? SS.menuOptionDisabled : SS.menuOption,
-        indicatorsContainer: (provided, state) => SS.indicatorContainer,
+            isDisabled ? SS.menuOptionDisabled(theme) : SS.menuOption(theme),
+        indicatorsContainer: (provided, state) => SS.indicatorContainer(theme),
         indicatorSeparator: (provided, state) => SS.indicatorSeparator
     };
 

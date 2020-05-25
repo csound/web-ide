@@ -164,11 +164,12 @@ const TargetDropdown = ({ activeProjectUid }) => {
                         control: (provided, state) => SS.control,
                         container: (provided, state) =>
                             SS.dropdownContainer(theme),
-                        groupHeading: (provided, state) => SS.groupHeading,
-                        placeholder: (provided, state) => SS.placeholder,
-                        menu: (provided, state) => SS.menu,
+                        groupHeading: (provided, state) =>
+                            SS.groupHeading(theme),
+                        placeholder: (provided, state) => SS.placeholder(theme),
+                        menu: (provided, state) => SS.menu(theme),
                         menuList: (provided, state) => SS.menuList(theme),
-                        option: (provided, state) => SS.menuOption,
+                        option: (provided, state) => SS.menuOption(theme),
                         indicatorsContainer: (provided, state) =>
                             SS.indicatorContainer(theme),
                         indicatorSeparator: (provided, state) =>
