@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { saveChangesToTarget } from "./actions";
 import { setOnCloseModal, closeModal } from "@comp/Modal/actions";
 import { useTheme } from "emotion-theming";
-import PerfectScrollbar from "react-perfect-scrollbar";
 import Select from "react-select";
 import {
     selectDefaultTargetName,
@@ -481,12 +480,12 @@ const TargetsConfigDialog = () => {
         </p>
     );
     return (
-        <PerfectScrollbar css={SS.targetsDialog}>
+        <div css={SS.targetsDialog}>
             {isEmpty(targets) && fallbackText}
             {mainArea}
             <hr css={hrCss} />
             {bottomArea}
-        </PerfectScrollbar>
+        </div>
     );
 };
 
