@@ -61,7 +61,9 @@ const PlayButton = ({ activeProjectUid, isOwner }) => {
                         }
                         case "stopped":
                         case "initialized": {
-                            isOwner && dispatch(saveAllFiles());
+                            if (isOwner) {
+                                dispatch(saveAllFiles());
+                            }
                             dispatch(playAction);
                         }
                     }

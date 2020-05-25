@@ -13,6 +13,7 @@ import {
     saveFile,
     addDocument
 } from "@comp/Projects/actions";
+import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { showTargetsConfigDialog } from "@comp/TargetControls/actions";
 import {
     getPlayActionFromProject,
@@ -49,7 +50,17 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
                     getStore()
                 );
                 const playAction = playActionDefault || playActionFallback;
-                playAction && dispatch(playAction);
+
+                if (playAction) {
+                    const isOwner = selectIsOwner(
+                        projectUid as any,
+                        getStore()
+                    );
+                    if (isOwner) {
+                        dispatch(saveAllFiles());
+                    }
+                    dispatch(playAction);
+                }
             }),
             save_all_documents: withPreventDefault(() =>
                 dispatch(saveAllFiles())
