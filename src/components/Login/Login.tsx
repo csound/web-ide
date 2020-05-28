@@ -323,11 +323,10 @@ const Login = () => {
                     Back
                 </Button>
                 <Button
-                    onClick={() => {
+                    onClick={() => 
                         dispatch(
                             createNewUser(localState.newEmail, localState.newPassword)
                         )
-                    }
                     }
                     color="primary"
                     disabled={disabledBool}
