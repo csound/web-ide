@@ -15,7 +15,8 @@ import { exportProject } from "@comp/Projects/actions";
 import {
     toggleManualPanel,
     setConsolePanelOpen,
-    setFileTreePanelOpen
+    setFileTreePanelOpen,
+    setSpectrogramOpen
 } from "@comp/ProjectEditor/actions";
 import { renderToDisk, enableMidiInput, enableAudioInput } from "@comp/Csound/actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
@@ -52,6 +53,10 @@ function MenuBar(props) {
 
     const isFileTreeVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
+    );
+
+    const isSpectrogramVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.spectrogramVisible
     );
 
     const menuBarItems: MenuItemDef[] = [
@@ -173,6 +178,12 @@ function MenuBar(props) {
                     callback: () =>
                         dispatch(setConsolePanelOpen(!isConsoleVisible)),
                     checked: isConsoleVisible
+                },
+                {
+                    label: "Spectrogram",
+                    callback: () =>
+                        dispatch(setSpectrogramOpen(!isSpectrogramVisible)),
+                    checked: isSpectrogramVisible
                 }
             ]
         },

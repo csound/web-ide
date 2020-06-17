@@ -49,6 +49,7 @@ import { isAudioFile } from "../Projects/utils";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../Csound/actions";
+import Spectrogram from "../Spectrogram/Spectrogram";
 
 type EditorForDocumentProps = {
     uid: any;
@@ -87,6 +88,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
     const isOwner = useSelector(selectIsOwner(projectUid));
     const tabPanelRef = useRef();
+    const [bottomTabIndex, setBottomTabIndex] = useState(0);
 
     useEffect(() => {
         const unsubscribeProjectChanges = subscribeToProjectChanges(
@@ -154,7 +156,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         const isModified: boolean = document.isModifiedLocally;
         const docPathHuman = append(
             document.filename,
-            (document.path || []).map(docUid =>
+            (document.path || []).map((docUid) =>
                 pathOr(
                     "<unknown>",
                     ["documents", docUid, "filename"],
@@ -183,7 +185,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                         <IconButton
                             size="small"
                             css={SS.closeButton}
-                            onClick={e => {
+                            onClick={(e) => {
                                 e.stopPropagation();
                                 closeTab(document.documentUid, isModified);
                             }}
@@ -264,7 +266,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         (store: IStore) => store.ProjectEditorReducer.manualLookupString
     );
 
-    const onManualMessage = evt => {};
+    const onManualMessage = (evt) => {};
 
     const manualWindow = (
         <div style={{ width: "100%", height: "100%", paddingTop: 35 }}>
@@ -319,6 +321,9 @@ const ProjectEditor = ({ activeProject, csound }) => {
     );
     const isFileTreeVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
+    );
+    const isSpectrogramVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.spectrogramVisible
     );
 
     useEffect(() => {
@@ -397,6 +402,75 @@ const ProjectEditor = ({ activeProject, csound }) => {
             </DnDProvider>
         );
     } else {
+        const bottomTabCount: number = reduce(
+            (a: number, b: boolean) => (b ? a + 1 : a),
+            0,
+            [isConsoleVisible, isSpectrogramVisible]
+        );
+
+        const bottomTabList: Array<JSX.Element> = [];
+        if (isConsoleVisible)
+            bottomTabList.push(
+                <DragTab closable={true} key={0}>
+                    Console
+                </DragTab>
+            );
+        if (isSpectrogramVisible)
+            bottomTabList.push(
+                <DragTab closable={true} key={1}>
+                    Spectrogram
+                </DragTab>
+            );
+
+        const bottomTabPanels: Array<JSX.Element> = [];
+        if (isConsoleVisible)
+            bottomTabPanels.push(
+                    <Panel key={0}>
+                        <Console />
+                    </Panel>
+           );
+        if (isSpectrogramVisible)
+            bottomTabPanels.push(
+                    <Panel key={1}>
+                        <Spectrogram/> 
+                    </Panel>
+            );
+
+        const bottom = bottomTabCount > 0 && (
+            <Tabs
+                activeIndex={Math.min(bottomTabIndex, bottomTabCount)}
+                onTabChange={(i) => setBottomTabIndex(i)}
+                customStyle={tabStyles}
+                showModalButton={false}
+                showArrowButton={"auto"}
+                // onTabSequenceChange={({ oldIndex, newIndex }) => {
+                //     dispatch(
+                //         rearrangeTabs(
+                //             projectUid,
+                //             simpleSwitch(tabDockDocuments, oldIndex, newIndex),
+                //             newIndex
+                //         )
+                //     );
+                // }}
+            >
+                <DragTabList id="drag-tab-list">{bottomTabList}</DragTabList>
+                <PanelList>{bottomTabPanels}</PanelList>
+            </Tabs>
+        );
+
+        const mainSection = !(isConsoleVisible || isSpectrogramVisible) ? (
+            tabDock
+        ) : (
+            <SplitterLayout
+                vertical
+                secondaryInitialSize={250}
+                ref={tabPanelRef}
+                customClassName={"panel-with-tab-dock"}
+            >
+                {tabDock}
+                {bottom}
+            </SplitterLayout>
+        );
         return (
             <DnDProvider project={activeProject}>
                 <style>{`#root {overflow: hidden!important;}
@@ -418,20 +492,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                             onDragStart={() => setManualDrag(true)}
                             onDragEnd={() => setManualDrag(false)}
                         >
-                            {!isConsoleVisible ? (
-                                tabDock
-                            ) : (
-                                <SplitterLayout
-                                    vertical
-                                    secondaryInitialSize={250}
-                                    ref={tabPanelRef}
-                                    customClassName={"panel-with-tab-dock"}
-                                >
-                                    {tabDock}
-                                    <Console />
-                                </SplitterLayout>
-                            )}
-
+                            {mainSection}
                             {isManualVisible && manualWindow}
                         </SplitterLayout>
                     </SplitterLayout>

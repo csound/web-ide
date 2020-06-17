@@ -14,7 +14,8 @@ import {
     SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
     ITabDock,
-    IOpenDocument
+    IOpenDocument,
+    SET_SPECTROGRAM_OPEN
 } from "./types";
 import {
     assoc,
@@ -35,6 +36,7 @@ export interface IProjectEditorReducer {
     consoleVisible: boolean;
     fileTreeVisible: boolean;
     manualVisible: boolean;
+    spectrogramVisible: boolean;
     manualLookupString: string;
 }
 
@@ -46,6 +48,7 @@ const initialLayoutState = (): IProjectEditorReducer => ({
     consoleVisible: true,
     fileTreeVisible: true,
     manualVisible: false,
+    spectrogramVisible: false,
     manualLookupString: ""
 });
 
@@ -191,6 +194,9 @@ export default (state: IProjectEditorReducer, action: any) => {
         }
         case SET_FILE_TREE_PANEL_OPEN: {
             return assoc("fileTreeVisible", action.open, state);
+        }
+        case SET_SPECTROGRAM_OPEN: {
+            return assoc("spectrogramVisible", action.open, state);
         }
         case STORE_EDITOR_INSTANCE: {
             const openDocumentIndex = findIndex(

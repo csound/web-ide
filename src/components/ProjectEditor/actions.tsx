@@ -19,7 +19,8 @@ import {
     SET_CONSOLE_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
-    IOpenDocument
+    IOpenDocument,
+    SET_SPECTROGRAM_OPEN
 } from "./types";
 
 export const tabDockInit = (
@@ -234,6 +235,13 @@ export const setConsolePanelOpen = (open: boolean) => {
 export const setFileTreePanelOpen = (open: boolean) => {
     return {
         type: SET_FILE_TREE_PANEL_OPEN,
+        open
+    };
+};
+
+export const setSpectrogramOpen = (open: boolean) => {
+    return {
+        type: SET_SPECTROGRAM_OPEN,
         open
     };
 };
