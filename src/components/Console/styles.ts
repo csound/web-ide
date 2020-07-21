@@ -1,6 +1,10 @@
 import { css } from "@emotion/core";
 // import { css as classCss } from "emotion";
 
+export const virtualizedListContainer = css`
+    position: relative;
+`;
+
 export const listWrapper = theme => css`
     height: 100%;
     width: 100%;

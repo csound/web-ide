@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { memo, useEffect, useState, useRef } from "react";
 import { ICsoundObj } from "../Csound/types";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { useDispatch, useSelector } from "react-redux";
@@ -90,23 +90,25 @@ const Console = ({ width, height }: IConsoleProps) => {
         );
     }
     return (
-        <List
-            key={"ListWithResize"}
-            ref={consoleRef}
-            autoHeight={false}
-            height={height || 400}
-            width={width || 400}
-            style={{ paddingBottom: 12 }}
-            css={SS.listWrapper}
-            rowCount={logs.length}
-            rowHeight={16}
-            rowRenderer={rowRenderer}
-            scrollToAlignment={"end"}
-            onRowsRendered={(e: any) => {
-                scrollPosition = e.overscanStopIndex;
-            }}
-        ></List>
+        <div css={SS.virtualizedListContainer}>
+            <List
+                key={"ListWithResize"}
+                ref={consoleRef}
+                autoHeight={false}
+                height={height || 400}
+                width={width || 400}
+                style={{ paddingBottom: 12 }}
+                css={SS.listWrapper}
+                rowCount={logs.length}
+                rowHeight={16}
+                rowRenderer={rowRenderer}
+                scrollToAlignment={"end"}
+                onRowsRendered={(e: any) => {
+                    scrollPosition = e.overscanStopIndex;
+                }}
+            ></List>
+        </div>
     );
 };
 
-export default withResizeDetector(Console);
+export default withResizeDetector(memo(Console));

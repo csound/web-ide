@@ -156,7 +156,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         const isModified: boolean = document.isModifiedLocally;
         const docPathHuman = append(
             document.filename,
-            (document.path || []).map((docUid) =>
+            (document.path || []).map(docUid =>
                 pathOr(
                     "<unknown>",
                     ["documents", docUid, "filename"],
@@ -185,7 +185,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                         <IconButton
                             size="small"
                             css={SS.closeButton}
-                            onClick={(e) => {
+                            onClick={e => {
                                 e.stopPropagation();
                                 closeTab(document.documentUid, isModified);
                             }}
@@ -239,7 +239,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     );
 
     const tabDock = isEmpty(openDocuments) ? (
-        <div style={{ height: "50vh", display: "flex" }} />
+        <div style={{ position: "relative" }} />
     ) : (
         <Tabs
             activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
@@ -266,7 +266,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         (store: IStore) => store.ProjectEditorReducer.manualLookupString
     );
 
-    const onManualMessage = (evt) => {};
+    const onManualMessage = evt => {};
 
     const manualWindow = (
         <div style={{ width: "100%", height: "100%", paddingTop: 35 }}>
@@ -425,21 +425,21 @@ const ProjectEditor = ({ activeProject, csound }) => {
         const bottomTabPanels: Array<JSX.Element> = [];
         if (isConsoleVisible)
             bottomTabPanels.push(
-                    <Panel key={0}>
-                        <Console />
-                    </Panel>
-           );
+                <Panel key={0}>
+                    <Console />
+                </Panel>
+            );
         if (isSpectrogramVisible)
             bottomTabPanels.push(
-                    <Panel key={1}>
-                        <Spectrogram/> 
-                    </Panel>
+                <Panel key={1}>
+                    <Spectrogram />
+                </Panel>
             );
 
         const bottom = bottomTabCount > 0 && (
             <Tabs
                 activeIndex={Math.min(bottomTabIndex, bottomTabCount)}
-                onTabChange={(i) => setBottomTabIndex(i)}
+                onTabChange={i => setBottomTabIndex(i)}
                 customStyle={tabStyles}
                 showModalButton={false}
                 showArrowButton={"auto"}

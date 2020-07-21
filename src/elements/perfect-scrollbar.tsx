@@ -7,7 +7,7 @@ import { perfectScrollbarStyleSheet } from "@styles/_perfectScrollbar";
 const scrollbarContainer = theme => css`
     ${perfectScrollbarStyleSheet(theme)}
     position: relative;
-    height: 100%;
+    height: auto;
     .ps__rail-x,
     .ps__rail-y {
         opacity: 0.6;

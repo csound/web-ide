@@ -1,17 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { UnControlled as CodeMirror } from "react-codemirror2";
 import { editorEvalCode } from "./utils";
 import { useDebounce } from "@root/utils";
 import { IDocument, IProject } from "../Projects/types";
 import { ICsoundObj, ICsoundStatus } from "../Csound/types";
-import ResizeObserver from "resize-observer-polyfill";
-import ScrollBar from "@elem/perfect-scrollbar";
 import { isNil, pathOr, propOr } from "ramda";
 import * as projectActions from "../Projects/actions";
 import * as projectEditorActions from "../ProjectEditor/actions";
 import { filenameToCsoundType } from "@comp/Csound/utils";
-import { useTheme } from "emotion-theming";
 import * as SS from "./styles";
 import "./modes/csound/csound";
 import "./plugins/autosuggest";
@@ -28,9 +25,7 @@ const cursorState = {};
 
 const CodeEditor = ({ documentUid, projectUid }) => {
     const [editorRef, setEditorRef] = useState(null as any);
-    const scrollerRef: any = useRef();
     const [editorValue, setEditorValue] = useState("");
-    const theme: any = useTheme();
     const debouncedEditorValue = useDebounce(editorValue, 200);
     const dispatch = useDispatch();
     const activeProjectUid = useSelector(
@@ -159,31 +154,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         editorRef && editorRef.toggleComment();
     };
 
-    useEffect(() => {
-        if (editorRef && scrollerRef.current) {
-            const cmSizer = window.document.getElementsByClassName(
-                "CodeMirror-sizer"
-            );
-            const currentScroller: any = scrollerRef.current;
-            editorRef.display.scroller = currentScroller;
-            const resizeHandler = () => {
-                if (
-                    (window as any)[`editor_scroller`] &&
-                    typeof (window as any)[`editor_scroller`].update ===
-                        "function"
-                ) {
-                    (window as any)[`editor_scroller`].update();
-                }
-            };
-            const resizeObserver = new ResizeObserver(resizeHandler);
-
-            cmSizer && cmSizer.length > 0 && resizeObserver.observe(cmSizer[0]);
-            return () => {
-                resizeObserver.disconnect();
-            };
-        }
-    }, [editorRef, scrollerRef]);
-
     const editorDidMount = (editor: any) => {
         editor.scrollIntoView = () => {
             setTimeout(() => {
@@ -306,31 +276,14 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
 
     return (
-        <ScrollBar
-            ref={scrollerRef}
-            windowName={`editor_scroller`}
-            initialScrollTop={pathOr(
-                0,
-                [`${documentUid}:scroll_top`],
-                cursorState
-            )}
-            onScroll={e => {
-                cursorState[`${documentUid}:scroll_top`] =
-                    e.srcElement.scrollTop;
-            }}
-            style={{
-                backgroundColor: theme.background
-            }}
-        >
-            <CodeMirror
-                key={lastModified ? `${(lastModified as any).seconds}` : "_"}
-                css={SS.root}
-                editorDidMount={editorDidMount}
-                editorWillUnmount={editorWillUnmount}
-                options={options}
-                onChange={onChange}
-            />
-        </ScrollBar>
+        <CodeMirror
+            key={lastModified ? `${(lastModified as any).seconds}` : "_"}
+            css={SS.root}
+            editorDidMount={editorDidMount}
+            editorWillUnmount={editorWillUnmount}
+            options={options}
+            onChange={onChange}
+        />
     );
 };
 
