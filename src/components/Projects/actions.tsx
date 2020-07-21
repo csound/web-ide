@@ -699,7 +699,7 @@ export const exportProject = () => {
 
         if (!isEmpty(project)) {
             const zip = new JSZip();
-            const folder = zip.folder("project");
+            const folder = zip.folder("project") as any;
             const docs = Object.values(project.documents);
 
             const folders = docs
@@ -708,6 +708,10 @@ export const exportProject = () => {
                     return { ...m, [f.documentUid]: f };
                 }, {});
 
+            if (!folders) {
+                console.error(`No folders found.`);
+                return;
+            }
             for (let i = 0; i < docs.length; i++) {
                 let doc = docs[i];
                 if (doc.type === "bin") {
@@ -717,7 +721,11 @@ export const exportProject = () => {
                     const response = await fetch(url);
                     const blob = await response.arrayBuffer();
                     const exportPath = createExportPath(folders, doc);
-                    folder.file(exportPath, blob, { binary: true });
+                    if (exportPath && folder && folder.file) {
+                        folder.file(exportPath, blob, { binary: true });
+                    } else {
+                        console.error(`whoops, no export path was created`);
+                    }
                 } else if (doc.type === "txt") {
                     const exportPath = createExportPath(folders, doc);
                     folder.file(exportPath, doc.savedValue);

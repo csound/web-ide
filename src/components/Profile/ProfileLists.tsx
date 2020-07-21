@@ -33,7 +33,7 @@ const ProjectListItem = props => {
     const { isProfileOwner, project } = props;
     const dispatch = useDispatch();
     const { projectUid, name, description, tags } = project;
-    useEffect(ReactTooltip.rebuild);
+    useEffect(ReactTooltip.rebuild as any);
 
     return (
         <div style={{ position: "relative" }}>
