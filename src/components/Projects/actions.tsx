@@ -66,7 +66,7 @@ import { store } from "@root/store";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import firebase from "firebase/app";
-import uuidv4 from "uuid/v4";
+import { v4 as uuidv4 } from "uuid";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
