@@ -2,6 +2,7 @@ import React, { memo, useEffect, useState, useRef } from "react";
 import { ICsoundObj } from "../Csound/types";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { useDispatch, useSelector } from "react-redux";
+import { selectActiveProject } from "@comp/Projects/selectors";
 // import { IStore } from "@store/types";
 import { List } from "react-virtualized";
 import { withResizeDetector } from "react-resize-detector";
@@ -23,7 +24,13 @@ type IConsoleProps = {
     height: number;
 };
 
+type IinterimLogsStore = {
+    projectUid: string | null;
+    logs: string[];
+};
+
 let scrollPosition = 0;
+let interimLogsStore: IinterimLogsStore = { projectUid: "", logs: [""] };
 
 const Console = ({ width, height }: IConsoleProps) => {
     const dispatch = useDispatch();
@@ -39,6 +46,10 @@ const Console = ({ width, height }: IConsoleProps) => {
         pathOr(null, ["ConsoleReducer", "printToConsole"])
     );
 
+    const activeProject = useSelector(selectActiveProject);
+
+    const projectUid = activeProject && activeProject.projectUid;
+
     useEffect(() => {
         dispatch(
             setClearConsoleCallback(() => {
@@ -46,10 +57,21 @@ const Console = ({ width, height }: IConsoleProps) => {
                 setLogs([]);
             })
         );
+
         return () => {
             dispatch(setClearConsoleCallback(() => {}));
         };
     }, [dispatch, setLogs]);
+
+    useEffect(() => {
+        if (interimLogsStore.projectUid === projectUid) {
+            setLogs(interimLogsStore.logs);
+        } else {
+            interimLogsStore.projectUid = projectUid;
+            interimLogsStore.logs = [""];
+            scrollPosition = 0;
+        }
+    }, [projectUid, setLogs]);
 
     const messageCallback = (msg: string) => {
         if (consoleRef && consoleRef.current) {
@@ -64,7 +86,9 @@ const Console = ({ width, height }: IConsoleProps) => {
                 ) {
                     setTimeout(() => row.scrollToRow(row.props.rowCount), 9);
                 }
-                return append(msg + "\n", currentLogs);
+                const newLogState = append(msg + "\n", currentLogs);
+                interimLogsStore.logs = newLogState;
+                return newLogState;
             });
         }
     };
