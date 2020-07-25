@@ -249,7 +249,7 @@ export const enableAudioInput = () => {
             getState()
         ) as ICsoundObj | null;
         cs?.enableAudioInput(() => {
-            console.log("enableMidiInput done");
+            console.log("enableAudioInput done");
         });
     }
 };
