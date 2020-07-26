@@ -1,14 +1,15 @@
 import { css as classCss } from "emotion";
 import { css } from "@emotion/core";
 import { shadow } from "@styles/_common";
+import { headerHeight } from "@styles/constants";
 
 const drawerWidth = 260;
 
 export const headerRoot = theme => css`
-    height: 64px;
+    height: ${headerHeight}px;
     background-color: ${theme.headerBackground};
     & > div {
-       height 64px;
+       height ${headerHeight}px;
     }
 `;
 
@@ -90,7 +91,7 @@ export const spacer = css`
 
 export const clearfixHeader = css`
     position: relative;
-    height: 64px;
+    height: ${headerHeight}px;
     width: 100%;
 `;
 

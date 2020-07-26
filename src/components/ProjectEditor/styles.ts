@@ -1,6 +1,6 @@
 import { css } from "@emotion/core";
-import { tabListHeight, shadow } from "@styles/_common";
-// import { isMobile } from "@root/utils";
+import { shadow } from "@styles/_common";
+import { headerHeight, tabListHeight } from "@styles/constants";
 
 export const mainTabsSplitter = css`
     .main-tab-panels {
@@ -27,7 +27,7 @@ export const mainTabsSplitter = css`
 
 export const splitterLayoutContainer = css`
     width: 100%;
-    height: calc(100vh - 64px);
+    height: calc(100vh - ${headerHeight}px);
     position absolute;
     bottom: 0;
     .layout-pane {
