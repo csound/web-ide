@@ -33,14 +33,6 @@ declare global {
     }
 }
 
-const navigatorAny = navigator as any;
-
-const getUserMedia =
-    typeof navigatorAny.mediaDevices !== "undefined"
-        ? navigatorAny.mediaDevices.getUserMedia
-        : navigatorAny.getUserMedia ||
-          navigatorAny.webkitGetUserMedia ||
-          navigatorAny.mozGetUserMedia;
 
 /** Csound global AudioContext
  */
@@ -374,24 +366,29 @@ class CsoundObj {
      * or false if the microphone cannot be enabled
      */
     enableAudioInput(audioInputCallback: any) {
-        let that = this;
 
-        if (
-            navigator.mediaDevices === null ||
-            navigator.mediaDevices.getUserMedia == null
-        ) {
+        const navigatorAny = navigator as any;
+
+        const getUserMedia =
+            typeof navigatorAny.mediaDevices !== "undefined"
+                ? navigatorAny.mediaDevices.getUserMedia
+                : navigatorAny.getUserMedia ||
+                  navigatorAny.webkitGetUserMedia ||
+                  navigatorAny.mozGetUserMedia;
+
+        if (getUserMedia === null) {
             console.log("Audio Input not supported in this browser");
             audioInputCallback(false);
         } else {
-            let onSuccess = function(stream: any) {
-                that.microphoneNode = CSOUND_AUDIO_CONTEXT.createMediaStreamSource(
+            let onSuccess = (stream: any) => {
+                this.microphoneNode = CSOUND_AUDIO_CONTEXT.createMediaStreamSource(
                     stream
                 );
                 audioInputCallback(true);
             };
 
-            let onFailure = function(error: any) {
-                that.microphoneNode = null;
+            let onFailure = (error: any) => {
+                this.microphoneNode = null;
                 console.log("Could not initialise audio input, error:" + error);
                 audioInputCallback(false);
             };
