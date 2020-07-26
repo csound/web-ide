@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { push } from "connected-react-router";
 import { useTheme } from "emotion-theming";
 import { useSelector, useDispatch } from "react-redux";
+import { ConsoleProvider } from "@comp/Console/context";
 import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
 import { IProject } from "@comp/Projects/types";
 import { ICsoundObj } from "@comp/Csound/types";
@@ -94,11 +95,13 @@ export const ProjectContext = (props: IProjectContextProps) => {
             <>
                 <ForceBackgroundColor theme={theme} />
                 <Header />
-                <ProjectEditor
-                    {...props}
-                    csound={csound as unknown}
-                    activeProject={project}
-                />
+                <ConsoleProvider activeProject={project} csound={csound}>
+                    <ProjectEditor
+                        {...props}
+                        csound={csound as unknown}
+                        activeProject={project}
+                    />
+                </ConsoleProvider>
             </>
         );
     } else {

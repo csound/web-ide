@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { ConsoleProvider } from "@comp/Console/context";
 import FileTree from "@comp/FileTree";
 import Console from "@comp/Console/Console";
 import MobileNavigation from "@comp/ProjectEditor/MobileNavigation";
@@ -34,26 +33,24 @@ const MobileTabs = ({ activeProject, csound, tabDock, projectUid }) => {
     );
 
     return (
-        <ConsoleProvider activeProject={activeProject} csound={csound}>
-            <DnDProvider project={activeProject}>
-                <style>
-                    {`body {overflow: hidden!important;}` +
-                        `#drag-tab-list {display: none;}`}
-                </style>
-                {MobileConsole}
-                {mobileTabIndex === 0
-                    ? tabDock
-                    : mobileTabIndex === 1
-                    ? MobileFileTree
-                    : mobileTabIndex === 3
-                    ? MobileManual
-                    : null}
-                <MobileNavigation
-                    mobileTabIndex={mobileTabIndex}
-                    setMobileTabIndex={setMobileTabIndex}
-                />
-            </DnDProvider>
-        </ConsoleProvider>
+        <DnDProvider project={activeProject}>
+            <style>
+                {`body {overflow: hidden!important;}` +
+                    `#drag-tab-list {display: none;}`}
+            </style>
+            {MobileConsole}
+            {mobileTabIndex === 0
+                ? tabDock
+                : mobileTabIndex === 1
+                ? MobileFileTree
+                : mobileTabIndex === 3
+                ? MobileManual
+                : null}
+            <MobileNavigation
+                mobileTabIndex={mobileTabIndex}
+                setMobileTabIndex={setMobileTabIndex}
+            />
+        </DnDProvider>
     );
 };
 

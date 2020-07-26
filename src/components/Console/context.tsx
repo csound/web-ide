@@ -30,7 +30,12 @@ export const ConsoleProvider = ({ children, activeProject, csound }) => {
 
     useEffect(() => {
         if (csound) {
-            if (!currentProject || currentProject !== activeProject) {
+            if (
+                !currentProject ||
+                (typeof currentProject === "object" &&
+                    (currentProject as any).projectUid !==
+                        activeProject.projectUid)
+            ) {
                 dispatch(setPrintToConsoleCallback(messageCallback));
                 csound && csound.setMessageCallback(messageCallback);
                 setLogs([""]);
