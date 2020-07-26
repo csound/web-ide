@@ -4,16 +4,14 @@ import {
     AnimatedGridContainer,
     ProjectSectionHeader,
     HorizontalRule,
-    PaginationIconButton,
-    SearchProjectWaitContainer
+    PaginationIconButton
 } from "./HomeUI";
-import { Grid, Button } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import { Refresh as RefreshIcon } from "@material-ui/icons";
 import LeftIcon from "@material-ui/icons/ArrowBack";
 import RightIcon from "@material-ui/icons/ArrowForward";
 import ProjectCard from "./ProjectCard";
 import { getRandomProjects, getPopularProjects } from "./actions";
-import { Transition, TransitionGroup } from "react-transition-group";
 const FeaturedProjects = ({
     duration,
     starredProjects,
@@ -85,9 +83,6 @@ const FeaturedProjects = ({
                 })}
 
             {Array.isArray(starredProjects) && starredProjects.length === 0 && (
-                // <SearchProjectWaitContainer className={""} duration={duration}>
-                // No results found
-                // </SearchProjectWaitContainer>
                 <Grid item xs={12}>
                     <ProjectSectionHeader container justify="space-between">
                         <Grid item>No results found</Grid>

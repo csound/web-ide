@@ -3,7 +3,7 @@ import { firestore } from "firebase/app";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
-import { selectStars, selectDisplayedStarredProjects } from "./selectors";
+import { selectDisplayedStarredProjects } from "./selectors";
 import {
     GET_DISPLAYED_RANDOM_PROJECTS,
     GET_DISPLAYED_STARRED_PROJECTS,

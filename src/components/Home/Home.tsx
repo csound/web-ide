@@ -4,15 +4,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../Header/Header";
 import withStyles from "./styles";
-import {
-    getPopularProjects,
-    searchProjects,
-    getRandomProjects
-} from "./actions";
+import { getPopularProjects, searchProjects } from "./actions";
 import { debounce } from "lodash";
 import { HomeContainer, StyledTextField, GlobalStyle } from "./HomeUI";
 import {
-    selectProjectLastModified,
     selectDisplayedStarredProjects,
     selectSearchedProjectUserProfiles,
     selectDisplayedRandomProjects,
@@ -31,7 +26,6 @@ const Home = ({ classes }) => {
     const dispatch = useDispatch();
     const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
     const [searchValue, setSearchValue] = useState("");
-    const projectLastModified = useSelector(selectProjectLastModified);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
     const randomProjects = useSelector(selectDisplayedRandomProjects);
     const searchedProjects = useSelector(selectSearchedProjects);
