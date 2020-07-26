@@ -17,6 +17,7 @@ const LogoContainer = styled.div<ILogoContainer>`
     line-height: ${props => props.size}px;
     text-align: center;
     font-weight: bold;
+    user-select: none;
     background: ${props =>
         props.interactive ? "inherit" : props.theme.buttonBackground};
     ${props =>

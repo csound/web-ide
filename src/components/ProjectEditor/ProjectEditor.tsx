@@ -92,6 +92,15 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const tabPanelRef = useRef();
 
     useEffect(() => {
+        // start at top on init
+        // in this case, prevent
+        // jumpy behavior
+        window.scrollTo(0, 0);
+        const rootElem = document.getElementById("root");
+        rootElem && rootElem.scrollTo(0, 0);
+    }, []);
+
+    useEffect(() => {
         const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
             dispatch,

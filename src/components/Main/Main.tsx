@@ -15,6 +15,7 @@ import {
 import { History } from "history";
 import firebase from "firebase/app";
 import HotKeys from "../HotKeys/HotKeys";
+import PerfectScrollbar from "perfect-scrollbar/dist/perfect-scrollbar.esm.js";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 interface IMain {
@@ -44,6 +45,9 @@ const Main = (props: IMain) => {
                     dispatch(setRequestingStatus(false));
                 }
             });
+        if (!isMobile()) {
+            (window as any).ps_body = new PerfectScrollbar("#root");
+        }
 
         return () => {
             unsubscribeAuthObserver();
