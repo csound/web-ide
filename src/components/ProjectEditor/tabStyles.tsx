@@ -18,9 +18,14 @@ TabListStyle = styled(TabListStyle)`
         z-index: 0;
     }
     ${!isMobile() ? "" : "display: none;"}
+
+    .tablist {
+        width: 100%;
+    }
 `;
 
 TabStyle = styled(TabStyle)`
+    z-index: 1;
     position: relative;
     color: ${props =>
         props.active ? props.theme.textColor : props.theme.unfocusedTextColor};
@@ -32,6 +37,7 @@ TabStyle = styled(TabStyle)`
     border: 0;
     padding: 13px 19px;
     padding-right: 42px;
+    user-select: inherit;
     margin-bottom: -1px;
     &:hover {
         color: ${props => props.theme.textColor};
@@ -64,6 +70,9 @@ TabStyle = styled(TabStyle)`
                 ? props.theme.highlightBackgroundAlt
                 : props.theme.highlightBackground};
         border-radius: 50%;
+    }
+    p {
+        user-select: none;
     }
 `;
 

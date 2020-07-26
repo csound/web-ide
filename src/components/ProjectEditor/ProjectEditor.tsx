@@ -176,42 +176,40 @@ const ProjectEditor = ({ activeProject, csound }) => {
         ).join("/");
         return (
             <DragTab closable={true} key={index}>
-                <>
-                    <Tooltip
-                        placement="right-end"
-                        title={
-                            document.path
-                                ? document.path.length > 0
-                                    ? docPathHuman
-                                    : document!.filename
-                                : ""
-                        }
+                <Tooltip
+                    placement="right-end"
+                    title={
+                        document.path
+                            ? document.path.length > 0
+                                ? docPathHuman
+                                : document!.filename
+                            : ""
+                    }
+                >
+                    <p style={{ margin: 0 }}>
+                        {document!.filename + (isModified ? "*" : "")}
+                    </p>
+                </Tooltip>
+                <Tooltip title={"close"} placement="right-end">
+                    <IconButton
+                        size="small"
+                        css={SS.closeButton}
+                        onClick={e => {
+                            e.stopPropagation();
+                            closeTab(document.documentUid, isModified);
+                        }}
                     >
-                        <p style={{ margin: 0 }}>
-                            {document!.filename + (isModified ? "*" : "")}
-                        </p>
-                    </Tooltip>
-                    <Tooltip title={"close"} placement="right-end">
-                        <IconButton
-                            size="small"
-                            css={SS.closeButton}
-                            onClick={e => {
-                                e.stopPropagation();
-                                closeTab(document.documentUid, isModified);
-                            }}
-                        >
-                            <FontAwesomeIcon
-                                icon={faTimes}
-                                size="sm"
-                                color={
-                                    isActive
-                                        ? theme.textColor
-                                        : theme.unfocusedTextColor
-                                }
-                            />
-                        </IconButton>
-                    </Tooltip>
-                </>
+                        <FontAwesomeIcon
+                            icon={faTimes}
+                            size="sm"
+                            color={
+                                isActive
+                                    ? theme.textColor
+                                    : theme.unfocusedTextColor
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
             </DragTab>
         );
     }, openDocuments as IDocument[]);
