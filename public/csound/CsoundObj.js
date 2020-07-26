@@ -365,6 +365,14 @@ class CsoundObj {
                 console.log("Could not initialise audio input, error:" + error);
                 audioInputCallback(false);
             };
+
+            const getUserMedia =
+                typeof navigator.mediaDevices !== "undefined"
+                    ? navigator.mediaDevices.getUserMedia
+                    : navigator.getUserMedia ||
+                      navigator.webkitGetUserMedia ||
+                      navigator.mozGetUserMedia;
+
             typeof navigator.mediaDevices !== "undefined"
                 ? getUserMedia
                       .call(navigator.mediaDevices, {

@@ -33,6 +33,15 @@ declare global {
     }
 }
 
+const navigatorAny = navigator as any;
+
+const getUserMedia =
+    typeof navigatorAny.mediaDevices !== "undefined"
+        ? navigatorAny.mediaDevices.getUserMedia
+        : navigatorAny.getUserMedia ||
+          navigatorAny.webkitGetUserMedia ||
+          navigatorAny.mozGetUserMedia;
+
 /** Csound global AudioContext
  */
 let CSOUND_AUDIO_CONTEXT =
@@ -367,7 +376,10 @@ class CsoundObj {
     enableAudioInput(audioInputCallback: any) {
         let that = this;
 
-        if (navigator.mediaDevices === null || navigator.mediaDevices.getUserMedia == null) {
+        if (
+            navigator.mediaDevices === null ||
+            navigator.mediaDevices.getUserMedia == null
+        ) {
             console.log("Audio Input not supported in this browser");
             audioInputCallback(false);
         } else {
@@ -383,13 +395,26 @@ class CsoundObj {
                 console.log("Could not initialise audio input, error:" + error);
                 audioInputCallback(false);
             };
-            (window as any).navigator.mediaDevices.getUserMedia(
-                {
-                    audio: true
-                })
-                .then(onSuccess)
-                .catch(onFailure);
-            
+
+            typeof navigator.mediaDevices !== "undefined"
+                ? getUserMedia
+                      .call(navigator.mediaDevices, {
+                          audio: { echoCancellation: false, sampleSize: 32 }
+                      })
+                      .then(onSuccess)
+                      .catch(onFailure)
+                : getUserMedia.call(
+                      navigator,
+                      {
+                          audio: {
+                              optional: [
+                                  { echoCancellation: false, sampleSize: 32 }
+                              ]
+                          }
+                      },
+                      onSuccess,
+                      onFailure
+                  );
         }
     }
 
