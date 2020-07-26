@@ -113,6 +113,13 @@ const Profile = ({ classes, ...props }) => {
     let uploadRef: RefObject<HTMLInputElement> = React.createRef();
 
     useEffect(() => {
+        // start at top on init
+        window.scrollTo(0, 0);
+        const rootElem = document.getElementById("root");
+        rootElem && rootElem.scrollTo(0, 0);
+    }, []);
+
+    useEffect(() => {
         if (username) {
             if (profileUriPath === null && selectedSection !== 0) {
                 setSelectedSection(0);

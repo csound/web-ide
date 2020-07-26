@@ -169,7 +169,6 @@ export const Header = () => {
 
     return (
         <>
-            <div css={SS.clearfixHeader} />
             {isLoginDialogOpen && <Login />}
             <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>

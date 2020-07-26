@@ -20,7 +20,7 @@ export const StyledGrid = styled(Grid)`
 const outerPadding = 10;
 
 export const HomeContainer = styled.div`
-    height: calc(100% - ${headerHeight + outerPadding}px);
+    min-height: calc(100% - ${headerHeight + outerPadding}px);
     width: 100%;
     position: absolute;
     padding: ${outerPadding}px;

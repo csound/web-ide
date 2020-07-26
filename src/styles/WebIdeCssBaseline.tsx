@@ -1,4 +1,5 @@
 import React from "react";
+import { headerHeight } from "@styles/constants";
 
 const WebIdeCssBaseline = () => (
     <style>{`
@@ -13,20 +14,23 @@ body {
 }
 
 body {
-height: inherit;
+    height: inherit;
     min-height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
     position: relative;
 }
 
 #root {
     position: relative;
-    min-height: 100vh;
+    height: calc(100% - ${headerHeight}px)!important;
+    height: 100%;
+    top: ${headerHeight}px;
+    bottom: 0;
+    overflow: auto;
 }
 
 main {
     position: relative;
-    min-height: calc(100% - 64px);
     height: auto;
     width: 100%;
     top: 0;

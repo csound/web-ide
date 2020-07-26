@@ -39,9 +39,18 @@ const Home = ({ classes }) => {
     const searchedProjectUserProfiles = useSelector(
         selectSearchedProjectUserProfiles
     );
+
+    useEffect(() => {
+        // start at top on init
+        window.scrollTo(0, 0);
+        const rootElem = document.getElementById("root");
+        rootElem && rootElem.scrollTo(0, 0);
+    }, []);
+
     useEffect(() => {
         dispatch(getPopularProjects(true));
     }, [dispatch]);
+
     useEffect(() => {
         if (searchValue === "" && searchedProjects !== false) {
             dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
@@ -100,7 +109,7 @@ const Home = ({ classes }) => {
                                 },
                                 inputMode: "numeric"
                             }}
-                            onChange={(e) => {
+                            onChange={e => {
                                 const query = e.target.value;
                                 setSearchValue(query);
 
@@ -112,7 +121,7 @@ const Home = ({ classes }) => {
                 <TransitionGroup component={null}>
                     {searchValue === "" && (
                         <Transition appear timeout={duration}>
-                            {(transitionState) => {
+                            {transitionState => {
                                 return (
                                     <FeaturedProjects
                                         duration={duration}
@@ -132,7 +141,7 @@ const Home = ({ classes }) => {
                     )}
                     {searchValue !== "" && (
                         <Transition appear timeout={duration}>
-                            {(transitionState) => {
+                            {transitionState => {
                                 return (
                                     <SearchProjects
                                         duration={duration}
