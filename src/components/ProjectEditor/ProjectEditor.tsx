@@ -15,18 +15,18 @@ import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faWindowClose } from "@fortawesome/free-solid-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
 import { IDocument } from "../Projects/types";
 import { IOpenDocument } from "./types";
 import SplitterLayout from "react-splitter-layout";
-import IframeComm from "react-iframe-comm";
 import { IStore } from "@store/types";
 import Editor from "../Editor/Editor";
 import AudioEditor from "../AudioEditor/AudioEditor";
 import { useTheme } from "emotion-theming";
 import { subscribeToProjectChanges } from "@comp/Projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
+import CsoundManualWindow from "./CsoundManual";
 import FileTree from "../FileTree";
 import {
     storeEditorKeyboardCallbacks,
@@ -42,13 +42,13 @@ import {
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
-import { mapIndexed } from "@root/utils";
+import { mapIndexed, isMobile } from "@root/utils";
 import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
-import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../Csound/actions";
 import BottomTabs from "@comp/BottomTabs/component";
+import MobileTabs from "@comp/BottomTabs/MobileTabs";
 
 const TabStyles = tabStyles(false);
 
@@ -85,6 +85,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
     const [manualDrag, setManualDrag] = useState(false);
+
     const projectUid: string = propOr("", "projectUid", activeProject);
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
     const isOwner = useSelector(selectIsOwner(projectUid));
@@ -262,57 +263,6 @@ const ProjectEditor = ({ activeProject, csound }) => {
         </Tabs>
     );
 
-    const manualLookupString = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.manualLookupString
-    );
-
-    const onManualMessage = evt => {};
-
-    const manualWindow = (
-        <div style={{ width: "100%", height: "100%", paddingTop: 35 }}>
-            <IframeComm
-                attributes={{
-                    src: "/manual/main?cache=1002",
-                    width: "100%",
-                    height: "100%"
-                }}
-                postMessageData={manualLookupString || ""}
-                handleReceiveMessage={onManualMessage}
-            />
-            <div css={windowHeaderStyle}>
-                <p>
-                    Csound Manual
-                    <span css={SS.headIconsContainer}>
-                        <Tooltip title="close window">
-                            <span
-                                onClick={() =>
-                                    dispatch(setManualPanelOpen(false))
-                                }
-                            >
-                                <FontAwesomeIcon
-                                    icon={faWindowClose}
-                                    size="sm"
-                                    color={theme.highlightBackgroundAlt}
-                                />
-                            </span>
-                        </Tooltip>
-                    </span>
-                </p>
-            </div>
-            {manualDrag && (
-                <div
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        zIndex: 200,
-                        position: "absolute",
-                        top: 0
-                    }}
-                />
-            )}
-        </div>
-    );
-
     const isManualVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.manualVisible
     );
@@ -322,13 +272,16 @@ const ProjectEditor = ({ activeProject, csound }) => {
     );
 
     useEffect(() => {
-        return () =>
-            sessionStorage.setItem(
-                projectUid + ":manualVisible",
-                `${isManualVisible || false}`
-            );
-        // eslint-disable-next-line
-    }, [isManualVisible]);
+        const lastIsManualVisible = sessionStorage.getItem(
+            projectUid + ":manualVisible"
+        );
+        if (!isEmpty(lastIsManualVisible)) {
+            if (lastIsManualVisible === "true") {
+                dispatch(setManualPanelOpen(true));
+            }
+            sessionStorage.removeItem(projectUid + ":manualVisible");
+        }
+    }, [dispatch, projectUid]);
 
     useEffect(() => {
         if (projectUid) {
@@ -343,19 +296,6 @@ const ProjectEditor = ({ activeProject, csound }) => {
             dispatch(closeTabDock());
             dispatch(closeProject());
         };
-        // eslint-disable-next-line
-    }, []);
-
-    useEffect(() => {
-        const lastIsManualVisible = sessionStorage.getItem(
-            projectUid + ":manualVisible"
-        );
-        if (!isEmpty(lastIsManualVisible)) {
-            if (lastIsManualVisible === "true") {
-                dispatch(setManualPanelOpen(true));
-            }
-            sessionStorage.removeItem(projectUid + ":manualVisible");
-        }
         // eslint-disable-next-line
     }, []);
 
@@ -375,31 +315,47 @@ const ProjectEditor = ({ activeProject, csound }) => {
         </ConsoleProvider>
     );
 
-    return (
-        <DnDProvider project={activeProject}>
-            <div css={SS.splitterLayoutContainer}>
-                {unsavedDataExitPrompt}
-                <SplitterLayout
-                    primaryIndex={1}
-                    primaryMinSize={400}
-                    secondaryInitialSize={250}
-                    secondaryMinSize={250}
-                >
-                    {isFileTreeVisible && <FileTree />}
-
+    if (isMobile()) {
+        return (
+            <MobileTabs
+                activeProject={activeProject}
+                csound={csound}
+                projectUid={projectUid}
+                tabDock={tabDock}
+            />
+        );
+    } else {
+        return (
+            <DnDProvider project={activeProject}>
+                <div css={SS.splitterLayoutContainer}>
+                    {unsavedDataExitPrompt}
                     <SplitterLayout
-                        horizontal
-                        secondaryInitialSize={500}
-                        onDragStart={() => setManualDrag(true)}
-                        onDragEnd={() => setManualDrag(false)}
+                        primaryIndex={1}
+                        primaryMinSize={400}
+                        secondaryInitialSize={250}
+                        secondaryMinSize={250}
                     >
-                        {mainSection}
-                        {isManualVisible && manualWindow}
+                        {isFileTreeVisible && <FileTree />}
+
+                        <SplitterLayout
+                            horizontal
+                            secondaryInitialSize={500}
+                            onDragStart={() => setManualDrag(true)}
+                            onDragEnd={() => setManualDrag(false)}
+                        >
+                            {mainSection}
+                            {isManualVisible && (
+                                <CsoundManualWindow
+                                    manualDrag={manualDrag}
+                                    projectUid={projectUid}
+                                />
+                            )}
+                        </SplitterLayout>
                     </SplitterLayout>
-                </SplitterLayout>
-            </div>
-        </DnDProvider>
-    );
+                </div>
+            </DnDProvider>
+        );
+    }
 };
 
 export default ProjectEditor;

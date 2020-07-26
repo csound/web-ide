@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { isMobile } from "@root/utils";
 import { useConsole } from "./context";
 import { List } from "react-virtualized";
 import { withResizeDetector } from "react-resize-detector";
@@ -19,7 +20,10 @@ type IConsoleProps = {
 
 let scrollPosition = 0;
 
-const Console = ({ height = 250, width = 1200 }: IConsoleProps) => {
+const Console = ({
+    height = isMobile() ? 1000 : 250,
+    width = 1200
+}: IConsoleProps) => {
     const logs = useConsole();
     const consoleRef: any = useRef(null);
 
