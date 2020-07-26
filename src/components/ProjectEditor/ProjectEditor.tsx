@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/FileTree/context";
+import { ConsoleProvider } from "@comp/Console/context";
 import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
 import { simpleSwitch } from "react-tabtab/lib/helpers/move";
 import { subscribeToProjectLastModified } from "@comp/ProjectLastModified/subscribers";
@@ -359,17 +360,19 @@ const ProjectEditor = ({ activeProject, csound }) => {
     }, []);
 
     const mainSection = (
-        <div css={SS.mainTabsSplitter}>
-            <SplitterLayout
-                vertical
-                secondaryInitialSize={250}
-                ref={tabPanelRef}
-                customClassName={"main-tab-panels"}
-            >
-                {tabDock}
-                <BottomTabs />
-            </SplitterLayout>
-        </div>
+        <ConsoleProvider activeProject={activeProject} csound={csound}>
+            <div css={SS.mainTabsSplitter}>
+                <SplitterLayout
+                    vertical
+                    secondaryInitialSize={250}
+                    ref={tabPanelRef}
+                    customClassName={"main-tab-panels"}
+                >
+                    {tabDock}
+                    <BottomTabs />
+                </SplitterLayout>
+            </div>
+        </ConsoleProvider>
     );
 
     return (
