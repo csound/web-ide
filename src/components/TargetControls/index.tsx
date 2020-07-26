@@ -73,7 +73,8 @@ const TargetControls = () => {
         selectedTarget
     ]);
 
-    return isEmpty(keys(targets)) ? null : (
+    //return isEmpty(keys(targets)) ? null : (
+    return (
         <>
             <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             <StopButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
