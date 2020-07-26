@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ICsoundObj } from "../Csound/types";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,7 @@ import { withResizeDetector } from "react-resize-detector";
 import { append, pathOr } from "ramda";
 import * as SS from "./styles";
 import "react-virtualized/styles.css";
+// import { Height } from "@material-ui/icons";
 
 type IGlobalMsgCallback = (msg: string) => void;
 
@@ -20,8 +21,8 @@ type ContentRect = {
 };
 
 type IConsoleProps = {
-    width: number;
     height: number;
+    width: number;
 };
 
 type IinterimLogsStore = {
@@ -32,7 +33,7 @@ type IinterimLogsStore = {
 let scrollPosition = 0;
 let interimLogsStore: IinterimLogsStore = { projectUid: "", logs: [""] };
 
-const Console = ({ width, height }: IConsoleProps) => {
+const Console = ({ height = 250, width = 400 }: IConsoleProps) => {
     const dispatch = useDispatch();
     const consoleRef: any = useRef(null);
 
@@ -53,7 +54,7 @@ const Console = ({ width, height }: IConsoleProps) => {
     useEffect(() => {
         dispatch(
             setClearConsoleCallback(() => {
-                scrollPosition = 0;
+                // scrollPosition = 0;
                 setLogs([]);
             })
         );
@@ -69,7 +70,7 @@ const Console = ({ width, height }: IConsoleProps) => {
         } else {
             interimLogsStore.projectUid = projectUid;
             interimLogsStore.logs = [""];
-            scrollPosition = 0;
+            // scrollPosition = 0;
         }
     }, [projectUid, setLogs]);
 
@@ -113,18 +114,19 @@ const Console = ({ width, height }: IConsoleProps) => {
             </li>
         );
     }
+
     return (
         <div css={SS.virtualizedListContainer}>
             <List
                 key={"ListWithResize"}
                 ref={consoleRef}
                 autoHeight={false}
-                height={height || 400}
-                width={width || 400}
-                style={{ paddingBottom: 12 }}
+                height={height}
+                width={width}
                 css={SS.listWrapper}
-                rowCount={logs.length}
+                rowCount={logs.length + 2}
                 rowHeight={16}
+                overscanRowCount={2}
                 rowRenderer={rowRenderer}
                 scrollToAlignment={"end"}
                 onRowsRendered={(e: any) => {
@@ -135,4 +137,8 @@ const Console = ({ width, height }: IConsoleProps) => {
     );
 };
 
-export default withResizeDetector(memo(Console));
+export default withResizeDetector(Console, {
+    handleWidth: true,
+    handleHeight: true,
+    refreshMode: "debounce"
+});

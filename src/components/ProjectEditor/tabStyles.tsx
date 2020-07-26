@@ -1,12 +1,14 @@
+import React from "react";
 import styled from "styled-components";
 import { styled as themeStyled } from "react-tabtab";
-import { _shadow } from "@styles/_common";
+import { _shadow, tabListHeight } from "@styles/_common";
 import { isMobile } from "@root/utils";
 let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
 
 TabListStyle = styled(TabListStyle)`
+    z-index: 1;
     background-color: ${props => props.theme.background};
-    height: 45px;
+    height: ${tabListHeight}px;
     bottom: 0;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
         0 3px 1px -2px rgba(0, 0, 0, 0.2);
@@ -83,17 +85,22 @@ ActionButtonStyle = styled(ActionButtonStyle)`
     }
 `;
 
+const bottomPanelStyle = `
+  position: relative;
+`;
+
 PanelStyle = styled(PanelStyle)`
     width: 100%;
     height: 100%;
     position: absolute;
     padding: 0;
     background-color: ${props => props.theme.background};
+    ${props => (props.isBottom ? bottomPanelStyle : "")};
 `;
 
-export default {
-    TabList: TabListStyle,
-    ActionButton: ActionButtonStyle,
-    Tab: TabStyle,
-    Panel: PanelStyle
-};
+export default isBottom => ({
+    TabList: props => <TabListStyle {...props} isBottom={isBottom} />,
+    ActionButton: props => <ActionButtonStyle {...props} isBottom={isBottom} />,
+    Tab: props => <TabStyle {...props} isBottom={isBottom} />,
+    Panel: props => <PanelStyle {...props} isBottom={isBottom} />
+});

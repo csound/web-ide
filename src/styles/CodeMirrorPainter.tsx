@@ -47,6 +47,7 @@ export const CodeMirrorPainter = ({ theme }) => (
                    color: ${theme.opcode};
                    font-weight: 500;
           }
+
           .cm-attribute { color: ${theme.attribute}!important; }
           .cm-variable   {color: ${theme.opcode}; font-weight: 500;}
           .cm-keyword   {color: ${theme.keyword}!important; font-weight: 500;}

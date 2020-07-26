@@ -1,39 +1,38 @@
 import { css } from "@emotion/core";
-import { shadow } from "@styles/_common";
-import { isMobile } from "@root/utils";
+import { tabListHeight, shadow } from "@styles/_common";
+// import { isMobile } from "@root/utils";
+
+export const mainTabsSplitter = css`
+    .main-tab-panels {
+        .layout-pane {
+            overflow: hidden;
+            > div {
+                height: 100%;
+                > div:nth-of-type(2) {
+                    height: calc(100% - ${tabListHeight}px);
+                }
+            }
+        }
+        .layout-pane-primary {
+            > div {
+                > div:nth-of-type(2) {
+                    > div {
+                        position: relative !important;
+                    }
+                }
+            }
+        }
+    }
+`;
 
 export const splitterLayoutContainer = css`
     width: 100%;
     height: calc(100vh - 64px);
-
     position absolute;
     bottom: 0;
     .layout-pane {
         overflow: hidden;
     }
-    .layout-pane-primary > div {
-        height: 100%;
-    }
-    & > div {
-        height: 100%;
-        bottom: 0;
-    }
-    .panel-with-tab-dock {
-        & > div {position: relative; overflow:unset;}
-        & > div > div {
-          overflow: hidden;
-        }
-        & > div > div > div:first-of-type {
-          height: ${isMobile() ? "0px" : "45px"};
-        }
-        & > div > div > div:last-of-type {
-          height: ${isMobile() ? "auto" : "calc(100% - 45px)"};
-          min-height: 360px;
-          width: 100%;
-          position: relative;
-
-        }
-}
 `;
 
 export const closeButton = css`

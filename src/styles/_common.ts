@@ -37,3 +37,40 @@ export const windowHeader = theme => css`
         color: ${theme.lineNumber};
     }
 `;
+
+export const tabListHeight = 45;
+
+export const _scrollbars = theme => css`
+    scrollbar-width: thin;
+    scrollbar-color: ${theme.scrollbar} transparent;
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &:scrollbar-track,
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: ${theme.scrollbar};
+        width: 6px;
+        border-radius: 6px;
+        border: 3px solid transparent;
+    }
+
+    &:hover {
+        scrollbar-color: ${theme.scrollbarHover} ${theme.highlightBackgroundAlt};
+        &::-webkit-scrollbar {
+        }
+        &::-webkit-scrollbar-thumb {
+            background-color: ${theme.scrollbarHover};
+            width: 6px;
+            border-radius: 6px;
+            border: 3px solid transparent;
+        }
+        &::-webkit-scrollbar-track {
+            background: ${theme.highlightBackgroundAlt};
+        }
+    }
+`;

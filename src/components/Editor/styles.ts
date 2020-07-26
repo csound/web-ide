@@ -1,6 +1,7 @@
 import { css } from "@emotion/core";
+import { _scrollbars } from "@root/styles/_common";
 
-export const root = css`
+export const root = theme => css`
     font-size: 16px;
     width: 100%;
     height: 100%;
@@ -20,5 +21,10 @@ export const root = css`
 
     & .CodeMirror-sizer > div {
         left: 3px;
+    }
+    .CodeMirror-scroll,
+    .CodeMirror-vscrollbar,
+    .CodeMirror-hscrollbar {
+        ${_scrollbars(theme)}
     }
 `;

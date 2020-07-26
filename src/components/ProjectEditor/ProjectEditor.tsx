@@ -27,8 +27,6 @@ import { useTheme } from "emotion-theming";
 import { subscribeToProjectChanges } from "@comp/Projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import FileTree from "../FileTree";
-import Console from "@comp/Console/Console";
-import MobileNavigation from "./MobileNavigation";
 import {
     storeEditorKeyboardCallbacks,
     storeProjectEditorKeyboardCallbacks
@@ -43,13 +41,15 @@ import {
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
-import { mapIndexed, isMobile } from "@root/utils";
+import { mapIndexed } from "@root/utils";
 import { closeProject } from "../Projects/actions";
 import { isAudioFile } from "../Projects/utils";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../Csound/actions";
-import Spectrogram from "../Spectrogram/Spectrogram";
+import BottomTabs from "@comp/BottomTabs/component";
+
+const TabStyles = tabStyles(false);
 
 type EditorForDocumentProps = {
     uid: any;
@@ -79,7 +79,7 @@ function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
 const ProjectEditor = ({ activeProject, csound }) => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
-    const [mobileTabIndex, setMobileTabIndex] = useState(0);
+
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
@@ -88,7 +88,6 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
     const isOwner = useSelector(selectIsOwner(projectUid));
     const tabPanelRef = useRef();
-    const [bottomTabIndex, setBottomTabIndex] = useState(0);
 
     useEffect(() => {
         const unsubscribeProjectChanges = subscribeToProjectChanges(
@@ -244,7 +243,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
         <Tabs
             activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
             onTabChange={switchTab}
-            customStyle={tabStyles}
+            customStyle={TabStyles}
             showModalButton={false}
             showArrowButton={"auto"}
             onTabSequenceChange={({ oldIndex, newIndex }) => {
@@ -316,14 +315,9 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const isManualVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.manualVisible
     );
-    const isConsoleVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.consoleVisible
-    );
+
     const isFileTreeVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
-    );
-    const isSpectrogramVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.spectrogramVisible
     );
 
     useEffect(() => {
@@ -364,142 +358,45 @@ const ProjectEditor = ({ activeProject, csound }) => {
         // eslint-disable-next-line
     }, []);
 
-    if (isMobile()) {
-        const MobileFileTree = (
-            <div css={SS.mobileFileTree}>
-                <FileTree />
-            </div>
-        );
-        const MobileConsole = (
-            <div
-                css={SS.mobileConsole}
-                style={{
-                    display: mobileTabIndex === 2 ? "inherit" : "none"
-                }}
-            >
-                <Console />
-            </div>
-        );
-        const MobileManual = <div css={SS.mobileManual}>{manualWindow}</div>;
-        return (
-            <DnDProvider project={activeProject}>
-                <style>
-                    {`body {overflow: hidden!important;}` +
-                        `#drag-tab-list {display: none;}`}
-                </style>
-                {MobileConsole}
-                {mobileTabIndex === 0
-                    ? tabDock
-                    : mobileTabIndex === 1
-                    ? MobileFileTree
-                    : mobileTabIndex === 3
-                    ? MobileManual
-                    : null}
-                <MobileNavigation
-                    mobileTabIndex={mobileTabIndex}
-                    setMobileTabIndex={setMobileTabIndex}
-                />
-            </DnDProvider>
-        );
-    } else {
-        const bottomTabCount: number = reduce(
-            (a: number, b: boolean) => (b ? a + 1 : a),
-            0,
-            [isConsoleVisible, isSpectrogramVisible]
-        );
-
-        const bottomTabList: Array<JSX.Element> = [];
-        if (isConsoleVisible)
-            bottomTabList.push(
-                <DragTab closable={true} key={0}>
-                    Console
-                </DragTab>
-            );
-        if (isSpectrogramVisible)
-            bottomTabList.push(
-                <DragTab closable={true} key={1}>
-                    Spectrogram
-                </DragTab>
-            );
-
-        const bottomTabPanels: Array<JSX.Element> = [];
-        if (isConsoleVisible)
-            bottomTabPanels.push(
-                <Panel key={0}>
-                    <Console />
-                </Panel>
-            );
-        if (isSpectrogramVisible)
-            bottomTabPanels.push(
-                <Panel key={1}>
-                    <Spectrogram />
-                </Panel>
-            );
-
-        const bottom = bottomTabCount > 0 && (
-            <Tabs
-                activeIndex={Math.min(bottomTabIndex, bottomTabCount)}
-                onTabChange={i => setBottomTabIndex(i)}
-                customStyle={tabStyles}
-                showModalButton={false}
-                showArrowButton={"auto"}
-                // onTabSequenceChange={({ oldIndex, newIndex }) => {
-                //     dispatch(
-                //         rearrangeTabs(
-                //             projectUid,
-                //             simpleSwitch(tabDockDocuments, oldIndex, newIndex),
-                //             newIndex
-                //         )
-                //     );
-                // }}
-            >
-                <DragTabList id="drag-tab-list">{bottomTabList}</DragTabList>
-                <PanelList>{bottomTabPanels}</PanelList>
-            </Tabs>
-        );
-
-        const mainSection = !(isConsoleVisible || isSpectrogramVisible) ? (
-            tabDock
-        ) : (
+    const mainSection = (
+        <div css={SS.mainTabsSplitter}>
             <SplitterLayout
                 vertical
                 secondaryInitialSize={250}
                 ref={tabPanelRef}
-                customClassName={"panel-with-tab-dock"}
+                customClassName={"main-tab-panels"}
             >
                 {tabDock}
-                {bottom}
+                <BottomTabs />
             </SplitterLayout>
-        );
-        return (
-            <DnDProvider project={activeProject}>
-                <style>{`#root {overflow: hidden!important;}
-                     body > .ps__rail-x {display:none!important;}
-                     body > .ps__rail-y {display:none!important;}`}</style>
-                <div css={SS.splitterLayoutContainer}>
-                    {unsavedDataExitPrompt}
-                    <SplitterLayout
-                        primaryIndex={1}
-                        primaryMinSize={400}
-                        secondaryInitialSize={250}
-                        secondaryMinSize={250}
-                    >
-                        {isFileTreeVisible && <FileTree />}
+        </div>
+    );
 
-                        <SplitterLayout
-                            horizontal
-                            secondaryInitialSize={500}
-                            onDragStart={() => setManualDrag(true)}
-                            onDragEnd={() => setManualDrag(false)}
-                        >
-                            {mainSection}
-                            {isManualVisible && manualWindow}
-                        </SplitterLayout>
+    return (
+        <DnDProvider project={activeProject}>
+            <div css={SS.splitterLayoutContainer}>
+                {unsavedDataExitPrompt}
+                <SplitterLayout
+                    primaryIndex={1}
+                    primaryMinSize={400}
+                    secondaryInitialSize={250}
+                    secondaryMinSize={250}
+                >
+                    {isFileTreeVisible && <FileTree />}
+
+                    <SplitterLayout
+                        horizontal
+                        secondaryInitialSize={500}
+                        onDragStart={() => setManualDrag(true)}
+                        onDragEnd={() => setManualDrag(false)}
+                    >
+                        {mainSection}
+                        {isManualVisible && manualWindow}
                     </SplitterLayout>
-                </div>
-            </DnDProvider>
-        );
-    }
+                </SplitterLayout>
+            </div>
+        </DnDProvider>
+    );
 };
 
 export default ProjectEditor;
