@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { pathOr } from "ramda";
 import { ICsoundObj } from "../Csound/types";
 
-type SpectrogramProps = {
+type SpectralAnalyzerProps = {
     classes: any;
 };
 
@@ -77,7 +77,7 @@ const disconnectVisualizer = (csound: ICsoundObj, scopeNode: AnalyserNode) => {
     console.log("Disconnect Visualizer!");
 };
 
-export const Spectrogram = ({ classes }: SpectrogramProps) => {
+export const SpectralAnalyzer = ({ classes }: SpectralAnalyzerProps) => {
     const csound: ICsoundObj | null = useSelector(
         pathOr(null, ["csound", "csound"])
     ) as ICsoundObj | null;
@@ -103,4 +103,4 @@ export const Spectrogram = ({ classes }: SpectrogramProps) => {
     );
 };
 
-export default withStyles(Spectrogram);
+export default withStyles(SpectralAnalyzer);

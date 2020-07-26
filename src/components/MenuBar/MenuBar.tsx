@@ -16,7 +16,7 @@ import {
     toggleManualPanel,
     setConsolePanelOpen,
     setFileTreePanelOpen,
-    setSpectrogramOpen
+    setSpectralAnalyzerOpen
 } from "@comp/ProjectEditor/actions";
 import { renderToDisk, enableMidiInput, enableAudioInput } from "@comp/Csound/actions";
 import { selectCsoundStatus } from "@comp/Csound/selectors";
@@ -55,8 +55,8 @@ function MenuBar(props) {
         (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
     );
 
-    const isSpectrogramVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.spectrogramVisible
+    const isSpectralAnalyzerVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.spectralAnalyzerVisible
     );
 
     const menuBarItems: MenuItemDef[] = [
@@ -180,10 +180,10 @@ function MenuBar(props) {
                     checked: isConsoleVisible
                 },
                 {
-                    label: "Spectrogram",
+                    label: "Spectral Analyzer",
                     callback: () =>
-                        dispatch(setSpectrogramOpen(!isSpectrogramVisible)),
-                    checked: isSpectrogramVisible
+                        dispatch(setSpectralAnalyzerOpen(!isSpectralAnalyzerVisible)),
+                    checked: isSpectralAnalyzerVisible
                 }
             ]
         },

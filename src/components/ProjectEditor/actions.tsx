@@ -20,7 +20,7 @@ import {
     SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
     IOpenDocument,
-    SET_SPECTROGRAM_OPEN
+    SET_SPECTRAL_ANALYZER_OPEN
 } from "./types";
 
 export const tabDockInit = (
@@ -239,9 +239,9 @@ export const setFileTreePanelOpen = (open: boolean) => {
     };
 };
 
-export const setSpectrogramOpen = (open: boolean) => {
+export const setSpectralAnalyzerOpen = (open: boolean) => {
     return {
-        type: SET_SPECTROGRAM_OPEN,
+        type: SET_SPECTRAL_ANALYZER_OPEN,
         open
     };
 };

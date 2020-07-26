@@ -6,7 +6,7 @@ import { simpleSwitch } from "react-tabtab/lib/helpers/move";
 import { IStore } from "@store/types";
 import tabStyles from "@comp/ProjectEditor/tabStyles";
 import Console from "@comp/Console/Console";
-import Spectrogram from "@comp/Spectrogram/Spectrogram";
+import SpectralAnalyzer from "@comp/SpectralAnalyzer/SpectralAnalyzer";
 
 const TabStyles = tabStyles(true);
 
@@ -17,14 +17,14 @@ const BottomTabs = () => {
         (store: IStore) => store.ProjectEditorReducer.consoleVisible
     );
 
-    const isSpectrogramVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.spectrogramVisible
+    const isSpectralAnalyzerVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.spectralAnalyzerVisible
     );
 
     const bottomTabCount: number = reduce(
         (a: number, b: boolean) => (b ? a + 1 : a),
         0,
-        [isConsoleVisible, isSpectrogramVisible]
+        [isConsoleVisible, isSpectralAnalyzerVisible]
     );
 
     const showTabs: boolean = bottomTabCount > 0;
@@ -39,10 +39,10 @@ const BottomTabs = () => {
         );
     }
 
-    if (isSpectrogramVisible) {
+    if (isSpectralAnalyzerVisible) {
         bottomTabList.push(
             <DragTab closable={true} key={1}>
-                Spectrogram
+                Spectral Analyzer
             </DragTab>
         );
     }
@@ -57,10 +57,10 @@ const BottomTabs = () => {
         );
     }
 
-    if (isSpectrogramVisible) {
+    if (isSpectralAnalyzerVisible) {
         bottomTabPanels.push(
             <Panel key={1} isBottom>
-                <Spectrogram />
+                <SpectralAnalyzer />
             </Panel>
         );
     }
