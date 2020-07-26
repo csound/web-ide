@@ -7,6 +7,10 @@ export const GET_DISPLAYED_RECENT_PROJECTS =
     "HOME.GET_DISPLAYED_RECENT_PROJECTS";
 export const GET_FEATURED_PROJECT_USER_PROFILES =
     "HOME.GET_FEATURED_PROJECT_USER_PROFILES";
+export const GET_RANDOM_PROJECT_USER_PROFILES =
+    "HOME.GET_RANDOM_PROJECT_USER_PROFILES";
+export const GET_POPULAR_PROJECT_USER_PROFILES =
+    "HOME.GET_POPULAR_PROJECT_USER_PROFILES";
 export const GET_DISPLAYED_RANDOM_PROJECTS =
     "HOME.GET_DISPLAYED_RANDOM_PROJECTS";
 export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
@@ -26,6 +30,16 @@ interface SearchProjectsSuccess {
 
 interface GetFeaturedProjectUserProfiles {
     type: typeof GET_FEATURED_PROJECT_USER_PROFILES;
+    payload: any;
+}
+
+interface GetRandomProjectUserProfiles {
+    type: typeof GET_RANDOM_PROJECT_USER_PROFILES;
+    payload: any;
+}
+
+interface GetPopularProjectUserProfiles {
+    type: typeof GET_POPULAR_PROJECT_USER_PROFILES;
     payload: any;
 }
 
@@ -72,4 +86,6 @@ export type HomeActionTypes =
     | GetSearchedProjectUserProfiles
     | GetFeaturedProjectUserProfiles
     | SearchProjectsRequest
-    | SearchProjectsSuccess;
+    | SearchProjectsSuccess
+    | GetRandomProjectUserProfiles
+    | GetPopularProjectUserProfiles;

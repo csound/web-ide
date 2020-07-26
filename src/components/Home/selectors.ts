@@ -5,7 +5,7 @@ export const selectDisplayedStarredProjects = (store: any) => {
     const state: State = store.HomeReducer;
     const displayedStarredProjects = state.displayedStarredProjects;
     if (displayedStarredProjects === false) {
-        return [null, null, null, null];
+        return new Array(8).fill(null);
     } else {
         return displayedStarredProjects;
     }
@@ -59,12 +59,22 @@ export const selectFeaturedProjectUserProfiles = (store: any) => {
     return state.featuredProjectUserProfiles;
 };
 
+export const selectRandomProjectUserProfiles = (store: any) => {
+    const state: State = store.HomeReducer;
+    return state.randomProjectUserProfiles;
+};
+
+export const selectPopularProjectUserProfiles = (store: any) => {
+    const state: State = store.HomeReducer;
+    return state.popularProjectUserProfiles;
+};
+
 export const selectSearchedProjectUserProfiles = (store: any) => {
     const state: State = store.HomeReducer;
     return state.featuredProjectUserProfiles;
 };
 
-export const selectOrderedStars = createSelector([selectStars], stars => {
+export const selectOrderedStars = createSelector([selectStars], (stars) => {
     if (!Array.isArray(stars)) {
         return [];
     }
@@ -74,7 +84,7 @@ export const selectOrderedStars = createSelector([selectStars], stars => {
 
 export const selectOrderedProjectLastModified = createSelector(
     [selectProjectLastModified],
-    projectLastModified => {
+    (projectLastModified) => {
         if (!Array.isArray(projectLastModified)) {
             return [];
         }

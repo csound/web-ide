@@ -4,18 +4,22 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "../Header/Header";
 import withStyles from "./styles";
-import { getPopularProjects, getStars, searchProjects } from "./actions";
+import {
+    getPopularProjects,
+    searchProjects,
+    getRandomProjects
+} from "./actions";
 import { debounce } from "lodash";
 import { HomeContainer, StyledTextField, GlobalStyle } from "./HomeUI";
 import {
-    selectStars,
     selectProjectLastModified,
     selectDisplayedStarredProjects,
-    selectFeaturedProjectUserProfiles,
     selectSearchedProjectUserProfiles,
     selectDisplayedRandomProjects,
     selectSearchedProjects,
-    selectSearchProjectsRequest
+    selectSearchProjectsRequest,
+    selectRandomProjectUserProfiles,
+    selectPopularProjectUserProfiles
 } from "./selectors";
 import { TransitionGroup, Transition } from "react-transition-group";
 import { Grid } from "@material-ui/core";
@@ -27,29 +31,23 @@ const Home = ({ classes }) => {
     const dispatch = useDispatch();
     const [showFeaturedProjects, setShowFeaturedProjects] = useState(true);
     const [searchValue, setSearchValue] = useState("");
-    const stars = useSelector(selectStars);
     const projectLastModified = useSelector(selectProjectLastModified);
     const starredProjects = useSelector(selectDisplayedStarredProjects);
     const randomProjects = useSelector(selectDisplayedRandomProjects);
     const searchedProjects = useSelector(selectSearchedProjects);
     const searchProjectsRequest = useSelector(selectSearchProjectsRequest);
-    // const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);
-    const featuredProjectUserProfiles = useSelector(
-        selectFeaturedProjectUserProfiles
+    const randomProjectUserProfiles = useSelector(
+        selectRandomProjectUserProfiles
+    );
+    const popularProjectUserProfiles = useSelector(
+        selectPopularProjectUserProfiles
     );
     const searchedProjectUserProfiles = useSelector(
         selectSearchedProjectUserProfiles
     );
     useEffect(() => {
-        if (Array.isArray(stars) === true) {
-            dispatch(getPopularProjects());
-        }
-    }, [dispatch, stars, projectLastModified]);
-
-    useEffect(() => {
-        dispatch(getStars());
+        dispatch(getPopularProjects(true));
     }, [dispatch]);
-
     useEffect(() => {
         if (searchValue === "" && searchedProjects !== false) {
             dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
@@ -125,11 +123,14 @@ const Home = ({ classes }) => {
                                     <FeaturedProjects
                                         duration={duration}
                                         starredProjects={starredProjects}
-                                        featuredProjectUserProfiles={
-                                            featuredProjectUserProfiles
-                                        }
                                         randomProjects={randomProjects}
                                         transitionState={transitionState}
+                                        randomProjectUserProfiles={
+                                            randomProjectUserProfiles
+                                        }
+                                        popularProjectUserProfiles={
+                                            popularProjectUserProfiles
+                                        }
                                     />
                                 );
                             }}

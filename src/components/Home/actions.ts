@@ -3,7 +3,7 @@ import { firestore } from "firebase/app";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
-import { selectStars } from "./selectors";
+import { selectStars, selectDisplayedStarredProjects } from "./selectors";
 import {
     GET_DISPLAYED_RANDOM_PROJECTS,
     GET_DISPLAYED_STARRED_PROJECTS,
@@ -11,7 +11,9 @@ import {
     GET_SEARCHED_PROJECT_USER_PROFILES,
     GET_STARS,
     SEARCH_PROJECTS_REQUEST,
-    SEARCH_PROJECTS_SUCCESS
+    SEARCH_PROJECTS_SUCCESS,
+    GET_RANDOM_PROJECT_USER_PROFILES,
+    GET_POPULAR_PROJECT_USER_PROFILES
 } from "./types";
 
 const databaseID = process.env.NODE_ENV === "development" ? "dev" : "prod";
@@ -21,7 +23,7 @@ const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
 export const searchProjects = (
     query: string,
     offset: number
-): ThunkAction<void, any, null, Action<string>> => async dispatch => {
+): ThunkAction<void, any, null, Action<string>> => async (dispatch) => {
     dispatch({ type: SEARCH_PROJECTS_REQUEST });
 
     const searchRequest = await fetch(
@@ -30,7 +32,7 @@ export const searchProjects = (
     let projects = await searchRequest.json();
     projects.data = projects.data.slice(0, 8);
 
-    const userIDs = [...new Set([...projects.data.map(e => e.userUid)])];
+    const userIDs = [...new Set([...projects.data.map((e) => e.userUid)])];
 
     if (userIDs.length === 0) {
         dispatch({ type: GET_SEARCHED_PROJECT_USER_PROFILES, payload: false });
@@ -45,7 +47,7 @@ export const searchProjects = (
         .where(firestore.FieldPath.documentId(), "in", userIDs)
         .get();
 
-    profilesQuery.forEach(snapshot => {
+    profilesQuery.forEach((snapshot) => {
         projectProfiles[snapshot.id] = snapshot.data();
     });
 
@@ -57,30 +59,28 @@ export const searchProjects = (
     dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: projects });
 };
 
-export const getStars = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => async dispatch => {
-    const starsRequest = await fetch(`${searchURL}/list/stars/8/0/count/desc`);
-    let starredProjects = await starsRequest.json();
-    starredProjects.data = starredProjects.data.slice(0, 4);
+export const getPopularProjects = (
+    withRandomProjects: Boolean = false,
+    startCount: number = 0
+): ThunkAction<void, any, null, Action<string>> => async (
+    dispatch,
+    getStore
+) => {
+    dispatch({
+        type: GET_POPULAR_PROJECT_USER_PROFILES,
+        payload: false
+    });
+    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: false });
 
-    dispatch({ type: GET_STARS, payload: starredProjects });
-};
+    const starsRequest = await fetch(
+        `${searchURL}/list/stars/8/${startCount * 4}/count/desc`
+    );
+    const starredProjects = (await starsRequest.json()).data;
 
-export const getPopularProjects = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> => async (dispatch, getStore) => {
-    const state = getStore();
-    const orderedStars = selectStars(state);
-    const starsIDs = orderedStars.map(e => (e as any).id);
+    const starsIDs = starredProjects.map((e) => (e as any).id);
 
-    if (orderedStars.length === 0) {
+    if (starredProjects.length === 0) {
+        dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: [] });
         return;
     }
     const splitStarProjectsQuery = await projects
@@ -89,26 +89,11 @@ export const getPopularProjects = (): ThunkAction<
         .get();
 
     const starProjects: any[] = [];
-    splitStarProjectsQuery.forEach(snapshot => {
+    splitStarProjectsQuery.forEach((snapshot) => {
         starProjects.push({ id: snapshot.id, ...snapshot.data() });
     });
 
-    const starProjectsIDs = starProjects.map(e => e.id);
-
-    const randomProjectsRequest = await fetch(`${searchURL}/random/projects/8`);
-    let randomProjects = await randomProjectsRequest.json();
-    randomProjects = randomProjects.data
-        .filter(e => {
-            return starProjectsIDs.includes(e.id) === false;
-        })
-        .slice(0, 4);
-
-    const userIDs = [
-        ...new Set([
-            ...starProjects.map(e => e.userUid),
-            ...randomProjects.map(e => e.userUid)
-        ])
-    ];
+    const userIDs = [...new Set([...starProjects.map((e) => e.userUid)])];
 
     const projectProfiles = {};
 
@@ -116,7 +101,55 @@ export const getPopularProjects = (): ThunkAction<
         .where(firestore.FieldPath.documentId(), "in", userIDs)
         .get();
 
-    profilesQuery.forEach(snapshot => {
+    profilesQuery.forEach((snapshot) => {
+        projectProfiles[snapshot.id] = snapshot.data();
+    });
+    dispatch({
+        type: GET_POPULAR_PROJECT_USER_PROFILES,
+        payload: projectProfiles
+    });
+    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: starProjects });
+
+    dispatch({ type: GET_STARS, payload: starProjects });
+
+    if (withRandomProjects === true) {
+        dispatch(getRandomProjects());
+    }
+};
+
+export const getRandomProjects = (): ThunkAction<
+    void,
+    any,
+    null,
+    Action<string>
+> => async (dispatch, getStore) => {
+    dispatch({ type: GET_DISPLAYED_RANDOM_PROJECTS, payload: false });
+
+    const state = getStore();
+    const starProjects = selectDisplayedStarredProjects(state);
+    if (starProjects.length === 0) {
+        return;
+    }
+
+    const starProjectsIDs = starProjects.map((e) => e.id);
+
+    const randomProjectsRequest = await fetch(`${searchURL}/random/projects/8`);
+    let randomProjects = await randomProjectsRequest.json();
+    randomProjects = randomProjects.data
+        .filter((e) => {
+            return starProjectsIDs.includes(e.id) === false;
+        })
+        .slice(0, 4);
+
+    const userIDs = [...new Set([...randomProjects.map((e) => e.userUid)])];
+
+    const projectProfiles = {};
+
+    const profilesQuery = await profiles
+        .where(firestore.FieldPath.documentId(), "in", userIDs)
+        .get();
+
+    profilesQuery.forEach((snapshot) => {
         projectProfiles[snapshot.id] = snapshot.data();
     });
 
@@ -124,6 +157,10 @@ export const getPopularProjects = (): ThunkAction<
         type: GET_FEATURED_PROJECT_USER_PROFILES,
         payload: projectProfiles
     });
-    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: starProjects });
+
+    dispatch({
+        type: GET_RANDOM_PROJECT_USER_PROFILES,
+        payload: projectProfiles
+    });
     dispatch({ type: GET_DISPLAYED_RANDOM_PROJECTS, payload: randomProjects });
 };

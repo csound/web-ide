@@ -6,6 +6,8 @@ import {
     GET_DISPLAYED_RECENT_PROJECTS,
     GET_DISPLAYED_STARRED_PROJECTS,
     GET_FEATURED_PROJECT_USER_PROFILES,
+    GET_RANDOM_PROJECT_USER_PROFILES,
+    GET_POPULAR_PROJECT_USER_PROFILES,
     GET_SEARCHED_PROJECT_USER_PROFILES,
     GET_DISPLAYED_RANDOM_PROJECTS,
     SEARCH_PROJECTS_REQUEST,
@@ -20,6 +22,8 @@ export interface State {
     readonly displayedStarredProjects: any;
     readonly displayedRandomProjects: any;
     readonly featuredProjectUserProfiles: any;
+    readonly popularProjectUserProfiles: any;
+    readonly randomProjectUserProfiles: any;
     readonly searchedProjectUserProfiles: any;
     readonly searchedProjects: any;
     readonly searchedProjectsTotal: any;
@@ -34,6 +38,8 @@ const INITIAL_STATE: State = {
     displayedStarredProjects: false,
     displayedRandomProjects: false,
     featuredProjectUserProfiles: false,
+    popularProjectUserProfiles: false,
+    randomProjectUserProfiles: false,
     searchedProjectUserProfiles: false,
     searchedProjects: false,
     searchedProjectsTotal: 0,
@@ -60,6 +66,18 @@ export default (state = INITIAL_STATE, action: HomeActionTypes) => {
             return {
                 ...state,
                 featuredProjectUserProfiles: action.payload
+            };
+        }
+        case GET_RANDOM_PROJECT_USER_PROFILES: {
+            return {
+                ...state,
+                randomProjectUserProfiles: action.payload
+            };
+        }
+        case GET_POPULAR_PROJECT_USER_PROFILES: {
+            return {
+                ...state,
+                popularProjectUserProfiles: action.payload
             };
         }
         case GET_SEARCHED_PROJECT_USER_PROFILES: {
