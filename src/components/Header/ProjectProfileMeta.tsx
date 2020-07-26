@@ -1,6 +1,6 @@
 import React from "react";
 // import Moment from "react-moment";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { selectActiveProject } from "@comp/Projects/selectors";
 // import { selectProjectLastModified } from "@comp/ProjectLastModified/selectors";
@@ -9,34 +9,14 @@ import {
     selectUserImageURL,
     selectProfileProjectsCount
 } from "@comp/Profile/selectors";
-import { exportProject } from "@comp/Projects/actions";
 import ProjectIcon from "@comp/Profile/ProjectIcon";
-import { IconButton } from "@material-ui/core";
-import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
 import { AccountBox } from "@material-ui/icons";
-import styled from "styled-components";
 import Avatar from "@material-ui/core/Avatar";
 import Tooltip from "@material-ui/core/Tooltip";
 import * as SS from "./styles";
 import { isEmpty, propOr } from "ramda";
 
-
-const StyledIconButton = styled(IconButton)`
-    && {
-        border-radius: 0;
-        padding: 2px;
-    }
-`;
-
-const StyledDownloadIcon = styled(CloudDownloadIcon)`
-    && {
-        fill: ${props => props.theme.socialIcon};
-    }
-`;
-
 const ProjectProfileMeta = () => {
-
-    const dispatch = useDispatch();
     const project = useSelector(selectActiveProject);
     const projectName = propOr("unnamed", "name", project || {});
     // const projectDescription = propOr(null, "description", project || {});
@@ -110,19 +90,6 @@ const ProjectProfileMeta = () => {
                         </Link>
                     </Tooltip>
                 </p>
-            </div>
-            <div css={SS.buttonContainer}>
-              <Tooltip title="Download project as Zip" placement="right">
-
-                <StyledIconButton
-                    size="medium"
-                    onClick={() => {
-                      dispatch(exportProject());
-                    }}
-                >
-                    <StyledDownloadIcon fontSize="large" />
-                </StyledIconButton>
-              </Tooltip>
             </div>
         </div>
     ) : (

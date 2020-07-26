@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { styled as themeStyled } from "react-tabtab";
-import { _shadow, tabListHeight } from "@styles/_common";
+import { tabListHeight } from "@styles/constants";
+import { _shadow } from "@styles/_common";
 import { isMobile } from "@root/utils";
 let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
 

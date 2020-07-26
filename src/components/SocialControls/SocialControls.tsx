@@ -4,8 +4,10 @@ import { subscribeToProjectStars } from "./subscribers";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IconButton } from "@material-ui/core";
+import { exportProject } from "@comp/Projects/actions";
 import StarIcon from "@material-ui/icons/Star";
 import OutlinedStarIcon from "@material-ui/icons/StarBorderOutlined";
+import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import ShareIcon from "@material-ui/icons/Share";
@@ -27,6 +29,11 @@ const StyledIconButton = styled(IconButton)`
     && {
         border-radius: 0;
         padding: 2px;
+    }
+`;
+const StyledDownloadIcon = styled(CloudDownloadIcon)`
+    && {
+        fill: ${props => props.theme.socialIcon};
     }
 `;
 const StyledStarIcon = styled(StarIcon)`
@@ -79,6 +86,20 @@ const SocialControls = () => {
 
     return (
         <>
+            {!isOwner && isPublic && (
+                <Tooltip title="Download project as Zip" placement="bottom-end">
+                    <div css={SS.buttonContainer}>
+                        <StyledIconButton
+                            size="medium"
+                            onClick={() => {
+                                dispatch(exportProject());
+                            }}
+                        >
+                            <StyledDownloadIcon fontSize="large" />
+                        </StyledIconButton>
+                    </div>
+                </Tooltip>
+            )}
             {isPublic && (
                 <Tooltip title={`Share this project`} placement="bottom-end">
                     <div css={SS.buttonContainer}>

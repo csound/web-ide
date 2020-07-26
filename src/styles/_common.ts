@@ -38,8 +38,6 @@ export const windowHeader = theme => css`
     }
 `;
 
-export const tabListHeight = 45;
-
 export const _scrollbars = theme => css`
     scrollbar-width: thin;
     scrollbar-color: ${theme.scrollbar} transparent;

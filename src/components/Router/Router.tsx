@@ -26,8 +26,7 @@ const EditorLayout = (props: any) => {
         return () => {
             dispatch(stopCsound());
         };
-        // eslint-disable-next-line
-    }, []);
+    }, [dispatch]);
 
     return (
         <Provider store={store}>
