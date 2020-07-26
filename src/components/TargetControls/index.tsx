@@ -6,7 +6,7 @@ import { selectProjectTargets, selectSelectedTarget } from "./selectors";
 import { selectIsOwner } from "@comp/ProjectEditor/selectors";
 import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
-import { isEmpty, keys, pathOr, values } from "ramda";
+import { pathOr, values } from "ramda";
 import { useDispatch, useSelector } from "react-redux";
 import StopButton from "./StopButton";
 
