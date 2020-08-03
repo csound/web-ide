@@ -121,7 +121,7 @@
         "concurrently": "^5.2.0",
         "customize-cra": "^1.0.0",
         "electron": "^9.1.1",
-        "electron-builder": "^22.7.0",
+        "electron-builder": "^22.8.0",
         "firebase-tools": "^8.6.0",
         "react-app-rewired": "^2.1.6",
         "react-scripts": "3.4.1",
