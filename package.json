@@ -36,7 +36,7 @@
         "file-saver": "^2.0.2",
         "files.macro": "^0.2.1",
         "firebase": "^7.16.1",
-        "fuse.js": "^6.4.0",
+        "fuse.js": "^6.4.1",
         "hex-rgb": "^4.1.0",
         "history": "^4.10.1",
         "jszip": "^3.5.0",
