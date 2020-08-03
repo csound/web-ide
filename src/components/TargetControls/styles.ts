@@ -1,5 +1,5 @@
 import { css } from "@emotion/core";
-import { shadow } from "@styles/_common";
+import { shadow, _scrollbars } from "@styles/_common";
 
 export const dropdownContainer = theme => css`
     position: relative;
@@ -276,7 +276,9 @@ export const menuForDialog = theme => css`
 
 export const targetsDialog = theme => css`
     min-width: 400px;
-    max-heigh: 80vh;
+    max-height: 80vh;
+    overflow-y: scroll;
+    ${_scrollbars(theme)}
 `;
 
 export const targetsDialogBottom = theme => css`
