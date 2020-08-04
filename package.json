@@ -19,7 +19,7 @@
         "@types/react-dom": "^16.9.8",
         "@types/react-onclickoutside": "^6.7.3",
         "@types/react-redux": "^7.1.9",
-        "@types/styled-components": "^5.1.1",
+        "@types/styled-components": "^5.1.2",
         "acorn": "^7.4.0",
         "autosuggest-highlight": "^3.1.1",
         "better-react-spinkit": "^2.0.4",
