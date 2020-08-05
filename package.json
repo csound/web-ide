@@ -47,7 +47,7 @@
         "moment": "^2.27.0",
         "patch-package": "^6.2.2",
         "postinstall-postinstall": "^2.1.0",
-        "ramda": "^0.27.0",
+        "ramda": "^0.27.1",
         "react": "^16.13.1",
         "react-autosuggest": "^10.0.2",
         "react-beautiful-dnd": "^13.0.0",
