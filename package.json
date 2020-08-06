@@ -38,7 +38,7 @@
         "firebase": "^7.17.1",
         "fuse.js": "^6.4.1",
         "hex-rgb": "^4.1.0",
-        "history": "^4.10.1",
+        "history": "^5.0.0",
         "jszip": "^3.5.0",
         "lodash": "^4.17.19",
         "material-ui-chip-input": "^2.0.0-beta.1",
