@@ -35,7 +35,7 @@
         "extract-text-webpack-plugin": "^4.0.0-beta.0",
         "file-saver": "^2.0.2",
         "files.macro": "^0.2.1",
-        "firebase": "^7.17.1",
+        "firebase": "^7.17.2",
         "fuse.js": "^6.4.1",
         "hex-rgb": "^4.1.0",
         "history": "^4.10.1",
