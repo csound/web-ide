@@ -387,7 +387,7 @@ CodeMirror.defineMode("csound", function(config) {
         },
 
         electricInput: /^\s*(?:end|rescue|elsif|else|od|\})$/,
-        // lineComment: /;|\/\//,
+        lineComment: ";",
         fold: "indent"
     };
 });
