@@ -73,7 +73,7 @@
         "react-splitter-layout": "^4.0.0",
         "react-tabtab": "^2.0.0",
         "react-tooltip": "^4.2.8",
-        "react-virtualized": "^9.21.2",
+        "react-virtualized": "^9.22.2",
         "redux": "^4.0.5",
         "redux-thunk": "^2.3.0",
         "reselect": "^4.0.0",
