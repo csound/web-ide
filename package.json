@@ -120,7 +120,7 @@
         "babel-plugin-emotion": "^10.0.33",
         "concurrently": "^5.2.0",
         "customize-cra": "^1.0.0",
-        "electron": "^9.1.2",
+        "electron": "^9.2.0",
         "electron-builder": "^22.8.0",
         "firebase-tools": "^8.7.0",
         "react-app-rewired": "^2.1.6",
