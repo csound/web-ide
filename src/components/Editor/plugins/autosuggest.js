@@ -31,27 +31,23 @@ async function hintFn(cm, callback, arg3) {
     const cur = cm.getDoc().getCursor();
     const tokenData = cm.getTokenAt(cur);
     const token = propOr(false, "string", tokenData);
-    if (!token || cur.ch !== tokenData.end || token.length < 3) return;
+    if (!token || cur.ch !== tokenData.end || token.length < 3 || tokenData.type === 'comment') return;
     const start = tokenData.start;
     const end = tokenData.end;
-    const list = pipe(
-        pick(take(50, fuzzyMatcher.search(token))),
-        values,
-        reduce(
-            (acc, token) =>
+    const results = take(50, fuzzyMatcher.search(token));
+    const list = reduce(
+            (acc, res) =>
                 append(
                     {
                         className: "",
-                        text: token,
-                        displayText: token,
+                        text: res.item,
+                        displayText: res.item,
                         from: CodeMirror.Pos(cur.line, start),
                         to: CodeMirror.Pos(cur.line, end)
                     },
                     acc
                 ),
-            []
-        )
-    )(opcodes);
+            [], results)
     typeof callback === "function" &&
         callback({
             list
