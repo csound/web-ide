@@ -127,7 +127,7 @@
         "react-scripts": "3.4.1",
         "robotstxt-webpack-plugin": "^7.0.0",
         "sitemap-webpack-plugin": "^0.8.1",
-        "wait-on": "^5.1.0"
+        "wait-on": "^5.2.0"
     },
     "config-overrides-path": "config-overrides.ts",
     "resolutions": {
