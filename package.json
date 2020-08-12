@@ -124,7 +124,7 @@
         "electron-builder": "^22.8.0",
         "firebase-tools": "^8.7.0",
         "react-app-rewired": "^2.1.6",
-        "react-scripts": "3.4.1",
+        "react-scripts": "3.4.2",
         "robotstxt-webpack-plugin": "^7.0.0",
         "sitemap-webpack-plugin": "^0.8.1",
         "wait-on": "^5.2.0"
