@@ -20,7 +20,7 @@
         "@types/react-onclickoutside": "^6.7.3",
         "@types/react-redux": "^7.1.9",
         "@types/styled-components": "^5.1.2",
-        "acorn": "^7.4.0",
+        "acorn": "^8.0.1",
         "autosuggest-highlight": "^3.1.1",
         "better-react-spinkit": "^2.0.4",
         "chalk": "^4.1.0",
