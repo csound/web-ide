@@ -3,6 +3,7 @@ import withStyles from "./styles";
 import { useSelector } from "react-redux";
 import { pathOr } from "ramda";
 import { ICsoundObj } from "../Csound/types";
+import { scaleLinear } from "d3-scale";
 
 type SpectralAnalyzerProps = {
     classes: any;
@@ -51,7 +52,10 @@ const connectVisualizer = (csound: ICsoundObj, canvasRef: CanvasRef) => {
             const width = canvas.width;
             const height = canvas.height;
             let freqData = new Uint8Array(scopeNode.frequencyBinCount);
-            let scaling = height / 256;
+
+            const scaleY = scaleLinear()
+                            .domain([0, 256])
+                            .range([height, 0]);
 
             scopeNode.getByteFrequencyData(freqData);
 
@@ -67,7 +71,7 @@ const connectVisualizer = (csound: ICsoundObj, canvasRef: CanvasRef) => {
                 let indx = Math.floor(
                     (x / width) * scopeNode.frequencyBinCount
                 );
-                ctx.lineTo(x, height - freqData[indx] * scaling);
+                ctx.lineTo(x, scaleY(freqData[indx]));
             }
 
             ctx.stroke();
