@@ -39,7 +39,7 @@ const connectVisualizer = (csound: ICsoundObj, canvasRef: CanvasRef) => {
             return null;
         }
 
-        console.log("Connect Visualizer!");
+        //console.log("Connect Visualizer!");
 
         const node = csound.getNode();
         const context = node.context;
@@ -87,7 +87,7 @@ const disconnectVisualizer = (csound: ICsoundObj, scopeNode: AnalyserNode) => {
     const node = csound.getNode();
     node.disconnect(scopeNode);
 
-    console.log("Disconnect Visualizer!");
+    //console.log("Disconnect Visualizer!");
 };
 
 export const SpectralAnalyzer = ({ classes }: SpectralAnalyzerProps) => {
