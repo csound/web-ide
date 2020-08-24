@@ -205,8 +205,19 @@ const profileFinalize = (user: any, dispatch: any) => {
 
 export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
     return async (dispatch: any) => {
-        const profile = await profiles.doc(user.uid).get();
-        if (!profile.exists || isEmpty(profile.data()!.username)) {
+        let profile;
+
+        try {
+            // TODO: alert if offline is detected
+            profile = await profiles.doc(user.uid).get();
+        } catch (e) {
+            console.error(e);
+        }
+
+        if (
+            (profile !== undefined && !profile.exists) ||
+            isEmpty(profile.data()!.username)
+        ) {
             const profileFinalizeComp = profileFinalize(user, dispatch);
             dispatch(openSimpleModal(profileFinalizeComp));
         } else {

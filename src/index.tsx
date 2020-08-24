@@ -11,6 +11,7 @@ import * as Sentry from "@sentry/browser";
 // import "./css/index.css";
 import "./config/firestore"; // import for sideffects
 import "react-perfect-scrollbar/dist/css/styles.css";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
 (window as any).React = React;
 (window as any).ReactDOM = ReactDOM;

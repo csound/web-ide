@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import LoaderSpinner from "react-loader-spinner";
 import { push } from "connected-react-router";
 import { useTheme } from "emotion-theming";
+import { ITheme } from "@styles/types";
 import { useSelector, useDispatch } from "react-redux";
 import { ConsoleProvider } from "@comp/Console/context";
 import ProjectEditor from "@comp/ProjectEditor/ProjectEditor";
@@ -21,7 +23,7 @@ const ForceBackgroundColor = ({ theme }) => (
 
 export const ProjectContext = (props: IProjectContextProps) => {
     const dispatch = useDispatch();
-    const theme = useTheme();
+    const theme: ITheme = useTheme();
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
@@ -90,7 +92,7 @@ export const ProjectContext = (props: IProjectContextProps) => {
         tabIndex
     ]);
 
-    if (!needsLoading && !invalidUrl) {
+    if (!needsLoading && !invalidUrl && project) {
         return (
             <>
                 <ForceBackgroundColor theme={theme} />
@@ -110,11 +112,12 @@ export const ProjectContext = (props: IProjectContextProps) => {
                 <ForceBackgroundColor theme={theme} />
                 <Header />
                 <main css={SS.loadMain}>
-                    <div css={SS.loadingSpinner1}>
-                        <div css={SS.loadingSpinner2}>
-                            <div css={SS.loadingSpinner3}></div>
-                        </div>
-                    </div>
+                    <LoaderSpinner
+                        type="Audio"
+                        color={theme.highlightBackground}
+                        height={80}
+                        width={80}
+                    />
                 </main>
             </>
         );

@@ -8,6 +8,11 @@ export const main = css`
 
 export const loadMain = css`
     overflow: hidden;
+    > div {
+        position: fixed;
+        left: calc(50vw - 80px);
+        top: calc(50vh - 80px);
+    }
 `;
 
 export const modalSubmitButton = theme => css`
