@@ -32,7 +32,7 @@ jobs:
             - checkout
             - attach_workspace:
                   at: .
-            - run: yarn build
+            - run: yarn build || yarn build
             - persist_to_workspace:
                   root: .
                   paths:
@@ -47,7 +47,7 @@ jobs:
             - checkout
             - attach_workspace:
                   at: .
-            - run: yarn build-dev
+            - run: yarn build-dev || yarn build-dev
             - persist_to_workspace:
                   root: .
                   paths:
