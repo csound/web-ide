@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { CElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/FileTree/context";
@@ -75,6 +75,24 @@ function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
         </div>
     );
 }
+
+type MainSectionProps = {
+    tabDock: CElement<"div", any>;
+};
+
+const MainSection = React.forwardRef((props: MainSectionProps, ref) => (
+    <div css={SS.mainTabsSplitter}>
+        <SplitterLayout
+            vertical
+            secondaryInitialSize={250}
+            ref={ref}
+            customClassName={"main-tab-panels"}
+        >
+            {props.tabDock}
+            <BottomTabs />
+        </SplitterLayout>
+    </div>
+));
 
 const ProjectEditor = ({ activeProject, csound }) => {
     const dispatch = useDispatch();
@@ -305,20 +323,6 @@ const ProjectEditor = ({ activeProject, csound }) => {
         // eslint-disable-next-line
     }, []);
 
-    const mainSection = (
-        <div css={SS.mainTabsSplitter}>
-            <SplitterLayout
-                vertical
-                secondaryInitialSize={250}
-                ref={tabPanelRef}
-                customClassName={"main-tab-panels"}
-            >
-                {tabDock}
-                <BottomTabs />
-            </SplitterLayout>
-        </div>
-    );
-
     if (isMobile()) {
         return (
             <MobileTabs
@@ -347,7 +351,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                             onDragStart={() => setManualDrag(true)}
                             onDragEnd={() => setManualDrag(false)}
                         >
-                            {mainSection}
+                            <MainSection ref={tabPanelRef} tabDock={tabDock} />
                             {isManualVisible && (
                                 <CsoundManualWindow
                                     manualDrag={manualDrag}

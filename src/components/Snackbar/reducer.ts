@@ -9,12 +9,14 @@ export interface State {
     readonly text: string;
     readonly type: SnackbarType;
     readonly open: boolean;
+    readonly timeout: number | typeof Infinity;
 }
 
 const INITIAL_STATE: State = {
     text: "",
     type: SnackbarType.Info,
-    open: false
+    open: false,
+    timeout: 6000
 };
 
 export default (state = INITIAL_STATE, action: SnackbarActionTypes) => {

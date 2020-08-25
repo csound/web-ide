@@ -9,11 +9,13 @@ import {
 
 export const openSnackbar = (
     text: string,
-    type: SnackbarType
+    type: SnackbarType,
+    timeout: number = 6000
 ): SnackbarActionTypes => {
     const payload: ISnackbar = {
         text,
-        type
+        type,
+        timeout
     };
     return {
         type: OPEN_SNACKBAR,

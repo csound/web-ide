@@ -15,7 +15,8 @@ import { useSelector, useDispatch } from "react-redux";
 import {
     selectSnackbarType,
     selectSnackbarOpen,
-    selectSnackbarText
+    selectSnackbarText,
+    selectSnackbarTimeout
 } from "./selectors";
 import { SnackbarType } from "./types";
 
@@ -119,6 +120,7 @@ const CustomSnackbar = props => {
     const type = useSelector(selectSnackbarType);
     const text = useSelector(selectSnackbarText);
     const open = useSelector(selectSnackbarOpen);
+    const timeout = useSelector(selectSnackbarTimeout);
     const dispatch = useDispatch();
 
     const handleClose = () => {
@@ -132,7 +134,7 @@ const CustomSnackbar = props => {
                 horizontal: "left"
             }}
             open={open}
-            autoHideDuration={6000}
+            autoHideDuration={timeout}
             onClose={handleClose}
         >
             <SnackbarContentWrapper

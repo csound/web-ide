@@ -208,15 +208,28 @@ export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
         let profile;
 
         try {
-            // TODO: alert if offline is detected
             profile = await profiles.doc(user.uid).get();
-        } catch (e) {
-            console.error(e);
+        } catch (fbError) {
+            if (
+                fbError.name === "FirebaseError" &&
+                fbError.code === "unavailable"
+            ) {
+                dispatch(
+                    openSnackbar(
+                        "Network error: offline",
+                        SnackbarType.Error,
+                        5 * 60 * 1000
+                    )
+                );
+            }
+            return;
+            // console.log("LOG", e);
+            // console.log("JSON", JSON.stringify(e));
         }
 
         if (
-            (profile !== undefined && !profile.exists) ||
-            isEmpty(profile.data()!.username)
+            profile !== undefined &&
+            (!profile.exists || isEmpty(profile.data()!.username))
         ) {
             const profileFinalizeComp = profileFinalize(user, dispatch);
             dispatch(openSimpleModal(profileFinalizeComp));
