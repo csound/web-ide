@@ -1,6 +1,6 @@
 defaults: &defaults #working_directory: ./circleci
     docker:
-        - image: circleci/node:14.3.0
+        - image: circleci/node:14.4.0
     working_directory: ~/repo
 
 version: 2
@@ -12,12 +12,12 @@ jobs:
             # Download and cache dependencies
             - restore_cache:
                   keys:
-                      - v1-dependencies-{{ checksum "package.json" }}
-            - run: yarn
+                      - v1-dependencies-{{ checksum "yarn.lock" }}
+            - run: yarn install --immutable
             - save_cache:
                   paths:
                       - node_modules
-                  key: v1-dependencies-{{ checksum "package.json" }}
+                  key: v1-dependencies-{{ checksum "yarn.lock" }}
             - persist_to_workspace:
                   root: .
                   paths:
@@ -67,7 +67,7 @@ jobs:
             - run: >
                 cp build/index.html functions &&
                 cd functions &&
-                npm install &&
+                yarn install &&
                 npx firebase deploy -P default --only functions
             - run: yarn deploy
             - persist_to_workspace:
@@ -89,7 +89,7 @@ jobs:
             - run: >
                 cp build/index.html functions &&
                 cd functions &&
-                npm install &&
+                yarn install &&
                 npx firebase deploy -P develop --only functions
             - run: yarn deploy-dev
             - persist_to_workspace:
