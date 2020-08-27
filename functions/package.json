@@ -9,9 +9,6 @@
         "deploy": "firebase deploy --only functions",
         "logs": "firebase functions:log"
     },
-    "engines": {
-        "node": "10"
-    },
     "dependencies": {
         "@google-cloud/logging": "^7.3.0",
         "firebase": "^7.14.0",
