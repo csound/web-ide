@@ -52,7 +52,7 @@
         "react": "^16.13.1",
         "react-autosuggest": "^10.0.2",
         "react-beautiful-dnd": "^13.0.0",
-        "react-beforeunload": "^2.2.2",
+        "react-beforeunload": "^2.2.3",
         "react-codemirror2": "^7.2.1",
         "react-color": "^2.18.1",
         "react-content-loader": "^5.1.0",
