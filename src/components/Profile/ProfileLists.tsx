@@ -183,7 +183,7 @@ export default ({
             {selectedSection === 1 && Array.isArray(filteredFollowing) && (
                 <FollowingList filteredFollowing={filteredFollowing} />
             )}
-            {selectedSection === 2 && Array.isArray(filteredFollowing) && (
+            {selectedSection === 2 && Array.isArray(filteredFollowers) && (
                 <FollowersList filteredFollowers={filteredFollowers} />
             )}
             {selectedSection === 3 && <StarsList profileUid={profileUid} />}
