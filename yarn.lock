@@ -12468,10 +12468,10 @@ react-beautiful-dnd@^13.0.0:
     redux "^4.0.4"
     use-memo-one "^1.1.1"
 
-react-beforeunload@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/react-beforeunload/-/react-beforeunload-2.2.2.tgz#35a99311284ecbc497a269347a5a9bb0ae21dffd"
-  integrity sha512-U2ZMbVj58ziIYEwQAKJTsCbe9jXyltnKIrU47OTqk8amXzopL/S4fK7kqg0ph8O4aQoSy5ydvKL+KLg+jIUe0Q==
+react-beforeunload@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/react-beforeunload/-/react-beforeunload-2.2.4.tgz#fe5e6e141578dfeae036d5505853469889111382"
+  integrity sha512-AX5eL74I1fiMshLdJcYpI9O873Tjj43ww6/VSguWYZWnNnHEQbMrFBbRjl1Ugvl+bren4T+/LCdVuoEkgs/XtA==
   dependencies:
     prop-types "^15.7.2"
     use-latest "^1.1.0"
