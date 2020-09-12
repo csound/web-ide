@@ -31,23 +31,41 @@ async function hintFn(cm, callback, arg3) {
     const cur = cm.getDoc().getCursor();
     const tokenData = cm.getTokenAt(cur);
     const token = propOr(false, "string", tokenData);
-    if (!token || cur.ch !== tokenData.end || token.length < 3 || tokenData.type === 'comment') return;
+    if (
+        !token ||
+        cur.ch !== tokenData.end ||
+        token.length < 3 ||
+        tokenData.type === "comment"
+    )
+        return;
     const start = tokenData.start;
     const end = tokenData.end;
     const results = take(50, fuzzyMatcher.search(token));
+    // if there are no matching results or it's the only result
+    // and the token matches the suggestion perfectly, there's no
+    // reason to display the suggestions list
+    if (
+        results.length === 0 ||
+        (results.length === 1 && results[0].item === token)
+    ) {
+        return;
+    }
+
     const list = reduce(
-            (acc, res) =>
-                append(
-                    {
-                        className: "",
-                        text: res.item,
-                        displayText: res.item,
-                        from: CodeMirror.Pos(cur.line, start),
-                        to: CodeMirror.Pos(cur.line, end)
-                    },
-                    acc
-                ),
-            [], results)
+        (acc, res) =>
+            append(
+                {
+                    className: "",
+                    text: res.item,
+                    displayText: res.item,
+                    from: CodeMirror.Pos(cur.line, start),
+                    to: CodeMirror.Pos(cur.line, end)
+                },
+                acc
+            ),
+        [],
+        results
+    );
     typeof callback === "function" &&
         callback({
             list
