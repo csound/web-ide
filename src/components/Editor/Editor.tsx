@@ -277,7 +277,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
 
     return (
         <CodeMirror
-            key={lastModified ? `${(lastModified as any).seconds}` : "_"}
+            key={documentUid}
             css={SS.root}
             editorDidMount={editorDidMount}
             editorWillUnmount={editorWillUnmount}
