@@ -46,16 +46,16 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         project
     );
 
-    const lastModified = useSelector(
-        pathOr(null, [
-            "ProjectsReducer",
-            "projects",
-            activeProjectUid,
-            "documents",
-            documentUid,
-            "lastModified"
-        ])
-    );
+    //const lastModified = useSelector(
+    //    pathOr(null, [
+    //        "ProjectsReducer",
+    //        "projects",
+    //        activeProjectUid,
+    //        "documents",
+    //        documentUid,
+    //        "lastModified"
+    //    ])
+    //);
 
     const savedValue: string = propOr("", "savedValue", document);
     const currentDocumentValue: string = propOr("", "currentValue", document);
