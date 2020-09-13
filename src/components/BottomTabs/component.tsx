@@ -93,7 +93,11 @@ const BottomTabs = () => {
             isSpectralAnalyzerVisible &&
             !renderedTabs.includes("spectralAnalyzer")
         ) {
-            setRenderedTabs(concat(renderedTabs, ["spectralAnalyzer"]));
+            const updatedRenderedTabs = concat(renderedTabs, [
+                "spectralAnalyzer"
+            ]);
+            setRenderedTabs(updatedRenderedTabs);
+            setBottomTabIndex(updatedRenderedTabs.length - 1);
         }
 
         if (
