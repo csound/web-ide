@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "main": "public/electron.js",
+    "type": "module",
     "dependencies": {
         "@emotion/core": "^10.0.35",
         "@fortawesome/fontawesome-svg-core": "^1.2.30",
@@ -91,16 +92,49 @@
         "build": "cross-env REACT_APP_DATABASE=PROD react-app-rewired build",
         "build-dev": "cross-env REACT_APP_DATABASE=DEV react-app-rewired build",
         "test": "react-app-rewired test",
+        "lint": "eslint --ext js,jsx,ts,tsx src",
         "eject": "react-app-rewired eject",
         "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
         "deploy-dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN",
         "postinstall": "patch-package"
     },
+    "babel": {
+        "plugins": [
+            "emotion"
+        ],
+        "presets": [
+            [
+                "@babel/preset-env",
+                {
+                    "targets": {
+                        "node": "current"
+                    }
+                }
+            ],
+            "babel-preset-react-app",
+            "@emotion/babel-preset-css-prop"
+        ]
+    },
     "jest": {
         "collectCoverageFrom": [
             "src/**/*.{js,jsx,mjs,ts,tsx}"
-        ]
+        ],
+        "moduleNameMapper": {
+            "^@root(.*)$": "<rootDir>/src$1",
+            "^@styles(.*)$": "<rootDir>/src/styles$1",
+            "^@comp(.*)$": "<rootDir>/src/components$1",
+            "^@elem(.*)$": "<rootDir>/src/elements$1",
+            "^@config(.*)$": "<rootDir>/src/config$1",
+            "^@store(.*)$": "<rootDir>/src/store$1",
+            "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/__mocks__/fileMock.js",
+            "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
+        },
+        "preset": "ts-jest",
+        "transform": {
+            "^.+\\.tsx?$": "ts-jest",
+            "^.+\\.jsx?$": "ts-jest"
+        }
     },
     "eslintConfig": {
         "extends": "react-app"
@@ -125,10 +159,12 @@
         "electron": "^10.1.1",
         "electron-builder": "^22.8.0",
         "firebase-tools": "^8.9.0",
+        "husky": "^4.3.0",
         "react-app-rewired": "^2.1.6",
         "react-scripts": "3.4.3",
         "robotstxt-webpack-plugin": "^7.0.0",
         "sitemap-webpack-plugin": "^0.8.1",
+        "ts-jest": "^26.3.0",
         "wait-on": "^5.2.0"
     },
     "config-overrides-path": "config-overrides.ts",

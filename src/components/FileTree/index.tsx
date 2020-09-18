@@ -28,6 +28,7 @@ import {
     assoc,
     both,
     concat,
+    curry,
     find,
     filter,
     isEmpty,
@@ -43,7 +44,6 @@ import {
     propOr,
     values
 } from "ramda";
-import curry3 from "ramda/es/internal/_curry3";
 const reduceIndexed = addIndex(reduce);
 
 const RootRef = React.forwardRef((props: any, ref: any) => (
@@ -52,7 +52,7 @@ const RootRef = React.forwardRef((props: any, ref: any) => (
     </div>
 ));
 
-const hopefulSorting = curry3((docIdx, docA, docB) => {
+const hopefulSorting = curry((docIdx, docA, docB) => {
     const idxA = pathOr(null, [docA.documentUid, "index"], docIdx);
     const idxB = pathOr(null, [docB.documentUid, "index"], docIdx);
     if (idxA && idxB) {

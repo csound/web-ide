@@ -4,6 +4,7 @@
 // initializer modified for csound-web-ide
 
 import * as CodeMirror from "codemirror";
+import { pathOr } from "ramda";
 
 var HINT_ELEMENT_CLASS = "CodeMirror-hint";
 var ACTIVE_HINT_ELEMENT_CLASS = "CodeMirror-hint-active";
@@ -605,7 +606,7 @@ CodeMirror.registerHelper("hint", "fromList", function(cm, options) {
 CodeMirror.commands.autocomplete = CodeMirror.showHint;
 
 var defaultOptions = {
-    hint: CodeMirror.hint.auto,
+    hint: pathOr(null, ["hint", "auto"], CodeMirror),
     completeSingle: true,
     alignWithWord: true,
     closeCharacters: /[\s()\[\]{};:>,]/,
