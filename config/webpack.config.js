@@ -674,6 +674,7 @@ module.exports = function (webpackEnv) {
             // the HTML & assets that are part of the webpack build.
             isEnvProduction &&
                 new WorkboxWebpackPlugin.GenerateSW({
+                    maximumFileSizeToCacheInBytes: 5000000,
                     clientsClaim: true,
                     exclude: [/\.map$/, /asset-manifest\.json$/],
                     navigateFallback: paths.publicUrlOrPath + "index.html",
