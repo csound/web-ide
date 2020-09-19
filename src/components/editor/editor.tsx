@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CodeMirror from "codemirror";
 import { UnControlled } from "react-codemirror2";
 import { editorEvalCode, uncommentLine } from "./utils";
-import { useDebounce } from "@root/utils";
+import { debounce } from "throttle-debounce";
 import { IDocument, IProject } from "../projects/types";
 import { ICsoundObject, ICsoundStatus } from "../csound/types";
 import { isNil, path, pathOr, propOr } from "ramda";
@@ -24,13 +24,27 @@ type IPrintToConsole = ((text: string) => void) | undefined;
 
 const cursorState = {};
 
+const updateReduxDocumentValue = debounce(
+    100,
+    (newValue, projectUid, documentUid, dispatch) => {
+        dispatch(
+            projectActions.updateDocumentValue(
+                newValue,
+                projectUid,
+                documentUid
+            )
+        );
+    }
+);
+
 const CodeEditor = ({ documentUid, projectUid }) => {
     const [editorReference, setEditorReference]: [
         CodeMirror.Editor | undefined,
         (argument: CodeMirror.Editor) => void
     ] = useState();
-    const [editorValue, setEditorValue] = useState("");
-    const debouncedEditorValue = useDebounce(editorValue, 200);
+
+    // const [editorValue, setEditorValue] = useState("");
+
     const dispatch = useDispatch();
     const activeProjectUid = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
@@ -50,18 +64,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         project
     );
 
-    //const lastModified = useSelector(
-    //    pathOr(null, [
-    //        "ProjectsReducer",
-    //        "projects",
-    //        activeProjectUid,
-    //        "documents",
-    //        documentUid,
-    //        "lastModified"
-    //    ])
-    //);
-
-    const savedValue: string = propOr("", "savedValue", document);
     const currentDocumentValue: string = propOr("", "currentValue", document);
     const maybeCsoundFile = filenameToCsoundType(document.filename);
     const documentType: string = maybeCsoundFile ? maybeCsoundFile : "txt";
@@ -171,9 +173,10 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         } else {
             editor.getDoc().clearHistory();
         }
-        setEditorValue(currentDocumentValue);
+        // setEditorValue(currentDocumentValue);
 
         setEditorReference(editor as any);
+
         dispatch(
             projectEditorActions.storeEditorInstance(
                 editor,
@@ -242,41 +245,21 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         }
     };
 
-    useEffect(() => {
-        // editorRef indicates that editor has initialized
-        if (editorReference) {
-            dispatch(
-                projectActions.updateDocumentModifiedLocally(
-                    editorValue !== savedValue,
+    const onChange = useCallback(
+        (editor, data, value) => {
+            // if editorRef doesn't exist = not yet
+            // mounted (meaning the value wont fit savedValue)
+            if (editorReference) {
+                updateReduxDocumentValue(
+                    value,
                     projectUid,
-                    documentUid
-                )
-            );
-            dispatch(
-                projectActions.updateDocumentValue(
-                    debouncedEditorValue,
-                    projectUid,
-                    documentUid
-                )
-            );
-        }
-    }, [
-        dispatch,
-        debouncedEditorValue,
-        documentUid,
-        editorReference,
-        editorValue,
-        projectUid,
-        savedValue
-    ]);
-
-    const onChange = (editor, data, value) => {
-        // if editorRef doesn't exist = not yet
-        // mounted (meaning the value wont fit savedValue)
-        if (editorReference) {
-            setEditorValue(value);
-        }
-    };
+                    documentUid,
+                    dispatch
+                );
+            }
+        },
+        [editorReference, projectUid, documentUid, dispatch]
+    );
 
     return (
         <UnControlled

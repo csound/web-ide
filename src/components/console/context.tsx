@@ -36,15 +36,13 @@ export const ConsoleProvider = ({ children, activeProject, csound }) => {
                     (currentProject as any).projectUid !==
                         activeProject.projectUid)
             ) {
+                console.log("WTF?");
                 dispatch(setPrintToConsoleCallback(messageCallback));
                 csound && csound.setMessageCallback(messageCallback);
                 setLogs([""]);
                 setCurrentProject(activeProject);
             }
         }
-        return () => {
-            dispatch(setPrintToConsoleCallback());
-        };
     }, [
         activeProject,
         currentProject,

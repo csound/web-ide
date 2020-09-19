@@ -204,15 +204,30 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             if (!action.documentUid || !action.projectUid || !state) {
                 return state;
             } else {
-                return assocPath(
-                    [
-                        "projects",
-                        action.projectUid,
-                        "documents",
-                        action.documentUid,
-                        "currentValue"
-                    ],
-                    action.val
+                return pipe(
+                    assocPath(
+                        [
+                            "projects",
+                            action.projectUid,
+                            "documents",
+                            action.documentUid,
+                            "isModifiedLocally"
+                        ],
+                        action.val !==
+                            state.projects[action.projectUid].documents[
+                                action.documentUid
+                            ].savedValue
+                    ),
+                    assocPath(
+                        [
+                            "projects",
+                            action.projectUid,
+                            "documents",
+                            action.documentUid,
+                            "currentValue"
+                        ],
+                        action.val
+                    )
                 )(state) as IProjectsReducer;
             }
         }
