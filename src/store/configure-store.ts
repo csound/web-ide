@@ -13,8 +13,9 @@ interface ICreatedStore extends Store {
     getState: () => IStore;
 }
 
+export const history: History = createBrowserHistory();
+
 export const configureStore = () => {
-    const history: History = createBrowserHistory();
     const composeEnhancer =
         typeof (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ===
         "function"

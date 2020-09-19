@@ -74,7 +74,8 @@ const ProjectCard = (properties) => {
             projectColumnCount={projectColumnCount}
             className={transitionStatus}
         >
-            <TransitionGroup>
+            {/* eslint-disable-next-line  unicorn/no-null */}
+            <TransitionGroup component={null}>
                 {!project && (
                     <Transition appear timeout={duration}>
                         {(transitionStatus) => {

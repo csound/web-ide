@@ -1,5 +1,5 @@
-import { combineReducers, AnyAction, Reducer } from "redux";
-import { connectRouter, RouterState } from "connected-react-router";
+import { combineReducers } from "redux";
+import { connectRouter } from "connected-react-router";
 import ProjectsReducer from "@comp/projects/reducer";
 import LoginReducer from "@comp/login/reducer";
 import ThemeReducer from "@comp/themes/reducer";
@@ -18,8 +18,8 @@ import { History } from "history";
 
 export default (history: History) =>
     combineReducers({
+        router: connectRouter(history),
         ProjectsReducer,
-        router: connectRouter(history) as Reducer<RouterState, AnyAction>,
         LoginReducer,
         ProjectEditorReducer,
         userProfile: IDReducer,

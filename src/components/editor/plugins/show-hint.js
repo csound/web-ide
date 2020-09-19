@@ -10,6 +10,7 @@ const ACTIVE_HINT_ELEMENT_CLASS = "CodeMirror-hint-active";
 
 // This is the old interface, kept around for now to stay
 // backwards-compatible.
+// eslint-disable-next-line no-import-assign
 CodeMirror.showHint = function (cm, getHints, options) {
     if (!getHints) {
         return cm.showHint(options);

@@ -53,14 +53,14 @@ const styles = makeStyles((theme: Theme) => ({
     }
 }));
 
-export interface Props {
+export interface IProperties {
     className?: string;
     message?: string;
     onClose?: () => void;
     variant: SnackbarType;
 }
 
-const SnackbarContentWrapper = (properties: Props) => {
+const SnackbarContentWrapper = (properties: IProperties) => {
     const classes = styles();
     const { className, message, onClose, variant, ...rest } = properties;
 

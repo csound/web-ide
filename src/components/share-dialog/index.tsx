@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectActiveProject } from "../projects/selectors";
-
+import { IProfile } from "@comp/profile/types";
 import { profiles } from "@root/config/firestore";
 import {
     FacebookShareButton,
@@ -14,7 +14,10 @@ import {
 
 const ShareDialog = () => {
     const project = useSelector(selectActiveProject);
-    const [profile, setProfile] = useState();
+    const [profile, setProfile]: [
+        IProfile | undefined,
+        (profile: IProfile) => void
+    ] = useState();
     const [error, setError] = useState(false);
 
     useEffect(() => {
@@ -22,7 +25,7 @@ const ShareDialog = () => {
             if (!error && !profile && project) {
                 const p = await profiles.doc(project.userUid).get();
                 if (p.exists) {
-                    setProfile(p.data());
+                    setProfile(p.data() as IProfile);
                 } else {
                     setError(true);
                 }

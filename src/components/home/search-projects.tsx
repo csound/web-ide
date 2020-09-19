@@ -83,40 +83,28 @@ const SearchProjects = ({
                 </ProjectSectionHeader>
                 <HorizontalRule />
             </Grid>
-            <TransitionGroup>
+            {/* eslint-disable-next-line  unicorn/no-null */}
+            <TransitionGroup component={null}>
                 {!requesting && Array.isArray(searchedProjects) && (
                     <Transition appear timeout={duration}>
-                        {(transitionState) => {
-                            return (
-                                <>
-                                    {searchedProjects.map(
-                                        (searchEvent, index) => {
-                                            return (
-                                                <Grid
-                                                    item
-                                                    xs={6}
-                                                    sm={3}
-                                                    key={index}
-                                                >
-                                                    <ProjectCard
-                                                        event={searchEvent}
-                                                        projectIndex={index}
-                                                        duration={duration}
-                                                        project={searchEvent}
-                                                        profiles={
-                                                            searchedProjectUserProfiles
-                                                        }
-                                                        transitionStatus={
-                                                            transitionState
-                                                        }
-                                                    />
-                                                </Grid>
-                                            );
-                                        }
-                                    )}
-                                </>
-                            );
-                        }}
+                        {(transitionState) =>
+                            searchedProjects.map((searchEvent, index) => {
+                                return (
+                                    <Grid item xs={6} sm={3} key={index}>
+                                        <ProjectCard
+                                            event={searchEvent}
+                                            projectIndex={index}
+                                            duration={duration}
+                                            project={searchEvent}
+                                            profiles={
+                                                searchedProjectUserProfiles
+                                            }
+                                            transitionStatus={transitionState}
+                                        />
+                                    </Grid>
+                                );
+                            })
+                        }
                     </Transition>
                 )}
                 {!requesting && searchedProjects === false && (

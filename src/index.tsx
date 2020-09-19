@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { store, history } from "./store";
+import { store } from "./store";
 import * as serviceWorker from "./service-worker";
 import Main from "./components/main/main";
 import { setCsound, setCsoundPlayState } from "./components/csound/actions";
@@ -45,7 +45,7 @@ class WithSentry extends React.Component<any> {
 ReactDOM.render(
     <WithSentry>
         <Provider store={store}>
-            <Main history={history} />
+            <Main />
         </Provider>
     </WithSentry>,
     document.querySelector("#root")

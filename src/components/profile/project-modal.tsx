@@ -43,10 +43,6 @@ const IconPickerContainer = styled.div`
     align-items: center;
 `;
 
-type IIconPickerIconButton = {
-    bgcolor: string;
-};
-
 const StyledSketchPicker = styled(SliderPicker)`
     grid-column: 2;
     grid-row: 1;

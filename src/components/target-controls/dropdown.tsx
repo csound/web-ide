@@ -55,8 +55,12 @@ const TargetDropdown = ({ activeProjectUid }) => {
     const selectedTargetName: string | undefined = useSelector(
         selectSelectedTarget(activeProjectUid)
     );
-    const selectedTarget: ITarget | undefined =
-        targets && selectedTargetName && targets[selectedTargetName];
+
+    let selectedTarget: ITarget | undefined;
+    if (targets && selectedTargetName && targets[selectedTargetName]) {
+        selectedTarget = targets[selectedTargetName];
+    }
+
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
 
     const mainTargets: ITarget[] = targets
@@ -114,7 +118,7 @@ const TargetDropdown = ({ activeProjectUid }) => {
     const [tooltipIsOpen, setTooltipIsOpen] = useState(false);
 
     if (!activeProjectUid) {
-        return;
+        return <></>;
     }
 
     const tooltipText = paranoidNotNullChecker(selectedTarget)

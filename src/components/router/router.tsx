@@ -9,15 +9,15 @@ import Page404 from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
 import { Route, Switch } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
-import { store } from "../../store";
-import { History } from "history";
+import { history, store } from "../../store";
+// import { History } from "history";
 import { stopCsound } from "../csound/actions";
 import SiteDocuments from "../site-documents/site-documents";
 
-interface IRouterComponent {
-    isAuthenticated: boolean;
-    history: History;
-}
+// interface IRouterComponent {
+//     isAuthenticated: boolean;
+//     history: History;
+// }
 
 const EditorLayout = (properties: any) => {
     const dispatch = useDispatch();
@@ -45,7 +45,7 @@ const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => (
 const RouterComponent = (properties: any) => {
     const theme = useTheme();
     return (
-        <ConnectedRouter history={properties.history} {...properties}>
+        <ConnectedRouter history={history} {...properties}>
             <Switch>
                 <Route
                     path="/editor/:id?"

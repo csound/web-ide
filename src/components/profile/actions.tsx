@@ -496,9 +496,7 @@ export const uploadProfileImage = (
     }
 };
 
-export const playListItem = (
-    projectUid: string | false
-): ThunkAction<void, any, null, Action<string>> => async (
+export const playListItem = (projectUid: string | false) => async (
     dispatch,
     getState
 ) => {

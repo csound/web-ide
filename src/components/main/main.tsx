@@ -12,17 +12,17 @@ import {
     setRequestingStatus,
     thirdPartyAuthSuccess
 } from "@comp/login/actions";
-import { History } from "history";
+// import { History } from "history";
 import firebase from "firebase/app";
 import HotKeys from "../hot-keys/hot-keys";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
-interface IMain {
-    history: History;
-}
+// interface IMain {
+//     history: History;
+// }
 
-const Main = (properties: IMain) => {
+const Main = () => {
     const dispatch = useDispatch();
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 
@@ -66,7 +66,7 @@ const Main = (properties: IMain) => {
                 <IosWarning />
                 <Snackbar />
                 <ReactTooltip />
-                <Router history={properties.history} />
+                <Router />
             </ThemeProvider>
         </HotKeys>
     );

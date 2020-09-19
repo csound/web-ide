@@ -13,7 +13,7 @@ import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
 import { isEmpty, path, pathOr } from "ramda";
 
-interface IProjectContextProps {
+interface IProjectContextProperties {
     match: any;
 }
 
@@ -21,7 +21,7 @@ const ForceBackgroundColor = ({ theme }) => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-export default (properties: IProjectContextProps) => {
+export default (properties: IProjectContextProperties) => {
     const dispatch = useDispatch();
     const theme: ITheme = useTheme();
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);

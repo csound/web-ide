@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { RefObject, useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import * as SS from "./styles";
 import Modal from "@material-ui/core/Modal";
@@ -21,7 +21,7 @@ function getModalStyle(width, height) {
 }
 
 export default function GlobalModal() {
-    const modalReference = useRef();
+    const modalReference = useRef() as RefObject<HTMLDivElement>;
     const [[width, height], setDimensions] = useState([0, 0]);
     const isOpen: boolean = useSelector(
         (store: IStore) => store.ModalReducer.isOpen

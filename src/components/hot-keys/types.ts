@@ -20,27 +20,27 @@ interface StoreProjectEditorKeyboardCallbacks {
 
 export type HotKeysActionTypes = StoreProjectEditorKeyboardCallbacks;
 
-type AnyCallback = (...args: any[]) => any;
+type AnyCallback = (...arguments_: any[]) => any;
 type CallbackOrUnbound = AnyCallback | null;
 
 export interface IProfileCallbacks {
-    new_project: CallbackOrUnbound;
+    new_project?: CallbackOrUnbound;
 }
 
 export interface IProjectEditorCallbacks {
-    add_file: CallbackOrUnbound;
-    new_document: CallbackOrUnbound;
-    pause_playback: CallbackOrUnbound;
-    open_target_config_dialog: CallbackOrUnbound;
-    run_project: CallbackOrUnbound;
-    save_all_documents: CallbackOrUnbound;
-    save_document: CallbackOrUnbound;
-    save_and_close: CallbackOrUnbound;
-    stop_playback: CallbackOrUnbound;
+    add_file?: CallbackOrUnbound;
+    new_document?: CallbackOrUnbound;
+    pause_playback?: CallbackOrUnbound;
+    open_target_config_dialog?: CallbackOrUnbound;
+    run_project?: CallbackOrUnbound;
+    save_all_documents?: CallbackOrUnbound;
+    save_document?: CallbackOrUnbound;
+    save_and_close?: CallbackOrUnbound;
+    stop_playback?: CallbackOrUnbound;
 }
 
 export interface IEditorCallbacks {
-    doc_at_point: CallbackOrUnbound;
+    doc_at_point?: CallbackOrUnbound;
 }
 
 export type IHotKeysCallbacks = IEditorCallbacks &

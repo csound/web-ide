@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { UnControlled as CodeMirror } from "react-codemirror2";
+import CodeMirror from "codemirror";
+import { UnControlled } from "react-codemirror2";
 import { editorEvalCode, uncommentLine } from "./utils";
 import { useDebounce } from "@root/utils";
 import { IDocument, IProject } from "../projects/types";
@@ -25,8 +26,8 @@ const cursorState = {};
 
 const CodeEditor = ({ documentUid, projectUid }) => {
     const [editorReference, setEditorReference]: [
-        CodeMirror?,
-        any
+        CodeMirror.Editor | undefined,
+        (argument: CodeMirror.Editor) => void
     ] = useState();
     const [editorValue, setEditorValue] = useState("");
     const debouncedEditorValue = useDebounce(editorValue, 200);
@@ -78,8 +79,8 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     );
 
     const findOrcBlock = () => {
-        const value = (editorReference as CodeMirror)
-            ? editorReference?.doc?.getValue()
+        const value = editorReference
+            ? (editorReference as any)?.doc?.getValue()
             : "";
         const lines = value.split("\n");
         const cursorLine = editorReference
@@ -147,7 +148,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
 
     const toggleComment = () => {
-        editorReference && editorReference.toggleComment();
+        editorReference && (editorReference as any).toggleComment();
     };
 
     const editorDidMount = (editor: any) => {
@@ -278,7 +279,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
     };
 
     return (
-        <CodeMirror
+        <UnControlled
             key={documentUid}
             css={SS.root}
             editorDidMount={editorDidMount}

@@ -46,16 +46,16 @@ export interface IProject {
     name: string;
     isPublic: boolean;
     documents: IDocumentsMap;
-    cachedProjectLastModified: Timestamp | null;
-    iconBackgroundColor: string | null;
-    iconForegroundColor: string | null;
-    iconName: string | null;
+    cachedProjectLastModified?: Timestamp;
+    iconBackgroundColor?: string;
+    iconForegroundColor?: string;
+    iconName?: string;
     // only local path, NOT stored there on firestore
     stars: IStar;
     tags: string[];
 }
 
 export interface IProjectsReducer {
-    activeProjectUid: string | null;
+    activeProjectUid?: string;
     projects: { [projectUid: string]: IProject };
 }

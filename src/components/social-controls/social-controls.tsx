@@ -124,7 +124,7 @@ const SocialControls = () => {
                     <StyledIconButton
                         size="medium"
                         onClick={() => {
-                            if (projectUid !== null) {
+                            if (projectUid) {
                                 dispatch(
                                     starOrUnstarProject(
                                         projectUid,
@@ -147,7 +147,7 @@ const SocialControls = () => {
                         <StyledIconButton
                             size="medium"
                             onClick={() => {
-                                if (projectUid !== null) {
+                                if (typeof projectUid === "string") {
                                     dispatch(
                                         markProjectPublic(projectUid, !isPublic)
                                     );

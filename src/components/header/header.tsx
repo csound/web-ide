@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { RefObject, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectCurrentRoute } from "@comp/router/selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
@@ -69,17 +69,17 @@ const Header = () => {
         (store: IStore) => store.LoginReducer.isLoginDialogOpen
     );
 
-    const anchorElement = useRef();
+    const anchorElement = useRef() as RefObject<HTMLButtonElement>;
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    const handleProfileMenuOpen = (event: any) => {
+    const handleProfileMenuOpen = (event?: any) => {
         setIsProfileMenuOpen(true);
     };
 
-    const handleProfileMenuClose = (event: any) => {
+    const handleProfileMenuClose = (event?: any) => {
         setIsProfileMenuOpen(false);
     };
 
@@ -96,13 +96,14 @@ const Header = () => {
     const userMenu = () => (
         <div css={SS.userMenu}>
             <IconButton
-                aria-owns={isProfileMenuOpen && "menu-appbar"}
+                aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
                 aria-haspopup="true"
                 color="inherit"
                 onClick={handleProfileMenuOpen}
                 ref={anchorElement}
+                component="button"
             >
-                {avatar}
+                {avatar as any}
             </IconButton>
             <Menu
                 classes={{ paper: SS.menuPaper }}

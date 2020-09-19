@@ -3,12 +3,12 @@ import { storageReference } from "../../config/firestore";
 
 import withStyles from "./styles";
 
-type AudioEditorProps = {
+type IAudioEditorProperties = {
     audioFileUrl: string;
     classes: any;
 };
 
-const AudioEditor = ({ audioFileUrl, classes }: AudioEditorProps) => {
+const AudioEditor = ({ audioFileUrl, classes }: IAudioEditorProperties) => {
     const [data, setData] = useState();
     // console.log("AFURL: " + audioFileUrl)
     // console.log("Data: " + data)

@@ -51,13 +51,17 @@ import MobileTabs from "@comp/bottom-tabs/mobile-tabs";
 
 const TabStyles = tabStyles(false);
 
-type EditorForDocumentProps = {
+type IEditorForDocumentProperties = {
     uid: any;
     doc: IDocument;
     projectUid: string;
 };
 
-function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
+function EditorForDocument({
+    uid,
+    projectUid,
+    doc
+}: IEditorForDocumentProperties) {
     if (doc.type === "txt") {
         return (
             <Editor
@@ -76,12 +80,12 @@ function EditorForDocument({ uid, projectUid, doc }: EditorForDocumentProps) {
     );
 }
 
-type MainSectionProps = {
+type IMainSectionProperties = {
     tabDock: CElement<"div", any>;
 };
 
 const MainSection = React.forwardRef(
-    (properties: MainSectionProps, reference) => (
+    (properties: IMainSectionProperties, reference) => (
         <div css={SS.mainTabsSplitter}>
             <SplitterLayout
                 vertical
@@ -331,7 +335,6 @@ const ProjectEditor = ({ activeProject, csound }) => {
         return (
             <MobileTabs
                 activeProject={activeProject}
-                csound={csound}
                 projectUid={projectUid}
                 tabDock={tabDock}
             />

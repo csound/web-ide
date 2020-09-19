@@ -15,7 +15,7 @@ export const SET_CSOUND_PLAY_STATE = PREFIX + "SET_CSOUND_PLAY_STATE";
 // INTERFACES
 export interface ICsoundObject {
     audioContext: any;
-    setCurrentDirFS: (dirPath: string) => void;
+    setCurrentDirFS: (directoryPath: string) => void;
     writeToFS: (filepath: string, data: any) => void;
     unlinkFromFS: (filepath: string) => void;
     compileCSD: (csd: string) => void;
@@ -32,11 +32,11 @@ export interface ICsoundObject {
     requestStringChannel: (channelName: string, callback: () => void) => void;
     getControlChannel: (channelName: string) => number;
     getStringChannel: (channelName: string) => string | number;
-    requestTable: (tabNum: number, callback: () => void) => void;
-    getTable: (tabNum: number) => ArrayBuffer;
-    setTableValue: (tabNum: number, index: number, value: number) => void;
-    setTable: (tabNum: number, table: ArrayBuffer) => void;
-    setMessageCallback: (msgCallback: (msg: string) => void) => void;
+    requestTable: (tableNumber: number, callback: () => void) => void;
+    getTable: (tableNumber: number) => ArrayBuffer;
+    setTableValue: (tableNumber: number, index: number, value: number) => void;
+    setTable: (tableNumber: number, table: ArrayBuffer) => void;
+    setMessageCallback: (messageCallback: (message: string) => void) => void;
     midiMessage: (byte1: number, byte2: number, byte3: number) => void;
     enableAudioInput: (audioInputCallback: () => void) => void;
     enableMidiInput: (midiInputCallback: () => void) => void;
@@ -51,10 +51,10 @@ export interface ICsoundObject {
     stop: () => void;
     getPlayState: () => ICsoundStatus;
     addPlayStateListener: (
-        listener: (csoundObj: ICsoundObject) => void
+        listener: (csoundObject: ICsoundObject) => void
     ) => void;
     removePlayStateListener: (
-        listener: (csoundObj: ICsoundObject) => void
+        listener: (csoundObject: ICsoundObject) => void
     ) => void;
 }
 

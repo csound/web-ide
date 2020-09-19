@@ -72,14 +72,14 @@ import {
 } from "./profile-ui";
 
 const UserLink = ({ link }) => {
-    return (
-        typeof link === "string" && (
-            <a href={link.includes("://") ? link : `https://${link}`}>
-                <Typography variant="body1" component="div">
-                    {link}
-                </Typography>
-            </a>
-        )
+    return typeof link === "string" ? (
+        <a href={link.includes("://") ? link : `https://${link}`}>
+            <Typography variant="body1" component="div">
+                {link}
+            </Typography>
+        </a>
+    ) : (
+        <></>
     );
 };
 
@@ -156,7 +156,7 @@ const Profile = ({ classes, ...properties }) => {
     useEffect(() => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
-                dispatch(push("/"));
+                dispatch(push({ pathname: "/" }));
             } else if (username) {
                 usernames
                     .doc(username)
@@ -164,7 +164,9 @@ const Profile = ({ classes, ...properties }) => {
                     .then((userSnap) => {
                         if (!userSnap.exists) {
                             dispatch(
-                                push("/404", { message: "User not found" })
+                                push("/404", {
+                                    message: "User not found"
+                                })
                             );
                         } else {
                             const data = userSnap.data();
@@ -261,12 +263,13 @@ const Profile = ({ classes, ...properties }) => {
                                             event,
                                             "target.files.0"
                                         );
-                                        dispatch(
-                                            uploadProfileImage(
-                                                loggedInUserUid,
-                                                file
-                                            )
-                                        );
+                                        file &&
+                                            dispatch(
+                                                uploadProfileImage(
+                                                    loggedInUserUid,
+                                                    file
+                                                )
+                                            );
                                     }}
                                 />
                                 {isProfileOwner && (

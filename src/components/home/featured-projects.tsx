@@ -108,7 +108,7 @@ const FeaturedProjects = ({
             {Array.isArray(randomProjects) &&
                 randomProjects.map((item, index) => {
                     return (
-                        <Grid item xs={6} sm={3} key={item}>
+                        <Grid item xs={6} sm={3} key={index}>
                             <ProjectCard
                                 event={item}
                                 projectIndex={index}

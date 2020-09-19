@@ -15,7 +15,7 @@ export interface IStore {
     router: any;
     LoginReducer: any;
     ProjectEditorReducer: IProjectEditorReducer;
-    userProfile: IUserProfile | null;
+    userProfile?: IUserProfile;
     ThemeReducer: IThemeReducer;
     ModalReducer: IModalReducer;
     ConsoleReducer: IConsoleReducer;

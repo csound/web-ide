@@ -422,8 +422,8 @@ const FileTree = () => {
     const filelist = values(documents || {});
 
     return (
-        project && (
-            <React.Fragment>
+        <React.Fragment>
+            {project && (
                 <div css={SS.container}>
                     <List css={SS.listContainer} dense>
                         {
@@ -440,12 +440,10 @@ const FileTree = () => {
                             )[1]
                         }
                     </List>
-                </div>
-                {project && (
                     <FileTreeHeader isOwner={isOwner} project={project} />
-                )}
-            </React.Fragment>
-        )
+                </div>
+            )}
+        </React.Fragment>
     );
 };
 

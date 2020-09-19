@@ -5,7 +5,7 @@ import { path } from "ramda";
 import { ICsoundObject } from "../csound/types";
 import { scaleLinear } from "d3-scale";
 
-type SpectralAnalyzerProps = {
+type ISpectralAnalyzerProperties = {
     classes: any;
 };
 
@@ -23,13 +23,13 @@ function resize(canvas) {
     }
 }
 
-type CanvasRef = {
+type CanvasReference = {
     current: HTMLCanvasElement | null;
 };
 
 const connectVisualizer = (
     csound: ICsoundObject,
-    canvasReference: CanvasRef
+    canvasReference: CanvasReference
 ) => {
     if (!canvasReference || !canvasReference.current) {
         return;
@@ -92,8 +92,8 @@ const disconnectVisualizer = (
     node.disconnect(scopeNode);
 };
 
-const SpectralAnalyzer = ({ classes }: SpectralAnalyzerProps) => {
-    const canvasReference = useRef() as CanvasRef;
+const SpectralAnalyzer = ({ classes }: ISpectralAnalyzerProperties) => {
+    const canvasReference = useRef() as CanvasReference;
 
     const csound: ICsoundObject | undefined = useSelector(
         path(["csound", "csound"])

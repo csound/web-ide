@@ -195,10 +195,12 @@ export const addProjectDocuments = (
             const maybeDefaultTargetName:
                 | string
                 | undefined = selectDefaultTargetName(projectUid, store);
-            const maybeDefaultTarget:
-                | ITarget
-                | undefined = maybeDefaultTargetName;
-            selectTarget(projectUid, maybeDefaultTargetName, store);
+            const maybeDefaultTarget: ITarget | undefined = selectTarget(
+                projectUid,
+                maybeDefaultTargetName,
+                store
+            );
+
             dispatch(
                 tabDockInit(projectUid, values(documents), maybeDefaultTarget)
             );

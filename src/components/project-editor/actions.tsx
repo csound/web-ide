@@ -29,7 +29,7 @@ export const tabDockInit = (
     defaultTarget: ITarget | undefined
 ) => {
     const storedIndex = localStorage.getItem(projectUid + ":tabIndex");
-    const storedTabOrder: string | undefined = localStorage.getItem(
+    const storedTabOrder: string | null = localStorage.getItem(
         projectUid + ":tabOrder"
     );
 

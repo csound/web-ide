@@ -235,8 +235,10 @@ export const enableAudioInput = () => {
         const cs = pathOr(["csound", "csound"], getState()) as
             | ICsoundObject
             | undefined;
-        cs?.enableAudioInput(() => {
-            console.log("enableAudioInput done");
-        });
+        cs &&
+            typeof cs?.enableAudioInput === "function" &&
+            cs?.enableAudioInput(() => {
+                console.log("enableAudioInput done");
+            });
     };
 };

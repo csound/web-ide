@@ -1,4 +1,4 @@
-/* eslint-disable unicorn/prefer-add-event-listener, unicorn/prevent-abbreviations, unicorn/no-null, unicorn/prefer-node-append, @typescript-eslint/no-unused-vars */
+/* eslint-disable unicorn/prefer-add-event-listener, unicorn/prevent-abbreviations, unicorn/no-null, unicorn/prefer-node-append, @typescript-eslint/no-unused-vars, unicorn/consistent-function-scoping */
 import { ICsoundStatus } from "./types";
 
 /*

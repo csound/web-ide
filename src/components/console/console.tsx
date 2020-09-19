@@ -6,14 +6,7 @@ import { withResizeDetector } from "react-resize-detector";
 import * as SS from "./styles";
 import "react-virtualized/styles.css";
 
-type ContentRect = {
-    entry?: {
-        width: number;
-        height: number;
-    };
-};
-
-type IConsoleProps = {
+type IConsoleProperties = {
     height: number;
     width: number;
 };
@@ -23,7 +16,7 @@ let scrollPosition = 0;
 const Console = ({
     height = isMobile() ? 1000 : 250,
     width = 1200
-}: IConsoleProps) => {
+}: IConsoleProperties) => {
     const logs = useConsole();
     const consoleReference: any = useRef();
 

@@ -185,7 +185,10 @@ export const newDocumentPrompt = (
 
 export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
     return (() => {
-        const [files, setFiles] = useState();
+        const [files, setFiles]: [
+            FileList | undefined | null,
+            (files: FileList | null) => void
+        ] = useState();
         const [nameCollides, setNameCollides] = useState(false);
 
         const activeProjectUid = useSelector(
@@ -216,9 +219,9 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
                         type="file"
                         style={{ display: "none" }}
                         onChange={(event) => {
-                            const files = event.target.files;
+                            const files: FileList | null = event.target.files;
                             const fileName = files ? files[0].name : "";
-                            setFiles(files);
+                            files && setFiles(files);
                             setNameCollides(
                                 some(reservedFilenames, (fn) => fn === fileName)
                             );

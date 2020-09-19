@@ -3,11 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { append, path } from "ramda";
 
-type IGlobalMsgCallback = (msg: string) => void;
+type IGlobalMessageCallback = (message: string) => void;
 
-type IConsoleContextProps = string[];
+type IConsoleContextProperties = string[];
 
-export const ConsoleContext = createContext([] as IConsoleContextProps);
+export const ConsoleContext = createContext([] as IConsoleContextProperties);
 
 export const ConsoleProvider = ({ children, activeProject, csound }) => {
     const dispatch = useDispatch();
@@ -18,9 +18,9 @@ export const ConsoleProvider = ({ children, activeProject, csound }) => {
         setLogs(append(message + "\n"));
     };
 
-    const globalMessageCallback: IGlobalMsgCallback | undefined = useSelector(
-        path(["ConsoleReducer", "printToConsole"])
-    );
+    const globalMessageCallback:
+        | IGlobalMessageCallback
+        | undefined = useSelector(path(["ConsoleReducer", "printToConsole"]));
 
     useEffect(() => {
         setClearConsoleCallback(() => {

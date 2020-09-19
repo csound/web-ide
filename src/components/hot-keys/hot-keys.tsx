@@ -19,10 +19,6 @@ configure({
 
 type HotKeyHandler = (keyEvent?: KeyboardEvent) => void;
 
-type ReadyCallbacks = {
-    [key in keyof IHotKeysCallbacks]?: (...args: any[]) => any;
-};
-
 type CommandKey = keyof IHotKeysCallbacks;
 
 const HotKeys = (properties) => {

@@ -114,7 +114,8 @@ const Home = ({ classes }) => {
                         />
                     </Grid>
                 </Grid>
-                <TransitionGroup>
+                {/* eslint-disable-next-line  unicorn/no-null */}
+                <TransitionGroup component={null}>
                     {searchValue === "" && (
                         <Transition appear timeout={duration}>
                             {(transitionState) => {
