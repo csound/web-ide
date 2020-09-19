@@ -84,6 +84,7 @@ CodeMirror.defineMode("csound", function (config) {
         }
 
         const ch = stream.next();
+
         let m;
         if (ch === "`" || ch === "'" || ch === '"') {
             return chain(
@@ -140,39 +141,7 @@ CodeMirror.defineMode("csound", function (config) {
                 stream.next();
             }
             return "string";
-        }
-        // else if (ch == ":") {
-        //     if (stream.eat("'"))
-        //         return chain(readQuoted("'", "atom", false), stream, state);
-        //     if (stream.eat('"'))
-        //         return chain(readQuoted('"', "atom", true), stream, state);
-        //
-        //     // :> :>> :< :<< are valid symbols
-        //     if (stream.eat(/[\<\>]/)) {
-        //         stream.eat(/[\<\>]/);
-        //         return "atom";
-        //     }
-        //
-        //     // :+ :- :/ :* :| :& :! are valid symbols
-        //     // if (stream.eat(/[\+\-\*\/\&\|\:\!]/)) {
-        //     //     return "atom";
-        //     // }
-        //
-        //     // Symbols can't start by a digit
-        //     if (stream.eat(/[a-zA-Z$@_\xa1-\uffff]/)) {
-        //         stream.eatWhile(/[\w$\xa1-\uffff]/);
-        //         // Only one ? ! = is allowed and only as the last character
-        //         stream.eat(/[\?\!\=]/);
-        //         return "atom";
-        //     }
-        //     return "operator";
-        // }
-        // else if (ch == "@" && stream.match(/^@?[a-zA-Z_\xa1-\uffff]/)) {
-        //     stream.eat("@");
-        //     stream.eatWhile(/[\w\xa1-\uffff]/);
-        //     return "variable-2";
-        // }
-        else if (ch === "$") {
+        } else if (ch === "$") {
             if (stream.eat(/[A-Z_a-z]/)) {
                 stream.eatWhile(/\w/);
             } else if (stream.eat(/\d/)) {
@@ -182,21 +151,26 @@ CodeMirror.defineMode("csound", function (config) {
             }
             return "variable-3";
         } else if (/[A-Z_a-\uFFFF]/.test(ch)) {
-            stream.eatWhile(/[\Wi-\uFFFF]/);
+            stream.eatWhile(/[\dA-Z_a-\uFFFF]/);
             stream.eat(/[!?]/);
-
+            const curentToken = stream.current();
             if (stream.peek() === ":") {
-                const isop = opcodes.some((s) => s === stream.current());
+                const maybeOpcode = stream.current();
+                const isop = opcodes.some((s) => s === maybeOpcode);
                 stream.next();
                 if (
                     isop &&
                     typeof stream.peek() == "string" &&
-                    stream.peek().match(/[aik]/)
+                    stream.peek().match(/[Saik]/)
                 ) {
                     stream.next();
+                    state.lastTok = maybeOpcode;
                     return "variable";
+                } else if (!/[A-Z_a-\uFFFF]/.test(stream.peek() || "")) {
+                    return "variable-6";
                 }
             }
+            state.lastTok = curentToken;
             return "ident";
         } else if (
             ch === "|" &&
@@ -314,9 +288,11 @@ CodeMirror.defineMode("csound", function (config) {
                 state
             );
             let kwtype;
+            let word;
             let thisTok = currentPunctuation;
+
             if (style === "ident") {
-                const word = stream.current();
+                word = stream.current();
                 if (keywords.some((s) => s === word)) {
                     style = "keyword";
                 } else if (attributes.some((s) => s === word)) {
@@ -409,7 +385,6 @@ CodeMirror.defineMode("csound", function (config) {
                 state.continuedLine =
                     currentPunctuation === "\\" || style === "operator";
             }
-
             return style;
         },
 
