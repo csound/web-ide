@@ -131,7 +131,6 @@
             "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/__mocks__/fileMock.js",
             "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
         },
-        "preset": "ts-jest",
         "transform": {
             "^.+\\.tsx?$": "ts-jest",
             "^.+\\.jsx?$": "ts-jest"
