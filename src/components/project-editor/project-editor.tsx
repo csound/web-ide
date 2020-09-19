@@ -2,8 +2,14 @@ import React, { CElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
-import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
-import { simpleSwitch } from "react-tabtab/lib/helpers/move";
+import {
+    Tabs,
+    DragTabList,
+    DragTab,
+    PanelList,
+    Panel
+} from "@hlolli/react-tabtab";
+import simpleSwitch from "array-move";
 import { subscribeToProjectLastModified } from "@comp/project-last-modified/subscribers";
 import {
     subscribeToProfile,

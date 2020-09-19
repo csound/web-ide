@@ -2,8 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTheme } from "emotion-theming";
 import { concat, propEq, reduce, reject } from "ramda";
-import { Tabs, DragTabList, DragTab, PanelList, Panel } from "react-tabtab";
-import { simpleSwitch } from "react-tabtab/lib/helpers/move";
+import {
+    Tabs,
+    DragTabList,
+    DragTab,
+    PanelList,
+    Panel
+} from "@hlolli/react-tabtab";
+import simpleSwitch from "array-move";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -9,6 +9,7 @@
         "@fortawesome/fontawesome-svg-core": "^1.2.30",
         "@fortawesome/free-solid-svg-icons": "^5.14.0",
         "@fortawesome/react-fontawesome": "^0.1.11",
+        "@hlolli/react-tabtab": "^2.1.0",
         "@material-ui/core": "^4.11.0",
         "@material-ui/icons": "^4.9.1",
         "@material-ui/styles": "^4.10.0",
@@ -26,6 +27,7 @@
         "@typescript-eslint/eslint-plugin": "^4.1.1",
         "@typescript-eslint/parser": "^4.1.1",
         "acorn": "^8.0.1",
+        "array-move": "^3.0.1",
         "autosuggest-highlight": "^3.1.1",
         "better-react-spinkit": "^2.0.4",
         "camelcase": "^6.0.0",
@@ -94,14 +96,15 @@
         "react-moment": "^0.9.7",
         "react-onclickoutside": "^6.9.0",
         "react-perfect-scrollbar": "^1.5.8",
+        "react-poppop": "^1.5.0",
         "react-redux": "^7.2.1",
         "react-resize-detector": "^5.2.0",
         "react-router": "^5.2.0",
         "react-router-dom": "^5.2.0",
         "react-select": "^3.1.0",
         "react-share": "^4.2.1",
+        "react-sortable-hoc": "^1.11.0",
         "react-splitter-layout": "^4.0.0",
-        "react-tabtab": "^2.0.0",
         "react-tooltip": "^4.2.10",
         "react-virtualized": "^9.22.2",
         "redux": "^4.0.5",
@@ -245,10 +248,7 @@
         "wait-on": "^5.2.0"
     },
     "resolutions": {
-        "react-tabtab/react-sortable-hoc": "^1.10.1",
-        "react-iframe-comm/react": "^16.12.0",
-        "react-iframe-comm/react-dom": "^16.12.0",
-        "webpack/terser-webpack-plugin/terser": "^4.6.10",
-        "react-scripts/terser-webpack-plugin/terser": "^4.6.10"
+        "react-iframe-comm/react": "^16.13.1",
+        "react-iframe-comm/react-dom": "^16.13.1"
     }
 }

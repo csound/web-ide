@@ -1738,6 +1738,15 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
+"@hlolli/react-tabtab@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@hlolli/react-tabtab/-/react-tabtab-2.1.0.tgz#25a5e94ce9eb9f53a921d99a21c32a99798269f4"
+  integrity sha512-zYB5CA86yLwY1Xt//G2bk9DgWsxVssNh4RKwQ8sjRrvVbfsuqiJ3p16Z49CFOSpjnAUCmerioL4uViyyabmZ2Q==
+  dependencies:
+    array-move "^3.0.1"
+    invariant "^2.2.4"
+    react-test-renderer "^16.13.1"
+
 "@icons/material@^0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@icons/material/-/material-0.2.4.tgz#e90c9f71768b3736e76d7dd6783fc6c2afa88bc8"
@@ -3373,6 +3382,11 @@ array-includes@^3.1.1:
     define-properties "^1.1.3"
     es-abstract "^1.17.0"
     is-string "^1.0.5"
+
+array-move@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/array-move/-/array-move-3.0.1.tgz#179645cc0987b65953a4fc06b6df9045e4ba9618"
+  integrity sha512-H3Of6NIn2nNU1gsVDqDnYKY/LCdWvCMMOWifNGhKcVQgiZ6nOek39aESOvro6zmueP07exSl93YLvkN4fZOkSg==
 
 array-union@^1.0.1:
   version "1.0.2"
@@ -13264,7 +13278,7 @@ react-dev-utils@^10.2.1:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@^15.4.2, react-dom@^16.12.0, react-dom@^16.13.1:
+react-dom@^15.4.2, react-dom@^16.13.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.13.1.tgz#c1bd37331a0486c078ee54c4740720993b2e0e7f"
   integrity sha512-81PIMmVLnCNLO/fFOQxdQkvEq/+Hfpv24XNJfpyZhTRfO0QcmQIF/PgCa1zCOj2w1hrn12MFLyaJ/G0+Mxtfag==
@@ -13441,7 +13455,7 @@ react-share@^4.2.1:
     classnames "^2.2.5"
     jsonp "^0.2.1"
 
-react-sortable-hoc@^0.6.8, react-sortable-hoc@^1.10.1:
+react-sortable-hoc@^1.11.0:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/react-sortable-hoc/-/react-sortable-hoc-1.11.0.tgz#fe4022362bbafc4b836f5104b9676608a40a278f"
   integrity sha512-v1CDCvdfoR3zLGNp6qsBa4J1BWMEVH25+UKxF/RvQRh+mrB+emqtVHMgZ+WreUiKJoEaiwYoScaueIKhMVBHUg==
@@ -13455,19 +13469,7 @@ react-splitter-layout@^4.0.0:
   resolved "https://registry.yarnpkg.com/react-splitter-layout/-/react-splitter-layout-4.0.0.tgz#70b43ca6a78c056f5e5fbf29c67b597f040fbf2e"
   integrity sha512-SLqOjBOxRuizWUa83w6q5/u9cDWa9/yj9Iko9V9JFN8x+cqIXiDlUFWSx+icz3IIgvsN/oRIw3za5/32RjIwrA==
 
-react-tabtab@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/react-tabtab/-/react-tabtab-2.0.0.tgz#5e638f78b0956bfd56c083e89a93cabd39fb06fb"
-  integrity sha512-5E0tjYRywR+nLI2IqckqLqffL2ey24TiS3hAMXEjgrsvpTlAjiQjwpLvIvdC/4Ga2eGbU8F8CH7ltyKdt4qndQ==
-  dependencies:
-    classnames "^2.2.5"
-    invariant "^2.2.2"
-    prop-types "^15.6.0"
-    react-poppop "^1.5.0"
-    react-sortable-hoc "^0.6.8"
-    react-test-renderer "^16.0.0"
-
-react-test-renderer@^16.0.0:
+react-test-renderer@^16.13.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-test-renderer/-/react-test-renderer-16.13.1.tgz#de25ea358d9012606de51e012d9742e7f0deabc1"
   integrity sha512-Sn2VRyOK2YJJldOqoh8Tn/lWQ+ZiKhyZTPtaO0Q6yNj+QDbmRkVFap6pZPy3YQk8DScRDfyqm/KxKYP9gCMRiQ==
@@ -13532,7 +13534,7 @@ react-window@^1.8.5:
     "@babel/runtime" "^7.0.0"
     memoize-one ">=3.1.1 <6"
 
-react@^15.4.2, react@^16.12.0, react@^16.13.1:
+react@^15.4.2, react@^16.13.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react/-/react-16.13.1.tgz#2e818822f1a9743122c063d6410d85c1e3afe48e"
   integrity sha512-YMZQQq32xHLX0bz5Mnibv1/LHb3Sqzngu7xstSM+vrkE5Kzr9xE0yMByK5kMoTK30YVJE61WfbxIFFvfeDKT1w==
@@ -15362,7 +15364,7 @@ terser-webpack-plugin@^1.4.3:
     webpack-sources "^1.4.0"
     worker-farm "^1.7.0"
 
-terser@^4.1.2, terser@^4.6.10, terser@^4.6.2, terser@^4.6.3:
+terser@^4.1.2, terser@^4.6.2, terser@^4.6.3:
   version "4.8.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-4.8.0.tgz#63056343d7c70bb29f3af665865a46fe03a0df17"
   integrity sha512-EAPipTNeWsb/3wLPeup1tVPaXfIaU68xMnVdPafIL1TV05OhASArYyIfFvnvJCNrR2NIOvDVNNTFRa+Re2MWyw==
