@@ -2,6 +2,7 @@
     "useTabs": false,
     "printWidth": 80,
     "tabWidth": 4,
+    "arrowParens": "always",
     "singleQuote": false,
     "trailingComma": "none",
     "jsxBracketSameLine": false

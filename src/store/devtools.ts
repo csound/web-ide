@@ -1,6 +1,6 @@
 import { assoc, assocPath, pipe, path, propEq, when } from "ramda";
 
-export const devToolsActionSanitizer = pipe(
+export const developmentToolsActionSanitizer = pipe(
     when(propEq("type", "CSOUND.SET_CSOUND"), assoc("csound", "<<CsoundObj>>")),
     when(
         propEq("type", "HOTKEYS.STORE_EDITOR_KEYBOARD_CALLBACKS"),
@@ -24,7 +24,7 @@ export const devToolsActionSanitizer = pipe(
     )
 );
 
-export const devToolsStateSanitizer = pipe(
+export const developmentToolsStateSanitizer = pipe(
     when(
         path(["csound", "csound"]),
         assocPath(["csound", "csound"], "<<CsoundObj>>")

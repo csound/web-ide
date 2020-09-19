@@ -1,8 +1,11 @@
 import { createStore, applyMiddleware, compose, Store } from "redux";
 import { IStore } from "./types";
 import thunk from "redux-thunk";
-import rootReducer from "./RootReducer";
-import { devToolsActionSanitizer, devToolsStateSanitizer } from "./devtools";
+import rootReducer from "./root-reducer";
+import {
+    developmentToolsActionSanitizer,
+    developmentToolsStateSanitizer
+} from "./devtools";
 import { routerMiddleware } from "connected-react-router";
 import { History, createBrowserHistory } from "history";
 
@@ -16,8 +19,8 @@ export const configureStore = () => {
         typeof (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ===
         "function"
             ? (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
-                  actionSanitizer: devToolsActionSanitizer,
-                  stateSanitizer: devToolsStateSanitizer
+                  actionSanitizer: developmentToolsActionSanitizer,
+                  stateSanitizer: developmentToolsStateSanitizer
               })
             : compose;
 

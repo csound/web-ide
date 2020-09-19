@@ -1,13 +1,13 @@
-import { IProjectsReducer } from "@comp/Projects/types";
-import { IProjectEditorReducer } from "@comp/ProjectEditor/reducer";
-import { ICsoundReducer } from "@comp/Csound/reducer";
-import { IModalReducer } from "@comp/Modal/reducer";
-import { IConsoleReducer } from "@comp/Console/reducer";
-import { IThemeReducer } from "@comp/Themes/reducer";
+import { IProjectsReducer } from "@comp/projects/types";
+import { IProjectEditorReducer } from "@comp/project-editor/reducer";
+import { ICsoundReducer } from "@comp/csound/reducer";
+import { IModalReducer } from "@comp/modal/reducer";
+import { IConsoleReducer } from "@comp/console/reducer";
+import { IThemeReducer } from "@comp/themes/reducer";
 import { IUserProfile } from "@root/db/types";
-import { ITargetControlsReducer } from "@comp/TargetControls/reducer";
-import { IProjectLastModifiedReducer } from "@comp/ProjectLastModified/reducer";
-import { IProfileReducer } from "@comp/Profile/reducer";
+import { ITargetControlsReducer } from "@comp/target-controls/reducer";
+import { IProjectLastModifiedReducer } from "@comp/project-last-modified/reducer";
+import { IProfileReducer } from "@comp/profile/reducer";
 
 export interface IStore {
     ProjectsReducer: IProjectsReducer;

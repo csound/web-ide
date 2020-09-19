@@ -21,7 +21,7 @@ const PROD = {
 };
 
 // INITIALIZE FIREBASE WITH SETTINGS
-if (!firebase.apps.length) {
+if (firebase.apps.length === 0) {
     let target;
     if (process.env.REACT_APP_DATABASE === "DEV") {
         target = DEV;
@@ -33,25 +33,25 @@ if (!firebase.apps.length) {
 }
 
 // CREATE REFERENCES FOR USE BY APP CODE
-export const db = firebase.firestore();
-export const projectLastModified = db.collection("projectLastModified");
-export const projects = db.collection("projects");
-export const projectsCount = db.collection("projectsCount");
-export const profiles = db.collection("profiles");
-export const followers = db.collection("followers");
-export const following = db.collection("following");
-export const usernames = db.collection("usernames");
-export const targets = db.collection("targets");
-export const tags = db.collection("tags");
-export const stars = db.collection("stars");
-export const profileStars = db.collection("profileStars");
-export const projectFiles = db.collection("projectFiles");
-export const storageRef = firebase.storage().ref();
+export const database = firebase.firestore();
+export const projectLastModified = database.collection("projectLastModified");
+export const projects = database.collection("projects");
+export const projectsCount = database.collection("projectsCount");
+export const profiles = database.collection("profiles");
+export const followers = database.collection("followers");
+export const following = database.collection("following");
+export const usernames = database.collection("usernames");
+export const targets = database.collection("targets");
+export const tags = database.collection("tags");
+export const stars = database.collection("stars");
+export const profileStars = database.collection("profileStars");
+export const projectFiles = database.collection("projectFiles");
+export const storageReference = firebase.storage().ref();
 
 // OTHER
 export const getCurrentUserPromise = () =>
-    new Promise(resolve => {
-        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+    new Promise((resolve) => {
+        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
             resolve(user);
             unsubscribe();
         });

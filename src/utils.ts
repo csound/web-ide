@@ -1,5 +1,4 @@
-// eslint-disable-next-line
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     addIndex,
     append,
@@ -19,32 +18,35 @@ import {
 import { debounce } from "throttle-debounce";
 
 // {a: 1, b: 2} => [{key: "a", val: 1}, {key: "b", val: 2}]
-export const listifyObject = obj =>
+export const listifyObject = (object) =>
     reduce(
-        (acc, k) =>
-            append(pipe(assoc("key", k), assoc("val", obj[k]))({}), acc),
+        (accumulator, k) =>
+            append(
+                pipe(assoc("key", k), assoc("val", object[k]))({}),
+                accumulator
+            ),
         [],
-        keys(obj)
+        keys(object)
     );
 
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string) {
-    var sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";
-    var sDtext = "[^\\x0d\\x5b-\\x5d\\x80-\\xff]";
-    var sAtom =
+    const sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";
+    const sDtext = "[^\\x0d\\x5b-\\x5d\\x80-\\xff]";
+    const sAtom =
         "[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+";
-    var sQuotedPair = "\\x5c[\\x00-\\x7f]";
-    var sDomainLiteral = "\\x5b(" + sDtext + "|" + sQuotedPair + ")*\\x5d";
-    var sQuotedString = "\\x22(" + sQtext + "|" + sQuotedPair + ")*\\x22";
-    var sDomain_ref = sAtom;
-    var sSubDomain = "(" + sDomain_ref + "|" + sDomainLiteral + ")";
-    var sWord = "(" + sAtom + "|" + sQuotedString + ")";
-    var sDomain = sSubDomain + "(\\x2e" + sSubDomain + ")*";
-    var sLocalPart = sWord + "(\\x2e" + sWord + ")*";
-    var sAddrSpec = sLocalPart + "\\x40" + sDomain; // complete RFC822 email address spec
-    var sValidEmail = "^" + sAddrSpec + "$"; // as whole string
+    const sQuotedPair = "\\x5c[\\x00-\\x7f]";
+    const sDomainLiteral = "\\x5b(" + sDtext + "|" + sQuotedPair + ")*\\x5d";
+    const sQuotedString = "\\x22(" + sQtext + "|" + sQuotedPair + ")*\\x22";
+    const sDomainReference = sAtom;
+    const sSubDomain = "(" + sDomainReference + "|" + sDomainLiteral + ")";
+    const sWord = "(" + sAtom + "|" + sQuotedString + ")";
+    const sDomain = sSubDomain + "(\\x2e" + sSubDomain + ")*";
+    const sLocalPart = sWord + "(\\x2e" + sWord + ")*";
+    const sAddrSpec = sLocalPart + "\\x40" + sDomain; // complete RFC822 email address spec
+    const sValidEmail = "^" + sAddrSpec + "$"; // as whole string
 
-    var reValidEmail = new RegExp(sValidEmail);
+    const reValidEmail = new RegExp(sValidEmail);
 
     return reValidEmail.test(emailAddress);
 }
@@ -65,7 +67,7 @@ export const mapIndexed = addIndex(map);
 export const notEmpty = compose(not, isEmpty);
 
 export function isMacintosh(): boolean {
-    return navigator.platform.indexOf("Mac") > -1;
+    return navigator.platform.includes("Mac");
 }
 
 export const isMac: boolean = isMacintosh();
@@ -110,12 +112,11 @@ export function useDebounce(value, delay) {
         return () => {
             clearTimeout(handler);
         };
-        // eslint-disable-next-line
-    }, [value]);
+    }, [value, delay]);
     return debouncedValue;
 }
 
-export const updateBodyScroller = debounceTime =>
+export const updateBodyScroller = (debounceTime) =>
     debounce(debounceTime, () => {
         const maybeElement: any = (window as any).ps_body;
         if (
@@ -127,7 +128,7 @@ export const updateBodyScroller = debounceTime =>
     });
 
 export const isMobile = () =>
-    /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent);
+    /android|webos|iphone|ipad|ipod|opera mini/i.test(navigator.userAgent);
 
 export const isIOS = () =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;

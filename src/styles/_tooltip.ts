@@ -7,7 +7,7 @@ const tooltipPopper = classCss`
    left: 0!important;
 `;
 
-const tooltipElem = classCss`
+const tooltipElement = classCss`
   font-size: 13px!important;
   padding: 6px 12px!important;
 `;
@@ -15,5 +15,5 @@ const tooltipElem = classCss`
 // inject into classes prop
 export const tooltipClasses = {
     popper: tooltipPopper,
-    tooltip: tooltipElem
+    tooltip: tooltipElement
 };

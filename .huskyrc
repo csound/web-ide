@@ -1,5 +1,5 @@
 {
   "hooks": {
-    "pre-commit": "yarn lint && REACT_APP_DATABASE=DEV yarn test --watchAll=false"
+    "pre-commit": "yarn lint:check && REACT_APP_DATABASE=DEV yarn test --watchAll=false"
   }
 }

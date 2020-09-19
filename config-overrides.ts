@@ -3,6 +3,7 @@ const {
     addBabelPreset,
     addWebpackAlias,
     addWebpackPlugin,
+    useEslintRc,
     override
 } = require("customize-cra");
 const SitemapPlugin = require("sitemap-webpack-plugin").default;
@@ -44,6 +45,7 @@ const paths = [
 ];
 
 module.exports = override(
+    useEslintRc("./.eslintrc.js"),
     addBabelPlugin("emotion"),
     addBabelPreset("@emotion/babel-preset-css-prop"),
     addWebpackAlias({

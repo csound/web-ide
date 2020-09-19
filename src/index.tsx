@@ -2,13 +2,13 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { store, history } from "./store";
-import * as serviceWorker from "./serviceWorker";
-import Main from "./components/Main/Main";
-import { setCsound, setCsoundPlayState } from "./components/Csound/actions";
-import CsoundObj from "./components/Csound/CsoundObj";
-import { ICsoundObj } from "./components/Csound/types";
+import * as serviceWorker from "./service-worker";
+import Main from "./components/main/main";
+import { setCsound, setCsoundPlayState } from "./components/csound/actions";
+import CsoundObject from "./components/csound/csound-object";
+import { ICsoundObject } from "./components/csound/types";
 import * as Sentry from "@sentry/browser";
-// import "./css/index.css";
+
 import "./config/firestore"; // import for sideffects
 import "react-perfect-scrollbar/dist/css/styles.css";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
@@ -25,8 +25,8 @@ if (typeof process.env.REACT_APP_SENTRY_DSN !== "undefined") {
 class WithSentry extends React.Component<any> {
     componentDidCatch(error, errorInfo) {
         if (typeof process.env.REACT_APP_SENTRY_DSN !== "undefined") {
-            Sentry.withScope(scope => {
-                Object.keys(errorInfo).forEach(key => {
+            Sentry.withScope((scope) => {
+                Object.keys(errorInfo).forEach((key) => {
                     scope.setExtra(key, errorInfo[key]);
                 });
                 Sentry.captureException(error);
@@ -48,20 +48,20 @@ ReactDOM.render(
             <Main history={history} />
         </Provider>
     </WithSentry>,
-    document.getElementById("root")
+    document.querySelector("#root")
 );
 
 serviceWorker.unregister();
 
 // ADD LISTENING TO REDUX STORE FOR SYNCHRONIZING PROJECT FILES TO EMFS
-CsoundObj.importScripts("/csound/").then(() => {
+CsoundObject.importScripts("/csound/").then(() => {
     // const state = store.getState()
     // console.log("STORE STATE", setCsound);
-    const csound: ICsoundObj = new CsoundObj();
+    const csound: ICsoundObject = new CsoundObject();
     store.dispatch(setCsound(csound));
     csound.setMessageCallback(() => {});
-    csound.addPlayStateListener(csObj => {
+    csound.addPlayStateListener((csObject) => {
         // console.log("Csound playState changed: " + csObj.getPlayState());
-        store.dispatch(setCsoundPlayState(csObj.getPlayState()));
+        store.dispatch(setCsoundPlayState(csObject.getPlayState()));
     });
 });

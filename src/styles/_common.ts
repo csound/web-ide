@@ -1,6 +1,6 @@
 import { css } from "@emotion/core";
 
-export const hr = theme => css`
+export const hr = (theme) => css`
     padding: 0;
     background-color: ${theme.line};
     height: 2px;
@@ -20,7 +20,7 @@ export const shadow = css`
         0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 `;
 
-export const windowHeader = theme => css`
+export const windowHeader = (theme) => css`
     background-color: ${theme.highlightBackgroundAlt};
     top: 0;
     position: absolute;
@@ -38,7 +38,7 @@ export const windowHeader = theme => css`
     }
 `;
 
-export const _scrollbars = theme => css`
+export const _scrollbars = (theme) => css`
     scrollbar-width: thin;
     scrollbar-color: ${theme.scrollbar} transparent;
     &::-webkit-scrollbar {
