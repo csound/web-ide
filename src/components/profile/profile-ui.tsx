@@ -92,6 +92,7 @@ export const NameSectionWrapper = styled.div`
     display: grid;
     grid-template-rows: 1fr auto;
     grid-template-columns: 1fr;
+    min-width: 680px;
 `;
 export const NameSection = styled.div`
     grid-row: 2;
@@ -112,6 +113,7 @@ export const ContentSection = styled.div<any>`
     background: ${(properties) => properties.theme.background};
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    min-width: 680px;
 `;
 export const ContentTabsContainer = styled.div`
     grid-row: 1;

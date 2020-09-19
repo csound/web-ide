@@ -36,7 +36,7 @@
         "codemirror": "^5.57.0",
         "connected-react-router": "^6.8.0",
         "cross-env": "^7.0.2",
-        "csound-manual-react": "^1.0.0-alpha15",
+        "csound-manual-react": "^1.0.0-alpha16",
         "css-loader": "4.3.0",
         "d3-scale": "^3.2.2",
         "dom-to-image-more": "^2.8.0",

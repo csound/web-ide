@@ -5232,10 +5232,10 @@ crypto-random-string@^2.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-2.0.0.tgz#ef2a7a966ec11083388369baa02ebead229b30d5"
   integrity sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==
 
-csound-manual-react@^1.0.0-alpha15:
-  version "1.0.0-alpha15"
-  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha15.tgz#07e2f0724d626de2f49b9e1076bef57d7c5c46bb"
-  integrity sha512-6n27ob+1+CI7PZm8/II1iwjWsdTlOy/YrRfOhD9jPgRjSt6TGIaz/5FgFqYsloqAR3ho05VuPiSUwFcMw8Ovig==
+csound-manual-react@^1.0.0-alpha16:
+  version "1.0.0-alpha16"
+  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha16.tgz#bf5aa1b1f242ec2676f801fedfe200c5cd04f220"
+  integrity sha512-eNATTv2DL88VkL8s8wfIeUvi3zMft4C51jc8uLlJO2rADtrxrIZ5X4k9Lgb5qlgXgLm4hEbpZESjjxm1jwUbiA==
   dependencies:
     "@babel/core" "^7.10.2"
     "@babel/preset-env" "^7.10.2"

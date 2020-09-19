@@ -35,12 +35,14 @@ const EditorLayout = (properties: any) => {
     );
 };
 
-const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => (
-    <div>
-        <style>{`#root {position: absolute!important;}`}</style>
-        <CsoundManual theme={theme} codeMirrorPainter={CodeMirrorPainter} />
-    </div>
-);
+const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => {
+    return (
+        <div style={{ overflow: "hidden" }}>
+            <style>{`#root {position: absolute!important; height: 100%!important;}`}</style>
+            <CsoundManual theme={theme} codeMirrorPainter={CodeMirrorPainter} />
+        </div>
+    );
+};
 
 const RouterComponent = (properties: any) => {
     const theme = useTheme();

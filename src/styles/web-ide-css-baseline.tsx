@@ -22,8 +22,7 @@ body {
 
 #root {
     position: relative;
-    height: calc(100% - ${headerHeight}px)!important;
-    height: 100%;
+    height: calc(100% - ${headerHeight}px);
     top: ${headerHeight}px;
     bottom: 0;
     overflow: auto;
@@ -41,6 +40,16 @@ button {
 }
 a {text-decoration: none;}
 
+.ps__rail-x,
+.ps__rail-y,
+.ps__rail-x:hover,
+.ps__rail-y:hover,
+.ps__rail-x:focus,
+.ps__rail-y:focus,
+.ps__rail-x.ps--clicking,
+.ps__rail-y.ps--clicking {
+  z-index: 2;
+}
     `}</style>
 );
 

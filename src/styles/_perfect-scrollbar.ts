@@ -10,6 +10,7 @@ export const perfectScrollbarStyleSheet = (theme) => css`
         background-color: ${theme.highlightBackground};
         width: 9px;
         opacity: 1;
+        z-index: 2;
     }
 
     & .ps:hover > .ps__rail-x,
