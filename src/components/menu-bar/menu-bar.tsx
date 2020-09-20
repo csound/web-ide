@@ -117,8 +117,9 @@ function MenuBar(properties) {
         {
             label: "Edit",
             submenu: [
-                { label: "Undo" },
-                { label: "Redo" },
+                { label: "Undo", hotKey: "undo" },
+                { label: "Redo", hotKey: "redo" },
+                { label: "Search", hotKey: "find_simple" },
                 {
                     label: "Theme",
                     submenu: [

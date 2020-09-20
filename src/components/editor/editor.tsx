@@ -16,6 +16,13 @@ import "./plugins/autosuggest";
 require("codemirror/addon/comment/comment");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
+require("codemirror/addon/search/search");
+require("codemirror/addon/search/searchcursor");
+require("codemirror/addon/search/jump-to-line");
+require("codemirror/addon/search/matchesonscrollbar");
+require("codemirror/addon/search/matchesonscrollbar.css");
+require("codemirror/addon/dialog/dialog");
+require("codemirror/addon/dialog/dialog.css");
 require("codemirror/keymap/vim");
 require("codemirror/keymap/emacs");
 require("codemirror/lib/codemirror.css");
@@ -241,6 +248,17 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
             : "text/plain",
         viewportMargin: Infinity,
         extraKeys: {
+            // noop default keybindings and handle from react
+            // all defaults: code-mirror/src/input/keymap.js
+            "Ctrl-F": () => {},
+            "Cmd-F": () => {},
+            "Ctrl-Z": () => {},
+            "Cmd-Z": () => {},
+            "Shift-Ctrl-Z": () => {},
+            "Ctrl-Y": () => {},
+            "Shift-Cmd-Z": () => {},
+            "Cmd-Y": () => {},
+            // todo: move to hot-keys
             "Ctrl-E": () => editorEvalCurried(false),
             "Ctrl-Enter": () => editorEvalCurried(true),
             "Cmd-E": () => editorEvalCurried(false),

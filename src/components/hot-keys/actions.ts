@@ -5,7 +5,7 @@ import {
     STORE_EDITOR_KEYBOARD_CALLBACKS,
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
-import { curry, path } from "ramda";
+import { path } from "ramda";
 import {
     newDocument,
     saveAllAndClose,
@@ -26,10 +26,10 @@ import { pauseCsound, stopCsound } from "@comp/csound/actions";
 
 import * as EditorActions from "@comp/editor/actions";
 
-const withPreventDefault = curry((callback, event: KeyboardEvent) => {
+const withPreventDefault = (callback: any) => (event: KeyboardEvent) => {
     event && event.preventDefault();
     callback();
-});
+};
 
 export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
     return async (dispatch: any, getStore) => {
@@ -92,8 +92,29 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
             doc_at_point: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
                 editor && dispatch(EditorActions.manualEntryAtPoint(editor));
+            }),
+            find_simple: withPreventDefault(() => {
+                const editor = selectCurrentEditor(getStore());
+                const maybeDialog = document.querySelector(
+                    ".CodeMirror-dialog"
+                );
+                if (!maybeDialog) {
+                    editor && editor.execCommand("find");
+                } else {
+                    maybeDialog.remove();
+                    editor && editor.focus();
+                }
+            }),
+            undo: withPreventDefault(() => {
+                const editor = selectCurrentEditor(getStore());
+                editor && editor.execCommand("undo");
+            }),
+            redo: withPreventDefault(() => {
+                const editor = selectCurrentEditor(getStore());
+                editor && editor.execCommand("redo");
             })
         };
+
         dispatch({
             type: STORE_EDITOR_KEYBOARD_CALLBACKS,
             callbacks
@@ -108,7 +129,7 @@ export const invokeHotKeyCallback = (hotKey: string) => {
             ["HotKeysReducer", "callbacks", hotKey],
             state
         );
-        if (maybeCallback) {
+        if (typeof maybeCallback === "function") {
             maybeCallback();
         }
     };
