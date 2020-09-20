@@ -1738,10 +1738,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@hlolli/react-tabtab@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@hlolli/react-tabtab/-/react-tabtab-2.1.0.tgz#25a5e94ce9eb9f53a921d99a21c32a99798269f4"
-  integrity sha512-zYB5CA86yLwY1Xt//G2bk9DgWsxVssNh4RKwQ8sjRrvVbfsuqiJ3p16Z49CFOSpjnAUCmerioL4uViyyabmZ2Q==
+"@hlolli/react-tabtab@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@hlolli/react-tabtab/-/react-tabtab-2.1.2.tgz#f8b64ffb285fc7339b286b0b6af3031dae7fddad"
+  integrity sha512-XlMP3rtSm/GFzALTpgZPUC3E8Mots2EwUbKaOriuSzEyjfDDQIUxXr9PNbO57wn+EVxCtEB1c/Py5sxkxu6hTg==
   dependencies:
     array-move "^3.0.1"
     invariant "^2.2.4"
