@@ -76,7 +76,12 @@ import { ThunkAction } from "redux-thunk";
 export const downloadProjectOnce = (projectUid: string) => {
     return async (dispatch: any) => {
         const projReference = projects.doc(projectUid);
-        const projSnap = await projReference.get();
+        let projSnap;
+        try {
+            projSnap = await projReference.get();
+        } catch {
+            return;
+        }
         if (projSnap && projSnap.exists) {
             const project: IProject = await convertProjectSnapToProject(
                 projSnap

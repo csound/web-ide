@@ -123,7 +123,7 @@ const Profile = ({ classes, ...properties }) => {
 
     useEffect(() => {
         if (username) {
-            if (profileUriPath === null && selectedSection !== 0) {
+            if (!profileUriPath && selectedSection !== 0) {
                 setSelectedSection(0);
             } else if (
                 profileUriPath === "following" &&
@@ -156,7 +156,7 @@ const Profile = ({ classes, ...properties }) => {
     useEffect(() => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
-                dispatch(push({ pathname: "/" }));
+                dispatch(push("/"));
             } else if (username) {
                 usernames
                     .doc(username)
