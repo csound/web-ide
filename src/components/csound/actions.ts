@@ -9,7 +9,7 @@ import {
 } from "./types";
 import { selectActiveProject } from "../projects/selectors";
 import { saveAs } from "file-saver";
-import { path, pathOr } from "ramda";
+import { path } from "ramda";
 import { storageReference } from "../../config/firestore";
 
 export const setCsound = (csound: ICsoundObject) => {
@@ -94,7 +94,7 @@ export const playORCFromString = (projectUid: string, orc: string) => {
 
 export const stopCsound = () => {
     return async (dispatch: any) => {
-        const cs = pathOr(["csound", "csound"], store.getState());
+        const cs = path(["csound", "csound"], store.getState());
         if (cs && typeof cs.stop === "function") {
             dispatch(setCsoundPlayState("stopped"));
             cs.stop();
@@ -108,7 +108,7 @@ export const stopCsound = () => {
 
 export const pauseCsound = () => {
     return async (dispatch: any, getState) => {
-        const cs = pathOr(["csound", "csound"], getState()) as
+        const cs = path(["csound", "csound"], getState()) as
             | ICsoundObject
             | undefined;
         if (cs && cs.getPlayState() === "playing") {
@@ -232,13 +232,11 @@ export const enableMidiInput = () => {
 
 export const enableAudioInput = () => {
     return async (dispatch: any, getState) => {
-        const cs = pathOr(["csound", "csound"], getState()) as
+        const cs = path(["csound", "csound"], getState()) as
             | ICsoundObject
             | undefined;
-        cs &&
-            typeof cs?.enableAudioInput === "function" &&
-            cs?.enableAudioInput(() => {
-                console.log("enableAudioInput done");
-            });
+        cs?.enableAudioInput(() => {
+            console.log("enableAudioInput done");
+        });
     };
 };

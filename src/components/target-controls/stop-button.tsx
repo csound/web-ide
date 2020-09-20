@@ -32,7 +32,10 @@ const StopButton = ({ activeProjectUid, isOwner }) => {
                             }
                         }
                     }}
-                    disabled={csoundPlayState === "stopped"}
+                    disabled={
+                        csoundPlayState === "stopped" ||
+                        csoundPlayState === "error"
+                    }
                 >
                     <StopIcon css={SS.stopIcon} fontSize="large" />
                 </IconButton>
