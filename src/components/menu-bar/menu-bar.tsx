@@ -54,9 +54,8 @@ function MenuBar(properties) {
         path(["ThemeReducer", "selectedThemeName"])
     );
 
-    const isManualOpen: boolean = useSelector(
-        (store) =>
-            path(["ProjectEditorReducer", "secondaryPanel"], store) === "manual"
+    const isManualOpen: boolean = useSelector((store) =>
+        path(["ProjectEditorReducer", "manualVisible"], store)
     );
 
     const isConsoleVisible = useSelector(
