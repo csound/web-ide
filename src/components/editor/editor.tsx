@@ -37,7 +37,13 @@ const updateReduxDocumentValue = debounce(
     }
 );
 
-const CodeEditor = ({ documentUid, projectUid }) => {
+const updateGuestDocumentValue = debounce(
+    100,
+    (csound, projectUid, document, newValue) =>
+        projectActions.saveFileOffline(csound, projectUid, document, newValue)
+);
+
+const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
     const [editorReference, setEditorReference]: [
         CodeMirror.Editor | undefined,
         (argument: CodeMirror.Editor) => void
@@ -173,7 +179,6 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         } else {
             editor.getDoc().clearHistory();
         }
-        // setEditorValue(currentDocumentValue);
 
         setEditorReference(editor as any);
 
@@ -261,6 +266,15 @@ const CodeEditor = ({ documentUid, projectUid }) => {
         [editorReference, projectUid, documentUid, dispatch]
     );
 
+    const onGuestChange = useCallback(
+        (editor, data, value) => {
+            if (editorReference && csound) {
+                updateGuestDocumentValue(csound, projectUid, document, value);
+            }
+        },
+        [editorReference, projectUid, document, csound]
+    );
+
     return (
         <UnControlled
             key={documentUid}
@@ -268,7 +282,7 @@ const CodeEditor = ({ documentUid, projectUid }) => {
             editorDidMount={editorDidMount}
             editorWillUnmount={editorWillUnmount}
             options={options}
-            onChange={onChange}
+            onChange={isOwner ? onChange : onGuestChange}
         />
     );
 };

@@ -61,18 +61,21 @@ type IEditorForDocumentProperties = {
     uid: any;
     doc: IDocument;
     projectUid: string;
+    isOwner: boolean;
 };
 
 function EditorForDocument({
     uid,
     projectUid,
-    doc
+    doc,
+    isOwner
 }: IEditorForDocumentProperties) {
     if (doc.type === "txt") {
         return (
             <Editor
                 documentUid={doc.documentUid}
                 projectUid={projectUid}
+                isOwner={isOwner}
             ></Editor>
         );
     } else if (doc.type === "bin" && isAudioFile(doc.filename)) {
@@ -119,7 +122,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
 
     const projectUid: string = propOr("", "projectUid", activeProject);
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
-    const isOwner = useSelector(selectIsOwner(projectUid));
+    const isOwner: boolean = useSelector(selectIsOwner(projectUid));
     const tabPanelReference = useRef();
 
     useEffect(() => {
@@ -219,7 +222,8 @@ const ProjectEditor = ({ activeProject, csound }) => {
                     }
                 >
                     <p style={{ margin: 0 }}>
-                        {document!.filename + (isModified ? "*" : "")}
+                        {document!.filename +
+                            (isOwner && isModified ? "*" : "")}
                     </p>
                 </Tooltip>
                 <Tooltip title={"close"} placement="right-end">
@@ -252,6 +256,7 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 <EditorForDocument
                     uid={activeProject.userUid}
                     projectUid={projectUid}
+                    isOwner={isOwner}
                     doc={document_}
                 />
             </Panel>
@@ -264,10 +269,12 @@ const ProjectEditor = ({ activeProject, csound }) => {
         dispatch(tabSwitch(index));
     };
 
-    const someUnsavedData: boolean = !!find(
-        openDocuments,
-        (document_: IDocument) => document_.isModifiedLocally === true
-    );
+    const someUnsavedData: boolean = isOwner
+        ? !!find(
+              openDocuments,
+              (document_: IDocument) => document_.isModifiedLocally === true
+          )
+        : false;
 
     const unsavedDataExitText =
         "You still have unsaved changes, are you sure you want to quit?";

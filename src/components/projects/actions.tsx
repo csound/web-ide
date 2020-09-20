@@ -26,6 +26,7 @@ import {
     assoc,
     concat,
     filter,
+    forEach,
     map,
     path,
     pathOr,
@@ -302,6 +303,56 @@ export const saveAllAndClose = (goTo: string) => {
             console.error
         );
     };
+};
+
+// for unauthorized or offline playing
+export const saveFileOffline = (
+    csound: ICsoundObject,
+    activeProjectUid: string,
+    document: IDocument,
+    newValue: string
+) => {
+    const pathPrefix = document.path || [];
+    const absolutePath = concat(
+        [`/${activeProjectUid}`],
+        append(document.filename, pathPrefix)
+    ).join("/");
+    addDocumentToEMFS(
+        activeProjectUid,
+        csound,
+        assoc("savedValue", newValue, document),
+        absolutePath
+    );
+};
+
+// for unauthorized or offline playing
+export const saveAllOffline = (csound: ICsoundObject) => {
+    const state = store.getState() as IStore;
+    const activeProjectUid = pathOr(
+        "",
+        ["ProjectsReducer", "activeProjectUid"],
+        state
+    );
+    const project: IProject | undefined = path(
+        ["ProjectsReducer", "projects", activeProjectUid],
+        state
+    );
+    if (project) {
+        const documents: IDocument[] = Object.values(project.documents);
+        forEach((document: IDocument) => {
+            const pathPrefix = document.path || [];
+            const absolutePath = concat(
+                [`/${activeProjectUid}`],
+                append(document.filename, pathPrefix)
+            ).join("/");
+            addDocumentToEMFS(
+                activeProjectUid,
+                csound,
+                assoc("savedValue", document.currentValue, document),
+                absolutePath
+            );
+        }, documents);
+    }
 };
 
 export const deleteFile = (projectUid: string, documentUid: string) => {
