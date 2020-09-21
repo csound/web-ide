@@ -84,7 +84,7 @@
         "react-beforeunload": "^2.2.4",
         "react-codemirror2": "^7.2.1",
         "react-color": "^2.18.1",
-        "react-content-loader": "^5.1.1",
+        "react-content-loader": "^5.1.2",
         "react-debounce-input": "^3.2.2",
         "react-dev-utils": "^10.2.1",
         "react-dom": "^16.13.1",
