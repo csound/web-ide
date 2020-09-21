@@ -244,7 +244,7 @@
         "prettier": "^2.1.2",
         "robotstxt-webpack-plugin": "^7.0.0",
         "sitemap-webpack-plugin": "^0.8.1",
-        "ts-jest": "^26.3.0",
+        "ts-jest": "^26.4.0",
         "wait-on": "^5.2.0"
     },
     "resolutions": {
