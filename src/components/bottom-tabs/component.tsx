@@ -95,21 +95,20 @@ const BottomTabs = () => {
         (oldIndex: number, newIndex: number) => {
             if (openTabs) {
                 const newOrder = simpleSwitch(openTabs, oldIndex, newIndex);
-                reorderBottomTabs(newOrder, newIndex);
+                dispatch(reorderBottomTabs(newOrder, newIndex));
             }
         },
-        [openTabs]
+        [dispatch, openTabs]
     );
 
     return (
         <>
             {!isEmpty(openTabs) && bottomTabIndex > -1 && (
                 <Tabs
-                    activeIndex={Math.min(
-                        bottomTabIndex,
-                        (openTabs || []).length
-                    )}
-                    onTabChange={setBottomTabIndex}
+                    activeIndex={bottomTabIndex}
+                    onTabChange={(newIndex: number) =>
+                        dispatch(setBottomTabIndex(newIndex))
+                    }
                     customStyle={TabStyles}
                     showModalButton={false}
                     showArrowButton={"auto"}
