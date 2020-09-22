@@ -10,7 +10,7 @@ import { append, assoc, equals, findIndex, pipe, propOr, reject } from "ramda";
 
 const initState: IBottomTabsReducer = {
     index: 0,
-    openTabs: ["piano"]
+    openTabs: ["console"]
 };
 
 export default (
