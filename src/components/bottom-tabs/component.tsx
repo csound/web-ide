@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "emotion-theming";
-import { concat, propEq, reduce, reject } from "ramda";
+import { isEmpty } from "ramda";
 import {
     Tabs,
     DragTabList,
@@ -16,13 +16,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "@store/types";
 import tabStyles from "@comp/project-editor/tab-styles";
-import {
-    setConsolePanelOpen,
-    setSpectralAnalyzerOpen
-} from "@comp/project-editor/actions";
 import Console from "@comp/console/console";
-import SpectralAnalyzer from "@comp/spectral-analyzer/spectral-analyzer";
 import { closeButton as ProjectEditorCloseButtonStyle } from "@comp/project-editor/styles";
+import { selectOpenBottomTabs, selectBottomTabIndex } from "./selectors";
+import {
+    closeBottomTab,
+    reorderBottomTabs,
+    setBottomTabIndex
+} from "./actions";
+import { BottomTab } from "./types";
 
 const TabStyles = tabStyles(true);
 
@@ -64,87 +66,61 @@ const DragTabWithCloseButton = ({
 const tabsData = {
     console: {
         title: "Console",
-        closeAction: setConsolePanelOpen,
         component: Console
     },
     spectralAnalyzer: {
         title: "Spectral Analyzer",
-        closeAction: setSpectralAnalyzerOpen,
-        component: SpectralAnalyzer
+        component: React.lazy(
+            () => import("@comp/spectral-analyzer/spectral-analyzer")
+        )
+    },
+    piano: {
+        title: "Virtual Midi Keyboard",
+        component: React.lazy(() => import("@elem/midi-piano"))
     }
 };
 
 const BottomTabs = () => {
-    const [bottomTabIndex, setBottomTabIndex] = useState(0);
-    const [renderedTabs, setRenderedTabs] = useState(["console"]);
     const dispatch = useDispatch();
 
-    const isConsoleVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.consoleVisible
+    const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
+        selectOpenBottomTabs(store)
     );
 
-    const isSpectralAnalyzerVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.spectralAnalyzerVisible
+    const bottomTabIndex = useSelector((store: IStore) =>
+        selectBottomTabIndex(store)
     );
 
-    useEffect(() => {
-        if (isConsoleVisible && !renderedTabs.includes("console")) {
-            setRenderedTabs(concat(renderedTabs, ["console"]));
-        }
-        if (!isConsoleVisible && renderedTabs.includes("console")) {
-            setRenderedTabs(reject(propEq("console"), renderedTabs));
-        }
-
-        if (
-            isSpectralAnalyzerVisible &&
-            !renderedTabs.includes("spectralAnalyzer")
-        ) {
-            const updatedRenderedTabs = concat(renderedTabs, [
-                "spectralAnalyzer"
-            ]);
-            setRenderedTabs(updatedRenderedTabs);
-            setBottomTabIndex(updatedRenderedTabs.length - 1);
-        }
-
-        if (
-            !isSpectralAnalyzerVisible &&
-            renderedTabs.includes("spectralAnalyzer")
-        ) {
-            setRenderedTabs(reject(propEq("spectralAnalyzer"), renderedTabs));
-        }
-    }, [isConsoleVisible, isSpectralAnalyzerVisible, renderedTabs]);
-
-    const bottomTabCount: number = reduce(
-        (a: number, b: boolean) => (b ? a + 1 : a),
-        0,
-        [isConsoleVisible, isSpectralAnalyzerVisible]
+    const handleTabSequenceChange = useCallback(
+        (oldIndex: number, newIndex: number) => {
+            if (openTabs) {
+                const newOrder = simpleSwitch(openTabs, oldIndex, newIndex);
+                reorderBottomTabs(newOrder, newIndex);
+            }
+        },
+        [openTabs]
     );
-
-    const showTabs: boolean = bottomTabCount > 0;
 
     return (
         <>
-            {showTabs && (
+            {!isEmpty(openTabs) && bottomTabIndex > -1 && (
                 <Tabs
-                    activeIndex={Math.min(bottomTabIndex, bottomTabCount)}
+                    activeIndex={Math.min(
+                        bottomTabIndex,
+                        (openTabs || []).length
+                    )}
                     onTabChange={setBottomTabIndex}
                     customStyle={TabStyles}
                     showModalButton={false}
                     showArrowButton={"auto"}
-                    onTabSequenceChange={({ oldIndex, newIndex }) => {
-                        setRenderedTabs(
-                            simpleSwitch(renderedTabs, oldIndex, newIndex)
-                        );
-                    }}
+                    onTabSequenceChange={handleTabSequenceChange}
                 >
                     <DragTabList id="drag-tab-list">
-                        {renderedTabs.map((k, i) => (
+                        {(openTabs || []).map((k, i) => (
                             <DragTab key={i} closable={true}>
                                 <DragTabWithCloseButton
                                     closeCallback={() =>
-                                        dispatch(
-                                            tabsData[k]["closeAction"](false)
-                                        )
+                                        dispatch(closeBottomTab(k))
                                     }
                                     currentIndex={bottomTabIndex}
                                     thisIndex={i}
@@ -164,11 +140,13 @@ const BottomTabs = () => {
                     </DragTabList>
 
                     <PanelList>
-                        {renderedTabs.map((k, i) => {
+                        {(openTabs || []).map((k, i) => {
                             const C = tabsData[k]["component"];
                             return (
-                                <Panel key={1} isBottom>
-                                    <C />
+                                <Panel key={i} isBottom>
+                                    <React.Suspense fallback={<></>}>
+                                        <C />
+                                    </React.Suspense>
                                 </Panel>
                             );
                         })}

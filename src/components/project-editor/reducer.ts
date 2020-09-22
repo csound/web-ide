@@ -10,12 +10,10 @@ import {
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
-    SET_CONSOLE_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
     ITabDock,
-    IOpenDocument,
-    SET_SPECTRAL_ANALYZER_OPEN
+    IOpenDocument
 } from "./types";
 import {
     assoc,
@@ -33,10 +31,8 @@ import {
 
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
-    consoleVisible: boolean;
     fileTreeVisible: boolean;
     manualVisible: boolean;
-    spectralAnalyzerVisible: boolean;
     manualLookupString: string;
 }
 
@@ -45,10 +41,8 @@ const initialLayoutState = (): IProjectEditorReducer => ({
         tabIndex: -1,
         openDocuments: []
     },
-    consoleVisible: true,
     fileTreeVisible: true,
     manualVisible: false,
-    spectralAnalyzerVisible: false,
     manualLookupString: ""
 });
 
@@ -189,14 +183,8 @@ export default (state: IProjectEditorReducer, action: any) => {
                 assoc("manualVisible", action.open)
             )(state);
         }
-        case SET_CONSOLE_PANEL_OPEN: {
-            return assoc("consoleVisible", action.open, state);
-        }
         case SET_FILE_TREE_PANEL_OPEN: {
             return assoc("fileTreeVisible", action.open, state);
-        }
-        case SET_SPECTRAL_ANALYZER_OPEN: {
-            return assoc("spectralAnalyzerVisible", action.open, state);
         }
         case STORE_EDITOR_INSTANCE: {
             const openDocumentIndex = findIndex(

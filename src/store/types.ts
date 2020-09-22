@@ -8,6 +8,7 @@ import { IUserProfile } from "@root/db/types";
 import { ITargetControlsReducer } from "@comp/target-controls/reducer";
 import { IProjectLastModifiedReducer } from "@comp/project-last-modified/reducer";
 import { IProfileReducer } from "@comp/profile/reducer";
+import { IBottomTabsReducer } from "@comp/bottom-tabs/types";
 
 export interface IStore {
     ProjectsReducer: IProjectsReducer;
@@ -22,6 +23,7 @@ export interface IStore {
     TargetControlsReducer: ITargetControlsReducer;
     ProjectLastModifiedReducer: IProjectLastModifiedReducer;
     ProfileReducer: IProfileReducer;
+    BottomTabsReducer: IBottomTabsReducer;
 }
 
 export type Selector = (x: IStore) => any;

@@ -13,6 +13,7 @@ import ConsoleReducer from "@comp/console/reducer";
 import HotKeysReducer from "@comp/hot-keys/reducer";
 import HomeReducer from "@comp/home/reducer";
 import TargetControlsReducer from "@comp/target-controls/reducer";
+import BottomTabsReducer from "@comp/bottom-tabs/reducer";
 import ProjectLastModifiedReducer from "@comp/project-last-modified/reducer";
 import { History } from "history";
 
@@ -32,5 +33,6 @@ export default (history: History) =>
         HotKeysReducer,
         TargetControlsReducer,
         ProjectLastModifiedReducer,
+        BottomTabsReducer,
         HomeReducer
     });

@@ -14,9 +14,7 @@ import { IStore } from "@store/types";
 import { exportProject } from "@comp/projects/actions";
 import {
     toggleManualPanel,
-    setConsolePanelOpen,
-    setFileTreePanelOpen,
-    setSpectralAnalyzerOpen
+    setFileTreePanelOpen
 } from "@comp/project-editor/actions";
 import {
     renderToDisk,
@@ -37,6 +35,7 @@ import {
     slice
 } from "ramda";
 import { showKeyboardShortcuts } from "@comp/site-documents/actions";
+import { openBottomTab } from "@comp/bottom-tabs/actions";
 
 function MenuBar(properties) {
     const activeProjectUid: string = useSelector(
@@ -58,16 +57,20 @@ function MenuBar(properties) {
         path(["ProjectEditorReducer", "manualVisible"], store)
     );
 
-    const isConsoleVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.consoleVisible
+    const isConsoleVisible = useSelector((store: IStore) =>
+        (store.BottomTabsReducer.openTabs || []).includes("console")
     );
 
     const isFileTreeVisible = useSelector(
         (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
     );
 
-    const isSpectralAnalyzerVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.spectralAnalyzerVisible
+    const isSpectralAnalyzerVisible = useSelector((store: IStore) =>
+        store.BottomTabsReducer.openTabs.includes("spectralAnalyzer")
+    );
+
+    const isMidiPianoVisible = useSelector((store: IStore) =>
+        store.BottomTabsReducer.openTabs.includes("piano")
     );
 
     const menuBarItems: MenuItemDef[] = [
@@ -187,17 +190,18 @@ function MenuBar(properties) {
                 },
                 {
                     label: "Console",
-                    callback: () =>
-                        dispatch(setConsolePanelOpen(!isConsoleVisible)),
+                    callback: () => dispatch(openBottomTab("console")),
                     checked: isConsoleVisible
                 },
                 {
                     label: "Spectral Analyzer",
-                    callback: () =>
-                        dispatch(
-                            setSpectralAnalyzerOpen(!isSpectralAnalyzerVisible)
-                        ),
+                    callback: () => dispatch(openBottomTab("spectralAnalyzer")),
                     checked: isSpectralAnalyzerVisible
+                },
+                {
+                    label: "Virtual Midi Keyboard",
+                    callback: () => dispatch(openBottomTab("piano")),
+                    checked: isMidiPianoVisible
                 }
             ]
         },

@@ -16,11 +16,9 @@ import {
     TAB_CLOSE,
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
-    SET_CONSOLE_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
     STORE_EDITOR_INSTANCE,
-    IOpenDocument,
-    SET_SPECTRAL_ANALYZER_OPEN
+    IOpenDocument
 } from "./types";
 
 export const tabDockInit = (
@@ -227,23 +225,9 @@ export const setManualPanelOpen = (open: boolean) => {
     };
 };
 
-export const setConsolePanelOpen = (open: boolean) => {
-    return {
-        type: SET_CONSOLE_PANEL_OPEN,
-        open
-    };
-};
-
 export const setFileTreePanelOpen = (open: boolean) => {
     return {
         type: SET_FILE_TREE_PANEL_OPEN,
-        open
-    };
-};
-
-export const setSpectralAnalyzerOpen = (open: boolean) => {
-    return {
-        type: SET_SPECTRAL_ANALYZER_OPEN,
         open
     };
 };
