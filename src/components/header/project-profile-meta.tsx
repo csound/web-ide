@@ -1,9 +1,9 @@
 import React from "react";
-// import Moment from "react-moment";
+import Moment from "react-moment";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { selectActiveProject } from "@comp/projects/selectors";
-// import { selectProjectLastModified } from "@comp/ProjectLastModified/selectors";
+import { selectProjectLastModified } from "@comp/project-last-modified/selectors";
 import {
     selectUserProfile,
     selectUserImageURL,
@@ -19,10 +19,10 @@ import { isEmpty, prop, propOr } from "ramda";
 const ProjectProfileMeta = () => {
     const project = useSelector(selectActiveProject);
     const projectName = propOr("unnamed", "name", project || {});
-    // const projectDescription = propOr(null, "description", project || {});
-    /*
+    const projectDescription = propOr("", "description", project || {});
+
     const projectLastModified = useSelector(
-        selectProjectLastModified(propOr(null, "projectUid", project || {}))
+        selectProjectLastModified(prop("projectUid", project || {}))
     );
 
     const projectLastModifiedDate =
@@ -30,7 +30,7 @@ const ProjectProfileMeta = () => {
         projectLastModified.timestamp &&
         projectLastModified.timestamp.toDate &&
         projectLastModified.timestamp.toDate();
-*/
+
     const iconName = prop("iconName", project || {});
     const iconBackgroundColor = prop("iconBackgroundColor", project || {});
     const iconForegroundColor = prop("iconForegroundColor", project || {});
@@ -61,16 +61,56 @@ const ProjectProfileMeta = () => {
 
     return project ? (
         <div css={SS.projectProfileMetaContainer}>
-            <div css={SS.projectIcon}>
-                <ProjectIcon
-                    iconName={iconName}
-                    iconBackgroundColor={iconBackgroundColor}
-                    iconForegroundColor={iconForegroundColor}
-                    onClick={() => {}}
-                />
-            </div>
             <div css={SS.projectProfileMetaTextContainer}>
-                <h1 css={SS.projectProfileMetaH1}>{projectName}</h1>
+                <Tooltip
+                    placement="right"
+                    title={
+                        <div>
+                            <div css={SS.projectProfileTooltipTitleContainer}>
+                                <div css={SS.projectIcon}>
+                                    <ProjectIcon
+                                        iconName={iconName}
+                                        iconBackgroundColor={
+                                            iconBackgroundColor
+                                        }
+                                        iconForegroundColor={
+                                            iconForegroundColor
+                                        }
+                                        onClick={() => {}}
+                                    />
+                                </div>
+                                <div>
+                                    <h1 css={SS.projectProfileMetaH1}>
+                                        {projectName}
+                                    </h1>
+                                    <p css={SS.projectProfileDescription}>
+                                        {projectDescription}
+                                    </p>
+                                    <div>
+                                        {projectLastModifiedDate && (
+                                            <em
+                                                css={
+                                                    SS.projectProfileDescription
+                                                }
+                                            >
+                                                Modified
+                                                <Moment
+                                                    style={{ marginLeft: 3 }}
+                                                    date={
+                                                        projectLastModifiedDate
+                                                    }
+                                                    fromNow
+                                                />
+                                            </em>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                >
+                    <h1 css={SS.projectProfileMetaH1}>{projectName}</h1>
+                </Tooltip>
                 <p css={SS.projectProfileMetaP}>
                     <span css={SS.projectProfileBySpan}>{"By "}</span>
                     <Tooltip title={authorTooltip} placement="right">
@@ -88,22 +128,5 @@ const ProjectProfileMeta = () => {
         <></>
     );
 };
-
-// <div>
-//     {projectLastModifiedDate && (
-//         <p css={SS.projectProfileMetaP}>
-//             Modified
-//             <Moment
-//                 style={{ marginLeft: 3 }}
-//                 date={projectLastModifiedDate}
-//                 fromNow
-//             />
-//         </p>
-//     )}
-// </div>
-
-// {projectDescription && (
-//     <p css={SS.projectProfileMetaP}>{projectDescription}</p>
-// )}
 
 export default ProjectProfileMeta;

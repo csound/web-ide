@@ -68,6 +68,12 @@ export const accountTooltip = classCss`
     margin-right: 24px;
 `;
 
+export const projectProfileTooltipTitleContainer = css`
+    display: flex;
+    justify-content: space-between;
+    padding-right: 12px;
+`;
+
 export const headerRightSideGroup = css`
     position: relative;
     right: 0px;
@@ -98,6 +104,7 @@ export const clearfixHeader = css`
 export const projectProfileMetaContainer = css`
     display: flex;
     flex-direction: row;
+    margin-left: 12px;
 `;
 
 export const projectProfileMetaTextContainer = (theme) => css`
@@ -111,6 +118,14 @@ export const projectProfileMetaH1 = (theme) => css`
     color: ${theme.headerTextColor};
     font-weight: 500;
     font-size: 16px;
+    padding: 0;
+    margin: 0;
+`;
+
+export const projectProfileDescription = (theme) => css`
+    color: ${theme.altTextColor};
+    font-weight: 300;
+    font-size: 12px;
     padding: 0;
     margin: 0;
 `;

@@ -174,13 +174,12 @@ const Header = () => {
             <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     {burgerMenu}
-                    {!(routeIsEditor && !isOwner) && (
-                        <CSLogo
-                            size={38}
-                            interactive={true}
-                            onClick={handleIconClick}
-                        />
-                    )}
+
+                    <CSLogo
+                        size={38}
+                        interactive={true}
+                        onClick={handleIconClick}
+                    />
 
                     {routeIsEditor && activeProjectUid && isOwner && (
                         <MenuBar />
