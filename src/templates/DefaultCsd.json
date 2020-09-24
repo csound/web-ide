@@ -1,5 +1,0 @@
-{
-    "name": "project.csd",
-    "value": "<CsoundSynthesizer>\n<CsOptions>\n\n</CsOptions>\n<CsInstruments>\n#include \"project.orc\"\n</CsInstruments>\n<CsScore>\n#include \"project.sco\"\n</CsScore>\n</CsoundSynthesizer>",
-    "type": "txt"
-}

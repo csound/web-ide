@@ -344,6 +344,11 @@ module.exports = function (webpackEnv) {
                 // Disable require.ensure as it's not a standard language feature.
                 { parser: { requireEnsure: false } },
 
+                {
+                    test: /\.(orc|sco|csd)$/i,
+                    use: "raw-loader"
+                },
+
                 // First, run the linter.
                 // It's important to do this before Babel processes the JS.
                 {
@@ -526,6 +531,7 @@ module.exports = function (webpackEnv) {
                             // by webpacks internal loaders.
                             exclude: [
                                 /\.(js|mjs|jsx|ts|tsx)$/,
+                                /\.(orc|sco|csd)$/i,
                                 /\.html$/,
                                 /\.json$/
                             ],

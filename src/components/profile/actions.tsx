@@ -32,9 +32,7 @@ import {
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING
 } from "./types";
-import defaultCsd from "@root/templates/DefaultCsd.json";
-import defaultOrc from "@root/templates/DefaultOrc.json";
-import defaultSco from "@root/templates/DefaultSco.json";
+import { defaultCsd, defaultOrc, defaultSco } from "@root/templates";
 import firebase from "firebase/app";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
