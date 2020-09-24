@@ -32,7 +32,13 @@ export default function CsLogo(properties: ILogoContainer) {
             if (containerReference.current) {
                 const faviconNode = document.querySelector("#favicon");
                 const result = await domToImage.toPng(
-                    containerReference.current
+                    containerReference.current,
+                    {
+                        style: {
+                            backgroundColor: "#000000",
+                            borderRadius: "50%"
+                        }
+                    }
                 );
                 faviconNode?.setAttribute("href", result);
             }
