@@ -7354,10 +7354,10 @@ findup-sync@^3.0.0:
     micromatch "^3.0.4"
     resolve-dir "^1.0.1"
 
-firebase-tools@^8.10.0:
-  version "8.11.0"
-  resolved "https://registry.yarnpkg.com/firebase-tools/-/firebase-tools-8.11.0.tgz#4f33f26b8da66c278b88b820b317b59776380d93"
-  integrity sha512-uz/Oz6idMN5/m1AU0DivCqsNZd8sBnLNb+YJJUdkTi3yeKVlXKtGBbYu9d87t9E5azLC5CaV1wo/57q03lIuJg==
+firebase-tools@^8.11.2:
+  version "8.11.2"
+  resolved "https://registry.yarnpkg.com/firebase-tools/-/firebase-tools-8.11.2.tgz#35b8b1dc41e3acb66615ab37e05031ea1804cf39"
+  integrity sha512-aKxWDwrWhziPsPphwITVTpBUBl5wC08yZIFNosQc4/I9qXbnLmkIBYd06YvQkm0uwNlCMlJ5zE/UUAemEPUm+A==
   dependencies:
     "@google-cloud/pubsub" "^1.7.0"
     JSONStream "^1.2.1"
