@@ -53,6 +53,10 @@ export const tabDockInit = (
                     allDocuments
                 );
             }
+            initialIndex = Math.min(
+                initialOpenDocuments.length - 1,
+                initialIndex
+            );
         } catch (error) {
             console.error(error);
         }
