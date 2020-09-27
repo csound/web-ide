@@ -244,9 +244,11 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
         lineWrapping: true,
         matchBrackets: true,
         mode: ["csd", "orc", "sco", "udo"].some((t) => t === documentType)
-            ? "csound"
+            ? { name: "csound", documentType }
             : "text/plain",
         viewportMargin: Infinity,
+        tabSize: 2,
+        indentUnit: 2,
         extraKeys: {
             // noop default keybindings and handle from react
             // all defaults: code-mirror/src/input/keymap.js

@@ -64,9 +64,16 @@ const attributes = [
     "then"
 ];
 
-CodeMirror.defineMode("csound", function (config) {
+CodeMirror.defineMode("csound", function (config, parserConfig) {
     const opcodes = Object.keys(synopsis);
-    const indentWords = wordsToObject(["opcode", "instr", "while", "until"]);
+    const documentType = parserConfig.documentType || "csd";
+    const indentWords = wordsToObject([
+        "opcode",
+        "instr",
+        "while",
+        "until",
+        "then"
+    ]);
     const dedentWords = wordsToObject(["endif", "endop", "endin", "od"]);
     const matching = { "[": "]", "{": "}", "(": ")" };
     let currentPunctuation;
@@ -81,6 +88,14 @@ CodeMirror.defineMode("csound", function (config) {
         }
         if (stream.match("0dbfs", true)) {
             return "keyword";
+        }
+
+        if (
+            documentType === "csd" &&
+            !state.scoreSection &&
+            stream.match("<CsScore", true)
+        ) {
+            state.scoreSection = true;
         }
 
         const ch = stream.next();
@@ -271,10 +286,11 @@ CodeMirror.defineMode("csound", function (config) {
             return {
                 tokenize: [tokenBase],
                 indented: 0,
-                context: { type: "top", indented: -config.indentUnit },
+                context: { type: "top", indented: 0 },
                 continuedLine: false,
                 lastTok: undefined,
-                varList: false
+                varList: false,
+                scoreSection: parserConfig.documentType === "sco" ? true : false
             };
         },
 
@@ -399,11 +415,15 @@ CodeMirror.defineMode("csound", function (config) {
                 ct.type === matching[firstChar] ||
                 ((ct.type === "attribute" || ct.type === "keyword") &&
                     /^(?:end|else|elseif|od)\b/.test(textAfter));
-            return (
-                ct.indented +
-                (closing ? 0 : config.indentUnit) +
-                (state.continuedLine ? config.indentUnit : 0)
-            );
+            if (state.scoreSection) {
+                return 0;
+            } else {
+                return (
+                    ct.indented +
+                    (closing ? 0 : config.indentUnit) +
+                    (state.continuedLine ? config.indentUnit : 0)
+                );
+            }
         },
 
         electricInput: /^\s*(?:end|rescue|elsif|else|od|})$/,
@@ -413,3 +433,19 @@ CodeMirror.defineMode("csound", function (config) {
 });
 
 CodeMirror.defineMIME("text/x-csound", "csound");
+CodeMirror.defineMIME("text/csound-csd", {
+    name: "csound",
+    documentType: "csd"
+});
+CodeMirror.defineMIME("text/csound-orc", {
+    name: "csound",
+    documentType: "orc"
+});
+CodeMirror.defineMIME("text/csound-udo", {
+    name: "csound",
+    documentType: "udo"
+});
+CodeMirror.defineMIME("text/csound-sco", {
+    name: "csound",
+    documentType: "sco"
+});
