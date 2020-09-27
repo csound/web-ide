@@ -22,12 +22,23 @@ export const IDContainer = styled(Card)`
         z-index: 2;
         min-height: 580px;
         box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+        & > div {
+            max-width: 250px;
+        }
     }
 `;
+
 export const DescriptionSection = styled.div`
     grid-row: 2;
     grid-column: 1;
     padding: 20px;
+    div,
+    a,
+    h1,
+    h2 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 `;
 
 export const EditProfileButtonSection = styled.div`
@@ -42,6 +53,7 @@ export const ProfilePictureContainer = styled.div`
     grid-column: 1;
     z-index: 2;
 `;
+
 export const ProfilePictureDiv = styled.div`
     width: 100%;
     height: 100%;
@@ -49,9 +61,11 @@ export const ProfilePictureDiv = styled.div`
     z-index: 1;
     background: white;
 `;
+
 interface IUploadProfilePicture {
     imageHover: Boolean;
 }
+
 export const UploadProfilePicture = styled.div<IUploadProfilePicture>`
     width: 100%;
     height: 30%;
