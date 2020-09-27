@@ -10,7 +10,6 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
-import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import IconButton from "@material-ui/core/IconButton";
@@ -87,8 +86,7 @@ export const ProjectModal = (properties: IProjectModal) => {
     const dispatch = useDispatch();
     const currentTags = useSelector(selectTags(properties.projectID));
     const [modifiedTags, setModifiedTags] = useState([]);
-    const shouldDisable =
-        isEmpty(name) || !name.match(/^[\w ]*[A-Za-z]+[\w ]*$/);
+    const shouldDisable = isEmpty(name);
 
     useEffect(() => {
         if (not(equals(currentTags, modifiedTags)) && !isEmpty(currentTags)) {
@@ -156,6 +154,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                 <TextField
                     style={textFieldStyle}
                     label={"Name"}
+                    error={shouldDisable}
                     value={name}
                     onChange={(event) => {
                         setName(event.target.value);
@@ -168,10 +167,6 @@ export const ProjectModal = (properties: IProjectModal) => {
                     style={textFieldStyle}
                     label={"Description"}
                     value={description}
-                    InputProps={{
-                        inputComponent: TextareaAutosize,
-                        rows: 4
-                    }}
                     multiline={true}
                     onChange={(event) => {
                         setDescription(event.target.value);

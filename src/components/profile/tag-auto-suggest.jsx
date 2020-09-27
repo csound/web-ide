@@ -10,7 +10,7 @@ import ChipInput from "material-ui-chip-input";
 import { selectLoggedInUid } from "@comp/login/selectors";
 import { selectAllTagsFromUser, selectCurrentTagText } from "./selectors";
 import { setCurrentTagText } from "./actions";
-import { append, equals, pickAll, reject, values } from "ramda";
+import { append, dissoc, equals, pickAll, pipe, reject, values } from "ramda";
 import Fuse from "fuse.js";
 
 const styles = (theme) => ({
@@ -104,7 +104,7 @@ const TagAutosuggest = (properties) => {
                     onUpdateInput={onChange}
                     value={chips}
                     inputRef={ref}
-                    {...other}
+                    {...pipe(dissoc("projectUid"), dissoc("value"))(other)}
                 />
             )}
             suggestions={suggestions}

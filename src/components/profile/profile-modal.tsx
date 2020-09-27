@@ -4,7 +4,6 @@ import { SnackbarType } from "../snackbar/types";
 import { updateUserProfile } from "./actions";
 import { closeModal } from "../modal/actions";
 import { TextField, Button } from "@material-ui/core";
-import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import { useDispatch } from "react-redux";
 import { useTheme } from "emotion-theming";
 import * as TargetSS from "@comp/target-controls/styles";
@@ -129,10 +128,6 @@ export const ProfileModal = (properties: IProfileModal) => {
             <FieldRow row={4}>
                 <TextField
                     style={textFieldStyle}
-                    InputProps={{
-                        inputComponent: TextareaAutosize,
-                        rows: 4
-                    }}
                     label={"Bio"}
                     value={bio}
                     multiline={true}
