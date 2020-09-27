@@ -252,11 +252,14 @@ export const ProjectCardContentBottomID = styled.div`
     grid-template-columns: 1fr;
 `;
 
-export const Photo = styled.img`
+export const Photo: any = styled.div`
     vertical-align: middle;
     width: 50px;
+    height: 50px;
     border-radius: 50%;
     overflow: hidden;
+    background-image: url(${(property: any) => property.src});
+    background-size: cover;
     box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
 `;
 
