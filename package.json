@@ -74,7 +74,7 @@
         "postcss-loader": "4.0.2",
         "postcss-normalize": "9.0.0",
         "postcss-preset-env": "6.7.0",
-        "postcss-safe-parser": "5.0.1",
+        "postcss-safe-parser": "5.0.2",
         "postinstall-postinstall": "^2.1.0",
         "ramda": "^0.27.1",
         "react": "^16.13.1",
