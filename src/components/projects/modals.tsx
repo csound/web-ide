@@ -206,9 +206,9 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
             project.documents
         ) as IDocument[]).map((document_) => document_.filename);
 
-        const megabyte = Math.pow(10, 6);
+        const megabyte_limit = Math.pow(10, 6) * 2;
         const shouldDisable =
-            !files || isEmpty(files) || files[0].size > megabyte;
+            !files || isEmpty(files) || files[0].size > megabyte_limit;
         const filesize = !files ? "Select file" : formatFileSize(files[0].size);
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -228,7 +228,7 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
                         }}
                     ></input>
                 </Button>
-                <p>{`File Size: ${filesize} (Max file size is 1MB)`}</p>
+                <p>{`File Size: ${filesize} (Max file size is 2MB)`}</p>
                 <Button
                     variant="outlined"
                     color="primary"
