@@ -58,7 +58,7 @@
         "identity-obj-proxy": "3.0.0",
         "jest": "26.4.2",
         "jest-environment-jsdom-fourteen": "1.0.1",
-        "jest-resolve": "26.4.0",
+        "jest-resolve": "26.5.2",
         "jest-watch-typeahead": "0.6.1",
         "jszip": "^3.5.0",
         "lodash": "^4.17.20",
