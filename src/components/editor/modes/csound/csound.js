@@ -96,6 +96,8 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
             stream.match("<CsScore", true)
         ) {
             state.scoreSection = true;
+            stream.backUp("<CsScore".length);
+            return;
         }
 
         const ch = stream.next();
@@ -168,7 +170,7 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
         } else if (/[A-Z_a-\uFFFF]/.test(ch)) {
             stream.eatWhile(/[\dA-Z_a-\uFFFF]/);
             stream.eat(/[!?]/);
-            const curentToken = stream.current();
+            const currentToken = stream.current();
             if (stream.peek() === ":") {
                 const maybeOpcode = stream.current();
                 const isop = opcodes.some((s) => s === maybeOpcode);
@@ -185,7 +187,7 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
                     return "variable-6";
                 }
             }
-            state.lastTok = curentToken;
+            state.lastTok = currentToken;
             return "ident";
         } else if (
             ch === "|" &&
