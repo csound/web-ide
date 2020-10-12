@@ -46,7 +46,7 @@
         "emotion": "^10.0.27",
         "emotion-theming": "^10.0.27",
         "extract-text-webpack-plugin": "^4.0.0-beta.0",
-        "file-loader": "6.1.0",
+        "file-loader": "6.1.1",
         "file-saver": "^2.0.2",
         "files.macro": "^0.2.1",
         "firebase": "^7.23.0",
