@@ -30,7 +30,7 @@
         "array-move": "^3.0.1",
         "autosuggest-highlight": "^3.1.1",
         "better-react-spinkit": "^2.0.4",
-        "camelcase": "^6.0.0",
+        "camelcase": "^6.1.0",
         "case-sensitive-paths-webpack-plugin": "2.3.0",
         "chalk": "^4.1.0",
         "codemirror": "^5.58.0",
