@@ -87,7 +87,7 @@ export const downloadProjectOnce = (projectUid: string) => {
             const project: IProject = await convertProjectSnapToProject(
                 projSnap
             );
-            await dispatch(storeProjectLocally(project));
+            await dispatch(storeProjectLocally([project]));
         }
     };
 };
@@ -171,10 +171,10 @@ export const activateProject = (projectUid: string, csound) => {
     };
 };
 
-export const storeProjectLocally = (project: IProject) => {
+export const storeProjectLocally = (projects: Array<IProject>) => {
     return {
         type: STORE_PROJECT_LOCALLY,
-        project
+        projects
     };
 };
 

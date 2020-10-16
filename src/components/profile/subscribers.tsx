@@ -36,6 +36,7 @@ import {
     propOr,
     sort
 } from "ramda";
+import { IProject } from "../projects/types";
 
 export const subscribeToProfile = (profileUid: string, dispatch: any) => {
     const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
@@ -177,15 +178,17 @@ export const subscribeToProfileProjects = (
             map(prop("id"), projectSnaps.docs).sort()
         );
         if (!projectSnaps.empty) {
-            await projectSnaps.docs.forEach(async (projSnap) => {
-                const projTags = await tags
-                    .where(projSnap.id, "==", profileUid)
-                    .get()
-                    .then((d) => d.docs.map(prop("id")));
-                const proj = await convertProjectSnapToProject(projSnap);
-                await dispatch(
-                    storeProjectLocally(assoc("tags", projTags, proj))
-                );
+            Promise.all(
+                projectSnaps.docs.map(async (projSnap) => {
+                    const projTags = await tags
+                        .where(projSnap.id, "==", profileUid)
+                        .get()
+                        .then((d) => d.docs.map(prop("id")));
+                    const proj = await convertProjectSnapToProject(projSnap);
+                    return assoc("tags", projTags, proj) as IProject;
+                })
+            ).then((localProjects) => {
+                dispatch(storeProjectLocally(localProjects));
             });
         }
 

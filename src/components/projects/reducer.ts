@@ -27,7 +27,8 @@ import {
     mergeAll,
     hasPath,
     pathOr,
-    pipe
+    pipe,
+    reduce
 } from "ramda";
 import { isEmpty } from "lodash";
 
@@ -79,25 +80,34 @@ const resetDocumentToSavedValue = curry(
 export default (state: IProjectsReducer | undefined, action: any) => {
     switch (action.type) {
         case STORE_PROJECT_LOCALLY: {
-            if (isEmpty(action.project)) {
+            if (isEmpty(action.projects)) {
                 return state;
             }
-            const path = ["projects", action.project.projectUid];
-            if (hasPath(path, state)) {
-                return assocPath(
-                    path,
-                    mergeAll([
-                        pathOr({}, path, state),
-                        pipe(
-                            dissoc("tags"),
-                            dissoc("stars"),
-                            dissoc("documents")
-                        )(action.project)
-                    ])
-                )(state as IProjectsReducer) as IProjectsReducer;
-            } else {
-                return assocPath(path, action.project, state);
-            }
+
+            const newState = reduce(
+                (st, proj) => {
+                    const path = ["projects", proj.projectUid];
+                    if (hasPath(path, st)) {
+                        return assocPath(
+                            path,
+                            mergeAll([
+                                pathOr({}, path, st),
+                                pipe(
+                                    dissoc("tags"),
+                                    dissoc("stars"),
+                                    dissoc("documents")
+                                )(proj)
+                            ]),
+                            st
+                        );
+                    } else {
+                        return assocPath(path, proj, st);
+                    }
+                },
+                state,
+                action.projects
+            );
+            return newState;
         }
         case UNSET_PROJECT: {
             return dissocPath(["projects", action.projectUid], state);
