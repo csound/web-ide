@@ -140,34 +140,39 @@ export const addUserProject = (
         };
 
         try {
-            const newProjectReference = await projects.add(newProject);
-            await newProjectReference
-                .collection("files")
-                .add({ ...defaultCsd, userUid: loggedInUserUid });
-            const filesWithCsd = await newProjectReference
-                .collection("files")
-                .get();
-            const defaultCsdUid = filesWithCsd.docs[0].id;
-            await targets.doc(newProjectReference.id).set(
+            const batch = database.batch();
+            const newProjectReference = projects.doc();
+            batch.set(newProjectReference, newProject);
+            const filesReference = newProjectReference.collection("files");
+            const csdFileReference = filesReference.doc();
+            batch.set(csdFileReference, {
+                ...defaultCsd,
+                userUid: loggedInUserUid
+            });
+            batch.set(filesReference.doc(), {
+                ...defaultOrc,
+                userUid: loggedInUserUid
+            });
+            batch.set(filesReference.doc(), {
+                ...defaultSco,
+                userUid: loggedInUserUid
+            });
+            batch.set(
+                targets.doc(newProjectReference.id),
                 {
                     targets: {
                         "project.csd": {
                             csoundOptions: {},
                             targetName: "project.csd",
                             targetType: "main",
-                            targetDocumentUid: defaultCsdUid
+                            targetDocumentUid: csdFileReference.id
                         }
                     },
                     defaultTarget: "project.csd"
                 },
                 { merge: true }
             );
-            await newProjectReference
-                .collection("files")
-                .add({ ...defaultOrc, userUid: loggedInUserUid });
-            await newProjectReference
-                .collection("files")
-                .add({ ...defaultSco, userUid: loggedInUserUid });
+            await batch.commit();
             await handleProjectTags(
                 newProjectReference.id,
                 loggedInUserUid,
