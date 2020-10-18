@@ -88,7 +88,7 @@ export const selectFilteredUserProjects = (profileUid: string | undefined) =>
                 };
 
                 const fuse = new Fuse(userProjects, options);
-                result = fuse.search(projectFilterString);
+                result = fuse.search(projectFilterString).map((x) => x.item);
             }
 
             return result;
