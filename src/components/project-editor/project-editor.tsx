@@ -54,6 +54,11 @@ import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../csound/actions";
 import BottomTabs from "@comp/bottom-tabs/component";
 import MobileTabs from "@comp/bottom-tabs/mobile-tabs";
+import {
+    selectBottomTabIndex,
+    selectOpenBottomTabs
+} from "../bottom-tabs/selectors";
+import { BottomTab } from "../bottom-tabs/types";
 
 const TabStyles = tabStyles(false);
 
@@ -94,19 +99,33 @@ type IMainSectionProperties = {
 };
 
 const MainSection = React.forwardRef(
-    (properties: IMainSectionProperties, reference) => (
-        <div css={SS.mainTabsSplitter}>
-            <SplitterLayout
-                vertical
-                secondaryInitialSize={250}
-                ref={reference}
-                customClassName={"main-tab-panels"}
-            >
-                {properties.tabDock}
-                <BottomTabs />
-            </SplitterLayout>
-        </div>
-    )
+    (properties: IMainSectionProperties, reference) => {
+        const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
+            selectOpenBottomTabs(store)
+        );
+
+        const bottomTabIndex = useSelector((store: IStore) =>
+            selectBottomTabIndex(store)
+        );
+
+        return (
+            <div css={SS.mainTabsSplitter}>
+                {!isEmpty(openTabs) && bottomTabIndex > -1 ? (
+                    <SplitterLayout
+                        vertical
+                        secondaryInitialSize={250}
+                        ref={reference}
+                        customClassName={"main-tab-panels"}
+                    >
+                        {properties.tabDock}
+                        <BottomTabs />
+                    </SplitterLayout>
+                ) : (
+                    properties.tabDock
+                )}
+            </div>
+        );
+    }
 );
 
 MainSection.displayName = "MainSection";
