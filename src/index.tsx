@@ -4,9 +4,6 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import * as serviceWorker from "./service-worker";
 import Main from "./components/main/main";
-import { setCsound, setCsoundPlayState } from "./components/csound/actions";
-import CsoundObject from "./components/csound/csound-object";
-import { ICsoundObject } from "./components/csound/types";
 import * as Sentry from "@sentry/browser";
 
 import "./config/firestore"; // import for sideffects
@@ -52,16 +49,3 @@ ReactDOM.render(
 );
 
 serviceWorker.unregister();
-
-// ADD LISTENING TO REDUX STORE FOR SYNCHRONIZING PROJECT FILES TO EMFS
-CsoundObject.importScripts("/csound/").then(() => {
-    // const state = store.getState()
-    // console.log("STORE STATE", setCsound);
-    const csound: ICsoundObject = new CsoundObject();
-    store.dispatch(setCsound(csound));
-    csound.setMessageCallback(() => {});
-    csound.addPlayStateListener((csObject) => {
-        // console.log("Csound playState changed: " + csObj.getPlayState());
-        store.dispatch(setCsoundPlayState(csObject.getPlayState()));
-    });
-});
