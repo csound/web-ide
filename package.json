@@ -239,7 +239,7 @@
         "eslint-plugin-prettier": "^3.1.4",
         "eslint-plugin-react": "7.21.4",
         "eslint-plugin-react-hooks": "^4.1.2",
-        "eslint-plugin-unicorn": "^22.0.0",
+        "eslint-plugin-unicorn": "^23.0.0",
         "firebase-tools": "^8.14.1",
         "husky": "^4.3.0",
         "prettier": "^2.1.2",
