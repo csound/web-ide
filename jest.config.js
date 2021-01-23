@@ -2,9 +2,11 @@
 const { jsWithBabel: tsjPreset } = require("ts-jest/presets");
 
 module.exports = {
+    automock: false,
+    setupFiles: ["<rootDir>/scripts/setupJest.js"],
     transform: {
         ...tsjPreset.transform,
-        "^.+\\.svg$": "<rootDir>/__mocks__/svgTransform.js"
+        "^.+\\.svg$": "babel-jest"
     },
     roots: ["<rootDir>/src"],
     testMatch: [
@@ -24,7 +26,8 @@ module.exports = {
         "^@elem(.*)$": "<rootDir>/src/elements$1",
         "^@config(.*)$": "<rootDir>/src/config$1",
         "^@store(.*)$": "<rootDir>/src/store$1",
-        "\\.(jpg|jpeg|png|gif|svg|orc|sco|csd|udo)$":
+        "^.*\\.svg$": "<rootDir>/__mocks__/svgMock.js",
+        "\\.(jpg|jpeg|png|gif|orc|sco|csd|udo)$":
             "<rootDir>/__mocks__/fileMock.js",
         "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
     }
