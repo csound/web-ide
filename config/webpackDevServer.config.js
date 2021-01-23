@@ -1,3 +1,11 @@
+// @remove-on-eject-begin
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+// @remove-on-eject-end
 "use strict";
 
 const fs = require("fs");
@@ -38,7 +46,7 @@ module.exports = function (proxy, allowedHost) {
         compress: true,
         // Silence WebpackDevServer's own logs since they're generally not useful.
         // It will still show compile warnings and errors with this setting.
-        clientLogLevel: "none",
+        clientLogLevel: "debug",
         // By default WebpackDevServer serves physical files from current directory
         // in addition to all the virtual build products that it serves from memory.
         // This is confusing because those files won’t automatically be available in

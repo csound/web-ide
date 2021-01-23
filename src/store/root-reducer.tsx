@@ -19,7 +19,7 @@ import { History } from "history";
 
 const RootReducer = (history: History) =>
     combineReducers({
-        router: connectRouter(history),
+        router: connectRouter(Object.assign({}, { ...history }) as any),
         ProjectsReducer,
         LoginReducer,
         ProjectEditorReducer,

@@ -126,7 +126,9 @@ module.exports = function (webpackEnv = "production") {
                     "scheduler/tracing": "scheduler/tracing-profiling"
                 })
             },
-            fallback: { stream: require.resolve("stream-browserify") }
+            fallback: {
+                stream: require.resolve("stream-browserify")
+            }
         },
         resolveLoader: {
             plugins: [PnpWebpackPlugin.moduleLoader(module)]
@@ -163,7 +165,8 @@ module.exports = function (webpackEnv = "production") {
                 },
                 {
                     test: /\.(jsx?)$|\.(tsx?)$/i,
-                    exclude: /node_modules/,
+                    exclude: path.resolve(__dirname, "../node_modules/"),
+
                     use: [
                         { loader: "babel-loader", options: { babelrc: true } }
                     ]
@@ -249,7 +252,10 @@ module.exports = function (webpackEnv = "production") {
 
             new ModuleNotFoundPlugin(paths.appPath),
 
-            new webpack.DefinePlugin(env.stringified),
+            new webpack.DefinePlugin({
+                ...env.stringified,
+                "process.platform": `'${process.platform.toString()}'`
+            }),
             // This is necessary to emit hot updates (currently CSS only):
             isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
             isEnvDevelopment && new CaseSensitivePathsPlugin(),
@@ -337,7 +343,7 @@ module.exports = function (webpackEnv = "production") {
                 eslint: {
                     files: path.resolve("../src") + "/**/*.{ts,tsx,js,jsx}"
                 },
-                async: false, //isEnvDevelopment,
+                async: false,
                 useTypescriptIncrementalApi: true,
                 checkSyntacticErrors: true,
                 resolveModuleNameModule: process.versions.pnp
@@ -354,7 +360,6 @@ module.exports = function (webpackEnv = "production") {
                     "!**/src/setupProxy.*",
                     "!**/src/setupTests.*"
                 ],
-                // silent: true,
                 // The formatter is invoked directly in WebpackDevServerUtils during development
                 formatter: isEnvProduction ? typescriptFormatter : undefined
             }),
@@ -364,6 +369,8 @@ module.exports = function (webpackEnv = "production") {
                 formatter: require.resolve("react-dev-utils/eslintFormatter"),
                 eslintPath: require.resolve("eslint"),
                 context: paths.appSrc,
+                emitWarning: true,
+                emitError: true,
                 cache: true,
                 cacheLocation: path.resolve(
                     paths.appNodeModules,

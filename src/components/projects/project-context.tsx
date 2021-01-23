@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "react-loader-spinner";
 import { push } from "connected-react-router";
-import { Path } from "history";
 import { useTheme } from "@emotion/react";
 import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
@@ -32,10 +31,7 @@ const ProjectContext = (properties: IProjectContextProperties) => {
     const projectUid = properties.match.params.id;
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
-    invalidUrl &&
-        dispatch(
-            push({ pathname: "/404" } as Path, { message: "Project not found" })
-        );
+    invalidUrl && dispatch(push("/404", { message: "Project not found" }));
 
     const activeProjectUid: string | undefined = useSelector(
         (store) =>
@@ -80,7 +76,7 @@ const ProjectContext = (properties: IProjectContextProperties) => {
                     ) {
                         error.code === "permission-denied" &&
                             dispatch(
-                                push({ pathname: "/404" } as Path, {
+                                push("/404", {
                                     message: "Project not found"
                                 })
                             );

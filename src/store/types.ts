@@ -11,9 +11,9 @@ import { IProfileReducer } from "@comp/profile/reducer";
 import { IBottomTabsReducer } from "@comp/bottom-tabs/types";
 
 export interface IStore {
+    router: any;
     ProjectsReducer: IProjectsReducer;
     csound: ICsoundReducer;
-    router: any;
     LoginReducer: any;
     ProjectEditorReducer: IProjectEditorReducer;
     userProfile?: IUserProfile;

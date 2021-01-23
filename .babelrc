@@ -1,4 +1,9 @@
 {
+    "env": {
+        "development": {
+            "compact": false
+        }
+    },
     "presets": [
         "@babel/preset-env",
         "@babel/preset-typescript",

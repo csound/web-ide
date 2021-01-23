@@ -30,7 +30,7 @@ const ProjectCard = (properties) => {
         projectColumnCount,
         transitionStatus,
         profiles,
-        project
+        project = {}
     } = properties;
     let photoUrl = "",
         displayName = "",
