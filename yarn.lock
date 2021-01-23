@@ -13749,10 +13749,10 @@ react-loader-spinner@^3.1.14:
     babel-runtime "^6.26.0"
     prop-types "^15.7.2"
 
-react-moment@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/react-moment/-/react-moment-1.0.0.tgz#aedac867cd08739065799de9452c898d954ba6d7"
-  integrity sha512-J4iIiwUT4oZcL7cp2U7naQKbQtqvmzGXXBMg/DLj+Pi7n9EW0VhBRx/1aJ1Tp2poCqTCAPoadLEoUIkReGnNNg==
+react-moment@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/react-moment/-/react-moment-1.1.1.tgz#5fe9fb257039590c804e2b3aedfc3ceb0a6ffb16"
+  integrity sha512-WjwvxBSnmLMRcU33do0KixDB+9vP3e84eCse+rd+HNklAMNWyRgZTDEQlay/qK6lcXFPRuEIASJTpEt6pyK7Ww==
 
 react-onclickoutside@^6.9.0:
   version "6.9.0"
