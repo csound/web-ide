@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import LoaderSpinner from "react-loader-spinner";
 import { push } from "connected-react-router";
-import { useTheme } from "emotion-theming";
-import { ITheme } from "@styles/types";
+import { Path } from "history";
+import { useTheme } from "@emotion/react";
+import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
 import { ConsoleProvider } from "@comp/console/context";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
+import { fetchCsound } from "@comp/csound/actions";
 import { ICsoundObject } from "@comp/csound/types";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
@@ -23,14 +25,17 @@ const ForceBackgroundColor = ({ theme }) => (
 
 const ProjectContext = (properties: IProjectContextProperties) => {
     const dispatch = useDispatch();
-    const theme: ITheme = useTheme();
+    const theme = useTheme();
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
     const projectUid = properties.match.params.id;
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
-    invalidUrl && dispatch(push("/404", { message: "Project not found" }));
+    invalidUrl &&
+        dispatch(
+            push({ pathname: "/404" } as Path, { message: "Project not found" })
+        );
 
     const activeProjectUid: string | undefined = useSelector(
         (store) =>
@@ -43,6 +48,17 @@ const ProjectContext = (properties: IProjectContextProperties) => {
             !invalidUrl &&
             path(["ProjectsReducer", "projects", activeProjectUid], store)
     );
+
+    const csoundConstructor = useSelector((store: IStore) => {
+        return store.csound.constructor;
+    });
+
+    useEffect(() => {
+        console.log(csoundConstructor);
+        if (!csoundConstructor) {
+            dispatch(fetchCsound());
+        }
+    }, [csoundConstructor, dispatch]);
 
     const csound: ICsoundObject | undefined = useSelector(
         path(["csound", "csound"])
@@ -64,7 +80,9 @@ const ProjectContext = (properties: IProjectContextProperties) => {
                     ) {
                         error.code === "permission-denied" &&
                             dispatch(
-                                push("/404", { message: "Project not found" })
+                                push({ pathname: "/404" } as Path, {
+                                    message: "Project not found"
+                                })
                             );
                     }
                 }

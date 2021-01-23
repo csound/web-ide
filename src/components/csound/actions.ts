@@ -3,6 +3,7 @@ import { IStore } from "@store/types";
 import { IDocument, IProject } from "../projects/types";
 import {
     ICsoundObject,
+    FETCH_CSOUND,
     SET_CSOUND,
     ICsoundStatus,
     SET_CSOUND_PLAY_STATE
@@ -11,6 +12,19 @@ import { selectActiveProject } from "../projects/selectors";
 import { saveAs } from "file-saver";
 import { path } from "ramda";
 import { storageReference } from "../../config/firestore";
+
+export const fetchCsound = () => {
+    return async (dispatch: any, getState) => {
+        const currentState = getState();
+        const constructor = path(["csound", "constructor"], currentState);
+        if (!constructor) {
+            dispatch({
+                type: FETCH_CSOUND,
+                constructor: await import("@csound/browser")
+            });
+        }
+    };
+};
 
 export const setCsound = (csound: ICsoundObject) => {
     return {

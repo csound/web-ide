@@ -1,3 +1,4 @@
+import "jest";
 import React from "react";
 import ReactDOM from "react-dom";
 import Main from "./main";
@@ -5,7 +6,7 @@ import { configureStore } from "@store/configure-store";
 import { Provider } from "react-redux";
 import { JSDOM } from "jsdom";
 
-const { store, history } = configureStore();
+const { store } = configureStore();
 
 jest.mock("perfect-scrollbar");
 
@@ -26,7 +27,7 @@ it("renders without crashing", () => {
     const div = global.document.createElement("div");
     ReactDOM.render(
         <Provider store={store}>
-            <Main history={history} />
+            <Main />
         </Provider>,
         div
     );

@@ -32,7 +32,7 @@ export const tabDockInit = (
     );
 
     let initialOpenDocuments: IOpenDocument[] = [];
-    let initialIndex: number = -1;
+    let initialIndex = -1;
 
     if (
         storedTabOrder &&

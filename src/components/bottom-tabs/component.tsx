@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { isEmpty } from "ramda";
 import {
     Tabs,

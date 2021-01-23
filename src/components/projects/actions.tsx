@@ -1,3 +1,5 @@
+import firebase from "firebase/app";
+import "firebase/auth";
 import { push } from "connected-react-router";
 import { ICsoundObject } from "@comp/csound/types";
 import {
@@ -69,7 +71,6 @@ import {
 import { store } from "@root/store";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import firebase from "firebase/app";
 import { v4 as uuidv4 } from "uuid";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";

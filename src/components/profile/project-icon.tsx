@@ -12,6 +12,11 @@ const ProjectIcon = ({
     iconBackgroundColor,
     iconForegroundColor,
     onClick
+}: {
+    iconName: string;
+    iconBackgroundColor: string;
+    iconForegroundColor: string;
+    onClick?: (event: any) => void;
 }) => {
     const IconComponent: React.ElementType =
         iconName && iconName !== "default" && SVGPaths[iconName]
@@ -25,7 +30,7 @@ const ProjectIcon = ({
                 SS.previewAvatarColor(iconForegroundColor || "#fff")
             ]}
             style={{ backgroundColor: iconBackgroundColor || "#000" }}
-            onClick={onClick ? onClick : () => {}}
+            {...(onClick ? { onClick } : {})}
         >
             <IconComponent width={"100%"} height={"100%"} />
         </div>

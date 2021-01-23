@@ -4,7 +4,9 @@ import { createSelector } from "reselect";
 export const selectDisplayedStarredProjects = (store: any) => {
     const state: State = store.HomeReducer;
     const displayedStarredProjects = state.displayedStarredProjects;
-    return !displayedStarredProjects ? new Array(8) : displayedStarredProjects;
+    return !displayedStarredProjects
+        ? Array.from({ length: 8 })
+        : displayedStarredProjects;
 };
 
 export const selectSearchProjectsRequest = (store: any) => {
@@ -28,7 +30,9 @@ export const selectSearchedProjectsTotal = (store: any) => {
 export const selectDisplayedRandomProjects = (store: any) => {
     const state: State = store.HomeReducer;
     const { displayedRandomProjects } = state;
-    return !displayedRandomProjects ? new Array(4) : displayedRandomProjects;
+    return !displayedRandomProjects
+        ? Array.from({ length: 4 })
+        : displayedRandomProjects;
 };
 
 export const selectTags = (store: any) => {

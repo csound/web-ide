@@ -1,4 +1,24 @@
 {
-    "presets": ["react-app", "@emotion/babel-preset-css-prop"],
-    "plugins": ["emotion"]
+    "presets": [
+        "@babel/preset-env",
+        "@babel/preset-typescript",
+        "@babel/preset-react",
+        "@emotion/babel-preset-css-prop"
+    ],
+    "plugins": [
+        "@emotion",
+        "@babel/plugin-transform-runtime",
+        "@babel/proposal-class-properties",
+        "@babel/proposal-object-rest-spread",
+        [
+            "babel-plugin-named-asset-import",
+            {
+                "loaderMap": {
+                    "svg": {
+                        "ReactComponent": "@svgr/webpack?-svgo,+titleProp,+ref![path]"
+                    }
+                }
+            }
+        ]
+    ]
 }

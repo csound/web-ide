@@ -1,4 +1,5 @@
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
+import "firebase/auth";
 import { IStore } from "@store/types";
 import { curry, equals, path, pathOr } from "ramda";
 import { IOpenDocument } from "./types";

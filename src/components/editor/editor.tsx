@@ -115,9 +115,9 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
 
         for (lineNumber = 0; lineNumber < cursorBoundry; lineNumber++) {
             const line = uncommentLine(lines[lineNumber]);
-            if (line.match(/instr|opcode/g)) {
+            if (/instr|opcode/g.test(line)) {
                 lastBlockLine = lineNumber;
-            } else if (line.match(/endin|endop/g)) {
+            } else if (/endin|endop/g.test(line)) {
                 lastBlockLine = undefined;
             }
         }
@@ -142,7 +142,7 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
             }
             const line = uncommentLine(lines[lineNumber]);
 
-            if (line.match(/endin|endop/g)) {
+            if (/endin|endop/g.test(line)) {
                 blockEnd = lineNumber;
             }
         }
@@ -243,20 +243,20 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
         mode: ["csd", "orc", "sco", "udo"].some((t) => t === documentType)
             ? { name: "csound", documentType }
             : "text/plain",
-        viewportMargin: Infinity,
+        viewportMargin: Number.POSITIVE_INFINITY,
         tabSize: 2,
         indentUnit: 2,
         extraKeys: {
             // noop default keybindings and handle from react
             // all defaults: code-mirror/src/input/keymap.js
-            "Ctrl-F": () => {},
-            "Cmd-F": () => {},
-            "Ctrl-Z": () => {},
-            "Cmd-Z": () => {},
-            "Shift-Ctrl-Z": () => {},
-            "Ctrl-Y": () => {},
-            "Shift-Cmd-Z": () => {},
-            "Cmd-Y": () => {},
+            // "Ctrl-F": () => {},
+            // "Cmd-F": () => {},
+            // "Ctrl-Z": () => {},
+            // "Cmd-Z": () => {},
+            // "Shift-Ctrl-Z": () => {},
+            // "Ctrl-Y": () => {},
+            // "Shift-Cmd-Z": () => {},
+            // "Cmd-Y": () => {},
             // todo: move to hot-keys
             "Ctrl-E": () => editorEvalCurried(false),
             "Ctrl-Enter": () => editorEvalCurried(true),

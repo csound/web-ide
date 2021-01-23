@@ -76,7 +76,6 @@ const ProjectProfileMeta = () => {
                                         iconForegroundColor={
                                             iconForegroundColor
                                         }
-                                        onClick={() => {}}
                                     />
                                 </div>
                                 <div>

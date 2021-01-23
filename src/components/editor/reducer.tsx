@@ -6,7 +6,7 @@ const INITIAL_STATE = {
     failed: false
 };
 
-export default (state = INITIAL_STATE, action: any) => {
+const EditorReducer = (state = INITIAL_STATE, action: any) => {
     switch (action.type) {
         case SIGNIN_REQUEST: {
             return { authenticated: false, requesting: true, failed: false };
@@ -22,3 +22,5 @@ export default (state = INITIAL_STATE, action: any) => {
         }
     }
 };
+
+export default EditorReducer;

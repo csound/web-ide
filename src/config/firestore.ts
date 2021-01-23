@@ -1,6 +1,7 @@
-import * as firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/firebase-storage";
+import firebase from "firebase";
+// import firebase from "@firebase/app";
+import "@firebase/firestore";
+import "@firebase/storage";
 
 const DEV = {
     apiKey: "AIzaSyDFV4Pm43eQXbFUrayG9Dj_7ddEBzQ9Gd4",

@@ -9,7 +9,7 @@ export interface State {
     readonly text: string;
     readonly type: SnackbarType;
     readonly open: boolean;
-    readonly timeout: number | typeof Infinity;
+    readonly timeout: number | typeof Number.POSITIVE_INFINITY;
 }
 
 const INITIAL_STATE: State = {

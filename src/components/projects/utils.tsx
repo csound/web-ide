@@ -21,7 +21,7 @@ export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
     const lowerName = filename.toLowerCase();
 
-    if (textFiles.find((extension) => lowerName.endsWith(extension))) {
+    if (textFiles.some((extension) => lowerName.endsWith(extension))) {
         return "txt";
     }
     return "bin";

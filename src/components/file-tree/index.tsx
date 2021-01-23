@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { rgba } from "@styles/utils";
 import { useDnD } from "./context";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useDispatch, useSelector } from "react-redux";
 import Collapse from "@material-ui/core/Collapse";

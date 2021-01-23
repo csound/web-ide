@@ -5,7 +5,7 @@ import { updateUserProfile } from "./actions";
 import { closeModal } from "../modal/actions";
 import { TextField, Button } from "@material-ui/core";
 import { useDispatch } from "react-redux";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import * as TargetSS from "@comp/target-controls/styles";
 import styled from "styled-components";
 import Select from "react-select";

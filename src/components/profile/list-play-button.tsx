@@ -10,7 +10,7 @@ import SVGPaths, { SVGComponents } from "./svg-paths";
 import { useDispatch, useSelector } from "react-redux";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import AlertIcon from "@material-ui/icons/ErrorOutline";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import * as SS from "./styles";
 import { Avatar } from "@material-ui/core";
 

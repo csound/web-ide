@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import { shadow } from "@styles/_common";
 import { headerHeight, tabListHeight } from "@styles/constants";
 

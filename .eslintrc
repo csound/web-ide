@@ -6,6 +6,7 @@
     "plugins": ["import", "unicorn", "react", "react-hooks"],
     "extends": [
         "react-app",
+        "plugin:@typescript-eslint/recommended",
         "eslint:recommended",
         "plugin:import/errors",
         "plugin:import/warnings",
@@ -18,8 +19,9 @@
         "prettier/unicorn",
         "prettier"
     ],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 2021,
+        "ecmaVersion": 2018,
         "sourceType": "module"
     },
     "settings": {
@@ -46,8 +48,14 @@
         "no-empty": "off",
         "react/prop-types": "off",
         "unicorn/no-reduce": "off",
+        "unicorn/no-array-for-each": "off",
+        "unicorn/no-array-reduce": "off",
         "react/jsx-uses-react": "error",
         "react-hooks/exhaustive-deps": "error"
     },
-    "ignorePatterns": ["**/src/react-app-env.d.ts", "**/src/styles/*"]
+    "ignorePatterns": [
+        "**/src/react-app-env.d.ts",
+        "**/src/styles/*",
+        "**/plugins/show-hint.js"
+    ]
 }

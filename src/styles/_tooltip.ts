@@ -1,4 +1,4 @@
-import { css as classCss } from "emotion";
+import { css as classCss } from "@emotion/css";
 
 // the absolute pos elem
 const tooltipPopper = classCss`

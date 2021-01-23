@@ -63,7 +63,7 @@ export const ProfilePictureDiv = styled.div`
 `;
 
 interface IUploadProfilePicture {
-    imageHover: Boolean;
+    imageHover: boolean;
 }
 
 export const UploadProfilePicture = styled.div<IUploadProfilePicture>`

@@ -154,10 +154,8 @@ const ProfileReducer = (
             return assoc("currentlyPlayingProject", action.projectUid, state);
         }
         case SET_CSOUND_PLAY_STATE: {
-            if (state.currentlyPlayingProject) {
-                if (action.status === "stopped") {
-                    return dissoc("currentlyPlayingProject", state);
-                }
+            if (state.currentlyPlayingProject && action.status === "stopped") {
+                return dissoc("currentlyPlayingProject", state);
             }
             return state;
         }

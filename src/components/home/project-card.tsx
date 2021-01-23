@@ -32,24 +32,22 @@ const ProjectCard = (properties) => {
         profiles,
         project
     } = properties;
-    let description = "",
-        iconName = "",
-        iconBackgroundColor = "",
-        iconForegroundColor = "",
-        name = "",
-        userUid = "",
-        photoUrl = "",
+    let photoUrl = "",
         displayName = "",
         username = "",
         bio = "";
 
-    if (properties.project || typeof profiles[userUid] !== "undefined") {
-        description = project.description;
-        iconName = project.iconName;
-        iconBackgroundColor = project.iconBackgroundColor;
-        iconForegroundColor = project.iconForegroundColor;
-        name = project.name;
-        userUid = project.userUid;
+    const {
+        description = "",
+        iconName: iconName_ = "",
+        iconBackgroundColor = "",
+        iconForegroundColor = "",
+        name = "",
+        userUid = "",
+        id: projectId
+    } = project;
+
+    if (project || typeof profiles[userUid] !== "undefined") {
         photoUrl = path([userUid, "photoUrl"], profiles);
         displayName = path([userUid, "displayName"], profiles);
         username = get(profiles, `${userUid}.username`) || "";
@@ -58,12 +56,12 @@ const ProjectCard = (properties) => {
 
     const [mouseOver, setMouseOver] = useState(false);
 
-    iconName =
-        iconName === "" ||
-        typeof iconName === "undefined" ||
-        iconName === "default"
+    const iconName =
+        iconName_ === "" ||
+        typeof iconName_ === "undefined" ||
+        iconName_ === "default"
             ? "fadwaveform"
-            : iconName;
+            : iconName_;
 
     const SVGIcon = SVGComponents[`${iconName}Component`];
 
@@ -116,7 +114,7 @@ const ProjectCard = (properties) => {
                                         onMouseLeave={() => setMouseOver(false)}
                                     >
                                         <ProjectCardContentTop
-                                            to={`editor/${project.id}`}
+                                            to={`editor/${projectId}`}
                                         >
                                             <ProjectCardContentTopHeader>
                                                 {name}
@@ -135,7 +133,7 @@ const ProjectCard = (properties) => {
                                             }}
                                         >
                                             <ListPlayButton
-                                                projectUid={project.id}
+                                                projectUid={projectId}
                                                 iconNameProp={iconName}
                                                 iconBackgroundColorProp={
                                                     iconBackgroundColor

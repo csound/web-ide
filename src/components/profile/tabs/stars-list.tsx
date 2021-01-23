@@ -44,7 +44,6 @@ const StarsList = ({ profileUid }) => {
                                     iconForegroundColor={
                                         project.iconForegroundColor
                                     }
-                                    onClick={() => {}}
                                 />
                             )}
                         </div>

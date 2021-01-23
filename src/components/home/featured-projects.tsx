@@ -67,7 +67,7 @@ const FeaturedProjects = ({
             </Grid>
 
             {Array.isArray(starredProjects) &&
-                starredProjects.length !== 0 &&
+                starredProjects.length > 0 &&
                 starredProjects.map((item, index) => {
                     return (
                         <Grid item xs={6} sm={3} key={index}>

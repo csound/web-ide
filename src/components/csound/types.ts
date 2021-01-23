@@ -9,6 +9,7 @@ export type ICsoundStatus =
     | "error";
 
 // ACTION TYPES
+export const FETCH_CSOUND = PREFIX + "FETCH_CSOUND";
 export const SET_CSOUND = PREFIX + "SET_CSOUND";
 export const SET_CSOUND_PLAY_STATE = PREFIX + "SET_CSOUND_PLAY_STATE";
 

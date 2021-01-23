@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import { shadow, _scrollbars } from "@styles/_common";
 
 export const dropdownContainer = (theme) => css`

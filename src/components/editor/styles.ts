@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import { _scrollbars } from "@root/styles/_common";
 
 export const root = (theme) => css`

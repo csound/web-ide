@@ -1,5 +1,5 @@
-import { css as classCss } from "emotion";
-import { css } from "@emotion/core";
+import { css as classCss } from "@emotion/css";
+import { css } from "@emotion/react";
 import { shadow } from "@styles/_common";
 import { headerHeight } from "@styles/constants";
 

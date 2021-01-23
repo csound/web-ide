@@ -1,4 +1,5 @@
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
+import "firebase/firestore";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import { openSimpleModal } from "@comp/modal/actions";
 import { openSnackbar } from "@comp/snackbar/actions";

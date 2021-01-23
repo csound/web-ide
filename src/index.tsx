@@ -8,10 +8,12 @@ import * as Sentry from "@sentry/browser";
 
 import "./config/firestore"; // import for sideffects
 import "react-perfect-scrollbar/dist/css/styles.css";
-import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import "react-loader-spinner/dist/loader/css/CradleLoader.css";
+import "react-loader-spinner/dist/loader/css/Plane.css";
+import "react-loader-spinner/dist/loader/css/Triangle.css";
 
-(window as any).React = React;
-(window as any).ReactDOM = ReactDOM;
+// (window as any).React = React;
+// (window as any).ReactDOM = ReactDOM;
 
 if (typeof process.env.REACT_APP_SENTRY_DSN !== "undefined") {
     Sentry.init({

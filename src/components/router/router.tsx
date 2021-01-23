@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Provider, useDispatch } from "react-redux";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
 import Home from "../home/home";
 import CsoundManual from "csound-manual-react";

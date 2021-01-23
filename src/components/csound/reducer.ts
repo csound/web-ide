@@ -1,38 +1,41 @@
+import { assoc } from "ramda";
+import { Csound, CsoundObj } from "@csound/browser";
 import {
-    ICsoundObject,
     ICsoundStatus,
+    FETCH_CSOUND,
     SET_CSOUND,
     SET_CSOUND_PLAY_STATE
 } from "./types";
 
 export interface ICsoundReducer {
-    csound: ICsoundObject | undefined;
+    constructor: typeof Csound | undefined;
+    csound: typeof CsoundObj | undefined;
     status: ICsoundStatus;
 }
 
 const CsoundReducer = (state: any, action: any): ICsoundReducer => {
     switch (action.type) {
+        case FETCH_CSOUND: {
+            return assoc("constructor", action.constructor, state);
+        }
         case SET_CSOUND: {
             // store it globally for the Manual!
-            (window as any).csound = action.csound;
-            return {
-                csound: action.csound,
-                status: state.status
-            };
+            // (window as any).csound = action.csound;
+            // return {
+            //     csound: action.csound,
+            //     status: state.status
+            // };
+            return state;
         }
         case SET_CSOUND_PLAY_STATE: {
-            return {
-                csound: state.csound,
-                status: action.status
-            };
+            return state;
+            // return {
+            //     csound: state.csound,
+            //     status: action.status
+            // };
         }
         default: {
-            return (
-                state ||
-                ({
-                    status: "initialized"
-                } as ICsoundReducer)
-            );
+            return state || { status: "initialized" };
         }
     }
 };

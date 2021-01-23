@@ -189,7 +189,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                     <Tooltip title={"select an icon for your project"}>
                         <>
                             <ProjectIcon
-                                iconName={iconName}
+                                iconName={iconName || ""}
                                 iconBackgroundColor={iconBackgroundColor}
                                 iconForegroundColor={iconForegroundColor}
                                 onClick={handleProfileDropDown}

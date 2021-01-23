@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { saveChangesToTarget } from "./actions";
 import { setOnCloseModal, closeModal } from "@comp/modal/actions";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import Select from "react-select";
 import {
     selectDefaultTargetName,
@@ -162,7 +162,7 @@ const TargetsConfigDialog = () => {
             targetType,
             isDefaultTarget
         } = thisTarget;
-        const maybeMainTargetDocumentUid = thisTarget.targetDocumentUid;
+        const { targetDocumentUid } = thisTarget;
         const validateTargetType = (targetType) =>
             typeof targetType === "string" ? !isEmpty(targetName) : false;
 
@@ -273,7 +273,7 @@ const TargetsConfigDialog = () => {
                         <div style={{ marginLeft: 12 }}>
                             <p css={SS.targetLabel}>{"main document"}</p>
                             <Select
-                                value={maybeMainTargetDocumentUid || ""}
+                                value={targetDocumentUid || ""}
                                 onChange={handleSelect("targetDocumentUid")}
                                 options={pipe(
                                     filter<any, any>(
@@ -305,10 +305,7 @@ const TargetsConfigDialog = () => {
                                 closeMenuOnSelect={true}
                                 placeholder={pathOr(
                                     "Select main document",
-                                    [
-                                        maybeMainTargetDocumentUid || "",
-                                        "filename"
-                                    ],
+                                    [targetDocumentUid || "", "filename"],
                                     documentsMap
                                 )}
                                 styles={dropdownStyleWithValidation(
@@ -385,8 +382,8 @@ const TargetsConfigDialog = () => {
         newTargets.some(propEq("isNameValid", false)) ||
         newTargets.some(propEq("isTypeValid", false)) ||
         newTargets.some(propEq("isOtherwiseValid", false));
-    const someChangesMade: boolean = !equals(storedTargets, newTargets);
-    const shouldDisallowSave: boolean = someErrorPresent || !someChangesMade;
+    const someChangesMade = !equals(storedTargets, newTargets);
+    const shouldDisallowSave = someErrorPresent || !someChangesMade;
 
     useEffect(() => {
         dispatch(

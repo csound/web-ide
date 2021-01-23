@@ -28,7 +28,7 @@ import SplitterLayout from "react-splitter-layout";
 import { IStore } from "@store/types";
 import Editor from "../editor/editor";
 import AudioEditor from "../audio-editor/audio-editor";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import CsoundManualWindow from "./csound-manual";
@@ -165,17 +165,17 @@ const ProjectEditor = ({ activeProject, csound }) => {
         );
 
         // get some metadata from other people's projects
-        const unsubscribeToProfile = !isOwner
-            ? subscribeToProfile(projectOwnerUid, dispatch)
-            : () => {};
-        const unsubscribeToProjectsCount = !isOwner
-            ? subscribeToProjectsCount(projectOwnerUid, dispatch)
-            : () => {};
+        const unsubscribeToProfile =
+            !isOwner && subscribeToProfile(projectOwnerUid, dispatch);
+
+        const unsubscribeToProjectsCount =
+            !isOwner && subscribeToProjectsCount(projectOwnerUid, dispatch);
+
         return () => {
             unsubscribeProjectChanges();
             unsubscribeToProjectLastModified();
-            unsubscribeToProfile();
-            unsubscribeToProjectsCount();
+            unsubscribeToProfile && unsubscribeToProfile();
+            unsubscribeToProjectsCount && unsubscribeToProjectsCount();
         };
     }, [csound, dispatch, isOwner, projectOwnerUid, projectUid]);
 

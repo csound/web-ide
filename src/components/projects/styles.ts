@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import { rgba } from "@styles/utils";
 
 export const main = css`

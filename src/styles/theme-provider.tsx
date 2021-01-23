@@ -7,9 +7,9 @@ import {
 } from "@material-ui/core/styles";
 import { ThemeProvider as StyledComponentsThemeProvider } from "styled-components";
 import { useSelector } from "react-redux";
-import { ThemeProvider } from "emotion-theming";
+import { ThemeProvider } from "@emotion/react";
 import { assocPath, pathOr, pipe } from "ramda";
-import { ITheme } from "./types";
+import { Theme } from "@emotion/react";
 import { CodeMirrorPainter } from "./code-mirror-painter";
 import themeMonokai from "./_theme-monokai";
 import { makeMuiTheme } from "./material-ui-style";
@@ -42,14 +42,14 @@ const CsoundWebIdeThemeProvider = (properties) => {
     const monospaceFont = `"Fira Mono", monospace`;
     const regularFont = `"Roboto", sans-serif`;
 
-    const theme: ITheme = pipe(
+    const theme: Theme = pipe(
         assocPath(["font", "monospace"], monospaceFont),
         assocPath(["font", "regular"], regularFont)
     )(
         useSelector(
             pathOr(themeMonokai, ["ThemeReducer", "selectedTheme"])
-        ) as ITheme
-    ) as ITheme;
+        ) as Theme
+    ) as Theme;
 
     const muiTheme = createMuiTheme();
     const muiThemeMixed = makeMuiTheme(muiTheme, theme);

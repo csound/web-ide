@@ -1,6 +1,6 @@
 import { Theme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 
 const profileStyles = (theme: Theme) =>
     createStyles({

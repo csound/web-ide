@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/css";
 import { _scrollbars } from "@styles/_common";
 // import { css as classCss } from "emotion";
 

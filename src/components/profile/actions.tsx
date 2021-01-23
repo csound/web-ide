@@ -1,4 +1,3 @@
-import "firebase/auth";
 import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
@@ -34,6 +33,7 @@ import {
 } from "./types";
 import { defaultCsd, defaultOrc, defaultSco } from "@root/templates";
 import firebase from "firebase/app";
+import "firebase/auth";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { openSimpleModal } from "@comp/modal/actions";

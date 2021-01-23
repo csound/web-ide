@@ -32,7 +32,7 @@ import * as SS from "./styles";
 const ProjectListItem = (properties) => {
     const { isProfileOwner, project } = properties;
     const dispatch = useDispatch();
-    const { projectUid, name, description, tags } = project;
+    const { isPublic, projectUid, name, description, tags } = project;
     ReactTooltip.rebuild();
 
     return (
@@ -98,7 +98,7 @@ const ProjectListItem = (properties) => {
                     </div>
                     <div
                         css={SS.deleteIconContainer}
-                        data-tip={`Delete ${project.name}`}
+                        data-tip={`Delete ${name}`}
                     >
                         <div
                             css={SS.deleteIcon}
@@ -114,26 +114,23 @@ const ProjectListItem = (properties) => {
                     <div
                         css={SS.publicIconContainer}
                         data-tip={
-                            project.isPublic
+                            isPublic
                                 ? "Make the project private"
                                 : "Make the project public"
                         }
                     >
                         <div
                             css={SS.publicIcon}
-                            style={{ opacity: !project.isPublic ? 0.6 : 1 }}
+                            style={{ opacity: !isPublic ? 0.6 : 1 }}
                             onClick={(event) => {
                                 dispatch(
-                                    markProjectPublic(
-                                        project.projectUid,
-                                        !project.isPublic
-                                    )
+                                    markProjectPublic(projectUid, !isPublic)
                                 );
                                 event.preventDefault();
                                 event.stopPropagation();
                             }}
                         >
-                            {project.isPublic ? (
+                            {isPublic ? (
                                 <VisibilityIcon />
                             ) : (
                                 <VisibilityOffIcon />
@@ -167,7 +164,7 @@ const ProfileLists = ({
             {selectedSection === 0 &&
                 Array.isArray(filteredProjects) &&
                 sort(
-                    descend(propOr(-Infinity, "created")),
+                    descend(propOr(Number.NEGATIVE_INFINITY, "created")),
                     filteredProjects
                 ).map((project) => {
                     return (

@@ -36,5 +36,7 @@ const profileStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
+const _withStyles = (ClassComponent: any) =>
     withStyles(profileStyles)(ClassComponent);
+
+export default _withStyles;

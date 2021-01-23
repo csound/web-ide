@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { IStore } from "@store/types";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

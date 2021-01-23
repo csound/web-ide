@@ -14,9 +14,9 @@ import {
     CREATE_CLEAR_ERROR,
     LOG_OUT
 } from "./types";
-import firebase from "firebase/app";
 import { closeModal, openSimpleModal } from "../modal/actions";
 import { database, profiles, usernames } from "../../config/firestore";
+import firebase from "firebase/app";
 import "firebase/auth";
 import { isEmpty } from "lodash";
 import { push } from "connected-react-router";
@@ -75,7 +75,7 @@ const profileFinalize = (user: any, dispatch: any) => {
                 .then((document_) => setNameReserved(document_.exists));
         };
 
-        const shouldDisable = isEmpty(input) || !input.match(/^[\dA-Za-z]+$/);
+        const shouldDisable = isEmpty(input) || !/^[\dA-Za-z]+$/.test(input);
 
         const handleOnSubmit = async () => {
             if (!nameReserved) {

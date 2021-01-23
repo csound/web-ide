@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 
 export const errorBox = (theme) => css`
     color: ${theme.errorText};

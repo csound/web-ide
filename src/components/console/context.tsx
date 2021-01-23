@@ -29,18 +29,17 @@ export const ConsoleProvider = ({ children, activeProject, csound }) => {
     }, [setLogs]);
 
     useEffect(() => {
-        if (csound) {
-            if (
-                !currentProject ||
+        if (
+            csound &&
+            (!currentProject ||
                 (typeof currentProject === "object" &&
                     (currentProject as any).projectUid !==
-                        activeProject.projectUid)
-            ) {
-                dispatch(setPrintToConsoleCallback(messageCallback));
-                csound && csound.setMessageCallback(messageCallback);
-                setLogs([""]);
-                setCurrentProject(activeProject);
-            }
+                        activeProject.projectUid))
+        ) {
+            dispatch(setPrintToConsoleCallback(messageCallback));
+            csound && csound.setMessageCallback(messageCallback);
+            setLogs([""]);
+            setCurrentProject(activeProject);
         }
     }, [
         activeProject,

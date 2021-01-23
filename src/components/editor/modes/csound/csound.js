@@ -20,7 +20,7 @@ function chain(newtok, stream, state) {
 
 function readHereDocument(phrase) {
     return function (stream, state) {
-        if (stream.match(phrase)) {
+        if (phrase.test(stream)) {
             state.tokenize.pop();
         } else {
             stream.skipToEnd();
@@ -30,7 +30,7 @@ function readHereDocument(phrase) {
 }
 
 function readBlockComment(stream, state) {
-    if (stream.match(/.*\*\//)) {
+    if (/.*\*\//.test(stream)) {
         state.tokenize.pop();
         stream.skipTo("*/");
     } else {
@@ -79,7 +79,7 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
     let currentPunctuation;
 
     function tokenBase(stream, state) {
-        if (stream.match(/\/\*/)) {
+        if (/\/\*/.test(stream)) {
             state.tokenize.push(readBlockComment);
             return "comment";
         }
@@ -151,7 +151,7 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
             stream.match(/^[\d_]*(?:\.[\d_]+)?(?:[Ee][+-]?[\d_]+)?/);
             return "number";
         } else if (ch === "?") {
-            while (stream.match(/^\\[CM]-/)) {}
+            while (/^\\[CM]-/.test(stream)) {}
             if (stream.eat("\\")) {
                 stream.eatWhile(/\w/);
             } else {
@@ -178,7 +178,7 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
                 if (
                     isop &&
                     typeof stream.peek() == "string" &&
-                    stream.peek().match(/[Saik]/)
+                    /[Saik]/.test(stream.peek())
                 ) {
                     stream.next();
                     state.lastTok = maybeOpcode;
@@ -317,34 +317,32 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
                     style = "attribute";
                 } else if (opcodes.some((s) => s === word)) {
                     style = "variable";
-                } else if (word.match(/^a\w+/)) {
+                } else if (/^a\w+/.test(word)) {
                     style = "variable-2";
-                } else if (word.match(/^i\w+/)) {
+                } else if (/^i\w+/.test(word)) {
                     style = "variable-3";
-                } else if (word.match(/^k\w+/)) {
+                } else if (/^k\w+/.test(word)) {
                     style = "variable-4";
-                } else if (word.match(/^f\w+/)) {
+                } else if (/^f\w+/.test(word)) {
                     style = "variable-5";
-                } else if (word.match(/^p\d+/)) {
+                } else if (/^p\d+/.test(word)) {
                     style = "variable-6";
-                } else if (word.match(/^g[afik]\w+/)) {
-                    if (word.length > 1) {
-                        switch (word.charAt(1)) {
-                            case "a":
-                                style = "variable-2 global";
-                                break;
-                            case "i":
-                                style = "variable-3 global";
-                                break;
-                            case "k":
-                                style = "variable-4 global";
-                                break;
-                            case "f":
-                                style = "variable-5 global";
-                                break;
-                            default: {
-                                break;
-                            }
+                } else if (/^g[afik]\w+/.test(word) && word.length > 1) {
+                    switch (word.charAt(1)) {
+                        case "a":
+                            style = "variable-2 global";
+                            break;
+                        case "i":
+                            style = "variable-3 global";
+                            break;
+                        case "k":
+                            style = "variable-4 global";
+                            break;
+                        case "f":
+                            style = "variable-5 global";
+                            break;
+                        default: {
+                            break;
                         }
                     }
                 }

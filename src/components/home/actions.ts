@@ -1,5 +1,6 @@
 import { profiles, projects } from "@config/firestore";
-import { firestore } from "firebase/app";
+import firebase from "firebase/app";
+import "firebase/firestore";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
@@ -46,7 +47,7 @@ export const searchProjects = (
     const projectProfiles = {};
 
     const profilesQuery = await profiles
-        .where(firestore.FieldPath.documentId(), "in", userIDs)
+        .where(firebase.firestore.FieldPath.documentId(), "in", userIDs)
         .get();
 
     profilesQuery.forEach((snapshot) => {
@@ -62,8 +63,8 @@ export const searchProjects = (
 };
 
 export const getPopularProjects = (
-    withRandomProjects: Boolean = false,
-    startCount: number = 0
+    withRandomProjects = false,
+    startCount = 0
 ): ThunkAction<void, any, null, Action<string>> => async (
     dispatch,
     getStore
@@ -87,7 +88,7 @@ export const getPopularProjects = (
     }
     const splitStarProjectsQuery = await projects
         .where("public", "==", true)
-        .where(firestore.FieldPath.documentId(), "in", starsIDs)
+        .where(firebase.firestore.FieldPath.documentId(), "in", starsIDs)
         .get();
 
     const starProjects: any[] = [];
@@ -100,7 +101,7 @@ export const getPopularProjects = (
     const projectProfiles = {};
 
     const profilesQuery = await profiles
-        .where(firestore.FieldPath.documentId(), "in", userIDs)
+        .where(firebase.firestore.FieldPath.documentId(), "in", userIDs)
         .get();
 
     profilesQuery.forEach((snapshot) => {
@@ -154,7 +155,7 @@ export const getRandomProjects = (): ThunkAction<
         const projectProfiles = {};
 
         const profilesQuery = await profiles
-            .where(firestore.FieldPath.documentId(), "in", userIDs)
+            .where(firebase.firestore.FieldPath.documentId(), "in", userIDs)
             .get();
 
         profilesQuery.forEach((snapshot) => {

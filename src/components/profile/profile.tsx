@@ -4,7 +4,7 @@ import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
-
+import { Path } from "history";
 import { useDispatch, useSelector } from "react-redux";
 import withStyles from "./styles";
 import AddIcon from "@material-ui/icons/Add";
@@ -156,7 +156,7 @@ const Profile = ({ classes, ...properties }) => {
     useEffect(() => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
-                dispatch(push("/"));
+                dispatch(push({ pathname: "/" } as Path));
             } else if (username) {
                 usernames
                     .doc(username)
@@ -164,7 +164,7 @@ const Profile = ({ classes, ...properties }) => {
                     .then((userSnap) => {
                         if (!userSnap.exists) {
                             dispatch(
-                                push("/404", {
+                                push({ pathname: "/404" } as Path, {
                                     message: "User not found"
                                 })
                             );
@@ -173,7 +173,7 @@ const Profile = ({ classes, ...properties }) => {
                             data && data.userUid
                                 ? setProfileUid(data.userUid)
                                 : dispatch(
-                                      push("/404", {
+                                      push({ pathname: "/404" } as Path, {
                                           message: "User not found"
                                       })
                                   );

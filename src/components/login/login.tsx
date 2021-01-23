@@ -28,7 +28,8 @@ import { validateEmail, isElectron } from "@root/utils";
 import * as SS from "./styles";
 import { assoc, isEmpty, pipe } from "ramda";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 // Configure FirebaseUI.
 const uiConfig = {

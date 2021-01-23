@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedTarget, showTargetsConfigDialog } from "./actions";
