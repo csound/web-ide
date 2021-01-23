@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { path, pathOr } from "ramda";
 import "react-piano/dist/styles.css";
 
-const MidiPiano = () => {
+const MidiPiano = (): React.ReactElement => {
     const firstNote = MidiNumbers.fromNote("c3");
     const lastNote = MidiNumbers.fromNote("f5");
     const csound: ICsoundObject | undefined = useSelector(

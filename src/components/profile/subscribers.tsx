@@ -55,7 +55,7 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
             const userProfileData = followingReference.data();
             const userProfileDataSorted = sort(
                 descend(propOr(Number.NEGATIVE_INFINITY, "val")),
-                listifyObject(userProfileData)
+                listifyObject(userProfileData || {})
             );
             const userProfileUids = map(prop("key"), userProfileDataSorted);
             const cachedProfileUids = keys(state.ProfileReducer.profiles);
@@ -93,7 +93,7 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
             const userProfileData = followersReference.data();
             const userProfileDataSorted = sort(
                 descend(propOr(Number.NEGATIVE_INFINITY, "val")),
-                listifyObject(userProfileData)
+                listifyObject(userProfileData || {})
             );
             const userProfileUids = map(prop("key"), userProfileDataSorted);
             const cachedProfileUids = keys(state.ProfileReducer.profiles);

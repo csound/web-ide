@@ -1,4 +1,4 @@
-import { combineReducers } from "redux";
+import { combineReducers, Reducer } from "redux";
 import { connectRouter } from "connected-react-router";
 import ProjectsReducer from "@comp/projects/reducer";
 import LoginReducer from "@comp/login/reducer";
@@ -17,7 +17,7 @@ import BottomTabsReducer from "@comp/bottom-tabs/reducer";
 import ProjectLastModifiedReducer from "@comp/project-last-modified/reducer";
 import { History } from "history";
 
-const RootReducer = (history: History) =>
+const RootReducer = (history: History): Reducer =>
     combineReducers({
         router: connectRouter(Object.assign({}, { ...history }) as any),
         ProjectsReducer,

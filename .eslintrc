@@ -41,6 +41,7 @@
     },
     "rules": {
         "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/no-explicit-any": "off",
         "no-var": "error",
         "prefer-const": "error",
         "curly": "error",
@@ -56,6 +57,7 @@
     "ignorePatterns": [
         "**/src/react-app-env.d.ts",
         "**/src/styles/*",
+        "**/src/service-worker.js",
         "**/plugins/show-hint.js"
     ]
 }
