@@ -23,10 +23,10 @@ interface IDropdownOption {
 
 const paranoidNotNullChecker = (item: any): boolean =>
     allPass([
-        (i) => typeof i !== "undefined",
-        (i) => `${i}` !== "undefined",
-        (i) => !isNil(i),
-        (i) => i !== null
+        (item_) => typeof item_ !== "undefined",
+        (item_) => `${item_}` !== "undefined",
+        (item_) => !isNil(item_),
+        (item_) => item_ !== null
     ])(item);
 
 const titleTooltip = ({ documents, selectedTarget }) => {
@@ -34,11 +34,9 @@ const titleTooltip = ({ documents, selectedTarget }) => {
         typeof selectedTarget === "object" &&
         has("targetDocumentUid", selectedTarget) &&
         documents[(selectedTarget || ({} as any)).targetDocumentUid];
-    if (mainDocument && selectedTarget.targetType === "main") {
-        return `main: ${mainDocument.filename}`;
-    } else {
-        return `No document found for selected target: ${selectedTarget.targetName}`;
-    }
+    return mainDocument && selectedTarget.targetType === "main"
+        ? `main: ${mainDocument.filename}`
+        : `No document found for selected target: ${selectedTarget.targetName}`;
 };
 
 const TargetDropdown = ({ activeProjectUid }) => {

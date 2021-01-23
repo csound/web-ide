@@ -13,12 +13,10 @@ const ProjectIcon = ({
     iconForegroundColor,
     onClick
 }) => {
-    let IconComponent: React.ElementType = SVGComponents[`fadADRComponent`];
-    if (iconName && iconName !== "default" && SVGPaths[iconName]) {
-        IconComponent = SVGComponents[`${iconName}Component`];
-    } else {
-        IconComponent = FallbackIcon;
-    }
+    const IconComponent: React.ElementType =
+        iconName && iconName !== "default" && SVGPaths[iconName]
+            ? SVGComponents[`${iconName}Component`]
+            : FallbackIcon;
 
     return (
         <div

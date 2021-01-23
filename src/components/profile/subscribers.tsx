@@ -69,11 +69,9 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
                     const profPromise = await profiles
                         .doc(followingProfileUid)
                         .get();
-                    if (profPromise.exists) {
-                        return profPromise.data();
-                    } else {
-                        return { displayName: "Deleted user" };
-                    }
+                    return profPromise.exists
+                        ? profPromise.data()
+                        : { displayName: "Deleted user" };
                 })
             );
             dispatch({
@@ -109,11 +107,9 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
                     const profPromise = await profiles
                         .doc(followerProfileUid)
                         .get();
-                    if (profPromise.exists) {
-                        return profPromise.data();
-                    } else {
-                        return { displayName: "Deleted user" };
-                    }
+                    return profPromise.exists
+                        ? profPromise.data()
+                        : { displayName: "Deleted user" };
                 })
             );
             dispatch({

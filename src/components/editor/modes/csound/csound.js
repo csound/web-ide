@@ -417,15 +417,11 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
                 ct.type === matching[firstChar] ||
                 ((ct.type === "attribute" || ct.type === "keyword") &&
                     /^(?:end|else|elseif|od)\b/.test(textAfter));
-            if (state.scoreSection) {
-                return 0;
-            } else {
-                return (
-                    ct.indented +
-                    (closing ? 0 : config.indentUnit) +
-                    (state.continuedLine ? config.indentUnit : 0)
-                );
-            }
+            return state.scoreSection
+                ? 0
+                : ct.indented +
+                      (closing ? 0 : config.indentUnit) +
+                      (state.continuedLine ? config.indentUnit : 0);
         },
 
         electricInput: /^\s*(?:end|rescue|elsif|else|od|})$/,

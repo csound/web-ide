@@ -6,7 +6,7 @@ import {
 import { mergeAll } from "ramda";
 import { IUserProfile } from "./types";
 
-export default (state = {}, action: any): IUserProfile => {
+const IdReducer = (state = {}, action: any): IUserProfile => {
     switch (action.type) {
         case SIGNIN_SUCCESS: {
             return {
@@ -26,3 +26,5 @@ export default (state = {}, action: any): IUserProfile => {
         }
     }
 };
+
+export default IdReducer;

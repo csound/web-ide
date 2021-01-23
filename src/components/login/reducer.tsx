@@ -23,7 +23,7 @@ const INITIAL_STATE = {
     requesting: true
 };
 
-export default (state = INITIAL_STATE, action: any) => {
+const LoginReducer = (state = INITIAL_STATE, action: any) => {
     switch (action.type) {
         case SIGNIN_REQUEST: {
             return assoc("requesting", true, state);
@@ -75,3 +75,5 @@ export default (state = INITIAL_STATE, action: any) => {
         }
     }
 };
+
+export default LoginReducer;

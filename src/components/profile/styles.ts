@@ -30,8 +30,10 @@ const profileStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
+const withStyles_ = (ClassComponent: any) =>
     withStyles(profileStyles)(ClassComponent);
+
+export default withStyles_;
 
 export const iconPreviewBox = css`
     margin-left: -16px;

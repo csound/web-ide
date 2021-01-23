@@ -23,9 +23,7 @@ export const selectTabDockIndex = (store: IStore) =>
 
 export const selectCurrentTab = (store: IStore): IOpenDocument | undefined => {
     const tabIndex = selectTabDockIndex(store);
-    if (tabIndex < 0) {
-        return;
-    } else {
+    if (tabIndex > -1) {
         return path(
             ["ProjectEditorReducer", "tabDock", "openDocuments", tabIndex],
             store

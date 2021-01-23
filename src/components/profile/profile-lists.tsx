@@ -51,12 +51,12 @@ const ProjectListItem = (properties) => {
                                 tags.map(
                                     (
                                         t: React.ReactNode,
-                                        i: string | number | undefined
+                                        index: string | number | undefined
                                     ) => {
                                         return (
                                             <StyledChip
                                                 color="primary"
-                                                key={i}
+                                                key={index}
                                                 label={t}
                                             />
                                         );
@@ -169,12 +169,12 @@ const ProfileLists = ({
                 sort(
                     descend(propOr(-Infinity, "created")),
                     filteredProjects
-                ).map((p, i) => {
+                ).map((project) => {
                     return (
                         <ProjectListItem
-                            key={p.projectUid}
+                            key={project.projectUid}
                             isProfileOwner={isProfileOwner}
-                            project={p}
+                            project={project}
                             csoundStatus={csoundStatus}
                             username={username}
                         />

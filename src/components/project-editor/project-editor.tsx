@@ -363,49 +363,45 @@ const ProjectEditor = ({ activeProject, csound }) => {
         };
     }, [dispatch]);
 
-    if (isMobile()) {
-        return (
-            <MobileTabs
-                activeProject={activeProject}
-                projectUid={projectUid}
-                tabDock={tabDock}
-            />
-        );
-    } else {
-        return (
-            <DnDProvider project={activeProject}>
-                <div css={SS.splitterLayoutContainer}>
-                    {unsavedDataExitPrompt}
-                    <SplitterLayout
-                        primaryIndex={1}
-                        primaryMinSize={400}
-                        secondaryInitialSize={250}
-                        secondaryMinSize={250}
-                    >
-                        {isFileTreeVisible && <FileTree />}
+    return isMobile() ? (
+        <MobileTabs
+            activeProject={activeProject}
+            projectUid={projectUid}
+            tabDock={tabDock}
+        />
+    ) : (
+        <DnDProvider project={activeProject}>
+            <div css={SS.splitterLayoutContainer}>
+                {unsavedDataExitPrompt}
+                <SplitterLayout
+                    primaryIndex={1}
+                    primaryMinSize={400}
+                    secondaryInitialSize={250}
+                    secondaryMinSize={250}
+                >
+                    {isFileTreeVisible && <FileTree />}
 
-                        <SplitterLayout
-                            horizontal
-                            secondaryInitialSize={500}
-                            onDragStart={() => setManualDrag(true)}
-                            onDragEnd={() => setManualDrag(false)}
-                        >
-                            <MainSection
-                                ref={tabPanelReference}
-                                tabDock={tabDock}
+                    <SplitterLayout
+                        horizontal
+                        secondaryInitialSize={500}
+                        onDragStart={() => setManualDrag(true)}
+                        onDragEnd={() => setManualDrag(false)}
+                    >
+                        <MainSection
+                            ref={tabPanelReference}
+                            tabDock={tabDock}
+                        />
+                        {isManualVisible && (
+                            <CsoundManualWindow
+                                manualDrag={manualDrag}
+                                projectUid={projectUid}
                             />
-                            {isManualVisible && (
-                                <CsoundManualWindow
-                                    manualDrag={manualDrag}
-                                    projectUid={projectUid}
-                                />
-                            )}
-                        </SplitterLayout>
+                        )}
                     </SplitterLayout>
-                </div>
-            </DnDProvider>
-        );
-    }
+                </SplitterLayout>
+            </div>
+        </DnDProvider>
+    );
 };
 
 export default ProjectEditor;

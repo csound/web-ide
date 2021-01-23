@@ -146,20 +146,17 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
                 blockEnd = lineNumber;
             }
         }
-
-        if (!blockEnd) {
-            return {
-                from: { line: cursorLine, ch: 0 },
-                to: { line: cursorLine, ch: lines[cursorLine - 1].length },
-                evalStr: lines[cursorLine]
-            };
-        } else {
-            return {
-                from: { line: lastBlockLine, ch: 0 },
-                to: { line: blockEnd, ch: lines[blockEnd].length },
-                evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
-            };
-        }
+        return !blockEnd
+            ? {
+                  from: { line: cursorLine, ch: 0 },
+                  to: { line: cursorLine, ch: lines[cursorLine - 1].length },
+                  evalStr: lines[cursorLine]
+              }
+            : {
+                  from: { line: lastBlockLine, ch: 0 },
+                  to: { line: blockEnd, ch: lines[blockEnd].length },
+                  evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
+              };
     };
 
     const toggleComment = () => {

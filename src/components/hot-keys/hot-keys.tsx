@@ -41,19 +41,13 @@ const HotKeys = (properties) => {
         {},
         keys(callbacks || {})
     );
-    if (insideIframe) {
-        return <>{properties.children}</>;
-    } else {
-        return (
-            <GlobalHotKeys
-                keyMap={bindings}
-                handlers={safeCallbacks}
-                allowChanges
-            >
-                {properties.children}
-            </GlobalHotKeys>
-        );
-    }
+    return insideIframe ? (
+        <>{properties.children}</>
+    ) : (
+        <GlobalHotKeys keyMap={bindings} handlers={safeCallbacks} allowChanges>
+            {properties.children}
+        </GlobalHotKeys>
+    );
 };
 
 export default HotKeys;

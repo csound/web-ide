@@ -17,7 +17,7 @@ import BottomTabsReducer from "@comp/bottom-tabs/reducer";
 import ProjectLastModifiedReducer from "@comp/project-last-modified/reducer";
 import { History } from "history";
 
-export default (history: History) =>
+const RootReducer = (history: History) =>
     combineReducers({
         router: connectRouter(history),
         ProjectsReducer,
@@ -36,3 +36,5 @@ export default (history: History) =>
         BottomTabsReducer,
         HomeReducer
     });
+
+export default RootReducer;

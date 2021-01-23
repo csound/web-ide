@@ -13,7 +13,7 @@ const initState: IBottomTabsReducer = {
     openTabs: ["console"]
 };
 
-export default (
+const BottomTabs = (
     state: IBottomTabsReducer | undefined,
     action: any
 ): IBottomTabsReducer => {
@@ -23,24 +23,22 @@ export default (
             const tabIsAlreadyOpen: boolean = safeState.openTabs.includes(
                 action.tab
             );
-            if (tabIsAlreadyOpen) {
-                return assoc(
-                    "index",
-                    findIndex(equals(action.tab), safeState.openTabs),
-                    state
-                );
-            } else {
-                return pipe(
-                    assoc(
-                        "openTabs",
-                        append(
-                            action.tab as BottomTab,
-                            propOr({}, "openTabs", state)
-                        )
-                    ),
-                    assoc("index", safeState.openTabs.length)
-                )(safeState);
-            }
+            return tabIsAlreadyOpen
+                ? assoc(
+                      "index",
+                      findIndex(equals(action.tab), safeState.openTabs),
+                      state
+                  )
+                : pipe(
+                      assoc(
+                          "openTabs",
+                          append(
+                              action.tab as BottomTab,
+                              propOr({}, "openTabs", state)
+                          )
+                      ),
+                      assoc("index", safeState.openTabs.length)
+                  )(safeState);
         }
         case CLOSE_BOTTOM_TAB: {
             const safeState = state || initState;
@@ -73,3 +71,5 @@ export default (
         }
     }
 };
+
+export default BottomTabs;

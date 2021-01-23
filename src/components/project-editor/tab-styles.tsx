@@ -111,7 +111,7 @@ PanelStyle = styled(PanelStyle)`
     ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
 `;
 
-export default (isBottom) => ({
+const TabStyles = (isBottom) => ({
     // eslint-disable-next-line react/display-name
     TabList: (properties) => (
         <TabListStyle {...properties} isBottom={isBottom} />
@@ -125,3 +125,5 @@ export default (isBottom) => ({
     // eslint-disable-next-line react/display-name
     Panel: (properties) => <PanelStyle {...properties} isBottom={isBottom} />
 });
+
+export default TabStyles;

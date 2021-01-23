@@ -58,7 +58,7 @@ const profileKeys = [
     "username"
 ];
 
-export default (
+const ProfileReducer = (
     state: IProfileReducer = INITIAL_STATE,
     action: ProfileActionTypes
 ) => {
@@ -80,15 +80,13 @@ export default (
             );
         }
         case STORE_USER_PROFILE: {
-            if (!hasPath(["profiles", (action as any).profileUid], state)) {
-                return assocPath(
-                    ["profiles", (action as any).profileUid],
-                    action.profile,
-                    state
-                );
-            } else {
-                return state;
-            }
+            return !hasPath(["profiles", (action as any).profileUid], state)
+                ? assocPath(
+                      ["profiles", (action as any).profileUid],
+                      action.profile,
+                      state
+                  )
+                : state;
         }
         case GET_ALL_TAGS: {
             return assocPath(
@@ -168,3 +166,5 @@ export default (
         }
     }
 };
+
+export default ProfileReducer;

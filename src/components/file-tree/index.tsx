@@ -55,11 +55,11 @@ const RootReference = React.forwardRef((properties: any, reference: any) => (
 
 RootReference.displayName = "FileTree";
 
-const hopefulSorting = curry((documentIdx, documentA, documentB) => {
-    const idxA = path([documentA.documentUid, "index"], documentIdx);
-    const idxB = path([documentB.documentUid, "index"], documentIdx);
-    if (idxA && idxB) {
-        return idxA < idxB ? -1 : idxA > idxB ? 1 : 0;
+const hopefulSorting = curry((documentIndex, documentA, documentB) => {
+    const indexA = path([documentA.documentUid, "index"], documentIndex);
+    const indexB = path([documentB.documentUid, "index"], documentIndex);
+    if (indexA && indexB) {
+        return indexA < indexB ? -1 : indexA > indexB ? 1 : 0;
     } else {
         return documentA.filename < documentB.filename
             ? -1
@@ -77,7 +77,7 @@ const makeTree = (
     isOwner,
     theme,
     path,
-    [documentIdx, elementArray],
+    [documentIndex, elementArray],
     filelist
 ) => {
     const allDirectories = filter(propEq("type", "folder"), filelist);
@@ -89,8 +89,8 @@ const makeTree = (
 
     // this could be problematic, but then again, we need to test what behaviour we want
     const sortedFiles = concat(
-        sort(hopefulSorting(documentIdx), allDirectories),
-        sort(hopefulSorting(documentIdx), allFiles)
+        sort(hopefulSorting(documentIndex), allDirectories),
+        sort(hopefulSorting(documentIndex), allFiles)
     );
 
     const currentFiles = filter(propEq("path", path || []), sortedFiles);
@@ -147,7 +147,7 @@ const makeTree = (
 
     return reduceIndexed(
         (
-            [documentIdx_, elementArray_],
+            [documentIndex_, elementArray_],
             document_: IDocument,
             index: number
         ) => {
@@ -169,7 +169,7 @@ const makeTree = (
                         )}
                     </ListItemIcon>
                 );
-                const [newDocumentIdx, newElementArray] = makeTree(
+                const [newDocumentIndex, newElementArray] = makeTree(
                     activeProjectUid,
                     dispatch,
                     collapseState,
@@ -177,7 +177,7 @@ const makeTree = (
                     isOwner,
                     theme,
                     folderPath,
-                    [documentIdx_, []],
+                    [documentIndex_, []],
                     newFileList
                 );
                 return [
@@ -189,7 +189,7 @@ const makeTree = (
                                 ? folderDocument.documentUid
                                 : "root"
                         },
-                        newDocumentIdx
+                        newDocumentIndex
                     ),
                     pipe(
                         append(
@@ -322,7 +322,7 @@ const makeTree = (
                                 ? folderDocument.documentUid
                                 : "root"
                         },
-                        documentIdx_
+                        documentIndex_
                     ),
                     append(
                         <Droppable
@@ -396,7 +396,7 @@ const makeTree = (
                 ];
             }
         },
-        [documentIdx, elementArray],
+        [documentIndex, elementArray],
         currentFiles
     );
 };

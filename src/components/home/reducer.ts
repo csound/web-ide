@@ -46,7 +46,7 @@ const INITIAL_STATE: State = {
     searchProjectsRequest: false
 };
 
-export default (state = INITIAL_STATE, action: HomeActionTypes) => {
+const HomeReducer = (state = INITIAL_STATE, action: HomeActionTypes) => {
     switch (action.type) {
         case SEARCH_PROJECTS_REQUEST: {
             return {
@@ -128,3 +128,5 @@ export default (state = INITIAL_STATE, action: HomeActionTypes) => {
         }
     }
 };
+
+export default HomeReducer;

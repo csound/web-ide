@@ -10,7 +10,7 @@ export type IProjectLastModifiedReducer = {
     [projectUid: string]: IProjectLastModified;
 };
 
-export default (
+const ProjectLastModifiedReducer = (
     state: IProjectLastModifiedReducer | undefined,
     action: any
 ) => {
@@ -26,3 +26,5 @@ export default (
         }
     }
 };
+
+export default ProjectLastModifiedReducer;

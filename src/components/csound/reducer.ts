@@ -10,7 +10,7 @@ export interface ICsoundReducer {
     status: ICsoundStatus;
 }
 
-export default (state: any, action: any): ICsoundReducer => {
+const CsoundReducer = (state: any, action: any): ICsoundReducer => {
     switch (action.type) {
         case SET_CSOUND: {
             // store it globally for the Manual!
@@ -36,3 +36,5 @@ export default (state: any, action: any): ICsoundReducer => {
         }
     }
 };
+
+export default CsoundReducer;

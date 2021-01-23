@@ -77,7 +77,7 @@ const resetDocumentToSavedValue = curry(
         )(state)
 );
 
-export default (state: IProjectsReducer | undefined, action: any) => {
+const ProjectsReducer = (state: IProjectsReducer | undefined, action: any) => {
     switch (action.type) {
         case STORE_PROJECT_LOCALLY: {
             if (isEmpty(action.projects)) {
@@ -87,22 +87,20 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             const newState = reduce(
                 (st, proj) => {
                     const path = ["projects", proj.projectUid];
-                    if (hasPath(path, st)) {
-                        return assocPath(
-                            path,
-                            mergeAll([
-                                pathOr({}, path, st),
-                                pipe(
-                                    dissoc("tags"),
-                                    dissoc("stars"),
-                                    dissoc("documents")
-                                )(proj)
-                            ]),
-                            st
-                        );
-                    } else {
-                        return assocPath(path, proj, st);
-                    }
+                    return hasPath(path, st)
+                        ? assocPath(
+                              path,
+                              mergeAll([
+                                  pathOr({}, path, st),
+                                  pipe(
+                                      dissoc("tags"),
+                                      dissoc("stars"),
+                                      dissoc("documents")
+                                  )(proj)
+                              ]),
+                              st
+                          )
+                        : assocPath(path, proj, st);
                 },
                 state,
                 action.projects
@@ -211,35 +209,33 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             // )(state);
         }
         case DOCUMENT_UPDATE_VALUE: {
-            if (!action.documentUid || !action.projectUid || !state) {
-                return state;
-            } else {
-                return pipe(
-                    assocPath(
-                        [
-                            "projects",
-                            action.projectUid,
-                            "documents",
-                            action.documentUid,
-                            "isModifiedLocally"
-                        ],
-                        action.val !==
-                            state.projects[action.projectUid].documents[
-                                action.documentUid
-                            ].savedValue
-                    ),
-                    assocPath(
-                        [
-                            "projects",
-                            action.projectUid,
-                            "documents",
-                            action.documentUid,
-                            "currentValue"
-                        ],
-                        action.val
-                    )
-                )(state) as IProjectsReducer;
-            }
+            return !action.documentUid || !action.projectUid || !state
+                ? state
+                : (pipe(
+                      assocPath(
+                          [
+                              "projects",
+                              action.projectUid,
+                              "documents",
+                              action.documentUid,
+                              "isModifiedLocally"
+                          ],
+                          action.val !==
+                              state.projects[action.projectUid].documents[
+                                  action.documentUid
+                              ].savedValue
+                      ),
+                      assocPath(
+                          [
+                              "projects",
+                              action.projectUid,
+                              "documents",
+                              action.documentUid,
+                              "currentValue"
+                          ],
+                          action.val
+                      )
+                  )(state) as IProjectsReducer);
         }
         case DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
             if (!action.documentUid || !state) {
@@ -273,26 +269,24 @@ export default (state: IProjectsReducer | undefined, action: any) => {
             );
         }
         case UPDATE_PROJECT_LAST_MODIFIED_LOCALLY: {
-            if (
-                state &&
+            return state &&
                 action.projectUid !== null &&
                 action.projectUid === state.activeProjectUid
-            ) {
-                return (assocPath as any)(
-                    [
-                        "projects",
-                        state.activeProjectUid,
-                        "cachedProjectLastModified"
-                    ],
-                    action.timestamp,
-                    state as IProjectsReducer
-                );
-            } else {
-                return state;
-            }
+                ? (assocPath as any)(
+                      [
+                          "projects",
+                          state.activeProjectUid,
+                          "cachedProjectLastModified"
+                      ],
+                      action.timestamp,
+                      state as IProjectsReducer
+                  )
+                : state;
         }
         default: {
             return (state as IProjectsReducer) || initialProjectsState;
         }
     }
 };
+
+export default ProjectsReducer;

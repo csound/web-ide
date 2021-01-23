@@ -65,12 +65,10 @@ const ListPlayButton = ({
     const [isStartingUp, setIsStartingUp] = useState(false);
     const dispatch = useDispatch();
 
-    let IconComponent;
-    if (iconNameProp && iconNameProp !== "default" && SVGPaths[iconNameProp]) {
-        IconComponent = SVGComponents[`${iconNameProp}Component`];
-    } else {
-        IconComponent = AssignmentIcon;
-    }
+    const IconComponent =
+        iconNameProp && iconNameProp !== "default" && SVGPaths[iconNameProp]
+            ? SVGComponents[`${iconNameProp}Component`]
+            : AssignmentIcon;
 
     useEffect(() => {
         if (

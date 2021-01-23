@@ -17,7 +17,7 @@ const initState: IConsoleReducer = {
     printToConsole: undefined
 };
 
-export default (
+const Console = (
     state: IConsoleReducer | undefined,
     action: any
 ): IConsoleReducer => {
@@ -33,3 +33,5 @@ export default (
         }
     }
 };
+
+export default Console;

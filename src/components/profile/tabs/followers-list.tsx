@@ -10,12 +10,12 @@ import { push } from "connected-react-router";
 
 const FollowersList = ({ filteredFollowers }) => {
     const dispatch = useDispatch();
-    return filteredFollowers.map((p: any, i) => {
+    return filteredFollowers.map((p: any, index) => {
         return (
             <ListItem
                 button
                 alignItems="flex-start"
-                key={i}
+                key={index}
                 onClick={() => {
                     dispatch(push(`/profile/${p.username}`));
                 }}

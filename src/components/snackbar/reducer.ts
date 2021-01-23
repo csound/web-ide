@@ -19,7 +19,10 @@ const INITIAL_STATE: State = {
     timeout: 6000
 };
 
-export default (state = INITIAL_STATE, action: SnackbarActionTypes) => {
+const SnackbarReducer = (
+    state = INITIAL_STATE,
+    action: SnackbarActionTypes
+) => {
     switch (action.type) {
         case OPEN_SNACKBAR: {
             return {
@@ -39,3 +42,5 @@ export default (state = INITIAL_STATE, action: SnackbarActionTypes) => {
         }
     }
 };
+
+export default SnackbarReducer;

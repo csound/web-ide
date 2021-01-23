@@ -115,14 +115,14 @@ const BottomTabs = () => {
                     onTabSequenceChange={handleTabSequenceChange}
                 >
                     <DragTabList id="drag-tab-list">
-                        {(openTabs || []).map((k, i) => (
-                            <DragTab key={i} closable={true}>
+                        {(openTabs || []).map((k, index) => (
+                            <DragTab key={index} closable={true}>
                                 <DragTabWithCloseButton
                                     closeCallback={() =>
                                         dispatch(closeBottomTab(k))
                                     }
                                     currentIndex={bottomTabIndex}
-                                    thisIndex={i}
+                                    thisIndex={index}
                                 >
                                     <p
                                         style={{
@@ -139,10 +139,10 @@ const BottomTabs = () => {
                     </DragTabList>
 
                     <PanelList>
-                        {(openTabs || []).map((k, i) => {
+                        {(openTabs || []).map((k, index) => {
                             const C = tabsData[k]["component"];
                             return (
-                                <Panel key={i} isBottom>
+                                <Panel key={index} isBottom>
                                     <React.Suspense fallback={<></>}>
                                         <C />
                                     </React.Suspense>

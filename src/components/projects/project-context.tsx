@@ -21,7 +21,7 @@ const ForceBackgroundColor = ({ theme }) => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-export default (properties: IProjectContextProperties) => {
+const ProjectContext = (properties: IProjectContextProperties) => {
     const dispatch = useDispatch();
     const theme: ITheme = useTheme();
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
@@ -89,34 +89,32 @@ export default (properties: IProjectContextProperties) => {
         tabIndex
     ]);
 
-    if (!needsLoading && !invalidUrl && project) {
-        return (
-            <>
-                <ForceBackgroundColor theme={theme} />
-                <Header />
-                <ConsoleProvider activeProject={project} csound={csound}>
-                    <ProjectEditor
-                        {...properties}
-                        csound={csound as unknown}
-                        activeProject={project}
-                    />
-                </ConsoleProvider>
-            </>
-        );
-    } else {
-        return (
-            <>
-                <ForceBackgroundColor theme={theme} />
-                <Header />
-                <main css={SS.loadMain}>
-                    <LoaderSpinner
-                        type="Audio"
-                        color={theme.highlightBackground}
-                        height={80}
-                        width={80}
-                    />
-                </main>
-            </>
-        );
-    }
+    return !needsLoading && !invalidUrl && project ? (
+        <>
+            <ForceBackgroundColor theme={theme} />
+            <Header />
+            <ConsoleProvider activeProject={project} csound={csound}>
+                <ProjectEditor
+                    {...properties}
+                    csound={csound as unknown}
+                    activeProject={project}
+                />
+            </ConsoleProvider>
+        </>
+    ) : (
+        <>
+            <ForceBackgroundColor theme={theme} />
+            <Header />
+            <main css={SS.loadMain}>
+                <LoaderSpinner
+                    type="Audio"
+                    color={theme.highlightBackground}
+                    height={80}
+                    width={80}
+                />
+            </main>
+        </>
+    );
 };
+
+export default ProjectContext;

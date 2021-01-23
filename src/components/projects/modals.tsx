@@ -96,7 +96,7 @@ export const newFolderPrompt = (
                         setNameCollides(
                             some(
                                 reservedFilenames,
-                                (fn) => fn === event.target.value
+                                (function_) => function_ === event.target.value
                             )
                         );
                     }}
@@ -163,7 +163,7 @@ export const newDocumentPrompt = (
                         setNameCollides(
                             some(
                                 reservedFilenames,
-                                (fn) => fn === event.target.value
+                                (function_) => function_ === event.target.value
                             )
                         );
                     }}
@@ -223,7 +223,10 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
                             const fileName = files ? files[0].name : "";
                             files && setFiles(files);
                             setNameCollides(
-                                some(reservedFilenames, (fn) => fn === fileName)
+                                some(
+                                    reservedFilenames,
+                                    (function_) => function_ === fileName
+                                )
                             );
                         }}
                     ></input>

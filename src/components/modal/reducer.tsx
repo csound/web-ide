@@ -15,7 +15,7 @@ const initialModalState: IModalReducer = {
     component: dummyComp
 };
 
-export default (state, action: any) => {
+const ModalReducer = (state, action: any) => {
     switch (action.type) {
         case "MODAL_CLOSE": {
             return { isOpen: false, component: dummyComp };
@@ -34,3 +34,5 @@ export default (state, action: any) => {
         }
     }
 };
+
+export default ModalReducer;

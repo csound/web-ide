@@ -29,5 +29,7 @@ const siteDocumentsStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
+const withStyles_ = (ClassComponent: any) =>
     withStyles(siteDocumentsStyles)(ClassComponent);
+
+export default withStyles_;

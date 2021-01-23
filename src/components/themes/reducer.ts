@@ -13,7 +13,7 @@ const initialState = {
     selectedThemeName: "monokai"
 };
 
-export default (state: IThemeReducer, action: any) => {
+const ThemeReducer = (state: IThemeReducer, action: any) => {
     switch (action.type) {
         case THEMES_CHANGE_THEME: {
             switch (action.newTheme) {
@@ -43,3 +43,5 @@ export default (state: IThemeReducer, action: any) => {
         }
     }
 };
+
+export default ThemeReducer;

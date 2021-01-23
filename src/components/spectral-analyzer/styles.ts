@@ -9,5 +9,7 @@ const audioEditorStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
+const withStyles_ = (ClassComponent: any) =>
     withStyles(audioEditorStyles)(ClassComponent);
+
+export default withStyles_;

@@ -18,7 +18,10 @@ export type ITargetControlsReducer = { [projectUid: string]: ITargetControl };
 
 const INITIAL_STATE: ITargetControlsReducer = {};
 
-export default (state: ITargetControlsReducer | undefined, action: any) => {
+const TargetControlsReducer = (
+    state: ITargetControlsReducer | undefined,
+    action: any
+) => {
     switch (action.type) {
         case SET_SELECTED_TARGET: {
             return assocPath(
@@ -64,3 +67,5 @@ export default (state: ITargetControlsReducer | undefined, action: any) => {
         }
     }
 };
+
+export default TargetControlsReducer;

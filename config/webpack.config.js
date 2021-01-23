@@ -28,6 +28,7 @@ const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
 const RobotstxtPlugin = require("robotstxt-webpack-plugin");
 const SitemapPlugin = require("sitemap-webpack-plugin").default;
 const postcssNormalize = require("postcss-normalize");
+const ESLintPlugin = require("eslint-webpack-plugin");
 
 const appPackageJson = require(paths.appPackageJson);
 
@@ -36,8 +37,6 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false";
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== "false";
-
-const isExtendingEslintConfig = process.env.EXTEND_ESLINT === "true";
 
 const imageInlineSizeLimit = parseInt(
     process.env.IMAGE_INLINE_SIZE_LIMIT || "10000"
@@ -347,27 +346,6 @@ module.exports = function (webpackEnv) {
                 {
                     test: /\.(orc|sco|csd)$/i,
                     use: "raw-loader"
-                },
-
-                // First, run the linter.
-                // It's important to do this before Babel processes the JS.
-                {
-                    test: /\.(js|mjs|jsx|ts|tsx)$/,
-                    enforce: "pre",
-                    use: [
-                        {
-                            options: {
-                                cache: true,
-                                formatter: require.resolve(
-                                    "react-dev-utils/eslintFormatter"
-                                ),
-                                eslintPath: require.resolve("eslint"),
-                                resolvePluginsRelativeTo: __dirname
-                            },
-                            loader: require.resolve("eslint-loader")
-                        }
-                    ],
-                    include: paths.appSrc
                 },
                 {
                     // "oneOf" will traverse all following loaders until one will
@@ -718,6 +696,24 @@ module.exports = function (webpackEnv) {
                 silent: true,
                 // The formatter is invoked directly in WebpackDevServerUtils during development
                 formatter: isEnvProduction ? typescriptFormatter : undefined
+            }),
+            new ESLintPlugin({
+                // Plugin options
+                extensions: ["js", "mjs", "jsx", "ts", "tsx"],
+                formatter: require.resolve("react-dev-utils/eslintFormatter"),
+                eslintPath: require.resolve("eslint"),
+                context: paths.appSrc,
+                cache: true,
+                cacheLocation: path.resolve(
+                    paths.appNodeModules,
+                    ".cache/.eslintcache"
+                ),
+                // ESLint class options
+                cwd: paths.appPath,
+                resolvePluginsRelativeTo: __dirname,
+                baseConfig: {
+                    extends: [require.resolve("eslint-config-react-app/base")]
+                }
             })
         ].filter(Boolean),
         // Some libraries import Node modules but don't use them in the browser.
