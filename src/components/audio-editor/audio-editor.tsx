@@ -13,13 +13,15 @@ const AudioEditor = ({ audioFileUrl, classes }: IAudioEditorProperties) => {
     // console.log("AFURL: " + audioFileUrl)
     // console.log("Data: " + data)
     useEffect(() => {
-        (async () => {
-            const fileUrl = await storageReference
+        if (!data) {
+            storageReference
                 .child(audioFileUrl)
-                .getDownloadURL();
-            setData(fileUrl);
-        })();
-    }, [audioFileUrl]);
+                .getDownloadURL()
+                .then((fileUrl) => {
+                    setData(fileUrl);
+                });
+        }
+    }, [data, setData, audioFileUrl]);
     return !data ? (
         <div>
             <p>Looking up audio file URL...</p>
@@ -27,7 +29,7 @@ const AudioEditor = ({ audioFileUrl, classes }: IAudioEditorProperties) => {
     ) : (
         <div className={classes.root}>
             <audio controls>
-                <source src={data!} />
+                <source src={data} />
             </audio>
         </div>
     );
