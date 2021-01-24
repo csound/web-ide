@@ -48,19 +48,6 @@ export const login = (
     };
 };
 
-function DebounceCuston(properties: Record<string, any>): React.ReactElement {
-    const { inputRef, ...other } = properties;
-
-    return (
-        <DebounceInput
-            {...other}
-            ref={(reference: any) => {
-                inputRef(reference && reference.inputElement);
-            }}
-        />
-    );
-}
-
 const profileFinalize = (
     user: { displayName: string | undefined; uid: string },
     dispatch: (any) => void
@@ -146,16 +133,28 @@ const profileFinalize = (
                             ? input + " already exists!"
                             : "New username"
                     }
-                    InputProps={{ inputComponent: DebounceCuston as any }}
+                    InputProps={{
+                        inputComponent: ({ inputRef }) => (
+                            <DebounceInput
+                                ref={(reference: any) => {
+                                    if (reference) {
+                                        inputRef = reference;
+                                    }
+                                }}
+                                onChange={(event) => {
+                                    event.target.value.length < 50 &&
+                                        setInput(event.target.value);
+                                    event.target.value.length < 50 &&
+                                        !isEmpty(event.target.value) &&
+                                        checkReservedUsername(
+                                            event.target.value
+                                        );
+                                }}
+                            />
+                        )
+                    }}
                     error={shouldDisable || nameReserved}
                     value={input}
-                    onChange={(event) => {
-                        event.target.value.length < 50 &&
-                            setInput(event.target.value);
-                        event.target.value.length < 50 &&
-                            !isEmpty(event.target.value) &&
-                            checkReservedUsername(event.target.value);
-                    }}
                 />
                 <TextField
                     style={textFieldStyle}
@@ -215,7 +214,7 @@ const profileFinalize = (
 };
 
 export const thirdPartyAuthSuccess = (
-    user: { uid: string },
+    user: { uid: string; userName: string | undefined },
     fromAutoLogin: boolean
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {

@@ -3,12 +3,16 @@ import { assoc } from "ramda";
 
 export interface IModalReducer {
     isOpen: boolean;
-    component: React.ReactElement;
+    component: () => React.ReactElement;
     title?: string;
     onClose?: () => void;
 }
 
-const dummyComp = () => <div />;
+const dummyComp = (): React.ReactElement => (
+    <>
+        <div />
+    </>
+);
 
 const initialModalState: IModalReducer = {
     isOpen: false,

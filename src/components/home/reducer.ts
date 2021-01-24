@@ -103,12 +103,12 @@ const HomeReducer = (
                 displayedRandomProjects: action.payload
             };
         }
-        case GET_DISPLAYED_RECENT_PROJECTS: {
-            return {
-                ...state,
-                displayedRecentProjects: action.payload
-            };
-        }
+        // case GET_DISPLAYED_RECENT_PROJECTS: {
+        //     return {
+        //         ...state,
+        //         displayedRecentProjects: action.payload
+        //     };
+        // }
         case GET_PROJECT_LAST_MODIFIED: {
             return {
                 ...state,

@@ -89,8 +89,8 @@ export const addDocumentToEMFS = curry(
         } else {
             const encoder = new TextEncoder();
             csound &&
-                typeof csound.writeToFS === "function" &&
-                csound.writeToFS(
+                typeof csound.fs.writeFileSync === "function" &&
+                csound.fs.writeFileSync(
                     absolutePath,
                     encoder.encode(document.savedValue)
                 );
