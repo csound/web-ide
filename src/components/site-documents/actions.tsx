@@ -1,7 +1,7 @@
 import React from "react";
 import { openSimpleModal } from "../modal/actions";
 
-export const showKeyboardShortcuts = () => {
+export const showKeyboardShortcuts = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const shortcuts = () => (
             <div>

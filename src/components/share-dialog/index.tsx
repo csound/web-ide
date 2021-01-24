@@ -12,7 +12,7 @@ import {
     EmailShareButton
 } from "react-share";
 
-const ShareDialog = () => {
+const ShareDialog = (): React.ReactElement => {
     const project = useSelector(selectActiveProject);
     const [profile, setProfile]: [
         IProfile | undefined,

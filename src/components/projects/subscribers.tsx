@@ -30,9 +30,9 @@ import {
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
-    dispatch: any,
+    dispatch: (any) => void,
     csound: ICsoundObject
-) => {
+): (() => void) => {
     const unsubscribe: () => void = projects
         .doc(projectUid)
         .collection("files")
@@ -176,8 +176,8 @@ export const subscribeToProjectFilesChanges = (
 
 export const subscribeToProjectTargetsChanges = (
     projectUid: string,
-    dispatch: any
-) => {
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = targets.doc(projectUid).onSnapshot(
         (target) => {
             if (!target.exists) {
@@ -198,9 +198,9 @@ export const subscribeToProjectTargetsChanges = (
 
 export const subscribeToProjectChanges = (
     projectUid: string,
-    dispatch: any,
+    dispatch: (any) => void,
     csound: ICsoundObject
-) => {
+): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(
         projectUid,
         dispatch,

@@ -1,8 +1,10 @@
+import firebase from "firebase/app";
 import {
     storageReference,
     getFirebaseTimestamp,
     projectLastModified
 } from "@config/firestore";
+import { IFirestoreDocument } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { ICsoundObject } from "@comp/csound/types";
 import {
@@ -27,14 +29,17 @@ export function textOrBinary(filename: string): IDocumentFileType {
     return "bin";
 }
 
-export function isAudioFile(fileName: string) {
+export function isAudioFile(fileName: string): boolean {
     // currently does not deal with FLAC, not sure if browser supports it
     const endings = [".wav", ".ogg", ".mp3"];
     const lower = fileName.toLowerCase();
     return endings.some((ending) => lower.endsWith(ending));
 }
 
-export const generateEmptyDocument = (documentUid, filename): IDocument => ({
+export const generateEmptyDocument = (
+    documentUid: string,
+    filename: string
+): IDocument => ({
     filename,
     currentValue: "",
     created: getFirebaseTimestamp(),
@@ -90,7 +95,9 @@ export const addDocumentToEMFS = curry(
     }
 );
 
-export const fileDocumentDataToDocumentType = (documentData) =>
+export const fileDocumentDataToDocumentType = (
+    documentData: IFirestoreDocument
+): IDocument =>
     ({
         created: documentData["created"],
         currentValue: documentData["value"],
@@ -105,7 +112,9 @@ export const fileDocumentDataToDocumentType = (documentData) =>
         path: reject(isNil, documentData["path"] || [])
     } as IDocument);
 
-export const convertDocumentSnapToDocumentsMap = (documentsToAdd) =>
+export const convertDocumentSnapToDocumentsMap = (
+    documentsToAdd: IFirestoreDocument[]
+): Record<string, IDocument> =>
     (pipe as any)(
         map(prop("doc")),
         map((d: any) => assoc("documentUid", d.id, d.data())),
@@ -117,7 +126,9 @@ export const convertDocumentSnapToDocumentsMap = (documentsToAdd) =>
         }, {})
     )(documentsToAdd);
 
-export const convertProjectSnapToProject = async (projSnap) => {
+export const convertProjectSnapToProject = async (
+    projSnap: firebase.firestore.QueryDocumentSnapshot
+): Promise<IProject> => {
     const projData = projSnap.data();
     const lastModified = await projectLastModified.doc(projSnap.id).get();
     const lastModifiedData = lastModified.exists && lastModified.data();

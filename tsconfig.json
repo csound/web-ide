@@ -29,6 +29,7 @@
             "@comp/*": ["./components/*"],
             "@elem/*": ["./elements/*"],
             "@config/*": ["./config/*"],
+            "@db/*": ["./db/*"],
             "@styles": ["./styles/index.ts"],
             "@styles/*": ["./styles/*"]
         },

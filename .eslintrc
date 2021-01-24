@@ -33,7 +33,8 @@
                     ["@config", "./src/config"],
                     ["@elem", "./src/elements"],
                     ["@store", "./src/store"],
-                    ["@styles", "./src/styles"]
+                    ["@styles", "./src/styles"],
+                    ["@db", "./src/db"]
                 ],
                 "extensions": [".ts", ".tsx", ".js", ".jsx", ".json"]
             }

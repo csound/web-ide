@@ -1,6 +1,7 @@
 import { Theme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const siteDocumentsStyles = (theme: Theme) =>
     createStyles({
         root: {
@@ -29,6 +30,7 @@ const siteDocumentsStyles = (theme: Theme) =>
         }
     });
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const withStyles_ = (ClassComponent: any) =>
     withStyles(siteDocumentsStyles)(ClassComponent);
 
