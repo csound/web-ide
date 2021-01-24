@@ -36,6 +36,7 @@ const profileStyles = (theme: Theme) =>
         }
     });
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const withStyles_ = (ClassComponent: any) =>
     withStyles(profileStyles)(ClassComponent);
 

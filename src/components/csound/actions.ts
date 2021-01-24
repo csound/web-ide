@@ -1,8 +1,8 @@
 import { store } from "@store";
 import { IStore } from "@store/types";
 import { IDocument, IProject } from "../projects/types";
+import { CsoundObj } from "@csound/browser";
 import {
-    ICsoundObject,
     FETCH_CSOUND,
     SET_CSOUND,
     ICsoundStatus,
@@ -26,7 +26,7 @@ export const fetchCsound = () => {
     };
 };
 
-export const setCsound = (csound: ICsoundObject) => {
+export const setCsound = (csound: CsoundObj) => {
     return {
         type: SET_CSOUND,
         csound
@@ -68,7 +68,7 @@ export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
 export const playCSDFromString = (projectUid: string, csd: string) => {
     return async (dispatch: any) => {
         const cs = path(["csound", "csound"], store.getState()) as
-            | ICsoundObject
+            | CsoundObj
             | undefined;
         if (cs) {
             await cs.setCurrentDirFS(projectUid);
@@ -85,7 +85,7 @@ export const playCSDFromString = (projectUid: string, csd: string) => {
 export const playORCFromString = (projectUid: string, orc: string) => {
     return async (dispatch: any) => {
         const cs = path(["csound", "csound"], store.getState()) as
-            | ICsoundObject
+            | CsoundObj
             | undefined;
         if (cs) {
             await cs.setCurrentDirFS(projectUid);
@@ -123,7 +123,7 @@ export const stopCsound = () => {
 export const pauseCsound = () => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
-            | ICsoundObject
+            | CsoundObj
             | undefined;
         if (cs && cs.getPlayState() === "playing") {
             cs.pause();
@@ -137,7 +137,7 @@ export const pauseCsound = () => {
 export const resumePausedCsound = () => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
-            | ICsoundObject
+            | CsoundObj
             | undefined;
         if (cs && cs.getPlayState() === "paused") {
             cs.resume();
@@ -236,7 +236,7 @@ export const renderToDisk = () => {
 export const enableMidiInput = () => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
-            | ICsoundObject
+            | CsoundObj
             | undefined;
         cs?.enableMidiInput(() => {
             console.log("enableMidiInput done");
@@ -247,7 +247,7 @@ export const enableMidiInput = () => {
 export const enableAudioInput = () => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
-            | ICsoundObject
+            | CsoundObj
             | undefined;
         cs?.enableAudioInput(() => {
             console.log("enableAudioInput done");

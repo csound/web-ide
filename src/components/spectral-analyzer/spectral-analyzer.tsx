@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { path } from "ramda";
-import { ICsoundObject } from "../csound/types";
+import { CsoundObj } from "@csound/browser";
 import { scaleLinear } from "d3-scale";
 
 type ISpectralAnalyzerProperties = {
@@ -27,7 +27,7 @@ type CanvasReference = {
 };
 
 const connectVisualizer = (
-    csound: ICsoundObject,
+    csound: CsoundObj,
     canvasReference: CanvasReference
 ) => {
     if (!canvasReference || !canvasReference.current) {
@@ -83,10 +83,7 @@ const connectVisualizer = (
     }
 };
 
-const disconnectVisualizer = (
-    csound: ICsoundObject,
-    scopeNode: AnalyserNode
-) => {
+const disconnectVisualizer = (csound: CsoundObj, scopeNode: AnalyserNode) => {
     const node = csound.getNode();
     node.disconnect(scopeNode);
 };
@@ -96,7 +93,7 @@ const SpectralAnalyzer = ({
 }: ISpectralAnalyzerProperties): React.ReactElement => {
     const canvasReference = useRef() as CanvasReference;
 
-    const csound: ICsoundObject | undefined = useSelector(
+    const csound: CsoundObj | undefined = useSelector(
         path(["csound", "csound"])
     );
 

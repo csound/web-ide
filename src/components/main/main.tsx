@@ -18,7 +18,7 @@ import HotKeys from "../hot-keys/hot-keys";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
-const Main = () => {
+const Main = (): React.ReactElement => {
     const dispatch = useDispatch();
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 

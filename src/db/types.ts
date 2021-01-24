@@ -25,3 +25,16 @@ export interface IFirestoreProject {
     public: boolean;
     userUid: string;
 }
+
+export interface IFirestoreProfile {
+    backgroundIndex?: number;
+    bio: string;
+    displayName: string;
+    link1: string;
+    link2: string;
+    link3: string;
+    photoUrl: string;
+    userJoinDate: firebase.firestore.Timestamp;
+    userUid: string;
+    username: string;
+}

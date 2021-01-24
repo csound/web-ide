@@ -21,7 +21,7 @@ type HotKeyHandler = (keyEvent?: KeyboardEvent) => void;
 
 type CommandKey = keyof IHotKeysCallbacks;
 
-const HotKeys = (properties) => {
+const HotKeys = (properties: React.ReactElement): React.ReactElement => {
     // prevent leak into the manual iframe
     const insideIframe = !!window.frameElement;
     const callbacks = useSelector(selectKeyCallbacks);

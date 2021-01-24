@@ -61,7 +61,7 @@ const profileKeys = [
 const ProfileReducer = (
     state: IProfileReducer = INITIAL_STATE,
     action: ProfileActionTypes
-) => {
+): IProfileReducer => {
     switch (action.type) {
         case SET_FOLLOWING_FILTER_STRING: {
             return assoc("followingFilterString", action.payload, state);

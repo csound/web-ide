@@ -42,7 +42,12 @@ const ListPlayButton = ({
     iconNameProp,
     iconBackgroundColorProp,
     iconForegroundColorProp
-}) => {
+}: {
+    projectUid: string;
+    iconNameProp: string | undefined;
+    iconBackgroundColorProp: string | undefined;
+    iconForegroundColorProp: string | undefined;
+}): React.ReactElement => {
     const theme: any = useTheme();
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
@@ -50,15 +55,13 @@ const ListPlayButton = ({
         selectProjectIconStyle(projectUid)
     );
 
-    iconNameProp = iconNameProp === false ? iconName : iconNameProp;
-    iconBackgroundColorProp =
-        iconBackgroundColorProp === false
-            ? iconBackgroundColor
-            : iconBackgroundColorProp;
-    iconForegroundColorProp =
-        iconForegroundColorProp === false
-            ? iconForegroundColor
-            : iconForegroundColorProp;
+    iconNameProp = !iconNameProp ? iconName : iconNameProp;
+    iconBackgroundColorProp = !iconBackgroundColorProp
+        ? iconBackgroundColor
+        : iconBackgroundColorProp;
+    iconForegroundColorProp = !iconForegroundColorProp
+        ? iconForegroundColor
+        : iconForegroundColorProp;
     const isPlaying = currentlyPlayingProject === projectUid;
     const hasError = isPlaying && csoundStatus === "error";
     const isPaused = isPlaying && csoundStatus === "paused";
@@ -108,7 +111,7 @@ const ListPlayButton = ({
                 {!isPlaying && !isStartingUp && (
                     <IconComponent
                         className={"projectIcon"}
-                        css={SS.avatarIcon(iconForegroundColorProp)}
+                        css={SS.avatarIcon(iconForegroundColorProp || "")}
                         style={{
                             fill: `${iconForegroundColorProp}!important`
                         }}

@@ -44,7 +44,7 @@ const backgroundOptions = [
     { label: "yin yang", value: 4 }
 ];
 
-export const ProfileModal = (properties: IProfileModal) => {
+export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
     const [username, setUsername] = useState(properties.username);
     const [displayName, setDisplayName] = useState(properties.displayName);
     const [bio, setBio] = useState(properties.bio);

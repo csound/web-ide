@@ -1,7 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import { push } from "connected-react-router";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import {
     tabOpenByDocumentUid,
     tabDockInit
@@ -98,7 +98,7 @@ export const downloadProjectOnce = (
 // TODO: optimize
 export const downloadAllProjectDocumentsOnce = (
     projectUid: string,
-    csound: ICsoundObject
+    csound: CsoundObj
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const filesReference = await projects
@@ -167,7 +167,7 @@ export const closeProject = (): Record<string, any> => {
 
 export const activateProject = (
     projectUid: string,
-    csound: ICsoundObject
+    csound: CsoundObj
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
@@ -320,7 +320,7 @@ export const saveAllAndClose = (
 
 // for unauthorized or offline playing
 export const saveFileOffline = (
-    csound: ICsoundObject,
+    csound: CsoundObj,
     activeProjectUid: string,
     document: IDocument,
     newValue: string
@@ -339,7 +339,7 @@ export const saveFileOffline = (
 };
 
 // for unauthorized or offline playing
-export const saveAllOffline = (csound: ICsoundObject): void => {
+export const saveAllOffline = (csound: CsoundObj): void => {
     const state = store.getState() as IStore;
     const activeProjectUid = pathOr(
         "",

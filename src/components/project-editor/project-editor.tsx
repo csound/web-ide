@@ -2,7 +2,7 @@ import React, { CElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import { IDocument, IProject } from "@comp/projects/types";
 import {
     Tabs,
@@ -136,7 +136,7 @@ const ProjectEditor = ({
     csound
 }: {
     activeProject: IProject;
-    csound: ICsoundObject;
+    csound: CsoundObj;
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();

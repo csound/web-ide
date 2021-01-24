@@ -1,6 +1,6 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 
-const shapes = (shapeIndex, theme) => {
+const shapes = (shapeIndex: number, theme: Theme) => {
     switch (shapeIndex) {
         case 0: {
             return `background: radial-gradient(black 15%, transparent 16%) 0 0,
@@ -52,7 +52,9 @@ background-size:100px 100px;
     }
 };
 
-export const gradient = (shapeIndex) => (theme) => css`
+export const gradient = (shapeIndex: number) => (
+    theme: Theme
+): SerializedStyles => css`
     ${shapes(shapeIndex, theme)}
     min-height: 100vh;
 `;

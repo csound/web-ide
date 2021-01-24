@@ -23,7 +23,10 @@ import { push } from "connected-react-router";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 
-export const login = (email: string, password: string) => {
+export const login = (
+    email: string,
+    password: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: SIGNIN_REQUEST
@@ -45,7 +48,7 @@ export const login = (email: string, password: string) => {
     };
 };
 
-function DebounceCuston(properties: any) {
+function DebounceCuston(properties: Record<string, any>): React.ReactElement {
     const { inputRef, ...other } = properties;
 
     return (
@@ -58,8 +61,11 @@ function DebounceCuston(properties: any) {
     );
 }
 
-const profileFinalize = (user: any, dispatch: any) => {
-    return (() => {
+const profileFinalize = (
+    user: { displayName: string | undefined; uid: string },
+    dispatch: (any) => void
+): (() => React.ReactElement) => {
+    return function ProfileFinalize() {
         const [input, setInput] = useState("");
         const [displayName, setDisplayName] = useState(user.displayName || "");
         const [nameReserved, setNameReserved] = useState(false);
@@ -205,10 +211,13 @@ const profileFinalize = (user: any, dispatch: any) => {
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };
 
-export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
+export const thirdPartyAuthSuccess = (
+    user: { uid: string },
+    fromAutoLogin: boolean
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         let profile;
 
@@ -232,7 +241,8 @@ export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
 
         if (
             profile !== undefined &&
-            (!profile.exists || isEmpty(profile.data()!.username))
+            (!profile.exists ||
+                (profile.data() && isEmpty(profile.data().username)))
         ) {
             const profileFinalizeComp = profileFinalize(user, dispatch);
             dispatch(openSimpleModal(profileFinalizeComp));
@@ -249,7 +259,7 @@ export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
     };
 };
 
-export const openLoginDialog = () => {
+export const openLoginDialog = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: OPEN_DIALOG
@@ -257,7 +267,7 @@ export const openLoginDialog = () => {
     };
 };
 
-export const closeLoginDialog = () => {
+export const closeLoginDialog = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: CLOSE_DIALOG
@@ -265,7 +275,7 @@ export const closeLoginDialog = () => {
     };
 };
 
-export const logOut = () => {
+export const logOut = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         try {
             await firebase.auth().signOut();
@@ -279,7 +289,10 @@ export const logOut = () => {
     };
 };
 
-export const createNewUser = (email: string, password: string) => {
+export const createNewUser = (
+    email: string,
+    password: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         firebase
             .auth()
@@ -300,7 +313,7 @@ export const createNewUser = (email: string, password: string) => {
     };
 };
 
-export const createUserClearError = () => {
+export const createUserClearError = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: CREATE_CLEAR_ERROR
@@ -308,7 +321,9 @@ export const createUserClearError = () => {
     };
 };
 
-export const setRequestingStatus = (status: boolean) => {
+export const setRequestingStatus = (
+    status: boolean
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: SET_REQUESTING_STATUS,
@@ -317,7 +332,9 @@ export const setRequestingStatus = (status: boolean) => {
     };
 };
 
-export const resetPassword = (email: string) => {
+export const resetPassword = (
+    email: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         firebase.auth().sendPasswordResetEmail(email);
     };

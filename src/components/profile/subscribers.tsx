@@ -38,7 +38,10 @@ import {
 } from "ramda";
 import { IProject } from "../projects/types";
 
-export const subscribeToProfile = (profileUid: string, dispatch: any) => {
+export const subscribeToProfile = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
         (profile) => {
             dispatch(storeUserProfile(profile.data(), profileUid));
@@ -48,7 +51,10 @@ export const subscribeToProfile = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
+export const subscribeToFollowing = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = following.doc(profileUid).onSnapshot(
         async (followingReference) => {
             const state = store.getState();
@@ -86,7 +92,10 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
+export const subscribeToFollowers = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = followers.doc(profileUid).onSnapshot(
         async (followersReference) => {
             const state = store.getState();
@@ -124,7 +133,10 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToProjectsCount = (profileUid: string, dispatch: any) => {
+export const subscribeToProjectsCount = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = projectsCount.doc(profileUid).onSnapshot(
         (projectsCount) => {
             dispatch(
@@ -136,7 +148,10 @@ export const subscribeToProjectsCount = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToProfileStars = (profileUid: string, dispatch: any) => {
+export const subscribeToProfileStars = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = profileStars.doc(profileUid).onSnapshot(
         (starsReference) => {
             const starsData = starsReference.data();
@@ -157,8 +172,8 @@ export const subscribeToProfileStars = (profileUid: string, dispatch: any) => {
 export const subscribeToProfileProjects = (
     profileUid: string,
     isProfileOwner: boolean,
-    dispatch: any
-) => {
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe = (isProfileOwner
         ? projects.where("userUid", "==", profileUid)
         : projects

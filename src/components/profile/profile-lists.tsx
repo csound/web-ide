@@ -24,13 +24,23 @@ import {
     selectFilteredUserFollowing,
     selectFilteredUserFollowers
 } from "./selectors";
+import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
 import { descend, sort, propOr } from "ramda";
 import * as SS from "./styles";
 
-const ProjectListItem = (properties) => {
-    const { isProfileOwner, project } = properties;
+const ProjectListItem = ({
+    isProfileOwner,
+    project,
+    username,
+    csoundStatus
+}: {
+    isProfileOwner: boolean;
+    project: IProject;
+    username: string;
+    csoundStatus: string;
+}) => {
     const dispatch = useDispatch();
     const { isPublic, projectUid, name, description, tags } = project;
     ReactTooltip.rebuild();
@@ -70,9 +80,9 @@ const ProjectListItem = (properties) => {
             <StyledListPlayButtonContainer>
                 <ListPlayButton
                     projectUid={projectUid}
-                    iconNameProp={false}
-                    iconBackgroundColorProp={false}
-                    iconForegroundColorProp={false}
+                    iconNameProp={undefined}
+                    iconBackgroundColorProp={undefined}
+                    iconForegroundColorProp={undefined}
                 />
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
@@ -148,9 +158,14 @@ const ProfileLists = ({
     selectedSection,
     isProfileOwner,
     filteredProjects,
-    username,
-    setProfileUid
-}) => {
+    username
+}: {
+    profileUid: string;
+    selectedSection: number;
+    isProfileOwner: boolean;
+    filteredProjects: Array<any>;
+    username: string;
+}): React.ReactElement => {
     const csoundStatus = useSelector(selectCsoundStatus);
     const filteredFollowing = useSelector(
         selectFilteredUserFollowing(profileUid)

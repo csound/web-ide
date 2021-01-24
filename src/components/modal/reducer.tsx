@@ -3,7 +3,7 @@ import { assoc } from "ramda";
 
 export interface IModalReducer {
     isOpen: boolean;
-    component: React.FC;
+    component: React.ReactElement;
     title?: string;
     onClose?: () => void;
 }
@@ -15,7 +15,10 @@ const initialModalState: IModalReducer = {
     component: dummyComp
 };
 
-const ModalReducer = (state, action: any) => {
+const ModalReducer = (
+    state: IModalReducer,
+    action: Record<string, any>
+): IModalReducer => {
     switch (action.type) {
         case "MODAL_CLOSE": {
             return { isOpen: false, component: dummyComp };

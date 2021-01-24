@@ -6,7 +6,7 @@ import {
 } from "@config/firestore";
 import { IFirestoreDocument } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import {
     assoc,
     curry,
@@ -55,7 +55,7 @@ export const generateEmptyDocument = (
 export const addDocumentToEMFS = curry(
     (
         projectUid: string,
-        csound: ICsoundObject,
+        csound: CsoundObj,
         document: IDocument,
         absolutePath: string
     ) => {

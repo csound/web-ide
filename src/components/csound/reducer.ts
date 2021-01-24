@@ -8,8 +8,8 @@ import {
 } from "./types";
 
 export interface ICsoundReducer {
-    constructor: typeof Csound | undefined;
-    csound: typeof CsoundObj | undefined;
+    constructor: Csound | undefined;
+    csound: CsoundObj | undefined;
     status: ICsoundStatus;
 }
 

@@ -12,7 +12,17 @@ import {
 } from "./types";
 import { assoc, dissoc, pipe } from "ramda";
 
-const INITIAL_STATE = {
+export interface ILoginReducer {
+    authenticated: boolean;
+    errorCode: number | undefined;
+    errorMessage: string | undefined;
+    failed: boolean;
+    isLoginDialogOpen: boolean;
+    loggedInUid: string | undefined;
+    requesting: boolean;
+}
+
+const INITIAL_STATE: ILoginReducer = {
     authenticated: false,
     errorCode: undefined,
     errorMessage: undefined,
@@ -23,7 +33,10 @@ const INITIAL_STATE = {
     requesting: true
 };
 
-const LoginReducer = (state = INITIAL_STATE, action: any) => {
+const LoginReducer = (
+    state: ILoginReducer = INITIAL_STATE,
+    action: Record<string, any>
+): ILoginReducer => {
     switch (action.type) {
         case SIGNIN_REQUEST: {
             return assoc("requesting", true, state);

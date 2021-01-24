@@ -55,7 +55,7 @@ interface ILoginLocalState {
     loginMode: LoginMode;
 }
 
-const Login = () => {
+const Login = (): React.ReactElement => {
     const dispatch = useDispatch();
     const errorCode = useSelector(selectErrorCode);
     const errorMessage = useSelector(selectErrorMessage);

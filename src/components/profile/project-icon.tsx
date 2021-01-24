@@ -3,7 +3,7 @@ import SVGPaths, { SVGComponents } from "./svg-paths";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import * as SS from "./styles";
 
-const FallbackIcon = ({ fill }) => (
+const FallbackIcon = ({ fill }): React.ReactElement => (
     <AssignmentIcon style={{ height: 62, width: 62, fill }} />
 );
 
@@ -17,7 +17,7 @@ const ProjectIcon = ({
     iconBackgroundColor: string;
     iconForegroundColor: string;
     onClick?: (event: any) => void;
-}) => {
+}): React.ReactElement => {
     const IconComponent: React.ElementType =
         iconName && iconName !== "default" && SVGPaths[iconName]
             ? SVGComponents[`${iconName}Component`]

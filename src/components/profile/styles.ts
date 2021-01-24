@@ -1,8 +1,8 @@
-import { Theme } from "@material-ui/core";
+import { Theme as MaterialTheme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 
-const profileStyles = (theme: Theme) =>
+const profileStyles = (theme: MaterialTheme) =>
     createStyles({
         root: {
             fontFamily: "'Space Mono', monospace"
@@ -30,6 +30,7 @@ const profileStyles = (theme: Theme) =>
         }
     });
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const withStyles_ = (ClassComponent: any) =>
     withStyles(profileStyles)(ClassComponent);
 
@@ -96,7 +97,9 @@ export const avatar = css`
     }
 `;
 
-export const avatarIconForeground = (foregroundColor: string) => css`
+export const avatarIconForeground = (
+    foregroundColor: string
+): SerializedStyles => css`
     & path {
         fill: ${foregroundColor};
     }
@@ -108,19 +111,21 @@ export const avatarIconForeground = (foregroundColor: string) => css`
     }
 `;
 
-export const avatarIcon = (foregroundColor: string) => css`
+export const avatarIcon = (foregroundColor: string): SerializedStyles => css`
     width: calc(100% - 32px);
     height: calc(100% - 32px);
     ${avatarIconForeground(foregroundColor)}
 `;
 
-export const previewAvatarColor = (foregroundColor: string) => css`
+export const previewAvatarColor = (
+    foregroundColor: string
+): SerializedStyles => css`
     & > svg {
         ${avatarIconForeground(foregroundColor)}
     }
 `;
 
-export const loadingSpinner = (theme) => css`
+export const loadingSpinner = (theme: Theme): SerializedStyles => css`
 @keyframes cricle {
   from {
     transform: rotate(-25deg);
@@ -149,7 +154,7 @@ export const loadingSpinner = (theme) => css`
 
 `;
 
-export const pauseIcon = (theme) => css`
+export const pauseIcon = (theme: Theme): SerializedStyles => css`
     position: absolute;
     transform: rotate(90deg);
     cursor: pointer;
@@ -165,7 +170,7 @@ export const settingsIconContainer = css`
     right: 66px;
 `;
 
-export const settingsIcon = (theme) => css`
+export const settingsIcon = (theme: Theme): SerializedStyles => css`
     align-self: center;
     width: 42px;
     height: 42px;
@@ -221,7 +226,7 @@ export const deleteIconContainer = css`
     right: 12px;
 `;
 
-export const deleteIcon = (theme) => css`
+export const deleteIcon = (theme: Theme): SerializedStyles => css`
     align-self: center;
     width: 42px;
     height: 42px;
@@ -282,7 +287,7 @@ export const publicIconContainer = css`
     right: 120px;
 `;
 
-export const publicIcon = (theme) => css`
+export const publicIcon = (theme: Theme): SerializedStyles => css`
     ${deleteIcon(theme)}
     color: ${theme.altButtonBackground};
     &:hover {

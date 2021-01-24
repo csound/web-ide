@@ -1,6 +1,6 @@
 import { IDocument, IDocumentsMap } from "./types";
 import { store } from "@store/index";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
 import {
     addDocumentToEMFS,
@@ -31,7 +31,7 @@ import {
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
     dispatch: (any) => void,
-    csound: ICsoundObject
+    csound: CsoundObj
 ): (() => void) => {
     const unsubscribe: () => void = projects
         .doc(projectUid)
@@ -199,7 +199,7 @@ export const subscribeToProjectTargetsChanges = (
 export const subscribeToProjectChanges = (
     projectUid: string,
     dispatch: (any) => void,
-    csound: ICsoundObject
+    csound: CsoundObj
 ): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(
         projectUid,

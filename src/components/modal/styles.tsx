@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 
-export const content = (theme) => css`
+export const content = (theme: Theme): SerializedStyles => css`
     position: absolute;
     outline: none;
     max-height: 100vh;

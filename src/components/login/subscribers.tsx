@@ -3,8 +3,8 @@ import { profiles } from "@config/firestore";
 
 export const subscribeToLoggedInUserProfile = (
     userUid: string,
-    dispatch: any
-) => {
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = profiles.doc(userUid).onSnapshot(
         (profile) => {
             dispatch({

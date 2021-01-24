@@ -1,6 +1,7 @@
 import { ThunkAction } from "redux-thunk";
 import React from "react";
 import { Action } from "redux";
+import { IStore } from "@store/types";
 import {
     database,
     following,
@@ -17,6 +18,7 @@ import {
     Timestamp
 } from "@config/firestore";
 import {
+    IProfile,
     ProfileActionTypes,
     ADD_USER_PROJECT,
     DELETE_USER_PROJECT,
@@ -48,6 +50,7 @@ import {
 import { getProjectLastModifiedOnce } from "@comp/project-last-modified/actions";
 import { getPlayActionFromProject } from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
+import { IProject } from "@comp/projects/types";
 import { ProfileModal } from "./profile-modal";
 import {
     assoc,
@@ -234,7 +237,7 @@ const deleteUserProjectAction = (): ProfileActionTypes => {
 };
 
 export const deleteUserProject = (
-    document_: any
+    project: IProject
 ): ThunkAction<void, any, null, Action<string>> => async (
     dispatch,
     getState
@@ -243,12 +246,12 @@ export const deleteUserProject = (
     const loggedInUserUid = selectLoggedInUid(currentState);
     if (loggedInUserUid) {
         const files = await projects
-            .doc(document_.projectUid)
+            .doc(project.projectUid)
             .collection("files")
             .get();
 
         const batch = database.batch();
-        const documentReference = projects.doc(document_.projectUid);
+        const documentReference = projects.doc(project.projectUid);
         batch.delete(documentReference);
         files.forEach((d) => batch.delete(d.ref));
 
@@ -272,7 +275,7 @@ export const setCurrentTagText = (text: string): ProfileActionTypes => {
     };
 };
 
-export const setTagsInput = (tags): ProfileActionTypes => {
+export const setTagsInput = (tags: Array<any>): ProfileActionTypes => {
     return {
         type: SET_TAGS_INPUT,
         payload: tags
@@ -280,8 +283,8 @@ export const setTagsInput = (tags): ProfileActionTypes => {
 };
 
 export const getAllTagsFromUser = (
-    loggedInUserUid,
-    allUserProjectsUids
+    loggedInUserUid: string | undefined,
+    allUserProjectsUids: string[]
 ): ThunkAction<void, any, null, Action<string>> => async (
     dispatch,
     getStore
@@ -308,7 +311,7 @@ export const getAllTagsFromUser = (
 };
 
 export const addProject = () => {
-    return async (dispatch: any) => {
+    return async (dispatch: (any) => void): Promise<void> => {
         dispatch(
             openSimpleModal(() => (
                 <ProjectModal
@@ -416,8 +419,8 @@ export const editProfile = (
     link2: string,
     link3: string,
     backgroundIndex: number
-) => {
-    return async (dispatch: any, getState) => {
+): ((dispatch: (any) => void, getState: () => IStore) => Promise<void>) => {
+    return async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
@@ -447,8 +450,10 @@ export const editProfile = (
     };
 };
 
-export const editProject = (project: any) => {
-    return async (dispatch: any) => {
+export const editProject = (
+    project: IProject
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch) => {
         dispatch(
             openSimpleModal(() => (
                 <ProjectModal
@@ -466,9 +471,11 @@ export const editProject = (project: any) => {
     };
 };
 
-export const deleteProject = (document_: any) => {
-    return async (dispatch: any) => {
-        const DeleteProjectModal = getDeleteProjectModal(document_);
+export const deleteProject = (
+    project: IProject
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch) => {
+        const DeleteProjectModal = getDeleteProjectModal(project);
         dispatch(openSimpleModal(DeleteProjectModal));
     };
 };
@@ -499,10 +506,12 @@ export const uploadProfileImage = (
     }
 };
 
-export const playListItem = (projectUid: string | false) => async (
-    dispatch,
-    getState
-) => {
+export const playListItem = (
+    projectUid: string | false
+): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => Promise<void>) => async (dispatch, getState) => {
     const state = getState();
     const csound = state.csound.csound;
     const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
@@ -550,7 +559,10 @@ export const playListItem = (projectUid: string | false) => async (
         }
     }
 
-    if (!projectIsCached || timestampMismatch || !projectHasLastModule) {
+    if (
+        csound &&
+        (!projectIsCached || timestampMismatch || !projectHasLastModule)
+    ) {
         await downloadProjectOnce(projectUid)(dispatch);
         await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
         await downloadTargetsOnce(projectUid)(dispatch);
@@ -571,7 +583,7 @@ export const playListItem = (projectUid: string | false) => async (
     }
 };
 
-export const storeProfileProjectsCount = (
+export const storeProfileProjectsCount: Record<string, any> = (
     projectsCount: any,
     profileUid: string
 ) => {
@@ -582,7 +594,10 @@ export const storeProfileProjectsCount = (
     };
 };
 
-export const storeUserProfile = (profile: any, profileUid: string) => {
+export const storeUserProfile = (
+    profile: IProfile,
+    profileUid: string
+): Record<string, any> => {
     return {
         type: STORE_USER_PROFILE,
         profile,
@@ -590,7 +605,10 @@ export const storeUserProfile = (profile: any, profileUid: string) => {
     };
 };
 
-export const storeProfileStars = (stars: any, profileUid: string) => {
+export const storeProfileStars = (
+    stars: Array<any>,
+    profileUid: string
+): Record<string, any> => {
     return {
         type: STORE_PROFILE_STARS,
         profileUid,
@@ -617,7 +635,7 @@ export const setFollowingFilterString = (
 export const starOrUnstarProject = (
     projectUid: string,
     loggedInUserUid: string
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async () => {
         if (!projectUid || !loggedInUserUid) {
             return;

@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 
-export const root = (theme) => css`
+export const root = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-size: 15px;
     display: inline-block;
@@ -16,7 +16,7 @@ export const root = (theme) => css`
     margin-left: 12px;
 `;
 
-export const selectedIcon = (theme) => css`
+export const selectedIcon = (theme: Theme): SerializedStyles => css`
     position: absolute;
     fill: ${theme.headerTextColor};
     height: auto;
@@ -24,7 +24,7 @@ export const selectedIcon = (theme) => css`
     margin-top: 8px;
 `;
 
-export const nestedMenuIcon = (theme) => css`
+export const nestedMenuIcon = (theme: Theme): SerializedStyles => css`
     ${selectedIcon(theme)}
     margin-top: 6px;
     right: 0px;
@@ -43,7 +43,7 @@ export const dropdownButtonWrapper = css`
     position: relative;
 `;
 
-export const dropdownButton = (theme) => css`
+export const dropdownButton = (theme: Theme): SerializedStyles => css`
     $[shadow];
     z-index: 2;
     display: inline;
@@ -63,7 +63,7 @@ export const dropdownButton = (theme) => css`
     }
 `;
 
-export const dropdownList = (theme) => css`
+export const dropdownList = (theme: Theme): SerializedStyles => css`
     z-index: 10000;
     width: fit-content;
     border: 2px solid ${theme.line};
@@ -82,7 +82,7 @@ export const dropdownList = (theme) => css`
     ${shadow}
 `;
 
-export const dropdownListNested = (theme) => css`
+export const dropdownListNested = (theme: Theme): SerializedStyles => css`
     ${dropdownList(theme)}
     top: 0;
     left: 100%;
@@ -94,7 +94,7 @@ export const nestedWrapper = css`
     position: relative;
 `;
 
-export const listItem = (theme) => css`
+export const listItem = (theme: Theme): SerializedStyles => css`
     padding: 2px 12px;
     padding-right: 18px;
     width: 100%;
@@ -114,7 +114,7 @@ export const listItem = (theme) => css`
     }
 `;
 
-export const listItemDisabled = (theme) => css`
+export const listItemDisabled = (theme: Theme): SerializedStyles => css`
     ${listItem(theme)}
     &:hover {
         cursor: initial;

@@ -228,13 +228,13 @@ const Profile = ({ classes, ...properties }) => {
         };
     }, []);
 
-    const { displayName, bio, link1, link2, link3, backgroundIndex } =
+    const { displayName, bio, link1, link2, link3, backgroundIndex = 0 } =
         profile || {};
 
     return (
         <div className={classes.root}>
             <Header />
-            <div css={gradient(backgroundIndex || 0)}>
+            <div css={gradient(backgroundIndex)}>
                 <ProfileContainer>
                     {!isMobile() && (
                         <IDContainer>
@@ -276,7 +276,7 @@ const Profile = ({ classes, ...properties }) => {
                                         onClick={() => {
                                             const input =
                                                 uploadReference.current;
-                                            input!.click();
+                                            input && input.click();
                                         }}
                                         imageHover={imageHover}
                                     >
@@ -457,17 +457,17 @@ const Profile = ({ classes, ...properties }) => {
                                 </AddFab>
                             )}
                         </ContentActionsContainer>
-
-                        <ListContainer>
-                            <ProfileLists
-                                profileUid={profileUid}
-                                isProfileOwner={isProfileOwner}
-                                selectedSection={selectedSection}
-                                setProfileUid={setProfileUid}
-                                filteredProjects={filteredProjects}
-                                username={username}
-                            />
-                        </ListContainer>
+                        {profileUid && username && (
+                            <ListContainer>
+                                <ProfileLists
+                                    profileUid={profileUid}
+                                    isProfileOwner={isProfileOwner}
+                                    selectedSection={selectedSection}
+                                    filteredProjects={filteredProjects}
+                                    username={username}
+                                />
+                            </ListContainer>
+                        )}
                     </ContentSection>
                 </ProfileContainer>
             </div>

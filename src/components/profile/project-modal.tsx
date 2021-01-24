@@ -69,7 +69,7 @@ interface IProjectModal {
     newProject: boolean;
 }
 
-export const ProjectModal = (properties: IProjectModal) => {
+export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
     const [name, setName] = useState(properties.name);
     const [description, setDescription] = useState(properties.description);
     const [iconName, setIconName] = useState(properties.iconName);
