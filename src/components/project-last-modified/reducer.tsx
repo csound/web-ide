@@ -12,8 +12,8 @@ export type IProjectLastModifiedReducer = {
 
 const ProjectLastModifiedReducer = (
     state: IProjectLastModifiedReducer | undefined,
-    action: any
-) => {
+    action: Record<string, any>
+): IProjectLastModifiedReducer => {
     switch (action.type) {
         case UPDATE_PROJECT_LAST_MODIFIED_LOCALLY:
             return assocPath(

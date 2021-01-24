@@ -39,7 +39,11 @@ const titleTooltip = ({ documents, selectedTarget }) => {
         : `No document found for selected target: ${selectedTarget.targetName}`;
 };
 
-const TargetDropdown = ({ activeProjectUid }) => {
+const TargetDropdown = ({
+    activeProjectUid
+}: {
+    activeProjectUid: string;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const targets: ITargetMap | undefined = useSelector(
@@ -138,7 +142,7 @@ const TargetDropdown = ({ activeProjectUid }) => {
                     placeholder={
                         values(targets || []).length > 0
                             ? selectedTargetName &&
-                              selectedTargetName!.length > 0
+                              selectedTargetName.length > 0
                                 ? selectedTargetName
                                 : "Select target"
                             : "No targets found"

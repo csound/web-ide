@@ -68,7 +68,7 @@ const StyledPublicOffIcon = styled(VisibilityOffIcon)`
     }
 `;
 
-const SocialControls = () => {
+const SocialControls = (): React.ReactElement => {
     const projectUid = useSelector(selectActiveProjectUid);
     const loggedInUserUid = useSelector(selectLoggedInUid);
     const starred = useSelector(

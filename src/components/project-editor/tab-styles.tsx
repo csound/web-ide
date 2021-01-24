@@ -111,7 +111,7 @@ PanelStyle = styled(PanelStyle)`
     ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
 `;
 
-const TabStyles = (isBottom) => ({
+const TabStyles = (isBottom: boolean): Record<string, any> => ({
     // eslint-disable-next-line react/display-name
     TabList: (properties) => (
         <TabListStyle {...properties} isBottom={isBottom} />

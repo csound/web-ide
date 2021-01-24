@@ -10,7 +10,13 @@ import IframeComm from "react-iframe-comm";
 import { setManualPanelOpen } from "./actions";
 import * as SS from "./styles";
 
-const ManualWindow = ({ manualDrag, projectUid }) => {
+const ManualWindow = ({
+    manualDrag,
+    projectUid
+}: {
+    manualDrag: boolean;
+    projectUid: string;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 

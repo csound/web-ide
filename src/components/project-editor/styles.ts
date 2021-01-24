@@ -1,4 +1,4 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 import { headerHeight, tabListHeight } from "@styles/constants";
 
@@ -43,7 +43,7 @@ export const closeButton = css`
     z-index: 1;
 `;
 
-export const headIconsContainer = (theme) => css`
+export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     position: absolute;
     right: 16px;
 
@@ -63,7 +63,9 @@ export const headIconsContainer = (theme) => css`
     }
 `;
 
-export const mobileNavigationContainer = (theme) => css`
+export const mobileNavigationContainer = (
+    theme: Theme
+): SerializedStyles => css`
     background-color: ${theme.headerBackground};
     position: fixed;
     width: 100%;
@@ -73,11 +75,13 @@ export const mobileNavigationContainer = (theme) => css`
     border-top: 1px solid;
 `;
 
-export const mobileNavigationButton = (theme) => css`
+export const mobileNavigationButton = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
 `;
 
-export const mobileNavigationButtonAwesome = (theme) => css`
+export const mobileNavigationButtonAwesome = (
+    theme: Theme
+): SerializedStyles => css`
     color: ${theme.headerTextColor};
     width: 28px !important;
     height: 28px !important;
@@ -85,18 +89,18 @@ export const mobileNavigationButtonAwesome = (theme) => css`
     margin-bottom: 5px;
 `;
 
-export const mobileConsole = (theme) => css`
+export const mobileConsole = (theme: Theme): SerializedStyles => css`
     height: calc(100vh - 130px);
 `;
 
-export const mobileManual = (theme) => css`
+export const mobileManual = (theme: Theme): SerializedStyles => css`
     height: calc(100vh - 130px);
     & > div {
         padding: 0 !important;
     }
 `;
 
-export const mobileFileTree = (theme) => css`
+export const mobileFileTree = (theme: Theme): SerializedStyles => css`
     zoom: 140%;
     & > div {
         padding: 0 !important;

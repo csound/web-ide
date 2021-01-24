@@ -10,7 +10,7 @@ import { path, pathOr, values } from "ramda";
 import { useDispatch, useSelector } from "react-redux";
 import StopButton from "./stop-button";
 
-const TargetControls = () => {
+const TargetControls = (): React.ReactElement => {
     const dispatch = useDispatch();
 
     const selectedTarget: string | undefined = useSelector(
@@ -23,7 +23,7 @@ const TargetControls = () => {
         }
     );
 
-    const isOwner = useSelector(selectIsOwner(activeProjectUid));
+    const isOwner = useSelector(selectIsOwner(activeProjectUid || ""));
 
     const targets: ITargetMap | undefined = useSelector(
         selectProjectTargets(activeProjectUid)
@@ -51,21 +51,25 @@ const TargetControls = () => {
     useEffect(() => {
         if (!selectedTarget) {
             if (savedDefaultTarget && savedDefaultTarget.length > 0) {
-                dispatch(
-                    setSelectedTarget(activeProjectUid, savedDefaultTarget)
-                );
+                activeProjectUid &&
+                    dispatch(
+                        setSelectedTarget(activeProjectUid, savedDefaultTarget)
+                    );
             } else if (targetsValues && targetsValues.length > 0) {
                 if (targetsValues.some((t) => t.targetName === "project.csd")) {
-                    dispatch(
-                        setSelectedTarget(activeProjectUid, "project.csd")
-                    );
+                    activeProjectUid &&
+                        dispatch(
+                            setSelectedTarget(activeProjectUid, "project.csd")
+                        );
                 } else {
-                    dispatch(
-                        setSelectedTarget(
-                            activeProjectUid,
-                            targetsValues[0].targetName
-                        )
-                    );
+                    activeProjectUid
+                        ? dispatch(
+                              setSelectedTarget(
+                                  activeProjectUid,
+                                  targetsValues[0].targetName
+                              )
+                          )
+                        : console.error("Error: missing activeProjectUid");
                 }
             }
         }
@@ -77,12 +81,14 @@ const TargetControls = () => {
         selectedTarget
     ]);
 
-    return (
+    return activeProjectUid ? (
         <>
             <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             <StopButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             {isOwner && <TargetDropdown activeProjectUid={activeProjectUid} />}
         </>
+    ) : (
+        <></>
     );
 };
 

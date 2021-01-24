@@ -3,8 +3,8 @@ import { updateProjectLastModifiedLocally } from "./actions";
 
 export const subscribeToProjectLastModified = (
     projectUid: string,
-    dispatch: any
-) => {
+    dispatch: (any) => void
+): (() => void) => {
     const unsubscribe: () => void = projectLastModified
         .doc(projectUid)
         .onSnapshot(

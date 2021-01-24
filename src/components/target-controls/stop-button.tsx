@@ -8,7 +8,13 @@ import { stopCsound } from "@comp/csound/actions";
 import { IconButton } from "@material-ui/core";
 import StopIcon from "@material-ui/icons/Stop";
 
-const StopButton = ({ activeProjectUid, isOwner }) => {
+const StopButton = ({
+    activeProjectUid,
+    isOwner
+}: {
+    activeProjectUid: string;
+    isOwner: boolean;
+}): React.ReactElement => {
     const csoundPlayState: string = useSelector((store: IStore) => {
         return pathOr("stopped", ["csound", "status"], store);
     });

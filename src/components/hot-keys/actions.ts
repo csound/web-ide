@@ -55,10 +55,9 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
                 const playAction = playActionDefault || playActionFallback;
 
                 if (playAction) {
-                    const isOwner = selectIsOwner(
-                        projectUid as any,
-                        getStore()
-                    );
+                    const isOwner = projectUid
+                        ? selectIsOwner(projectUid)(getStore())
+                        : false;
                     if (isOwner) {
                         dispatch(saveAllFiles());
                     }

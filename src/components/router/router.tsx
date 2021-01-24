@@ -44,10 +44,10 @@ const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => {
     );
 };
 
-const RouterComponent = (properties: any) => {
+const RouterComponent = (): React.ReactElement => {
     const theme = useTheme();
     return (
-        <ConnectedRouter history={history} {...properties}>
+        <ConnectedRouter history={history}>
             <Switch>
                 <Route
                     path="/editor/:id?"

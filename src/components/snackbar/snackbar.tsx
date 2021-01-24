@@ -116,7 +116,7 @@ const SnackbarContentWrapper = (properties: IProperties) => {
     );
 };
 
-const CustomSnackbar = (properties) => {
+const CustomSnackbar = (): React.ReactElement => {
     const type = useSelector(selectSnackbarType);
     const text = useSelector(selectSnackbarText);
     const open = useSelector(selectSnackbarOpen);

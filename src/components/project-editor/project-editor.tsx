@@ -2,6 +2,8 @@ import React, { CElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
+import { ICsoundObject } from "@comp/csound/types";
+import { IDocument, IProject } from "@comp/projects/types";
 import {
     Tabs,
     DragTabList,
@@ -22,7 +24,6 @@ import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
-import { IDocument } from "../projects/types";
 import { IOpenDocument } from "./types";
 import SplitterLayout from "react-splitter-layout";
 import { IStore } from "@store/types";
@@ -130,7 +131,13 @@ const MainSection = React.forwardRef(
 
 MainSection.displayName = "MainSection";
 
-const ProjectEditor = ({ activeProject, csound }) => {
+const ProjectEditor = ({
+    activeProject,
+    csound
+}: {
+    activeProject: IProject;
+    csound: ICsoundObject;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 
@@ -233,16 +240,18 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 <Tooltip
                     placement="right-end"
                     title={
-                        document.path
+                        document && document.path
                             ? document.path.length > 0
                                 ? documentPathHuman
-                                : document!.filename
+                                : document.filename
                             : ""
                     }
                 >
                     <p style={{ margin: 0 }}>
-                        {document!.filename +
-                            (isOwner && isModified ? "*" : "")}
+                        {document
+                            ? document.filename +
+                              (isOwner && isModified ? "*" : "")
+                            : ""}
                     </p>
                 </Tooltip>
                 <Tooltip title={"close"} placement="right-end">

@@ -13,9 +13,9 @@ import {
 } from "./types";
 
 export const setSelectedTarget = (
-    projectUid,
+    projectUid: string,
     selectedTarget: string | null
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: SET_SELECTED_TARGET,
@@ -25,18 +25,20 @@ export const setSelectedTarget = (
     };
 };
 
-export const showTargetsConfigDialog = () => {
+export const showTargetsConfigDialog = (): ((
+    dispatch: any
+) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch(openSimpleModal(TargetsConfigDialog));
     };
 };
 
 export const updateAllTargetsLocally = (
-    dispatch,
-    defaultTarget,
-    projectUid,
-    targets
-) =>
+    dispatch: (any) => void,
+    defaultTarget: string,
+    projectUid: string,
+    targets: ITargetMap
+): void =>
     dispatch({
         type: UPDATE_ALL_TARGETS_LOCALLY,
         defaultTarget,
@@ -44,7 +46,9 @@ export const updateAllTargetsLocally = (
         targets
     });
 
-export const downloadTargetsOnce = (projectUid: string) => {
+export const downloadTargetsOnce = (
+    projectUid: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const projTargetsReference = await targetsCollReference
             .doc(projectUid)
@@ -67,7 +71,7 @@ export const saveChangesToTarget = (
     targets: ITargetMap,
     defaultTarget: string | null,
     onSuccessCallback: () => void
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const targetsReference = targetsCollReference.doc(projectUid);
         try {

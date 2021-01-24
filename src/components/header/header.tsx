@@ -57,7 +57,7 @@ const Header = () => {
 
     const routeIsProfile = currentRoute === "profile";
 
-    const isOwner = useSelector(selectIsOwner(activeProjectUid));
+    const isOwner = useSelector(selectIsOwner(activeProjectUid || ""));
 
     const loggedInUid = useSelector(selectLoggedInUid);
 
