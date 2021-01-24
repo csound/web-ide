@@ -1,4 +1,4 @@
-import { State } from "./reducer";
+import { IHomeReducer } from "./reducer";
 import { IStore } from "@store/types";
 import { IFirestoreProject } from "@db/types";
 import { createSelector } from "reselect";
@@ -7,27 +7,27 @@ import { Timestamp } from "@config/firestore";
 export const selectDisplayedStarredProjects = (
     store: IStore
 ): IFirestoreProject[] => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     const displayedStarredProjects = state.displayedStarredProjects;
-    return !displayedStarredProjects
+    return displayedStarredProjects.length === 0
         ? Array.from({ length: 8 })
         : displayedStarredProjects;
 };
 
 export const selectSearchProjectsRequest = (store: IStore): boolean => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     const request = state.searchProjectsRequest;
     return request;
 };
 
-export const selectSearchedProjects = (store: IStore): boolean => {
-    const state: State = store.HomeReducer;
+export const selectSearchedProjects = (store: IStore): IFirestoreProject[] => {
+    const state: IHomeReducer = store.HomeReducer;
     const searchedProjects = state.searchedProjects;
     return searchedProjects;
 };
 
 export const selectSearchedProjectsTotal = (store: IStore): number => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     const searchedProjectsTotal = state.searchedProjectsTotal;
     return searchedProjectsTotal;
 };
@@ -35,53 +35,55 @@ export const selectSearchedProjectsTotal = (store: IStore): number => {
 export const selectDisplayedRandomProjects = (
     store: IStore
 ): IFirestoreProject[] => {
-    const state: State = store.HomeReducer;
-    const { displayedRandomProjects } = state;
-    return !displayedRandomProjects
+    const state: IHomeReducer = store.HomeReducer;
+    const { displayedRandomProjects = [] } = state;
+    return displayedRandomProjects.length === 0
         ? Array.from({ length: 4 })
         : displayedRandomProjects;
 };
 
 // export const selectTags = (store: IStore) => {
-//     const state: State = store.HomeReducer;
+//     const state: IHomeReducer = store.HomeReducer;
 //     return state.tags;
 // };
 
 export const selectStars = (store: IStore): Record<string, any> => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     return state.stars;
 };
 
-export const selectProjectLastModified = (store: IStore): Timestamp => {
-    const state: State = store.HomeReducer;
+export const selectProjectLastModified = (
+    store: IStore
+): Timestamp | undefined => {
+    const state: IHomeReducer = store.HomeReducer;
     return state.projectLastModified;
 };
 
 export const selectFeaturedProjectUserProfiles = (
     store: IStore
 ): IFirestoreProject[] => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     return state.featuredProjectUserProfiles;
 };
 
 export const selectRandomProjectUserProfiles = (
     store: IStore
 ): IFirestoreProject[] => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     return state.randomProjectUserProfiles;
 };
 
 export const selectPopularProjectUserProfiles = (
     store: IStore
 ): IFirestoreProject[] => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     return state.popularProjectUserProfiles;
 };
 
 export const selectSearchedProjectUserProfiles = (
     store: IStore
 ): IFirestoreProject[] => {
-    const state: State = store.HomeReducer;
+    const state: IHomeReducer = store.HomeReducer;
     return state.featuredProjectUserProfiles;
 };
 

@@ -20,7 +20,7 @@ export const setOnCloseModal = (
 };
 
 export const openSimpleModal = (
-    component: React.ReactElement
+    component: () => React.ReactElement
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({

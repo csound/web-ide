@@ -24,6 +24,7 @@ export interface IFirestoreProject {
     name: string;
     public: boolean;
     userUid: string;
+    id?: string;
 }
 
 export interface IFirestoreProfile {

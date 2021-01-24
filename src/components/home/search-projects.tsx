@@ -55,7 +55,7 @@ const SearchProjects = ({
             return "";
         } else {
             return `${1 + pageOffset * 8}-${
-                pageOffset * 8 + searchedProjects.length
+                pageOffset * 8
             } of ${searchedProjectsTotal}`;
         }
     };

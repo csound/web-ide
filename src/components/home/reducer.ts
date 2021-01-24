@@ -21,13 +21,13 @@ export interface IHomeReducer {
     readonly stars: Record<string, Timestamp>;
     readonly starsTotal: number;
     readonly projectLastModified: Timestamp | undefined;
-    readonly displayedStarredProjects: boolean;
-    readonly displayedRandomProjects: boolean;
+    readonly displayedStarredProjects: IFirestoreProject[];
+    readonly displayedRandomProjects: IFirestoreProject[];
     readonly featuredProjectUserProfiles: IFirestoreProject[];
     readonly popularProjectUserProfiles: IFirestoreProject[];
     readonly randomProjectUserProfiles: IFirestoreProject[];
     readonly searchedProjectUserProfiles: IFirestoreProject[];
-    readonly searchedProjects: boolean;
+    readonly searchedProjects: IFirestoreProject[];
     readonly searchedProjectsTotal: number;
     readonly searchProjectsRequest: boolean;
 }
@@ -37,13 +37,13 @@ const INITIAL_STATE: IHomeReducer = {
     stars: {},
     starsTotal: 0,
     projectLastModified: undefined,
-    displayedStarredProjects: false,
-    displayedRandomProjects: false,
+    displayedStarredProjects: [],
+    displayedRandomProjects: [],
     featuredProjectUserProfiles: [],
     popularProjectUserProfiles: [],
     randomProjectUserProfiles: [],
     searchedProjectUserProfiles: [],
-    searchedProjects: false,
+    searchedProjects: [],
     searchedProjectsTotal: 0,
     searchProjectsRequest: false
 };

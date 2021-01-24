@@ -74,8 +74,11 @@ export const addDocumentToEMFS = curry(
                     xhr.addEventListener("load", function (event) {
                         const blob = xhr.response;
                         csound &&
-                            typeof csound.writeToFS === "function" &&
-                            csound.writeToFS(absolutePath, blob);
+                            typeof csound.fs.writeFileSync === "function" &&
+                            csound.fs.writeFileSync(
+                                absolutePath,
+                                new Uint8Array(blob)
+                            );
                     });
                     xhr.open("GET", url);
                     xhr.send();

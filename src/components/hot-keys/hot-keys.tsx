@@ -21,7 +21,11 @@ type HotKeyHandler = (keyEvent?: KeyboardEvent) => void;
 
 type CommandKey = keyof IHotKeysCallbacks;
 
-const HotKeys = (properties: React.ReactElement): React.ReactElement => {
+const HotKeys = ({
+    children
+}: {
+    children: React.ReactElement;
+}): React.ReactElement => {
     // prevent leak into the manual iframe
     const insideIframe = !!window.frameElement;
     const callbacks = useSelector(selectKeyCallbacks);
@@ -41,12 +45,20 @@ const HotKeys = (properties: React.ReactElement): React.ReactElement => {
         {},
         keys(callbacks || {})
     );
-    return insideIframe ? (
-        <>{properties.children}</>
-    ) : (
-        <GlobalHotKeys keyMap={bindings} handlers={safeCallbacks} allowChanges>
-            {properties.children}
-        </GlobalHotKeys>
+    return (
+        <>
+            {insideIframe ? (
+                <>{children}</>
+            ) : (
+                <GlobalHotKeys
+                    keyMap={bindings}
+                    handlers={safeCallbacks}
+                    allowChanges
+                >
+                    {children}
+                </GlobalHotKeys>
+            )}
+        </>
     );
 };
 
