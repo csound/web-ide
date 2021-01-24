@@ -81,7 +81,7 @@ const makeOption = (value, disabled: boolean) => ({
     disabled
 });
 
-const TargetsConfigDialog = () => {
+const TargetsConfigDialog = (): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 

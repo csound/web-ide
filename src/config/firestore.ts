@@ -49,7 +49,7 @@ export const projectFiles = database.collection("projectFiles");
 export const storageReference = firebase.storage().ref();
 
 // OTHER
-export const getCurrentUserPromise = () =>
+export const getCurrentUserPromise = (): Promise<firebase.User | null> =>
     new Promise((resolve) => {
         const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
             resolve(user);

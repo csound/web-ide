@@ -5,14 +5,14 @@ import {
     SnackbarActionTypes
 } from "./types";
 
-export interface State {
+export interface ISnackbarReducer {
     readonly text: string;
     readonly type: SnackbarType;
     readonly open: boolean;
     readonly timeout: number | typeof Number.POSITIVE_INFINITY;
 }
 
-const INITIAL_STATE: State = {
+const INITIAL_STATE: ISnackbarReducer = {
     text: "",
     type: SnackbarType.Info,
     open: false,
@@ -22,7 +22,7 @@ const INITIAL_STATE: State = {
 const SnackbarReducer = (
     state = INITIAL_STATE,
     action: SnackbarActionTypes
-) => {
+): ISnackbarReducer => {
     switch (action.type) {
         case OPEN_SNACKBAR: {
             return {

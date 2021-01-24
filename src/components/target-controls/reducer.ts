@@ -20,8 +20,15 @@ const INITIAL_STATE: ITargetControlsReducer = {};
 
 const TargetControlsReducer = (
     state: ITargetControlsReducer | undefined,
-    action: any
-) => {
+    action: {
+        type: string;
+        projectUid: string;
+        target?: string;
+        targetName?: string;
+        targets?: ITargetMap;
+        defaultTarget?: string;
+    }
+): ITargetControlsReducer => {
     switch (action.type) {
         case SET_SELECTED_TARGET: {
             return assocPath(

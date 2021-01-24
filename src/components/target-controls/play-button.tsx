@@ -13,7 +13,13 @@ import { selectSelectedTarget } from "./selectors";
 import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { saveAllFiles } from "@comp/projects/actions";
 
-const PlayButton = ({ activeProjectUid, isOwner }) => {
+const PlayButton = ({
+    activeProjectUid,
+    isOwner
+}: {
+    activeProjectUid: string;
+    isOwner: boolean;
+}): React.ReactElement => {
     const playActionDefault = useSelector(getPlayActionFromTarget);
 
     const playActionFallback = useSelector(

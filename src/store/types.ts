@@ -9,6 +9,7 @@ import { ITargetControlsReducer } from "@comp/target-controls/reducer";
 import { IProjectLastModifiedReducer } from "@comp/project-last-modified/reducer";
 import { IProfileReducer } from "@comp/profile/reducer";
 import { IBottomTabsReducer } from "@comp/bottom-tabs/types";
+import { ISnackbarReducer } from "@comp/snackbar/reducer";
 
 export interface IStore {
     router: any;
@@ -24,6 +25,7 @@ export interface IStore {
     ProjectLastModifiedReducer: IProjectLastModifiedReducer;
     ProfileReducer: IProfileReducer;
     BottomTabsReducer: IBottomTabsReducer;
+    SnackbarReducer: ISnackbarReducer;
 }
 
 export type Selector = (x: IStore) => any;

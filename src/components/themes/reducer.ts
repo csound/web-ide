@@ -13,7 +13,10 @@ const initialState = {
     selectedThemeName: "monokai"
 };
 
-const ThemeReducer = (state: IThemeReducer, action: any) => {
+const ThemeReducer = (
+    state: IThemeReducer,
+    action: { newTheme?: string; type: string }
+): IThemeReducer => {
     switch (action.type) {
         case THEMES_CHANGE_THEME: {
             switch (action.newTheme) {
@@ -25,7 +28,7 @@ const ThemeReducer = (state: IThemeReducer, action: any) => {
                 }
                 case "github": {
                     return {
-                        selectedTheme: GitHubTheme,
+                        selectedTheme: GitHubTheme as Theme,
                         selectedThemeName: "github"
                     };
                 }

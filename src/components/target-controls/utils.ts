@@ -43,7 +43,7 @@ export const getDefaultTargetDocument = curry((projectUid, store):
                   "documents",
                   (maybeDefaultTarget as ITarget).targetType === "main"
                       ? maybeDefaultTarget &&
-                        (maybeDefaultTarget as ITarget)!.targetDocumentUid
+                        maybeDefaultTarget.targetDocumentUid
                       : maybeDefaultTarget &&
                         pathOr(
                             "",
@@ -83,7 +83,9 @@ export const getPlayActionFromProject = curry(
     }
 );
 
-export const getPlayActionFromTarget = (store: IStore) => {
+export const getPlayActionFromTarget = (
+    store: IStore
+): undefined | ((dispatch: any) => void) => {
     const selectedTarget = path(
         ["TargetControlsReducer", "selectedTarget"],
         store

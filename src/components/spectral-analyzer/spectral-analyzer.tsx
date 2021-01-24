@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import withStyles from "./styles";
 import { useSelector } from "react-redux";
 import { path } from "ramda";
 import { ICsoundObject } from "../csound/types";
@@ -92,7 +91,9 @@ const disconnectVisualizer = (
     node.disconnect(scopeNode);
 };
 
-const SpectralAnalyzer = ({ classes }: ISpectralAnalyzerProperties) => {
+const SpectralAnalyzer = ({
+    classes
+}: ISpectralAnalyzerProperties): React.ReactElement => {
     const canvasReference = useRef() as CanvasReference;
 
     const csound: ICsoundObject | undefined = useSelector(
@@ -120,4 +121,4 @@ const SpectralAnalyzer = ({ classes }: ISpectralAnalyzerProperties) => {
     );
 };
 
-export default withStyles(SpectralAnalyzer);
+export default SpectralAnalyzer;

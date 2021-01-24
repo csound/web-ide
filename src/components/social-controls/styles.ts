@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 
-export const buttonContainer = (theme) => css`
+export const buttonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
     top: 0;
     color: ${theme.headerTextColor};

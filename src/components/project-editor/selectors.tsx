@@ -4,7 +4,9 @@ import { IStore } from "@store/types";
 import { curry, equals, path, pathOr } from "ramda";
 import { IOpenDocument } from "./types";
 
-export const selectIsOwner = curry(
+export const selectIsOwner: (
+    projectUid: string
+) => (store: IStore) => boolean = curry(
     (projectUid: string, store: IStore): boolean => {
         const currentUser = firebase.auth().currentUser;
         if (typeof currentUser !== "object") {
