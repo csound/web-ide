@@ -18,11 +18,13 @@ interface IProjectContextProperties {
     match: any;
 }
 
-const ForceBackgroundColor = ({ theme }) => (
+const ForceBackgroundColor = ({ theme }): React.ReactElement => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-const ProjectContext = (properties: IProjectContextProperties) => {
+const ProjectContext = (
+    properties: IProjectContextProperties
+): React.ReactElement => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
@@ -103,14 +105,14 @@ const ProjectContext = (properties: IProjectContextProperties) => {
         tabIndex
     ]);
 
-    return !needsLoading && !invalidUrl && project ? (
+    return csound && !needsLoading && !invalidUrl && project ? (
         <>
             <ForceBackgroundColor theme={theme} />
             <Header />
             <ConsoleProvider activeProject={project} csound={csound}>
                 <ProjectEditor
                     {...properties}
-                    csound={csound as unknown}
+                    csound={csound}
                     activeProject={project}
                 />
             </ConsoleProvider>

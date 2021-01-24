@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "@material-ui/core/Button";
+import { ICodeMirror } from "react-codemirror2";
 import { closeModal, openSimpleModal } from "@comp/modal/actions";
 import { resetDocumentValue } from "@comp/projects/actions";
 import { IDocument } from "@comp/projects/types";
@@ -25,7 +26,7 @@ export const tabDockInit = (
     projectUid: string,
     allDocuments: IDocument[],
     defaultTarget: ITarget | undefined
-) => {
+): ((dispatch: any) => Promise<void>) => {
     const storedIndex = localStorage.getItem(projectUid + ":tabIndex");
     const storedTabOrder: string | null = localStorage.getItem(
         projectUid + ":tabOrder"
@@ -115,7 +116,7 @@ export const rearrangeTabs = (
     projectUid: string,
     modifiedDock: IOpenDocument[],
     newActiveIndex: number
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: TAB_DOCK_REARRANGE_TABS,
@@ -129,7 +130,7 @@ export const rearrangeTabs = (
 export const tabOpenByDocumentUid = (
     documentUid: string,
     projectUid: string
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
@@ -139,14 +140,17 @@ export const tabOpenByDocumentUid = (
     };
 };
 
-export const closeTabDock = () => {
+export const closeTabDock = (): Record<string, any> => {
     return {
         type: TAB_DOCK_CLOSE
     };
 };
 
-const closeUnsavedTabPrompt = (cancelCallback, closeWithoutSavingCallback) => {
-    return (() => {
+const closeUnsavedTabPrompt = (
+    cancelCallback,
+    closeWithoutSavingCallback
+): (() => React.ReactElement) => {
+    return function CloseUnsavedFilePrompt() {
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
                 <Button
@@ -167,14 +171,14 @@ const closeUnsavedTabPrompt = (cancelCallback, closeWithoutSavingCallback) => {
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };
 
 export const tabClose = (
     activeProjectUid: string,
     documentUid: string,
     isModified: boolean
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         if (!isModified) {
             dispatch({
@@ -202,34 +206,36 @@ export const tabClose = (
     };
 };
 
-export const tabSwitch = (index: number) => {
+export const tabSwitch = (index: number): Record<string, any> => {
     return {
         type: TAB_DOCK_SWITCH_TAB,
         tabIndex: index
     };
 };
 
-export const lookupManualString = (manualLookupString?: string) => {
+export const lookupManualString = (
+    manualLookupString?: string
+): Record<string, any> => {
     return {
         type: MANUAL_LOOKUP_STRING,
         manualLookupString
     };
 };
 
-export const toggleManualPanel = () => {
+export const toggleManualPanel = (): Record<string, any> => {
     return {
         type: TOGGLE_MANUAL_PANEL
     };
 };
 
-export const setManualPanelOpen = (open: boolean) => {
+export const setManualPanelOpen = (open: boolean): Record<string, any> => {
     return {
         type: SET_MANUAL_PANEL_OPEN,
         open
     };
 };
 
-export const setFileTreePanelOpen = (open: boolean) => {
+export const setFileTreePanelOpen = (open: boolean): Record<string, any> => {
     return {
         type: SET_FILE_TREE_PANEL_OPEN,
         open
@@ -237,10 +243,10 @@ export const setFileTreePanelOpen = (open: boolean) => {
 };
 
 export const storeEditorInstance = (
-    editorInstance: any,
+    editorInstance: ICodeMirror | undefined,
     projectUid: string,
     documentUid: string
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: STORE_EDITOR_INSTANCE,

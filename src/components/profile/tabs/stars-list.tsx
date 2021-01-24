@@ -12,7 +12,11 @@ import { push } from "connected-react-router";
 import { isEmpty, prop } from "ramda";
 import * as SS from "./styles";
 
-const StarsList = ({ profileUid }) => {
+const StarsList = ({
+    profileUid
+}: {
+    profileUid: string;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const profileStars = useSelector(selectProfileStars(profileUid));
     const cachedProjects = useSelector(

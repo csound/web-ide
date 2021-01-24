@@ -54,7 +54,7 @@ const storeTabDockState = (
     projectUid: string,
     openDocuments: IOpenDocument[],
     tabIndex: number | undefined
-) => {
+): void => {
     try {
         const tabOrder: string[] = map(prop("uid"), openDocuments);
         const tabOrderString: string = JSON.stringify(tabOrder);
@@ -66,7 +66,10 @@ const storeTabDockState = (
     }
 };
 
-const ProjectEditorReducer = (state: IProjectEditorReducer, action: any) => {
+const ProjectEditorReducer = (
+    state: IProjectEditorReducer,
+    action: Record<string, any>
+): IProjectEditorReducer => {
     switch (action.type) {
         case MANUAL_LOOKUP_STRING: {
             return pipe(

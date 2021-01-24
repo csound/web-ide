@@ -6,7 +6,13 @@ import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import * as SS from "./styles";
 
-const MobileNavigation = ({ mobileTabIndex, setMobileTabIndex }) => {
+const MobileNavigation = ({
+    mobileTabIndex,
+    setMobileTabIndex
+}: {
+    mobileTabIndex: number;
+    setMobileTabIndex: (number) => void;
+}): React.ReactElement => {
     return (
         <BottomNavigation
             value={mobileTabIndex}

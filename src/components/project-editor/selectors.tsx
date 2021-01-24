@@ -21,7 +21,7 @@ export const selectIsOwner: (
     }
 );
 
-export const selectTabDockIndex = (store: IStore) =>
+export const selectTabDockIndex = (store: IStore): number =>
     pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"], store);
 
 export const selectCurrentTab = (store: IStore): IOpenDocument | undefined => {
