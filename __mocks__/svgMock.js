@@ -12,5 +12,5 @@ const createComponent = function (name) {
     };
 };
 
-export const ReactComponent = createComponent("Svg");
+export const ReactComponent = createComponent("svg");
 export default `"<svg name=\"mock\"></svg>"`;

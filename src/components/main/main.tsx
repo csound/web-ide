@@ -12,16 +12,11 @@ import {
     setRequestingStatus,
     thirdPartyAuthSuccess
 } from "@comp/login/actions";
-// import { History } from "history";
 import firebase from "firebase/app";
 import "firebase/auth";
 import HotKeys from "../hot-keys/hot-keys";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
-
-// interface IMain {
-//     history: History;
-// }
 
 const Main = () => {
     const dispatch = useDispatch();
