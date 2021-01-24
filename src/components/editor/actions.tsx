@@ -1,3 +1,4 @@
+import { ICodeMirror } from "react-codemirror2";
 import synopsis from "csound-manual-react/lib/manual/synopsis";
 import { store } from "@root/store";
 import { IStore } from "@store/types";
@@ -15,8 +16,8 @@ export const toggleEditorFullScreen = (): void => {
     editorInstance.display.wrapper.requestFullscreen();
 };
 
-export const manualEntryAtPoint = (editorReference) => {
-    return async (dispatch: any) => {
+export const manualEntryAtPoint = (editorReference: ICodeMirror) => {
+    return async (dispatch: (any) => void): void => {
         if (!editorReference) {
             return;
         }

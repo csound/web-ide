@@ -401,7 +401,7 @@ const makeTree = (
     );
 };
 
-const FileTree = () => {
+const FileTree = (): React.ReactElement => {
     const [collapseState, setCollapseState] = useState({});
     // const [isLoaded, setIsLoaded] = useState(false);
     const [stateDnD] = useDnD();

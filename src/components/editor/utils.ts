@@ -50,7 +50,10 @@ export const editorEvalCode = curry(
                     };
                 }
                 if (result) {
-                    evalString = result!.evalStr;
+                    if (!result) {
+                        return;
+                    }
+                    evalString = result.evalStr;
                     markerCallback = (hasError) => {
                         const textMarker = editorReference.markText(
                             result.from,
@@ -88,7 +91,7 @@ export const editorEvalCode = curry(
     }
 );
 
-export const uncommentLine = (line: string) => {
+export const uncommentLine = (line: string): string => {
     let uncommentedLine: any = line.split(";");
     if (uncommentedLine.length > 1) {
         uncommentedLine = uncommentedLine[0];

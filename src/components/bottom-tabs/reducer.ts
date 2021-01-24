@@ -15,7 +15,7 @@ const initState: IBottomTabsReducer = {
 
 const BottomTabs = (
     state: IBottomTabsReducer | undefined,
-    action: any
+    action: Record<string, any>
 ): IBottomTabsReducer => {
     switch (action.type) {
         case OPEN_BOTTOM_TAB: {

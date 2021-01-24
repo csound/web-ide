@@ -33,7 +33,7 @@ const DragTabWithCloseButton = ({
     thisIndex,
     closeCallback,
     children
-}) => {
+}): React.ReactElement => {
     const theme: any = useTheme();
 
     return (
@@ -80,7 +80,7 @@ const tabsData = {
     }
 };
 
-const BottomTabs = () => {
+const BottomTabs = (): React.ReactElement => {
     const dispatch = useDispatch();
 
     const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>

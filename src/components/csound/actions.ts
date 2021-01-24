@@ -13,7 +13,10 @@ import { saveAs } from "file-saver";
 import { path } from "ramda";
 import { storageReference } from "../../config/firestore";
 
-export const fetchCsound = () => {
+export const fetchCsound = (): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => Promise<void>) => {
     return async (dispatch: any, getState) => {
         const currentState = getState();
         const constructor = path(["csound", "constructor"], currentState);
@@ -26,14 +29,17 @@ export const fetchCsound = () => {
     };
 };
 
-export const setCsound = (csound: CsoundObj) => {
+export const setCsound = (csound: CsoundObj): Record<string, any> => {
     return {
         type: SET_CSOUND,
         csound
     };
 };
 
-export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
+export const playCSDFromEMFS = (
+    projectUid: string,
+    emfsPath: string
+): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const state = store.getState();
         const cs = path(["csound", "csound"], state);
@@ -65,8 +71,11 @@ export const playCSDFromEMFS = (projectUid: string, emfsPath: string) => {
     };
 };
 
-export const playCSDFromString = (projectUid: string, csd: string) => {
-    return async (dispatch: any) => {
+export const playCSDFromString = (
+    projectUid: string,
+    csd: string
+): ((dispatch: (any) => void) => void) => {
+    return async (dispatch) => {
         const cs = path(["csound", "csound"], store.getState()) as
             | CsoundObj
             | undefined;
@@ -82,8 +91,11 @@ export const playCSDFromString = (projectUid: string, csd: string) => {
     };
 };
 
-export const playORCFromString = (projectUid: string, orc: string) => {
-    return async (dispatch: any) => {
+export const playORCFromString = (
+    projectUid: string,
+    orc: string
+): ((dispatch: (any) => void) => void) => {
+    return async (dispatch) => {
         const cs = path(["csound", "csound"], store.getState()) as
             | CsoundObj
             | undefined;
@@ -106,7 +118,7 @@ export const playORCFromString = (projectUid: string, orc: string) => {
     };
 };
 
-export const stopCsound = () => {
+export const stopCsound = (): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const cs = path(["csound", "csound"], store.getState());
         if (cs && typeof cs.stop === "function") {
@@ -120,7 +132,10 @@ export const stopCsound = () => {
     };
 };
 
-export const pauseCsound = () => {
+export const pauseCsound = (): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => void) => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
             | CsoundObj
@@ -134,7 +149,10 @@ export const pauseCsound = () => {
     };
 };
 
-export const resumePausedCsound = () => {
+export const resumePausedCsound = (): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => void) => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
             | CsoundObj
@@ -148,14 +166,16 @@ export const resumePausedCsound = () => {
     };
 };
 
-export const setCsoundPlayState = (playState: ICsoundStatus) => {
+export const setCsoundPlayState = (
+    playState: ICsoundStatus
+): Record<string, any> => {
     return {
         type: SET_CSOUND_PLAY_STATE,
         status: playState
     };
 };
 
-export const renderToDisk = () => {
+export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const state: IStore = store.getState();
         const project: IProject | undefined = selectActiveProject(state);
@@ -233,7 +253,10 @@ export const renderToDisk = () => {
     };
 };
 
-export const enableMidiInput = () => {
+export const enableMidiInput = (): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => void) => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
             | CsoundObj
@@ -244,7 +267,10 @@ export const enableMidiInput = () => {
     };
 };
 
-export const enableAudioInput = () => {
+export const enableAudioInput = (): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => void) => {
     return async (dispatch: any, getState) => {
         const cs = path(["csound", "csound"], getState()) as
             | CsoundObj

@@ -12,6 +12,8 @@ import LeftIcon from "@material-ui/icons/ArrowBack";
 import RightIcon from "@material-ui/icons/ArrowForward";
 import ProjectCard from "./project-card";
 import { getRandomProjects, getPopularProjects } from "./actions";
+import { IFirestoreProject } from "@db/types";
+
 const FeaturedProjects = ({
     duration,
     starredProjects,
@@ -19,7 +21,14 @@ const FeaturedProjects = ({
     popularProjectUserProfiles,
     randomProjects,
     transitionState
-}) => {
+}: {
+    duration: number;
+    starredProjects: Record<string, any>;
+    randomProjectUserProfiles: IFirestoreProject[];
+    popularProjectUserProfiles: IFirestoreProject[];
+    randomProjects: IFirestoreProject[];
+    transitionState: string;
+}): React.ReactElement => {
     const [popularProjectOffset, setPopularProjectOffset] = useState(0);
 
     const dispatch = useDispatch();

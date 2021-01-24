@@ -19,7 +19,7 @@ const initState: IConsoleReducer = {
 
 const Console = (
     state: IConsoleReducer | undefined,
-    action: any
+    action: Record<string, any>
 ): IConsoleReducer => {
     switch (action.type) {
         case SET_CLEAR_CONSOLE_CALLBACK: {

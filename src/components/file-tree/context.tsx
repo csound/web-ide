@@ -1,6 +1,7 @@
 import { DragDropContext } from "react-beautiful-dnd";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import React, { createContext, useContext, useReducer } from "react";
+import { IProject } from "@comp/projects/types";
 import { listifyObject } from "@root/utils";
 import { getFirebaseTimestamp, projects } from "@config/firestore";
 import {
@@ -132,7 +133,13 @@ const reducer = curry((state, action) => {
     }
 });
 
-export const DnDProvider = ({ children, project }) => {
+export const DnDProvider = ({
+    children,
+    project
+}: {
+    children: React.ReactElement;
+    project: IProject;
+}): React.ReactElement => {
     const [state, dispatch]: [any, any] = useReducer(reducer, {
         docIdx: {}
     });
@@ -152,7 +159,7 @@ export const DnDProvider = ({ children, project }) => {
     );
 };
 
-export const useDnDState = () => {
+export const useDnDState = (): React.ReactContext => {
     const context = useContext(DnDStateContext);
     if (context === undefined) {
         throw new Error("useDnDState must be used within a DnDProvider");
@@ -160,7 +167,7 @@ export const useDnDState = () => {
     return context;
 };
 
-export const useDnDDispatch = () => {
+export const useDnDDispatch = (): React.ReactContext => {
     const context = useContext(DnDDispatchContext);
     if (context === undefined) {
         throw new Error("useDnD must be used within a DnDProvider");

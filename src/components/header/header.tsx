@@ -39,7 +39,7 @@ import ProjectProfileMeta from "./project-profile-meta";
 import TargetControls from "../target-controls";
 import SocialControls from "../social-controls/social-controls";
 
-const Header = () => {
+const Header = (): React.ReactElement => {
     const dispatch = useDispatch();
 
     const authenticated = useSelector(

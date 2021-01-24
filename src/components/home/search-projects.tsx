@@ -15,6 +15,8 @@ import { TransitionGroup, Transition } from "react-transition-group";
 import { ThreeBounce } from "better-react-spinkit";
 import { selectSearchedProjectsTotal } from "./selectors";
 import { useSelector, useDispatch } from "react-redux";
+import { IFirestoreProject } from "@db/types";
+
 const SearchProjects = ({
     duration,
     searchedProjects,
@@ -22,7 +24,14 @@ const SearchProjects = ({
     transitionState,
     requesting,
     query
-}) => {
+}: {
+    duration: number;
+    searchedProjects: boolean;
+    searchedProjectUserProfiles: IFirestoreProject[];
+    transitionState: string;
+    requesting: boolean;
+    query: string;
+}): React.ReactElement => {
     const [pageOffset, setPageOffset] = useState(0);
     const dispatch = useDispatch();
     const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);

@@ -1,11 +1,11 @@
 import { css as classCss } from "@emotion/css";
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 import { headerHeight } from "@styles/constants";
 
 const drawerWidth = 260;
 
-export const headerRoot = (theme) => css`
+export const headerRoot = (theme: Theme): SerializedStyles => css`
     height: ${headerHeight}px;
     background-color: ${theme.headerBackground};
     & > div {
@@ -28,7 +28,7 @@ export const menuButton = css`
     margin-right: 6px;
 `;
 
-export const menuItemLink = (theme) => css`
+export const menuItemLink = (theme: Theme): SerializedStyles => css`
     text-decoration: none;
 `;
 
@@ -107,14 +107,16 @@ export const projectProfileMetaContainer = css`
     margin-left: 12px;
 `;
 
-export const projectProfileMetaTextContainer = (theme) => css`
+export const projectProfileMetaTextContainer = (
+    theme: Theme
+): SerializedStyles => css`
     align-self: center;
     font-family: ${theme.font.regular};
     display: flex;
     flex-direction: column;
 `;
 
-export const projectProfileMetaH1 = (theme) => css`
+export const projectProfileMetaH1 = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-weight: 500;
     font-size: 16px;
@@ -122,7 +124,9 @@ export const projectProfileMetaH1 = (theme) => css`
     margin: 0;
 `;
 
-export const projectProfileDescription = (theme) => css`
+export const projectProfileDescription = (
+    theme: Theme
+): SerializedStyles => css`
     color: ${theme.altTextColor};
     font-weight: 300;
     font-size: 12px;
@@ -130,16 +134,16 @@ export const projectProfileDescription = (theme) => css`
     margin: 0;
 `;
 
-export const projectProfileBySpan = (theme) => css`
+export const projectProfileBySpan = (theme: Theme): SerializedStyles => css`
     color: ${theme.altTextColor};
 `;
 
-export const projectProfileLink = (theme) => css`
+export const projectProfileLink = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     text-decoration: underline;
 `;
 
-export const projectProfileMetaP = (theme) => css`
+export const projectProfileMetaP = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-weight: 400;
     font-size: 13px;
@@ -192,7 +196,7 @@ export const drawerIcon = css`
     fill: #fff;
 `;
 
-export const buttonContainer = (theme) => css`
+export const buttonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
     top: 0;
     color: ${theme.headerTextColor};

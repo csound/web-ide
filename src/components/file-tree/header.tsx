@@ -16,7 +16,7 @@ const FileTreeHeader = ({
 }: {
     project: IProject;
     isOwner: boolean;
-}) => {
+}): React.ReactElement => {
     const theme: any = useTheme();
     const dispatch = useDispatch();
     return (

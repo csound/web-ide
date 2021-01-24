@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { rgba } from "@styles/utils";
 
-export const container = (theme) => css`
+export const container = (theme: Theme): SerializedStyles => css`
     width: 100%;
     height: 100%;
     background-color: ${theme.fileTreeBackground};
@@ -9,7 +9,7 @@ export const container = (theme) => css`
     margin-top: 32px;
 `;
 
-export const fileIcon = (theme) => css`
+export const fileIcon = (theme: Theme): SerializedStyles => css`
     z-index: 0;
     margin-right: 6px;
     color: ${theme.textColor};
@@ -21,7 +21,7 @@ export const fileIcon = (theme) => css`
     pointer-events: none;
 `;
 
-export const editIcon = (theme) => css`
+export const editIcon = (theme: Theme): SerializedStyles => css`
     position: absolute;
     cursor: pointer;
     color: ${theme.textColor};
@@ -40,7 +40,7 @@ export const editIcon = (theme) => css`
     }
 `;
 
-export const deleteIcon = (theme) => css`
+export const deleteIcon = (theme: Theme): SerializedStyles => css`
     position: absolute;
     cursor: pointer;
     color: ${theme.textColor};
@@ -57,7 +57,7 @@ export const deleteIcon = (theme) => css`
     }
 `;
 
-export const headIconsContainer = (theme) => css`
+export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     position: absolute;
     right: 16px;
 
@@ -75,44 +75,44 @@ export const headIconsContainer = (theme) => css`
     }
 `;
 
-export const listContainer = (theme) => css`
+export const listContainer = (theme: Theme): SerializedStyles => css`
     margin-top: -3px;
 `;
 
-export const listItem = (theme) => css`
+export const listItem = (theme: Theme): SerializedStyles => css`
     padding-left: 32px;
 `;
 
-export const draggingOver = (theme) => css`
+export const draggingOver = (theme: Theme): SerializedStyles => css`
     ${listItem(theme)}
     & .MuiTouchRipple-root {
         background-color: rgba(${rgba(theme.allowed, 0.1)}) !important;
     }
 `;
 
-export const listItemIcon = (theme) => css`
+export const listItemIcon = (theme: Theme): SerializedStyles => css`
     top: 6px;
     left: 22px;
     position: absolute;
 `;
 
-export const listItemIconMui = (theme) => css`
+export const listItemIconMui = (theme: Theme): SerializedStyles => css`
     ${listItemIcon(theme)}
     left: 12px;
     top: 4px;
 `;
 
-export const muiIcon = (theme) => css`
+export const muiIcon = (theme: Theme): SerializedStyles => css`
     fill: ${theme.textColor} !important;
     width: 16px;
     height: 16px;
 `;
 
-export const newFolderIcon = (theme) => css`
+export const newFolderIcon = (theme: Theme): SerializedStyles => css`
     margin-right: 12px;
 `;
 
-const musicIconBase = (theme) => css`
+const musicIconBase = (theme: Theme): SerializedStyles => css`
     position: absolute;
     width: 32px;
     height: 24px;
@@ -120,14 +120,14 @@ const musicIconBase = (theme) => css`
     top: -6px;
 `;
 
-export const mediaIcon = (theme) => css`
+export const mediaIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
     margin-top: 2px;
     zoom: 90%;
     fill: ${theme.aRateVar};
 `;
 
-export const directoryCloseIcon = (theme) => css`
+export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
     & > g > path:first-of-type {
         fill: ${theme.textColor};
@@ -137,6 +137,6 @@ export const directoryCloseIcon = (theme) => css`
     }
 `;
 
-export const directoryOpenIcon = (theme) => css`
+export const directoryOpenIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
 `;

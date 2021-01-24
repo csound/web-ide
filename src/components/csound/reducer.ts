@@ -13,7 +13,10 @@ export interface ICsoundReducer {
     status: ICsoundStatus;
 }
 
-const CsoundReducer = (state: any, action: any): ICsoundReducer => {
+const CsoundReducer = (
+    state: ICsoundReducer,
+    action: Record<string, any>
+): ICsoundReducer => {
     switch (action.type) {
         case FETCH_CSOUND: {
             return assoc("constructor", action.constructor, state);

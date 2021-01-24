@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { CsoundObj } from "@csound/browser";
+import { IProject } from "@comp/projects/types";
 import { setClearConsoleCallback, setPrintToConsoleCallback } from "./actions";
 import { append, path } from "ramda";
 
@@ -9,7 +11,15 @@ type IConsoleContextProperties = string[];
 
 export const ConsoleContext = createContext([] as IConsoleContextProperties);
 
-export const ConsoleProvider = ({ children, activeProject, csound }) => {
+export const ConsoleProvider = ({
+    children,
+    activeProject,
+    csound
+}: {
+    children: React.ReactElement;
+    activeProject: IProject;
+    csound: CsoundObj;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const [logs, setLogs]: [string[], any] = useState([""]);
     const [currentProject, setCurrentProject] = useState();
@@ -56,7 +66,7 @@ export const ConsoleProvider = ({ children, activeProject, csound }) => {
     );
 };
 
-export const useConsole = () => {
+export const useConsole = (): React.ReactContext | undefined => {
     const context = useContext(ConsoleContext);
     if (context === undefined) {
         throw new Error("useConsole must be used within a ConsoleProvider");

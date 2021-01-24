@@ -42,7 +42,4 @@ const homeStyles = (theme: Theme) =>
         disabled: { overflow: "hidden" }
     });
 
-const withStyles_ = (ClassComponent: any) =>
-    withStyles(homeStyles)(ClassComponent);
-
-export default withStyles_;
+export default withStyles(homeStyles);

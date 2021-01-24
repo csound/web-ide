@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { _scrollbars } from "@root/styles/_common";
 
-export const root = (theme) => css`
+export const root = (theme: Theme): SerializedStyles => css`
     font-size: 16px;
     width: 100%;
     height: 100%;

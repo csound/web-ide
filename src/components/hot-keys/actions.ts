@@ -6,6 +6,7 @@ import {
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
 import { path } from "ramda";
+import { IStore } from "@store/types";
 import {
     newDocument,
     saveAllAndClose,
@@ -26,13 +27,15 @@ import { pauseCsound, stopCsound } from "@comp/csound/actions";
 
 import * as EditorActions from "@comp/editor/actions";
 
-const withPreventDefault = (callback: any) => (event: KeyboardEvent) => {
+const withPreventDefault = (callback: any) => (event: KeyboardEvent): void => {
     event && event.preventDefault();
     callback();
 };
 
-export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
-    return async (dispatch: any, getStore) => {
+export const storeProjectEditorKeyboardCallbacks = (
+    projectUid: string
+): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
+    return async (dispatch, getStore) => {
         const callbacks: IProjectEditorCallbacks = {
             add_file: withPreventDefault(() =>
                 dispatch(addDocument(projectUid))
@@ -85,8 +88,10 @@ const selectCurrentEditor = (store): any | undefined => {
     return currentTab && currentTab.editorInstance;
 };
 
-export const storeEditorKeyboardCallbacks = (projectUid: string) => {
-    return async (dispatch: any, getStore) => {
+export const storeEditorKeyboardCallbacks = (
+    projectUid: string
+): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
+    return async (dispatch, getStore) => {
         const callbacks: IEditorCallbacks = {
             doc_at_point: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
@@ -121,8 +126,10 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
     };
 };
 
-export const invokeHotKeyCallback = (hotKey: string) => {
-    return async (dispatch: any, getState) => {
+export const invokeHotKeyCallback = (
+    hotKey: string
+): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
+    return async (dispatch, getState) => {
         const state = getState();
         const maybeCallback = path(
             ["HotKeysReducer", "callbacks", hotKey],

@@ -1,4 +1,4 @@
-import { css } from "@emotion/css";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { _scrollbars } from "@styles/_common";
 // import { css as classCss } from "emotion";
 
@@ -7,7 +7,7 @@ export const virtualizedListContainer = css`
     position: relative;
 `;
 
-export const listWrapper = (theme) => css`
+export const listWrapper = (theme: Theme): SerializedStyles => css`
     height: 100%;
     width: 100%;
     white-space: nowrap;

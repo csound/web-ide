@@ -6,6 +6,7 @@ interface ILogoContainer {
     interactive?: boolean;
     onClick?: any;
 }
+
 const LogoContainer = styled.div<ILogoContainer>`
     font-family: "Merriweather", serif;
     display: inline-block;
@@ -24,7 +25,7 @@ const LogoContainer = styled.div<ILogoContainer>`
         properties.interactive && ":hover{background: #445; cursor: pointer;}"}
 `;
 
-export default function CsLogo(properties: ILogoContainer) {
+export default function CsLogo(properties: ILogoContainer): React.ReactElement {
     const containerReference = useRef();
 
     useEffect(() => {

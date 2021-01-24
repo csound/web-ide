@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Tooltip from "@material-ui/core/Tooltip";
 import SVGPaths from "./svg-paths";
 import { addUserProject, editUserProject } from "./actions";
@@ -10,12 +10,12 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import styled from "styled-components";
 import IconButton from "@material-ui/core/IconButton";
 import ReactAutosuggestExample from "./tag-auto-suggest";
-import { selectTags } from "./selectors";
-import { equals, isEmpty, not } from "ramda";
+// import { selectTags } from "./selectors";
+import { isEmpty } from "ramda";
 import ProjectIcon from "./project-icon";
 
 const ModalContainer = styled.div`
@@ -84,16 +84,16 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
     const [popupState, setPopupState] = useState(false);
     const [anchorElement, setAnchorElement] = useState();
     const dispatch = useDispatch();
-    const currentTags = useSelector(selectTags(properties.projectID));
+    // const currentTags = useSelector(selectTags(properties.projectID));
     const [modifiedTags, setModifiedTags] = useState([]);
     const shouldDisable = isEmpty(name);
 
-    useEffect(() => {
-        if (not(equals(currentTags, modifiedTags)) && !isEmpty(currentTags)) {
-            setModifiedTags(currentTags);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentTags]);
+    // useEffect(() => {
+    //     if (not(equals(currentTags, modifiedTags)) && !isEmpty(currentTags)) {
+    //         setModifiedTags(currentTags);
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [currentTags]);
 
     const handleOnSubmit = async () => {
         try {

@@ -1,6 +1,6 @@
 import {
     HomeActionTypes,
-    GET_TAGS,
+    // GET_TAGS,
     GET_STARS,
     GET_PROJECT_LAST_MODIFIED,
     GET_DISPLAYED_RECENT_PROJECTS,
@@ -13,40 +13,45 @@ import {
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS
 } from "./types";
+import { Timestamp } from "@config/firestore";
+import { IFirestoreProject } from "@db/types";
 
-export interface State {
-    readonly tags: any;
-    readonly stars: any;
+export interface IHomeReducer {
+    // readonly tags: any;
+    readonly stars: Record<string, Timestamp>;
     readonly starsTotal: number;
-    readonly projectLastModified: any;
-    readonly displayedStarredProjects: any;
-    readonly displayedRandomProjects: any;
-    readonly featuredProjectUserProfiles: any;
-    readonly popularProjectUserProfiles: any;
-    readonly randomProjectUserProfiles: any;
-    readonly searchedProjectUserProfiles: any;
-    readonly searchedProjects: any;
-    readonly searchedProjectsTotal: any;
+    readonly projectLastModified: Timestamp | undefined;
+    readonly displayedStarredProjects: boolean;
+    readonly displayedRandomProjects: boolean;
+    readonly featuredProjectUserProfiles: IFirestoreProject[];
+    readonly popularProjectUserProfiles: IFirestoreProject[];
+    readonly randomProjectUserProfiles: IFirestoreProject[];
+    readonly searchedProjectUserProfiles: IFirestoreProject[];
+    readonly searchedProjects: boolean;
+    readonly searchedProjectsTotal: number;
     readonly searchProjectsRequest: boolean;
 }
 
-const INITIAL_STATE: State = {
-    tags: false,
-    stars: false,
+const INITIAL_STATE: IHomeReducer = {
+    // tags: false,
+    stars: {},
     starsTotal: 0,
-    projectLastModified: false,
+    projectLastModified: undefined,
     displayedStarredProjects: false,
     displayedRandomProjects: false,
-    featuredProjectUserProfiles: false,
-    popularProjectUserProfiles: false,
-    randomProjectUserProfiles: false,
-    searchedProjectUserProfiles: false,
+    featuredProjectUserProfiles: [],
+    popularProjectUserProfiles: [],
+    randomProjectUserProfiles: [],
+    searchedProjectUserProfiles: [],
     searchedProjects: false,
     searchedProjectsTotal: 0,
     searchProjectsRequest: false
 };
 
-const HomeReducer = (state = INITIAL_STATE, action: HomeActionTypes) => {
+const HomeReducer = (
+    state: IHomeReducer = INITIAL_STATE,
+    action: HomeActionTypes
+): IHomeReducer => {
     switch (action.type) {
         case SEARCH_PROJECTS_REQUEST: {
             return {
@@ -110,12 +115,12 @@ const HomeReducer = (state = INITIAL_STATE, action: HomeActionTypes) => {
                 projectLastModified: action.payload
             };
         }
-        case GET_TAGS: {
-            return {
-                ...state,
-                tags: action.payload
-            };
-        }
+        // case GET_TAGS: {
+        //     return {
+        //         ...state,
+        //         tags: action.payload
+        //     };
+        // }
         case GET_STARS: {
             return {
                 ...state,

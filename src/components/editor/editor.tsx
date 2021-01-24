@@ -51,7 +51,15 @@ const updateGuestDocumentValue = debounce(
         projectActions.saveFileOffline(csound, projectUid, document, newValue)
 );
 
-const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
+const CodeEditor = ({
+    documentUid,
+    projectUid,
+    isOwner
+}: {
+    documentUid: string;
+    projectUid: string;
+    isOwner: boolean;
+}): React.ReactElement => {
     const [editorReference, setEditorReference]: [
         CodeMirror.Editor | undefined,
         (argument: CodeMirror.Editor) => void

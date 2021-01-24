@@ -16,7 +16,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import * as SS from "./styles";
 import { isEmpty, prop, propOr } from "ramda";
 
-const ProjectProfileMeta = () => {
+const ProjectProfileMeta = (): React.ReactElement => {
     const project = useSelector(selectActiveProject);
     const projectName = propOr("unnamed", "name", project || {});
     const projectDescription = propOr("", "description", project || {});

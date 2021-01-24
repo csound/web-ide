@@ -3,10 +3,20 @@ import FileTree from "@comp/file-tree";
 import Console from "@comp/console/console";
 import MobileNavigation from "@comp/project-editor/mobile-navigation";
 import CsoundManualWindow from "@comp/project-editor/csound-manual";
+import { ITabDock } from "@comp/project-editor/types";
 import { DnDProvider } from "@comp/file-tree/context";
+import { IProject } from "@comp/projects/types";
 import * as SS from "./styles";
 
-const MobileTabs = ({ activeProject, tabDock, projectUid }) => {
+const MobileTabs = ({
+    activeProject,
+    tabDock,
+    projectUid
+}: {
+    project: IProject;
+    tabDock: ITabDock;
+    projectUid: string;
+}): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
 
     const MobileFileTree = (
