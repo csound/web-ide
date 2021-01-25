@@ -11,7 +11,7 @@ import { isNil, path, pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
 import * as projectEditorActions from "../project-editor/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
-import * as SS from "./styles";
+// import * as SS from "./styles";
 import "./modes/csound/csound";
 import "./plugins/autosuggest";
 require("codemirror/addon/comment/comment");
@@ -255,7 +255,7 @@ const CodeEditor = ({
         mode: ["csd", "orc", "sco", "udo"].some((t) => t === documentType)
             ? { name: "csound", documentType }
             : "text/plain",
-        viewportMargin: Number.POSITIVE_INFINITY,
+        // viewportMargin: Number.POSITIVE_INFINITY,
         tabSize: 2,
         indentUnit: 2,
         extraKeys: {
@@ -307,7 +307,6 @@ const CodeEditor = ({
     return (
         <UnControlled
             key={documentUid}
-            css={SS.root}
             editorDidMount={editorDidMount}
             editorWillUnmount={editorWillUnmount}
             options={options}

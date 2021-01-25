@@ -35,6 +35,9 @@ export const windowHeader = (theme) => css`
         margin: 0;
         margin-left: 12px;
         color: ${theme.lineNumber};
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 `;
 

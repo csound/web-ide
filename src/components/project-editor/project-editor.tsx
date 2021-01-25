@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
@@ -25,14 +25,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
 import { IOpenDocument } from "./types";
-import SplitterLayout from "react-splitter-layout";
+import SplitPane from "react-split-pane";
 import { IStore } from "@store/types";
 import Editor from "../editor/editor";
 import AudioEditor from "../audio-editor/audio-editor";
 import { useTheme } from "@emotion/react";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
-import CsoundManualWindow from "./csound-manual";
+// import CsoundManualWindow from "./csound-manual";
 import FileTree from "../file-tree";
 import {
     storeEditorKeyboardCallbacks,
@@ -40,7 +40,6 @@ import {
 } from "@comp/hot-keys/actions";
 import { append, reduce, pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
-import "react-splitter-layout/lib/index.css";
 import {
     closeTabDock,
     rearrangeTabs,
@@ -95,44 +94,38 @@ function EditorForDocument({
     );
 }
 
-const MainSection = React.forwardRef(
-    ({ tabDock }: { tabDock: React.ReactElement }, reference) => {
-        const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
-            selectOpenBottomTabs(store)
-        );
+const MainSection = ({ tabDock }: { tabDock: React.ReactElement }) => {
+    const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
+        selectOpenBottomTabs(store)
+    );
 
-        const bottomTabIndex = useSelector((store: IStore) =>
-            selectBottomTabIndex(store)
-        );
-
-        return (
-            <div css={SS.mainTabsSplitter}>
-                {!isEmpty(openTabs) && bottomTabIndex > -1 ? (
-                    <SplitterLayout
-                        vertical
-                        secondaryInitialSize={250}
-                        ref={reference}
-                        customClassName={"main-tab-panels"}
-                    >
-                        {tabDock}
-                        <BottomTabs />
-                    </SplitterLayout>
-                ) : (
-                    tabDock
-                )}
-            </div>
-        );
-    }
-);
+    const bottomTabIndex = useSelector((store: IStore) =>
+        selectBottomTabIndex(store)
+    );
+    const showBottomTabs = !isEmpty(openTabs) && bottomTabIndex > -1;
+    // console.log("HIDE?", hideBottomTabs);
+    // css={SS.mainTabsSplitter}
+    return (
+        <div>
+            <SplitPane
+                split="horizontal"
+                primary="first"
+                minSize={showBottomTabs ? "25%" : "100%"}
+                defaultSize="75%"
+                className={"main-tab-panels"}
+            >
+                {[tabDock, <BottomTabs key="2" />]}
+            </SplitPane>
+        </div>
+    );
+};
 
 MainSection.displayName = "MainSection";
 
 const ProjectEditor = ({
-    activeProject,
-    csound
+    activeProject
 }: {
     activeProject: IProject;
-    csound: CsoundObj;
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
@@ -140,12 +133,13 @@ const ProjectEditor = ({
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
-    const [manualDrag, setManualDrag] = useState(false);
+    // const [manualDrag, setManualDrag] = useState(false);
 
     const projectUid: string = propOr("", "projectUid", activeProject);
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
     const isOwner: boolean = useSelector(selectIsOwner(projectUid));
-    const tabPanelReference = useRef();
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    const csound: CsoundObj | undefined = undefined;
 
     useEffect(() => {
         // start at top on init
@@ -157,6 +151,9 @@ const ProjectEditor = ({
     }, []);
 
     useEffect(() => {
+        if (!csound) {
+            return;
+        }
         const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
             dispatch,
@@ -180,7 +177,7 @@ const ProjectEditor = ({
             unsubscribeToProfile && unsubscribeToProfile();
             unsubscribeToProjectsCount && unsubscribeToProjectsCount();
         };
-    }, [csound, dispatch, isOwner, projectOwnerUid, projectUid]);
+    }, [dispatch, isOwner, projectOwnerUid, projectUid, csound]);
 
     useEffect(() => {
         dispatch(enableMidiInput());
@@ -310,9 +307,10 @@ const ProjectEditor = ({
     );
 
     const tabDock: React.ReactElement = isEmpty(openDocuments) ? (
-        <div style={{ position: "relative" }} />
+        <div key="0" style={{ position: "relative" }} />
     ) : (
         <Tabs
+            key="1"
             activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
             onTabChange={switchTab}
             customStyle={TabStyles}
@@ -333,13 +331,13 @@ const ProjectEditor = ({
         </Tabs>
     );
 
-    const isManualVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.manualVisible
-    );
+    // const isManualVisible = useSelector(
+    //     (store: IStore) => store.ProjectEditorReducer.manualVisible
+    // );
 
-    const isFileTreeVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
-    );
+    // const isFileTreeVisible = useSelector(
+    //     (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
+    // );
 
     useEffect(() => {
         const lastIsManualVisible = sessionStorage.getItem(
@@ -375,37 +373,23 @@ const ProjectEditor = ({
             tabDock={tabDock}
         />
     ) : (
-        <DnDProvider project={activeProject}>
-            <div css={SS.splitterLayoutContainer}>
-                {unsavedDataExitPrompt}
-                <SplitterLayout
-                    primaryIndex={1}
-                    primaryMinSize={400}
-                    secondaryInitialSize={250}
-                    secondaryMinSize={250}
-                >
-                    {isFileTreeVisible && <FileTree />}
-
-                    <SplitterLayout
-                        horizontal
-                        secondaryInitialSize={500}
-                        onDragStart={() => setManualDrag(true)}
-                        onDragEnd={() => setManualDrag(false)}
+        <>
+            {unsavedDataExitPrompt}
+            <DnDProvider project={activeProject}>
+                <div>
+                    <SplitPane
+                        primary="second"
+                        split="vertical"
+                        minSize="80%"
+                        maxSize="0"
+                        defaultSize="80%"
                     >
-                        <MainSection
-                            ref={tabPanelReference}
-                            tabDock={tabDock}
-                        />
-                        {isManualVisible && (
-                            <CsoundManualWindow
-                                manualDrag={manualDrag}
-                                projectUid={projectUid}
-                            />
-                        )}
-                    </SplitterLayout>
-                </SplitterLayout>
-            </div>
-        </DnDProvider>
+                        <FileTree />
+                        <MainSection tabDock={tabDock} />
+                    </SplitPane>
+                </div>
+            </DnDProvider>
+        </>
     );
 };
 

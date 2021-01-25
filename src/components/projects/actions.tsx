@@ -166,8 +166,7 @@ export const closeProject = (): Record<string, any> => {
 };
 
 export const activateProject = (
-    projectUid: string,
-    csound: CsoundObj
+    projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({

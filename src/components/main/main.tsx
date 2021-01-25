@@ -15,8 +15,8 @@ import {
 import firebase from "firebase/app";
 import "firebase/auth";
 import HotKeys from "@comp/hot-keys/hot-keys";
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
+// import PerfectScrollbar from "perfect-scrollbar";
+// import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 const Main = (): React.ReactElement => {
     const dispatch = useDispatch();
@@ -31,19 +31,28 @@ const Main = (): React.ReactElement => {
         const unsubscribeAuthObserver = firebase
             .auth()
             .onAuthStateChanged((user) => {
-                if (user) {
+                if (user && user.displayName) {
                     unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
                         user.uid,
                         dispatch
                     );
-                    dispatch(thirdPartyAuthSuccess(user, !autoLoginTimeout));
+                    const tsIsSometimesStupidUser = {
+                        uid: user.uid,
+                        displayName: user.displayName
+                    };
+                    dispatch(
+                        thirdPartyAuthSuccess(
+                            tsIsSometimesStupidUser,
+                            !autoLoginTimeout
+                        )
+                    );
                 } else {
                     dispatch(setRequestingStatus(false));
                 }
             });
-        if (!isMobile()) {
-            (window as any).ps_body = new PerfectScrollbar("#root");
-        }
+        // if (!isMobile()) {
+        //     (window as any).ps_body = new PerfectScrollbar("#root");
+        // }
 
         return () => {
             unsubscribeAuthObserver();
@@ -56,15 +65,19 @@ const Main = (): React.ReactElement => {
     }, []);
 
     return (
-        <HotKeys>
-            <ThemeProvider>
-                <Modal />
-                <IosWarning />
-                <Snackbar />
+        <>
+            <div style={{ position: "absolute" }}>
                 <ReactTooltip />
-                <Router />
-            </ThemeProvider>
-        </HotKeys>
+            </div>
+            <HotKeys>
+                <ThemeProvider>
+                    <Modal />
+                    <IosWarning />
+                    <Snackbar />
+                    <Router />
+                </ThemeProvider>
+            </HotKeys>
+        </>
     );
 };
 

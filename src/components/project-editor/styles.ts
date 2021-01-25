@@ -1,6 +1,7 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
-import { headerHeight, tabListHeight } from "@styles/constants";
+// import { headerHeight, tabListHeight } from "@styles/constants";
+import { tabListHeight } from "@styles/constants";
 
 export const mainTabsSplitter = css`
     .main-tab-panels {
@@ -27,12 +28,7 @@ export const mainTabsSplitter = css`
 
 export const splitterLayoutContainer = css`
     width: 100%;
-    height: calc(100vh - ${headerHeight}px);
-    position absolute;
-    bottom: 0;
-    .layout-pane {
-        overflow: hidden;
-    }
+    height: 100%;
 `;
 
 export const closeButton = css`

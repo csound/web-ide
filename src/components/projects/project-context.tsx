@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import LoaderSpinner from "react-loader-spinner";
 import { push } from "connected-react-router";
 import { useTheme } from "@emotion/react";
-import { IStore } from "@store/types";
+// import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
 import { ConsoleProvider } from "@comp/console/context";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
-import { fetchCsound } from "@comp/csound/actions";
+// import { fetchCsound } from "@comp/csound/actions";
 import { CsoundObj } from "@csound/browser";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
@@ -47,16 +47,15 @@ const ProjectContext = (
             path(["ProjectsReducer", "projects", activeProjectUid], store)
     );
 
-    const csoundConstructor = useSelector((store: IStore) => {
-        return store.csound.constructor;
-    });
+    // const csoundConstructor = useSelector((store: IStore) => {
+    //     return store.csound.constructor;
+    // });
 
-    useEffect(() => {
-        console.log(csoundConstructor);
-        if (!csoundConstructor) {
-            dispatch(fetchCsound());
-        }
-    }, [csoundConstructor, dispatch]);
+    // useEffect(() => {
+    //     if (!csoundConstructor) {
+    //         dispatch(fetchCsound());
+    //     }
+    // }, [csoundConstructor, dispatch]);
 
     const csound: CsoundObj | undefined = useSelector(
         path(["csound", "csound"])
@@ -67,7 +66,7 @@ const ProjectContext = (
     );
 
     useEffect(() => {
-        if (!projectFetchStarted && csound) {
+        if (!projectFetchStarted) {
             const initProject = async () => {
                 try {
                     await downloadProjectOnce(projectUid)(dispatch);
@@ -84,7 +83,7 @@ const ProjectContext = (
                             );
                     }
                 }
-                await activateProject(projectUid, csound)(dispatch);
+                await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };
             setProjectFetchStarted(true);
@@ -105,16 +104,12 @@ const ProjectContext = (
         tabIndex
     ]);
 
-    return csound && !needsLoading && !invalidUrl && project ? (
+    return needsLoading && !invalidUrl && project ? (
         <>
             <ForceBackgroundColor theme={theme} />
             <Header />
             <ConsoleProvider activeProject={project} csound={csound}>
-                <ProjectEditor
-                    {...properties}
-                    csound={csound}
-                    activeProject={project}
-                />
+                <ProjectEditor {...properties} activeProject={project} />
             </ConsoleProvider>
         </>
     ) : (

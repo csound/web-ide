@@ -18,7 +18,7 @@ export const ConsoleProvider = ({
 }: {
     children: React.ReactElement;
     activeProject: IProject;
-    csound: CsoundObj;
+    csound: CsoundObj | undefined;
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const [logs, setLogs]: [string[], any] = useState([""]);
