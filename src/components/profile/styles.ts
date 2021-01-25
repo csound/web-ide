@@ -5,7 +5,10 @@ import { css, SerializedStyles, Theme } from "@emotion/react";
 const profileStyles = (theme: MaterialTheme) =>
     createStyles({
         root: {
-            fontFamily: "'Space Mono', monospace"
+            fontFamily: "'Space Mono', monospace",
+            position: "absolute",
+            top: 0,
+            width: "100%"
         },
         centerBox: {
             position: "absolute",

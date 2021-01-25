@@ -126,7 +126,7 @@ export const playORCFromString = (
 export const stopCsound = (): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const cs = path(["csound", "csound"], store.getState());
-        cs.stop();
+        cs && cs.stop();
         // FIXME
         // if (cs && typeof cs.stop === "function") {
         //     dispatch(setCsoundPlayState("stopped"));
