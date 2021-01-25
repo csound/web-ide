@@ -423,7 +423,7 @@ const FileTree = (): React.ReactElement => {
 
     return (
         <React.Fragment>
-            {project && (
+            {stateDnD && project && (
                 <div css={SS.container}>
                     <List css={SS.listContainer} dense>
                         {

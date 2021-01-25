@@ -11,7 +11,6 @@ import { IProfileReducer } from "@comp/profile/reducer";
 import { IBottomTabsReducer } from "@comp/bottom-tabs/types";
 import { ISnackbarReducer } from "@comp/snackbar/reducer";
 import { IHomeReducer } from "@comp/home/reducer";
-import { IThemeReducer } from "@comp/themes/reducer";
 
 export interface IStore {
     router: any;
@@ -29,7 +28,6 @@ export interface IStore {
     BottomTabsReducer: IBottomTabsReducer;
     SnackbarReducer: ISnackbarReducer;
     HomeReducer: IHomeReducer;
-    ThemeReducer: IThemeReducer;
 }
 
 export type Selector = (x: IStore) => any;

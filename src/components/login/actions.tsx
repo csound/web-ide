@@ -134,24 +134,26 @@ const profileFinalize = (
                             : "New username"
                     }
                     InputProps={{
-                        inputComponent: ({ inputRef }) => (
-                            <DebounceInput
-                                ref={(reference: any) => {
-                                    if (reference) {
-                                        inputRef = reference;
-                                    }
-                                }}
-                                onChange={(event) => {
-                                    event.target.value.length < 50 &&
-                                        setInput(event.target.value);
-                                    event.target.value.length < 50 &&
-                                        !isEmpty(event.target.value) &&
-                                        checkReservedUsername(
-                                            event.target.value
-                                        );
-                                }}
-                            />
-                        )
+                        inputComponent: function InputComponent({ inputRef }) {
+                            return (
+                                <DebounceInput
+                                    ref={(reference: any) => {
+                                        if (reference) {
+                                            inputRef = reference;
+                                        }
+                                    }}
+                                    onChange={(event) => {
+                                        event.target.value.length < 50 &&
+                                            setInput(event.target.value);
+                                        event.target.value.length < 50 &&
+                                            !isEmpty(event.target.value) &&
+                                            checkReservedUsername(
+                                                event.target.value
+                                            );
+                                    }}
+                                />
+                            );
+                        }
                     }}
                     error={shouldDisable || nameReserved}
                     value={input}
@@ -214,7 +216,7 @@ const profileFinalize = (
 };
 
 export const thirdPartyAuthSuccess = (
-    user: { uid: string; userName: string | undefined },
+    user: { uid: string; displayName: string | undefined },
     fromAutoLogin: boolean
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {

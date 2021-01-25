@@ -1,4 +1,4 @@
-import React, { CElement, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
@@ -95,12 +95,8 @@ function EditorForDocument({
     );
 }
 
-type IMainSectionProperties = {
-    tabDock: CElement<"div", any>;
-};
-
 const MainSection = React.forwardRef(
-    (properties: IMainSectionProperties, reference) => {
+    ({ tabDock }: { tabDock: React.ReactElement }, reference) => {
         const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
             selectOpenBottomTabs(store)
         );
@@ -118,11 +114,11 @@ const MainSection = React.forwardRef(
                         ref={reference}
                         customClassName={"main-tab-panels"}
                     >
-                        {properties.tabDock}
+                        {tabDock}
                         <BottomTabs />
                     </SplitterLayout>
                 ) : (
-                    properties.tabDock
+                    tabDock
                 )}
             </div>
         );
@@ -313,7 +309,7 @@ const ProjectEditor = ({
         </React.Fragment>
     );
 
-    const tabDock = isEmpty(openDocuments) ? (
+    const tabDock: React.ReactElement = isEmpty(openDocuments) ? (
         <div style={{ position: "relative" }} />
     ) : (
         <Tabs

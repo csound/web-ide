@@ -8,7 +8,7 @@ import { ConsoleProvider } from "@comp/console/context";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import { fetchCsound } from "@comp/csound/actions";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
@@ -58,7 +58,7 @@ const ProjectContext = (
         }
     }, [csoundConstructor, dispatch]);
 
-    const csound: ICsoundObject | undefined = useSelector(
+    const csound: CsoundObj | undefined = useSelector(
         path(["csound", "csound"])
     );
 

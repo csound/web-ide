@@ -22,7 +22,10 @@ export const ConsoleProvider = ({
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const [logs, setLogs]: [string[], any] = useState([""]);
-    const [currentProject, setCurrentProject] = useState();
+    const [currentProject, setCurrentProject]: [
+        IProject | undefined,
+        (proj: IProject) => void
+    ] = useState();
 
     const messageCallback = (message: string) => {
         setLogs(append(message + "\n"));
@@ -47,7 +50,7 @@ export const ConsoleProvider = ({
                         activeProject.projectUid))
         ) {
             dispatch(setPrintToConsoleCallback(messageCallback));
-            csound && csound.setMessageCallback(messageCallback);
+            csound && csound.on("message", messageCallback);
             setLogs([""]);
             setCurrentProject(activeProject);
         }
@@ -66,7 +69,7 @@ export const ConsoleProvider = ({
     );
 };
 
-export const useConsole = (): React.ReactContext | undefined => {
+export const useConsole = (): string[] | undefined => {
     const context = useContext(ConsoleContext);
     if (context === undefined) {
         throw new Error("useConsole must be used within a ConsoleProvider");

@@ -111,12 +111,15 @@ const CodeEditor = ({
             ? propOr(0, "line", editorReference.getCursor())
             : 0;
 
-        const currentLineEndOfBound: boolean = uncommentLine(
-            lines[cursorLine]
-        ).match(/endin|endop/g);
+        const currentLineEndOfBound = uncommentLine(lines[cursorLine]).match(
+            /endin|endop/g
+        );
 
         const cursorBoundry = Math.min(
-            cursorLine + (currentLineEndOfBound ? 0 : 1),
+            cursorLine +
+                (currentLineEndOfBound && currentLineEndOfBound.length > 0
+                    ? 0
+                    : 1),
             lines.length
         );
 

@@ -10,7 +10,6 @@ import {
     ascend,
     assoc,
     assocPath,
-    curry,
     equals,
     filter,
     map,
@@ -23,16 +22,22 @@ import {
     sort
 } from "ramda";
 
-export const DnDStateContext = createContext({});
-export const DnDDispatchContext = createContext({});
+type DnDState = {
+    docIdx: Record<string, any>;
+};
 
-interface DnDState {
-    docIdx?: any;
-}
+const initialState: DnDState = { docIdx: {} };
+
+export const DnDStateContext = createContext(initialState);
+
+export const DnDDispatchContext = createContext(
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    (dispatch: Record<string, any>): void => {}
+);
 
 const reduceIndexed = addIndex(reduce);
 
-const reducer = curry((state, action) => {
+const reducer = (state: DnDState, action: Record<string, any>): DnDState => {
     switch (action.type) {
         case "handleDrop": {
             if (
@@ -131,7 +136,7 @@ const reducer = curry((state, action) => {
             return state;
         }
     }
-});
+};
 
 export const DnDProvider = ({
     children,
@@ -140,9 +145,10 @@ export const DnDProvider = ({
     children: React.ReactElement;
     project: IProject;
 }): React.ReactElement => {
-    const [state, dispatch]: [any, any] = useReducer(reducer, {
-        docIdx: {}
-    });
+    const [state, dispatch]: [
+        DnDState,
+        (action: Record<string, any>) => void
+    ] = useReducer(reducer, initialState);
 
     return (
         <DragDropContext
@@ -150,7 +156,7 @@ export const DnDProvider = ({
                 dispatch({ type: "handleDrop", payload: result, project })
             }
         >
-            <DnDStateContext.Provider value={state as any}>
+            <DnDStateContext.Provider value={state}>
                 <DnDDispatchContext.Provider value={dispatch}>
                     {children}
                 </DnDDispatchContext.Provider>
@@ -159,7 +165,7 @@ export const DnDProvider = ({
     );
 };
 
-export const useDnDState = (): React.ReactContext => {
+export const useDnDState = (): DnDState | undefined => {
     const context = useContext(DnDStateContext);
     if (context === undefined) {
         throw new Error("useDnDState must be used within a DnDProvider");
@@ -167,7 +173,9 @@ export const useDnDState = (): React.ReactContext => {
     return context;
 };
 
-export const useDnDDispatch = (): React.ReactContext => {
+export const useDnDDispatch = ():
+    | undefined
+    | ((dispatch: Record<string, any>) => void) => {
     const context = useContext(DnDDispatchContext);
     if (context === undefined) {
         throw new Error("useDnD must be used within a DnDProvider");
@@ -175,4 +183,7 @@ export const useDnDDispatch = (): React.ReactContext => {
     return context;
 };
 
-export const useDnD = (): [DnDState, any] => [useDnDState(), useDnDDispatch()];
+export const useDnD = (): [DnDState | undefined, any] => [
+    useDnDState(),
+    useDnDDispatch()
+];

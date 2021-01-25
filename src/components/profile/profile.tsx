@@ -263,6 +263,7 @@ const Profile = ({ classes, ...properties }) => {
                                             "target.files.0"
                                         );
                                         file &&
+                                            loggedInUserUid &&
                                             dispatch(
                                                 uploadProfileImage(
                                                     loggedInUserUid,

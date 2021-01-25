@@ -119,9 +119,9 @@ export const subscribeToProjectFilesChanges = (
                         ).join("/");
                         // Handle file moved
                         if (newAbsolutePath !== lastAbsolutePath) {
-                            csound.unlinkFromFS(lastAbsolutePath);
+                            csound.fs.unlinkSync(lastAbsolutePath);
                         } else {
-                            csound.unlinkFromFS(newAbsolutePath);
+                            csound.fs.unlinkSync(newAbsolutePath);
                         }
                         addDocumentToEMFS(
                             projectUid,
@@ -166,7 +166,7 @@ export const subscribeToProjectFilesChanges = (
                             [`/${projectUid}`],
                             append(document_.filename, pathPrefix)
                         ).join("/");
-                        csound.unlinkFromFS(absolutePath);
+                        csound.fs.unlinkSync(absolutePath);
                     }
                 });
             }

@@ -583,10 +583,10 @@ export const playListItem = (
     }
 };
 
-export const storeProfileProjectsCount: Record<string, any> = (
-    projectsCount: any,
+export const storeProfileProjectsCount = (
+    projectsCount: number,
     profileUid: string
-) => {
+): Record<string, any> => {
     return {
         type: STORE_PROFILE_PROJECTS_COUNT,
         projectsCount,
@@ -606,7 +606,7 @@ export const storeUserProfile = (
 };
 
 export const storeProfileStars = (
-    stars: Array<any>,
+    stars: Record<string, Timestamp>,
     profileUid: string
 ): Record<string, any> => {
     return {

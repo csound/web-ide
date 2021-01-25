@@ -1,7 +1,15 @@
 import "@emotion/react";
 
+type ThemeFont = {
+    regular: string;
+    monospace: string;
+};
+
 declare module "@emotion/react" {
     export interface Theme {
+        // fonts
+        font: ThemeFont;
+        // basic colors
         background: string;
         headerBackground: string;
         fileTreeBackground: string;

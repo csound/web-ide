@@ -19,7 +19,11 @@ import {
     storeProfileProjectsCount,
     storeProfileStars
 } from "./actions";
-import { UPDATE_PROFILE_FOLLOWING, UPDATE_PROFILE_FOLLOWERS } from "./types";
+import {
+    IProfile,
+    UPDATE_PROFILE_FOLLOWING,
+    UPDATE_PROFILE_FOLLOWERS
+} from "./types";
 import { listifyObject } from "@root/utils";
 import {
     assoc,
@@ -44,7 +48,7 @@ export const subscribeToProfile = (
 ): (() => void) => {
     const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
         (profile) => {
-            dispatch(storeUserProfile(profile.data(), profileUid));
+            dispatch(storeUserProfile(profile.data() as IProfile, profileUid));
         },
         (error: any) => console.error(error)
     );
@@ -155,6 +159,9 @@ export const subscribeToProfileStars = (
     const unsubscribe: () => void = profileStars.doc(profileUid).onSnapshot(
         (starsReference) => {
             const starsData = starsReference.data();
+            if (!starsData) {
+                return;
+            }
             const state = store.getState();
             const starredProjects = keys(starsData);
             const cachedProjects = keys(state.ProjectsReducer.projects);

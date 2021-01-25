@@ -124,7 +124,7 @@ const SocialControls = (): React.ReactElement => {
                     <StyledIconButton
                         size="medium"
                         onClick={() => {
-                            if (projectUid) {
+                            if (projectUid && loggedInUserUid) {
                                 dispatch(
                                     starOrUnstarProject(
                                         projectUid,

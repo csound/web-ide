@@ -36,10 +36,10 @@ const Console = ({
     };
 
     useEffect(() => {
-        if (logs.length > 0) {
+        if (logs && logs.length > 0) {
             onMessage();
         }
-    });
+    }, [logs]);
 
     useEffect(() => {
         if (consoleReference && consoleReference.current) {

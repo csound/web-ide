@@ -3,7 +3,6 @@ import FileTree from "@comp/file-tree";
 import Console from "@comp/console/console";
 import MobileNavigation from "@comp/project-editor/mobile-navigation";
 import CsoundManualWindow from "@comp/project-editor/csound-manual";
-import { ITabDock } from "@comp/project-editor/types";
 import { DnDProvider } from "@comp/file-tree/context";
 import { IProject } from "@comp/projects/types";
 import * as SS from "./styles";
@@ -13,8 +12,8 @@ const MobileTabs = ({
     tabDock,
     projectUid
 }: {
-    project: IProject;
-    tabDock: ITabDock;
+    activeProject: IProject;
+    tabDock: React.ReactElement;
     projectUid: string;
 }): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
@@ -44,22 +43,24 @@ const MobileTabs = ({
 
     return (
         <DnDProvider project={activeProject}>
-            <style>
-                {`body {overflow: hidden!important;}` +
-                    `#drag-tab-list {display: none;}`}
-            </style>
-            {MobileConsole}
-            {mobileTabIndex === 0
-                ? tabDock
-                : mobileTabIndex === 1
-                ? MobileFileTree
-                : mobileTabIndex === 3
-                ? MobileManual
-                : undefined}
-            <MobileNavigation
-                mobileTabIndex={mobileTabIndex}
-                setMobileTabIndex={setMobileTabIndex}
-            />
+            <>
+                <style>
+                    {`body {overflow: hidden!important;}` +
+                        `#drag-tab-list {display: none;}`}
+                </style>
+                {MobileConsole}
+                {mobileTabIndex === 0
+                    ? tabDock
+                    : mobileTabIndex === 1
+                    ? MobileFileTree
+                    : mobileTabIndex === 3
+                    ? MobileManual
+                    : undefined}
+                <MobileNavigation
+                    mobileTabIndex={mobileTabIndex}
+                    setMobileTabIndex={setMobileTabIndex}
+                />
+            </>
         </DnDProvider>
     );
 };
