@@ -151,9 +151,9 @@ const ProjectEditor = ({
     }, []);
 
     useEffect(() => {
-        if (!csound) {
-            return;
-        }
+        // if (!csound) {
+        //     return;
+        // }
         const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
             dispatch,

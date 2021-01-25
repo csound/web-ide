@@ -31,7 +31,7 @@ import {
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
     dispatch: (any) => void,
-    csound: CsoundObj
+    csound: CsoundObj | undefined
 ): (() => void) => {
     const unsubscribe: () => void = projects
         .doc(projectUid)
@@ -52,20 +52,26 @@ export const subscribeToProjectFilesChanges = (
                 const documents: IDocumentsMap = convertDocumentSnapToDocumentsMap(
                     filesToAdd
                 );
-                forEach((d) => {
-                    if (d.type !== "folder") {
-                        const pathPrefix = (d.path || [])
-                            .filter((p) => typeof p === "string")
-                            .map((documentUid) =>
-                                path([documentUid, "filename"], documents)
+                csound &&
+                    forEach((d) => {
+                        if (d.type !== "folder") {
+                            const pathPrefix = (d.path || [])
+                                .filter((p) => typeof p === "string")
+                                .map((documentUid) =>
+                                    path([documentUid, "filename"], documents)
+                                );
+                            const absolutePath = concat(
+                                [`/${projectUid}`],
+                                append(d.filename, pathPrefix)
+                            ).join("/");
+                            addDocumentToEMFS(
+                                projectUid,
+                                csound,
+                                d,
+                                absolutePath
                             );
-                        const absolutePath = concat(
-                            [`/${projectUid}`],
-                            append(d.filename, pathPrefix)
-                        ).join("/");
-                        addDocumentToEMFS(projectUid, csound, d, absolutePath);
-                    }
-                }, values(documents));
+                        }
+                    }, values(documents));
                 dispatch(addProjectDocuments(projectUid, documents));
             }
 
@@ -119,16 +125,17 @@ export const subscribeToProjectFilesChanges = (
                         ).join("/");
                         // Handle file moved
                         if (newAbsolutePath !== lastAbsolutePath) {
-                            csound.fs.unlinkSync(lastAbsolutePath);
+                            csound && csound.fs.unlinkSync(lastAbsolutePath);
                         } else {
-                            csound.fs.unlinkSync(newAbsolutePath);
+                            csound && csound.fs.unlinkSync(newAbsolutePath);
                         }
-                        addDocumentToEMFS(
-                            projectUid,
-                            csound,
-                            document_,
-                            newAbsolutePath
-                        );
+                        csound &&
+                            addDocumentToEMFS(
+                                projectUid,
+                                csound,
+                                document_,
+                                newAbsolutePath
+                            );
                         dispatch(saveUpdatedDocument(projectUid, document_));
                     }
                 });
@@ -166,7 +173,7 @@ export const subscribeToProjectFilesChanges = (
                             [`/${projectUid}`],
                             append(document_.filename, pathPrefix)
                         ).join("/");
-                        csound.fs.unlinkSync(absolutePath);
+                        csound && csound.fs.unlinkSync(absolutePath);
                     }
                 });
             }
@@ -199,7 +206,7 @@ export const subscribeToProjectTargetsChanges = (
 export const subscribeToProjectChanges = (
     projectUid: string,
     dispatch: (any) => void,
-    csound: CsoundObj
+    csound: CsoundObj | undefined
 ): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(
         projectUid,
