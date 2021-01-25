@@ -376,7 +376,7 @@ const ProjectEditor = ({
         <>
             {unsavedDataExitPrompt}
             <DnDProvider project={activeProject}>
-                <div>
+                <div css={SS.splitterRoot}>
                     <SplitPane
                         primary="second"
                         split="vertical"

@@ -1,17 +1,17 @@
-import React, { useCallback, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CodeMirror from "codemirror";
-import { UnControlled } from "react-codemirror2";
+// import { UnControlled } from "react-codemirror2";
 import { editorEvalCode, uncommentLine } from "./utils";
-import { debounce } from "throttle-debounce";
+// import { debounce } from "throttle-debounce";
 import { IDocument, IProject } from "../projects/types";
 import { ICsoundStatus } from "@comp/csound/types";
 import { CsoundObj } from "@csound/browser";
 import { isNil, path, pathOr, propOr } from "ramda";
-import * as projectActions from "../projects/actions";
+// import * as projectActions from "../projects/actions";
 import * as projectEditorActions from "../project-editor/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
-// import * as SS from "./styles";
+import * as SS from "./styles";
 import "./modes/csound/csound";
 import "./plugins/autosuggest";
 require("codemirror/addon/comment/comment");
@@ -32,24 +32,23 @@ type IPrintToConsole = ((text: string) => void) | undefined;
 
 const cursorState = {};
 
-const updateReduxDocumentValue = debounce(
-    100,
-    (newValue, projectUid, documentUid, dispatch) => {
-        dispatch(
-            projectActions.updateDocumentValue(
-                newValue,
-                projectUid,
-                documentUid
-            )
-        );
-    }
-);
-
-const updateGuestDocumentValue = debounce(
-    100,
-    (csound, projectUid, document, newValue) =>
-        projectActions.saveFileOffline(csound, projectUid, document, newValue)
-);
+// const updateReduxDocumentValue = debounce(
+//     100,
+//     (newValue, projectUid, documentUid, dispatch) => {
+//         dispatch(
+//             projectActions.updateDocumentValue(
+//                 newValue,
+//                 projectUid,
+//                 documentUid
+//             )
+//         );
+//     }
+// );
+// const updateGuestDocumentValue = debounce(
+//     100,
+//     (csound, projectUid, document, newValue) =>
+//         projectActions.saveFileOffline(csound, projectUid, document, newValue)
+// );
 
 const CodeEditor = ({
     documentUid,
@@ -60,11 +59,14 @@ const CodeEditor = ({
     projectUid: string;
     isOwner: boolean;
 }): React.ReactElement => {
+    const [isMounted, setIsMounted] = useState(false);
+
     const [editorReference, setEditorReference]: [
         CodeMirror.Editor | undefined,
         (argument: CodeMirror.Editor) => void
     ] = useState();
 
+    const textfieldReference: React.RefObject<HTMLTextAreaElement> = useRef();
     // const [editorValue, setEditorValue] = useState("");
 
     const dispatch = useDispatch();
@@ -171,53 +173,9 @@ const CodeEditor = ({
               };
     };
 
-    const toggleComment = () => {
-        editorReference && (editorReference as any).toggleComment();
-    };
-
-    const editorDidMount = (editor: any) => {
-        editor.scrollIntoView = () => {
-            setTimeout(() => {
-                if (
-                    (window as any)[`editor_scroller`] &&
-                    typeof (window as any)[`editor_scroller`].update ===
-                        "function"
-                ) {
-                    (window as any)[`editor_scroller`].update();
-                }
-            }, 50);
-        };
-        editor.getDoc().setValue(currentDocumentValue);
-
-        const editorHistory = path([`${documentUid}:history`], cursorState);
-        if (editorHistory) {
-            editor.getDoc().setHistory(editorHistory);
-        } else {
-            editor.getDoc().clearHistory();
-        }
-
-        setEditorReference(editor as any);
-
-        dispatch(
-            projectEditorActions.storeEditorInstance(
-                editor,
-                projectUid,
-                documentUid
-            )
-        );
-        editor.focus();
-        const lastLine = pathOr(
-            0,
-            [`${documentUid}:cursor_pos`, "line"],
-            cursorState
-        );
-        const lastColumn = pathOr(
-            0,
-            [`${documentUid}:cursor_pos`, "ch"],
-            cursorState
-        );
-        editor.setCursor({ line: lastLine, ch: lastColumn });
-    };
+    // const toggleComment = () => {
+    //     editorReference && (editorReference as any).toggleComment();
+    // };
 
     const editorEvalCurried = editorEvalCode(
         csound,
@@ -228,90 +186,133 @@ const CodeEditor = ({
         editorReference
     );
 
-    const editorWillUnmount = () => {
-        if (editorReference) {
-            cursorState[
-                `${documentUid}:cursor_pos`
-            ] = editorReference.getCursor();
-            cursorState[
-                `${documentUid}:history`
-            ] = editorReference.getHistory();
-        }
-        dispatch(
-            projectEditorActions.storeEditorInstance(
-                undefined,
-                projectUid,
-                documentUid
-            )
-        );
-    };
-    const options = {
-        autoSuggest: true,
-        autoCloseBrackets: true,
-        fullScreen: true,
-        lineNumbers: true,
-        lineWrapping: true,
-        matchBrackets: true,
-        mode: ["csd", "orc", "sco", "udo"].some((t) => t === documentType)
-            ? { name: "csound", documentType }
-            : "text/plain",
-        // viewportMargin: Number.POSITIVE_INFINITY,
-        tabSize: 2,
-        indentUnit: 2,
-        extraKeys: {
-            // noop default keybindings and handle from react
-            // all defaults: code-mirror/src/input/keymap.js
-            // "Ctrl-F": () => {},
-            // "Cmd-F": () => {},
-            // "Ctrl-Z": () => {},
-            // "Cmd-Z": () => {},
-            // "Shift-Ctrl-Z": () => {},
-            // "Ctrl-Y": () => {},
-            // "Shift-Cmd-Z": () => {},
-            // "Cmd-Y": () => {},
-            // todo: move to hot-keys
-            "Ctrl-E": () => editorEvalCurried(false),
-            "Ctrl-Enter": () => editorEvalCurried(true),
-            "Cmd-E": () => editorEvalCurried(false),
-            "Cmd-Enter": () => editorEvalCurried(true),
-            "Ctrl-;": () => toggleComment(),
-            "Cmd-;": () => toggleComment()
-        }
-    };
+    useEffect(() => {
+        if (!isMounted && textfieldReference && textfieldReference.current) {
+            const editor = CodeMirror.fromTextArea(
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                textfieldReference.current!,
+                {
+                    // autoCloseBrackets: true,
+                    autoSuggest: true,
+                    fullScreen: true,
+                    height: "auto",
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    matchBrackets: true,
+                    viewportMargin: Number.POSITIVE_INFINITY,
+                    mode: ["csd", "orc", "sco", "udo"].some(
+                        (t) => t === documentType
+                    )
+                        ? { name: "csound", documentType }
+                        : "text/plain",
+                    extraKeys: {
+                        // noop default keybindings and handle from react
+                        // all defaults: code-mirror/src/input/keymap.js
+                        // "Ctrl-F": () => {},
+                        // "Cmd-F": () => {},
+                        // "Ctrl-Z": () => {},
+                        // "Cmd-Z": () => {},
+                        // "Shift-Ctrl-Z": () => {},
+                        // "Ctrl-Y": () => {},
+                        // "Shift-Cmd-Z": () => {},
+                        // "Cmd-Y": () => {},
+                        // todo: move to hot-keys
+                        "Ctrl-E": () => editorEvalCurried(false),
+                        "Ctrl-Enter": () => editorEvalCurried(true),
+                        "Cmd-E": () => editorEvalCurried(false),
+                        "Cmd-Enter": () => editorEvalCurried(true)
+                        // "Ctrl-;": () => toggleComment(),
+                        // "Cmd-;": () => toggleComment()
+                    }
+                }
+            );
+            setEditorReference(editor as any);
 
-    const onChange = useCallback(
-        (editor, data, value) => {
-            // if editorRef doesn't exist = not yet
-            // mounted (meaning the value wont fit savedValue)
-            if (editorReference) {
-                updateReduxDocumentValue(
-                    value,
+            dispatch(
+                projectEditorActions.storeEditorInstance(
+                    editor,
                     projectUid,
-                    documentUid,
-                    dispatch
-                );
-            }
-        },
-        [editorReference, projectUid, documentUid, dispatch]
-    );
+                    documentUid
+                )
+            );
+            editor.focus();
+            const lastLine = pathOr(
+                0,
+                [`${documentUid}:cursor_pos`, "line"],
+                cursorState
+            );
+            const lastColumn = pathOr(
+                0,
+                [`${documentUid}:cursor_pos`, "ch"],
+                cursorState
+            );
+            editor.setCursor({ line: lastLine, ch: lastColumn });
+            // editorDidMount(editor);
+            setIsMounted(true);
+        }
+    }, [
+        dispatch,
+        documentUid,
+        projectUid,
+        isMounted,
+        setIsMounted,
+        documentType,
+        // editorDidMount,
+        // toggleComment,
+        editorEvalCurried
+    ]);
 
-    const onGuestChange = useCallback(
-        (editor, data, value) => {
-            if (editorReference && csound) {
-                updateGuestDocumentValue(csound, projectUid, document, value);
-            }
-        },
-        [editorReference, projectUid, document, csound]
-    );
+    // const editorWillUnmount = () => {
+    //     if (editorReference) {
+    //         cursorState[
+    //             `${documentUid}:cursor_pos`
+    //         ] = editorReference.getCursor();
+    //         cursorState[
+    //             `${documentUid}:history`
+    //         ] = editorReference.getHistory();
+    //     }
+    //     dispatch(
+    //         projectEditorActions.storeEditorInstance(
+    //             undefined,
+    //             projectUid,
+    //             documentUid
+    //         )
+    //     );
+    // };
+
+    // const onChange = useCallback(
+    //     (editor, data, value) => {
+    //         // if editorRef doesn't exist = not yet
+    //         // mounted (meaning the value wont fit savedValue)
+    //         if (editorReference) {
+    //             updateReduxDocumentValue(
+    //                 value,
+    //                 projectUid,
+    //                 documentUid,
+    //                 dispatch
+    //             );
+    //         }
+    //     },
+    //     [editorReference, projectUid, documentUid, dispatch]
+    // );
+    // const onGuestChange = useCallback(
+    //     (editor, data, value) => {
+    //         if (editorReference && csound) {
+    //             updateGuestDocumentValue(csound, projectUid, document, value);
+    //         }
+    //     },
+    //     [editorReference, projectUid, document, csound]
+    // );
 
     return (
-        <UnControlled
-            key={documentUid}
-            editorDidMount={editorDidMount}
-            editorWillUnmount={editorWillUnmount}
-            options={options}
-            onChange={isOwner ? onChange : onGuestChange}
-        />
+        <form style={{ overflowY: "hidden", height: "100%" }}>
+            <textarea
+                ref={textfieldReference}
+                css={SS.root}
+                style={{ fontSize: `16px !important` }}
+                defaultValue={currentDocumentValue}
+            ></textarea>
+        </form>
     );
 };
 

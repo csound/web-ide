@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "@material-ui/core/Button";
-import { ICodeMirror } from "react-codemirror2";
+import CodeMirror from "codemirror";
 import { closeModal, openSimpleModal } from "@comp/modal/actions";
 import { resetDocumentValue } from "@comp/projects/actions";
 import { IDocument } from "@comp/projects/types";
@@ -243,7 +243,7 @@ export const setFileTreePanelOpen = (open: boolean): Record<string, any> => {
 };
 
 export const storeEditorInstance = (
-    editorInstance: ICodeMirror | undefined,
+    editorInstance: CodeMirror.Editor | undefined,
     projectUid: string,
     documentUid: string
 ): ((dispatch: any) => Promise<void>) => {

@@ -8,6 +8,7 @@ const drawerWidth = 260;
 export const headerRoot = (theme: Theme): SerializedStyles => css`
     height: ${headerHeight}px;
     background-color: ${theme.headerBackground};
+    z-index: 3;
     & > div {
        height ${headerHeight}px;
     }

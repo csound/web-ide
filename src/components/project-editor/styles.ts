@@ -3,6 +3,12 @@ import { shadow } from "@styles/_common";
 // import { headerHeight, tabListHeight } from "@styles/constants";
 import { tabListHeight } from "@styles/constants";
 
+export const splitterRoot = css`
+    position: absolute;
+    width: 100%;
+    height: 100%;
+`;
+
 export const mainTabsSplitter = css`
     .main-tab-panels {
         .layout-pane {

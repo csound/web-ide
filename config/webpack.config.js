@@ -17,7 +17,7 @@ const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeM
 const paths = require("./paths");
 const getClientEnvironment = require("./env");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
-const ForkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWebpackPlugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
 const RobotstxtPlugin = require("robotstxt-webpack-plugin");
 const SitemapPlugin = require("sitemap-webpack-plugin").default;
@@ -336,30 +336,34 @@ module.exports = function (webpackEnv = "production") {
                     ]
                 }),
             new ForkTsCheckerWebpackPlugin({
-                typescript: resolve.sync("typescript", {
-                    basedir: paths.appNodeModules,
-                    build: true
-                }),
+                typescript: {
+                    enabled: true,
+                    build: true,
+                    typescriptPath: require.resolve("typescript"),
+                    configFile: path.resolve(__dirname, "../tsconfig.json")
+                },
                 eslint: {
-                    files: path.resolve("../src") + "/**/*.{ts,tsx,js,jsx}"
+                    files:
+                        path.resolve(__dirname, "../src") +
+                        "/**/*.{ts,tsx,js,jsx}"
                 },
                 async: false,
-                useTypescriptIncrementalApi: true,
-                checkSyntacticErrors: true,
-                resolveModuleNameModule: process.versions.pnp
-                    ? `${__dirname}/pnpTs.js`
-                    : undefined,
-                resolveTypeReferenceDirectiveModule: process.versions.pnp
-                    ? `${__dirname}/pnpTs.js`
-                    : undefined,
-                tsconfig: paths.appTsConfig,
-                reportFiles: [
-                    "**",
-                    "!**/__tests__/**",
-                    "!**/?(*.)(spec|test).*",
-                    "!**/src/setupProxy.*",
-                    "!**/src/setupTests.*"
-                ],
+                // useTypescriptIncrementalApi: true,
+                // checkSyntacticErrors: true,
+                // resolveModuleNameModule: process.versions.pnp
+                //     ? `${__dirname}/pnpTs.js`
+                //     : undefined,
+                // resolveTypeReferenceDirectiveModule: process.versions.pnp
+                //     ? `${__dirname}/pnpTs.js`
+                //     : undefined,
+                // tsconfig: paths.appTsConfig,
+                // reportFiles: [
+                //     "**",
+                //     "!**/__tests__/**",
+                //     "!**/?(*.)(spec|test).*",
+                //     "!**/src/setupProxy.*",
+                //     "!**/src/setupTests.*"
+                // ],
                 // The formatter is invoked directly in WebpackDevServerUtils during development
                 formatter: isEnvProduction ? typescriptFormatter : undefined
             }),
