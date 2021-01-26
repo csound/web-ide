@@ -87,7 +87,7 @@
         "@types/react-onclickoutside": "^6.7.3",
         "@types/react-redux": "^7.1.16",
         "@types/styled-components": "^5.1.7",
-        "@typescript-eslint/eslint-plugin": "^4.14.0",
+        "@typescript-eslint/eslint-plugin": "^4.14.1",
         "@typescript-eslint/parser": "^4.14.0",
         "array-move": "^3.0.1",
         "autosuggest-highlight": "^3.1.1",
