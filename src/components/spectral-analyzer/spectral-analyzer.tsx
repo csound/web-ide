@@ -26,7 +26,7 @@ type CanvasReference = {
     current: HTMLCanvasElement | null;
 };
 
-const connectVisualizer = (
+const connectVisualizer = async (
     csound: CsoundObj,
     canvasReference: CanvasReference
 ) => {
@@ -43,7 +43,10 @@ const connectVisualizer = (
 
         //console.log("Connect Visualizer!");
 
-        const node = csound.getNode();
+        const node = await csound.getNode();
+        if(node === undefined) {
+            return;
+        }
         const context = node.context;
         const scopeNode = context.createAnalyser();
         scopeNode.fftSize = 2048;
@@ -83,9 +86,11 @@ const connectVisualizer = (
     }
 };
 
-const disconnectVisualizer = (csound: CsoundObj, scopeNode: AnalyserNode) => {
-    const node = csound.getNode();
-    node.disconnect(scopeNode);
+const disconnectVisualizer = async (csound: CsoundObj, scopeNode: AnalyserNode) => {
+    const node = await csound.getNode();
+    if(node) {
+        node.disconnect(scopeNode);
+    }
 };
 
 const SpectralAnalyzer = ({
@@ -98,14 +103,18 @@ const SpectralAnalyzer = ({
     );
 
     useEffect(() => {
-        let scopeNode: AnalyserNode | undefined;
+        let scopeNode: Promise<AnalyserNode | undefined>;
         if (csound && canvasReference.current) {
             scopeNode = connectVisualizer(csound, canvasReference);
         }
 
         return () => {
             if (csound && scopeNode) {
-                disconnectVisualizer(csound, scopeNode);
+                scopeNode.then(node => {
+                    if(node) {
+                        disconnectVisualizer(csound, node);
+                    }
+                })
             }
         };
     }, [canvasReference, csound]);
