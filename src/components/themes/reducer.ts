@@ -22,7 +22,7 @@ const ThemeReducer = (
             switch (action.newTheme) {
                 case "monokai": {
                     return {
-                        selectedTheme: MonokaiTheme,
+                        selectedTheme: MonokaiTheme as Theme,
                         selectedThemeName: "monokai"
                     };
                 }
@@ -34,7 +34,7 @@ const ThemeReducer = (
                 }
                 default: {
                     return {
-                        selectedTheme: MonokaiTheme,
+                        selectedTheme: MonokaiTheme as Theme,
                         selectedThemeName: "monokai"
                     };
                 }
