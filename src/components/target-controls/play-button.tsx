@@ -1,16 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import * as SS from "./styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "@store/types";
-import { pathOr } from "ramda";
+import { path, pathOr } from "ramda";
 import {
     getDefaultTargetDocument,
     getPlayActionFromProject,
     getPlayActionFromTarget
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
-import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
+import {
+    fetchSetStartCsound,
+    pauseCsound,
+    resumePausedCsound
+} from "@comp/csound/actions";
 import { saveAllFiles } from "@comp/projects/actions";
 
 const PlayButton = ({
@@ -20,6 +24,7 @@ const PlayButton = ({
     activeProjectUid: string;
     isOwner: boolean;
 }): React.ReactElement => {
+    const [isLoading, setIsLoading] = useState(false);
     const playActionDefault = useSelector(getPlayActionFromTarget);
 
     const playActionFallback = useSelector(
@@ -28,6 +33,10 @@ const PlayButton = ({
 
     const csoundPlayState: string = useSelector((store: IStore) => {
         return pathOr("stopped", ["csound", "status"], store);
+    });
+
+    const csoundConstructorReady: boolean = useSelector((store: IStore) => {
+        return typeof path(["csound", "factory"], store) === "function";
     });
 
     const selectedTargetName: string | null = useSelector(
@@ -55,7 +64,15 @@ const PlayButton = ({
         <Tooltip title={tooltipText}>
             <div
                 css={SS.playButtonContainer}
-                onClick={() => {
+                onClick={async () => {
+                    if (isLoading) {
+                        return;
+                    }
+                    setIsLoading(true);
+                    if (!playAction) {
+                        console.error("Don't know how to play this project");
+                        return;
+                    }
                     switch (csoundPlayState) {
                         case "playing": {
                             dispatch(pauseCsound());
@@ -71,9 +88,18 @@ const PlayButton = ({
                             if (isOwner) {
                                 dispatch(saveAllFiles());
                             }
-                            dispatch(playAction);
+                            if (!csoundConstructorReady) {
+                                await fetchSetStartCsound(
+                                    playAction as any,
+                                    activeProjectUid
+                                )(dispatch);
+                            } else {
+                                playAction &&
+                                    (await (playAction as any)(dispatch));
+                            }
                         }
                     }
+                    setIsLoading(false);
                 }}
             >
                 <button

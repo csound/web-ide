@@ -8,7 +8,7 @@ import {
 } from "./types";
 
 export interface ICsoundReducer {
-    constructor: Csound | undefined;
+    factory: Csound | undefined;
     csound: CsoundObj | undefined;
     status: ICsoundStatus;
 }
@@ -19,7 +19,7 @@ const CsoundReducer = (
 ): ICsoundReducer => {
     switch (action.type) {
         case FETCH_CSOUND: {
-            return assoc("constructor", action.constructor, state);
+            return assoc("factory", action.factory, state);
         }
         case SET_CSOUND: {
             // store it globally for the Manual!

@@ -7,17 +7,7 @@ import {
 import { IFirestoreDocument } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@csound/browser";
-import {
-    assoc,
-    curry,
-    isNil,
-    map,
-    pipe,
-    prop,
-    propOr,
-    reduce,
-    reject
-} from "ramda";
+import { assoc, isNil, map, pipe, prop, propOr, reduce, reject } from "ramda";
 
 export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
@@ -31,7 +21,7 @@ export function textOrBinary(filename: string): IDocumentFileType {
 
 export function isAudioFile(fileName: string): boolean {
     // currently does not deal with FLAC, not sure if browser supports it
-    const endings = [".wav", ".ogg", ".mp3"];
+    const endings = [".wav", ".ogg", ".mp3", "aiff", "flac"];
     const lower = fileName.toLowerCase();
     return endings.some((ending) => lower.endsWith(ending));
 }
@@ -52,51 +42,39 @@ export const generateEmptyDocument = (
     path: []
 });
 
-export const addDocumentToEMFS = curry(
-    (
-        projectUid: string,
-        csound: CsoundObj,
-        document: IDocument,
-        absolutePath: string
-    ) => {
-        if (document.type === "folder") {
-            return;
-        }
-        if (document.type === "bin") {
-            const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
-            return storageReference
-                .child(path)
-                .getDownloadURL()
-                .then(function (url) {
-                    // This can be downloaded directly:
-                    const xhr = new XMLHttpRequest();
-                    xhr.responseType = "arraybuffer";
-                    xhr.addEventListener("load", function (event) {
-                        const blob = xhr.response;
-                        csound &&
-                            typeof csound.fs.writeFileSync === "function" &&
-                            csound.fs.writeFileSync(
-                                absolutePath,
-                                new Uint8Array(blob)
-                            );
-                    });
-                    xhr.open("GET", url);
-                    xhr.send();
-                })
-                .catch(function (error) {
-                    // Handle any errors
-                });
-        } else {
-            const encoder = new TextEncoder();
-            csound &&
-                typeof csound.fs.writeFileSync === "function" &&
-                csound.fs.writeFileSync(
-                    absolutePath,
-                    encoder.encode(document.savedValue)
-                );
-        }
+export const addDocumentToEMFS = async (
+    projectUid: string,
+    csound: CsoundObj,
+    document: IDocument,
+    absolutePath: string
+): Promise<void> => {
+    if (document.type === "folder") {
+        csound.fs.mkdirpSync(document.filename);
+        return;
     }
-);
+    if (document.type === "bin") {
+        const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
+        try {
+            const downloadUrl = await storageReference
+                .child(path)
+                .getDownloadURL();
+            const response = await fetch(downloadUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const blob = new Uint8Array(arrayBuffer);
+            csound.fs.writeFileSync(absolutePath, blob);
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        const encoder = new TextEncoder();
+        csound &&
+            typeof csound.fs.writeFileSync === "function" &&
+            csound.fs.writeFileSync(
+                absolutePath,
+                encoder.encode(document.currentValue)
+            );
+    }
+};
 
 export const fileDocumentDataToDocumentType = (
     documentData: IFirestoreDocument

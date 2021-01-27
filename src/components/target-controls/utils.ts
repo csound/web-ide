@@ -2,7 +2,8 @@ import { curry, find, path, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
 import { ITarget } from "./types";
 import { IDocument } from "@comp/projects/types";
-import { playORCFromString, playCSDFromEMFS } from "@comp/csound/actions";
+import { CsoundObj } from "@csound/browser";
+import { playORCFromString, playCsdFromFs } from "@comp/csound/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
 
 const getDefaultTargetName = (store, projectUid): string | undefined =>
@@ -68,7 +69,7 @@ export const getPlayActionFromProject = curry(
         );
         switch (csoundDocumentType) {
             case "csd": {
-                return playCSDFromEMFS(
+                return playCsdFromFs(
                     projectUid,
                     (targetDocument as IDocument).filename
                 );
@@ -85,7 +86,7 @@ export const getPlayActionFromProject = curry(
 
 export const getPlayActionFromTarget = (
     store: IStore
-): undefined | ((dispatch: any) => void) => {
+): undefined | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
     const selectedTarget = path(
         ["TargetControlsReducer", "selectedTarget"],
         store
@@ -145,7 +146,7 @@ export const getPlayActionFromTarget = (
         );
         switch (csoundDocumentType) {
             case "csd": {
-                return playCSDFromEMFS(
+                return playCsdFromFs(
                     activeProjectUid,
                     (targetDocument as IDocument).filename
                 );

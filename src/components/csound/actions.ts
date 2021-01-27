@@ -8,26 +8,12 @@ import {
     ICsoundStatus,
     SET_CSOUND_PLAY_STATE
 } from "./types";
-import { selectActiveProject } from "../projects/selectors";
+import { selectActiveProject } from "@comp/projects/selectors";
+import { addDocumentToEMFS } from "@comp/projects/utils";
 import { saveAs } from "file-saver";
-import { path } from "ramda";
-import { storageReference } from "../../config/firestore";
+import { isEmpty, path, pathOr, pipe, values } from "ramda";
 
-export const fetchCsound = (): ((
-    dispatch: (any) => void,
-    getState: () => IStore
-) => Promise<void>) => {
-    return async (dispatch: any, getState) => {
-        const currentState = getState();
-        const constructor = path(["csound", "constructor"], currentState);
-        if (!constructor) {
-            dispatch({
-                type: FETCH_CSOUND,
-                constructor: await import("@csound/browser")
-            });
-        }
-    };
-};
+import { storageReference } from "@config/firestore";
 
 export const setCsound = (csound: CsoundObj): Record<string, any> => {
     return {
@@ -36,37 +22,107 @@ export const setCsound = (csound: CsoundObj): Record<string, any> => {
     };
 };
 
-export const playCSDFromEMFS = (
-    projectUid: string,
-    emfsPath: string
-): ((dispatch: (any) => void) => void) => {
+export const fetchSetStartCsound = (
+    playCallback: (dispatch: any, csound: CsoundObj) => void,
+    activeProjectUid: string
+): ((dispatch: (any) => void) => Promise<void>) => {
     return async (dispatch: any) => {
+        const { Csound } = await import("@csound/browser");
+
+        // eslint-disable-next-line unicorn/prevent-abbreviations
+        const csoundObj = await Csound({ useWorker: true });
+        if (!csoundObj) {
+            // TODO: error handle
+            return;
+        }
+        const storeState: IStore = store.getState();
+        const documents = pipe(
+            pathOr({}, [
+                "ProjectsReducer",
+                "projects",
+                activeProjectUid,
+                "documents"
+            ]),
+            values
+        )(storeState);
+        for (const document of documents) {
+            // reminder: paths are store by document ref and not
+            // the actual filesystem name
+            const realPath = document.path.map((documentId) =>
+                path(
+                    [
+                        "ProjectsReducer",
+                        "projects",
+                        activeProjectUid,
+                        "documents",
+                        documentId,
+                        "name"
+                    ],
+                    storeState
+                )
+            );
+            const filepath = isEmpty(realPath)
+                ? document.filename
+                : realPath.join("/") + "/" + document.filename;
+            await addDocumentToEMFS(
+                activeProjectUid,
+                csoundObj,
+                document,
+                filepath
+            );
+        }
+
+        if (Csound && csoundObj) {
+            dispatch({
+                type: FETCH_CSOUND,
+                factory: Csound
+            });
+            dispatch({
+                type: SET_CSOUND,
+                csound: csoundObj
+            });
+            // await csoundObj.start();
+            await playCallback(dispatch, csoundObj);
+        }
+    };
+};
+
+export const playCsdFromFs = (
+    projectUid: string,
+    csdPath: string
+): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
+    return async (dispatch: any, csound) => {
         const state = store.getState();
-        const cs = path(["csound", "csound"], state);
+        // eslint-disable-next-line unicorn/prevent-abbreviations
+        const csoundObj = csound || path(["csound", "csound"], state);
+
         const clearConsoleCallback = path(
             ["ConsoleReducer", "clearConsole"],
             state
         );
-
-        if (cs) {
-            const playState = cs.getPlayState();
-            if (playState === "error") {
-                dispatch(setCsoundPlayState("stopped"));
-            }
+        console.log(csoundObj);
+        if (csoundObj) {
+            // const playState = csoundObj.getPlayState();
+            // if (playState === "error") {
+            //     dispatch(setCsoundPlayState("stopped"));
+            // }
             typeof clearConsoleCallback === "function" &&
                 clearConsoleCallback();
-            cs.audioContext.resume();
-            cs.resetIfNeeded();
-            cs.setOption("-odac");
-            cs.setOption("-+msg_color=false");
-            await cs.setCurrentDirFS(projectUid);
-            const result = await cs.compileCSDPromise(emfsPath);
-            if (result === 0) {
-                dispatch(setCsoundPlayState("playing"));
-                cs.start();
-            } else {
-                dispatch(setCsoundPlayState("error"));
-            }
+            // csoundObj.audioContext.resume();
+            // csoundObj.resetIfNeeded();
+            csoundObj.setOption("-odac");
+            csoundObj.setOption("-+msg_color=false");
+            // await csoundObj.setCurrentDirFS(projectUid);
+            await csoundObj.start();
+            console.log("ret", await csoundObj.compileCsd(csdPath));
+            dispatch(setCsoundPlayState("playing"));
+
+            // if (result === 0) {
+            //     dispatch(setCsoundPlayState("playing"));
+            //     await csoundObj.start();
+            // } else {
+            //     dispatch(setCsoundPlayState("error"));
+            // }
         }
     };
 };
@@ -74,11 +130,13 @@ export const playCSDFromEMFS = (
 export const playCSDFromString = (
     projectUid: string,
     csd: string
-): ((dispatch: (any) => void) => void) => {
-    return async (dispatch) => {
-        const cs = path(["csound", "csound"], store.getState()) as
-            | CsoundObj
-            | undefined;
+): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
+    return async (dispatch, csound) => {
+        const cs =
+            csound ||
+            (path(["csound", "csound"], store.getState()) as
+                | CsoundObj
+                | undefined);
         if (cs) {
             // await cs.setCurrentDirFS(projectUid);
             // cs.audioContext.resume();
@@ -94,7 +152,7 @@ export const playCSDFromString = (
 export const playORCFromString = (
     projectUid: string,
     orc: string
-): ((dispatch: (any) => void) => void) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch) => {
         const cs = path(["csound", "csound"], store.getState()) as
             | CsoundObj
