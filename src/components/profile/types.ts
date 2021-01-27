@@ -41,6 +41,11 @@ type ProfileActionTypeValue =
     | typeof SET_PROJECT_FILTER_STRING
     | typeof SET_FOLLOWING_FILTER_STRING;
 
+export type ProjectsCount = {
+    all: number;
+    public: number;
+};
+
 export type ProfileActionTypes = {
     type: ProfileActionTypeValue;
     [payload: string]: any;
@@ -50,6 +55,7 @@ export interface IProfile {
     allTags?: any[];
     profileUid?: string | null;
     userFollowing?: [];
+    projectsCount?: ProjectsCount;
     userImageURL?: string | null | undefined;
     backgroundIndex: number;
     displayName: string;

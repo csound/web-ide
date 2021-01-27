@@ -143,9 +143,17 @@ export const subscribeToProjectsCount = (
 ): (() => void) => {
     const unsubscribe: () => void = projectsCount.doc(profileUid).onSnapshot(
         (projectsCount) => {
-            dispatch(
-                storeProfileProjectsCount(projectsCount.data(), profileUid)
-            );
+            const projectsCountData = projectsCount.data();
+            if (projectsCountData) {
+                const projectsCount_ = {
+                    public: projectsCountData.public || 0,
+                    all: projectsCountData.all || 0
+                };
+                projectsCountData &&
+                    dispatch(
+                        storeProfileProjectsCount(projectsCount_, profileUid)
+                    );
+            }
         },
         (error: any) => console.error(error)
     );

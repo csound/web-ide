@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CodeMirror from "codemirror";
 // import { UnControlled } from "react-codemirror2";
 import { editorEvalCode, uncommentLine } from "./utils";
-// import { debounce } from "throttle-debounce";
+import { debounce } from "throttle-debounce";
 import { IDocument, IProject } from "../projects/types";
 import { ICsoundStatus } from "@comp/csound/types";
 import { CsoundObj } from "@csound/browser";
 import { isNil, path, pathOr, propOr } from "ramda";
-// import * as projectActions from "../projects/actions";
+import * as projectActions from "../projects/actions";
 import * as projectEditorActions from "../project-editor/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import * as SS from "./styles";
@@ -32,18 +32,8 @@ type IPrintToConsole = ((text: string) => void) | undefined;
 
 const cursorState = {};
 
-// const updateReduxDocumentValue = debounce(
-//     100,
-//     (newValue, projectUid, documentUid, dispatch) => {
-//         dispatch(
-//             projectActions.updateDocumentValue(
-//                 newValue,
-//                 projectUid,
-//                 documentUid
-//             )
-//         );
-//     }
-// );
+let updateReduxDocumentValue;
+
 // const updateGuestDocumentValue = debounce(
 //     100,
 //     (csound, projectUid, document, newValue) =>
@@ -66,10 +56,43 @@ const CodeEditor = ({
         (argument: CodeMirror.Editor) => void
     ] = useState();
 
-    const textfieldReference: React.RefObject<HTMLTextAreaElement> = useRef();
-    // const [editorValue, setEditorValue] = useState("");
+    const [onChangedCallback, setOnChangedCallback]: [
+        ((cm: CodeMirror.Editor) => void) | undefined,
+        any
+    ] = useState();
+
+    const textfieldReference = useRef(null);
 
     const dispatch = useDispatch();
+
+    const onUnmount = useCallback(() => {
+        dispatch(
+            projectEditorActions.storeEditorInstance(
+                undefined,
+                projectUid,
+                documentUid
+            )
+        );
+        if (editorReference && onChangedCallback) {
+            editorReference.off("change", onChangedCallback);
+        }
+        if (editorReference) {
+            cursorState[
+                `${documentUid}:cursor_pos`
+            ] = editorReference.getCursor();
+            cursorState[
+                `${documentUid}:history`
+            ] = editorReference.getHistory();
+        }
+        updateReduxDocumentValue && updateReduxDocumentValue.cancel();
+    }, [dispatch, projectUid, documentUid, editorReference, onChangedCallback]);
+
+    useEffect(() => {
+        return () => {
+            textfieldReference && isMounted && onUnmount();
+        };
+    }, [textfieldReference, isMounted, onUnmount]);
+
     const activeProjectUid = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
@@ -193,12 +216,12 @@ const CodeEditor = ({
                 textfieldReference.current!,
                 {
                     // autoCloseBrackets: true,
-                    autoSuggest: true,
-                    fullScreen: true,
-                    height: "auto",
+                    // autoSuggest: true,
+                    // fullScreen: true,
+                    // height: "auto",
                     lineNumbers: true,
                     lineWrapping: true,
-                    matchBrackets: true,
+                    // matchBrackets: true,
                     viewportMargin: Number.POSITIVE_INFINITY,
                     mode: ["csd", "orc", "sco", "udo"].some(
                         (t) => t === documentType
@@ -249,6 +272,29 @@ const CodeEditor = ({
             editor.setCursor({ line: lastLine, ch: lastColumn });
             // editorDidMount(editor);
             setIsMounted(true);
+            updateReduxDocumentValue = debounce(
+                100,
+                (newValue, projectUid, documentUid, dispatch) => {
+                    dispatch(
+                        projectActions.updateDocumentValue(
+                            newValue,
+                            projectUid,
+                            documentUid
+                        )
+                    );
+                }
+            );
+            const changeCallback = function (cm) {
+                cm &&
+                    updateReduxDocumentValue(
+                        cm.getValue(),
+                        projectUid,
+                        documentUid,
+                        dispatch
+                    );
+            };
+            setOnChangedCallback(changeCallback);
+            editor.on("change", changeCallback);
         }
     }, [
         dispatch,

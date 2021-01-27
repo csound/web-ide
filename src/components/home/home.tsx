@@ -52,7 +52,7 @@ const Home = ({ classes }) => {
     }, [dispatch]);
 
     useEffect(() => {
-        if (searchValue === "" && searchedProjects !== false) {
+        if (searchValue === "" && searchedProjects.length === 0) {
             dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
         }
     }, [dispatch, searchValue, searchedProjects]);

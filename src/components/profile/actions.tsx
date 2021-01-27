@@ -18,6 +18,7 @@ import {
     Timestamp
 } from "@config/firestore";
 import {
+    ProjectsCount,
     IProfile,
     ProfileActionTypes,
     ADD_USER_PROJECT,
@@ -584,7 +585,7 @@ export const playListItem = (
 };
 
 export const storeProfileProjectsCount = (
-    projectsCount: number,
+    projectsCount: ProjectsCount,
     profileUid: string
 ): Record<string, any> => {
     return {

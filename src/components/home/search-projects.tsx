@@ -26,7 +26,7 @@ const SearchProjects = ({
     query
 }: {
     duration: number;
-    searchedProjects: boolean;
+    searchedProjects: IFirestoreProject[];
     searchedProjectUserProfiles: IFirestoreProject[];
     transitionState: string;
     requesting: boolean;
@@ -51,7 +51,7 @@ const SearchProjects = ({
     const getResultRange = () => {
         if (requesting) {
             return "";
-        } else if (!requesting && searchedProjects === false) {
+        } else if (!requesting && searchedProjects.length === 0) {
             return "";
         } else {
             return `${1 + pageOffset * 8}-${
@@ -116,7 +116,7 @@ const SearchProjects = ({
                         }
                     </Transition>
                 )}
-                {!requesting && searchedProjects === false && (
+                {!requesting && searchedProjects.length === 0 && (
                     <Transition appear timeout={duration}>
                         {(transitionState) => {
                             return (
