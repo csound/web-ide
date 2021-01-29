@@ -127,7 +127,10 @@ export const ProjectCardSVGContainer = styled.div<IProjectCardSVGContainer>`
     height: 100%;
     width: 100%;
     background-color: ${(properties) => properties.backgroundColor};
-    opacity: ${(properties) => (properties.mouseOver ? 1 : 0.5)};
+    opacity: 0.5;
+    &:hover {
+        opacity: 1;
+    }
     z-index: 2;
     transition: opacity 0.3s;
     grid-row: 1;

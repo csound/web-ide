@@ -16,7 +16,6 @@ import {
     selectRandomProjectUserProfiles,
     selectPopularProjectUserProfiles
 } from "./selectors";
-import { TransitionGroup, Transition } from "react-transition-group";
 import { Grid } from "@material-ui/core";
 import { SEARCH_PROJECTS_SUCCESS } from "./types";
 
@@ -115,46 +114,25 @@ const Home = ({ classes }) => {
                     </Grid>
                 </Grid>
                 {/* eslint-disable-next-line  unicorn/no-null */}
-                <TransitionGroup component={null}>
-                    {searchValue === "" && (
-                        <Transition appear timeout={duration}>
-                            {(transitionState) => {
-                                return (
-                                    <FeaturedProjects
-                                        duration={duration}
-                                        starredProjects={starredProjects}
-                                        randomProjects={randomProjects}
-                                        transitionState={transitionState}
-                                        randomProjectUserProfiles={
-                                            randomProjectUserProfiles
-                                        }
-                                        popularProjectUserProfiles={
-                                            popularProjectUserProfiles
-                                        }
-                                    />
-                                );
-                            }}
-                        </Transition>
-                    )}
-                    {searchValue !== "" && (
-                        <Transition appear timeout={duration}>
-                            {(transitionState) => {
-                                return (
-                                    <SearchProjects
-                                        duration={duration}
-                                        searchedProjects={searchedProjects}
-                                        searchedProjectUserProfiles={
-                                            searchedProjectUserProfiles
-                                        }
-                                        transitionState={transitionState}
-                                        requesting={searchProjectsRequest}
-                                        query={searchValue}
-                                    />
-                                );
-                            }}
-                        </Transition>
-                    )}
-                </TransitionGroup>
+
+                <FeaturedProjects
+                    duration={duration}
+                    starredProjects={starredProjects}
+                    randomProjects={randomProjects}
+                    randomProjectUserProfiles={randomProjectUserProfiles}
+                    popularProjectUserProfiles={popularProjectUserProfiles}
+                />
+                {searchValue !== "" && (
+                    <SearchProjects
+                        duration={duration}
+                        searchedProjects={searchedProjects}
+                        searchedProjectUserProfiles={
+                            searchedProjectUserProfiles
+                        }
+                        requesting={searchProjectsRequest}
+                        query={searchValue}
+                    />
+                )}
             </HomeContainer>
         </>
     );

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import withStyles from "./styles";
 import { SVGComponents } from "../profile/svg-paths";
-import { Transition, TransitionGroup } from "react-transition-group";
+// import { Transition, TransitionGroup } from "react-transition-group";
 import { ThreeBounce } from "better-react-spinkit";
 import { get } from "lodash";
 import { path } from "ramda";
@@ -73,101 +73,74 @@ const ProjectCard = (properties) => {
             className={transitionStatus}
         >
             {/* eslint-disable-next-line  unicorn/no-null */}
-            <TransitionGroup component={null}>
-                {!project && (
-                    <Transition appear timeout={duration}>
-                        {(transitionStatus) => {
-                            return (
-                                <ProjectCardSpinnerContainer
-                                    className={transitionStatus}
-                                    duration={duration}
-                                >
-                                    <ThreeBounce size={20} color={"white"} />
-                                </ProjectCardSpinnerContainer>
-                            );
-                        }}
-                    </Transition>
-                )}
-                {project && (
-                    <Transition appear timeout={duration}>
-                        {(transitionStatus) => {
-                            return (
-                                <>
-                                    <ProjectCardSVGContainer
-                                        mouseOver={mouseOver}
-                                        backgroundColor={iconBackgroundColor}
-                                        className={transitionStatus}
-                                        duration={duration}
-                                    >
-                                        <SVGIcon
-                                            height="100%"
-                                            width="100%"
-                                            fill={iconForegroundColor}
-                                        />
-                                    </ProjectCardSVGContainer>
-                                    <ProjectCardContentContainer
-                                        className={transitionStatus}
-                                        duration={duration}
-                                        onMouseOver={() => {
-                                            setMouseOver(true);
-                                        }}
-                                        onMouseLeave={() => setMouseOver(false)}
-                                    >
-                                        <ProjectCardContentTop
-                                            to={`editor/${projectId}`}
-                                        >
-                                            <ProjectCardContentTopHeader>
-                                                {name}
-                                            </ProjectCardContentTopHeader>
-                                            <ProjectCardContentTopDescription>
-                                                {description}
-                                            </ProjectCardContentTopDescription>
-                                        </ProjectCardContentTop>
-                                        <span
-                                            style={{
-                                                position: "absolute",
-                                                margin: "0 auto",
-                                                top: "calc(50% - 32px)",
-                                                left: "calc(50% - 32px)",
-                                                zIndex: 2
-                                            }}
-                                        >
-                                            <ListPlayButton
-                                                projectUid={projectId}
-                                                iconNameProp={iconName}
-                                                iconBackgroundColorProp={
-                                                    iconBackgroundColor
-                                                }
-                                                iconForegroundColorProp={
-                                                    iconForegroundColor
-                                                }
-                                            />
-                                        </span>
-                                        <ProjectCardContentMiddle />
-                                        <ProjectCardContentBottom
-                                            to={`profile/${username}`}
-                                        >
-                                            <ProjectCardContentBottomPhoto>
-                                                {photoUrl && (
-                                                    <Photo src={photoUrl} />
-                                                )}
-                                            </ProjectCardContentBottomPhoto>
-                                            <ProjectCardContentBottomID>
-                                                <ProjectCardContentBottomHeader>
-                                                    {displayName || username}
-                                                </ProjectCardContentBottomHeader>
-                                                <ProjectCardContentBottomDescription>
-                                                    {bio}
-                                                </ProjectCardContentBottomDescription>
-                                            </ProjectCardContentBottomID>
-                                        </ProjectCardContentBottom>
-                                    </ProjectCardContentContainer>
-                                </>
-                            );
-                        }}
-                    </Transition>
-                )}
-            </TransitionGroup>
+
+            <ProjectCardSpinnerContainer
+                className={transitionStatus}
+                duration={duration}
+            >
+                <ThreeBounce size={20} color={"white"} />
+            </ProjectCardSpinnerContainer>
+
+            <ProjectCardSVGContainer
+                mouseOver={mouseOver}
+                backgroundColor={iconBackgroundColor}
+                className={transitionStatus}
+                duration={duration}
+            >
+                <SVGIcon
+                    height="100%"
+                    width="100%"
+                    fill={iconForegroundColor}
+                />
+            </ProjectCardSVGContainer>
+
+            <ProjectCardContentContainer
+                className={transitionStatus}
+                duration={duration}
+                onMouseOver={() => {
+                    setMouseOver(true);
+                }}
+                onMouseLeave={() => setMouseOver(false)}
+            >
+                <ProjectCardContentTop to={`editor/${projectId}`}>
+                    <ProjectCardContentTopHeader>
+                        {name}
+                    </ProjectCardContentTopHeader>
+                    <ProjectCardContentTopDescription>
+                        {description}
+                    </ProjectCardContentTopDescription>
+                </ProjectCardContentTop>
+                <span
+                    style={{
+                        position: "absolute",
+                        margin: "0 auto",
+                        top: "calc(50% - 32px)",
+                        left: "calc(50% - 32px)",
+                        zIndex: 2
+                    }}
+                >
+                    <ListPlayButton
+                        projectUid={projectId}
+                        iconNameProp={iconName}
+                        iconBackgroundColorProp={iconBackgroundColor}
+                        iconForegroundColorProp={iconForegroundColor}
+                    />
+                </span>
+                <ProjectCardContentMiddle />
+                <ProjectCardContentBottom to={`profile/${username}`}>
+                    <ProjectCardContentBottomPhoto>
+                        {photoUrl && <Photo src={photoUrl} />}
+                    </ProjectCardContentBottomPhoto>
+                    <ProjectCardContentBottomID>
+                        <ProjectCardContentBottomHeader>
+                            {displayName || username}
+                        </ProjectCardContentBottomHeader>
+                        <ProjectCardContentBottomDescription>
+                            {bio}
+                        </ProjectCardContentBottomDescription>
+                    </ProjectCardContentBottomID>
+                </ProjectCardContentBottom>
+            </ProjectCardContentContainer>
         </ProjectCardContainer>
     );
 };

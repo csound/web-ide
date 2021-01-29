@@ -19,15 +19,13 @@ const FeaturedProjects = ({
     starredProjects,
     randomProjectUserProfiles,
     popularProjectUserProfiles,
-    randomProjects,
-    transitionState
+    randomProjects
 }: {
     duration: number;
     starredProjects: Record<string, any>;
     randomProjectUserProfiles: IFirestoreProject[];
     popularProjectUserProfiles: IFirestoreProject[];
     randomProjects: IFirestoreProject[];
-    transitionState: string;
 }): React.ReactElement => {
     const [popularProjectOffset, setPopularProjectOffset] = useState(0);
 
@@ -37,12 +35,7 @@ const FeaturedProjects = ({
     }, [dispatch, popularProjectOffset]);
 
     return (
-        <AnimatedGridContainer
-            duration={duration}
-            container
-            spacing={3}
-            className={transitionState}
-        >
+        <AnimatedGridContainer duration={duration} container spacing={3}>
             <Grid item xs={12}>
                 <ProjectSectionHeader container justify="space-between">
                     <Grid item>Popular Projects</Grid>

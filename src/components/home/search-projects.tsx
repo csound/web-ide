@@ -11,7 +11,7 @@ import { Grid } from "@material-ui/core";
 import ProjectCard from "./project-card";
 import LeftIcon from "@material-ui/icons/ArrowBack";
 import RightIcon from "@material-ui/icons/ArrowForward";
-import { TransitionGroup, Transition } from "react-transition-group";
+// import { TransitionGroup, Transition } from "react-transition-group";
 import { ThreeBounce } from "better-react-spinkit";
 import { selectSearchedProjectsTotal } from "./selectors";
 import { useSelector, useDispatch } from "react-redux";
@@ -21,14 +21,12 @@ const SearchProjects = ({
     duration,
     searchedProjects,
     searchedProjectUserProfiles,
-    transitionState,
     requesting,
     query
 }: {
     duration: number;
     searchedProjects: IFirestoreProject[];
     searchedProjectUserProfiles: IFirestoreProject[];
-    transitionState: string;
     requesting: boolean;
     query: string;
 }): React.ReactElement => {
@@ -60,12 +58,7 @@ const SearchProjects = ({
         }
     };
     return (
-        <AnimatedGridContainer
-            duration={duration}
-            container
-            spacing={3}
-            className={transitionState}
-        >
+        <AnimatedGridContainer duration={duration} container spacing={3}>
             <Grid item xs={12}>
                 <ProjectSectionHeader container justify="space-between">
                     <Grid item>Search Results: {getResultRange()}</Grid>
@@ -93,58 +86,29 @@ const SearchProjects = ({
                 <HorizontalRule />
             </Grid>
             {/* eslint-disable-next-line  unicorn/no-null */}
-            <TransitionGroup component={null}>
-                {!requesting && Array.isArray(searchedProjects) && (
-                    <Transition appear timeout={duration}>
-                        {(transitionState) =>
-                            searchedProjects.map((searchEvent, index) => {
-                                return (
-                                    <Grid item xs={6} sm={3} key={index}>
-                                        <ProjectCard
-                                            event={searchEvent}
-                                            projectIndex={index}
-                                            duration={duration}
-                                            project={searchEvent}
-                                            profiles={
-                                                searchedProjectUserProfiles
-                                            }
-                                            transitionStatus={transitionState}
-                                        />
-                                    </Grid>
-                                );
-                            })
-                        }
-                    </Transition>
-                )}
-                {!requesting && searchedProjects.length === 0 && (
-                    <Transition appear timeout={duration}>
-                        {(transitionState) => {
-                            return (
-                                <SearchProjectWaitContainer
-                                    className={transitionState}
-                                    duration={duration}
-                                >
-                                    No results found
-                                </SearchProjectWaitContainer>
-                            );
-                        }}
-                    </Transition>
-                )}
-                {requesting && (
-                    <Transition appear timeout={duration}>
-                        {(transitionState) => {
-                            return (
-                                <SearchProjectWaitContainer
-                                    className={transitionState}
-                                    duration={duration}
-                                >
-                                    <ThreeBounce size={20} color={"white"} />
-                                </SearchProjectWaitContainer>
-                            );
-                        }}
-                    </Transition>
-                )}
-            </TransitionGroup>
+            {!requesting &&
+                Array.isArray(searchedProjects) &&
+                searchedProjects.map((searchEvent, index) => (
+                    <Grid item xs={6} sm={3} key={index}>
+                        <ProjectCard
+                            event={searchEvent}
+                            projectIndex={index}
+                            duration={duration}
+                            project={searchEvent}
+                            profiles={searchedProjectUserProfiles}
+                        />
+                    </Grid>
+                ))}
+            {!requesting && searchedProjects.length === 0 && (
+                <SearchProjectWaitContainer duration={duration}>
+                    No results found
+                </SearchProjectWaitContainer>
+            )}
+            {requesting && (
+                <SearchProjectWaitContainer duration={duration}>
+                    <ThreeBounce size={20} color={"white"} />
+                </SearchProjectWaitContainer>
+            )}
         </AnimatedGridContainer>
     );
 };
