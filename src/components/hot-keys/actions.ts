@@ -5,7 +5,7 @@ import {
     STORE_EDITOR_KEYBOARD_CALLBACKS,
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
-import { path } from "ramda";
+import { path, pathOr } from "ramda";
 import { IStore } from "@store/types";
 import {
     newDocument,
@@ -24,7 +24,8 @@ import {
     getPlayActionFromTarget
 } from "@comp/target-controls/utils";
 import { pauseCsound, stopCsound } from "@comp/csound/actions";
-
+import { filenameToCsoundType } from "@comp/csound/utils";
+import { editorEvalCode } from "@comp/editor/utils";
 import * as EditorActions from "@comp/editor/actions";
 
 const withPreventDefault = (callback: any) => (event: KeyboardEvent): void => {
@@ -88,6 +89,20 @@ const selectCurrentEditor = (store): any | undefined => {
     return currentTab && currentTab.editorInstance;
 };
 
+const selectDocumentName = (store, projectUid): any | undefined => {
+    const currentTab = selectCurrentTab(store);
+    if (currentTab && currentTab.editorInstance) {
+        const documentUid = currentTab.uid;
+        if (documentUid) {
+            const document =
+                store.ProjectsReducer.projects[projectUid].documents[
+                    documentUid
+                ];
+            return document && document.filename;
+        }
+    }
+};
+
 export const storeEditorKeyboardCallbacks = (
     projectUid: string
 ): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
@@ -99,13 +114,23 @@ export const storeEditorKeyboardCallbacks = (
             }),
             find_simple: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
-                const maybeDialog = document.querySelector(
-                    ".CodeMirror-dialog"
+
+                const searchField = document.querySelector(
+                    ".CodeMirror-dialog.CodeMirror-dialog-top"
                 );
-                if (!maybeDialog) {
-                    editor && editor.execCommand("find");
+                if (!searchField) {
+                    editor && editor.execCommand("findPersistent");
+                    const maybeDialog = document.querySelector(
+                        ".CodeMirror-search-field"
+                    );
+                    setTimeout(() => {
+                        maybeDialog && maybeDialog[0] && maybeDialog[0].focus();
+                    }, 100);
                 } else {
-                    maybeDialog.remove();
+                    const dialogTop = document.querySelector(
+                        ".CodeMirror-dialog-top"
+                    );
+                    dialogTop && dialogTop.remove();
                     editor && editor.focus();
                 }
             }),
@@ -116,6 +141,61 @@ export const storeEditorKeyboardCallbacks = (
             redo: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
                 editor && editor.execCommand("redo");
+            }),
+            eval_block: withPreventDefault(() => {
+                const storeState = getStore();
+                const editor = selectCurrentEditor(storeState);
+                const csound = path(["csound", "csound"], storeState);
+
+                const csoundStatus = pathOr(
+                    "stopped",
+                    ["csound", "status"],
+                    storeState
+                );
+                const documentName = selectDocumentName(storeState, projectUid);
+                const documentType =
+                    documentName && filenameToCsoundType(documentName);
+
+                if (editor && csound && documentName && documentType) {
+                    editorEvalCode(
+                        csound,
+                        csoundStatus,
+                        documentType,
+                        editor,
+                        true
+                    );
+                }
+            }),
+            eval: withPreventDefault(() => {
+                const storeState = getStore();
+                const editor = selectCurrentEditor(storeState);
+                const csound = path(["csound", "csound"], storeState);
+
+                const csoundStatus = pathOr(
+                    "stopped",
+                    ["csound", "status"],
+                    storeState
+                );
+                const documentName = selectDocumentName(storeState, projectUid);
+                const documentType =
+                    documentName && filenameToCsoundType(documentName);
+
+                if (editor && csound && documentName && documentType) {
+                    editorEvalCode(
+                        csound,
+                        csoundStatus,
+                        documentType,
+                        editor,
+                        false
+                    );
+                }
+            }),
+            toggle_comment: withPreventDefault(() => {
+                const storeState = getStore();
+                const editor = selectCurrentEditor(storeState);
+                if (editor && typeof editor.toggleComment === "function") {
+                    editor.toggleComment();
+                }
             })
         };
 

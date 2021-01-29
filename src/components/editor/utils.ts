@@ -1,31 +1,91 @@
-import { curry } from "ramda";
-import { isEmpty } from "lodash";
+import { curry, isNil, propOr } from "ramda";
+
+const findOrcBlock = (editorReference) => {
+    const value = editorReference
+        ? (editorReference as any)?.doc?.getValue()
+        : "";
+    const lines = value.split("\n");
+    const cursorLine = editorReference
+        ? propOr(0, "line", editorReference.getCursor())
+        : 0;
+
+    const currentLineEndOfBound = uncommentLine(lines[cursorLine]).match(
+        /endin|endop/g
+    );
+
+    const cursorBoundry = Math.min(
+        cursorLine +
+            (currentLineEndOfBound && currentLineEndOfBound.length > 0 ? 0 : 1),
+        lines.length
+    );
+
+    let lastBlockLine, lineNumber;
+
+    for (lineNumber = 0; lineNumber < cursorBoundry; lineNumber++) {
+        const line = uncommentLine(lines[lineNumber]);
+        if (/instr|opcode/g.test(line)) {
+            lastBlockLine = lineNumber;
+        } else if (/endin|endop/g.test(line)) {
+            lastBlockLine = undefined;
+        }
+    }
+
+    if (isNil(lastBlockLine)) {
+        return {
+            from: { line: cursorLine, ch: 0 },
+            to: { line: cursorLine, ch: lines[cursorLine].length },
+            evalStr: lines[cursorLine]
+        };
+    }
+
+    let blockEnd;
+
+    for (lineNumber = cursorLine; lineNumber < lines.length + 1; lineNumber++) {
+        if (blockEnd) {
+            break;
+        }
+        const line = uncommentLine(lines[lineNumber]);
+
+        if (/endin|endop/g.test(line)) {
+            blockEnd = lineNumber;
+        }
+    }
+    return !blockEnd
+        ? {
+              from: { line: cursorLine, ch: 0 },
+              to: { line: cursorLine, ch: lines[cursorLine - 1].length },
+              evalStr: lines[cursorLine]
+          }
+        : {
+              from: { line: lastBlockLine, ch: 0 },
+              to: { line: blockEnd, ch: lines[blockEnd].length },
+              evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
+          };
+};
 
 export const editorEvalCode = curry(
     (
         csound,
         csoundStatus,
         documentType,
-        printToConsole,
-        findOrcBlock,
-        editorReference,
+        editorInstance,
         blockEval: boolean
     ) => {
         if (csoundStatus !== "playing") {
-            printToConsole && printToConsole("Csound isn't running!");
-        } else if (editorReference) {
+            return;
+        } else if (editorInstance) {
             // selection takes precedence
-            const selection = editorReference.getSelection();
-            const cursor = editorReference.getCursor();
+            const selection = editorInstance.getSelection();
+            const cursor = editorInstance.getCursor();
             let markerCallback;
             let evalString = "";
             // let csdLoc: "orc" | "sco" | null = null;
 
             if (!blockEval) {
-                const line = editorReference.getLine(cursor.line);
-                evalString = isEmpty(selection) ? line : selection;
+                const line = editorInstance.getLine(cursor.line);
+                evalString = isNil(selection) ? line : selection;
                 markerCallback = (hasError) => {
-                    const textMarker = editorReference.markText(
+                    const textMarker = editorInstance.markText(
                         { line: cursor.line, ch: 0 },
                         { line: cursor.line, ch: line.length },
                         {
@@ -37,16 +97,16 @@ export const editorEvalCode = curry(
             } else {
                 let result;
                 if (documentType === "orc" || documentType === "udo") {
-                    result = findOrcBlock();
+                    result = findOrcBlock(editorInstance);
                 } else if (documentType === "sco") {
                     // FIXME
                     result = {
                         from: { line: cursor.line, ch: 0 },
                         to: {
                             line: cursor.line,
-                            ch: editorReference.getLine(cursor.line).length
+                            ch: editorInstance.getLine(cursor.line).length
                         },
-                        evalStr: editorReference.getLine(cursor.line)
+                        evalStr: editorInstance.getLine(cursor.line)
                     };
                 }
                 if (result) {
@@ -55,7 +115,7 @@ export const editorEvalCode = curry(
                     }
                     evalString = result.evalStr;
                     markerCallback = (hasError) => {
-                        const textMarker = editorReference.markText(
+                        const textMarker = editorInstance.markText(
                             result.from,
                             result.to,
                             {
@@ -68,24 +128,21 @@ export const editorEvalCode = curry(
                     };
                 }
             }
-            if (isEmpty(evalString)) {
+            if (isNil(evalString)) {
                 return;
             }
             if (documentType === "orc" || documentType === "udo") {
                 csound &&
-                    csound.evaluateCodePromise(evalString).then((result) => {
+                    csound.evalCode(evalString).then((result) => {
                         markerCallback && markerCallback(result !== 0);
                     });
             } else if (documentType === "sco") {
                 csound && csound.readScore(evalString);
             } else if (documentType === "csd") {
                 csound &&
-                    csound.evaluateCodePromise(evalString).then((result) => {
+                    csound.evalCode(evalString).then((result) => {
                         markerCallback && markerCallback(result !== 0);
                     });
-            } else {
-                printToConsole &&
-                    printToConsole("Can't evaluate non-csound documents!");
             }
         }
     }

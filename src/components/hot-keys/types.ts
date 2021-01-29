@@ -41,9 +41,12 @@ export interface IProjectEditorCallbacks {
 
 export interface IEditorCallbacks {
     doc_at_point?: CallbackOrUnbound;
+    eval?: CallbackOrUnbound;
+    eval_block?: CallbackOrUnbound;
     find_simple?: CallbackOrUnbound;
-    undo?: CallbackOrUnbound;
     redo?: CallbackOrUnbound;
+    toggle_comment?: CallbackOrUnbound;
+    undo?: CallbackOrUnbound;
 }
 
 export type IHotKeysCallbacks = IEditorCallbacks &
