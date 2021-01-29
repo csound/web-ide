@@ -22,20 +22,10 @@ const CsoundReducer = (
             return assoc("factory", action.factory, state);
         }
         case SET_CSOUND: {
-            // store it globally for the Manual!
-            // (window as any).csound = action.csound;
-            // return {
-            //     csound: action.csound,
-            //     status: state.status
-            // };
-            return state;
+            return assoc("csound", action.csound, state);
         }
         case SET_CSOUND_PLAY_STATE: {
-            return state;
-            // return {
-            //     csound: state.csound,
-            //     status: action.status
-            // };
+            return assoc("status", action.status, state);
         }
         default: {
             return state || { status: "initialized" };

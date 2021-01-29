@@ -7,8 +7,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { ConsoleProvider } from "@comp/console/context";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
-// import { fetchCsound } from "@comp/csound/actions";
-import { CsoundObj } from "@csound/browser";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
@@ -47,20 +45,6 @@ const ProjectContext = (
             path(["ProjectsReducer", "projects", activeProjectUid], store)
     );
 
-    // const csoundConstructor = useSelector((store: IStore) => {
-    //     return store.csound.constructor;
-    // });
-
-    // useEffect(() => {
-    //     if (!csoundConstructor) {
-    //         dispatch(fetchCsound());
-    //     }
-    // }, [csoundConstructor, dispatch]);
-
-    const csound: CsoundObj | undefined = useSelector(
-        path(["csound", "csound"])
-    );
-
     const tabIndex: number = useSelector(
         pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
@@ -89,12 +73,12 @@ const ProjectContext = (
             setProjectFetchStarted(true);
             initProject();
         }
-        if (needsLoading && projectFetchStarted && projectIsReady && csound) {
+
+        if (needsLoading && projectFetchStarted && projectIsReady) {
             setNeedsLoading(false);
         }
     }, [
         dispatch,
-        csound,
         project,
         projectUid,
         activeProjectUid,
@@ -104,11 +88,11 @@ const ProjectContext = (
         tabIndex
     ]);
 
-    return needsLoading && !invalidUrl && project ? (
+    return !needsLoading && !invalidUrl && project ? (
         <>
             <ForceBackgroundColor theme={theme} />
             <Header />
-            <ConsoleProvider activeProject={project} csound={csound}>
+            <ConsoleProvider activeProject={project}>
                 <ProjectEditor {...properties} activeProject={project} />
             </ConsoleProvider>
         </>

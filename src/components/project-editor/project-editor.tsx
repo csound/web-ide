@@ -41,14 +41,12 @@ import {
 import { append, reduce, pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
 import {
-    closeTabDock,
     rearrangeTabs,
     tabClose,
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
 import { mapIndexed, isMobile } from "@root/utils";
-import { closeProject } from "../projects/actions";
 import { isAudioFile } from "../projects/utils";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../csound/actions";
@@ -103,8 +101,7 @@ const MainSection = ({ tabDock }: { tabDock: React.ReactElement }) => {
         selectBottomTabIndex(store)
     );
     const showBottomTabs = !isEmpty(openTabs) && bottomTabIndex > -1;
-    // console.log("HIDE?", hideBottomTabs);
-    // css={SS.mainTabsSplitter}
+
     return (
         <div>
             <SplitPane
@@ -151,9 +148,6 @@ const ProjectEditor = ({
     }, []);
 
     useEffect(() => {
-        // if (!csound) {
-        //     return;
-        // }
         const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
             dispatch,
@@ -357,14 +351,6 @@ const ProjectEditor = ({
             dispatch(storeEditorKeyboardCallbacks(projectUid));
         }
     }, [dispatch, projectUid]);
-
-    useEffect(() => {
-        document.body.scrollTo(0, 0);
-        return () => {
-            dispatch(closeTabDock());
-            dispatch(closeProject());
-        };
-    }, [dispatch]);
 
     return isMobile() ? (
         <MobileTabs

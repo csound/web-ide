@@ -13,12 +13,10 @@ export const ConsoleContext = createContext([] as IConsoleContextProperties);
 
 export const ConsoleProvider = ({
     children,
-    activeProject,
-    csound
+    activeProject
 }: {
     children: React.ReactElement;
     activeProject: IProject;
-    csound: CsoundObj | undefined;
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const [logs, setLogs]: [string[], any] = useState([""]);
@@ -30,6 +28,10 @@ export const ConsoleProvider = ({
     const messageCallback = (message: string) => {
         setLogs(append(message + "\n"));
     };
+
+    const csoundInstance: CsoundObj | undefined = useSelector(
+        path(["csound", "csound"])
+    );
 
     const globalMessageCallback:
         | IGlobalMessageCallback
@@ -43,21 +45,21 @@ export const ConsoleProvider = ({
 
     useEffect(() => {
         if (
-            csound &&
+            csoundInstance &&
             (!currentProject ||
                 (typeof currentProject === "object" &&
                     (currentProject as any).projectUid !==
                         activeProject.projectUid))
         ) {
             dispatch(setPrintToConsoleCallback(messageCallback));
-            csound && csound.on("message", messageCallback);
+            csoundInstance && csoundInstance.on("message", messageCallback);
             setLogs([""]);
             setCurrentProject(activeProject);
         }
     }, [
         activeProject,
         currentProject,
-        csound,
+        csoundInstance,
         dispatch,
         globalMessageCallback
     ]);

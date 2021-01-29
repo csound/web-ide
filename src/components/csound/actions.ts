@@ -15,11 +15,34 @@ import { isEmpty, path, pathOr, pipe, values } from "ramda";
 
 import { storageReference } from "@config/firestore";
 
-export const setCsound = (csound: CsoundObj): Record<string, any> => {
+export const setCsoundPlayState = (
+    playState: ICsoundStatus
+): Record<string, any> => {
     return {
+        type: SET_CSOUND_PLAY_STATE,
+        status: playState
+    };
+};
+
+export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
+    csound.on("realtimePerformanceEnded", () =>
+        dispatch(setCsoundPlayState("stopped"))
+    );
+    csound.on("realtimePerformancePaused", () =>
+        dispatch(setCsoundPlayState("paused"))
+    );
+
+    csound.on("realtimePerformanceResumed", () =>
+        dispatch(setCsoundPlayState("playing"))
+    );
+
+    csound.on("realtimePerformanceStarted", () =>
+        dispatch(setCsoundPlayState("playing"))
+    );
+    dispatch({
         type: SET_CSOUND,
         csound
-    };
+    });
 };
 
 export const fetchSetStartCsound = (
@@ -77,11 +100,7 @@ export const fetchSetStartCsound = (
                 type: FETCH_CSOUND,
                 factory: Csound
             });
-            dispatch({
-                type: SET_CSOUND,
-                csound: csoundObj
-            });
-            // await csoundObj.start();
+            setCsound(csoundObj, dispatch);
             await playCallback(dispatch, csoundObj);
         }
     };
@@ -95,34 +114,27 @@ export const playCsdFromFs = (
         const state = store.getState();
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const csoundObj = csound || path(["csound", "csound"], state);
+        const csoundStatus = csound || path(["csound", "status"], state);
 
         const clearConsoleCallback = path(
             ["ConsoleReducer", "clearConsole"],
             state
         );
-        console.log(csoundObj);
+
         if (csoundObj) {
-            // const playState = csoundObj.getPlayState();
-            // if (playState === "error") {
-            //     dispatch(setCsoundPlayState("stopped"));
-            // }
             typeof clearConsoleCallback === "function" &&
                 clearConsoleCallback();
-            // csoundObj.audioContext.resume();
-            // csoundObj.resetIfNeeded();
+
+            csoundStatus !== "initialized" && (await csoundObj.reset());
             csoundObj.setOption("-odac");
             csoundObj.setOption("-+msg_color=false");
-            // await csoundObj.setCurrentDirFS(projectUid);
-            await csoundObj.start();
-            console.log("ret", await csoundObj.compileCsd(csdPath));
-            dispatch(setCsoundPlayState("playing"));
+            const result = await csoundObj.compileCsd(csdPath);
 
-            // if (result === 0) {
-            //     dispatch(setCsoundPlayState("playing"));
-            //     await csoundObj.start();
-            // } else {
-            //     dispatch(setCsoundPlayState("error"));
-            // }
+            if (result === 0) {
+                await csoundObj.start();
+            } else {
+                dispatch(setCsoundPlayState("error"));
+            }
         }
     };
 };
@@ -233,15 +245,6 @@ export const resumePausedCsound = (): ((
         // } else {
         //     cs && dispatch(setCsoundPlayState(cs.getPlayState()));
         // }
-    };
-};
-
-export const setCsoundPlayState = (
-    playState: ICsoundStatus
-): Record<string, any> => {
-    return {
-        type: SET_CSOUND_PLAY_STATE,
-        status: playState
     };
 };
 
