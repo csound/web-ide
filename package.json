@@ -176,6 +176,9 @@
         "csound-manual-react/react": "^17.0.1",
         "csound-manual-react/react-dom": "^17.0.1"
     },
+    "engines": {
+        "node": ">=15"
+    },
     "browserslist": {
         "production": [
             ">0.2%",
