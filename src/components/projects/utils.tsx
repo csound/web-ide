@@ -7,7 +7,17 @@ import {
 import { IFirestoreDocument } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@csound/browser";
-import { assoc, isNil, map, pipe, prop, propOr, reduce, reject } from "ramda";
+import {
+    assoc,
+    dropLast,
+    isNil,
+    map,
+    pipe,
+    prop,
+    propOr,
+    reduce,
+    reject
+} from "ramda";
 
 export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
@@ -48,10 +58,20 @@ export const addDocumentToEMFS = async (
     document: IDocument,
     absolutePath: string
 ): Promise<void> => {
+    if (!document.filename) {
+        return;
+    }
+
     if (document.type === "folder") {
         csound.fs.mkdirpSync(document.filename);
         return;
     }
+
+    const steps = document.filename.split("/");
+    if (steps.length > 1) {
+        csound.fs.mkdirpSync(dropLast(steps).join("/"));
+    }
+
     if (document.type === "bin") {
         const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
         try {

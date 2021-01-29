@@ -95,8 +95,8 @@ const PlayButton = ({
                             }
                             if (!csoundConstructorReady) {
                                 await fetchSetStartCsound(
-                                    playAction as any,
-                                    activeProjectUid
+                                    activeProjectUid,
+                                    playAction as any
                                 )(dispatch);
                             } else {
                                 playAction &&

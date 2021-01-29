@@ -52,6 +52,7 @@ import { getProjectLastModifiedOnce } from "@comp/project-last-modified/actions"
 import { getPlayActionFromProject } from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
+import { fetchCsound, newCsound } from "@comp/csound/actions";
 import { ProfileModal } from "./profile-modal";
 import {
     assoc,
@@ -514,7 +515,21 @@ export const playListItem = (
     getState: () => IStore
 ) => Promise<void>) => async (dispatch, getState) => {
     const state = getState();
-    const csound = state.csound.csound;
+    let Csound = state.csound.factory;
+
+    if (!Csound) {
+        Csound = await fetchCsound(dispatch);
+    }
+
+    let csound = state.csound.csound;
+
+    if (!csound) {
+        csound = await newCsound(Csound, dispatch);
+    } else {
+        await csound.terminateInstance();
+        csound = await newCsound(Csound, dispatch);
+    }
+
     const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
 
     if (projectUid === false) {
@@ -573,8 +588,9 @@ export const playListItem = (
     }
 
     const playAction = getPlayActionFromProject(projectUid, state);
+
     if (playAction) {
-        dispatch(playAction);
+        await playAction(dispatch, csound);
         await dispatch({
             type: SET_CURRENTLY_PLAYING_PROJECT,
             projectUid

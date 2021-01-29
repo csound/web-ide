@@ -1,7 +1,7 @@
 import { store } from "@store";
 import { IStore } from "@store/types";
 import { IDocument, IProject } from "../projects/types";
-import { CsoundObj } from "@csound/browser";
+import { CsoundObj, Csound } from "@csound/browser";
 import {
     FETCH_CSOUND,
     SET_CSOUND,
@@ -45,19 +45,45 @@ export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
     });
 };
 
+export const newCsound = async (
+    Csound: Csound,
+    dispatch: (any) => void
+): Promise<CsoundObj | undefined> => {
+    // eslint-disable-next-line unicorn/prevent-abbreviations
+    const csoundObj = await Csound({ useWorker: true });
+    if (!csoundObj) {
+        dispatch(setCsoundPlayState("error"));
+    } else {
+        setCsound(csoundObj, dispatch);
+        return csoundObj;
+    }
+};
+
+export const fetchCsound = async (dispatch: (any) => void): Promise<Csound> => {
+    const { Csound } = await import("@csound/browser");
+    if (Csound) {
+        dispatch({
+            type: FETCH_CSOUND,
+            factory: Csound
+        });
+    }
+    return Csound;
+};
+
 export const fetchSetStartCsound = (
-    playCallback: (dispatch: any, csound: CsoundObj) => void,
-    activeProjectUid: string
+    activeProjectUid: string,
+    playCallback: (dispatch: any, csound: CsoundObj) => void
 ): ((dispatch: (any) => void) => Promise<void>) => {
     return async (dispatch: any) => {
-        const { Csound } = await import("@csound/browser");
-
+        const Csound = await fetchCsound(dispatch);
         // eslint-disable-next-line unicorn/prevent-abbreviations
-        const csoundObj = await Csound({ useWorker: true });
+        const csoundObj = await newCsound(Csound, dispatch);
+
         if (!csoundObj) {
             // TODO: error handle
             return;
         }
+
         const storeState: IStore = store.getState();
         const documents = pipe(
             pathOr({}, [
@@ -94,15 +120,7 @@ export const fetchSetStartCsound = (
                 filepath
             );
         }
-
-        if (Csound && csoundObj) {
-            dispatch({
-                type: FETCH_CSOUND,
-                factory: Csound
-            });
-            setCsound(csoundObj, dispatch);
-            await playCallback(dispatch, csoundObj);
-        }
+        playCallback && (await playCallback(dispatch, csoundObj));
     };
 };
 
@@ -112,6 +130,7 @@ export const playCsdFromFs = (
 ): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
     return async (dispatch: any, csound) => {
         const state = store.getState();
+
         // eslint-disable-next-line unicorn/prevent-abbreviations
         const csoundObj = csound || path(["csound", "csound"], state);
         const csoundStatus = csound || path(["csound", "status"], state);
@@ -124,7 +143,6 @@ export const playCsdFromFs = (
         if (csoundObj) {
             typeof clearConsoleCallback === "function" &&
                 clearConsoleCallback();
-
             csoundStatus !== "initialized" && (await csoundObj.reset());
             csoundObj.setOption("-odac");
             csoundObj.setOption("-+msg_color=false");
@@ -143,6 +161,7 @@ export const playCSDFromString = (
     projectUid: string,
     csd: string
 ): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
+    console.log("projectUid", projectUid, csd);
     return async (dispatch, csound) => {
         const cs =
             csound ||

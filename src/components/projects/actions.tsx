@@ -127,10 +127,11 @@ export const downloadAllProjectDocumentsOnce = (
                     .map((documentUid) =>
                         path([documentUid, "filename"], allDocumentsMap)
                     );
-                const absolutePath = concat(
-                    [`/${projectUid}`],
-                    append(document_.filename, pathPrefix)
+                const absolutePath = append(
+                    document_.filename,
+                    pathPrefix
                 ).join("/");
+
                 await addDocumentToEMFS(
                     projectUid,
                     csound,
