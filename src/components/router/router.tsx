@@ -7,6 +7,9 @@ import CsoundManual from "csound-manual-react";
 import Profile from "../profile/profile";
 import Page404 from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
+import { closeTabDock } from "@comp/project-editor/actions";
+
+import { closeProject } from "@comp/projects/actions";
 import { Route, Switch } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
 import { history, store } from "../../store";
@@ -25,6 +28,8 @@ const EditorLayout = (properties: any) => {
     useEffect(() => {
         return () => {
             dispatch(stopCsound());
+            dispatch(closeProject());
+            dispatch(closeTabDock());
         };
     }, [dispatch]);
 

@@ -352,7 +352,7 @@ const CodeEditor = ({
     //     [editorReference, projectUid, document, csound]
     // );
 
-    return (
+    return typeof currentDocumentValue === "string" ? (
         <form style={{ overflowY: "hidden", height: "100%" }}>
             <textarea
                 ref={textfieldReference}
@@ -361,6 +361,8 @@ const CodeEditor = ({
                 defaultValue={currentDocumentValue}
             ></textarea>
         </form>
+    ) : (
+        <></>
     );
 };
 
