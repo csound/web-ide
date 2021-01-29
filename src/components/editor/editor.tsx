@@ -28,6 +28,7 @@ import "codemirror/keymap/vim";
 import "codemirror/keymap/emacs";
 import "codemirror/addon/scroll/simplescrollbars";
 import "codemirror/addon/scroll/simplescrollbars.css";
+import "codemirror/lib/codemirror.css";
 
 type IPrintToConsole = ((text: string) => void) | undefined;
 
