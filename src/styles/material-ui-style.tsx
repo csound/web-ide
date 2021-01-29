@@ -135,13 +135,8 @@ export const makeMuiTheme = (muiTheme, theme) => {
                 padding: "12px 24px!important"
             }
         }),
-        // assocPath(["overrides", "MuiListItem", "button"], {
-        //     color: theme.color.primary,
-        //     backgroundColor: theme.background.primary,
-        //     "&:hover": {
-        //         backgroundColor: `${theme.highlightAlt.primary}`,
-        //         borderRadius: "2px"
-        //     }
+        // assocPath(["overrides", "MuiListItem"], {
+        //     cursor: "grabbing"
         // }),
         assocPath(["overrides", "MuiMenu", "list"], {
             color: theme.textColor

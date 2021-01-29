@@ -47,7 +47,7 @@ jobs:
             - checkout
             - attach_workspace:
                   at: .
-            - run: yarn build-dev
+            - run: yarn build:dev
             - persist_to_workspace:
                   root: .
                   paths:
@@ -91,7 +91,7 @@ jobs:
                 cd functions &&
                 yarn install &&
                 npx firebase deploy -P develop --only functions
-            - run: yarn deploy-dev
+            - run: yarn deploy:dev
             - persist_to_workspace:
                   root: .
                   paths:

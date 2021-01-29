@@ -270,6 +270,9 @@ margin-bottom: -50px;
     visibility: hidden;
 }
 
+ [data-rbd-drag-handle-context-id="0"] {
+      cursor: inherit!important;
+     }
 
     `}</style>
 );

@@ -5,15 +5,14 @@
     "main": "public/electron.js",
     "scripts": {
         "start": "cross-env REACT_APP_DATABASE=DEV node scripts/start.js",
-        "build": "cross-env NODE_ENV=production npx webpack --mode production -c config/webpack.config.js",
-        "build:deprecated": "cross-env REACT_APP_DATABASE=PROD node scripts/build.js",
-        "build-dev": "cross-env REACT_APP_DATABASE=DEV node scripts/build.js",
+        "build": "cross-env NODE_ENV=production REACT_APP_DATABASE=PROD npx webpack --mode production -c config/webpack.config.js",
+        "build:dev": "cross-env cross-env NODE_ENV=production REACT_APP_DATABASE=DEV npx webpack --mode production -c config/webpack.config.js",
         "test": "cross-env REACT_APP_DATABASE=DEV jest",
         "lint": "prettier --write src/**/*.{js,jsx,ts,tsx}",
         "lint:check": "eslint --ext js,jsx,ts,tsx src",
-        "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
+        "electron:dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && ELECTRON_IS_DEV=1 electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
-        "deploy-dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN",
+        "deploy:dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN",
         "postinstall": "patch-package"
     },
     "dependencies": {
