@@ -21,6 +21,7 @@ body {
 }
 
 #root {
+    overflow: auto;
     position: relative;
     height: calc(100% - ${headerHeight}px);
     top: ${headerHeight}px;
@@ -121,10 +122,13 @@ a {text-decoration: none;}
 
 .CodeMirror-scroll {
    box-sizing: content-box !important;
-   overflow: auto;
+   overflow: scroll !important;
    height: 100%;
    outline: none;
    position: relative;
+margin-bottom: -50px;
+    margin-right: -50px;
+    padding-bottom: 50px;
 }
 
 .CodeMirror-sizer {
@@ -132,24 +136,23 @@ a {text-decoration: none;}
    position: relative;
 }
 
-.CodeMirror-vscrollbar {
+.CodeMirror-simplescroll-vertical {
     right: 0;
     top: 0;
-    overflow-x: hidden;
-    overflow-y: scroll;
     position: absolute;
     z-index: 6;
-    display: none;
+    margin-bottom: -8px;
 }
 
-.CodeMirror-hscrollbar {
+.CodeMirror-simplescroll-horizontal {
     bottom: 0;
     left: 0;
-    overflow-y: hidden;
-    overflow-x: scroll;
     position: absolute;
     z-index: 6;
-    display: none;
+}
+
+.CodeMirror-vscrollbar,.CodeMirror-hscrollbar {
+  display: none;
 }
 
 .CodeMirror-scrollbar-filler {
@@ -171,7 +174,6 @@ a {text-decoration: none;}
 .CodeMirror-gutters {
     box-sizing: content-box!important;
     position: absolute;
-    left: 0!important;
     top: 0;
     min-height: 100%;
     z-index: 3;
@@ -267,6 +269,7 @@ a {text-decoration: none;}
     overflow: hidden;
     visibility: hidden;
 }
+
 
     `}</style>
 );

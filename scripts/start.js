@@ -115,6 +115,7 @@ checkBrowsers(paths.appPath, isInteractive)
             proxyConfig,
             urls.lanUrlForConfig
         );
+        // fs.writeFileSync("rebdug.json", JSON.stringify(config.module, null, 2));
         const devServer = new WebpackDevServer(compiler, serverConfig);
         // Launch WebpackDevServer.
         devServer.listen(port, HOST, (err) => {

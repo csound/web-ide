@@ -49,11 +49,7 @@ module.exports = function (webpackEnv = "production") {
             : isEnvDevelopment && "development",
         // Stop compilation early in production
         bail: isEnvProduction,
-        devtool: isEnvProduction
-            ? shouldUseSourceMap
-                ? "source-map"
-                : false
-            : isEnvDevelopment && "cheap-module-source-map",
+        devtool: "source-map",
 
         entry: [
             isEnvDevelopment &&
@@ -137,17 +133,8 @@ module.exports = function (webpackEnv = "production") {
             rules: [
                 {
                     test: /\.css$/i,
-                    use: [
-                        "style-loader",
-                        {
-                            loader: "css-loader",
-                            options: {
-                                importLoaders: 1,
-                                modules: true
-                            }
-                        }
-                    ],
-                    exclude: /node_modules/,
+                    sideEffects: true,
+                    use: ["style-loader", "css-loader"],
                     include: path.resolve(__dirname, "../")
                 },
                 {
@@ -199,7 +186,7 @@ module.exports = function (webpackEnv = "production") {
                             // Also exclude `html` and `json` extensions so they get processed
                             // by webpacks internal loaders.
                             exclude: [
-                                /\.(js|mjs|jsx|ts|tsx)$/,
+                                /\.(js|mjs|jsx|ts|tsx|css)$/,
                                 /\.(orc|sco|csd)$/i,
                                 /\.html$/,
                                 /\.json$/
@@ -348,23 +335,6 @@ module.exports = function (webpackEnv = "production") {
                         "/**/*.{ts,tsx,js,jsx}"
                 },
                 async: false,
-                // useTypescriptIncrementalApi: true,
-                // checkSyntacticErrors: true,
-                // resolveModuleNameModule: process.versions.pnp
-                //     ? `${__dirname}/pnpTs.js`
-                //     : undefined,
-                // resolveTypeReferenceDirectiveModule: process.versions.pnp
-                //     ? `${__dirname}/pnpTs.js`
-                //     : undefined,
-                // tsconfig: paths.appTsConfig,
-                // reportFiles: [
-                //     "**",
-                //     "!**/__tests__/**",
-                //     "!**/?(*.)(spec|test).*",
-                //     "!**/src/setupProxy.*",
-                //     "!**/src/setupTests.*"
-                // ],
-                // The formatter is invoked directly in WebpackDevServerUtils during development
                 formatter: isEnvProduction ? typescriptFormatter : undefined
             }),
             new ESLintPlugin({

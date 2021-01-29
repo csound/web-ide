@@ -14,19 +14,20 @@ import { filenameToCsoundType } from "@comp/csound/utils";
 import * as SS from "./styles";
 import "./modes/csound/csound";
 import "./plugins/autosuggest";
-require("codemirror/addon/comment/comment");
-require("codemirror/addon/edit/matchbrackets");
-require("codemirror/addon/edit/closebrackets");
-require("codemirror/addon/search/search");
-require("codemirror/addon/search/searchcursor");
-require("codemirror/addon/search/jump-to-line");
-require("codemirror/addon/search/matchesonscrollbar");
-require("codemirror/addon/search/matchesonscrollbar.css");
-require("codemirror/addon/dialog/dialog");
-require("codemirror/addon/dialog/dialog.css");
-require("codemirror/keymap/vim");
-require("codemirror/keymap/emacs");
-require("codemirror/lib/codemirror.css");
+import "codemirror/addon/comment/comment";
+import "codemirror/addon/edit/matchbrackets";
+import "codemirror/addon/edit/closebrackets";
+import "codemirror/addon/search/search";
+import "codemirror/addon/search/searchcursor";
+import "codemirror/addon/search/jump-to-line";
+import "codemirror/addon/search/matchesonscrollbar";
+import "codemirror/addon/search/matchesonscrollbar.css";
+import "codemirror/addon/dialog/dialog";
+import "codemirror/addon/dialog/dialog.css";
+import "codemirror/keymap/vim";
+import "codemirror/keymap/emacs";
+import "codemirror/addon/scroll/simplescrollbars";
+import "codemirror/addon/scroll/simplescrollbars.css";
 
 type IPrintToConsole = ((text: string) => void) | undefined;
 
@@ -196,9 +197,9 @@ const CodeEditor = ({
               };
     };
 
-    // const toggleComment = () => {
-    //     editorReference && (editorReference as any).toggleComment();
-    // };
+    const toggleComment = useCallback(() => {
+        editorReference && editorReference.toggleComment();
+    }, [editorReference]);
 
     const editorEvalCurried = editorEvalCode(
         csound,
@@ -215,14 +216,15 @@ const CodeEditor = ({
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 textfieldReference.current!,
                 {
-                    // autoCloseBrackets: true,
-                    // autoSuggest: true,
-                    // fullScreen: true,
-                    // height: "auto",
+                    autoCloseBrackets: true,
+                    autoSuggest: true,
+                    fullScreen: true,
+                    height: "auto",
                     lineNumbers: true,
                     lineWrapping: true,
-                    // matchBrackets: true,
+                    matchBrackets: true,
                     viewportMargin: Number.POSITIVE_INFINITY,
+                    scrollbarStyle: "simple",
                     mode: ["csd", "orc", "sco", "udo"].some(
                         (t) => t === documentType
                     )
@@ -243,11 +245,11 @@ const CodeEditor = ({
                         "Ctrl-E": () => editorEvalCurried(false),
                         "Ctrl-Enter": () => editorEvalCurried(true),
                         "Cmd-E": () => editorEvalCurried(false),
-                        "Cmd-Enter": () => editorEvalCurried(true)
-                        // "Ctrl-;": () => toggleComment(),
-                        // "Cmd-;": () => toggleComment()
+                        "Cmd-Enter": () => editorEvalCurried(true),
+                        "Ctrl-;": () => toggleComment(),
+                        "Cmd-;": () => toggleComment()
                     }
-                }
+                } as any
             );
             setEditorReference(editor as any);
 
@@ -304,7 +306,7 @@ const CodeEditor = ({
         setIsMounted,
         documentType,
         // editorDidMount,
-        // toggleComment,
+        toggleComment,
         editorEvalCurried
     ]);
 
