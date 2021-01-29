@@ -62,21 +62,20 @@ module.exports = function (webpackEnv = "production") {
             pathinfo: isEnvDevelopment,
             filename: isEnvProduction
                 ? "static/js/[name].[contenthash:8].js"
-                : isEnvDevelopment && "static/js/[name].js",
+                : "static/js/[name].js",
             chunkFilename: isEnvProduction
                 ? "static/js/[name].[contenthash:8].chunk.js"
-                : isEnvDevelopment && "static/js/[name].chunk.js",
+                : "static/js/[name].chunk.js",
             publicPath: paths.publicUrlOrPath,
             devtoolModuleFilenameTemplate: isEnvProduction
                 ? (info) =>
                       path
                           .relative(paths.appSrc, info.absoluteResourcePath)
                           .replace(/\\/g, "/")
-                : isEnvDevelopment &&
-                  ((info) =>
+                : (info) =>
                       path
                           .resolve(info.absoluteResourcePath)
-                          .replace(/\\/g, "/")),
+                          .replace(/\\/g, "/"),
             globalObject: "this"
         },
         optimization: {
