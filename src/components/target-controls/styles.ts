@@ -178,7 +178,6 @@ export const playButtonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
     overflow: hidden;
     border: 2px solid ${theme.highlightBackground};
-    cursor: pointer;
     border-radius: 3px;
     ${shadow}
     height: 100%;
@@ -189,6 +188,12 @@ export const playButtonContainer = (theme: Theme): SerializedStyles => css`
         border: 2px solid ${theme.line};
         background-color: ${theme.buttonBackgroundHover};
     }
+`;
+
+export const playButtonLoadingSpinner = (theme: Theme): SerializedStyles => css`
+    cursor: auto;
+    margin-top: 6px;
+    margin-left: 6px;
 `;
 
 export const playButtonStyle = (playing: boolean) => (

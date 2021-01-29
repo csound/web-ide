@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useTheme } from "@emotion/react";
+import Loader from "react-loader-spinner";
 import * as SS from "./styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
@@ -25,6 +27,9 @@ const PlayButton = ({
     isOwner: boolean;
 }): React.ReactElement => {
     const [isLoading, setIsLoading] = useState(false);
+
+    const theme = useTheme();
+
     const playActionDefault = useSelector(getPlayActionFromTarget);
 
     const playActionFallback = useSelector(
@@ -61,7 +66,7 @@ const PlayButton = ({
     const playAction = playActionDefault || playActionFallback;
 
     return (
-        <Tooltip title={tooltipText}>
+        <Tooltip title={isLoading ? "loading..." : tooltipText}>
             <div
                 css={SS.playButtonContainer}
                 onClick={async () => {
@@ -102,9 +107,19 @@ const PlayButton = ({
                     setIsLoading(false);
                 }}
             >
-                <button
-                    css={SS.playButtonStyle(csoundPlayState === "playing")}
-                />
+                {isLoading ? (
+                    <Loader
+                        css={SS.playButtonLoadingSpinner}
+                        type="TailSpin"
+                        color={theme.playIcon}
+                        height={25}
+                        width={25}
+                    />
+                ) : (
+                    <button
+                        css={SS.playButtonStyle(csoundPlayState === "playing")}
+                    />
+                )}
             </div>
         </Tooltip>
     );
