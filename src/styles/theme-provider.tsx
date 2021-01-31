@@ -5,7 +5,6 @@ import {
     createMuiTheme,
     ThemeProvider as MuiThemeProvider
 } from "@material-ui/core/styles";
-import { ThemeProvider as StyledComponentsThemeProvider } from "styled-components";
 import { useSelector } from "react-redux";
 import { ThemeProvider } from "@emotion/react";
 import { assocPath, pathOr, pipe } from "ramda";
@@ -39,8 +38,8 @@ const ThirdPartyLibraryPainter = ({ theme }) => (
 );
 
 const CsoundWebIdeThemeProvider = (properties) => {
-    const monospaceFont = `"Fira Mono", monospace`;
-    const regularFont = `"Roboto", sans-serif`;
+    const monospaceFont = `'Fira Mono', monospace`;
+    const regularFont = `'IBM Plex Sans', sans-serif;`;
 
     const theme: Theme = pipe(
         assocPath(["font", "monospace"], monospaceFont),
@@ -53,20 +52,17 @@ const CsoundWebIdeThemeProvider = (properties) => {
 
     const muiTheme = createMuiTheme();
     const muiThemeMixed = makeMuiTheme(muiTheme, theme);
-
     return (
         <MuiThemeProvider theme={muiThemeMixed}>
-            <StyledComponentsThemeProvider theme={theme}>
-                <ThemeProvider theme={theme ? theme : {}}>
-                    <CssBaseline />
-                    <WebIdeCssBaseline />
-                    <CodeMirrorPainter theme={theme} />
-                    <ThirdPartyLibraryPainter theme={theme} />
-                    {properties.children}
-                </ThemeProvider>
-            </StyledComponentsThemeProvider>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <WebIdeCssBaseline theme={theme} />
+                <CodeMirrorPainter theme={theme} />
+                <ThirdPartyLibraryPainter theme={theme} />
+                {properties.children}
+            </ThemeProvider>
         </MuiThemeProvider>
     );
 };
 
-export default CsoundWebIdeThemeProvider;
+export default React.memo(CsoundWebIdeThemeProvider);

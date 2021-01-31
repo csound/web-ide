@@ -205,7 +205,7 @@ export const playButtonStyle = (playing: boolean) => (
     width: 0;
     height: 12px;
     cursor: pointer;
-    border-color: transparent transparent transparent ${theme.playIcon};
+    border-color: transparent transparent transparent ${theme.buttonIcon};
     transition: 100ms all ease;
 
     // play state
@@ -261,7 +261,7 @@ export const iconButton = (theme: Theme): SerializedStyles => css`
 `;
 
 export const stopIcon = (theme: Theme): SerializedStyles => css`
-    fill: ${theme.publicIcon};
+    fill: ${theme.buttonIcon};
 `;
 
 export const closeIcon = (theme: Theme): SerializedStyles => css`

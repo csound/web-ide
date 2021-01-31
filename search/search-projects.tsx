@@ -1,21 +1,19 @@
 import React, { useState } from "react";
 import {
-    AnimatedGridContainer,
-    ProjectSectionHeader,
     HorizontalRule,
     SearchProjectWaitContainer,
     PaginationIconButton
 } from "./home-ui";
 import { searchProjects } from "./actions";
-import { Grid } from "@material-ui/core";
-import ProjectCard from "./project-card";
+// import { Grid } from "@material-ui/core";
+// import ProjectCard from "./project-card";
 import LeftIcon from "@material-ui/icons/ArrowBack";
 import RightIcon from "@material-ui/icons/ArrowForward";
 // import { TransitionGroup, Transition } from "react-transition-group";
 import { ThreeBounce } from "better-react-spinkit";
 import { selectSearchedProjectsTotal } from "./selectors";
 import { useSelector, useDispatch } from "react-redux";
-import { IFirestoreProject } from "@db/types";
+// import { IFirestoreProject } from "@db/types";
 
 const SearchProjects = ({
     duration,
@@ -25,8 +23,8 @@ const SearchProjects = ({
     query
 }: {
     duration: number;
-    searchedProjects: IFirestoreProject[];
-    searchedProjectUserProfiles: IFirestoreProject[];
+    searchedProjects: any;
+    searchedProjectUserProfiles: any;
     requesting: boolean;
     query: string;
 }): React.ReactElement => {
@@ -34,8 +32,8 @@ const SearchProjects = ({
     const dispatch = useDispatch();
     const searchedProjectsTotal = useSelector(selectSearchedProjectsTotal);
 
-    const disableForward = pageOffset * 8 + 8 > searchedProjectsTotal;
-    const disableBackward = pageOffset === 0;
+    // const disableForward = pageOffset * 8 + 8 > searchedProjectsTotal;
+    // const disableBackward = pageOffset === 0;
     const handlePageOffset = (offset) => {
         if (offset === 1 && (pageOffset + 1) * 8 <= searchedProjectsTotal) {
             dispatch(searchProjects(query, (pageOffset + offset) * 8));
@@ -58,17 +56,16 @@ const SearchProjects = ({
         }
     };
     return (
-        <AnimatedGridContainer duration={duration} container spacing={3}>
-            <Grid item xs={12}>
-                <ProjectSectionHeader container justify="space-between">
-                    <Grid item>Search Results: {getResultRange()}</Grid>
-                    <Grid item>
+        <div>
+            <div>
+                <div>
+                    <div>Search Results: {getResultRange()}</div>
+                    <div>
                         <PaginationIconButton
                             aria-label="left"
                             onClick={() => {
                                 handlePageOffset(-1);
                             }}
-                            disabled={disableBackward}
                         >
                             <LeftIcon />
                         </PaginationIconButton>
@@ -77,27 +74,17 @@ const SearchProjects = ({
                             onClick={() => {
                                 handlePageOffset(1);
                             }}
-                            disabled={disableForward}
                         >
                             <RightIcon />
                         </PaginationIconButton>
-                    </Grid>
-                </ProjectSectionHeader>
+                    </div>
+                </div>
                 <HorizontalRule />
-            </Grid>
-            {/* eslint-disable-next-line  unicorn/no-null */}
+            </div>
             {!requesting &&
                 Array.isArray(searchedProjects) &&
                 searchedProjects.map((searchEvent, index) => (
-                    <Grid item xs={6} sm={3} key={index}>
-                        <ProjectCard
-                            event={searchEvent}
-                            projectIndex={index}
-                            duration={duration}
-                            project={searchEvent}
-                            profiles={searchedProjectUserProfiles}
-                        />
-                    </Grid>
+                    <div key={index}></div>
                 ))}
             {!requesting && searchedProjects.length === 0 && (
                 <SearchProjectWaitContainer duration={duration}>
@@ -109,7 +96,7 @@ const SearchProjects = ({
                     <ThreeBounce size={20} color={"white"} />
                 </SearchProjectWaitContainer>
             )}
-        </AnimatedGridContainer>
+        </div>
     );
 };
 

@@ -1,4 +1,4 @@
-import { css as classCss } from "@emotion/css";
+// import { css as classCss } from "@emotion/react";
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 import { headerHeight } from "@styles/constants";
@@ -12,6 +12,7 @@ export const headerRoot = (theme: Theme): SerializedStyles => css`
     & > div {
        height ${headerHeight}px;
     }
+    font-family: ${theme.font.regular};
 `;
 
 export const drawer = css`
@@ -54,9 +55,9 @@ export const userMenu = css`
     }
 `;
 
-export const menuPaper = classCss`
-    top: 60px!important;
-    padding: 0!important;
+export const menuPaper = css`
+    top: 60px !important;
+    padding: 0 !important;
 `;
 
 export const loginButton = css`
@@ -65,7 +66,7 @@ export const loginButton = css`
     margin-left: 12px;
 `;
 
-export const accountTooltip = classCss`
+export const accountTooltip = css`
     margin-right: 24px;
 `;
 

@@ -1,6 +1,9 @@
-import { Card, Fab, TextField, Chip } from "@material-ui/core";
+import Card from "@material-ui/core/Card";
+import TextField from "@material-ui/core/TextField";
+import Chip from "@material-ui/core/Chip";
 import { isMobile } from "@root/utils";
 import styled from "styled-components";
+import { css } from "@emotion/react";
 
 export const ProfileContainer = styled.div`
     display: grid;
@@ -80,8 +83,8 @@ export const UploadProfilePicture = styled.div<IUploadProfilePicture>`
     transition: opacity 0.3s linear;
     opacity: ${(properties) => (properties.imageHover ? 1 : 0)};
 `;
+
 export const UploadProfilePictureText = styled.div`
-    font-family: Arial, Helvetica, sans-serif;
     text-align: center;
     font-weight: bold;
     color: white;
@@ -139,13 +142,7 @@ export const ContentActionsContainer = styled.div`
     padding-left: 36px;
     padding-right: 12px;
 `;
-export const AddFab = styled(Fab)`
-    float: right;
 
-    && {
-        margin-top: 6px;
-    }
-`;
 export const ListContainer = styled.div`
     padding-top: 10px;
     grid-row: 3;
@@ -258,4 +255,12 @@ export const StyledListStarButtonContainer = styled.div`
     margin: auto;
     width: 50%;
     padding-left: 4px;
+`;
+
+export const fabButton = css`
+    float: right;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 `;

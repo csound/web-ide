@@ -111,7 +111,7 @@ const PlayButton = ({
                     <Loader
                         css={SS.playButtonLoadingSpinner}
                         type="TailSpin"
-                        color={theme.playIcon}
+                        color={theme.buttonIcon}
                         height={25}
                         width={25}
                     />

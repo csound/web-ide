@@ -15,7 +15,7 @@ const monokaiYellow = "#E6DB74";
 const monokaiMagenta = "#FD5FF0";
 const monokaiGreen = "#A6E22E";
 const orchid = `#f92672`;
-// const sundriedClay = `#272822`;
+const sundriedClay = `#272822`;
 const monokaiViolet = "#AE81FF";
 const monokaiForeground = "#F8F8F2";
 const monokaiBackground = "#272822";
@@ -41,6 +41,7 @@ const theme = {
     disabledButtonBackground: monokaiHighlightAlt,
     highlightBackground: monokaiHighlight,
     highlightBackgroundAlt: monokaiHighlightAlt,
+    textFieldBackground: sundriedClay,
     // Text colors
     headerTextColor: monokaiForeground,
     textColor: monokaiForeground,
@@ -68,9 +69,7 @@ const theme = {
     // Other
     starActive: monokaiYellow,
     starInactive: monokaiGray,
-    socialIcon: monokaiGray,
-    publicIcon: monokaiGray,
-    playIcon: monokaiGray,
+    buttonIcon: monokaiGray,
     settingsIcon: monokaiViolet,
     profilePlayButton: henn1nk,
     profilePlayButtonActive: monokaiOrange,

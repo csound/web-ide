@@ -4,7 +4,8 @@ import {
     StyledListItemTopRowText,
     StyledUserListItemContainer
 } from "../profile-ui";
-import ProjectIcon from "../project-icon";
+import ProjectAvatar from "@elem/project-avatar";
+import { IProject } from "@comp/projects/types";
 import { selectProfileStars } from "../selectors";
 import { ListItem, ListItemText } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,7 +27,7 @@ const StarsList = ({
         <></>
     ) : (
         profileStars.map((projectUid, index) => {
-            const project = prop(projectUid, cachedProjects);
+            const project: IProject = prop(projectUid, cachedProjects);
             return (
                 <ListItem
                     button
@@ -39,17 +40,7 @@ const StarsList = ({
                 >
                     <StyledUserListItemContainer>
                         <div css={SS.starItemIcon}>
-                            {project && (
-                                <ProjectIcon
-                                    iconName={project.iconName}
-                                    iconBackgroundColor={
-                                        project.iconBackgroundColor
-                                    }
-                                    iconForegroundColor={
-                                        project.iconForegroundColor
-                                    }
-                                />
-                            )}
+                            {project && <ProjectAvatar project={project} />}
                         </div>
                         <StyledListItemTopRowText>
                             <ListItemText

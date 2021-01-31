@@ -1,8 +1,7 @@
-import { TextField, IconButton, Grid } from "@material-ui/core";
+// import { TextField, IconButton, Grid } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 import { Gradient } from "./gradient";
-
 import { headerHeight } from "@styles/constants";
 
 export const GlobalStyle = createGlobalStyle`
@@ -11,7 +10,7 @@ export const GlobalStyle = createGlobalStyle`
   }
 `;
 
-export const StyledGrid = styled(Grid)`
+export const StyledGrid = styled.div`
     && {
         background-color: black;
     }
@@ -30,46 +29,43 @@ export const HomeContainer = styled.div`
     flex-direction: column;
 `;
 
-export const StyledTextField = styled(TextField)`
+export const StyledTextField = styled.div`
     && {
         background-color: black;
         border-radius: 5px;
     }
 `;
 
-interface IAnimatedGridContainer {
-    duration: number;
-}
+// interface IAnimatedGridContainer {
+//     duration: number;
+// }
 
-export const AnimatedGridContainer = styled(Grid)<IAnimatedGridContainer>`
-    position: relative;
-    transition: all ${(properties) => properties.duration}ms;
+// export const AnimatedGridContainer = styled(Grid)<IAnimatedGridContainer>`
+//     position: relative;
+//     transition: all ${(properties) => properties.duration}ms;
 
-    &.entering {
-        opacity: 0;
-        transform: translate(30px);
-    }
-    &.entered {
-        opacity: 1;
-    }
-    &.exiting {
-        opacity: 0;
-        transform: translate(30px);
-    }
-`;
+//     &.entering {
+//         opacity: 0;
+//         transform: translate(30px);
+//     }
+//     &.entered {
+//         opacity: 1;
+//     }
+//     &.exiting {
+//         opacity: 0;
+//         transform: translate(30px);
+//     }
+// `;
 
 interface IProjectCard {
     duration: number;
     projectIndex: number;
-    projectColumnCount: number;
 }
 
 export const ProjectCardContainer = styled.div<IProjectCard>`
     height: 20vh;
-    border-radius: 8px;
     z-index: 1;
     position: relative;
-    margin: 5px;
     background-color: black;
 
     transition-delay: ${(properties) => properties.projectIndex * 50}ms;
@@ -89,7 +85,6 @@ export const ProjectCardContainer = styled.div<IProjectCard>`
 
 interface IProjectCardSVGContainer {
     backgroundColor: string;
-    mouseOver: boolean;
     duration: number;
 }
 
@@ -136,15 +131,6 @@ export const ProjectCardSVGContainer = styled.div<IProjectCardSVGContainer>`
     grid-row: 1;
     grid-column: 1;
     transition: all ${(properties) => properties.duration}ms;
-    &.entering {
-        opacity: 0;
-    }
-    &.entered {
-        opacity: 1;
-    }
-    &.exiting {
-        opacity: 0;
-    }
 `;
 
 interface IProjectCardContentContainer {
@@ -163,11 +149,10 @@ export const ProjectCardContentContainer = styled.div<
     grid-template-rows: 60px auto 60px;
     grid-template-columns: 1fr;
     z-index: 3;
-    font-family: "Merriweather", serif;
     text-overflow: ellipsis;
     white-space: nowrap;
 
-    transition: all ${(properties) => properties.duration}ms;
+    transition: all 200ms;
     &.entering {
         opacity: 0;
     }
@@ -185,13 +170,15 @@ export const ProjectCardContentTop = styled(Link)`
     display: grid;
     grid-template-rows: 1.2fr 0.8fr;
     grid-template-columns: 1fr;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0);
     color: white;
     padding: 10px;
-    box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
     overflow: hidden;
+    transition: all 200ms;
     &:hover {
-        background-color: rgba(0, 0, 0, 0.8);
+        box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
+        background-color: rgba(0, 0, 0, 0.5);
     }
 `;
 
@@ -201,8 +188,6 @@ export const ProjectCardContentMiddle = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.2);
 `;
 
 export const ProjectCardContentTopHeader = styled.div`
@@ -226,16 +211,18 @@ export const ProjectCardContentBottom = styled(Link)`
     grid-row: 3;
     grid-column: 1;
     z-index: 4;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0);
     color: white;
-    box-shadow: 0px 3px 8px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: none;
     display: grid;
     grid-template-rows: 1fr;
     grid-template-columns: 60px auto;
+    transition: all 200ms;
     overflow: hidden;
     cursor: pointer;
     &:hover {
-        background-color: rgba(0, 0, 0, 0.8);
+        box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
+        background-color: rgba(0, 0, 0, 0.4);
     }
 `;
 
@@ -243,6 +230,7 @@ export const ProjectCardContentBottomPhoto = styled.div`
     grid-row: 1;
     grid-column: 1;
     padding-left: 5px;
+    padding-bottom: 5px;
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -258,27 +246,31 @@ export const ProjectCardContentBottomID = styled.div`
 `;
 
 export const Photo: any = styled.div`
+    position: relative;
+    bottom: 3px;
     vertical-align: middle;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    overflow: hidden;
-    background-image: url(${(property: any) => property.src});
+    background-image: url("${(property: any) => property.src}");
     background-size: cover;
     box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
 `;
 
-export const StyledIconButton = styled(IconButton)`
+export const StyledIconButton = styled.div`
     && {
         filter: invert(1);
     }
 `;
 
-export const PaginationIconButton = styled(IconButton)`
-    && {
-        color: white;
-    }
-`;
+// export const PaginationIconButton = styled.div`
+//     && {
+//         color: white;
+//         position: absolute;
+//         right: 0;
+//         bottom: 6px;
+//     }
+// `;
 
 export const ProjectCardContentBottomHeader = styled.div`
     grid-row: 1;
@@ -295,14 +287,6 @@ export const ProjectCardContentBottomDescription = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 12px;
-`;
-
-export const ProjectSectionHeader = styled(Grid)`
-    font-family: "Merriweather", serif;
-    font-size: 1.5em;
-    color: white;
-    flex: 1;
-    width: 100%;
 `;
 
 export const HorizontalRule = styled.hr`
@@ -339,7 +323,7 @@ export const SearchProjectContainer = styled.div<ISearchProjectContainer>`
     }
 `;
 
-export const SearchProjectWaitContainer = styled(Grid)<ISearchProjectContainer>`
+export const SearchProjectWaitContainer = styled.div<ISearchProjectContainer>`
     position: absolute;
     width: 100%;
     padding-top: 100px;

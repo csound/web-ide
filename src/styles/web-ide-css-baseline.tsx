@@ -1,8 +1,15 @@
 import React from "react";
+import { Theme } from "@emotion/react";
 import { headerHeight } from "@styles/constants";
 
-const WebIdeCssBaseline = () => (
+const WebIdeCssBaseline = ({ theme }: { theme: Theme }): React.ReactElement => (
     <style>{`
+* {
+  font-smooth: always;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 html {
     height: 100%;
     overflow: hidden;
@@ -272,7 +279,10 @@ margin-bottom: -50px;
 
  [data-rbd-drag-handle-context-id="0"] {
       cursor: inherit!important;
-     }
+ }
+.MuiIconButton-label svg {
+fill: ${theme.buttonIcon};
+}
 
     `}</style>
 );

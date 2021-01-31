@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Tooltip from "@material-ui/core/Tooltip";
-import SVGPaths from "./svg-paths";
+import SVGPaths from "@elem/svg-icons";
+import ProjectAvatar from "@elem/project-avatar";
+import { IProject } from "@comp/projects/types";
 import { addUserProject, editUserProject } from "./actions";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
@@ -11,12 +13,27 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { TextField, Button, Popover, Grid } from "@material-ui/core";
 import { useDispatch } from "react-redux";
+import { css } from "@emotion/react";
 import styled from "styled-components";
 import IconButton from "@material-ui/core/IconButton";
 import ReactAutosuggestExample from "./tag-auto-suggest";
 // import { selectTags } from "./selectors";
 import { isEmpty } from "ramda";
-import ProjectIcon from "./project-icon";
+
+const avatarContainer = css`
+    margin-left: -16px;
+    margin-top: -16px;
+    width: 62px;
+    height: 62px;
+    padding: 28px;
+    -webkit-box-pack: center;
+    justify-content: center;
+    cursor: pointer;
+    .project-avatar {
+        position: relative;
+        border-radius: 50%;
+    }
+`;
 
 const ModalContainer = styled.div`
     display: grid;
@@ -187,14 +204,20 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
             <FieldRow row={5}>
                 <IconPickerContainer>
                     <Tooltip title={"select an icon for your project"}>
-                        <>
-                            <ProjectIcon
-                                iconName={iconName || ""}
-                                iconBackgroundColor={iconBackgroundColor}
-                                iconForegroundColor={iconForegroundColor}
-                                onClick={handleProfileDropDown}
+                        <span
+                            css={avatarContainer}
+                            onClick={handleProfileDropDown}
+                        >
+                            <ProjectAvatar
+                                project={
+                                    {
+                                        iconName,
+                                        iconBackgroundColor,
+                                        iconForegroundColor
+                                    } as IProject
+                                }
                             />
-                        </>
+                        </span>
                     </Tooltip>
                     <Popover
                         open={popupState}
@@ -291,7 +314,7 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
                     color="primary"
                     disabled={shouldDisable}
                     onClick={handleOnSubmit}
-                    style={{ marginTop: 11 }}
+                    style={{ marginTop: 42 }}
                 >
                     {properties.label}
                 </Button>

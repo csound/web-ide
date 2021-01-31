@@ -1,3 +1,5 @@
+import { IProject } from "@comp/projects/types";
+
 export const GET_TAGS = "HOME.GET_TAGS";
 export const GET_STARS = "HOME.GET_STARS";
 export const GET_PROJECT_LAST_MODIFIED = "HOME.GET_PROJECT_LAST_MODIFIED";
@@ -15,9 +17,11 @@ export const GET_DISPLAYED_RANDOM_PROJECTS =
     "HOME.GET_DISPLAYED_RANDOM_PROJECTS";
 export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
 export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
-
 export const GET_SEARCHED_PROJECT_USER_PROFILES =
     "HOME.GET_SEARCHED_PROJECT_USER_PROFILES";
+export const FETCH_POPULAR_PROJECTS = "HOME.FETCH_POPULAR_PROJECTS";
+export const SET_POPULAR_PROJECTS_OFFSET = "HOME.SET_POPULAR_PROJECTS_OFFSET";
+
 interface SearchProjectsRequest {
     type: typeof SEARCH_PROJECTS_REQUEST;
     payload: any;
@@ -76,6 +80,17 @@ interface GetStarsAction {
     payload: any;
 }
 
+interface FetchPopularProjectsAction {
+    type: typeof FETCH_POPULAR_PROJECTS;
+    payload: IProject[];
+    totalRecords: number;
+}
+
+interface SetPopularProjectsOffsetAction {
+    type: typeof SET_POPULAR_PROJECTS_OFFSET;
+    newOffset: number;
+}
+
 export type HomeActionTypes =
     | GetTagsAction
     | GetStarsAction
@@ -88,4 +103,6 @@ export type HomeActionTypes =
     | SearchProjectsRequest
     | SearchProjectsSuccess
     | GetRandomProjectUserProfiles
-    | GetPopularProjectUserProfiles;
+    | GetPopularProjectUserProfiles
+    | FetchPopularProjectsAction
+    | SetPopularProjectsOffsetAction;

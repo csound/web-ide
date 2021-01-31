@@ -1,10 +1,11 @@
 import React from "react";
-import Header from "../header/header";
-import styled from "styled-components";
+import Header from "@comp/header/header";
+import styled from "@emotion/styled";
 import withStyles from "./styles";
 import CSLogo from "../cs-logo/cs-logo";
 import { get } from "lodash";
 import { Gradient } from "./gradient";
+
 const MainContainer = styled.div`
     display: grid;
     width: 100%;
@@ -12,7 +13,6 @@ const MainContainer = styled.div`
     grid-template-columns: auto 300px 300px auto;
     grid-template-rows: auto 300px auto;
     background-color: #556;
-    ${Gradient}
 `;
 
 const CSLogoContainer = styled.div`
@@ -25,9 +25,9 @@ interface ILogoContainer {
 }
 
 const TextContainer = styled.div<ILogoContainer>`
-    font-family: "Merriweather", serif;
+    font-family: ${(properties) => properties.theme.font.regular};
     font-size: ${(properties) => Math.floor(properties.size * 0.75)}px;
-    color: #fff;
+    color: ${(properties) => properties.theme.textColor};
     line-height: ${(properties) => properties.size}px;
     text-align: center;
     font-weight: bold;
@@ -53,14 +53,17 @@ const Page404 = (properties) => {
         get(properties, "location.state.message") || "Page Not Found";
 
     return (
-        <div className={classes.root}>
+        <div
+            className={classes.root}
+            css={Gradient({
+                colorA: "rgba(30, 30, 30, 1)",
+                colorB: "rgba(40, 40, 40, 1)",
+                colorC: "rgba(20, 20, 20, 1)"
+            })}
+        >
             <Header />
             <main>
-                <MainContainer
-                    colorA={"rgba(30, 30, 30, 1)"}
-                    colorB={"rgba(40, 40, 40, 1)"}
-                    colorC={"rgba(20, 20, 20, 1)"}
-                >
+                <MainContainer>
                     <CSLogoContainer>
                         <CSLogo size={300} />
                     </CSLogoContainer>

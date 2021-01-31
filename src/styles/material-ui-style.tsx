@@ -1,11 +1,41 @@
 import { DefaultTheme } from "@material-ui/core/styles/defaultTheme";
-import { assocPath, pipe } from "ramda";
+import { Theme } from "@emotion/react";
+import { assocPath, pipe, reduce } from "ramda";
 // import { rgba } from "./utils";
 
 // assume darkmode = primary
 // (if consistent, the lightMode vs darkMode distinction becomes irrelevant)
 
-export const makeMuiTheme = (muiTheme, theme) => {
+const typographyOverride = (theme: Theme) =>
+    pipe(
+        assocPath(["typography", "fontFamily"], theme.font.regular),
+        assocPath(["typography", "button", "fontFamily"], theme.font.monospace),
+        (t) =>
+            reduce(
+                (acc, k) =>
+                    assocPath(
+                        ["typography", k, "fontFamily"],
+                        theme.font.regular,
+                        acc
+                    ),
+                t,
+                [
+                    "body1",
+                    "body2",
+                    // "button",
+                    "caption",
+                    "h1",
+                    "h2",
+                    "h3",
+                    "h4",
+                    "h5",
+                    "subtitle1",
+                    "subtitle2"
+                ]
+            )
+    );
+
+export const makeMuiTheme = (muiTheme, theme: Theme) => {
     // const primaryPalette = {
     //     light: theme.highlight.secondary,
     //     main: theme.highlight.primary,
@@ -19,6 +49,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
     // };
 
     return (pipe as any)(
+        typographyOverride(theme),
         assocPath(["palette", "common"], {
             black: theme.textColor,
             white: theme.background
@@ -67,7 +98,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
             color: `${theme.buttonTextColor}!important`,
             opacity: 0.95,
             "&:hover": {
-                backgroundColor: `${theme.buttonHover}!important`
+                backgroundColor: `${theme.buttonBackgroundHover}!important`
             }
         }),
         assocPath(["overrides", "MuiTouchRipple", "rippleVisible"], {

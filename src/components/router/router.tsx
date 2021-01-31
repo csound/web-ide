@@ -73,11 +73,7 @@ const RouterComponent = (): React.ReactElement => {
                     )}
                 />
                 <Route path="/profile/:username?" component={Profile} />
-                <Route
-                    path="/"
-                    exact
-                    render={(matchProperties) => <Home {...matchProperties} />}
-                />
+                <Route path="/" component={Home} exact />
                 <Route path="/documentation" render={() => <SiteDocuments />} />
                 <Route path="/404" exact component={Page404} />
                 <Route component={Page404} />

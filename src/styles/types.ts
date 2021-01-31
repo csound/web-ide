@@ -1,4 +1,5 @@
 import "@emotion/react";
+import CreateStyleOriginal "@emotion/styled"
 
 type ThemeFont = {
     regular: string;
@@ -6,7 +7,7 @@ type ThemeFont = {
 };
 
 declare module "@emotion/react" {
-    export interface Theme {
+    export interface Theme  {
         // fonts
         font: ThemeFont;
         // basic colors
@@ -20,6 +21,7 @@ declare module "@emotion/react" {
         disabledButtonBackground: string;
         highlightBackground: string;
         highlightBackgroundAlt: string;
+        textFieldBackground: string;
         // Text colors
         headerTextColor: string;
         textColor: string;
@@ -47,9 +49,7 @@ declare module "@emotion/react" {
         // Other
         starActive: string;
         starInactive: string;
-        socialIcon: string;
-        publicIcon: string;
-        playIcon: string;
+        buttonIcon: string;
         settingsIcon: string;
         profilePlayButton: string;
         profilePlayButtonActive: string;

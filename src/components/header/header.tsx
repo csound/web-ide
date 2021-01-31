@@ -5,10 +5,9 @@ import { selectIsOwner } from "@comp/project-editor/selectors";
 import { selectUserImageURL, selectUserName } from "@comp/profile/selectors";
 import { selectLoggedInUid } from "@comp/login/selectors";
 import AppBar from "@material-ui/core/AppBar";
-import Login from "../login/login";
-import * as loginActions from "../login/actions";
-import { push } from "connected-react-router";
-import CSLogo from "../cs-logo/cs-logo";
+import Login from "@comp/login/login";
+import * as loginActions from "@comp/login/actions";
+import CSLogo from "@comp/cs-logo/cs-logo";
 import { Link } from "react-router-dom";
 import {
     Toolbar,
@@ -30,14 +29,13 @@ import HelpIcon from "@material-ui/icons/Help";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import ReportProblemIcon from "@material-ui/icons/ReportProblem";
 import * as SS from "./styles";
-// import { tooltipClasses } from "@styles";
+// import { tooltipClasses } from "@comp/styles";
 import { IStore } from "@store/types";
-import { isEmpty } from "lodash";
-// import { hasPath } from "ramda";
-import MenuBar from "../menu-bar/menu-bar";
+import { isEmpty } from "ramda";
+import MenuBar from "@comp/menu-bar/menu-bar";
 import ProjectProfileMeta from "./project-profile-meta";
-import TargetControls from "../target-controls";
-import SocialControls from "../social-controls/social-controls";
+import TargetControls from "@comp/target-controls";
+import SocialControls from "@comp/social-controls/social-controls";
 
 const Header = (): React.ReactElement => {
     const dispatch = useDispatch();
@@ -85,7 +83,6 @@ const Header = (): React.ReactElement => {
 
     const logout = () => dispatch(loginActions.logOut());
     const openLoginDialog = () => dispatch(loginActions.openLoginDialog());
-    const handleIconClick = () => dispatch(push("/"));
 
     const avatar = isEmpty(avatarUrl) ? (
         <AccountBox />
@@ -106,7 +103,7 @@ const Header = (): React.ReactElement => {
                 {avatar as any}
             </IconButton>
             <Menu
-                classes={{ paper: SS.menuPaper }}
+                css={SS.menuPaper}
                 anchorEl={anchorElement.current}
                 anchorOrigin={{
                     vertical: "top",
@@ -175,11 +172,7 @@ const Header = (): React.ReactElement => {
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     {burgerMenu}
 
-                    <CSLogo
-                        size={38}
-                        interactive={true}
-                        onClick={handleIconClick}
-                    />
+                    <CSLogo size={38} interactive={true} />
 
                     {routeIsEditor && activeProjectUid && isOwner && (
                         <MenuBar />

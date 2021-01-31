@@ -78,12 +78,7 @@ const ProjectListItem = ({
                 {isProfileOwner && <StyledListButtonsContainer />}
             </Link>
             <StyledListPlayButtonContainer>
-                <ListPlayButton
-                    projectUid={projectUid}
-                    iconNameProp={undefined}
-                    iconBackgroundColorProp={undefined}
-                    iconForegroundColorProp={undefined}
-                />
+                <ListPlayButton project={project} />
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
                 <>

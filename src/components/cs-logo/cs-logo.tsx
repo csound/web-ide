@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import domToImage from "dom-to-image-more";
+import { Link } from "react-router-dom";
+
 interface ILogoContainer {
     size: number;
     interactive?: boolean;
-    onClick?: any;
 }
 
 const LogoContainer = styled.div<ILogoContainer>`
-    font-family: "Merriweather", serif;
+    font-family: ${(properties) => properties.theme.font.regular};
     display: inline-block;
     width: ${(properties) => properties.size}px;
     height: ${(properties) => properties.size}px;
@@ -21,8 +22,6 @@ const LogoContainer = styled.div<ILogoContainer>`
     user-select: none;
     background: ${(properties) =>
         properties.interactive ? "inherit" : properties.theme.buttonBackground};
-    ${(properties) =>
-        properties.interactive && ":hover{background: #445; cursor: pointer;}"}
 `;
 
 export default function CsLogo(properties: ILogoContainer): React.ReactElement {
@@ -46,13 +45,14 @@ export default function CsLogo(properties: ILogoContainer): React.ReactElement {
         })();
     }, [containerReference]);
     return (
-        <LogoContainer
-            ref={containerReference as any}
-            size={properties.size}
-            onClick={() => properties.onClick && properties.onClick()}
-            interactive={properties.interactive}
-        >
-            Cs
-        </LogoContainer>
+        <Link to="/">
+            <LogoContainer
+                ref={containerReference as any}
+                size={properties.size}
+                interactive={properties.interactive}
+            >
+                Cs
+            </LogoContainer>
+        </Link>
     );
 }

@@ -1,11 +1,13 @@
 import ProfileLists from "./profile-lists";
 import React, { useEffect, useState, RefObject } from "react";
+import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
 import { useDispatch, useSelector } from "react-redux";
-import withStyles from "./styles";
+import withStyles, { createButtonAddIcon } from "./styles";
+import Button from "@material-ui/core/Button";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
 import Header from "../header/header";
@@ -65,9 +67,9 @@ import {
     ContentTabsContainer,
     ContentActionsContainer,
     SearchBox,
-    AddFab,
     ListContainer,
-    EditProfileButtonSection
+    EditProfileButtonSection,
+    fabButton
 } from "./profile-ui";
 
 const UserLink = ({ link }) => {
@@ -84,6 +86,7 @@ const UserLink = ({ link }) => {
 
 const Profile = ({ classes, ...properties }) => {
     const [profileUid, setProfileUid]: [string | undefined, any] = useState();
+    const theme = useTheme();
     const dispatch = useDispatch();
     const [username, profileUriPath] = useSelector(selectCurrentProfileRoute);
     const profile = useSelector(selectUserProfile(profileUid));
@@ -315,9 +318,9 @@ const Profile = ({ classes, ...properties }) => {
                             </DescriptionSection>
                             {isProfileOwner && profileUid && (
                                 <EditProfileButtonSection>
-                                    <AddFab
+                                    <Button
+                                        css={fabButton}
                                         color="primary"
-                                        variant="extended"
                                         aria-label="Add"
                                         size="medium"
                                         onClick={() =>
@@ -335,14 +338,14 @@ const Profile = ({ classes, ...properties }) => {
                                         }
                                     >
                                         Edit Profile
-                                    </AddFab>
+                                    </Button>
                                 </EditProfileButtonSection>
                             )}
                             {!isProfileOwner && profileUid && loggedInUserUid && (
                                 <EditProfileButtonSection>
-                                    <AddFab
+                                    <Button
+                                        css={fabButton}
                                         color="primary"
-                                        variant="extended"
                                         aria-label="Add"
                                         size="medium"
                                         onClick={() => {
@@ -362,7 +365,7 @@ const Profile = ({ classes, ...properties }) => {
                                         }}
                                     >
                                         {isFollowing ? "Unfollow" : "Follow"}
-                                    </AddFab>
+                                    </Button>
                                 </EditProfileButtonSection>
                             )}
                         </IDContainer>
@@ -375,7 +378,10 @@ const Profile = ({ classes, ...properties }) => {
                         </NameSection>
                     </NameSectionWrapper>
 
-                    <ContentSection showSearch={selectedSection === 0}>
+                    <ContentSection
+                        theme={theme}
+                        showSearch={selectedSection === 0}
+                    >
                         <ContentTabsContainer>
                             <Tabs
                                 value={selectedSection}
@@ -444,18 +450,17 @@ const Profile = ({ classes, ...properties }) => {
                             )}
 
                             {isProfileOwner && selectedSection === 0 && (
-                                <AddFab
+                                <Button
+                                    css={fabButton}
                                     color="primary"
-                                    variant="extended"
                                     aria-label="Add"
                                     size="medium"
-                                    className={classes.margin}
                                     onClick={() => dispatch(addProject())}
                                     data-tip={"Create new project"}
                                 >
                                     Create
-                                    <AddIcon className={classes.extendedIcon} />
-                                </AddFab>
+                                    <AddIcon css={createButtonAddIcon} />
+                                </Button>
                             )}
                         </ContentActionsContainer>
                         {profileUid && username && (

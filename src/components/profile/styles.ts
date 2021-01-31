@@ -1,6 +1,14 @@
-import { Theme as MaterialTheme } from "@material-ui/core";
+import React from "react";
+import { Avatar, Theme as MaterialTheme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
+import styled from "@emotion/styled";
 import { css, SerializedStyles, Theme } from "@emotion/react";
+import { shadow } from "@styles/_common";
+
+export const createButtonAddIcon = css`
+    margin-bottom: 2px;
+    margin-left: 2px;
+`;
 
 const profileStyles = (theme: MaterialTheme) =>
     createStyles({
@@ -50,83 +58,13 @@ export const iconPreviewBox = css`
     cursor: pointer;
 `;
 
-export const showAvatarPlayButton = css`
-    .projectIcon {
-        opacity: 0;
-    }
-    .listPlayIcon {
-        opacity: 1;
-    }
-    transform: rotate(90deg);
-    cursor: pointer;
-    box-shadow: none;
-`;
-
-export const avatar = css`
-    align-self: center;
-    pointer-events: visible;
-    width: 64px;
-    height: 64px;
-
-    .listPlayIcon {
-        opacity: 0;
-        transition: opacity 1s ease-out;
-        transform: translate(0px, -3px) rotate(-90deg);
-        &:hover {
-            z-index: 10;
-        }
-    }
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
-    &:after {
-        content: "";
-        width: 100%;
-        height: 100%;
-        transform: scale(0.8);
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-    }
-    &:hover:after {
-        transform: scale(2);
-        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.19),
-            6px 0 6px rgba(0, 0, 0, 0.23);
-    }
-    &:hover {
-        ${showAvatarPlayButton}
-        background-color: black!important;
-    }
-`;
-
-export const avatarIconForeground = (
-    foregroundColor: string
-): SerializedStyles => css`
-    & path {
-        fill: ${foregroundColor};
-    }
-    & path:first-of-type {
-        fill: black;
-    }
-    & path:last-of-type {
-        fill: ${foregroundColor};
-    }
-`;
-
-export const avatarIcon = (foregroundColor: string): SerializedStyles => css`
-    width: calc(100% - 32px);
-    height: calc(100% - 32px);
-    ${avatarIconForeground(foregroundColor)}
-`;
-
-export const previewAvatarColor = (
-    foregroundColor: string
-): SerializedStyles => css`
-    & > svg {
-        ${avatarIconForeground(foregroundColor)}
-    }
-`;
+// export const previewAvatarColor = (
+//     foregroundColor: string
+// ): SerializedStyles => css`
+//     & > svg {
+//         ${avatarIconForeground(foregroundColor)}
+//     }
+// `;
 
 export const loadingSpinner = (theme: Theme): SerializedStyles => css`
 @keyframes cricle {
@@ -297,6 +235,103 @@ export const publicIcon = (theme: Theme): SerializedStyles => css`
         color: ${theme.altButtonBackground};
         & svg {
             transform: scale(1.1, 0.9);
+        }
+    }
+`;
+
+export const showAvatarPlayButton = css`
+    .projectIcon {
+        opacity: 0;
+    }
+    .listPlayIcon {
+        opacity: 1;
+    }
+    transform: rotate(90deg);
+    cursor: pointer;
+    box-shadow: none;
+`;
+
+export const avatar = css`
+    align-self: center;
+    pointer-events: visible;
+    width: 64px;
+    height: 64px;
+
+    .listPlayIcon {
+        opacity: 0;
+        transition: opacity 1s ease-out;
+        transform: translate(0px, -3px) rotate(-90deg);
+        &:hover {
+            z-index: 10;
+        }
+    }
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
+    &:after {
+        content: "";
+        width: 100%;
+        height: 100%;
+        transform: scale(0.8);
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    &:hover:after {
+        transform: scale(2);
+        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.19),
+            6px 0 6px rgba(0, 0, 0, 0.23);
+    }
+    &:hover {
+        ${showAvatarPlayButton}
+        background-color: black!important;
+    }
+`;
+
+type StyledAvatarType = {
+    isPlaying: boolean;
+    hasError: boolean;
+    isPaused: boolean;
+    isStartingUp: boolean;
+    iconBackgroundColorProp: string;
+    children: React.ReactElement;
+    theme: Theme;
+};
+
+export const StyledAvatar = styled(Avatar as any, {
+    shouldForwardProp: (property) =>
+        ["children", "onClick", "src"].includes(property.toString())
+            ? true
+            : false
+})`
+    ${avatar}
+    ${(properties: StyledAvatarType) =>
+        ((properties.isPlaying &&
+            !properties.hasError &&
+            !properties.isStartingUp) ||
+            properties.isPaused) &&
+        showAvatarPlayButton}
+    background-color: ${(properties: StyledAvatarType) =>
+        properties.hasError
+            ? properties.theme.errorText
+            : properties.isPlaying || properties.isStartingUp
+            ? "black"
+            : properties.iconBackgroundColorProp};
+    ${shadow}
+    .project-avatar {
+        transition: all 400ms;
+        display: ${(properties: StyledAvatarType) =>
+            properties.isStartingUp || properties.isPlaying
+                ? "none"
+                : "inherit"};
+        opacity: ${(properties: StyledAvatarType) =>
+            properties.isPlaying ? 0 : 1};
+    }
+    &:hover {
+        .project-avatar {
+            opacity: ${(properties: StyledAvatarType) =>
+                properties.isPlaying ? 1 : 0};
         }
     }
 `;

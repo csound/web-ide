@@ -65,19 +65,19 @@ const Main = (): React.ReactElement => {
     }, []);
 
     return (
-        <>
+        <ThemeProvider>
             <div style={{ position: "absolute" }}>
                 <ReactTooltip />
             </div>
             <HotKeys>
-                <ThemeProvider>
+                <>
                     <Modal />
                     <IosWarning />
                     <Snackbar />
                     <Router />
-                </ThemeProvider>
+                </>
             </HotKeys>
-        </>
+        </ThemeProvider>
     );
 };
 

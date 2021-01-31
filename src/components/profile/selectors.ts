@@ -3,7 +3,7 @@ import { createSelector } from "reselect";
 import { IProfileReducer } from "./reducer";
 // import { IProfile } from "./types";
 import { IFirestoreProfile } from "@db/types";
-import { path, pathOr, pickBy, prop, propEq, values } from "ramda";
+import { path, pathOr, pickBy, propEq, values } from "ramda";
 import Fuse from "fuse.js";
 
 export const selectUserFollowing = (
@@ -226,13 +226,13 @@ export const selectProfileProjectsCount = (
     );
 };
 
-export const selectProjectIconStyle = (
-    projectUid: string
-): ((store: IStore) => any) => (store) => {
-    const proj = pathOr({}, ["ProjectsReducer", "projects", projectUid], store);
-    return {
-        iconBackgroundColor: prop("iconBackgroundColor", proj),
-        iconForegroundColor: prop("iconForegroundColor", proj),
-        iconName: prop("iconName", proj)
-    };
-};
+// export const selectProjectIconStyle = (
+//     projectUid: string
+// ): ((store: IStore) => any) => (store) => {
+//     const proj = pathOr({}, ["ProjectsReducer", "projects", projectUid], store);
+//     return {
+//         iconBackgroundColor: prop("iconBackgroundColor", proj),
+//         iconForegroundColor: prop("iconForegroundColor", proj),
+//         iconName: prop("iconName", proj)
+//     };
+// };

@@ -20,6 +20,86 @@ export const shadow = css`
         0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 `;
 
+export const topInnerShadow = css`
+    &:before {
+        width: 100%;
+        content: " ";
+        height: 33.333%;
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background: rgba(255, 255, 255, 0);
+        background: -moz-linear-gradient(
+            top,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        background: -webkit-gradient(
+            linear,
+            left top,
+            left bottom,
+            color-stop(0%, rgba(0, 0, 0, 0.5)),
+            color-stop(100%, rgba(255, 255, 255, 0))
+        );
+        background: -webkit-linear-gradient(
+            top,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        background: -o-linear-gradient(
+            top,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+    }
+`;
+
+export const bottomInnerShadow = css`
+    &:after {
+        content: " ";
+        width: 100%;
+        height: 33.333%;
+        position: absolute;
+        z-index: 1;
+        bottom: 0;
+        left: 0;
+        background: rgba(255, 255, 255, 0);
+        background: -moz-linear-gradient(
+            bottom,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        background: -webkit-gradient(
+            linear,
+            left bottom,
+            left top,
+            color-stop(0%, rgba(0, 0, 0, 0.5)),
+            color-stop(100%, rgba(255, 255, 255, 0))
+        );
+        background: -webkit-linear-gradient(
+            bottom,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        background: -o-linear-gradient(
+            bottom,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+    }
+`;
+
 export const windowHeader = (theme) => css`
     background-color: ${theme.highlightBackgroundAlt};
     top: 0;
