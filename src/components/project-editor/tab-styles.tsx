@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { styled as themeStyled } from "@hlolli/react-tabtab";
 import { tabListHeight } from "@styles/constants";
 import { _shadow } from "@styles/_common";
@@ -8,7 +8,7 @@ let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
 
 TabListStyle = styled(TabListStyle)`
     z-index: 1;
-    background-color: ${(properties) => properties.theme.background};
+    background-color: ${(properties) => properties.theme.background}!important;
     height: ${tabListHeight}px;
     bottom: 0;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
@@ -21,6 +21,15 @@ TabListStyle = styled(TabListStyle)`
 
     .tablist {
         width: 100%;
+    }
+    & > div {
+        height: 100%;
+    }
+    & > div > ul {
+        height: 100%;
+    }
+    & > div > ul > li {
+        height: 100%;
     }
 `;
 
@@ -37,12 +46,12 @@ TabStyle = styled(TabStyle)`
             ? properties.theme.highlightBackground
             : properties.theme.background};
     border: 0;
-    padding: 13px 19px;
-    padding-right: 42px;
+    padding: 13px 19px !important;
+    padding-right: 42px !important;
     user-select: inherit;
     margin-bottom: -1px;
     &:hover {
-        color: ${(properties) => properties.theme.textColor};
+        color: ${(properties) => properties.theme.textColor}!important;
         background-color: ${(properties) =>
             properties.active
                 ? properties.theme.highlightBackground
@@ -106,7 +115,7 @@ PanelStyle = styled(PanelStyle)`
     width: 100%;
     height: 100%;
     position: absolute;
-    padding: 0;
+    padding: 0 !important;
     background-color: ${(properties) => properties.theme.background};
     ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
 `;

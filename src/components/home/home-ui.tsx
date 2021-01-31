@@ -151,6 +151,7 @@ export const ProjectCardContentContainer = styled.div<
     z-index: 3;
     text-overflow: ellipsis;
     white-space: nowrap;
+    overflow: hidden;
 
     transition: all 200ms;
     &.entering {
@@ -168,11 +169,11 @@ export const ProjectCardContentTop = styled(Link)`
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-template-rows: 1.2fr 0.8fr;
+    grid-template-rows: 1.1fr 0.9fr;
     grid-template-columns: 1fr;
     background-color: rgba(0, 0, 0, 0);
     color: white;
-    padding: 10px;
+    padding: 6px 10px;
     box-shadow: none;
     overflow: hidden;
     transition: all 200ms;
@@ -205,7 +206,7 @@ export const ProjectCardContentTopDescription = styled.div`
     grid-column: 1;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 12px;
+    font-size: 14px;
 `;
 
 export const ProjectCardContentBottom = styled(Link)`
@@ -230,8 +231,8 @@ export const ProjectCardContentBottom = styled(Link)`
 export const ProjectCardContentBottomPhoto = styled.div`
     grid-row: 1;
     grid-column: 1;
-    padding-left: 5px;
-    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-bottom: 6px;
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -240,9 +241,10 @@ export const ProjectCardContentBottomPhoto = styled.div`
 export const ProjectCardContentBottomID = styled.div`
     grid-row: 1;
     grid-column: 2;
-    padding: 5px;
+    padding: 6px 10px;
+    padding-top: 0;
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1.1fr 0.9fr;
     grid-template-columns: 1fr;
 `;
 
@@ -279,7 +281,7 @@ export const ProjectCardContentBottomHeader = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     padding-top: 8px;
 `;
 
@@ -288,7 +290,7 @@ export const ProjectCardContentBottomDescription = styled.div`
     grid-column: 1;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 12px;
+    font-size: 14px;
 `;
 
 export const HorizontalRule = styled.hr`

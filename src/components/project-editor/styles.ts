@@ -1,6 +1,6 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
-import { headerHeight, tabListHeight } from "@styles/constants";
+import { headerHeight } from "@styles/constants";
 
 export const splitterRoot = css`
     position: relative;
@@ -12,36 +12,8 @@ export const splitterRoot = css`
     box-sizing: border-box;
 `;
 
-export const mainTabsSplitter = css`
-    .main-tab-panels {
-        .layout-pane {
-            overflow: hidden;
-            > div {
-                height: 100%;
-                > div:nth-of-type(2) {
-                    height: calc(100% - ${tabListHeight}px);
-                }
-            }
-        }
-        .layout-pane-primary {
-            > div {
-                > div:nth-of-type(2) {
-                    > div {
-                        position: relative !important;
-                    }
-                }
-            }
-        }
-    }
-`;
-
-export const splitterLayoutContainer = css`
-    width: 100%;
-    height: 100%;
-`;
-
 export const closeButton = css`
-    top: 10px;
+    top: 8px;
     right: 8px;
     padding: 6px;
     position: absolute;

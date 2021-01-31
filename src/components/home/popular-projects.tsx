@@ -1,6 +1,6 @@
 import React from "react";
 import Loader from "react-loader-spinner";
-import { path, mergeAll, range } from "ramda";
+import { path, range } from "ramda";
 import { useSelector } from "react-redux";
 import { IStore } from "@store/types";
 import { IProject } from "@comp/projects/types";
@@ -52,11 +52,8 @@ const PopularProjects = ({
             <div css={SS.homeHeading}>
                 <IconButton
                     aria-label="left"
-                    css={SS.paginationButton}
-                    style={mergeAll([
-                        { right: 48 },
-                        hasPrevious ? { fill: theme.textColor } : {}
-                    ])}
+                    css={SS.paginationButton(!isLoading && hasPrevious)}
+                    style={{ right: 48 }}
                     onClick={handlePopularProjectsPreviousPage}
                     disabled={isLoading || !hasPrevious}
                 >
@@ -64,9 +61,8 @@ const PopularProjects = ({
                 </IconButton>
                 <IconButton
                     aria-label="right"
-                    css={SS.paginationButton}
+                    css={SS.paginationButton(!isLoading && hasNext)}
                     onClick={handlePopularProjectsNextPage}
-                    style={hasNext ? { fill: theme.textColor } : {}}
                     disabled={isLoading || !hasNext}
                 >
                     <RightIcon />

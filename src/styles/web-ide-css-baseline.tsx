@@ -22,6 +22,11 @@ body {
 
 body {
     position: relative;
+    /* 0 important because
+     mui's <Menu> adds some
+     annoying padding and overflow */
+    padding: 0!important;
+    overflow: auto!important;
 }
 
 #root {

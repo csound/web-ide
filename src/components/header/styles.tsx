@@ -13,6 +13,8 @@ export const headerRoot = (theme: Theme): SerializedStyles => css`
        height ${headerHeight}px;
     }
     font-family: ${theme.font.regular};
+    /* because of mui's <Menu> */
+    padding: 0!important;
 `;
 
 export const drawer = css`
@@ -56,7 +58,7 @@ export const userMenu = css`
 `;
 
 export const menuPaper = css`
-    top: 60px !important;
+    top: 52px !important;
     padding: 0 !important;
 `;
 

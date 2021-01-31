@@ -95,46 +95,52 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
             (item: IStarredProject) => item.id
         );
 
-        const publicProjectsSnapshots = await projects
-            .where("public", "==", true)
-            .where(firebase.firestore.FieldPath.documentId(), "in", starsIDs)
-            .get();
-
-        const popularProjects: IProject[] = await Promise.all(
-            publicProjectsSnapshots.docs.map(
-                async (snap) => await convertProjectSnapToProject(snap)
-            )
-        );
-
-        const userIDs = pluck("userUid", popularProjects);
-
-        const missingProfiles = difference(userIDs, keys(state.profiles));
-        if (!isEmpty(missingProfiles)) {
-            const projectProfiles = {};
-
-            const profilesQuery = await profiles
+        if (!isEmpty(starsIDs)) {
+            const publicProjectsSnapshots = await projects
+                .where("public", "==", true)
                 .where(
                     firebase.firestore.FieldPath.documentId(),
                     "in",
-                    missingProfiles
+                    starsIDs
                 )
                 .get();
 
-            profilesQuery.forEach((snapshot) => {
-                projectProfiles[snapshot.id] = snapshot.data();
-            });
+            const popularProjects: IProject[] = await Promise.all(
+                publicProjectsSnapshots.docs.map(
+                    async (snap) => await convertProjectSnapToProject(snap)
+                )
+            );
+
+            const userIDs = pluck("userUid", popularProjects);
+
+            const missingProfiles = difference(userIDs, keys(state.profiles));
+            if (!isEmpty(missingProfiles)) {
+                const projectProfiles = {};
+
+                const profilesQuery = await profiles
+                    .where(
+                        firebase.firestore.FieldPath.documentId(),
+                        "in",
+                        missingProfiles
+                    )
+                    .get();
+
+                profilesQuery.forEach((snapshot) => {
+                    projectProfiles[snapshot.id] = snapshot.data();
+                });
+
+                dispatch({
+                    type: GET_POPULAR_PROJECT_USER_PROFILES,
+                    payload: projectProfiles
+                });
+            }
 
             dispatch({
-                type: GET_POPULAR_PROJECT_USER_PROFILES,
-                payload: projectProfiles
+                type: FETCH_POPULAR_PROJECTS,
+                payload: popularProjects,
+                totalRecords: starredProjects.totalRecords
             });
         }
-
-        dispatch({
-            type: FETCH_POPULAR_PROJECTS,
-            payload: popularProjects,
-            totalRecords: starredProjects.totalRecords
-        });
     };
 };
 
