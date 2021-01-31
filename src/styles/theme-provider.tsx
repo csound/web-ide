@@ -39,7 +39,7 @@ const ThirdPartyLibraryPainter = ({ theme }) => (
 
 const CsoundWebIdeThemeProvider = (properties) => {
     const monospaceFont = `'Fira Mono', monospace`;
-    const regularFont = `'IBM Plex Sans', sans-serif;`;
+    const regularFont = ` 'Poppins', sans-serif`;
     const themeName = useSelector(path(["ThemeReducer", "selectedThemeName"]));
 
     const theme: Theme = pipe(

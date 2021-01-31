@@ -106,6 +106,7 @@ export const muiIcon = (theme: Theme): SerializedStyles => css`
     fill: ${theme.textColor} !important;
     width: 16px;
     height: 16px;
+    margin-top: 2px;
 `;
 
 export const newFolderIcon = (theme: Theme): SerializedStyles => css`
@@ -139,4 +140,13 @@ export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
 
 export const directoryOpenIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
+`;
+
+export const filenameStyle = (theme: Theme): SerializedStyles => css`
+    font-family: ${theme.font.regular};
+    font-size: 15px;
+    font-weight: 400;
+    color: ${theme.textColor};
+    padding: 0;
+    margin: 0;
 `;

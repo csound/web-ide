@@ -14,7 +14,7 @@ export const CodeMirrorPainter = ({ theme }) => (
               { background: ${theme.selectedTextColor}; }
           .CodeMirror-gutter { background: ${theme.gutterBackground};  }
           .CodeMirror-gutters { background: ${theme.gutterBackground};
-                                border-right: 1px solid #ddd;
+                                border-right: 1px solid ${theme.textColor};
                                }
           .CodeMirror-guttermarker { color: ${theme.gutterMarker}; }
           .CodeMirror-guttermarker-subtle { color: ${theme.gutterMarkerSubtle}; }

@@ -380,7 +380,9 @@ const makeTree = (
                                                     button
                                                 >
                                                     {IconComp}
-                                                    {document_.filename}
+                                                    <p css={SS.filenameStyle}>
+                                                        {document_.filename}
+                                                    </p>
                                                 </ListItem>
                                             )}
                                         </Draggable>

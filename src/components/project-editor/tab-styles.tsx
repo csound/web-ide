@@ -116,7 +116,7 @@ PanelStyle = styled(PanelStyle)`
     height: 100%;
     position: absolute;
     padding: 0 !important;
-    background-color: ${(properties) => properties.theme.background};
+    background-color: ${(properties) => properties.theme.background}!important;
     ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
 `;
 

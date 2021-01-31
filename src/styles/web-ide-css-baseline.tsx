@@ -5,6 +5,7 @@ import { headerHeight } from "@styles/constants";
 const WebIdeCssBaseline = ({ theme }: { theme: Theme }): React.ReactElement => (
     <style>{`
 * {
+  -webkit-font-smoothing: antialiased;
   font-smooth: always;
   -webkit-font-smoothing: subpixel-antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -185,7 +186,7 @@ margin-bottom: -50px;
     position: absolute;
     top: 0;
     min-height: 100%;
-    z-index: 3;
+    z-index: 0;
     white-space: nowrap;
 }
 
@@ -266,7 +267,7 @@ margin-bottom: -50px;
 
 .CodeMirror-gutter-wrapper {
     position: absolute;
-    z-index: 4;
+    z-index: 1;
     background: none !important;
     border: none !important;
 }

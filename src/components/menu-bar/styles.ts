@@ -64,7 +64,7 @@ export const dropdownButton = (theme: Theme): SerializedStyles => css`
 `;
 
 export const dropdownList = (theme: Theme): SerializedStyles => css`
-    z-index: 10000;
+    z-index: 20000;
     width: fit-content;
     border: 2px solid ${theme.line};
     border-radius: 6px;

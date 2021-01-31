@@ -8,8 +8,8 @@ import { assocPath, pipe, memoizeWith, reduce } from "ramda";
 
 const typographyOverride = (theme: Theme) =>
     pipe(
-        (x) => (console.log(x) as any) || x,
-        assocPath(["typography", "fontFamily"], theme.font.regular),
+        // (x) => (console.log(x) as any) || x,
+        // assocPath(["typography", "fontFamily"], theme.font.regular),
         assocPath(["typography", "button", "fontFamily"], theme.font.monospace),
         (t) =>
             reduce(
@@ -23,7 +23,7 @@ const typographyOverride = (theme: Theme) =>
                 [
                     "body1",
                     "body2",
-                    // "button",
+                    "button",
                     "caption",
                     "h1",
                     "h2",
