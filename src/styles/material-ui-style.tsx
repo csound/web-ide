@@ -55,6 +55,10 @@ const makeMuiTheme_ = (muiTheme, theme: Theme, themeName: string) => {
             black: theme.textColor,
             white: theme.background
         }),
+        assocPath(["palette", "background"], {
+            paper: theme.background,
+            default: theme.background
+        }),
         // assocPath(["palette", "primary"], primaryPalette),
 
         assocPath(["overrides", "MuiTooltip", "tooltip"], {
