@@ -1,6 +1,6 @@
 import { DefaultTheme } from "@material-ui/core/styles/defaultTheme";
 import { Theme } from "@emotion/react";
-import { assocPath, pipe, reduce } from "ramda";
+import { assocPath, pipe, memoizeWith, reduce } from "ramda";
 // import { rgba } from "./utils";
 
 // assume darkmode = primary
@@ -8,6 +8,7 @@ import { assocPath, pipe, reduce } from "ramda";
 
 const typographyOverride = (theme: Theme) =>
     pipe(
+        (x) => (console.log(x) as any) || x,
         assocPath(["typography", "fontFamily"], theme.font.regular),
         assocPath(["typography", "button", "fontFamily"], theme.font.monospace),
         (t) =>
@@ -35,7 +36,7 @@ const typographyOverride = (theme: Theme) =>
             )
     );
 
-export const makeMuiTheme = (muiTheme, theme: Theme) => {
+const makeMuiTheme_ = (muiTheme, theme: Theme, themeName: string) => {
     // const primaryPalette = {
     //     light: theme.highlight.secondary,
     //     main: theme.highlight.primary,
@@ -174,3 +175,8 @@ export const makeMuiTheme = (muiTheme, theme: Theme) => {
         })
     )(muiTheme) as DefaultTheme;
 };
+
+export const makeMuiTheme = memoizeWith(
+    (foo, bar, name) => name,
+    makeMuiTheme_
+);

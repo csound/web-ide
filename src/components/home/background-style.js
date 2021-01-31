@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import { headerHeight } from "@styles/constants";
 
 export const homeBackground = css`
     &:before {
@@ -13,4 +14,5 @@ export const homeBackground = css`
     }
     position: relative;
     padding: 24px;
+    top: ${headerHeight}px;
 `;

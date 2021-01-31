@@ -14,7 +14,7 @@ export const homePageHeading = (theme: Theme): SerializedStyles => css`
     font-family: ${theme.font.regular};
     font-size: 24px;
     color: ${theme.textColor};
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.43;
     letter-spacing: 0.01071em;
 `;

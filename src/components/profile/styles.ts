@@ -12,12 +12,6 @@ export const createButtonAddIcon = css`
 
 const profileStyles = (theme: MaterialTheme) =>
     createStyles({
-        root: {
-            fontFamily: "'Space Mono', monospace",
-            position: "absolute",
-            top: 0,
-            width: "100%"
-        },
         centerBox: {
             position: "absolute",
             width: "600px",

@@ -11,9 +11,9 @@ const WebIdeCssBaseline = ({ theme }: { theme: Theme }): React.ReactElement => (
 }
 
 html {
-    height: 100%;
-    overflow: hidden;
+  height: 100%;
 }
+
 html,
 body {
     padding: 0;
@@ -21,18 +21,15 @@ body {
 }
 
 body {
-    height: inherit;
-    min-height: 100%;
-    overflow: hidden;
     position: relative;
 }
 
 #root {
-    overflow: auto;
     position: relative;
-    height: calc(100% - ${headerHeight}px);
-    top: ${headerHeight}px;
-    bottom: 0;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
 }
 
 main {

@@ -1,12 +1,15 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
-// import { headerHeight, tabListHeight } from "@styles/constants";
-import { tabListHeight } from "@styles/constants";
+import { headerHeight, tabListHeight } from "@styles/constants";
 
 export const splitterRoot = css`
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    position: relative;
+    width: 100vw;
+    height: calc(100vh - ${headerHeight}px);
+    top: 0;
+    padding-top: ${headerHeight}px;
+    left: 0;
+    box-sizing: border-box;
 `;
 
 export const mainTabsSplitter = css`

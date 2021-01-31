@@ -196,6 +196,7 @@ export const ProjectCardContentTopHeader = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
 `;
 
@@ -278,6 +279,7 @@ export const ProjectCardContentBottomHeader = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 14px;
+    font-weight: 500;
     padding-top: 8px;
 `;
 

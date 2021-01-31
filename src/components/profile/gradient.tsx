@@ -1,4 +1,5 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
+import { headerHeight } from "@styles/constants";
 
 const shapes = (shapeIndex: number, theme: Theme) => {
     switch (shapeIndex) {
@@ -55,6 +56,16 @@ background-size:100px 100px;
 export const gradient = (shapeIndex: number) => (
     theme: Theme
 ): SerializedStyles => css`
-    ${shapes(shapeIndex, theme)}
-    min-height: 100vh;
+    &:after {
+        content: " ";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        ${shapes(shapeIndex, theme)}
+    }
+    position: relative;
+    top: ${headerHeight}px;
 `;
