@@ -63,7 +63,7 @@ interface IProjectCard {
 }
 
 export const ProjectCardContainer = styled.div<IProjectCard>`
-    height: 20vh;
+    height: 182px;
     z-index: 1;
     position: relative;
     background-color: black;

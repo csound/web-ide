@@ -51,7 +51,7 @@ export const doubleGridContainer = css`
     margin-top: 12px;
     display: grid;
     align-items: center;
-    min-height: 160px;
+    min-height: 190px;
     width: calc(100% + 12px);
 
     grid-template-columns: 1fr 1fr 1fr 1fr;
