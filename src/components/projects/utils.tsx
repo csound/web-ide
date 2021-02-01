@@ -67,9 +67,10 @@ export const addDocumentToEMFS = async (
         return;
     }
 
-    const steps = document.filename.split("/");
+    const steps = absolutePath.split("/").filter((p) => p.length > 0);
+
     if (steps.length > 1) {
-        csound.fs.mkdirpSync(dropLast(steps).join("/"));
+        csound.fs.mkdirpSync(dropLast(1, steps).join("/"));
     }
 
     if (document.type === "bin") {

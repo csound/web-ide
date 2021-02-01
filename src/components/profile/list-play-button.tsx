@@ -65,14 +65,17 @@ const ListPlayButton = ({
     }, [isPlaying, csoundStatus, currentlyPlayingProject, isStartingUp]);
 
     const buttonCallback = useCallback(
-        (event) => {
-            !isPlaying && !isStartingUp && setIsStartingUp(true);
+        async (event) => {
+            if (isStartingUp || isPlaying) {
+                return;
+            } else {
+                setIsStartingUp(true);
+            }
             isPaused
                 ? dispatch(resumePausedCsound())
                 : isPlaying && !hasError
                 ? dispatch(pauseCsound())
                 : dispatch(playListItem(projectUid));
-            event.stopPropagation();
         },
         [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]
     );

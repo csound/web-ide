@@ -95,10 +95,8 @@ export const downloadProjectOnce = (
     };
 };
 
-// TODO: optimize
 export const downloadAllProjectDocumentsOnce = (
-    projectUid: string,
-    csound: CsoundObj
+    projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const filesReference = await projects
@@ -119,27 +117,6 @@ export const downloadAllProjectDocumentsOnce = (
             {},
             allDocuments
         );
-
-        await allDocuments.forEach(async (document_) => {
-            if (document_.type !== "folder") {
-                const pathPrefix = (document_.path || [])
-                    .filter((p) => typeof p === "string")
-                    .map((documentUid) =>
-                        path([documentUid, "filename"], allDocumentsMap)
-                    );
-                const absolutePath = append(
-                    document_.filename,
-                    pathPrefix
-                ).join("/");
-
-                await addDocumentToEMFS(
-                    projectUid,
-                    csound,
-                    document_,
-                    absolutePath
-                );
-            }
-        });
 
         await dispatch({
             type: ADD_PROJECT_DOCUMENTS,

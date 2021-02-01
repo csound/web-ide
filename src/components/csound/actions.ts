@@ -12,7 +12,6 @@ import { selectActiveProject } from "@comp/projects/selectors";
 import { addDocumentToEMFS } from "@comp/projects/utils";
 import { saveAs } from "file-saver";
 import { isEmpty, path, pathOr, pipe, values } from "ramda";
-
 import { storageReference } from "@config/firestore";
 
 export const setCsoundPlayState = (
@@ -70,6 +69,39 @@ export const fetchCsound = async (dispatch: (any) => void): Promise<Csound> => {
     return Csound;
 };
 
+export const syncFs = async (
+    csound: CsoundObj,
+    projectUid: string,
+    storeState: IStore
+): Promise<void> => {
+    const documents = pipe(
+        pathOr({}, ["ProjectsReducer", "projects", projectUid, "documents"]),
+        values
+    )(storeState);
+
+    for (const document of documents) {
+        // reminder: paths are store by document ref and not
+        // the actual filesystem name
+        const realPath = document.path.map((documentId) =>
+            path(
+                [
+                    "ProjectsReducer",
+                    "projects",
+                    projectUid,
+                    "documents",
+                    documentId,
+                    "name"
+                ],
+                storeState
+            )
+        );
+        const filepath = isEmpty(realPath)
+            ? document.filename
+            : realPath.join("/") + "/" + document.filename;
+        await addDocumentToEMFS(projectUid, csound, document, filepath);
+    }
+};
+
 export const fetchSetStartCsound = (
     activeProjectUid: string,
     playCallback: (dispatch: any, csound: CsoundObj) => void
@@ -85,41 +117,8 @@ export const fetchSetStartCsound = (
         }
 
         const storeState: IStore = store.getState();
-        const documents = pipe(
-            pathOr({}, [
-                "ProjectsReducer",
-                "projects",
-                activeProjectUid,
-                "documents"
-            ]),
-            values
-        )(storeState);
-        for (const document of documents) {
-            // reminder: paths are store by document ref and not
-            // the actual filesystem name
-            const realPath = document.path.map((documentId) =>
-                path(
-                    [
-                        "ProjectsReducer",
-                        "projects",
-                        activeProjectUid,
-                        "documents",
-                        documentId,
-                        "name"
-                    ],
-                    storeState
-                )
-            );
-            const filepath = isEmpty(realPath)
-                ? document.filename
-                : realPath.join("/") + "/" + document.filename;
-            await addDocumentToEMFS(
-                activeProjectUid,
-                csoundObj,
-                document,
-                filepath
-            );
-        }
+
+        await syncFs(csoundObj, activeProjectUid, storeState);
         playCallback && (await playCallback(dispatch, csoundObj));
     };
 };
@@ -146,6 +145,8 @@ export const playCsdFromFs = (
             csoundStatus !== "initialized" && (await csoundObj.reset());
             csoundObj.setOption("-odac");
             csoundObj.setOption("-+msg_color=false");
+
+            await syncFs(csoundObj, projectUid, state);
             const result = await csoundObj.compileCsd(csdPath);
 
             if (result === 0) {
@@ -161,7 +162,6 @@ export const playCSDFromString = (
     projectUid: string,
     csd: string
 ): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
-    console.log("projectUid", projectUid, csd);
     return async (dispatch, csound) => {
         const cs =
             csound ||
@@ -173,7 +173,10 @@ export const playCSDFromString = (
             // cs.audioContext.resume();
             cs.setOption("-odac");
             cs.setOption("-+msg_color=false");
-            cs.compileCsd(csd);
+            const storeState = store.getState();
+            await syncFs(cs, projectUid, storeState);
+
+            cs.compileCsdText(csd);
             cs.start();
             dispatch(setCsoundPlayState("playing"));
         }
@@ -192,6 +195,10 @@ export const playORCFromString = (
             cs.setOption("-odac");
             cs.setOption("-+msg_color=false");
             cs.setOption("-d");
+
+            const storeState = store.getState();
+            await syncFs(cs, projectUid, storeState);
+
             cs.compileOrc(orc);
             cs.start();
             dispatch(setCsoundPlayState("playing"));

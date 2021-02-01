@@ -521,15 +521,6 @@ export const playListItem = (
         Csound = await fetchCsound(dispatch);
     }
 
-    let csound = state.csound.csound;
-
-    if (!csound) {
-        csound = await newCsound(Csound, dispatch);
-    } else {
-        await csound.terminateInstance();
-        csound = await newCsound(Csound, dispatch);
-    }
-
     const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
 
     if (projectUid === false) {
@@ -575,16 +566,22 @@ export const playListItem = (
         }
     }
 
-    if (
-        csound &&
-        (!projectIsCached || timestampMismatch || !projectHasLastModule)
-    ) {
+    if (!projectIsCached || timestampMismatch || !projectHasLastModule) {
         await downloadProjectOnce(projectUid)(dispatch);
-        await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
+        await downloadAllProjectDocumentsOnce(projectUid)(dispatch);
         await downloadTargetsOnce(projectUid)(dispatch);
         await getProjectLastModifiedOnce(projectUid)(dispatch);
         // recursion
-        return playListItem(projectUid)(dispatch, getState);
+        return await playListItem(projectUid)(dispatch, getState);
+    }
+
+    let csound = state.csound.csound;
+
+    if (!csound) {
+        csound = await newCsound(Csound, dispatch);
+    } else {
+        await csound.terminateInstance();
+        csound = await newCsound(Csound, dispatch);
     }
 
     const playAction = getPlayActionFromProject(projectUid, state);
