@@ -132,7 +132,6 @@ export const firestoreProjectToIProject = (
 ): IProject => ({
     projectUid: project.id || "",
     description: propOr("", "description", project),
-    // created: prop("created", project),
     documents: {},
     isPublic: propOr(false, "public", project),
     name: propOr("", "name", project),
@@ -151,8 +150,13 @@ export const convertProjectSnapToProject = async (
     const lastModified = await projectLastModified.doc(projSnap.id).get();
     const lastModifiedData = lastModified.exists && lastModified.data();
     const project = firestoreProjectToIProject(projData as IFirestoreProject);
+    project["projectUid"] = projSnap.id;
+
     if (lastModifiedData && lastModifiedData.target) {
         project["cachedProjectLastModified"] = lastModifiedData.target;
+    }
+    if (projData.created) {
+        project["created"] = projData.created;
     }
     return project;
 };

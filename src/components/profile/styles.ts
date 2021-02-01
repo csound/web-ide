@@ -114,12 +114,14 @@ export const settingsIcon = (theme: Theme): SerializedStyles => css`
     box-shadow: 0 1px 3px black, 0 1px 2px black;
     transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
     background-color: ${theme.highlightBackgroundAlt};
-    color: ${theme.settingsIcon};
     position: relative;
     border-radius: 50%;
     padding: 6px;
     margin: 4px;
-
+    color: ${theme.settingsIcon};
+    & svg {
+        fill: ${theme.settingsIcon}!important;
+    }
     &:after {
         content: "";
         width: 100%;
@@ -171,6 +173,9 @@ export const deleteIcon = (theme: Theme): SerializedStyles => css`
     transition: color 0.2s ease, background-color 0.2s ease, transform 0.5s ease;
     background-color: ${theme.highlightBackgroundAlt};
     color: ${theme.errorText};
+    & svg {
+        fill: ${theme.errorText}!important;
+    }
     position: relative;
     border-radius: 50%;
     padding: 6px;
@@ -225,6 +230,10 @@ export const publicIconContainer = css`
 export const publicIcon = (theme: Theme): SerializedStyles => css`
     ${deleteIcon(theme)}
     color: ${theme.altButtonBackground};
+    & svg {
+        fill: ${theme.altButtonBackground}!important;
+    }
+
     &:hover {
         color: ${theme.altButtonBackground};
         & svg {
