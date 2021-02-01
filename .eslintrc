@@ -52,6 +52,7 @@
         "unicorn/no-reduce": "off",
         "unicorn/no-array-for-each": "off",
         "unicorn/no-array-reduce": "off",
+        "unicorn/no-array-callback-reference": "off",
         "react/jsx-uses-react": "error",
         "react-hooks/exhaustive-deps": "error"
     },

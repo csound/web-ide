@@ -4,19 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 import Header from "@comp/header/header";
 import { homeBackground } from "./background-style";
 import { fetchPopularProjects } from "./actions";
-// import { debounce } from "lodash";
 import Search from "./search";
 import {
-    // selectSearchedProjects,
     selectPopularProjectsFetchOffset,
     selectPopularProjectsSlice
 } from "./selectors";
-// import { SEARCH_PROJECTS_SUCCESS } from "./types";
 
 const Home = (): React.ReactElement => {
     const dispatch = useDispatch();
-    // const [searchValue, setSearchValue] = useState("");
-    // const searchedProjects = useSelector(selectSearchedProjects);
 
     const [
         popularProjectsFetchOffset,
@@ -69,18 +64,6 @@ const Home = (): React.ReactElement => {
         const rootElement = document.querySelector("#root");
         rootElement && rootElement.scrollTo(0, 0);
     }, []);
-
-    // useEffect(() => {
-    //     if (searchValue === "" && searchedProjects.length === 0) {
-    //         dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
-    //     }
-    // }, [dispatch, searchValue, searchedProjects]);
-
-    // const handler = debounce((query: string, offset: number) => {
-    //     if (query !== "") {
-    //         dispatch(searchProjects(query, offset));
-    //     }
-    // }, 200);
 
     return (
         <>

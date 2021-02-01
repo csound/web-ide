@@ -283,8 +283,9 @@ margin-bottom: -50px;
  [data-rbd-drag-handle-context-id="0"] {
       cursor: inherit!important;
  }
-.MuiIconButton-label svg {
-fill: ${theme.buttonIcon};
+
+.MuiSvgIcon-root, .MuiIconButton-label svg {
+  fill: ${theme.buttonIcon};
 }
 
     `}</style>

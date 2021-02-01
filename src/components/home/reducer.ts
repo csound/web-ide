@@ -1,23 +1,12 @@
-import { assoc, concat, mergeAll, pipe } from "ramda";
+import { assoc, concat, isEmpty, mergeAll, pipe, when } from "ramda";
 import {
     HomeActionTypes,
-    // GET_TAGS,
-    GET_STARS,
-    GET_PROJECT_LAST_MODIFIED,
-    GET_DISPLAYED_STARRED_PROJECTS,
-    GET_FEATURED_PROJECT_USER_PROFILES,
-    GET_RANDOM_PROJECT_USER_PROFILES,
-    GET_POPULAR_PROJECT_USER_PROFILES,
-    GET_SEARCHED_PROJECT_USER_PROFILES,
-    GET_DISPLAYED_RANDOM_PROJECTS,
+    ADD_USER_PROFILES,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
     FETCH_POPULAR_PROJECTS,
     SET_POPULAR_PROJECTS_OFFSET
 } from "./types";
-import { Timestamp } from "@config/firestore";
-import { IFirestoreProject } from "@db/types";
-// import { ISearchResultItem } from "@db/search";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
 
@@ -26,19 +15,11 @@ export interface IHomeReducer {
     popularProjectsOffset: number;
     popularProjectsTotalRecords: number;
     profiles: { [uid: string]: IProfile };
-    // readonly tags: any;
-    readonly stars: Record<string, Timestamp>;
-    readonly starsTotal: number;
-    readonly projectLastModified: Timestamp | undefined;
-    readonly displayedStarredProjects: IFirestoreProject[];
-    readonly displayedRandomProjects: IFirestoreProject[];
-    readonly featuredProjectUserProfiles: IFirestoreProject[];
-    readonly popularProjectUserProfiles: IFirestoreProject[];
-    readonly randomProjectUserProfiles: IFirestoreProject[];
-    readonly searchedProjectUserProfiles: IFirestoreProject[];
-    readonly searchedProjects: IFirestoreProject[];
-    readonly searchedProjectsTotal: number;
-    readonly searchProjectsRequest: boolean;
+    searchProjectsRequest: boolean;
+    searchResult: IProject[];
+    searchResultTotalRecords: number;
+    searchPaginationOffset: number;
+    searchQuery: string;
 }
 
 const INITIAL_STATE: IHomeReducer = {
@@ -46,19 +27,11 @@ const INITIAL_STATE: IHomeReducer = {
     popularProjectsOffset: -1,
     popularProjectsTotalRecords: -1,
     profiles: {},
-    // tags: false,
-    stars: {},
-    starsTotal: 0,
-    projectLastModified: undefined,
-    displayedStarredProjects: [],
-    displayedRandomProjects: [],
-    featuredProjectUserProfiles: [],
-    popularProjectUserProfiles: [],
-    randomProjectUserProfiles: [],
-    searchedProjectUserProfiles: [],
-    searchedProjects: [],
-    searchedProjectsTotal: 0,
-    searchProjectsRequest: false
+    searchProjectsRequest: false,
+    searchResult: [],
+    searchResultTotalRecords: -1,
+    searchPaginationOffset: -1,
+    searchQuery: ""
 };
 
 const HomeReducer = (
@@ -67,80 +40,32 @@ const HomeReducer = (
 ): IHomeReducer => {
     switch (action.type) {
         case SEARCH_PROJECTS_REQUEST: {
-            return {
-                ...state,
-                searchProjectsRequest: true
-            };
+            return pipe(
+                assoc("searchProjectsRequest", !isEmpty(action.query)),
+                assoc("searchQuery", action.query),
+                assoc(
+                    "searchPaginationOffset",
+                    isEmpty(action.query) ? -1 : action.offset
+                ),
+                when(
+                    () => isEmpty(action.query),
+                    assoc("searchResultTotalRecords", -1)
+                )
+            )(state);
         }
         case SEARCH_PROJECTS_SUCCESS: {
-            return {
-                ...state,
-                searchedProjects: action.payload.data || false,
-                searchedProjectsTotal: action.payload.totalRecords || 0,
-                searchProjectsRequest: false
-            };
+            return pipe(
+                assoc("searchResult", action.result || []),
+                assoc("searchProjectsRequest", false),
+                assoc("searchResultTotalRecords", action.totalRecords)
+            )(state);
         }
-        case GET_FEATURED_PROJECT_USER_PROFILES: {
-            return {
-                ...state,
-                featuredProjectUserProfiles: action.payload
-            };
-        }
-        case GET_RANDOM_PROJECT_USER_PROFILES: {
-            return {
-                ...state,
-                randomProjectUserProfiles: action.payload
-            };
-        }
-        case GET_POPULAR_PROJECT_USER_PROFILES: {
+        case ADD_USER_PROFILES: {
             return assoc(
                 "profiles",
                 mergeAll([action.payload, state.profiles]),
                 state
             );
-        }
-        case GET_SEARCHED_PROJECT_USER_PROFILES: {
-            return {
-                ...state,
-                searchedProjectUserProfiles: action.payload
-            };
-        }
-        case GET_DISPLAYED_STARRED_PROJECTS: {
-            return {
-                ...state,
-                displayedStarredProjects: action.payload
-            };
-        }
-        case GET_DISPLAYED_RANDOM_PROJECTS: {
-            return {
-                ...state,
-                displayedRandomProjects: action.payload
-            };
-        }
-        // case GET_DISPLAYED_RECENT_PROJECTS: {
-        //     return {
-        //         ...state,
-        //         displayedRecentProjects: action.payload
-        //     };
-        // }
-        case GET_PROJECT_LAST_MODIFIED: {
-            return {
-                ...state,
-                projectLastModified: action.payload
-            };
-        }
-        // case GET_TAGS: {
-        //     return {
-        //         ...state,
-        //         tags: action.payload
-        //     };
-        // }
-        case GET_STARS: {
-            return {
-                ...state,
-                stars: action.payload.data,
-                starsTotal: action.payload.totalRecords
-            };
         }
         case FETCH_POPULAR_PROJECTS: {
             return pipe(

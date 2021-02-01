@@ -4,7 +4,7 @@ import {
     getFirebaseTimestamp,
     projectLastModified
 } from "@config/firestore";
-import { IFirestoreDocument } from "@db/types";
+import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@csound/browser";
 import {
@@ -127,25 +127,32 @@ export const convertDocumentSnapToDocumentsMap = (
         }, {})
     )(documentsToAdd);
 
+export const firestoreProjectToIProject = (
+    project: IFirestoreProject
+): IProject => ({
+    projectUid: project.id || "",
+    description: propOr("", "description", project),
+    // created: prop("created", project),
+    documents: {},
+    isPublic: propOr(false, "public", project),
+    name: propOr("", "name", project),
+    userUid: propOr("", "userUid", project),
+    iconBackgroundColor: prop("iconBackgroundColor", project),
+    iconForegroundColor: prop("iconForegroundColor", project),
+    iconName: prop("iconName", project),
+    tags: [],
+    stars: {}
+});
+
 export const convertProjectSnapToProject = async (
     projSnap: firebase.firestore.QueryDocumentSnapshot
 ): Promise<IProject> => {
     const projData = projSnap.data();
     const lastModified = await projectLastModified.doc(projSnap.id).get();
     const lastModifiedData = lastModified.exists && lastModified.data();
-    return {
-        projectUid: projSnap.id,
-        description: propOr("", "description", projData),
-        created: prop("created", projData),
-        documents: {},
-        isPublic: propOr(false, "public", projData),
-        name: propOr("", "name", projData),
-        userUid: propOr("", "userUid", projData),
-        iconBackgroundColor: prop("iconBackgroundColor", projData),
-        iconForegroundColor: prop("iconForegroundColor", projData),
-        iconName: prop("iconName", projData),
-        tags: [],
-        stars: {},
-        cachedProjectLastModified: lastModifiedData && lastModifiedData.target
-    } as IProject;
+    const project = firestoreProjectToIProject(projData as IFirestoreProject);
+    if (lastModifiedData && lastModifiedData.target) {
+        project["cachedProjectLastModified"] = lastModifiedData.target;
+    }
+    return project;
 };

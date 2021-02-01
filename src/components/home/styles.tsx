@@ -125,3 +125,10 @@ export const searchField = (theme: Theme): SerializedStyles => css`
         }
     }
 `;
+
+export const searchLoaderSpinner = css`
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;

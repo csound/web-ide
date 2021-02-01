@@ -1,14 +1,10 @@
 import React from "react";
-// import { SVGComponents } from "@comp/profile/svg-paths";
-// import { Transition, TransitionGroup } from "react-transition-group";
-// import { path } from "ramda";
 import ProjectAvatar from "@elem/project-avatar";
 import ListPlayButton from "@comp/profile/list-play-button";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
 import {
     ProjectCardContainer,
-    // ProjectCardSVGContainer,
     ProjectCardContentContainer,
     ProjectCardContentTop,
     ProjectCardContentBottom,
@@ -20,7 +16,6 @@ import {
     ProjectCardContentBottomDescription,
     Photo,
     ProjectCardContentBottomID
-    // ProjectCardSpinnerContainer
 } from "./home-ui";
 import * as SS from "./styles";
 

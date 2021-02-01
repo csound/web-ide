@@ -1,6 +1,6 @@
 import React from "react";
 import Loader from "react-loader-spinner";
-import { path, range } from "ramda";
+import { isEmpty, path, range } from "ramda";
 import { useSelector } from "react-redux";
 import { IStore } from "@store/types";
 import { IProject } from "@comp/projects/types";
@@ -39,12 +39,17 @@ const PopularProjects = ({
     hasPrevious: boolean;
 }): React.ReactElement => {
     const theme: Theme = useTheme();
+
     const profiles = useSelector((store: IStore) => {
         return path(["HomeReducer", "profiles"], store);
     });
 
     const isLoading = useSelector((store: IStore) => {
-        return path(["HomeReducer", "popularProjectsTotalRecords"], store) < 0;
+        const totalRecords = path(
+            ["HomeReducer", "popularProjectsTotalRecords"],
+            store
+        );
+        return totalRecords < 0 || (isEmpty(projects) && totalRecords > 0);
     });
 
     return (
