@@ -1,10 +1,11 @@
-import PopularProjects from "./popular-projects";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "@comp/header/header";
+import Search from "./search";
+import PopularProjects from "./popular-projects";
+import RandomProjects from "./random-projects";
 import { homeBackground } from "./background-style";
 import { fetchPopularProjects } from "./actions";
-import Search from "./search";
 import {
     selectPopularProjectsFetchOffset,
     selectPopularProjectsSlice
@@ -85,6 +86,7 @@ const Home = (): React.ReactElement => {
                     }
                     hasPrevious={currentPopularProjectsOffset > 0}
                 />
+                <RandomProjects />
             </div>
         </>
     );

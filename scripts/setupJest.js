@@ -11,7 +11,10 @@ Object.defineProperty(window, "scrollTo", {
 });
 
 fetch.mockResponse((req) => {
-    if (req.url.endsWith("list/stars/8/0/count/desc")) {
+    if (
+        req.url.endsWith("list/stars/8/0/count/desc") ||
+        req.url.includes("random/projects/")
+    ) {
         return {
             then: function () {
                 return {

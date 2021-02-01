@@ -4,8 +4,10 @@ import {
     ADD_USER_PROFILES,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
-    FETCH_POPULAR_PROJECTS,
-    SET_POPULAR_PROJECTS_OFFSET
+    ADD_POPULAR_PROJECTS,
+    ADD_RANDOM_PROJECTS,
+    SET_POPULAR_PROJECTS_OFFSET,
+    SET_RANDOM_PROJECTS_LOADING
 } from "./types";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
@@ -20,6 +22,8 @@ export interface IHomeReducer {
     searchResultTotalRecords: number;
     searchPaginationOffset: number;
     searchQuery: string;
+    randomProjects: IProject[];
+    randomProjectsLoading: boolean;
 }
 
 const INITIAL_STATE: IHomeReducer = {
@@ -31,7 +35,9 @@ const INITIAL_STATE: IHomeReducer = {
     searchResult: [],
     searchResultTotalRecords: -1,
     searchPaginationOffset: -1,
-    searchQuery: ""
+    searchQuery: "",
+    randomProjects: [],
+    randomProjectsLoading: true
 };
 
 const HomeReducer = (
@@ -67,7 +73,7 @@ const HomeReducer = (
                 state
             );
         }
-        case FETCH_POPULAR_PROJECTS: {
+        case ADD_POPULAR_PROJECTS: {
             return pipe(
                 assoc(
                     "popularProjects",
@@ -78,6 +84,14 @@ const HomeReducer = (
         }
         case SET_POPULAR_PROJECTS_OFFSET: {
             return assoc("popularProjectsOffset", action.newOffset, state);
+        }
+
+        case ADD_RANDOM_PROJECTS: {
+            return assoc("randomProjects", action.payload || [])(state);
+        }
+
+        case SET_RANDOM_PROJECTS_LOADING: {
+            return assoc("randomProjectsLoading", action.isLoading)(state);
         }
 
         default: {

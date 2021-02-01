@@ -94,6 +94,7 @@ const Header = (): React.ReactElement => {
         <div css={SS.userMenu}>
             <IconButton
                 aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
+                data-tip="UserMenu"
                 aria-haspopup="true"
                 color="inherit"
                 onClick={handleProfileMenuOpen}
@@ -155,6 +156,7 @@ const Header = (): React.ReactElement => {
             <IconButton
                 color="inherit"
                 aria-label="open drawer"
+                data-tip="Open drawer"
                 onClick={() => setIsDrawerOpen(true)}
                 edge="start"
                 css={SS.menuButton}

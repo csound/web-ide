@@ -65,7 +65,7 @@ export default function CsLogo(properties: ILogoContainer): React.ReactElement {
     */
 
     return (
-        <Link to="/">
+        <Link to="/" data-tip="Go back home">
             <LogoContainer
                 size={properties.size}
                 interactive={properties.interactive}

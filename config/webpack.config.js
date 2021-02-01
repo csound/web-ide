@@ -324,7 +324,7 @@ module.exports = function (webpackEnv = "production") {
             new ForkTsCheckerWebpackPlugin({
                 typescript: {
                     enabled: true,
-                    build: true,
+                    build: false,
                     typescriptPath: require.resolve("typescript"),
                     configFile: path.resolve(__dirname, "../tsconfig.json")
                 },

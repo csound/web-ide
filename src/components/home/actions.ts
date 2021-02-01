@@ -6,10 +6,12 @@ import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 import {
     ADD_USER_PROFILES,
+    ADD_RANDOM_PROJECTS,
+    ADD_POPULAR_PROJECTS,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
-    FETCH_POPULAR_PROJECTS,
     SET_POPULAR_PROJECTS_OFFSET,
+    SET_RANDOM_PROJECTS_LOADING,
     HomeActionTypes
 } from "./types";
 import { IProject } from "@comp/projects/types";
@@ -134,10 +136,79 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
             }
 
             dispatch({
-                type: FETCH_POPULAR_PROJECTS,
+                type: ADD_POPULAR_PROJECTS,
                 payload: popularProjects,
                 totalRecords: starredProjects.totalRecords
             });
         }
+    };
+};
+
+export const fetchRandomProjects = () => {
+    return async (
+        dispatch: (action: HomeActionTypes) => Promise<void>,
+        getState: () => IStore
+    ): Promise<void> => {
+        dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: true });
+
+        const state = getState().HomeReducer;
+
+        const randomProjectsRequest = await fetch(
+            `${searchURL}/random/projects/8`
+        );
+
+        const randomProjects = await randomProjectsRequest.json();
+
+        const randomProjectsIDs = randomProjects.data.map(
+            (item: IStarredProject) => item.id
+        );
+
+        if (!isEmpty(randomProjectsIDs)) {
+            const randomProjectsSnapshots = await projects
+                .where("public", "==", true)
+                .where(
+                    firebase.firestore.FieldPath.documentId(),
+                    "in",
+                    randomProjectsIDs
+                )
+                .get();
+
+            const randomProjects: IProject[] = await Promise.all(
+                randomProjectsSnapshots.docs.map(
+                    async (snap) => await convertProjectSnapToProject(snap)
+                )
+            );
+
+            const userIDs = pluck("userUid", randomProjects);
+
+            const missingProfiles = difference(userIDs, keys(state.profiles));
+
+            if (!isEmpty(missingProfiles)) {
+                const projectProfiles = {};
+
+                const profilesQuery = await profiles
+                    .where(
+                        firebase.firestore.FieldPath.documentId(),
+                        "in",
+                        missingProfiles
+                    )
+                    .get();
+
+                profilesQuery.forEach((snapshot) => {
+                    projectProfiles[snapshot.id] = snapshot.data();
+                });
+
+                dispatch({
+                    type: ADD_USER_PROFILES,
+                    payload: projectProfiles
+                });
+            }
+
+            dispatch({
+                type: ADD_RANDOM_PROJECTS,
+                payload: randomProjects
+            });
+        }
+        dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: false });
     };
 };

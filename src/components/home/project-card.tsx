@@ -1,4 +1,6 @@
 import React from "react";
+import Loader from "react-loader-spinner";
+import { Theme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
 import ListPlayButton from "@comp/profile/list-play-button";
 import { IProject } from "@comp/projects/types";
@@ -18,6 +20,24 @@ import {
     ProjectCardContentBottomID
 } from "./home-ui";
 import * as SS from "./styles";
+
+export const ProjectCardSkeleton = ({
+    theme
+}: {
+    theme: Theme;
+}): React.ReactElement => (
+    <div css={SS.cardLoderSkeleton}>
+        <span className="skeleton-photo" />
+        <span className="skeleton-name" />
+        <span className="skeleton-description" />
+        <Loader
+            type="Bars"
+            color={theme.altTextColor}
+            height={100}
+            width={100}
+        />
+    </div>
+);
 
 const ProjectCard = ({
     projectIndex,

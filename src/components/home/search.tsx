@@ -60,6 +60,7 @@ const Search = (): React.ReactElement => {
                     <>
                         <IconButton
                             aria-label="left"
+                            data-tip="Previous results"
                             css={SS.paginationButton(true)}
                             style={{ right: 48 }}
                             onClick={() =>
@@ -79,6 +80,7 @@ const Search = (): React.ReactElement => {
                         </IconButton>
                         <IconButton
                             aria-label="right"
+                            data-tip="Next results"
                             css={SS.paginationButton(true)}
                             onClick={() =>
                                 doSearch(

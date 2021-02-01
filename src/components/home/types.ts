@@ -4,8 +4,10 @@ export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
 export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
 
 export const ADD_USER_PROFILES = "HOME.ADD_USER_PROFILES";
-export const FETCH_POPULAR_PROJECTS = "HOME.FETCH_POPULAR_PROJECTS";
+export const ADD_RANDOM_PROJECTS = "HOME.ADD_RANDOM_PROJECTS";
+export const ADD_POPULAR_PROJECTS = "HOME.ADD_POPULAR_PROJECTS";
 export const SET_POPULAR_PROJECTS_OFFSET = "HOME.SET_POPULAR_PROJECTS_OFFSET";
+export const SET_RANDOM_PROJECTS_LOADING = "HOME.SET_RANDOM_PROJECTS_LOADING";
 
 interface SearchProjectsRequest {
     type: typeof SEARCH_PROJECTS_REQUEST;
@@ -24,8 +26,8 @@ interface AddUserProfiles {
     payload: any;
 }
 
-interface FetchPopularProjectsAction {
-    type: typeof FETCH_POPULAR_PROJECTS;
+interface AddPopularProjectsAction {
+    type: typeof ADD_POPULAR_PROJECTS;
     payload: IProject[];
     totalRecords: number;
 }
@@ -35,9 +37,21 @@ interface SetPopularProjectsOffsetAction {
     newOffset: number;
 }
 
+interface AddRandomProjectsAction {
+    type: typeof ADD_RANDOM_PROJECTS;
+    payload: IProject[];
+}
+
+interface SetRandomProjectsLoading {
+    type: typeof SET_RANDOM_PROJECTS_LOADING;
+    isLoading: boolean;
+}
+
 export type HomeActionTypes =
     | SearchProjectsRequest
     | SearchProjectsSuccess
     | AddUserProfiles
-    | FetchPopularProjectsAction
-    | SetPopularProjectsOffsetAction;
+    | AddPopularProjectsAction
+    | AddRandomProjectsAction
+    | SetPopularProjectsOffsetAction
+    | SetRandomProjectsLoading;

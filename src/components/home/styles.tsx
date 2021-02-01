@@ -132,3 +132,12 @@ export const searchLoaderSpinner = css`
     align-items: center;
     justify-content: center;
 `;
+
+export const shuffleButton = (theme: Theme): SerializedStyles => css`
+    position: absolute;
+    right: 0;
+    bottom: 6px;
+    svg {
+        fill: ${theme.textColor} !important;
+    }
+`;
