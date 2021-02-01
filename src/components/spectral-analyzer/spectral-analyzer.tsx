@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { path } from "ramda";
+import { assoc, path } from "ramda";
 import { CsoundObj } from "@csound/browser";
+import { ICsoundStatus } from "@comp/csound/types";
 import { scaleLinear } from "d3-scale";
 
 type ISpectralAnalyzerProperties = {
@@ -42,20 +43,30 @@ const connectVisualizer = async (
         }
 
         //console.log("Connect Visualizer!");
-
         const node = await csound.getNode();
-        if(node === undefined) {
+        if (node === undefined) {
             return;
         }
+
         const context = node.context;
         const scopeNode = context.createAnalyser();
+
         scopeNode.fftSize = 2048;
         node.connect(scopeNode);
 
+        let isConnected = true;
+
         const mags = () => {
             resize(canvas);
+
             const width = canvas.width;
             const height = canvas.height;
+
+            if (!isConnected) {
+                context_.clearRect(0, 0, width, height);
+                return;
+            }
+
             const freqData = new Uint8Array(scopeNode.frequencyBinCount);
 
             const scaleY = scaleLinear().domain([0, 256]).range([height, 0]);
@@ -80,44 +91,76 @@ const connectVisualizer = async (
             context_.stroke();
             requestAnimationFrame(mags);
         };
+
         mags();
 
-        return scopeNode;
-    }
-};
+        const disconnectionCallback = () => {
+            if (isConnected) {
+                isConnected = false;
+                node.disconnect(scopeNode);
+            }
+        };
 
-const disconnectVisualizer = async (csound: CsoundObj, scopeNode: AnalyserNode) => {
-    const node = await csound.getNode();
-    if(node) {
-        node.disconnect(scopeNode);
+        return disconnectionCallback;
     }
 };
 
 const SpectralAnalyzer = ({
     classes
 }: ISpectralAnalyzerProperties): React.ReactElement => {
+    const [scopeNodeState, setScopeNodeState]: [
+        {
+            status: "init" | "running";
+            scopeNodeDisconnector: (() => void) | undefined;
+        },
+        any
+    ] = useState({
+        status: "init",
+        scopeNodeDisconnector: undefined
+    });
+
     const canvasReference = useRef() as CanvasReference;
 
     const csound: CsoundObj | undefined = useSelector(
         path(["csound", "csound"])
     );
 
-    useEffect(() => {
-        let scopeNode: Promise<AnalyserNode | undefined>;
-        if (csound && canvasReference.current) {
-            scopeNode = connectVisualizer(csound, canvasReference);
-        }
+    const csoundStatus: ICsoundStatus = useSelector(path(["csound", "status"]));
 
-        return () => {
-            if (csound && scopeNode) {
-                scopeNode.then(node => {
-                    if(node) {
-                        disconnectVisualizer(csound, node);
-                    }
-                })
+    useEffect(() => {
+        if (
+            ["stopped", "error"].includes(csoundStatus) &&
+            scopeNodeState.status === "running"
+        ) {
+            if (csound && scopeNodeState.scopeNodeDisconnector) {
+                scopeNodeState.scopeNodeDisconnector();
             }
+            setScopeNodeState({
+                status: "init",
+                scopeNodeDisconnector: undefined
+            });
+        }
+        if (
+            csound &&
+            csoundStatus === "playing" &&
+            scopeNodeState.status !== "running"
+        ) {
+            setScopeNodeState(assoc("status", "running", scopeNodeState));
+            connectVisualizer(
+                csound,
+                canvasReference
+            ).then((scopeNodeDisconnector) =>
+                setScopeNodeState({ status: "running", scopeNodeDisconnector })
+            );
+        }
+    }, [csound, csoundStatus, scopeNodeState]);
+
+    useEffect(() => {
+        return () => {
+            scopeNodeState.scopeNodeDisconnector &&
+                scopeNodeState.scopeNodeDisconnector();
         };
-    }, [canvasReference, csound]);
+    }, [canvasReference, scopeNodeState]);
 
     return (
         <canvas
