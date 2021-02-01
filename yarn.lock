@@ -15444,7 +15444,7 @@ workbox-broadcast-update@^6.1.0:
   dependencies:
     workbox-core "^6.1.0"
 
-workbox-build@^6.0.2:
+workbox-build@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/workbox-build/-/workbox-build-6.1.0.tgz#e0ba4a0004da1079e934c7452c72c92ef7b52cba"
   integrity sha512-xJPqTEf+Pg9KAoTrNeVWpMjqi4cJIRn14i02bZjjbHsLNN38qrqc8xwAW48TwoPCYLjp104ST164/3RDgrc7yw==
@@ -15578,17 +15578,17 @@ workbox-sw@^6.1.0:
   resolved "https://registry.yarnpkg.com/workbox-sw/-/workbox-sw-6.1.0.tgz#dfaca1029264af71f13a90fdfb16cf8d64ed0537"
   integrity sha512-e2jnIWSmNrpO9Psy4D6euDdRUW8FTXAdMxOj5O02gxa01fri1kfTSM9irDnTGKUiSGc+hlycsvzGdr8bnvzDiA==
 
-workbox-webpack-plugin@6.0.2:
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/workbox-webpack-plugin/-/workbox-webpack-plugin-6.0.2.tgz#a7fc0499bc6b5cfa7ebf8d71d8da00be93c9a112"
-  integrity sha512-HvzXLyaOD+6pEfNNKZYheRvHk9fVkIL9Rp6CHCd2LowF7M9YMEj8zh2Uuf5IEav6NZ02FR53zWnznO8Imv+fVQ==
+workbox-webpack-plugin@6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/workbox-webpack-plugin/-/workbox-webpack-plugin-6.1.0.tgz#7090533aed07d000181f5686b5cc5f8c5fe36e06"
+  integrity sha512-uRmImfQghNmNF/iyPJ+MS0o2Z9E6kExZRSZIDOhnf1v+Mw1ixxx3n9fuTvTuCDvrUksaXcVEkvhagr12kfkEYA==
   dependencies:
     fast-json-stable-stringify "^2.1.0"
     pretty-bytes "^5.4.1"
     source-map-url "^0.4.0"
     upath "^1.2.0"
     webpack-sources "^1.4.3"
-    workbox-build "^6.0.2"
+    workbox-build "^6.1.0"
 
 workbox-window@^6.1.0:
   version "6.1.0"
