@@ -37,7 +37,7 @@ const MobileTabs = ({
 
     const MobileManual = (
         <div css={SS.mobileManual}>
-            <CsoundManualWindow manualDrag={false} projectUid={projectUid} />
+            <CsoundManualWindow projectUid={projectUid} />
         </div>
     );
 

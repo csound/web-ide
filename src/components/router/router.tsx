@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Provider, useDispatch } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
@@ -40,11 +40,36 @@ const EditorLayout = (properties: any) => {
     );
 };
 
-const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => {
-    return (
+const CsoundManualWithStyleOverrides = ({
+    theme,
+    ...routerProperties
+}: any) => {
+    const [isMounted, setIsMounted] = useState(false);
+    const [{ fetched, Csound }, setFetchState]: [
+        { fetched: boolean; Csound: any },
+        any
+    ] = useState({ fetched: false, Csound: undefined });
+
+    useEffect(() => {
+        if (!isMounted) {
+            setIsMounted(true);
+            import("@csound/browser").then(({ Csound }) => {
+                setFetchState({ fetched: true, Csound });
+            });
+        }
+    }, [isMounted, setIsMounted, fetched, Csound, setFetchState]);
+
+    return !fetched ? (
+        <></>
+    ) : (
         <div style={{ overflow: "hidden" }}>
             <style>{`#root {position: absolute!important; height: 100%!important;}`}</style>
-            <CsoundManual theme={theme} codeMirrorPainter={CodeMirrorPainter} />
+            <CsoundManual
+                {...routerProperties}
+                theme={theme}
+                codeMirrorPainter={CodeMirrorPainter}
+                Csound={Csound}
+            />
         </div>
     );
 };
@@ -61,15 +86,12 @@ const RouterComponent = (): React.ReactElement => {
                     )}
                 />
                 <Route
-                    path="/manual/"
-                    render={() => (
-                        <CsoundManualWithStyleOverrides theme={theme} />
-                    )}
-                />
-                <Route
-                    path="/manual/:id"
-                    render={() => (
-                        <CsoundManualWithStyleOverrides theme={theme} />
+                    path="/manual/:id?"
+                    render={(routerProperties) => (
+                        <CsoundManualWithStyleOverrides
+                            theme={theme}
+                            {...routerProperties}
+                        />
                     )}
                 />
                 <Route path="/profile/:username?" component={Profile} />

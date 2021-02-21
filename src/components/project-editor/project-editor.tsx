@@ -32,7 +32,7 @@ import AudioEditor from "../audio-editor/audio-editor";
 import { useTheme } from "@emotion/react";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
-// import CsoundManualWindow from "./csound-manual";
+import CsoundManualWindow from "./csound-manual";
 import FileTree from "../file-tree";
 import {
     storeEditorKeyboardCallbacks,
@@ -325,9 +325,9 @@ const ProjectEditor = ({
         </Tabs>
     );
 
-    // const isManualVisible = useSelector(
-    //     (store: IStore) => store.ProjectEditorReducer.manualVisible
-    // );
+    const isManualVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.manualVisible
+    );
 
     // const isFileTreeVisible = useSelector(
     //     (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
@@ -371,7 +371,21 @@ const ProjectEditor = ({
                         defaultSize="80%"
                     >
                         <FileTree />
-                        <MainSection tabDock={tabDock} />
+
+                        {isManualVisible ? (
+                            <SplitPane
+                                primary="first"
+                                split="vertical"
+                                minSize="80%"
+                                maxSize="0"
+                                defaultSize="60%"
+                            >
+                                <MainSection tabDock={tabDock} />
+                                <CsoundManualWindow projectUid={projectUid} />
+                            </SplitPane>
+                        ) : (
+                            <MainSection tabDock={tabDock} />
+                        )}
                     </SplitPane>
                 </div>
             </DnDProvider>

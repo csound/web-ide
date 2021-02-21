@@ -11,10 +11,8 @@ import { setManualPanelOpen } from "./actions";
 import * as SS from "./styles";
 
 const ManualWindow = ({
-    manualDrag,
     projectUid
 }: {
-    manualDrag: boolean;
     projectUid: string;
 }): React.ReactElement => {
     const dispatch = useDispatch();
@@ -24,7 +22,9 @@ const ManualWindow = ({
         (store: IStore) => store.ProjectEditorReducer.manualLookupString
     );
 
-    // const onManualMessage = (event_) => {};
+    // const onManualMessage = (event_) => {
+    //     console.log("ON MAN MSG", event_, theme);
+    // };
 
     useEffect(() => {
         sessionStorage.setItem(projectUid + ":manualVisible", "true");
@@ -62,17 +62,6 @@ const ManualWindow = ({
                     </span>
                 </p>
             </div>
-            {manualDrag && (
-                <div
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        zIndex: 200,
-                        position: "absolute",
-                        top: 0
-                    }}
-                />
-            )}
         </div>
     );
 };

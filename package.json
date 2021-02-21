@@ -22,7 +22,6 @@
         "react-autosuggest": "^10.1.0",
         "react-beautiful-dnd": "^13.0.0",
         "react-beforeunload": "^2.4.0",
-        "react-codemirror2": "^7.2.1",
         "react-color": "^2.19.3",
         "react-debounce-input": "^3.2.3",
         "react-dev-utils": "^11.0.1",
@@ -99,7 +98,7 @@
         "concurrently": "^5.3.0",
         "connected-react-router": "^6.8.0",
         "cross-env": "^7.0.3",
-        "csound-manual-react": "^1.0.0-alpha16",
+        "csound-manual-react": "^1.0.0-alpha18",
         "css-loader": "5.0.1",
         "d3-scale": "^3.2.3",
         "dom-to-image-more": "^2.8.0",
@@ -170,9 +169,7 @@
     },
     "resolutions": {
         "react-iframe-comm/react": "^17.0.1",
-        "react-iframe-comm/react-dom": "^17.0.1",
-        "csound-manual-react/react": "^17.0.1",
-        "csound-manual-react/react-dom": "^17.0.1"
+        "react-iframe-comm/react-dom": "^17.0.1"
     },
     "engines": {
         "node": ">=15"
