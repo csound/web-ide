@@ -72,3 +72,13 @@ export const mobileFileTree = (theme: Theme): SerializedStyles => css`
         padding: 0 !important;
     }
 `;
+
+export const heightFix = css`
+    height: 100%;
+    & > div {
+        height: 100%;
+    }
+    & > div > div:nth-of-type(2) {
+        height: 100%;
+    }
+`;

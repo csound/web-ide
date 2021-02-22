@@ -62,13 +62,11 @@ a {text-decoration: none;}
 }
 
 .Resizer {
-  background: #000;
   opacity: 0.2;
   z-index: 1;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 1px 5px 0 rgb(0 0 0 / 12%), 0 3px 1px -2px rgb(0 0 0 / 20%);
 }
 
 .Resizer:hover {
@@ -79,30 +77,39 @@ a {text-decoration: none;}
 .Resizer.horizontal {
   height: 2px;
   margin: 0;
-  border-top: 2px solid rgba(255, 255, 255, 0);
-  border-bottom: 1px solid rgba(255, 255, 255, 0);
   cursor: row-resize;
   width: 100%;
 }
 
+.Resizer.vertical::before {
+    width: 3px;
+    height: 100%;
+    background-color: black;
+    content: "";
+    margin: 0 auto;
+    position: absolute;
+    top: 0; left: -2px;
+    z-index: -1;
+  }
+
 .Resizer.horizontal:hover {
   opacity: 0.5;
-  border-top: 3px solid rgba(0, 0, 0, 0.5);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
 }
 
 .Resizer.vertical {
+  position: relative;
+  top: 0;
+  left: 5px;
   width: 2px;
-  margin: 0;
-  border-left: 1px solid rgba(255, 255, 255, 0);
-  border-right: 1px solid rgba(255, 255, 255, 0);
+  height: 100%;
+  padding: 5px;
+  margin: 0 -5px;
   cursor: col-resize;
+  z-index: 1;
 }
 
 .Resizer.vertical:hover {
   opacity: 0.5;
-  border-left: 1px solid rgba(0, 0, 0, 0.5);
-  border-right: 1px solid rgba(0, 0, 0, 0.5);
 }
 .Resizer.disabled {
   cursor: not-allowed;
@@ -136,7 +143,7 @@ a {text-decoration: none;}
    height: 100%;
    outline: none;
    position: relative;
-margin-bottom: -50px;
+   margin-bottom: -50px;
     margin-right: -50px;
     padding-bottom: 50px;
 }
@@ -159,6 +166,26 @@ margin-bottom: -50px;
     left: 0;
     position: absolute;
     z-index: 6;
+}
+
+.CodeMirror-simplescroll-horizontal,
+.CodeMirror-simplescroll-vertical {
+  background: ${theme.highlightBackgroundAlt}!important;
+}
+
+.CodeMirror-simplescroll-horizontal div,
+.CodeMirror-simplescroll-vertical div {
+  background: ${theme.scrollbar}!important;
+  border-radius: 6px!important;
+  border: 3px solid transparent!important;
+  opacity: 0.8;
+}
+
+.CodeMirror-simplescroll-horizontal div:hover,
+.CodeMirror-simplescroll-vertical div:hover {
+    -webkit-transition: all 0.2s ease;
+   transition: all 0.2s ease;
+   opacity: 1;
 }
 
 .CodeMirror-vscrollbar,.CodeMirror-hscrollbar {

@@ -49,7 +49,7 @@ export const dropdownButton = (theme: Theme): SerializedStyles => css`
     display: inline;
     border: 2px solid ${theme.line};
     border-radius: 6px;
-    padding: 5px 9px;
+    padding: 4px 8px;
    margin: 2px;
     &:hover {
         cursor: pointer;

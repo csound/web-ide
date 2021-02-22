@@ -13,7 +13,7 @@ export const splitterRoot = css`
 `;
 
 export const closeButton = css`
-    top: 8px;
+    top: 4px;
     right: 8px;
     padding: 6px;
     position: absolute;

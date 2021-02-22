@@ -62,15 +62,12 @@ const CsoundManualWithStyleOverrides = ({
     return !fetched ? (
         <></>
     ) : (
-        <div style={{ overflow: "hidden" }}>
-            <style>{`#root {position: absolute!important; height: 100%!important;}`}</style>
-            <CsoundManual
-                {...routerProperties}
-                theme={theme}
-                codeMirrorPainter={CodeMirrorPainter}
-                Csound={Csound}
-            />
-        </div>
+        <CsoundManual
+            {...routerProperties}
+            theme={theme}
+            codeMirrorPainter={CodeMirrorPainter}
+            Csound={Csound}
+        />
     );
 };
 

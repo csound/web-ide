@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
@@ -92,7 +92,13 @@ function EditorForDocument({
     );
 }
 
-const MainSection = ({ tabDock }: { tabDock: React.ReactElement }) => {
+const MainSection = ({
+    tabDock,
+    setIsDragging
+}: {
+    tabDock: React.ReactElement;
+    setIsDragging?: (isDragging: boolean) => void;
+}) => {
     const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
         selectOpenBottomTabs(store)
     );
@@ -110,6 +116,8 @@ const MainSection = ({ tabDock }: { tabDock: React.ReactElement }) => {
                 minSize={showBottomTabs ? "25%" : "100%"}
                 defaultSize="75%"
                 className={"main-tab-panels"}
+                onDragStarted={() => setIsDragging && setIsDragging(true)}
+                onDragFinished={() => setIsDragging && setIsDragging(false)}
             >
                 {[tabDock, <BottomTabs key="2" />]}
             </SplitPane>
@@ -130,7 +138,7 @@ const ProjectEditor = ({
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
-    // const [manualDrag, setManualDrag] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     const projectUid: string = propOr("", "projectUid", activeProject);
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
@@ -369,6 +377,8 @@ const ProjectEditor = ({
                         minSize="80%"
                         maxSize="0"
                         defaultSize="80%"
+                        onDragStarted={() => setIsDragging(true)}
+                        onDragFinished={() => setIsDragging(false)}
                     >
                         <FileTree />
 
@@ -379,9 +389,17 @@ const ProjectEditor = ({
                                 minSize="80%"
                                 maxSize="0"
                                 defaultSize="60%"
+                                onDragStarted={() => setIsDragging(true)}
+                                onDragFinished={() => setIsDragging(false)}
                             >
-                                <MainSection tabDock={tabDock} />
-                                <CsoundManualWindow projectUid={projectUid} />
+                                <MainSection
+                                    tabDock={tabDock}
+                                    setIsDragging={setIsDragging}
+                                />
+                                <CsoundManualWindow
+                                    projectUid={projectUid}
+                                    isDragging={isDragging}
+                                />
                             </SplitPane>
                         ) : (
                             <MainSection tabDock={tabDock} />

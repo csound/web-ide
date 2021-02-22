@@ -158,7 +158,6 @@ const makeMuiTheme_ = (muiTheme, theme: Theme, themeName: string) => {
             backgroundColor: theme.background,
             border: `2px solid ${theme.line}`,
             borderRadius: "6px",
-            padding: "12px",
             "& ul": {
                 padding: 0
             },

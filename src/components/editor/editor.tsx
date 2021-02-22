@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CodeMirror from "codemirror";
-// import { UnControlled } from "react-codemirror2";
 // import { editorEvalCode, uncommentLine } from "./utils";
 import { debounce } from "throttle-debounce";
 import { IDocument, IProject } from "../projects/types";
@@ -11,8 +10,8 @@ import { pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
 import * as projectEditorActions from "../project-editor/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
+import { registerCsoundMode } from "./modes/csound/csound";
 import * as SS from "./styles";
-import "./modes/csound/csound";
 import "./plugins/autosuggest";
 import "codemirror/addon/comment/comment";
 import "codemirror/addon/edit/matchbrackets";
@@ -29,6 +28,8 @@ import "codemirror/keymap/emacs";
 import "codemirror/addon/scroll/simplescrollbars";
 import "codemirror/addon/scroll/simplescrollbars.css";
 import "codemirror/lib/codemirror.css";
+
+registerCsoundMode(CodeMirror);
 
 const cursorState = {};
 

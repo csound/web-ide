@@ -31,6 +31,13 @@ TabListStyle = styled(TabListStyle)`
     & > div > ul > li {
         height: 100%;
     }
+    & > div > ul > li > span {
+        margin: auto 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+    }
 `;
 
 TabStyle = styled(TabStyle)`
@@ -46,8 +53,9 @@ TabStyle = styled(TabStyle)`
             ? properties.theme.highlightBackground
             : properties.theme.background};
     border: 0;
-    padding: 13px 19px !important;
+    padding: 0 !important;
     padding-right: 42px !important;
+    padding-bottom: 2px !important;
     user-select: inherit;
     margin-bottom: -1px;
     &:hover {

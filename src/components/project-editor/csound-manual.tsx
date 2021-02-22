@@ -11,9 +11,11 @@ import { setManualPanelOpen } from "./actions";
 import * as SS from "./styles";
 
 const ManualWindow = ({
-    projectUid
+    projectUid,
+    isDragging = false
 }: {
     projectUid: string;
+    isDragging?: boolean;
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
@@ -33,7 +35,14 @@ const ManualWindow = ({
     }, [projectUid]);
 
     return (
-        <div style={{ width: "100%", height: "100%", paddingTop: 35 }}>
+        <div
+            style={{
+                width: "100%",
+                height: "100%",
+                paddingTop: 35,
+                pointerEvents: isDragging ? "none" : "auto"
+            }}
+        >
             <IframeComm
                 attributes={{
                     src: "/manual/main?cache=1002",
