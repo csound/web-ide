@@ -4753,10 +4753,10 @@ crypto-random-string@^2.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-2.0.0.tgz#ef2a7a966ec11083388369baa02ebead229b30d5"
   integrity sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==
 
-csound-manual-react@^1.0.0-alpha19:
-  version "1.0.0-alpha19"
-  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha19.tgz#5077bc7c0b0d7fa1e936ace49e81aaff590cb4cd"
-  integrity sha512-tw2ZOKp9jgjrCOCSBEx8cVT12vGovAjD+3AwgaHyPHKXIac2kZljRMOwtGNaq/WuYRMw5ldl/4sb7LU48BAQlw==
+csound-manual-react@^1.0.0-alpha20:
+  version "1.0.0-alpha20"
+  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha20.tgz#524d895a0ab97d40d2ee90867a42d02801688bcd"
+  integrity sha512-/Ie915BpmHV0QKDtCvaQMoWXCMy+eARM7JSsSJnQO7FRsMhuqKOE3Fyu/Zkgm1HZgmIUMLJNL1hoMvefQfqZcg==
 
 css-box-model@^1.2.0:
   version "1.2.1"
