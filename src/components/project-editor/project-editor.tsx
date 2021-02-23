@@ -67,6 +67,35 @@ type IEditorForDocumentProperties = {
     isOwner: boolean;
 };
 
+const MySplit = ({
+    primary,
+    split,
+    minSize,
+    maxSize,
+    defaultSize,
+    onDragStarted,
+    onDragFinished,
+    children
+}) => {
+    const filteredChildren = children.filter((c) => c);
+    console.log(filteredChildren);
+    return filteredChildren.length === 1 ? (
+        filteredChildren[0]
+    ) : (
+        <SplitPane
+            primary={primary}
+            split={split}
+            minSize={minSize}
+            maxSize={maxSize}
+            defaultSize={defaultSize}
+            onDragStarted={onDragStarted}
+            onDragFinished={onDragFinished}
+        >
+            {filteredChildren}
+        </SplitPane>
+    );
+};
+
 function EditorForDocument({
     uid,
     projectUid,
@@ -337,9 +366,9 @@ const ProjectEditor = ({
         (store: IStore) => store.ProjectEditorReducer.manualVisible
     );
 
-    // const isFileTreeVisible = useSelector(
-    //     (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
-    // );
+    const isFileTreeVisible = useSelector(
+        (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
+    );
 
     useEffect(() => {
         const lastIsManualVisible = sessionStorage.getItem(
@@ -371,7 +400,7 @@ const ProjectEditor = ({
             {unsavedDataExitPrompt}
             <DnDProvider project={activeProject}>
                 <div css={SS.splitterRoot}>
-                    <SplitPane
+                    <MySplit
                         primary="second"
                         split="vertical"
                         minSize="80%"
@@ -380,31 +409,28 @@ const ProjectEditor = ({
                         onDragStarted={() => setIsDragging(true)}
                         onDragFinished={() => setIsDragging(false)}
                     >
-                        <FileTree />
-
-                        {isManualVisible ? (
-                            <SplitPane
-                                primary="first"
-                                split="vertical"
-                                minSize="80%"
-                                maxSize="0"
-                                defaultSize="60%"
-                                onDragStarted={() => setIsDragging(true)}
-                                onDragFinished={() => setIsDragging(false)}
-                            >
-                                <MainSection
-                                    tabDock={tabDock}
-                                    setIsDragging={setIsDragging}
-                                />
+                        {isFileTreeVisible && <FileTree />}
+                        <MySplit
+                            primary="first"
+                            split="vertical"
+                            minSize="80%"
+                            maxSize="0"
+                            defaultSize="60%"
+                            onDragStarted={() => setIsDragging(true)}
+                            onDragFinished={() => setIsDragging(false)}
+                        >
+                            <MainSection
+                                tabDock={tabDock}
+                                setIsDragging={setIsDragging}
+                            />
+                            {isManualVisible && (
                                 <CsoundManualWindow
                                     projectUid={projectUid}
                                     isDragging={isDragging}
                                 />
-                            </SplitPane>
-                        ) : (
-                            <MainSection tabDock={tabDock} />
-                        )}
-                    </SplitPane>
+                            )}
+                        </MySplit>
+                    </MySplit>
                 </div>
             </DnDProvider>
         </>
