@@ -33,6 +33,15 @@ registerCsoundMode(CodeMirror);
 
 const cursorState = {};
 
+const onScroll = debounce(100, (editor: any) => {
+    const documentUid = editor.state.documentUid;
+    if (documentUid) {
+        cursorState[`${documentUid}:scrollTop`] = (editor as any).doc.scrollTop
+            ? (editor as any).doc.scrollTop
+            : 0;
+    }
+});
+
 let updateReduxDocumentValue;
 
 const CodeEditor = ({
@@ -71,7 +80,9 @@ const CodeEditor = ({
         if (editorReference && onChangedCallback) {
             editorReference.off("change", onChangedCallback);
         }
+
         if (editorReference) {
+            editorReference.off("scroll", onScroll);
             cursorState[
                 `${documentUid}:cursor_pos`
             ] = editorReference.getCursor();
@@ -118,7 +129,7 @@ const CodeEditor = ({
                 {
                     autoCloseBrackets: true,
                     autoSuggest: true,
-                    fullScreen: true,
+                    fullScreen: false,
                     height: "auto",
                     lineNumbers: true,
                     lineWrapping: true,
@@ -173,8 +184,13 @@ const CodeEditor = ({
                 [`${documentUid}:cursor_pos`, "ch"],
                 cursorState
             );
+            editor.state.documentUid = documentUid;
+
             editor.setCursor({ line: lastLine, ch: lastColumn });
-            // editorDidMount(editor);
+
+            const lastScrollTop = cursorState[`${documentUid}:scrollTop`] || 0;
+            editor.scrollTo(0, lastScrollTop);
+
             setIsMounted(true);
             updateReduxDocumentValue = debounce(
                 100,
@@ -199,6 +215,7 @@ const CodeEditor = ({
             };
             setOnChangedCallback(changeCallback);
             editor.on("change", changeCallback);
+            editor.on("scroll", onScroll);
         }
     }, [
         dispatch,
