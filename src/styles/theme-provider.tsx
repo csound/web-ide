@@ -29,6 +29,13 @@ const ThirdPartyLibraryPainter = ({ theme }) => (
     body > li[role=tab] button {
       z-index: 10000;
    }
+    body > li[role=tab] span {
+        margin: auto 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+   }
    .MuiButton-outlinedPrimary {
      color: ${theme.textColor}!important;
      border-color: ${theme.textColor}!important;
