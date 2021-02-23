@@ -52,6 +52,7 @@ const ListPlayButton = ({
     const isPlaying = currentlyPlayingProject === projectUid;
     const hasError = isPlaying && csoundStatus === "error";
     const isPaused = isPlaying && csoundStatus === "paused";
+    const isStop = csoundStatus === "stopped";
     const [isStartingUp, setIsStartingUp] = useState(false);
     const dispatch = useDispatch();
 
@@ -66,11 +67,12 @@ const ListPlayButton = ({
 
     const buttonCallback = useCallback(
         async (event) => {
-            if (isStartingUp || isPlaying) {
+            if (isStartingUp) {
                 return;
-            } else {
+            } else if (!isPlaying) {
                 setIsStartingUp(true);
             }
+
             isPaused
                 ? dispatch(resumePausedCsound())
                 : isPlaying && !hasError
@@ -86,6 +88,7 @@ const ListPlayButton = ({
         <SS.StyledAvatar
             isPlaying={isPlaying}
             isPaused={isPaused}
+            isStop={isStop}
             isStartingUp={isStartingUp}
             hasError={hasError}
             iconBackgroundColorProp={iconBackgroundColor}
@@ -96,7 +99,9 @@ const ListPlayButton = ({
 
                 <SvgPlayIcon
                     shouldDisplay={
-                        (isPaused || !isPlaying) && !isStartingUp && !hasError
+                        (isPaused || isStop || !isPlaying) &&
+                        !isStartingUp &&
+                        !hasError
                     }
                     theme={theme}
                 />
@@ -112,7 +117,9 @@ const ListPlayButton = ({
                 />
                 <span
                     css={SS.loadingSpinner}
-                    style={{ display: isStartingUp ? "inherit" : "none" }}
+                    style={{
+                        display: isStartingUp ? "inherit" : "none"
+                    }}
                 >
                     <span />
                     <span />

@@ -30,6 +30,7 @@ import {
     SET_TAGS_INPUT,
     GET_ALL_TAGS,
     SET_CURRENTLY_PLAYING_PROJECT,
+    CLOSE_CURRENTLY_PLAYING_PROJECT,
     REFRESH_USER_PROFILE,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING
@@ -580,14 +581,18 @@ export const playListItem = (
     if (!csound) {
         csound = await newCsound(Csound, dispatch);
     } else {
-        await csound.terminateInstance();
+        csound && (await csound.terminateInstance());
         csound = await newCsound(Csound, dispatch);
     }
 
+    csound &&
+        csound.on("realtimePerformanceEnded", () =>
+            dispatch({ type: CLOSE_CURRENTLY_PLAYING_PROJECT })
+        );
     const playAction = getPlayActionFromProject(projectUid, state);
 
     if (playAction) {
-        await playAction(dispatch, csound);
+        playAction(dispatch, csound);
         await dispatch({
             type: SET_CURRENTLY_PLAYING_PROJECT,
             projectUid

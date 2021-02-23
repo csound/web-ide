@@ -296,6 +296,7 @@ type StyledAvatarType = {
     isPlaying: boolean;
     hasError: boolean;
     isPaused: boolean;
+    isStop: boolean;
     isStartingUp: boolean;
     iconBackgroundColorProp: string;
     children: React.ReactElement;
@@ -312,7 +313,8 @@ export const StyledAvatar = styled(Avatar as any, {
     ${(properties: StyledAvatarType) =>
         ((properties.isPlaying &&
             !properties.hasError &&
-            !properties.isStartingUp) ||
+            !properties.isStartingUp &&
+            !properties.isStop) ||
             properties.isPaused) &&
         showAvatarPlayButton}
     background-color: ${(properties: StyledAvatarType) =>
@@ -334,7 +336,7 @@ export const StyledAvatar = styled(Avatar as any, {
     &:hover {
         .project-avatar {
             opacity: ${(properties: StyledAvatarType) =>
-                properties.isPlaying ? 1 : 0};
+                properties.isPlaying && !properties.isStop ? 1 : 0};
         }
     }
 `;

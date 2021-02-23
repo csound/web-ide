@@ -24,9 +24,9 @@ export const setCsoundPlayState = (
 };
 
 export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
-    csound.on("realtimePerformanceEnded", () =>
-        dispatch(setCsoundPlayState("stopped"))
-    );
+    csound.on("realtimePerformanceEnded", () => {
+        dispatch(setCsoundPlayState("stopped"));
+    });
     csound.on("realtimePerformancePaused", () =>
         dispatch(setCsoundPlayState("paused"))
     );
@@ -49,7 +49,7 @@ export const newCsound = async (
     dispatch: (any) => void
 ): Promise<CsoundObj | undefined> => {
     // eslint-disable-next-line unicorn/prevent-abbreviations
-    const csoundObj = await Csound({ useWorker: true });
+    const csoundObj = await Csound({ useWorker: false });
     if (!csoundObj) {
         dispatch(setCsoundPlayState("error"));
     } else {
@@ -243,7 +243,8 @@ export const pauseCsound = (): ((
         const cs = path(["csound", "csound"], getState()) as
             | CsoundObj
             | undefined;
-        cs && cs.pause();
+        cs && (await cs.pause());
+
         dispatch(setCsoundPlayState("paused"));
         // if (cs && cs.getPlayState() === "playing") {
         //     cs.pause();

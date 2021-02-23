@@ -4,6 +4,7 @@ import {
     IProfile,
     ProfileActionTypes,
     SET_CURRENTLY_PLAYING_PROJECT,
+    CLOSE_CURRENTLY_PLAYING_PROJECT,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING,
     STORE_USER_PROFILE,
@@ -152,6 +153,9 @@ const ProfileReducer = (
         }
         case SET_CURRENTLY_PLAYING_PROJECT: {
             return assoc("currentlyPlayingProject", action.projectUid, state);
+        }
+        case CLOSE_CURRENTLY_PLAYING_PROJECT: {
+            return dissoc("currentlyPlayingProject", state);
         }
         case SET_CSOUND_PLAY_STATE: {
             if (state.currentlyPlayingProject && action.status === "stopped") {
