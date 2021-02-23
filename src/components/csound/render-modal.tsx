@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import ReactTooltip from "react-tooltip";
 import JSZip from "jszip";
 import { closeIcon } from "@comp/target-controls/styles";
-import { append, last } from "ramda";
+import { append, equals, last, reject } from "ramda";
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { CsoundObj } from "@csound/browser";
 import { isAudioFile } from "@comp/projects/utils";
@@ -426,14 +426,18 @@ function RenderModal({
                                         <ListItem
                                             css={renderedListStyle}
                                             onClick={() =>
-                                                !selectedFiles.includes(
-                                                    filename
-                                                ) &&
                                                 setSelectedFiles(
-                                                    append(
-                                                        filename,
-                                                        selectedFiles
+                                                    selectedFiles.includes(
+                                                        filename
                                                     )
+                                                        ? reject(
+                                                              equals(filename),
+                                                              selectedFiles
+                                                          )
+                                                        : append(
+                                                              filename,
+                                                              selectedFiles
+                                                          )
                                                 )
                                             }
                                             role={undefined}
