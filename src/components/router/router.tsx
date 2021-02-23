@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Provider, useDispatch } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
+import ReactTooltip from "react-tooltip";
 import Home from "../home/home";
 import CsoundManual from "csound-manual-react";
 import Profile from "../profile/profile";
@@ -73,6 +74,7 @@ const CsoundManualWithStyleOverrides = ({
 
 const RouterComponent = (): React.ReactElement => {
     const theme = useTheme();
+    ReactTooltip.rebuild();
     return (
         <ConnectedRouter history={history}>
             <Switch>

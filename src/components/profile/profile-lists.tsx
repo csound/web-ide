@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactTooltip from "react-tooltip";
 import { List, ListItem, ListItemText } from "@material-ui/core";
+import ReactTooltip from "react-tooltip";
 import FollowingList from "./tabs/following-list";
 import FollowersList from "./tabs/followers-list";
 import StarsList from "./tabs/stars-list";
@@ -41,9 +41,9 @@ const ProjectListItem = ({
     username: string;
     csoundStatus: string;
 }) => {
+    ReactTooltip.rebuild();
     const dispatch = useDispatch();
     const { isPublic, projectUid, name, description, tags } = project;
-    ReactTooltip.rebuild();
 
     return (
         <div style={{ position: "relative" }}>
@@ -89,9 +89,6 @@ const ProjectListItem = ({
                         <div
                             css={SS.settingsIcon}
                             key={projectUid}
-                            onMouseOver={() => {
-                                ReactTooltip.rebuild();
-                            }}
                             onClick={(event) => {
                                 dispatch(editProject(project));
                                 event.preventDefault();
