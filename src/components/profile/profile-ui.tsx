@@ -1,5 +1,4 @@
 import Card from "@material-ui/core/Card";
-import TextField from "@material-ui/core/TextField";
 import Chip from "@material-ui/core/Chip";
 import { isMobile } from "@root/utils";
 import styled from "styled-components";
@@ -8,7 +7,7 @@ import { css } from "@emotion/react";
 export const ProfileContainer = styled.div`
     display: grid;
     ${!isMobile() &&
-    `grid-template-columns: 24px 250px minmax(0,1100px);
+    `grid-template-columns: 24px 250px 800px;
     grid-template-rows: 50px 175px 1fr 70px;`}
     width: 100%;
     grid-auto-rows: minmax(90px, auto);
@@ -122,25 +121,25 @@ export const ContentSection = styled.div<any>`
     grid-row-end: auto;
     grid-column: 3;
     z-index: 2;
-    ${!isMobile() && "margin: 0 24px;"}
-    display: grid;
-    grid-template-rows: ${(properties) =>
-        properties.showSearch ? "60px 50px auto" : "60px 0px auto"};
-    grid-template-columns: 1fr;
+    ${!isMobile() && "margin-left: 48px;"}
     background: ${(properties) => properties.theme.background};
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-    min-width: 680px;
+    width: 100%;
+    overflow: hidden;
 `;
 export const ContentTabsContainer = styled.div`
-    grid-row: 1;
-    grid-column: 1;
+    background-color: rgba(0, 0, 0, 0.2);
 `;
 export const ContentActionsContainer = styled.div`
-    grid-row: 2;
-    grid-column: 1;
-    padding-left: 36px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 58px;
+    padding-left: 24px;
     padding-right: 12px;
+    margin-top: 12px;
 `;
 
 export const ListContainer = styled.div`
@@ -151,14 +150,10 @@ export const ListContainer = styled.div`
         padding: 0 !important;
     }
     .MuiListItem-button {
-        padding: 8px 36px !important;
+        padding: 8px 24px !important;
     }
 `;
-export const SearchBox = styled(TextField)`
-    && {
-        height: 20px;
-    }
-`;
+
 export const StyledChip = styled(Chip)`
     && {
         margin: 3px;
@@ -180,9 +175,8 @@ export const StyledListItemContainer = styled.div<IStyledListItemContainer>`
 `;
 
 export const StyledUserListItemContainer = styled.div`
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 72px auto;
+    display: flex;
+    justify-content: left;
     width: 100%;
     height: 100%;
     min-height: 80px;
@@ -190,13 +184,10 @@ export const StyledUserListItemContainer = styled.div`
 `;
 
 export const StyledListItemAvatar = styled.div`
-    position: absolute;
-    left: 24px;
-    top: 0px;
-    margin: auto 0;
-    margin-right: 12px;
-    height: 100%;
     display: flex;
+    align-items: center;
+    align-self: center;
+    margin-right: 24px;
     & > div {
         align-self: center;
         width: 55px;
@@ -258,9 +249,8 @@ export const StyledListStarButtonContainer = styled.div`
 `;
 
 export const fabButton = css`
-    float: right;
-    margin-top: 6px;
     display: flex;
+    align-self: center;
     align-items: center;
     justify-content: space-between;
 `;

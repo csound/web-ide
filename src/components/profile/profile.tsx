@@ -1,5 +1,6 @@
 import ProfileLists from "./profile-lists";
 import React, { useEffect, useState, RefObject } from "react";
+import ReactTooltip from "react-tooltip";
 import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
@@ -10,6 +11,7 @@ import withStyles, { createButtonAddIcon } from "./styles";
 import Button from "@material-ui/core/Button";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
+import TextField from "@material-ui/core/TextField";
 import Header from "../header/header";
 import ResizeObserver from "resize-observer-polyfill";
 import {
@@ -66,7 +68,6 @@ import {
     ContentSection,
     ContentTabsContainer,
     ContentActionsContainer,
-    SearchBox,
     ListContainer,
     EditProfileButtonSection,
     fabButton
@@ -124,6 +125,7 @@ const Profile = ({ classes, ...properties }) => {
     }, []);
 
     useEffect(() => {
+        ReactTooltip.rebuild();
         if (username) {
             if (!profileUriPath && selectedSection !== 0) {
                 setSelectedSection(0);
@@ -424,9 +426,13 @@ const Profile = ({ classes, ...properties }) => {
                             </Tabs>
                         </ContentTabsContainer>
 
-                        <ContentActionsContainer>
+                        <ContentActionsContainer
+                            style={{
+                                display: selectedSection === 0 ? "flex" : "none"
+                            }}
+                        >
                             {selectedSection === 0 && (
-                                <SearchBox
+                                <TextField
                                     id="input-with-icon-adornment"
                                     label="Search Projects"
                                     InputProps={{
