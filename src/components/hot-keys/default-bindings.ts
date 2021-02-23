@@ -19,7 +19,9 @@ const defaultBindings: BindingsMap = {
     redo: isMac ? "shift+command+z" : "shift+ctrl+z",
     eval: isMac ? "command+e" : "ctrl+e",
     eval_block: isMac ? "command+enter" : "ctrl+enter",
-    toggle_comment: isMac ? "opt+command+;" : "ctrl+shift+;"
+    toggle_comment: isMac
+        ? ["command+;", "opt+command+;"]
+        : ["ctrl+;", "ctrl+shift+;"]
 };
 
 export default defaultBindings;

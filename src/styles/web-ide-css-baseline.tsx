@@ -330,6 +330,10 @@ a {text-decoration: none;}
   fill: ${theme.buttonIcon};
 }
 
+.MuiListItem-button {
+  cursor: grabbing!important;
+}
+
     `}</style>
 );
 
