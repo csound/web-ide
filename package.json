@@ -17,6 +17,7 @@
     },
     "dependencies": {
         "@csound/browser": "^6.16.0-beta3",
+        "@hlolli/react-modal-resizable-draggable": "^0.1.5",
         "ramda": "^0.27.1",
         "react": "^17.0.1",
         "react-autosuggest": "^10.1.0",
