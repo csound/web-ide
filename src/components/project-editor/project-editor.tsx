@@ -78,7 +78,6 @@ const MySplit = ({
     children
 }) => {
     const filteredChildren = children.filter((c) => c);
-    console.log(filteredChildren);
     return filteredChildren.length === 1 ? (
         filteredChildren[0]
     ) : (
