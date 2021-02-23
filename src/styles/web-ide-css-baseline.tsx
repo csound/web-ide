@@ -72,14 +72,31 @@ a {text-decoration: none;}
 .Resizer:hover {
   -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
+  opacity: 0.5;
 }
 
 .Resizer.horizontal {
+  position: relative;
   height: 2px;
-  margin: 0;
+  margin: -5px 0;
+  padding: 5px;
   cursor: row-resize;
   width: 100%;
+  z-index: 1;
 }
+
+.Resizer.horizontal::before {
+    height: 3px;
+    width: 100%;
+    background-color: black;
+    content: "";
+    margin: auto 0;
+    position: absolute;
+    top: 3px;
+    left: 0;
+    z-index: -1;
+  }
+
 
 .Resizer.vertical::before {
     width: 3px;
@@ -88,13 +105,11 @@ a {text-decoration: none;}
     content: "";
     margin: 0 auto;
     position: absolute;
-    top: 0; left: -2px;
+    top: 0;
+    left: -2px;
     z-index: -1;
   }
 
-.Resizer.horizontal:hover {
-  opacity: 0.5;
-}
 
 .Resizer.vertical {
   position: relative;
