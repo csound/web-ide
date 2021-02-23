@@ -5,8 +5,14 @@ import { useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useDispatch, useSelector } from "react-redux";
 import Collapse from "@material-ui/core/Collapse";
-import DescriptionIcon from "@material-ui/icons/Description";
+// import DescriptionIcon from "@material-ui/icons/Description";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
+import {
+    CsdFileIcon,
+    OrcFileIcon,
+    ScoFileIcon,
+    UdoFileIcon
+} from "@elem/filetype-icons";
 import EditIcon from "@material-ui/icons/EditTwoTone";
 import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
 import Tooltip from "@material-ui/core/Tooltip";
@@ -21,7 +27,10 @@ import FileTreeHeader from "./header";
 import { IDocument, IDocumentsMap, IProject } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { tabOpenByDocumentUid } from "@comp/project-editor/actions";
-import { selectIsOwner } from "@comp/project-editor/selectors";
+import {
+    selectIsOwner,
+    selectCurrentTabDocumentUid
+} from "@comp/project-editor/selectors";
 import {
     addIndex,
     append,
@@ -71,6 +80,7 @@ const hopefulSorting = curry((documentIndex, documentA, documentB) => {
 
 const makeTree = (
     activeProjectUid,
+    currentTabDocumentUid,
     dispatch,
     collapseState,
     setCollapseState,
@@ -160,7 +170,7 @@ const makeTree = (
                     <ListItemIcon
                         key={`${document_.documentUid}-folder`}
                         css={SS.listItemIcon}
-                        style={{ left: 22 + 24 * path.length }}
+                        style={{ left: 1 + (24 * path.length - 1) }}
                     >
                         {collapseState[document_.documentUid] ? (
                             <DirectoryOpen css={SS.directoryOpenIcon} />
@@ -171,6 +181,7 @@ const makeTree = (
                 );
                 const [newDocumentIndex, newElementArray] = makeTree(
                     activeProjectUid,
+                    currentTabDocumentUid,
                     dispatch,
                     collapseState,
                     setCollapseState,
@@ -233,22 +244,33 @@ const makeTree = (
                                                     className={`folder-${document_.documentUid}`}
                                                     {...provided.draggableProps}
                                                     {...provided.dragHandleProps}
-                                                    style={
+                                                    style={mergeAll([
                                                         snapshot.isDragging
                                                             ? provided
                                                                   .draggableProps
                                                                   .style
-                                                            : {}
-                                                    }
+                                                            : {},
+                                                        {
+                                                            paddingLeft: 40,
+                                                            height: 36
+                                                        }
+                                                    ])}
                                                     button
                                                 >
                                                     {FolderIcon}
                                                     {document_.filename}
+                                                    <div
+                                                        css={
+                                                            SS.delEditContainer
+                                                        }
+                                                    >
+                                                        {deleteIcon(document_)}
+                                                        {editIcon(document_)}
+                                                    </div>
                                                 </ListItem>
                                             )}
                                         </Draggable>
-                                        {deleteIcon(document_)}
-                                        {editIcon(document_)}
+
                                         <Collapse
                                             timeout={{
                                                 enter: 300,
@@ -281,7 +303,7 @@ const makeTree = (
                         <ListItemIcon
                             key={`${document_.documentUid}-bin-icon`}
                             css={SS.listItemIcon}
-                            style={{ left: 22 + 24 * path.length }}
+                            style={{ marginLeft: 24 * path.length }}
                         >
                             <WaveFormIcon css={SS.mediaIcon} />
                         </ListItemIcon>
@@ -296,9 +318,24 @@ const makeTree = (
                         <ListItemIcon
                             css={SS.listItemIconMui}
                             key={`${document_.documentUid}-csd-icon`}
-                            style={{ left: 12 + 24 * path.length }}
+                            style={{
+                                left: 6,
+                                marginLeft: 24 * path.length
+                            }}
                         >
-                            <DescriptionIcon css={SS.muiIcon} />
+                            <span css={SS.csoundFileIcon}>
+                                {document_.filename.endsWith(".csd") ? (
+                                    <CsdFileIcon />
+                                ) : document_.filename.endsWith(".orc") ? (
+                                    <OrcFileIcon />
+                                ) : document_.filename.endsWith(".sco") ? (
+                                    <ScoFileIcon />
+                                ) : document_.filename.endsWith(".udo") ? (
+                                    <UdoFileIcon />
+                                ) : (
+                                    <CsdFileIcon />
+                                )}
+                            </span>
                         </ListItemIcon>
                     );
                 } else {
@@ -306,7 +343,7 @@ const makeTree = (
                         <ListItemIcon
                             css={SS.listItemIconMui}
                             key={`${document_.documentUid}-txt-icon`}
-                            style={{ left: 12 + 24 * path.length }}
+                            style={{ left: 0 + 24 * path.length }}
                         >
                             <InsertDriveFileIcon css={SS.muiIcon} />
                         </ListItemIcon>
@@ -373,8 +410,15 @@ const makeTree = (
                                                             : {},
                                                         {
                                                             paddingLeft:
-                                                                32 +
-                                                                path.length * 24
+                                                                40 +
+                                                                24 *
+                                                                    path.length,
+                                                            height: 36,
+                                                            backgroundColor:
+                                                                currentTabDocumentUid ===
+                                                                document_.documentUid
+                                                                    ? "rgba(0,0,0,0.2)"
+                                                                    : "inherit"
                                                         }
                                                     ])}
                                                     button
@@ -383,11 +427,17 @@ const makeTree = (
                                                     <p css={SS.filenameStyle}>
                                                         {document_.filename}
                                                     </p>
+                                                    <div
+                                                        css={
+                                                            SS.delEditContainer
+                                                        }
+                                                    >
+                                                        {deleteIcon(document_)}
+                                                        {editIcon(document_)}
+                                                    </div>
                                                 </ListItem>
                                             )}
                                         </Draggable>
-                                        {deleteIcon(document_)}
-                                        {editIcon(document_)}
                                     </React.Fragment>
                                     {droppableProvided.placeholder}
                                 </RootReference>
@@ -421,6 +471,8 @@ const FileTree = (): React.ReactElement => {
         path(["ProjectsReducer", "projects", activeProjectUid, "documents"])
     );
 
+    const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
+
     const filelist = values(documents || {});
 
     return (
@@ -431,6 +483,7 @@ const FileTree = (): React.ReactElement => {
                         {
                             makeTree(
                                 activeProjectUid,
+                                currentTabDocumentUid,
                                 dispatch,
                                 collapseState,
                                 setCollapseState,

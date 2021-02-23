@@ -20,12 +20,14 @@ export const setOnCloseModal = (
 };
 
 export const openSimpleModal = (
-    component: () => React.ReactElement
+    component: (properties: any) => React.ReactElement,
+    properties: Record<string, any> | undefined
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: "MODAL_OPEN_SIMPLE",
             onClose: () => dispatch({ type: "MODAL_CLOSE" }),
+            properties,
             component
         });
     };

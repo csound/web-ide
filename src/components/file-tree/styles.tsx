@@ -22,16 +22,11 @@ export const fileIcon = (theme: Theme): SerializedStyles => css`
 `;
 
 export const editIcon = (theme: Theme): SerializedStyles => css`
-    position: absolute;
     cursor: pointer;
     color: ${theme.textColor};
-    width: 16px;
-    height: 16px;
-    z-index: 2;
-    right: 36px;
-    margin-top: -22px;
-    border-radius: 50%;
-    background-clip: content-box;
+    width: 22px;
+    height: 22px;
+    z-index: 3;
     border-radius: 50%;
     background-clip: content-box;
     &:hover {
@@ -41,20 +36,24 @@ export const editIcon = (theme: Theme): SerializedStyles => css`
 `;
 
 export const deleteIcon = (theme: Theme): SerializedStyles => css`
-    position: absolute;
     cursor: pointer;
     color: ${theme.textColor};
-    width: 18px;
-    height: 18px;
-    z-index: 2;
-    right: 12px;
-    margin-top: -23px;
+    width: 24px;
+    height: 24px;
+    z-index: 3;
     border-radius: 50%;
     background-clip: content-box;
     &:hover {
         background-color: ${theme.buttonBackgroundHover}!important;
         color: ${theme.buttonTextColorHover}!important;
     }
+`;
+
+export const delEditContainer = css`
+    width: 38px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1px;
 `;
 
 export const headIconsContainer = (theme: Theme): SerializedStyles => css`
@@ -81,6 +80,8 @@ export const listContainer = (theme: Theme): SerializedStyles => css`
 
 export const listItem = (theme: Theme): SerializedStyles => css`
     padding-left: 32px;
+    display: flex;
+    justify-content: space-between;
 `;
 
 export const draggingOver = (theme: Theme): SerializedStyles => css`
@@ -91,9 +92,8 @@ export const draggingOver = (theme: Theme): SerializedStyles => css`
 `;
 
 export const listItemIcon = (theme: Theme): SerializedStyles => css`
-    top: 6px;
-    left: 22px;
     position: absolute;
+    min-width: 18px;
 `;
 
 export const listItemIconMui = (theme: Theme): SerializedStyles => css`
@@ -104,9 +104,16 @@ export const listItemIconMui = (theme: Theme): SerializedStyles => css`
 
 export const muiIcon = (theme: Theme): SerializedStyles => css`
     fill: ${theme.textColor} !important;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
+    width: 36px;
+    height: 32px;
+    margin-left: 1px;
+`;
+
+export const csoundFileIcon = (theme: Theme): SerializedStyles => css`
+    svg {
+        width: 28px;
+        height: 28px;
+    }
 `;
 
 export const newFolderIcon = (theme: Theme): SerializedStyles => css`
@@ -114,22 +121,23 @@ export const newFolderIcon = (theme: Theme): SerializedStyles => css`
 `;
 
 const musicIconBase = (theme: Theme): SerializedStyles => css`
-    position: absolute;
+    position: relative;
     width: 32px;
     height: 24px;
-    left: -18px;
-    top: -6px;
 `;
 
 export const mediaIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
-    margin-top: 2px;
-    zoom: 90%;
+    margin-top: 1px;
+    left: -36px;
     fill: ${theme.aRateVar};
 `;
 
 export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
+    width: 36px;
+    height: 32px;
+    margin-left: 2px;
     & > g > path:first-of-type {
         fill: ${theme.textColor};
     }
@@ -140,6 +148,8 @@ export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
 
 export const directoryOpenIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase(theme)}
+    width: 36px;
+    height: 32px;
 `;
 
 export const filenameStyle = (theme: Theme): SerializedStyles => css`

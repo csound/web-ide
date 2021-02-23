@@ -14,6 +14,7 @@ export const root = (theme: Theme): SerializedStyles => css`
     margin: 0;
     user-select: none;
     margin-left: 12px;
+    z-index: 1;
 `;
 
 export const selectedIcon = (theme: Theme): SerializedStyles => css`

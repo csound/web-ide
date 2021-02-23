@@ -108,7 +108,7 @@ const SocialControls = (): React.ReactElement => {
                         <StyledIconButton
                             size="medium"
                             onClick={() => {
-                                dispatch(openSimpleModal(ShareDialog));
+                                dispatch(openSimpleModal(ShareDialog, {}));
                             }}
                         >
                             <StyledShareIcon fontSize="large" />

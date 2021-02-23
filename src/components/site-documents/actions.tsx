@@ -60,6 +60,6 @@ export const showKeyboardShortcuts = (): ((dispatch: any) => Promise<void>) => {
                 </table>
             </div>
         );
-        dispatch(openSimpleModal(shortcuts));
+        dispatch(openSimpleModal(shortcuts, {}));
     };
 };

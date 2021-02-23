@@ -394,7 +394,7 @@ export const deleteFile = (
                     cancelCallback,
                     deleteCallback
                 );
-                dispatch(openSimpleModal(deleteDocumentPromptComp));
+                dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else if (document_) {
                 const cancelCallback = () => dispatch(closeModal());
                 const deleteCallback = () => {
@@ -416,7 +416,7 @@ export const deleteFile = (
                     deleteCallback
                 );
 
-                dispatch(openSimpleModal(deleteDocumentPromptComp));
+                dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else {
                 console.error("No document found with id", projectUid);
             }
@@ -502,7 +502,7 @@ export const newFolder = (
             newFolderSuccessCallback,
             project
         );
-        dispatch(openSimpleModal(newFolderPromptComp));
+        dispatch(openSimpleModal(newFolderPromptComp, {}));
     };
 };
 
@@ -555,7 +555,7 @@ export const newDocument = (
             false,
             ""
         );
-        dispatch(openSimpleModal(newDocumentPromptComp));
+        dispatch(openSimpleModal(newDocumentPromptComp, {}));
     };
 };
 
@@ -688,7 +688,7 @@ export const addDocument = (
         const addDocumentPromptComp = addDocumentPrompt(
             addDocumentSuccessCallback
         );
-        dispatch(openSimpleModal(addDocumentPromptComp));
+        dispatch(openSimpleModal(addDocumentPromptComp, {}));
     };
 };
 
@@ -750,7 +750,7 @@ export const renameDocument = (
             true,
             currentFilename
         );
-        dispatch(openSimpleModal(renameDocumentPromptComp));
+        dispatch(openSimpleModal(renameDocumentPromptComp, {}));
     };
 };
 

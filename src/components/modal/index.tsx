@@ -1,5 +1,6 @@
 import React, { RefObject, useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
+import { always } from "ramda";
 import * as SS from "./styles";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
@@ -30,6 +31,10 @@ export default function GlobalModal(): React.ReactElement {
     const ModalComponent = useSelector(
         (store: IStore) => store.ModalReducer.component
     );
+
+    const modalProperties =
+        useSelector((store: IStore) => store.ModalReducer.properties) || {};
+
     const onClose = useSelector((store: IStore) => store.ModalReducer.onClose);
 
     const updateDimensions = (focus: boolean) => {
@@ -77,7 +82,8 @@ export default function GlobalModal(): React.ReactElement {
                 timeout: 500
             }}
             open={isOpen}
-            onClose={onClose}
+            onClose={modalProperties.disableOnClose ? always : onClose}
+            style={{ zIndex: 3 }}
         >
             <Fade in={isOpen}>
                 <div
@@ -86,7 +92,7 @@ export default function GlobalModal(): React.ReactElement {
                     ref={modalReference}
                     style={getModalStyle(width, height)}
                 >
-                    {ModalComponent && <ModalComponent />}
+                    {ModalComponent && <ModalComponent {...modalProperties} />}
                 </div>
             </Fade>
         </Modal>

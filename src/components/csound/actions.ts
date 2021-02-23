@@ -1,7 +1,10 @@
 import { store } from "@store";
 import { IStore } from "@store/types";
-import { IDocument, IProject } from "../projects/types";
+import { IProject } from "../projects/types";
 import { CsoundObj, Csound } from "@csound/browser";
+import { openSimpleModal } from "@comp/modal/actions";
+import { openSnackbar } from "@comp/snackbar/actions";
+import { SnackbarType } from "@comp/snackbar/types";
 import {
     FETCH_CSOUND,
     SET_CSOUND,
@@ -9,10 +12,12 @@ import {
     SET_CSOUND_PLAY_STATE
 } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
+import { selectCsoundFactory } from "./selectors";
 import { addDocumentToEMFS } from "@comp/projects/utils";
-import { saveAs } from "file-saver";
+import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
+import RenderModal from "./render-modal";
 import { isEmpty, path, pathOr, pipe, values } from "ramda";
-import { storageReference } from "@config/firestore";
+// import { storageReference } from "@config/firestore";
 
 export const setCsoundPlayState = (
     playState: ICsoundStatus
@@ -112,7 +117,12 @@ export const fetchSetStartCsound = (
         const csoundObj = await newCsound(Csound, dispatch);
 
         if (!csoundObj) {
-            // TODO: error handle
+            dispatch(
+                openSnackbar(
+                    "Error: fetching csound failed",
+                    SnackbarType.Error
+                )
+            );
             return;
         }
 
@@ -264,92 +274,125 @@ export const resumePausedCsound = (): ((
             | CsoundObj
             | undefined;
         cs && cs.resume();
-        // FIXME
-        // dispatch(setCsoundPlayState("playing"));
-        // if (cs && cs.getPlayState() === "paused") {
-        //     cs.resume();
-        //     dispatch(setCsoundPlayState("playing"));
-        // } else {
-        //     cs && dispatch(setCsoundPlayState(cs.getPlayState()));
-        // }
     };
 };
+
+function lsAll(fs, tree = {}, root = "/") {
+    if (fs.existsSync(root)) {
+        fs.readdirSync(root).forEach((file) => {
+            const currentPath = `${root}/${file}`.replace("//", "/");
+            if (fs.lstatSync(currentPath).isDirectory()) {
+                return (tree[currentPath] = lsAll(fs, tree, currentPath));
+            } else {
+                tree[currentPath] = fs.statSync(currentPath).size;
+            }
+        });
+        return tree;
+    }
+}
 
 export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const state: IStore = store.getState();
         const project: IProject | undefined = selectActiveProject(state);
+
         if (!project) {
+            dispatch(
+                openSnackbar(
+                    "Render error: no project is currently selected",
+                    SnackbarType.Error
+                )
+            );
             return;
         }
 
-        const encoder = new TextEncoder();
+        const targetDocumentUid = getSelectedTargetDocumentUid(
+            project.projectUid,
+            state
+        );
 
-        if (project) {
-            const documents: IDocument[] = Object.values(project.documents);
-            const worker = new Worker("/csound/CsoundWebWorker.js");
-
-            // eslint-disable-next-line unicorn/prefer-add-event-listener
-            worker.onmessage = (event_) => {
-                const data = event_.data;
-                const content = data[1];
-
-                switch (data[0]) {
-                    case "log":
-                        console.log("CsoundDisk: " + content);
-                        break;
-                    case "renderResult":
-                        // grab binary data and download as blob
-                        saveAs(
-                            new Blob([content.buffer], {
-                                type: "audio/wav"
-                            }),
-                            "project-render.wav"
-                        );
-                        break;
-                    default:
-                        console.log(
-                            "CsoundWebWorker: Unknown Message: " + data[0]
-                        );
-                        break;
-                }
-            };
-
-            for (const document_ of documents) {
-                if (document_.type === "bin") {
-                    const path = `${project.userUid}/${project.projectUid}/${document_.documentUid}`;
-                    const url = await storageReference
-                        .child(path)
-                        .getDownloadURL();
-
-                    const response = await fetch(url);
-                    const blob = await response.arrayBuffer();
-                    const message = ["writeToFS", document_.filename, blob];
-                    worker.postMessage(message);
-                } else {
-                    const message = [
-                        "writeToFS",
-                        document_.filename,
-                        encoder.encode(document_.savedValue)
-                    ];
-                    worker.postMessage(message);
-                }
-            }
-
-            //let d = docs.find(d => d.filename == 'project.csd');
-
-            // TODO - replace with 'main' csd file name
-            // if(d) {
-            worker.postMessage(["renderCSD", "project.csd"]);
-            //}
+        if (!targetDocumentUid) {
+            dispatch(
+                openSnackbar(
+                    "Render error: no target was found for this project",
+                    SnackbarType.Error
+                )
+            );
+            return;
         }
 
-        // if (cs) {
-        //     cs.reset();
-        //     cs.setOption("-+msg_color=false");
-        //     cs.compileCSD("project.csd");
-        //     cs.start();
-        // }
+        let Csound = selectCsoundFactory(state);
+
+        if (!Csound) {
+            Csound = await fetchCsound(dispatch);
+        }
+
+        // vanilla mode should work everywhere
+        const csound = await Csound({ useWorker: true, useSAB: false });
+
+        if (!csound) {
+            dispatch(
+                openSnackbar(
+                    "Render error: csound failed to start",
+                    SnackbarType.Error
+                )
+            );
+            return;
+        }
+        await syncFs(csound, project.projectUid, state);
+        const preStartTree = lsAll(csound.fs);
+
+        csound.on("renderEnded", () => {
+            dispatch(
+                openSimpleModal(RenderModal, {
+                    csound,
+                    preStartTree,
+                    disableOnClose: true
+                })
+            );
+        });
+
+        const targetDocumentName =
+            project.documents[targetDocumentUid].filename;
+
+        targetDocumentName.endsWith("csd")
+            ? await csound.compileCsd(targetDocumentName)
+            : await csound.compileOrc(
+                  project.documents[targetDocumentUid].currentValue
+              );
+
+        // logic: if the user specified output name, we use it
+        // otherwise we'll default to the filename dot wav
+        let outputName = await csound.getOutputName();
+
+        if (
+            typeof outputName !== "string" ||
+            outputName.length === 0 ||
+            outputName === "dac"
+        ) {
+            outputName = `${targetDocumentName.split(".")[0]}.wav`;
+            await csound.setOption(`-o${outputName}`);
+        }
+
+        csound.on("renderStarted", () => {
+            dispatch(
+                openSnackbar(
+                    `Render of ${targetDocumentName} started`,
+                    SnackbarType.Info
+                )
+            );
+        });
+
+        const result = await csound.start();
+
+        if (result !== 0) {
+            dispatch(
+                openSnackbar(
+                    "Render error: the project encountered an error while rendering",
+                    SnackbarType.Error
+                )
+            );
+        }
     };
 };
 

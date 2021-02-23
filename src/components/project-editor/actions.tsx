@@ -201,7 +201,7 @@ export const tabClose = (
                 cancelCallback,
                 closeWithoutSavingCallback
             );
-            dispatch(openSimpleModal(closeUnsavedTabPromptComp));
+            dispatch(openSimpleModal(closeUnsavedTabPromptComp, {}));
         }
     };
 };

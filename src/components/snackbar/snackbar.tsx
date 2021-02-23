@@ -49,7 +49,8 @@ const styles = makeStyles((theme: Theme) => ({
     },
     message: {
         display: "flex",
-        alignItems: "center"
+        alignItems: "center",
+        color: theme.palette.common.black
     }
 }));
 

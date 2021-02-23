@@ -29,7 +29,7 @@ export const showTargetsConfigDialog = (): ((
     dispatch: any
 ) => Promise<void>) => {
     return async (dispatch: any) => {
-        dispatch(openSimpleModal(TargetsConfigDialog));
+        dispatch(openSimpleModal(TargetsConfigDialog, {}));
     };
 };
 

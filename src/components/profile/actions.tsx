@@ -1,5 +1,4 @@
 import { ThunkAction } from "redux-thunk";
-import React from "react";
 import { Action } from "redux";
 import { IStore } from "@store/types";
 import {
@@ -316,18 +315,16 @@ export const getAllTagsFromUser = (
 export const addProject = () => {
     return async (dispatch: (any) => void): Promise<void> => {
         dispatch(
-            openSimpleModal(() => (
-                <ProjectModal
-                    name={"New Project"}
-                    description={""}
-                    label={"Create Project"}
-                    newProject={true}
-                    projectID=""
-                    iconName={undefined}
-                    iconForegroundColor={undefined}
-                    iconBackgroundColor={undefined}
-                />
-            ))
+            openSimpleModal(ProjectModal, {
+                name: "New Project",
+                description: "",
+                labe: "Create Project",
+                newProject: true,
+                projectID: "",
+                iconName: undefined,
+                iconForegroundColor: undefined,
+                iconBackgroundColor: undefined
+            })
         );
     };
 };
@@ -436,18 +433,16 @@ export const editProfile = (
             });
 
             dispatch(
-                openSimpleModal(() => (
-                    <ProfileModal
-                        existingNames={existingNames}
-                        username={username}
-                        displayName={displayName}
-                        bio={bio}
-                        link1={link1}
-                        link2={link2}
-                        link3={link3}
-                        backgroundIndex={backgroundIndex}
-                    />
-                ))
+                openSimpleModal(ProfileModal, {
+                    existingNames: existingNames,
+                    username: username,
+                    displayName: displayName,
+                    bio: bio,
+                    link1: link1,
+                    link2: link2,
+                    link3: link3,
+                    backgroundIndex: backgroundIndex
+                })
             );
         }
     };
@@ -458,18 +453,16 @@ export const editProject = (
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch) => {
         dispatch(
-            openSimpleModal(() => (
-                <ProjectModal
-                    name={project.name}
-                    description={project.description}
-                    label={"Apply changes"}
-                    projectID={project.projectUid}
-                    iconName={project.iconName}
-                    iconForegroundColor={project.iconForegroundColor}
-                    iconBackgroundColor={project.iconBackgroundColor}
-                    newProject={false}
-                />
-            ))
+            openSimpleModal(ProjectModal, {
+                name: project.name,
+                description: project.description,
+                label: "Apply changes",
+                projectID: project.projectUid,
+                iconName: project.iconName,
+                iconForegroundColor: project.iconForegroundColor,
+                iconBackgroundColor: project.iconBackgroundColor,
+                newProject: false
+            })
         );
     };
 };
@@ -479,7 +472,7 @@ export const deleteProject = (
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch) => {
         const DeleteProjectModal = getDeleteProjectModal(project);
-        dispatch(openSimpleModal(DeleteProjectModal));
+        dispatch(openSimpleModal(DeleteProjectModal, {}));
     };
 };
 

@@ -246,7 +246,7 @@ export const thirdPartyAuthSuccess = (
                 (profile.data() && isEmpty(profile.data().username)))
         ) {
             const profileFinalizeComp = profileFinalize(user, dispatch);
-            dispatch(openSimpleModal(profileFinalizeComp));
+            dispatch(openSimpleModal(profileFinalizeComp, {}));
         } else {
             const profileData = profile.data();
             dispatch({

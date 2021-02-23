@@ -33,3 +33,21 @@ export const selectCurrentTab = (store: IStore): IOpenDocument | undefined => {
         );
     }
 };
+
+export const selectCurrentTabDocumentUid = (
+    store: IStore
+): string | undefined => {
+    const tabIndex = selectTabDockIndex(store);
+    if (tabIndex > -1) {
+        return path(
+            [
+                "ProjectEditorReducer",
+                "tabDock",
+                "openDocuments",
+                tabIndex,
+                "uid"
+            ],
+            store
+        );
+    }
+};

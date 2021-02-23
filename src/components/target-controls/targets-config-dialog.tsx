@@ -9,13 +9,11 @@ import {
     selectProjectDocuments,
     selectProjectTargets
 } from "./selectors";
-import {
-    Checkbox,
-    Fab,
-    FormControlLabel,
-    FormGroup,
-    TextField
-} from "@material-ui/core";
+import Checkbox from "@material-ui/core/Checkbox";
+import Fab from "@material-ui/core/Fab";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormGroup from "@material-ui/core/FormGroup";
+import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import AddIcon from "@material-ui/icons/Add";
 import CloseIcon from "@material-ui/icons/Close";

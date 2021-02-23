@@ -91,10 +91,10 @@ const ProjectContext = (
     return !needsLoading && !invalidUrl && project ? (
         <>
             <ForceBackgroundColor theme={theme} />
-            <Header />
             <ConsoleProvider activeProject={project}>
                 <ProjectEditor {...properties} activeProject={project} />
             </ConsoleProvider>
+            <Header />
         </>
     ) : (
         <>
