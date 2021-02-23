@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useResizeDetector } from "react-resize-detector";
 import { useTheme } from "@emotion/react";
 import { isEmpty } from "ramda";
 import {
@@ -102,10 +101,9 @@ const BottomTabs = (): React.ReactElement => {
         },
         [dispatch, openTabs]
     );
-    const { height, ref } = useResizeDetector();
 
     return (
-        <div css={SS.heightFix} ref={ref as any}>
+        <div css={SS.heightFix}>
             {!isEmpty(openTabs) && bottomTabIndex > -1 && (
                 <Tabs
                     activeIndex={bottomTabIndex}
@@ -147,7 +145,7 @@ const BottomTabs = (): React.ReactElement => {
                             return (
                                 <Panel key={index} isBottom>
                                     <React.Suspense fallback={<></>}>
-                                        <C height={height} />
+                                        <C />
                                     </React.Suspense>
                                 </Panel>
                             );
