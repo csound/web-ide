@@ -1,5 +1,5 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { shadow, _scrollbars } from "@styles/_common";
+import { shadow } from "@styles/_common";
 
 export const dropdownContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
@@ -285,9 +285,6 @@ export const menuForDialog = (theme: Theme): SerializedStyles => css`
 
 export const targetsDialog = (theme: Theme): SerializedStyles => css`
     min-width: 400px;
-    max-height: 80vh;
-    overflow-y: scroll;
-    ${_scrollbars(theme)}
 `;
 
 export const targetsDialogBottom = (theme: Theme): SerializedStyles => css`
