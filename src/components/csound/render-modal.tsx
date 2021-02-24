@@ -9,6 +9,9 @@ import { CsoundObj } from "@csound/browser";
 import { isAudioFile } from "@comp/projects/utils";
 import { closeModal } from "@comp/modal/actions";
 import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
+import { getType as mimeLookup } from "mime/lite";
+import { openSnackbar } from "@comp/snackbar/actions";
+import { SnackbarType } from "@comp/snackbar/types";
 import Fab from "@material-ui/core/Fab";
 import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -32,11 +35,6 @@ import {
     UdoFileIcon
 } from "@elem/filetype-icons";
 
-// const arrayBuffer = await libcsound.readFromFs(f.name);
-//        const mimeType = mimeLookup(f.name);
-//        const blob = new Blob([arrayBuffer], { type: mimeType });
-//        const url = (window.URL || window.webkitURL).createObjectURL(blob);
-//
 function lsStatAll(fs, tree = {}, root = "/") {
     if (fs.existsSync(root)) {
         fs.readdirSync(root).forEach((file) => {
@@ -233,6 +231,8 @@ function AudioPlayer({
     const [isStarted, setIsStarted] = useState(false);
     const [currentTime, setCurrentTime] = useState("00:00");
     const [percentagePlayed, setPercentagePlayed] = useState("0%");
+    const dispatch = useDispatch();
+    const mimeType = mimeLookup(filename);
 
     const onAudioProgress = useCallback(
         (seekTime?: number | any) => {
@@ -294,16 +294,39 @@ function AudioPlayer({
                                 setIsPaused(false);
                                 setIsStarted(false);
                             };
-                            audioReference.current.play();
+                            try {
+                                audioReference.current.play();
+                            } catch (error) {
+                                dispatch(
+                                    openSnackbar(
+                                        "Failed to play audio file, html5 audio or audio codec is not supported. " +
+                                            "(browser support for html5 audio playback can differ). " +
+                                            error,
+                                        SnackbarType.Error
+                                    )
+                                );
+                            }
+
                             setCurrentlyPlaying({
                                 filename,
                                 url: (
                                     window.URL || window.webkitURL
                                 ).createObjectURL(
-                                    new Blob([csound.fs.readFileSync(filename)])
+                                    new Blob(
+                                        [csound.fs.readFileSync(filename)],
+                                        { type: mimeType }
+                                    )
                                 )
                             });
                             setIsStarted(true);
+                        } else {
+                            dispatch(
+                                openSnackbar(
+                                    "Failed to play audio file, html5 audio or audio codec is not supported. " +
+                                        "(browser support for html5 audio playback can differ).",
+                                    SnackbarType.Error
+                                )
+                            );
                         }
                     }}
                 >
@@ -314,7 +337,10 @@ function AudioPlayer({
                 {currentlyPlaying &&
                     currentlyPlaying.filename === filename &&
                     currentlyPlaying.url && (
-                        <source src={currentlyPlaying.url}></source>
+                        <source
+                            src={currentlyPlaying.url}
+                            type={mimeType}
+                        ></source>
                     )}
             </audio>
             <div style={{ display: "flex" }}>

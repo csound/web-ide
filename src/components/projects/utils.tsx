@@ -1,4 +1,5 @@
 import firebase from "firebase/app";
+import { getType as mimeLookup } from "mime/lite";
 import {
     storageReference,
     getFirebaseTimestamp,
@@ -31,9 +32,13 @@ export function textOrBinary(filename: string): IDocumentFileType {
 
 export function isAudioFile(fileName: string): boolean {
     // currently does not deal with FLAC, not sure if browser supports it
+    const mimeType = mimeLookup(fileName) || "";
     const endings = [".wav", ".ogg", ".mp3", "aiff", "flac"];
     const lower = fileName.toLowerCase();
-    return endings.some((ending) => lower.endsWith(ending));
+    return (
+        endings.some((ending) => lower.endsWith(ending)) ||
+        mimeType.startsWith("audio")
+    );
 }
 
 export const generateEmptyDocument = (
