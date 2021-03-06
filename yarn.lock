@@ -986,10 +986,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@csound/browser@^6.16.0-beta3":
-  version "6.16.0-beta3"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.16.0-beta3.tgz#f31073852e9009449a0d7b6f6392c4fa184e5f48"
-  integrity sha512-sGUTXqII6M+y6Z/AA0bdUYomjtrTLaHnXlBuiCpIqksOLJ6x7LnPg9RJM6ryuPKv1JFok+R1BSGKxrNo4Nyy5w==
+"@csound/browser@^6.16.0-beta4":
+  version "6.16.0-beta4"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.16.0-beta4.tgz#368a218fe9aa484173aa7556c8ee1b4f6fc319ab"
+  integrity sha512-2EgmB60xM2uaA4WtTAru115PxPRyLI6PzOMVakuudUptcej2k2hj/3uxEAi8yredO2MJM2FK+GS3vnkTqEDNzA==
   dependencies:
     "@wasmer/wasi" "^0.12.0"
     "@wasmer/wasm-transformer" "^0.12.0"
