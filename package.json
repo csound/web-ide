@@ -26,7 +26,7 @@
         "react-beforeunload": "^2.4.0",
         "react-color": "^2.19.3",
         "react-debounce-input": "^3.2.3",
-        "react-dev-utils": "^11.0.1",
+        "react-dev-utils": "^11.0.4",
         "react-dom": "^17.0.1",
         "react-firebaseui": "^4.1.0",
         "react-hotkeys": "^2.0.0",
