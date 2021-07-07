@@ -156,12 +156,8 @@ const TargetsConfigDialog = () => {
     const mainArea = map((index: number) => {
         const thisTarget = newTargets[index] as ITargetFromInput;
 
-        const {
-            targetName,
-            oldTargetName,
-            targetType,
-            isDefaultTarget
-        } = thisTarget;
+        const { targetName, oldTargetName, targetType, isDefaultTarget } =
+            thisTarget;
         const maybeMainTargetDocumentUid = thisTarget.targetDocumentUid;
         const validateTargetType = (targetType) =>
             typeof targetType === "string" ? !isEmpty(targetName) : false;

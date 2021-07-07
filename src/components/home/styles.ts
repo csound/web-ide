@@ -27,10 +27,11 @@ const homeStyles = (theme: Theme) =>
             }
         },
         cssOutlinedInput: {
-            "&:not(hover):not($disabled):not($cssFocused):not($error) $notchedOutline": {
-                borderColor: "#272922",
-                overflow: "hidden"
-            }
+            "&:not(hover):not($disabled):not($cssFocused):not($error) $notchedOutline":
+                {
+                    borderColor: "#272922",
+                    overflow: "hidden"
+                }
         },
         cssLabel: {
             color: "green",

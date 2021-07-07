@@ -36,10 +36,8 @@ const Main = () => {
             .auth()
             .onAuthStateChanged((user) => {
                 if (user) {
-                    unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
-                        user.uid,
-                        dispatch
-                    );
+                    unsubscribeLoggedInUserProfile =
+                        subscribeToLoggedInUserProfile(user.uid, dispatch);
                     dispatch(thirdPartyAuthSuccess(user, !autoLoginTimeout));
                 } else {
                     dispatch(setRequestingStatus(false));

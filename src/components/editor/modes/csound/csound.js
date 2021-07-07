@@ -224,9 +224,8 @@ CodeMirror.defineMode("csound", function (config, parserConfig) {
                         state
                     );
                 } else {
-                    state.tokenize[
-                        state.tokenize.length - 1
-                    ] = tokenBaseUntilBrace(depth - 1);
+                    state.tokenize[state.tokenize.length - 1] =
+                        tokenBaseUntilBrace(depth - 1);
                 }
             } else if (stream.peek() === "{") {
                 state.tokenize[state.tokenize.length - 1] = tokenBaseUntilBrace(

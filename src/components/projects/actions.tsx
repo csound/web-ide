@@ -198,9 +198,8 @@ export const addProjectDocuments = (
             documents
         });
         if (tabIndex < 0) {
-            const maybeDefaultTargetName:
-                | string
-                | undefined = selectDefaultTargetName(projectUid, store);
+            const maybeDefaultTargetName: string | undefined =
+                selectDefaultTargetName(projectUid, store);
             const maybeDefaultTarget: ITarget | undefined = selectTarget(
                 projectUid,
                 maybeDefaultTargetName,

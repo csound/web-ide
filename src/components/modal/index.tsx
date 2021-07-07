@@ -57,7 +57,7 @@ export default function GlobalModal() {
         setTimeout(() => {
             if (modalReference.current) {
                 resizeObserver.observe(
-                    (modalReference.current as unknown) as Element
+                    modalReference.current as unknown as Element
                 );
                 copiedReference = modalReference.current;
             }

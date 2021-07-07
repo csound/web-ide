@@ -163,11 +163,12 @@ export const subscribeToProfileProjects = (
     isProfileOwner: boolean,
     dispatch: any
 ) => {
-    const unsubscribe = (isProfileOwner
-        ? projects.where("userUid", "==", profileUid)
-        : projects
-              .where("userUid", "==", profileUid)
-              .where("public", "==", true)
+    const unsubscribe = (
+        isProfileOwner
+            ? projects.where("userUid", "==", profileUid)
+            : projects
+                  .where("userUid", "==", profileUid)
+                  .where("public", "==", true)
     ).onSnapshot(async (projectSnaps) => {
         const currentProfileProjects = pipe(
             pathOr([], ["ProjectsReducer", "projects"]),

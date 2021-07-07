@@ -189,24 +189,25 @@ export const playButtonContainer = (theme) => css`
     }
 `;
 
-export const playButtonStyle = (playing: boolean) => (theme) => css`
-    border: 0;
-    background: transparent;
-    box-sizing: border-box;
-    width: 0;
-    height: 12px;
-    cursor: pointer;
-    border-color: transparent transparent transparent ${theme.playIcon};
-    transition: 100ms all ease;
+export const playButtonStyle = (playing: boolean) => (theme) =>
+    css`
+        border: 0;
+        background: transparent;
+        box-sizing: border-box;
+        width: 0;
+        height: 12px;
+        cursor: pointer;
+        border-color: transparent transparent transparent ${theme.playIcon};
+        transition: 100ms all ease;
 
-    // play state
-    margin-top: 6px;
-    margin-left: 10px;
-    border-style: solid;
-    border-width: 12px 0 12px 20px;
+        // play state
+        margin-top: 6px;
+        margin-left: 10px;
+        border-style: solid;
+        border-width: 12px 0 12px 20px;
 
-    ${playing &&
-    `
+        ${playing &&
+        `
 cursor: pointer;
 border-style: double;
 border-width: 0px 0 0px 20px;
@@ -214,7 +215,7 @@ height: 26px;
 margin-top: 6px;
 margin-left: 9px;
 `}
-`;
+    `;
 
 export const buttonContainer = (theme) => css`
     position: relative;

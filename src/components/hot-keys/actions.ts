@@ -95,9 +95,8 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
             }),
             find_simple: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
-                const maybeDialog = document.querySelector(
-                    ".CodeMirror-dialog"
-                );
+                const maybeDialog =
+                    document.querySelector(".CodeMirror-dialog");
                 if (!maybeDialog) {
                     editor && editor.execCommand("find");
                 } else {

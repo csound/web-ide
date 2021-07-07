@@ -52,7 +52,8 @@ background-size:100px 100px;
     }
 };
 
-export const gradient = (shapeIndex) => (theme) => css`
-    ${shapes(shapeIndex, theme)}
-    min-height: 100vh;
-`;
+export const gradient = (shapeIndex) => (theme) =>
+    css`
+        ${shapes(shapeIndex, theme)}
+        min-height: 100vh;
+    `;

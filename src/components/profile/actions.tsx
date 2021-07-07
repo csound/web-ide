@@ -113,119 +113,125 @@ const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
     await batch.commit();
 };
 
-export const addUserProject = (
-    name: string,
-    description: string,
-    currentTags: string[],
-    projectUid: string,
-    iconName: string,
-    iconForegroundColor: string,
-    iconBackgroundColor: string
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getState
-) => {
-    const currentState = getState();
-    const loggedInUserUid = selectLoggedInUid(currentState);
-    if (loggedInUserUid) {
-        const newProject = {
-            userUid: loggedInUserUid,
-            name,
-            created: getFirebaseTimestamp(),
-            description,
-            public: true,
-            iconName,
-            iconForegroundColor,
-            iconBackgroundColor
-        };
+export const addUserProject =
+    (
+        name: string,
+        description: string,
+        currentTags: string[],
+        projectUid: string,
+        iconName: string,
+        iconForegroundColor: string,
+        iconBackgroundColor: string
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch, getState) => {
+        const currentState = getState();
+        const loggedInUserUid = selectLoggedInUid(currentState);
+        if (loggedInUserUid) {
+            const newProject = {
+                userUid: loggedInUserUid,
+                name,
+                created: getFirebaseTimestamp(),
+                description,
+                public: true,
+                iconName,
+                iconForegroundColor,
+                iconBackgroundColor
+            };
 
-        try {
-            const batch = database.batch();
-            const newProjectReference = projects.doc();
-            batch.set(newProjectReference, newProject);
-            const filesReference = newProjectReference.collection("files");
-            const csdFileReference = filesReference.doc();
-            batch.set(csdFileReference, {
-                ...defaultCsd,
-                userUid: loggedInUserUid
-            });
-            batch.set(filesReference.doc(), {
-                ...defaultOrc,
-                userUid: loggedInUserUid
-            });
-            batch.set(filesReference.doc(), {
-                ...defaultSco,
-                userUid: loggedInUserUid
-            });
-            batch.set(
-                targets.doc(newProjectReference.id),
-                {
-                    targets: {
-                        "project.csd": {
-                            csoundOptions: {},
-                            targetName: "project.csd",
-                            targetType: "main",
-                            targetDocumentUid: csdFileReference.id
-                        }
+            try {
+                const batch = database.batch();
+                const newProjectReference = projects.doc();
+                batch.set(newProjectReference, newProject);
+                const filesReference = newProjectReference.collection("files");
+                const csdFileReference = filesReference.doc();
+                batch.set(csdFileReference, {
+                    ...defaultCsd,
+                    userUid: loggedInUserUid
+                });
+                batch.set(filesReference.doc(), {
+                    ...defaultOrc,
+                    userUid: loggedInUserUid
+                });
+                batch.set(filesReference.doc(), {
+                    ...defaultSco,
+                    userUid: loggedInUserUid
+                });
+                batch.set(
+                    targets.doc(newProjectReference.id),
+                    {
+                        targets: {
+                            "project.csd": {
+                                csoundOptions: {},
+                                targetName: "project.csd",
+                                targetType: "main",
+                                targetDocumentUid: csdFileReference.id
+                            }
+                        },
+                        defaultTarget: "project.csd"
                     },
-                    defaultTarget: "project.csd"
-                },
-                { merge: true }
-            );
-            await batch.commit();
-            await handleProjectTags(
-                newProjectReference.id,
-                loggedInUserUid,
-                currentTags
-            );
-            dispatch(addUserProjectAction());
-            dispatch(openSnackbar("Project Added", SnackbarType.Success));
-        } catch (error) {
-            console.log(error);
-            dispatch(openSnackbar("Could not add Project", SnackbarType.Error));
+                    { merge: true }
+                );
+                await batch.commit();
+                await handleProjectTags(
+                    newProjectReference.id,
+                    loggedInUserUid,
+                    currentTags
+                );
+                dispatch(addUserProjectAction());
+                dispatch(openSnackbar("Project Added", SnackbarType.Success));
+            } catch (error) {
+                console.log(error);
+                dispatch(
+                    openSnackbar("Could not add Project", SnackbarType.Error)
+                );
+            }
         }
-    }
-};
+    };
 
-export const editUserProject = (
-    name: string,
-    description: string,
-    currentTags: string[],
-    projectUid: string,
-    iconName: string,
-    iconForegroundColor: string,
-    iconBackgroundColor: string
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getState
-) => {
-    const currentState = getState();
-    const loggedInUserUid = selectLoggedInUid(currentState);
-    if (loggedInUserUid) {
-        const newProject = {
-            userUid: loggedInUserUid,
-            name: name || "",
-            description: description || "",
-            public: false,
-            iconName: iconName || "",
-            iconForegroundColor: iconForegroundColor || "",
-            iconBackgroundColor: iconBackgroundColor || ""
-        };
+export const editUserProject =
+    (
+        name: string,
+        description: string,
+        currentTags: string[],
+        projectUid: string,
+        iconName: string,
+        iconForegroundColor: string,
+        iconBackgroundColor: string
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch, getState) => {
+        const currentState = getState();
+        const loggedInUserUid = selectLoggedInUid(currentState);
+        if (loggedInUserUid) {
+            const newProject = {
+                userUid: loggedInUserUid,
+                name: name || "",
+                description: description || "",
+                public: false,
+                iconName: iconName || "",
+                iconForegroundColor: iconForegroundColor || "",
+                iconBackgroundColor: iconBackgroundColor || ""
+            };
 
-        try {
-            const newProjectReference = await projects.doc(projectUid);
-            await newProjectReference.update(newProject);
-            await handleProjectTags(projectUid, loggedInUserUid, currentTags);
-            dispatch(addUserProjectAction());
-            dispatch(openSnackbar("Project modified", SnackbarType.Success));
-        } catch (error) {
-            console.log(error);
-            dispatch(
-                openSnackbar("Could not edit Project", SnackbarType.Error)
-            );
+            try {
+                const newProjectReference = await projects.doc(projectUid);
+                await newProjectReference.update(newProject);
+                await handleProjectTags(
+                    projectUid,
+                    loggedInUserUid,
+                    currentTags
+                );
+                dispatch(addUserProjectAction());
+                dispatch(
+                    openSnackbar("Project modified", SnackbarType.Success)
+                );
+            } catch (error) {
+                console.log(error);
+                dispatch(
+                    openSnackbar("Could not edit Project", SnackbarType.Error)
+                );
+            }
         }
-    }
-};
+    };
 
 const deleteUserProjectAction = (): ProfileActionTypes => {
     return {
@@ -233,37 +239,34 @@ const deleteUserProjectAction = (): ProfileActionTypes => {
     };
 };
 
-export const deleteUserProject = (
-    document_: any
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getState
-) => {
-    const currentState = getState();
-    const loggedInUserUid = selectLoggedInUid(currentState);
-    if (loggedInUserUid) {
-        const files = await projects
-            .doc(document_.projectUid)
-            .collection("files")
-            .get();
+export const deleteUserProject =
+    (document_: any): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch, getState) => {
+        const currentState = getState();
+        const loggedInUserUid = selectLoggedInUid(currentState);
+        if (loggedInUserUid) {
+            const files = await projects
+                .doc(document_.projectUid)
+                .collection("files")
+                .get();
 
-        const batch = database.batch();
-        const documentReference = projects.doc(document_.projectUid);
-        batch.delete(documentReference);
-        files.forEach((d) => batch.delete(d.ref));
+            const batch = database.batch();
+            const documentReference = projects.doc(document_.projectUid);
+            batch.delete(documentReference);
+            files.forEach((d) => batch.delete(d.ref));
 
-        try {
-            await batch.commit();
-            setTimeout(() => dispatch(deleteUserProjectAction()), 1);
+            try {
+                await batch.commit();
+                setTimeout(() => dispatch(deleteUserProjectAction()), 1);
 
-            dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
-        } catch {
-            dispatch(
-                openSnackbar("Could Not Delete Project", SnackbarType.Error)
-            );
+                dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
+            } catch {
+                dispatch(
+                    openSnackbar("Could Not Delete Project", SnackbarType.Error)
+                );
+            }
         }
-    }
-};
+    };
 
 export const setCurrentTagText = (text: string): ProfileActionTypes => {
     return {
@@ -279,33 +282,32 @@ export const setTagsInput = (tags): ProfileActionTypes => {
     };
 };
 
-export const getAllTagsFromUser = (
-    loggedInUserUid,
-    allUserProjectsUids
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getStore
-) => {
-    const store = getStore();
+export const getAllTagsFromUser =
+    (
+        loggedInUserUid,
+        allUserProjectsUids
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch, getStore) => {
+        const store = getStore();
 
-    const currentAllTags = pathOr(
-        {},
-        ["ProfiledReducer", "profiles", loggedInUserUid, "allTags"],
-        store
-    );
-
-    if (allUserProjectsUids) {
-        const allTags = reduce(
-            (accumulator, item) => concat(item.tags || [], accumulator),
-            [],
-            allUserProjectsUids
+        const currentAllTags = pathOr(
+            {},
+            ["ProfiledReducer", "profiles", loggedInUserUid, "allTags"],
+            store
         );
-        // console.log();
-        if (!equals(currentAllTags, allTags)) {
-            dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
+
+        if (allUserProjectsUids) {
+            const allTags = reduce(
+                (accumulator, item) => concat(item.tags || [], accumulator),
+                [],
+                allUserProjectsUids
+            );
+            // console.log();
+            if (!equals(currentAllTags, allTags)) {
+                dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
+            }
         }
-    }
-};
+    };
 
 export const addProject = () => {
     return async (dispatch: any) => {
@@ -326,87 +328,90 @@ export const addProject = () => {
     };
 };
 
-export const followUser = (
-    loggedInUserUid: string,
-    profileUid: string
-): ThunkAction<void, any, null, Action<string>> => async (dispatch) => {
-    const batch = database.batch();
-    const followersReference = followers.doc(profileUid);
-    const followersData = await followersReference.get();
+export const followUser =
+    (
+        loggedInUserUid: string,
+        profileUid: string
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch) => {
+        const batch = database.batch();
+        const followersReference = followers.doc(profileUid);
+        const followersData = await followersReference.get();
 
-    if (followersData.exists) {
-        batch.update(followersReference, {
-            [loggedInUserUid]: getFirebaseTimestamp()
-        });
-    } else {
-        batch.set(followersReference, {
-            [loggedInUserUid]: getFirebaseTimestamp()
-        });
-    }
+        if (followersData.exists) {
+            batch.update(followersReference, {
+                [loggedInUserUid]: getFirebaseTimestamp()
+            });
+        } else {
+            batch.set(followersReference, {
+                [loggedInUserUid]: getFirebaseTimestamp()
+            });
+        }
 
-    const followingReference = following.doc(loggedInUserUid);
-    const followingData = await followingReference.get();
-    if (followingData.exists) {
-        batch.update(followingReference, {
-            [profileUid]: getFirebaseTimestamp()
-        });
-    } else {
-        batch.set(followingReference, {
-            [profileUid]: getFirebaseTimestamp()
-        });
-    }
+        const followingReference = following.doc(loggedInUserUid);
+        const followingData = await followingReference.get();
+        if (followingData.exists) {
+            batch.update(followingReference, {
+                [profileUid]: getFirebaseTimestamp()
+            });
+        } else {
+            batch.set(followingReference, {
+                [profileUid]: getFirebaseTimestamp()
+            });
+        }
 
-    await batch.commit();
-};
+        await batch.commit();
+    };
 
-export const unfollowUser = (
-    loggedInUserUid: string,
-    profileUid: string
-): ThunkAction<void, any, null, Action<string>> => async (dispatch) => {
-    const batch = database.batch();
-    batch.update(followers.doc(profileUid), {
-        [loggedInUserUid]: fieldDelete()
-    });
-    batch.update(following.doc(loggedInUserUid), {
-        [profileUid]: fieldDelete()
-    });
-    await batch.commit();
-};
-
-export const updateUserProfile = (
-    originalUsername: string,
-    username: string,
-    displayName: string,
-    bio: string,
-    link1: string,
-    link2: string,
-    link3: string,
-    backgroundIndex: number
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getState
-) => {
-    const currentState = getState();
-    const loggedInUserUid = selectLoggedInUid(currentState);
-    if (loggedInUserUid) {
-        await profiles.doc(loggedInUserUid).update({
-            username,
-            displayName,
-            bio,
-            link1,
-            link2,
-            link3,
-            backgroundIndex
+export const unfollowUser =
+    (
+        loggedInUserUid: string,
+        profileUid: string
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch) => {
+        const batch = database.batch();
+        batch.update(followers.doc(profileUid), {
+            [loggedInUserUid]: fieldDelete()
         });
-
-        await usernames.doc(originalUsername).delete();
-        await usernames.doc(username).set({ userUid: loggedInUserUid });
-        dispatch({
-            type: REFRESH_USER_PROFILE,
-            payload: { username, displayName, bio, link1, link2, link3 }
+        batch.update(following.doc(loggedInUserUid), {
+            [profileUid]: fieldDelete()
         });
-    }
-};
+        await batch.commit();
+    };
+
+export const updateUserProfile =
+    (
+        originalUsername: string,
+        username: string,
+        displayName: string,
+        bio: string,
+        link1: string,
+        link2: string,
+        link3: string,
+        backgroundIndex: number
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch, getState) => {
+        const currentState = getState();
+        const loggedInUserUid = selectLoggedInUid(currentState);
+        if (loggedInUserUid) {
+            await profiles.doc(loggedInUserUid).update({
+                username,
+                displayName,
+                bio,
+                link1,
+                link2,
+                link3,
+                backgroundIndex
+            });
+
+            await usernames.doc(originalUsername).delete();
+            await usernames.doc(username).set({ userUid: loggedInUserUid });
+            dispatch({
+                type: REFRESH_USER_PROFILE,
+                payload: { username, displayName, bio, link1, link2, link3 }
+            });
+        }
+    };
 
 export const editProfile = (
     username: string,
@@ -473,103 +478,106 @@ export const deleteProject = (document_: any) => {
     };
 };
 
-export const uploadProfileImage = (
-    loggedInUserUid: string,
-    file: File
-): ThunkAction<void, any, null, Action<string>> => async (dispatch) => {
-    try {
-        await firebase
-            .storage()
-            .ref()
-            .child(`images/${loggedInUserUid}/profile.jpeg`)
-            .put(file);
-        const imageUrl = await firebase
-            .storage()
-            .ref()
-            .child(`images/${loggedInUserUid}/profile.jpeg`)
-            .getDownloadURL();
-        await profiles.doc(loggedInUserUid).update({ photoUrl: imageUrl });
-        dispatch(
-            openSnackbar("Profile Picture Uploaded", SnackbarType.Success)
-        );
-    } catch {
-        dispatch(
-            openSnackbar("Profile Picture Upload Failed", SnackbarType.Error)
-        );
-    }
-};
+export const uploadProfileImage =
+    (
+        loggedInUserUid: string,
+        file: File
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch) => {
+        try {
+            await firebase
+                .storage()
+                .ref()
+                .child(`images/${loggedInUserUid}/profile.jpeg`)
+                .put(file);
+            const imageUrl = await firebase
+                .storage()
+                .ref()
+                .child(`images/${loggedInUserUid}/profile.jpeg`)
+                .getDownloadURL();
+            await profiles.doc(loggedInUserUid).update({ photoUrl: imageUrl });
+            dispatch(
+                openSnackbar("Profile Picture Uploaded", SnackbarType.Success)
+            );
+        } catch {
+            dispatch(
+                openSnackbar(
+                    "Profile Picture Upload Failed",
+                    SnackbarType.Error
+                )
+            );
+        }
+    };
 
-export const playListItem = (projectUid: string | false) => async (
-    dispatch,
-    getState
-) => {
-    const state = getState();
-    const csound = state.csound.csound;
-    const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
+export const playListItem =
+    (projectUid: string | false) => async (dispatch, getState) => {
+        const state = getState();
+        const csound = state.csound.csound;
+        const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
 
-    if (projectUid === false) {
-        console.log("playListItem: projectUid is false");
-        return;
-    }
+        if (projectUid === false) {
+            console.log("playListItem: projectUid is false");
+            return;
+        }
 
-    if (projectUid !== currentlyPlayingProject) {
-        await dispatch({
-            type: SET_CURRENTLY_PLAYING_PROJECT,
-            projectUid: undefined
-        });
-    }
+        if (projectUid !== currentlyPlayingProject) {
+            await dispatch({
+                type: SET_CURRENTLY_PLAYING_PROJECT,
+                projectUid: undefined
+            });
+        }
 
-    const projectIsCached = hasPath(
-        ["ProjectsReducer", "projects", projectUid],
-        state
-    );
-    const projectHasLastModule = hasPath(
-        ["ProjectLastModifiedReducer", projectUid, "timestamp"],
-        state
-    );
-    let timestampMismatch = false;
-
-    if (projectIsCached && projectHasLastModule) {
-        const cachedTimestamp: Timestamp | undefined = path(
-            [
-                "ProjectsReducer",
-                "projects",
-                projectUid,
-                "cachedProjectLastModified"
-            ],
+        const projectIsCached = hasPath(
+            ["ProjectsReducer", "projects", projectUid],
             state
         );
-        const currentTimestamp: Timestamp | undefined = path(
+        const projectHasLastModule = hasPath(
             ["ProjectLastModifiedReducer", projectUid, "timestamp"],
             state
         );
-        if (cachedTimestamp && currentTimestamp) {
-            timestampMismatch =
-                (cachedTimestamp as Timestamp).toMillis() !==
-                (currentTimestamp as Timestamp).toMillis();
+        let timestampMismatch = false;
+
+        if (projectIsCached && projectHasLastModule) {
+            const cachedTimestamp: Timestamp | undefined = path(
+                [
+                    "ProjectsReducer",
+                    "projects",
+                    projectUid,
+                    "cachedProjectLastModified"
+                ],
+                state
+            );
+            const currentTimestamp: Timestamp | undefined = path(
+                ["ProjectLastModifiedReducer", projectUid, "timestamp"],
+                state
+            );
+            if (cachedTimestamp && currentTimestamp) {
+                timestampMismatch =
+                    (cachedTimestamp as Timestamp).toMillis() !==
+                    (currentTimestamp as Timestamp).toMillis();
+            }
         }
-    }
 
-    if (!projectIsCached || timestampMismatch || !projectHasLastModule) {
-        await downloadProjectOnce(projectUid)(dispatch);
-        await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
-        await downloadTargetsOnce(projectUid)(dispatch);
-        await getProjectLastModifiedOnce(projectUid)(dispatch);
-        // recursion
-        return playListItem(projectUid)(dispatch, getState);
-    }
+        if (!projectIsCached || timestampMismatch || !projectHasLastModule) {
+            await downloadProjectOnce(projectUid)(dispatch);
+            await downloadAllProjectDocumentsOnce(projectUid, csound)(dispatch);
+            await downloadTargetsOnce(projectUid)(dispatch);
+            await getProjectLastModifiedOnce(projectUid)(dispatch);
+            // recursion
+            return playListItem(projectUid)(dispatch, getState);
+        }
 
-    const playAction = getPlayActionFromProject(projectUid, state);
-    if (playAction) {
-        dispatch(playAction);
-        await dispatch({
-            type: SET_CURRENTLY_PLAYING_PROJECT,
-            projectUid
-        });
-    } else {
-        // handle unplayable project
-    }
-};
+        const playAction = getPlayActionFromProject(projectUid, state);
+        if (playAction) {
+            dispatch(playAction);
+            await dispatch({
+                type: SET_CURRENTLY_PLAYING_PROJECT,
+                projectUid
+            });
+        } else {
+            // handle unplayable project
+        }
+    };
 
 export const storeProfileProjectsCount = (
     projectsCount: any,

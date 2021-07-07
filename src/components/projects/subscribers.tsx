@@ -49,9 +49,8 @@ export const subscribeToProjectFilesChanges = (
             );
 
             if (!isEmpty(filesToAdd)) {
-                const documents: IDocumentsMap = convertDocumentSnapToDocumentsMap(
-                    filesToAdd
-                );
+                const documents: IDocumentsMap =
+                    convertDocumentSnapToDocumentsMap(filesToAdd);
                 forEach((d) => {
                     if (d.type !== "folder") {
                         const pathPrefix = (d.path || [])

@@ -202,9 +202,9 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
             ])
         );
 
-        const reservedFilenames = (values(
-            project.documents
-        ) as IDocument[]).map((document_) => document_.filename);
+        const reservedFilenames = (
+            values(project.documents) as IDocument[]
+        ).map((document_) => document_.filename);
 
         const megabyte_limit = Math.pow(10, 6) * 2;
         const shouldDisable =

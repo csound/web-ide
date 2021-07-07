@@ -380,9 +380,8 @@ class CsoundObj {
             audioInputCallback(false);
         } else {
             const onSuccess = (stream: any) => {
-                this.microphoneNode = CSOUND_AUDIO_CONTEXT.createMediaStreamSource(
-                    stream
-                );
+                this.microphoneNode =
+                    CSOUND_AUDIO_CONTEXT.createMediaStreamSource(stream);
                 audioInputCallback(true);
             };
 

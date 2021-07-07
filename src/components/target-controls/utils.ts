@@ -8,54 +8,54 @@ import { filenameToCsoundType } from "@comp/csound/utils";
 const getDefaultTargetName = (store, projectUid): string | undefined =>
     path(["TargetControlsReducer", projectUid, "defaultTarget"], store);
 
-export const getDefaultTargetDocument = curry((projectUid, store):
-    | IDocument
-    | undefined => {
-    const maybeDefaultTarget: ITarget | undefined = path(
-        [
-            "TargetControlsReducer",
-            projectUid,
-            "targets",
-            getDefaultTargetName(store, projectUid) || ""
-        ],
-        store
-    );
+export const getDefaultTargetDocument = curry(
+    (projectUid, store): IDocument | undefined => {
+        const maybeDefaultTarget: ITarget | undefined = path(
+            [
+                "TargetControlsReducer",
+                projectUid,
+                "targets",
+                getDefaultTargetName(store, projectUid) || ""
+            ],
+            store
+        );
 
-    const projectCsdFallback = find(
-        propEq("filename", "project.csd"),
-        values(
-            pathOr(
-                {},
-                ["ProjectsReducer", "projects", projectUid, "documents"],
-                store
+        const projectCsdFallback = find(
+            propEq("filename", "project.csd"),
+            values(
+                pathOr(
+                    {},
+                    ["ProjectsReducer", "projects", projectUid, "documents"],
+                    store
+                )
             )
-        )
-    );
+        );
 
-    // ATT: fallback to project.csd is to prevserve fallback behaviour
-    // This should be marked as a deprecated fallback, soonish
-    const targetDocument: IDocument | undefined = maybeDefaultTarget
-        ? path(
-              [
-                  "ProjectsReducer",
-                  "projects",
-                  projectUid,
-                  "documents",
-                  (maybeDefaultTarget as ITarget).targetType === "main"
-                      ? maybeDefaultTarget &&
-                        (maybeDefaultTarget as ITarget)!.targetDocumentUid
-                      : maybeDefaultTarget &&
-                        pathOr(
-                            "",
-                            ["playlistDocumentsUid", 0],
-                            maybeDefaultTarget as ITarget
-                        )
-              ],
-              store
-          )
-        : projectCsdFallback;
-    return targetDocument;
-});
+        // ATT: fallback to project.csd is to prevserve fallback behaviour
+        // This should be marked as a deprecated fallback, soonish
+        const targetDocument: IDocument | undefined = maybeDefaultTarget
+            ? path(
+                  [
+                      "ProjectsReducer",
+                      "projects",
+                      projectUid,
+                      "documents",
+                      (maybeDefaultTarget as ITarget).targetType === "main"
+                          ? maybeDefaultTarget &&
+                            (maybeDefaultTarget as ITarget)!.targetDocumentUid
+                          : maybeDefaultTarget &&
+                            pathOr(
+                                "",
+                                ["playlistDocumentsUid", 0],
+                                maybeDefaultTarget as ITarget
+                            )
+                  ],
+                  store
+              )
+            : projectCsdFallback;
+        return targetDocument;
+    }
+);
 
 export const getPlayActionFromProject = curry(
     (projectUid: string, store: IStore) => {

@@ -221,12 +221,10 @@ const CodeEditor = ({ documentUid, projectUid, isOwner }) => {
 
     const editorWillUnmount = () => {
         if (editorReference) {
-            cursorState[
-                `${documentUid}:cursor_pos`
-            ] = editorReference.getCursor();
-            cursorState[
-                `${documentUid}:history`
-            ] = editorReference.getHistory();
+            cursorState[`${documentUid}:cursor_pos`] =
+                editorReference.getCursor();
+            cursorState[`${documentUid}:history`] =
+                editorReference.getHistory();
         }
         dispatch(
             projectEditorActions.storeEditorInstance(

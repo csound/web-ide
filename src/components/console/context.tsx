@@ -18,9 +18,8 @@ export const ConsoleProvider = ({ children, activeProject, csound }) => {
         setLogs(append(message + "\n"));
     };
 
-    const globalMessageCallback:
-        | IGlobalMessageCallback
-        | undefined = useSelector(path(["ConsoleReducer", "printToConsole"]));
+    const globalMessageCallback: IGlobalMessageCallback | undefined =
+        useSelector(path(["ConsoleReducer", "printToConsole"]));
 
     useEffect(() => {
         setClearConsoleCallback(() => {

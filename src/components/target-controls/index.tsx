@@ -13,9 +13,8 @@ import StopButton from "./stop-button";
 const TargetControls = () => {
     const dispatch = useDispatch();
 
-    const selectedTarget: string | undefined = useSelector(
-        selectSelectedTarget
-    );
+    const selectedTarget: string | undefined =
+        useSelector(selectSelectedTarget);
 
     const activeProjectUid: string | undefined = useSelector(
         (store: IStore) => {

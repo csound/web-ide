@@ -96,9 +96,7 @@ interface IProjectCardSpinnerContainer {
     duration: number;
 }
 
-export const ProjectCardSpinnerContainer = styled.div<
-    IProjectCardSpinnerContainer
->`
+export const ProjectCardSpinnerContainer = styled.div<IProjectCardSpinnerContainer>`
     position: absolute;
     height: 100%;
     width: 100%;
@@ -146,9 +144,7 @@ export const ProjectCardSVGContainer = styled.div<IProjectCardSVGContainer>`
 interface IProjectCardContentContainer {
     duration: number;
 }
-export const ProjectCardContentContainer = styled.div<
-    IProjectCardContentContainer
->`
+export const ProjectCardContentContainer = styled.div<IProjectCardContentContainer>`
     position: absolute;
     height: 100%;
     width: 100%;

@@ -93,9 +93,8 @@ const Profile = ({ classes, ...properties }) => {
     const allUserProjectsUids = useSelector(
         selectAllUserProjectUids(loggedInUserUid)
     );
-    const [lastAllUserProjectUids, setLastAllUserProjectUids] = useState(
-        allUserProjectsUids
-    );
+    const [lastAllUserProjectUids, setLastAllUserProjectUids] =
+        useState(allUserProjectsUids);
     const filteredProjects = useSelector(
         selectFilteredUserProjects(profileUid)
     );

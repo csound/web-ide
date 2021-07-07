@@ -110,9 +110,8 @@ export const convertDocumentSnapToDocumentsMap = (documentsToAdd) =>
         map(prop("doc")),
         map((d: any) => assoc("documentUid", d.id, d.data())),
         reduce((accumulator: IDocumentsMap, documentData: any) => {
-            accumulator[
-                documentData["documentUid"]
-            ] = fileDocumentDataToDocumentType(documentData);
+            accumulator[documentData["documentUid"]] =
+                fileDocumentDataToDocumentType(documentData);
             return accumulator;
         }, {})
     )(documentsToAdd);
