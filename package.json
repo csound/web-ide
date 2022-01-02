@@ -19,6 +19,7 @@
     "dependencies": {
         "@csound/browser": "^6.17.0-beta1",
         "@hlolli/react-modal-resizable-draggable": "^0.1.5",
+        "history": "^5.2.0",
         "mime": "^3.0.0",
         "ramda": "^0.27.1",
         "react": "^17.0.2",
@@ -42,7 +43,6 @@
         "react-refresh": "^0.11.0",
         "react-router": "^6.2.1",
         "react-router-dom": "^6.2.1",
-        "react-router-navigation-prompt": "^1.9.1",
         "react-select": "^5.2.1",
         "react-share": "^4.4.0",
         "react-sortable-hoc": "^2.0.0",
@@ -79,7 +79,6 @@
         "@svgr/webpack": "^6.1.2",
         "@testing-library/react": "^12.1.2",
         "@types/codemirror": "^5.60.5",
-        "@types/history": "^4.7.9",
         "@types/jest": "^27.4.0",
         "@types/lodash": "^4.14.178",
         "@types/ramda": "types/npm-ramda",
@@ -99,7 +98,6 @@
         "case-sensitive-paths-webpack-plugin": "2.4.0",
         "codemirror": "^5.65.0",
         "concurrently": "^6.5.1",
-        "connected-react-router": "^6.9.2",
         "cross-env": "^7.0.3",
         "csound-manual-react": "^1.0.0-alpha22",
         "css-loader": "6.5.1",
@@ -129,7 +127,6 @@
         "fork-ts-checker-webpack-plugin": "^6.5.0",
         "fuse.js": "^6.5.3",
         "hex-rgb": "^5.0.0",
-        "history": "4x",
         "html-webpack-plugin": "5.5.0",
         "husky": "^7.0.4",
         "jest": "27.4.5",
@@ -180,11 +177,7 @@
         "node": ">=15"
     },
     "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
+        "production": [">0.2%", "not dead", "not op_mini all"],
         "development": [
             "last 1 chrome version",
             "last 1 firefox version",

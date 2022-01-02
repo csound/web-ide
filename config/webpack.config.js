@@ -113,6 +113,13 @@ module.exports = function (webpackEnv = "production") {
                 "@config": path.resolve(__dirname, "../src/config"),
                 "@store": path.resolve(__dirname, "../src/store"),
                 "react-native": "react-native-web",
+                react: process.cwd() + "/node_modules/react",
+                "react-dom": process.cwd() + "/node_modules/react-dom",
+                "react-router": process.cwd() + "/node_modules/react-router",
+                "react-router-dom":
+                    process.cwd() + "/node_modules/react-router-dom",
+                "@emotion/react":
+                    process.cwd() + "/node_modules/@emotion/react",
                 // Allows for better profiling with ReactDevTools
                 ...(isEnvProductionProfile && {
                     "react-dom$": "react-dom/profiling",

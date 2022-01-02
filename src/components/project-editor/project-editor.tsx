@@ -18,7 +18,6 @@ import {
     subscribeToProjectsCount
 } from "@comp/profile/subscribers";
 import tabStyles from "./tab-styles";
-import Prompt from "react-router-navigation-prompt";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -332,7 +331,6 @@ const ProjectEditor = ({
     const unsavedDataExitPrompt = someUnsavedData && (
         <React.Fragment>
             <Beforeunload onBeforeunload={() => unsavedDataExitText} />
-            <Prompt when={someUnsavedData} message={unsavedDataExitText} />
         </React.Fragment>
     );
 

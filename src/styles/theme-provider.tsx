@@ -2,7 +2,7 @@ import React from "react";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import WebIdeCssBaseline from "./web-ide-css-baseline";
 import {
-    createMuiTheme,
+    createTheme as createMuiTheme,
     ThemeProvider as MuiThemeProvider
 } from "@material-ui/core/styles";
 import { useSelector } from "react-redux";

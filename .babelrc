@@ -13,7 +13,13 @@
                 "runtime": "automatic"
             }
         ],
-        "@emotion/babel-preset-css-prop"
+        [
+            "@emotion/babel-preset-css-prop",
+            {
+                "autoLabel": "dev-only",
+                "labelFormat": "[local]"
+            }
+        ]
     ],
     "plugins": [
         "@emotion",

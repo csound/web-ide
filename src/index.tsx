@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
+import { Provider, ReactReduxContext } from "react-redux";
 import { store } from "./store";
 import * as serviceWorker from "./service-worker";
 import Main from "./components/main/main";
@@ -42,8 +42,8 @@ import "react-loader-spinner/dist/loader/css/Triangle.css";
 
 // INITIALIZE REACT RENDERING
 ReactDOM.render(
-    <Provider store={store}>
-        <Main />
+    <Provider store={store} context={ReactReduxContext}>
+        <Main context={ReactReduxContext} />
     </Provider>,
 
     document.querySelector("#root")

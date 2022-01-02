@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, ReactReduxContext, useDispatch } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
 import ReactTooltip from "react-tooltip";
@@ -12,8 +12,8 @@ import { closeTabDock } from "@comp/project-editor/actions";
 
 import { closeProject } from "@comp/projects/actions";
 import { Route, Routes } from "react-router-dom";
-import { ConnectedRouter } from "connected-react-router";
-import { history, store } from "../../store";
+// import { ConnectedRouter } from "connected-react-router";
+import { store } from "../../store";
 // import { History } from "history";
 import { stopCsound } from "../csound/actions";
 import SiteDocuments from "../site-documents/site-documents";
@@ -72,24 +72,36 @@ const CsoundManualWithStyleOverrides = ({
     );
 };
 
-const RouterComponent = (): React.ReactElement => {
+const RouterComponent = ({
+    context
+}: {
+    context: typeof ReactReduxContext;
+}): React.ReactElement => {
     const theme = useTheme();
     ReactTooltip.rebuild();
     return (
-        <ConnectedRouter history={history}>
-            <Routes>
-                <Route path="/editor/:id?" element={<EditorLayout />} />
+        <Routes>
+            <Route index element={<Home />} />
+            <Route path="profile" element={<Profile />}>
+                <Route path=":username" element={<Profile />} />
+            </Route>
+            <Route path="editor" element={<EditorLayout />}>
+                <Route path=":id" element={<EditorLayout />} />
+            </Route>
+            <Route
+                path="manual"
+                element={<CsoundManualWithStyleOverrides theme={theme} />}
+            >
                 <Route
-                    path="/manual/:id?"
+                    path=":id"
                     element={<CsoundManualWithStyleOverrides theme={theme} />}
                 />
-                <Route path="/profile/:username?" element={<Profile />} />
-                <Route path="/" element={<Home />} />
-                <Route path="/documentation" element={<SiteDocuments />} />
-                <Route path="/404" element={<Page404 />} />
-                <Route element={<Page404 />} />
-            </Routes>
-        </ConnectedRouter>
+            </Route>
+
+            <Route path="documentation" element={<SiteDocuments />} />
+            <Route path="404" element={<Page404 />} />
+            <Route path="*" element={<Page404 />} />
+        </Routes>
     );
 };
 

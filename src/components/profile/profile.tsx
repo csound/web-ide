@@ -1,4 +1,5 @@
 import { doc, getDoc } from "firebase/firestore";
+import { Path } from "history";
 import ProfileLists from "./profile-lists";
 import React, { useEffect, useState, RefObject } from "react";
 import ReactTooltip from "react-tooltip";
@@ -165,7 +166,7 @@ const Profile = ({ classes, ...properties }) => {
                 getDoc(doc(usernames, username)).then((userSnap) => {
                     if (!userSnap.exists()) {
                         dispatch(
-                            push("/404", {
+                            push({ pathname: "/404" } as Path, {
                                 message: "User not found"
                             })
                         );
@@ -174,7 +175,7 @@ const Profile = ({ classes, ...properties }) => {
                         data && data.userUid
                             ? setProfileUid(data.userUid)
                             : dispatch(
-                                  push("/404", {
+                                  push({ pathname: "/404" } as Path, {
                                       message: "User not found"
                                   })
                               );
@@ -394,28 +395,30 @@ const Profile = ({ classes, ...properties }) => {
                                     switch (index) {
                                         case 0:
                                             dispatch(
-                                                push(`/profile/${username}`)
+                                                push({
+                                                    pathname: `/profile/${username}`
+                                                } as Path)
                                             );
                                             break;
                                         case 1:
                                             dispatch(
-                                                push(
-                                                    `/profile/${username}/following`
-                                                )
+                                                push({
+                                                    pathname: `/profile/${username}/following`
+                                                } as Path)
                                             );
                                             break;
                                         case 2:
                                             dispatch(
-                                                push(
-                                                    `/profile/${username}/followers`
-                                                )
+                                                push({
+                                                    pathname: `/profile/${username}/followers`
+                                                } as Path)
                                             );
                                             break;
                                         case 3:
                                             dispatch(
-                                                push(
-                                                    `/profile/${username}/stars`
-                                                )
+                                                push({
+                                                    pathname: `/profile/${username}/stars`
+                                                } as Path)
                                             );
                                             break;
                                     }
