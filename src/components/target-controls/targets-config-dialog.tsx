@@ -86,6 +86,7 @@ const TargetsConfigDialog = (): React.ReactElement => {
     const dropdownStyle = {
         control: (provided, state) => SS.control(theme),
         container: (provided, state) => SS.dropdownContainerForDialog(theme),
+        valueContainer: (provided, state) => SS.valueContainer(theme),
         groupHeading: (provided, state) => SS.groupHeading,
         placeholder: (provided, state) => SS.placeholder,
         menu: (provided, state) => SS.menuForDialog(theme),
@@ -237,7 +238,7 @@ const TargetsConfigDialog = (): React.ReactElement => {
                             }
                             css={SS.closeIcon}
                             color="secondary"
-                            variant="round"
+                            variant="circular"
                             size="small"
                         >
                             <CloseIcon />

@@ -183,7 +183,7 @@ const Profile = ({ classes, ...properties }) => {
                 });
             }
         }
-    }, [dispatch, username, loggedInUserUid, isRequestingLogin]);
+    }, [dispatch, username, loggedInUserUid, isRequestingLogin, setProfileUid]);
 
     useEffect(() => {
         if (!isRequestingLogin && profileUid) {

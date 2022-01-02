@@ -170,6 +170,8 @@ const TargetDropdown = ({
                             control: (provided, state) => SS.control,
                             container: (provided, state) =>
                                 SS.dropdownContainer(theme),
+                            valueContainer: (provided, state) =>
+                                SS.valueContainer(theme),
                             groupHeading: (provided, state) =>
                                 SS.groupHeading(theme),
                             placeholder: (provided, state) =>

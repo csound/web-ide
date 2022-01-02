@@ -189,10 +189,10 @@ export const subscribeToProjectTargetsChanges = (
     const unsubscribe: () => void = onSnapshot(
         doc(targets, projectUid),
         async (target) => {
-            if (!target.exists) {
+            if (!target.exists()) {
                 return;
             }
-            const { defaultTarget, targets } = (await target.data()) as any;
+            const { defaultTarget, targets } = await target.data();
             updateAllTargetsLocally(
                 dispatch,
                 defaultTarget,

@@ -43,12 +43,9 @@ import "react-loader-spinner/dist/loader/css/Triangle.css";
 
 // INITIALIZE REACT RENDERING
 ReactDOM.render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <Main />
-        </Provider>
-    </React.StrictMode>,
-
+    <Provider store={store}>
+        <Main />
+    </Provider>,
     document.querySelector("#root")
 );
 

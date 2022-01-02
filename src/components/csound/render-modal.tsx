@@ -424,7 +424,7 @@ function RenderModal({
                     "Closing will remove all temporary files (until you render again)"
                 }
                 color="secondary"
-                variant="round"
+                variant="circular"
                 size="small"
             >
                 <CloseIcon />

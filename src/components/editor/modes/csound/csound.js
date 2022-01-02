@@ -66,7 +66,7 @@ const attributes = new Set([
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const registerCsoundMode = (CodeMirror) => {
     CodeMirror.defineMode("csound", function (config, parserConfig) {
-        const opcodes = Object.keys(synopsis);
+        const opcodes = new Set(Object.keys(synopsis));
         const documentType = parserConfig.documentType || "csd";
         const indentWords = wordsToObject([
             "opcode",
@@ -178,7 +178,7 @@ export const registerCsoundMode = (CodeMirror) => {
                 const currentToken = stream.current();
                 if (stream.peek() === ":") {
                     const maybeOpcode = stream.current();
-                    const isop = opcodes.includes(maybeOpcode);
+                    const isop = opcodes.has(maybeOpcode);
                     stream.next();
                     if (
                         isop &&
