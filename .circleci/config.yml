@@ -1,6 +1,6 @@
 defaults: &defaults #working_directory: ./circleci
     docker:
-        - image: circleci/node:15.7.0
+        - image: circleci/node:16
     working_directory: ~/repo
 
 version: 2
@@ -55,7 +55,7 @@ jobs:
     deploy:
         <<: *defaults
         environment:
-          PRODUCTION: 1
+            PRODUCTION: 1
         filters:
             branches:
                 only:
@@ -65,10 +65,10 @@ jobs:
             - attach_workspace:
                   at: .
             - run: >
-                cp build/index.html functions &&
-                cd functions &&
-                yarn install &&
-                npx firebase deploy -P default --only functions
+                  cp build/index.html functions &&
+                  cd functions &&
+                  yarn install &&
+                  npx firebase deploy -P default --only functions
             - run: yarn deploy
             - persist_to_workspace:
                   root: .
@@ -77,7 +77,7 @@ jobs:
     deploy_dev:
         <<: *defaults
         environment:
-          PRODUCTION: 0
+            PRODUCTION: 0
         filters:
             branches:
                 only:
@@ -87,10 +87,10 @@ jobs:
             - attach_workspace:
                   at: .
             - run: >
-                cp build/index.html functions &&
-                cd functions &&
-                yarn install &&
-                npx firebase deploy -P develop --only functions
+                  cp build/index.html functions &&
+                  cd functions &&
+                  yarn install &&
+                  npx firebase deploy -P develop --only functions
             - run: yarn deploy:dev
             - persist_to_workspace:
                   root: .
