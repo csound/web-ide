@@ -27,18 +27,18 @@ const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
 
 export const searchProjects =
     (
-        query: string,
+        query_: string,
         offset: number
     ): ThunkAction<void, any, null, Action<string>> =>
     async (dispatch) => {
-        dispatch({ type: SEARCH_PROJECTS_REQUEST, query, offset });
+        dispatch({ type: SEARCH_PROJECTS_REQUEST, query: query_, offset });
 
-        if (isEmpty(query)) {
+        if (isEmpty(query_)) {
             return;
         }
 
         const searchRequest = await fetch(
-            `${searchURL}/query/projects/${query}/8/${offset}/name/desc`
+            `${searchURL}/query/projects/${query_}/8/${offset}/name/desc`
         );
         const projects = await searchRequest.json();
         projects.data = projects.data.slice(0, 8);
