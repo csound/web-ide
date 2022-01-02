@@ -1,5 +1,15 @@
-import firebase from "firebase/app";
-import "firebase/auth";
+import { getAuth } from "firebase/auth";
+import { getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    writeBatch
+} from "firebase/firestore";
 import { push } from "connected-react-router";
 import { CsoundObj } from "@csound/browser";
 import {
@@ -79,10 +89,10 @@ export const downloadProjectOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const projReference = projects.doc(projectUid);
+        const projReference = doc(projects, projectUid);
         let projSnap;
         try {
-            projSnap = await projReference.get();
+            projSnap = await getDoc(projReference);
         } catch {
             return;
         }
@@ -99,10 +109,9 @@ export const downloadAllProjectDocumentsOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const filesReference = await projects
-            .doc(projectUid)
-            .collection("files")
-            .get();
+        const filesReference = await getDocs(
+            collection(doc(projects, projectUid), "files")
+        );
         const allDocuments = await Promise.all(
             filesReference.docs.map(async (d) => {
                 const data = await d.data();
@@ -183,9 +192,8 @@ export const addProjectDocuments = (
             documents
         });
         if (tabIndex < 0) {
-            const maybeDefaultTargetName:
-                | string
-                | undefined = selectDefaultTargetName(projectUid, store);
+            const maybeDefaultTargetName: string | undefined =
+                selectDefaultTargetName(projectUid, store);
             const maybeDefaultTarget: ITarget | undefined = selectTarget(
                 projectUid,
                 maybeDefaultTargetName,
@@ -231,14 +239,17 @@ export const saveFile = (): ((dispatch: any) => Promise<void>) => {
             find(project.documents, (d) => d.documentUid === documentUid);
         if (project && document_) {
             try {
-                projects
-                    .doc(project.projectUid)
-                    .collection("files")
-                    .doc(document_.documentUid)
-                    .update({
+                updateDoc(
+                    doc(
+                        collection(doc(projects, project.projectUid), "files"),
+                        document_.documentUid
+                    ),
+                    {
                         value: document_.currentValue,
                         lastModified: getFirebaseTimestamp()
-                    });
+                    }
+                );
+
                 updateProjectLastModified(project.projectUid);
             } catch {}
         }
@@ -265,13 +276,13 @@ export const saveAllFiles = (): ((dispatch: any) => Promise<void>) => {
                 (d) => d.isModifiedLocally
             );
         if (project && documents && !isEmpty(documents)) {
-            const batch = database.batch();
+            const batch = writeBatch(database);
             documents.forEach((document_) => {
                 batch.update(
-                    projects
-                        .doc(project.projectUid)
-                        .collection("files")
-                        .doc(document_.documentUid),
+                    doc(
+                        collection(doc(projects, project.projectUid), "files"),
+                        document_.documentUid
+                    ),
                     {
                         value: document_.currentValue,
                         lastModified: getFirebaseTimestamp()
@@ -373,13 +384,16 @@ export const deleteFile = (
                         document_,
                         values(allNestedFiles)
                     );
-                    const batch = database.batch();
+                    const batch = writeBatch(database);
                     allFilesToDelete.forEach((document__) => {
                         batch.delete(
-                            projects
-                                .doc(project.projectUid)
-                                .collection("files")
-                                .doc(document__.documentUid)
+                            doc(
+                                collection(
+                                    doc(projects, project.projectUid),
+                                    "files"
+                                ),
+                                document__.documentUid
+                            )
                         );
                     });
                     batch.commit().then(() => {
@@ -396,17 +410,15 @@ export const deleteFile = (
                 );
                 dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else if (document_) {
-                const cancelCallback = () => dispatch(closeModal());
-                const deleteCallback = () => {
-                    projects
-                        .doc(projectUid)
-                        .collection("files")
-                        .doc(documentUid)
-                        .delete()
-                        .then(() => {
-                            dispatch(closeModal());
-                        });
-                    updateProjectLastModified(projectUid);
+                const cancelCallback = async () => await dispatch(closeModal());
+                const deleteCallback = async () => {
+                    await deleteDoc(
+                        doc(
+                            collection(doc(projects, projectUid), "files"),
+                            documentUid
+                        )
+                    );
+                    await updateProjectLastModified(projectUid);
                 };
                 const deleteDocumentPromptComp = deleteDocumentPrompt(
                     document_.filename,
@@ -490,10 +502,10 @@ export const newFolder = (
                     lastModified: getFirebaseTimestamp(),
                     created: getFirebaseTimestamp()
                 };
-                await projects
-                    .doc(projectUid)
-                    .collection("files")
-                    .add(document_);
+                await addDoc(
+                    collection(doc(projects, projectUid), "files"),
+                    document_
+                );
                 updateProjectLastModified(projectUid);
             }
             dispatch(closeModal());
@@ -525,7 +537,7 @@ export const newDocument = (
             );
 
             if (!isEmpty(project)) {
-                const currentUser = firebase.auth().currentUser;
+                const currentUser = getAuth().currentUser;
                 const uid = currentUser ? currentUser.uid : "";
                 const document_ = {
                     type: "txt",
@@ -536,10 +548,10 @@ export const newDocument = (
                     created: getFirebaseTimestamp(),
                     path: []
                 };
-                const result = await projects
-                    .doc(project.projectUid)
-                    .collection("files")
-                    .add(document_);
+                const result = await addDoc(
+                    collection(doc(projects, project.projectUid), "files"),
+                    document_
+                );
 
                 const documentUid = result.id;
                 dispatch(tabOpenByDocumentUid(result.id, projectUid));
@@ -581,13 +593,13 @@ export const addDocument = (
                 const filename = file.name;
                 const fileType = textOrBinary(file.name);
                 const reader = new FileReader();
-                const currentUser = firebase.auth().currentUser;
+                const currentUser = getAuth().currentUser;
                 const uid = currentUser ? currentUser.uid : "";
 
                 console.log("File type found:", fileType);
 
                 if (fileType === "txt") {
-                    reader.addEventListener("load", () => {
+                    reader.addEventListener("load", async () => {
                         const txt = reader.result;
                         const document_ = {
                             type: fileType,
@@ -597,26 +609,26 @@ export const addDocument = (
                             lastModified: getFirebaseTimestamp(),
                             created: getFirebaseTimestamp()
                         };
-                        projects
-                            .doc(project.projectUid)
-                            .collection("files")
-                            .add(document_)
-                            .then((result) => {
-                                const documentUid = result.id;
-                                dispatch(
-                                    tabOpenByDocumentUid(
-                                        result.id,
-                                        activeProjectUid
-                                    )
-                                );
-                                dispatch(
-                                    newEmptyDocumentAction(
-                                        project.projectUid,
-                                        documentUid,
-                                        filename
-                                    )
-                                );
-                            });
+
+                        const result = await addDoc(
+                            collection(
+                                doc(projects, project.projectUid),
+                                "files"
+                            ),
+                            document_
+                        );
+
+                        const documentUid = result.id;
+                        dispatch(
+                            tabOpenByDocumentUid(documentUid, activeProjectUid)
+                        );
+                        dispatch(
+                            newEmptyDocumentAction(
+                                project.projectUid,
+                                documentUid,
+                                filename
+                            )
+                        );
                         updateProjectLastModified(project.projectUid);
                     });
                     reader.readAsText(file);
@@ -633,12 +645,17 @@ export const addDocument = (
                         }
                     };
 
-                    const uploadTask = storageReference
-                        .child(`${uid}/${project.projectUid}/${documentId}`)
-                        .put(file, metadata);
+                    const uploadTask = uploadBytesResumable(
+                        await storageReference(
+                            `${uid}/${project.projectUid}/${documentId}`
+                        ),
+                        file,
+                        metadata
+                    );
+
                     // Listen for state changes, errors, and completion of the upload.
                     uploadTask.on(
-                        firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                        "state_changed",
                         (snapshot) => {
                             // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                             const progress =
@@ -647,15 +664,15 @@ export const addDocument = (
                                 100;
                             console.log("Upload is " + progress + "% done");
                             switch (snapshot.state) {
-                                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                                case "paused":
                                     console.log("Upload is paused");
                                     break;
-                                case firebase.storage.TaskState.RUNNING: // or 'running'
+                                case "running":
                                     console.log("Upload is running");
                                     break;
                             }
                         },
-                        function (error) {
+                        function (error: any) {
                             dispatch(
                                 openSnackbar(error.message, SnackbarType.Error)
                             );
@@ -735,11 +752,13 @@ export const renameDocument = (
             project
         );
         const renameDocumentSuccessCallback = async (filename: string) => {
-            await projects
-                .doc(projectUid)
-                .collection("files")
-                .doc(documentUid)
-                .update({ name: filename } as any);
+            await updateDoc(
+                doc(
+                    collection(doc(projects, projectUid), "files"),
+                    documentUid
+                ),
+                { name: filename } as any
+            );
 
             dispatch(renameDocumentLocally(documentUid, filename));
             updateProjectLastModified(projectUid);
@@ -783,6 +802,7 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
 
             const folders = documents
                 .filter((d) => d.type === "folder")
+                /* eslint-disable unicorn/prefer-object-from-entries */
                 .reduce((m, f) => {
                     return { ...m, [f.documentUid]: f };
                 }, {});
@@ -794,9 +814,9 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
             for (const document_ of documents) {
                 if (document_.type === "bin") {
                     const path = `${project.userUid}/${project.projectUid}/${document_.documentUid}`;
-                    const url = await storageReference
-                        .child(path)
-                        .getDownloadURL();
+                    const url = await getDownloadURL(
+                        await storageReference(path)
+                    );
 
                     const response = await fetch(url);
                     const blob = await response.arrayBuffer();
@@ -829,9 +849,7 @@ export const markProjectPublic = (
         if (!loggedInUserUid || !projectUid) {
             return;
         }
-        await projects.doc(projectUid).update({
-            public: isPublic
-        });
+        await updateDoc(doc(projects, projectUid), { public: isPublic });
         dispatch({
             type: SET_PROJECT_PUBLIC,
             projectUid,

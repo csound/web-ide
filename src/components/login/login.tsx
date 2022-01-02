@@ -28,8 +28,9 @@ import { validateEmail, isElectron } from "@root/utils";
 import * as SS from "./styles";
 import { assoc, isEmpty, pipe } from "ramda";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
-import firebase from "firebase/app";
-import "firebase/auth";
+import firebase from "firebase/compat/app";
+import { getAuth } from "firebase/auth";
+import "firebase/compat/auth";
 
 // Configure FirebaseUI.
 const uiConfig = {
@@ -166,10 +167,7 @@ const Login = (): React.ReactElement => {
                     </Button>
                 </DialogActions>
             </DialogContent>
-            <StyledFirebaseAuth
-                uiConfig={uiConfig}
-                firebaseAuth={firebase.auth()}
-            />
+            <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={getAuth()} />
             <div css={SS.centerLink}>
                 <Link onClick={() => switchLoginMode("reset")}>
                     Forgot password?

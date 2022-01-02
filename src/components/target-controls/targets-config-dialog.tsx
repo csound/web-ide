@@ -73,7 +73,7 @@ const labelFromValue = (value) =>
 const validateTargetDocument = (targetDocumentUid) =>
     typeof targetDocumentUid === "string" ? !isEmpty(targetDocumentUid) : false;
 
-const makeOption = (value, disabled: boolean) => ({
+const makeOption = (value: string, disabled: boolean) => ({
     value,
     label: labelFromValue(value),
     disabled
@@ -154,12 +154,8 @@ const TargetsConfigDialog = (): React.ReactElement => {
     const mainArea = map((index: number) => {
         const thisTarget = newTargets[index] as ITargetFromInput;
 
-        const {
-            targetName,
-            oldTargetName,
-            targetType,
-            isDefaultTarget
-        } = thisTarget;
+        const { targetName, oldTargetName, targetType, isDefaultTarget } =
+            thisTarget;
         const { targetDocumentUid } = thisTarget;
         const validateTargetType = (targetType) =>
             typeof targetType === "string" ? !isEmpty(targetName) : false;
@@ -254,11 +250,13 @@ const TargetsConfigDialog = (): React.ReactElement => {
                         defaultValue={"main"}
                         value={targetType}
                         onChange={handleSelect("targetType")}
-                        options={[
-                            makeOption("main", false),
-                            makeOption("playlist", true),
-                            makeOption("render", true)
-                        ]}
+                        options={
+                            [
+                                makeOption("main", false),
+                                makeOption("playlist", true),
+                                makeOption("render", true)
+                            ] as any
+                        }
                         isOptionDisabled={prop("disabled")}
                         isSearchable={false}
                         closeMenuOnSelect={true}

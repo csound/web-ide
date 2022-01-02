@@ -13,12 +13,10 @@ const TerserPlugin = require("terser-webpack-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
 const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
-const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
 const paths = require("./paths");
 const getClientEnvironment = require("./env");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
+const ForkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWarningWebpackPlugin");
 const RobotstxtPlugin = require("robotstxt-webpack-plugin");
 const SitemapPlugin = require("sitemap-webpack-plugin").default;
 const ESLintPlugin = require("eslint-webpack-plugin");
@@ -129,7 +127,14 @@ module.exports = function (webpackEnv = "production") {
             plugins: [PnpWebpackPlugin.moduleLoader(module)]
         },
         module: {
+            strictExportPresence: true,
             rules: [
+                {
+                    enforce: "pre",
+                    exclude: /@babel(?:\/|\\{1,2})runtime/,
+                    test: /\.(js|mjs|jsx|ts|tsx|css)$/,
+                    loader: require.resolve("source-map-loader")
+                },
                 {
                     test: /\.css$/i,
                     sideEffects: true,
@@ -245,8 +250,6 @@ module.exports = function (webpackEnv = "production") {
             // This is necessary to emit hot updates (currently CSS only):
             isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
             isEnvDevelopment && new CaseSensitivePathsPlugin(),
-            isEnvDevelopment &&
-                new WatchMissingNodeModulesPlugin(paths.appNodeModules),
 
             isProdDeployment &&
                 new RobotstxtPlugin({
@@ -283,58 +286,85 @@ module.exports = function (webpackEnv = "production") {
                         }
                     ]
                 }),
+            new WebpackManifestPlugin({
+                fileName: "asset-manifest.json",
+                publicPath: paths.publicUrlOrPath,
+                generate: (seed, files, entrypoints) => {
+                    const manifestFiles = files.reduce((manifest, file) => {
+                        manifest[file.name] = file.path;
+                        return manifest;
+                    }, seed);
+                    const entrypointFiles = entrypoints.main.filter(
+                        (fileName) => !fileName.endsWith(".map")
+                    );
+
+                    return {
+                        files: manifestFiles,
+                        entrypoints: entrypointFiles
+                    };
+                }
+            }),
+
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^\.\/locale$/,
+                contextRegExp: /moment$/
+            }),
+
             isEnvProduction &&
-                new WebpackManifestPlugin({
-                    fileName: "asset-manifest.json",
-                    publicPath: paths.publicUrlOrPath,
-                    generate: (seed, files, entrypoints) => {
-                        const manifestFiles = files.reduce((manifest, file) => {
-                            manifest[file.name] = file.path;
-                            return manifest;
-                        }, seed);
-                        const entrypointFiles = entrypoints.main.filter(
-                            (fileName) => !fileName.endsWith(".map")
-                        );
-
-                        return {
-                            files: manifestFiles,
-                            entrypoints: entrypointFiles
-                        };
-                    }
-                }),
-
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-
-            isEnvProduction &&
-                new WorkboxWebpackPlugin.GenerateSW({
-                    maximumFileSizeToCacheInBytes: 5000000,
-                    clientsClaim: true,
-                    exclude: [/\.map$/, /asset-manifest\.json$/],
-                    navigateFallback: paths.publicUrlOrPath + "index.html",
-                    navigateFallbackDenylist: [
-                        // Exclude URLs starting with /_, as they're likely an API call
-                        new RegExp("^/_"),
-                        // Exclude any URLs whose last part seems to be a file extension
-                        // as they're likely a resource and not a SPA route.
-                        // URLs containing a "?" character won't be blacklisted as they're likely
-                        // a route with query params (e.g. auth callbacks).
-                        new RegExp("/[^/?]+\\.[^/]+$")
-                    ]
+                new WorkboxWebpackPlugin.InjectManifest({
+                    swSrc,
+                    dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
+                    exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
+                    // Bump up the default maximum size (2mb) that's precached,
+                    // to make lazy-loading failure scenarios less likely.
+                    // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
+                    maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
                 }),
             new ForkTsCheckerWebpackPlugin({
+                async: isEnvDevelopment,
                 typescript: {
-                    enabled: true,
-                    build: false,
-                    typescriptPath: require.resolve("typescript"),
-                    configFile: path.resolve(__dirname, "../tsconfig.json")
+                    typescriptPath: resolve.sync("typescript", {
+                        basedir: paths.appNodeModules
+                    }),
+                    configOverwrite: {
+                        compilerOptions: {
+                            sourceMap: isEnvProduction
+                                ? shouldUseSourceMap
+                                : isEnvDevelopment,
+                            skipLibCheck: true,
+                            inlineSourceMap: false,
+                            declarationMap: false,
+                            noEmit: true,
+                            incremental: true,
+                            tsBuildInfoFile: paths.appTsBuildInfoFile
+                        }
+                    },
+                    context: paths.appPath,
+                    diagnosticOptions: {
+                        syntactic: true
+                    },
+                    mode: "write-references"
+                    // profile: true,
                 },
-                eslint: {
-                    files:
-                        path.resolve(__dirname, "../src") +
-                        "/**/*.{ts,tsx,js,jsx}"
+                issue: {
+                    // This one is specifically to match during CI tests,
+                    // as micromatch doesn't match
+                    // '../cra-template-typescript/template/src/App.tsx'
+                    // otherwise.
+                    include: [
+                        { file: "../**/src/**/*.{ts,tsx}" },
+                        { file: "**/src/**/*.{ts,tsx}" }
+                    ],
+                    exclude: [
+                        { file: "**/src/**/__tests__/**" },
+                        { file: "**/src/**/?(*.){spec|test}.*" },
+                        { file: "**/src/setupProxy.*" },
+                        { file: "**/src/setupTests.*" }
+                    ]
                 },
-                async: false,
-                formatter: isEnvProduction ? typescriptFormatter : undefined
+                logger: {
+                    infrastructure: "silent"
+                }
             }),
             new ESLintPlugin({
                 // Plugin options

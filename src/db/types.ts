@@ -1,4 +1,4 @@
-import firebase from "firebase/app";
+import firestore from "firebase/firestore";
 
 export interface IUserProfile {
     name: string;
@@ -8,7 +8,7 @@ export interface IUserProfile {
 }
 
 export interface IFirestoreDocument {
-    lastModified: firebase.firestore.Timestamp;
+    lastModified: firestore.Timestamp;
     name: string;
     type: string;
     userUid: string;
@@ -16,7 +16,7 @@ export interface IFirestoreDocument {
 }
 
 export interface IFirestoreProject {
-    created: firebase.firestore.Timestamp;
+    created: firestore.Timestamp;
     description: string;
     iconBackgroundColor: string;
     iconForegroundColor: string;
@@ -35,7 +35,7 @@ export interface IFirestoreProfile {
     link2: string;
     link3: string;
     photoUrl: string;
-    userJoinDate: firebase.firestore.Timestamp;
+    userJoinDate: firestore.Timestamp;
     userUid: string;
     username: string;
 }

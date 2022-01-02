@@ -12,11 +12,8 @@ import {
     setRequestingStatus,
     thirdPartyAuthSuccess
 } from "@comp/login/actions";
-import firebase from "firebase/app";
-import "firebase/auth";
+import { getAuth } from "firebase/auth";
 import HotKeys from "@comp/hot-keys/hot-keys";
-// import PerfectScrollbar from "perfect-scrollbar";
-// import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 const Main = (): React.ReactElement => {
     const dispatch = useDispatch();
@@ -28,28 +25,26 @@ const Main = (): React.ReactElement => {
         // change is a result of manual login or autologin
         // we determine this from a timeout
         !autoLoginTimeout && setTimeout(() => setAutoLoginTimeout(true), 1000);
-        const unsubscribeAuthObserver = firebase
-            .auth()
-            .onAuthStateChanged((user) => {
-                if (user && user.displayName) {
-                    unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
-                        user.uid,
-                        dispatch
-                    );
-                    const tsIsSometimesStupidUser = {
-                        uid: user.uid,
-                        displayName: user.displayName
-                    };
-                    dispatch(
-                        thirdPartyAuthSuccess(
-                            tsIsSometimesStupidUser,
-                            !autoLoginTimeout
-                        )
-                    );
-                } else {
-                    dispatch(setRequestingStatus(false));
-                }
-            });
+        const unsubscribeAuthObserver = getAuth().onAuthStateChanged((user) => {
+            if (user && user.displayName) {
+                unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
+                    user.uid,
+                    dispatch
+                );
+                const tsIsSometimesStupidUser = {
+                    uid: user.uid,
+                    displayName: user.displayName
+                };
+                dispatch(
+                    thirdPartyAuthSuccess(
+                        tsIsSometimesStupidUser,
+                        !autoLoginTimeout
+                    )
+                );
+            } else {
+                dispatch(setRequestingStatus(false));
+            }
+        });
         // if (!isMobile()) {
         //     (window as any).ps_body = new PerfectScrollbar("#root");
         // }

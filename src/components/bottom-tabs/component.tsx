@@ -9,7 +9,7 @@ import {
     PanelList,
     Panel
 } from "@hlolli/react-tabtab";
-import simpleSwitch from "array-move";
+import { arrayMoveImmutable as simpleSwitch } from "array-move";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -9,7 +9,7 @@ import { CsoundObj } from "@csound/browser";
 import { isAudioFile } from "@comp/projects/utils";
 import { closeModal } from "@comp/modal/actions";
 import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
-import { getType as mimeLookup } from "mime/lite";
+import { lookup as mimeLookup } from "mime";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import Fab from "@material-ui/core/Fab";
@@ -207,9 +207,9 @@ const renderedListStyle = (theme: Theme): SerializedStyles => css`
 function calculateAudioPlayerTimestamp(currentTime) {
     const currentMinute = (currentTime / 60) % 60;
     const currentSecondsLong = currentTime % 60;
-    const currentSeconds = currentSecondsLong.toFixed();
+    const currentSeconds = currentSecondsLong.toFixed(2);
     const currentTimeFormatted = `${
-        currentMinute < 10 ? `0${currentMinute.toFixed()}` : currentMinute
+        currentMinute < 10 ? `0${currentMinute.toFixed(2)}` : currentMinute
     }:${currentSeconds.length < 2 ? `0${currentSeconds}` : currentSeconds}`;
     return currentTimeFormatted;
 }
@@ -224,9 +224,8 @@ function AudioPlayer({
     currentlyPlaying,
     setCurrentlyPlaying
 }) {
-    const audioReference: React.RefObject<HTMLAudioElement> | null = useRef(
-        null
-    );
+    const audioReference: React.RefObject<HTMLAudioElement> | null =
+        useRef(null);
     const [isPaused, setIsPaused] = useState(false);
     const [isStarted, setIsStarted] = useState(false);
     const [currentTime, setCurrentTime] = useState("00:00");
@@ -415,7 +414,7 @@ function RenderModal({
                 onClick={() => {
                     dispatch(closeModal());
                     for (const newFile of Object.keys(newFiles)) {
-                        csound.fs.unlinkSync(newFile);
+                        csound.fs.unlink(newFile);
                     }
                     csound.terminateInstance();
                 }}
@@ -504,10 +503,10 @@ function RenderModal({
                                                     data-tip={
                                                         "download " + filename
                                                     }
-                                                    onClick={() =>
+                                                    onClick={async () =>
                                                         saveAs(
                                                             new Blob([
-                                                                csound.fs.readFileSync(
+                                                                await csound.fs.readFile(
                                                                     filename
                                                                 )
                                                             ]),
@@ -554,7 +553,7 @@ function RenderModal({
                         onClick={async () => {
                             const bundle = new JSZip();
                             for (const filename of selectedFiles) {
-                                const arrayBuffer = await csound.fs.promises.readFile(
+                                const arrayBuffer = await csound.fs.readFile(
                                     filename
                                 );
                                 bundle.file(filename, arrayBuffer);

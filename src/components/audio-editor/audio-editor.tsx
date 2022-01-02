@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getDownloadURL } from "firebase/storage";
 import { storageReference } from "../../config/firestore";
 
 import withStyles from "./styles";
@@ -9,17 +10,16 @@ type IAudioEditorProperties = {
 };
 
 const AudioEditor = ({ audioFileUrl, classes }: IAudioEditorProperties) => {
-    const [data, setData] = useState();
+    const [data, setData] = useState("");
     // console.log("AFURL: " + audioFileUrl)
     // console.log("Data: " + data)
     useEffect(() => {
         if (!data) {
-            storageReference
-                .child(audioFileUrl)
-                .getDownloadURL()
-                .then((fileUrl) => {
+            storageReference(audioFileUrl).then((storage) => {
+                getDownloadURL(storage).then((fileUrl) => {
                     setData(fileUrl);
                 });
+            });
         }
     }, [data, setData, audioFileUrl]);
     return !data ? (

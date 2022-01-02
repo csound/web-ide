@@ -1,7 +1,8 @@
-import { IDocument, IDocumentsMap } from "./types";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { store } from "@store/index";
 import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
+import { IDocument, IDocumentsMap } from "./types";
 import {
     addDocumentToEMFS,
     convertDocumentSnapToDocumentsMap,
@@ -33,10 +34,9 @@ export const subscribeToProjectFilesChanges = (
     dispatch: (any) => void,
     csound: CsoundObj | undefined
 ): (() => void) => {
-    const unsubscribe: () => void = projects
-        .doc(projectUid)
-        .collection("files")
-        .onSnapshot(async (files) => {
+    const unsubscribe: () => void = onSnapshot(
+        collection(doc(projects, projectUid), "files"),
+        async (files) => {
             const changedFiles = files.docChanges();
             const filesToAdd = filter(propEq("type", "added"), changedFiles);
             const filesToRemove = filter(
@@ -49,9 +49,8 @@ export const subscribeToProjectFilesChanges = (
             );
 
             if (!isEmpty(filesToAdd)) {
-                const documents: IDocumentsMap = convertDocumentSnapToDocumentsMap(
-                    filesToAdd
-                );
+                const documents: IDocumentsMap =
+                    convertDocumentSnapToDocumentsMap(filesToAdd);
                 csound &&
                     forEach((d) => {
                         if (d.type !== "folder") {
@@ -95,7 +94,7 @@ export const subscribeToProjectFilesChanges = (
                 const documentDataReady = documentData.filter(
                     (d) => !!d.lastModified
                 );
-                documentDataReady.forEach((document_) => {
+                await documentDataReady.forEach(async (document_) => {
                     if (document_.type !== "folder") {
                         const oldFile =
                             currentReduxDocuments[document_.documentUid];
@@ -125,9 +124,10 @@ export const subscribeToProjectFilesChanges = (
                         ).join("/");
                         // Handle file moved
                         if (newAbsolutePath !== lastAbsolutePath) {
-                            csound && csound.fs.unlinkSync(lastAbsolutePath);
+                            csound &&
+                                (await csound.fs.unlink(lastAbsolutePath));
                         } else {
-                            csound && csound.fs.unlinkSync(newAbsolutePath);
+                            csound && (await csound.fs.unlink(newAbsolutePath));
                         }
                         csound &&
                             addDocumentToEMFS(
@@ -159,7 +159,7 @@ export const subscribeToProjectFilesChanges = (
                     dispatch(removeDocumentLocally(projectUid, uid));
                 });
 
-                documentData.forEach((document_) => {
+                await documentData.forEach(async (document_) => {
                     if (document_.type !== "folder") {
                         const pathPrefix = (document_.path || [])
                             .filter((p) => typeof p === "string")
@@ -173,11 +173,12 @@ export const subscribeToProjectFilesChanges = (
                             [`/${projectUid}`],
                             append(document_.filename, pathPrefix)
                         ).join("/");
-                        csound && csound.fs.unlinkSync(absolutePath);
+                        csound && (await csound.fs.unlink(absolutePath));
                     }
                 });
             }
-        });
+        }
+    );
     return unsubscribe;
 };
 
@@ -185,12 +186,13 @@ export const subscribeToProjectTargetsChanges = (
     projectUid: string,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe: () => void = targets.doc(projectUid).onSnapshot(
-        (target) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(targets, projectUid),
+        async (target) => {
             if (!target.exists) {
                 return;
             }
-            const { defaultTarget, targets } = target.data() as any;
+            const { defaultTarget, targets } = (await target.data()) as any;
             updateAllTargetsLocally(
                 dispatch,
                 defaultTarget,

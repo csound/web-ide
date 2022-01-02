@@ -1,24 +1,24 @@
+import { doc, onSnapshot } from "firebase/firestore";
 import { projectLastModified } from "@config/firestore";
 import { updateProjectLastModifiedLocally } from "./actions";
 
-export const subscribeToProjectLastModified = (
+export const subscribeToProjectLastModified = async (
     projectUid: string,
     dispatch: (any) => void
-): (() => void) => {
-    const unsubscribe: () => void = projectLastModified
-        .doc(projectUid)
-        .onSnapshot(
-            (timestampDocument) => {
-                if (!timestampDocument.exists) {
-                    return;
-                }
-                const { timestamp } = timestampDocument.data() as any;
-                timestamp &&
-                    dispatch(
-                        updateProjectLastModifiedLocally(projectUid, timestamp)
-                    );
-            },
-            (error: any) => console.error(error)
-        );
+): Promise<() => void> => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(projectLastModified, projectUid),
+        async (timestampDocument) => {
+            if (!timestampDocument.exists) {
+                return;
+            }
+            const { timestamp } = timestampDocument.data() as any;
+            timestamp &&
+                (await dispatch(
+                    updateProjectLastModifiedLocally(projectUid, timestamp)
+                ));
+        },
+        (error: any) => console.error(error)
+    );
     return unsubscribe;
 };

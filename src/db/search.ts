@@ -1,8 +1,8 @@
-import firebase from "firebase/app";
+import firestore from "firebase/firestore";
 
 export interface ISearchResultItem {
     id: string;
-    created: firebase.firestore.Timestamp;
+    created: firestore.Timestamp;
     description: string;
     iconBackgroundColor: string;
     iconForegroundColor: string;
@@ -22,7 +22,7 @@ interface IStarredProjectMeta {
     count: number;
 }
 
-type IStar = { [userUid: string]: firebase.firestore.Timestamp };
+type IStar = { [userUid: string]: firestore.Timestamp };
 
 export type IStarredProject = IStarredProjectMeta & IStar;
 

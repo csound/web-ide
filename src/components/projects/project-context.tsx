@@ -54,7 +54,7 @@ const ProjectContext = (
             const initProject = async () => {
                 try {
                     await downloadProjectOnce(projectUid)(dispatch);
-                } catch (error) {
+                } catch (error: any) {
                     if (
                         typeof error === "object" &&
                         typeof error.code === "string"

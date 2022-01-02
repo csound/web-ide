@@ -11,14 +11,14 @@ import {
     PanelList,
     Panel
 } from "@hlolli/react-tabtab";
-import simpleSwitch from "array-move";
+import { arrayMoveImmutable as simpleSwitch } from "array-move";
 import { subscribeToProjectLastModified } from "@comp/project-last-modified/subscribers";
 import {
     subscribeToProfile,
     subscribeToProjectsCount
 } from "@comp/profile/subscribers";
 import tabStyles from "./tab-styles";
-import { Prompt } from "react-router";
+import Prompt from "react-router-navigation-prompt";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -203,7 +203,7 @@ const ProjectEditor = ({
 
         return () => {
             unsubscribeProjectChanges();
-            unsubscribeToProjectLastModified();
+            unsubscribeToProjectLastModified.then((unsub) => unsub());
             unsubscribeToProfile && unsubscribeToProfile();
             unsubscribeToProjectsCount && unsubscribeToProjectsCount();
         };

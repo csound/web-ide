@@ -38,7 +38,7 @@ function readBlockComment(stream, state) {
     return "comment";
 }
 
-const keywords = [
+const keywords = new Set([
     "ksmps",
     "opcode",
     "endop",
@@ -49,9 +49,9 @@ const keywords = [
     "kr",
     "nchnls",
     "nchnls_i"
-];
+]);
 
-const attributes = [
+const attributes = new Set([
     "while",
     "do",
     "od",
@@ -61,7 +61,7 @@ const attributes = [
     "endif",
     "until",
     "then"
-];
+]);
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const registerCsoundMode = (CodeMirror) => {
@@ -178,7 +178,7 @@ export const registerCsoundMode = (CodeMirror) => {
                 const currentToken = stream.current();
                 if (stream.peek() === ":") {
                     const maybeOpcode = stream.current();
-                    const isop = opcodes.some((s) => s === maybeOpcode);
+                    const isop = opcodes.includes(maybeOpcode);
                     stream.next();
                     if (
                         isop &&
@@ -231,14 +231,12 @@ export const registerCsoundMode = (CodeMirror) => {
                             state
                         );
                     } else {
-                        state.tokenize[
-                            state.tokenize.length - 1
-                        ] = tokenBaseUntilBrace(depth - 1);
+                        state.tokenize[state.tokenize.length - 1] =
+                            tokenBaseUntilBrace(depth - 1);
                     }
                 } else if (stream.peek() === "{") {
-                    state.tokenize[
-                        state.tokenize.length - 1
-                    ] = tokenBaseUntilBrace(depth + 1);
+                    state.tokenize[state.tokenize.length - 1] =
+                        tokenBaseUntilBrace(depth + 1);
                 }
                 return tokenBase(stream, state);
             };
@@ -322,11 +320,11 @@ export const registerCsoundMode = (CodeMirror) => {
 
                 if (style === "ident") {
                     word = stream.current();
-                    if (keywords.some((s) => s === word)) {
+                    if (keywords.has(word)) {
                         style = "keyword";
-                    } else if (attributes.some((s) => s === word)) {
+                    } else if (attributes.has(word)) {
                         style = "attribute";
-                    } else if (opcodes.some((s) => s === word)) {
+                    } else if (opcodes.has(word)) {
                         style = "variable";
                     } else if (/^a\w+/.test(word)) {
                         style = "variable-2";

@@ -1,3 +1,4 @@
+import { collection, doc, updateDoc } from "firebase/firestore";
 import { DragDropContext } from "react-beautiful-dnd";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import React, { createContext, useContext, useReducer } from "react";
@@ -51,29 +52,40 @@ const reducer = (state: DnDState, action: Record<string, any>): DnDState => {
                 const sourceDocument = action.project.documents[sourceUid];
 
                 if (destinationDocument.type === "folder") {
-                    projects
-                        .doc(action.project.projectUid)
-                        .collection("files")
-                        .doc(sourceUid)
-                        .update({
+                    updateDoc(
+                        doc(
+                            collection(
+                                doc(projects, action.project.projectUid),
+                                "files"
+                            ),
+                            sourceUid
+                        ),
+                        {
                             path: append(
                                 destinationUid,
                                 destinationDocument.path || []
                             ),
                             lastModified: getFirebaseTimestamp()
-                        });
+                        }
+                    );
                     updateProjectLastModified(action.project.projectUid);
                 } else if (
                     !equals(destinationDocument.path, sourceDocument.path)
                 ) {
-                    projects
-                        .doc(action.project.projectUid)
-                        .collection("files")
-                        .doc(sourceUid)
-                        .update({
+                    updateDoc(
+                        doc(
+                            collection(
+                                doc(projects, action.project.projectUid),
+                                "files"
+                            ),
+                            sourceUid
+                        ),
+                        {
                             path: destinationDocument.path || [],
                             lastModified: getFirebaseTimestamp()
-                        });
+                        }
+                    );
+
                     updateProjectLastModified(action.project.projectUid);
                 }
             }
@@ -145,10 +157,8 @@ export const DnDProvider = ({
     children: React.ReactElement;
     project: IProject;
 }): React.ReactElement => {
-    const [state, dispatch]: [
-        DnDState,
-        (action: Record<string, any>) => void
-    ] = useReducer(reducer, initialState);
+    const [state, dispatch]: [DnDState, (action: Record<string, any>) => void] =
+        useReducer(reducer, initialState);
 
     return (
         <DragDropContext

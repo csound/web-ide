@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { doc, getDoc, writeBatch } from "firebase/firestore";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { DebounceInput } from "react-debounce-input";
@@ -16,8 +17,12 @@ import {
 } from "./types";
 import { closeModal, openSimpleModal } from "../modal/actions";
 import { database, profiles, usernames } from "../../config/firestore";
-import firebase from "firebase/app";
-import "firebase/auth";
+import {
+    createUserWithEmailAndPassword,
+    getAuth,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword
+} from "firebase/auth";
 import { isEmpty } from "lodash";
 import { push } from "connected-react-router";
 import { openSnackbar } from "../snackbar/actions";
@@ -33,9 +38,11 @@ export const login = (
         });
 
         try {
-            const user = await firebase
-                .auth()
-                .signInWithEmailAndPassword(email, password);
+            const user = await signInWithEmailAndPassword(
+                getAuth(),
+                email,
+                password
+            );
             dispatch({
                 type: SIGNIN_SUCCESS,
                 user
@@ -61,21 +68,19 @@ const profileFinalize = (
         const [link2, setLink2] = useState("");
         const [link3, setLink3] = useState("");
 
-        const checkReservedUsername = (candidate: string) => {
-            usernames
-                .doc(candidate)
-                .get()
-                .then((document_) => setNameReserved(document_.exists));
+        const checkReservedUsername = async (candidate: string) => {
+            const document_ = await getDoc(doc(usernames, candidate));
+            setNameReserved(document_.exists());
         };
 
         const shouldDisable = isEmpty(input) || !/^[\dA-Za-z]+$/.test(input);
 
         const handleOnSubmit = async () => {
             if (!nameReserved) {
-                const batch = database.batch();
+                const batch = writeBatch(database);
 
-                const usernameReference = usernames.doc(input);
-                const profileReference = profiles.doc(user.uid);
+                const usernameReference = doc(usernames, input);
+                const profileReference = doc(profiles, user.uid);
                 batch.set(
                     usernameReference,
                     { userUid: user.uid },
@@ -223,8 +228,8 @@ export const thirdPartyAuthSuccess = (
         let profile;
 
         try {
-            profile = await profiles.doc(user.uid).get();
-        } catch (fbError) {
+            profile = await getDoc(doc(profiles, user.uid));
+        } catch (fbError: any) {
             if (
                 fbError.name === "FirebaseError" &&
                 fbError.code === "unavailable"
@@ -279,7 +284,7 @@ export const closeLoginDialog = (): ((dispatch: any) => Promise<void>) => {
 export const logOut = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         try {
-            await firebase.auth().signOut();
+            await getAuth().signOut();
         } catch (error) {
             console.error(error);
         }
@@ -295,22 +300,23 @@ export const createNewUser = (
     password: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        firebase
-            .auth()
-            .createUserWithEmailAndPassword(email, password)
-            .then((creditendials: any) => {
-                dispatch({
-                    type: CREATE_USER_SUCCESS,
-                    creditendials
-                });
-            })
-            .catch((error: any) => {
-                dispatch({
-                    type: CREATE_USER_FAIL,
-                    errorCode: error.code,
-                    errorMessage: error.message
-                });
+        try {
+            const credentials = await createUserWithEmailAndPassword(
+                getAuth(),
+                email,
+                password
+            );
+            dispatch({
+                type: CREATE_USER_SUCCESS,
+                credentials
             });
+        } catch (error: any) {
+            dispatch({
+                type: CREATE_USER_FAIL,
+                errorCode: error.code,
+                errorMessage: error.message
+            });
+        }
     };
 };
 
@@ -337,6 +343,6 @@ export const resetPassword = (
     email: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        firebase.auth().sendPasswordResetEmail(email);
+        await sendPasswordResetEmail(getAuth(), email);
     };
 };

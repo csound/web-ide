@@ -1,5 +1,4 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
+import { deleteField, doc, getDoc, writeBatch } from "firebase/firestore";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import { openSimpleModal } from "@comp/modal/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -50,10 +49,10 @@ export const downloadTargetsOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const projTargetsReference = await targetsCollReference
-            .doc(projectUid)
-            .get();
-        if (projTargetsReference.exists) {
+        const projTargetsReference = await getDoc(
+            doc(targetsCollReference, projectUid)
+        );
+        if (projTargetsReference.exists()) {
             const data = projTargetsReference.data();
             data &&
                 (await updateAllTargetsLocally(
@@ -73,14 +72,14 @@ export const saveChangesToTarget = (
     onSuccessCallback: () => void
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const targetsReference = targetsCollReference.doc(projectUid);
-        try {
-            const batch = database.batch();
+        const targetsReference = doc(targetsCollReference, projectUid);
+        const batch = writeBatch(database);
 
+        try {
             batch.set(
                 targetsReference,
                 {
-                    targets: firebase.firestore.FieldValue.delete()
+                    targets: deleteField()
                 },
                 { merge: true }
             );
@@ -92,7 +91,7 @@ export const saveChangesToTarget = (
             await batch.commit();
             updateProjectLastModified(projectUid);
             onSuccessCallback && onSuccessCallback();
-        } catch (error) {
+        } catch (error: any) {
             dispatch(openSnackbar(error.toString(), SnackbarType.Error));
         }
     };

@@ -11,7 +11,7 @@ import ProjectContext from "../projects/project-context";
 import { closeTabDock } from "@comp/project-editor/actions";
 
 import { closeProject } from "@comp/projects/actions";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { ConnectedRouter } from "connected-react-router";
 import { history, store } from "../../store";
 // import { History } from "history";
@@ -77,28 +77,18 @@ const RouterComponent = (): React.ReactElement => {
     ReactTooltip.rebuild();
     return (
         <ConnectedRouter history={history}>
-            <Switch>
-                <Route
-                    path="/editor/:id?"
-                    render={(matchProperties) => (
-                        <EditorLayout {...matchProperties} />
-                    )}
-                />
+            <Routes>
+                <Route path="/editor/:id?" element={<EditorLayout />} />
                 <Route
                     path="/manual/:id?"
-                    render={(routerProperties) => (
-                        <CsoundManualWithStyleOverrides
-                            theme={theme}
-                            {...routerProperties}
-                        />
-                    )}
+                    element={<CsoundManualWithStyleOverrides theme={theme} />}
                 />
-                <Route path="/profile/:username?" component={Profile} />
-                <Route path="/" component={Home} exact />
-                <Route path="/documentation" render={() => <SiteDocuments />} />
-                <Route path="/404" exact component={Page404} />
-                <Route component={Page404} />
-            </Switch>
+                <Route path="/profile/:username?" element={<Profile />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/documentation" element={<SiteDocuments />} />
+                <Route path="/404" element={<Page404 />} />
+                <Route element={<Page404 />} />
+            </Routes>
         </ConnectedRouter>
     );
 };

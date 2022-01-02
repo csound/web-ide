@@ -1,5 +1,13 @@
 import { store } from "@store/index";
 import {
+    doc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    query,
+    where
+} from "firebase/firestore";
+import {
     following,
     followers,
     profiles,
@@ -46,7 +54,8 @@ export const subscribeToProfile = (
     profileUid: string,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
+    const unsubscribe: () => void = onSnapshot(
+        doc(profiles, profileUid),
         (profile) => {
             dispatch(storeUserProfile(profile.data() as IProfile, profileUid));
         },
@@ -59,7 +68,8 @@ export const subscribeToFollowing = (
     profileUid: string,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe: () => void = following.doc(profileUid).onSnapshot(
+    const unsubscribe: () => void = onSnapshot(
+        doc(following, profileUid),
         async (followingReference) => {
             const state = store.getState();
             const userProfileData = followingReference.data();
@@ -76,10 +86,10 @@ export const subscribeToFollowing = (
 
             const missingProfiles = await Promise.all(
                 missingProfileUids.map(async (followingProfileUid) => {
-                    const profPromise = await profiles
-                        .doc(followingProfileUid)
-                        .get();
-                    return profPromise.exists
+                    const profPromise = await getDoc(
+                        doc(profiles, followingProfileUid)
+                    );
+                    return profPromise.exists()
                         ? profPromise.data()
                         : { displayName: "Deleted user" };
                 })
@@ -100,7 +110,8 @@ export const subscribeToFollowers = (
     profileUid: string,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe: () => void = followers.doc(profileUid).onSnapshot(
+    const unsubscribe: () => void = onSnapshot(
+        doc(followers, profileUid),
         async (followersReference) => {
             const state = store.getState();
             const userProfileData = followersReference.data();
@@ -117,10 +128,11 @@ export const subscribeToFollowers = (
 
             const missingProfiles = await Promise.all(
                 missingProfileUids.map(async (followerProfileUid) => {
-                    const profPromise = await profiles
-                        .doc(followerProfileUid)
-                        .get();
-                    return profPromise.exists
+                    const profPromise = await getDoc(
+                        doc(profiles, followerProfileUid)
+                    );
+
+                    return profPromise.exists()
                         ? profPromise.data()
                         : { displayName: "Deleted user" };
                 })
@@ -141,7 +153,8 @@ export const subscribeToProjectsCount = (
     profileUid: string,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe: () => void = projectsCount.doc(profileUid).onSnapshot(
+    const unsubscribe: () => void = onSnapshot(
+        doc(projectsCount, profileUid),
         (projectsCount) => {
             const projectsCountData = projectsCount.data();
             if (projectsCountData) {
@@ -164,7 +177,8 @@ export const subscribeToProfileStars = (
     profileUid: string,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe: () => void = profileStars.doc(profileUid).onSnapshot(
+    const unsubscribe: () => void = onSnapshot(
+        doc(profileStars),
         (starsReference) => {
             const starsData = starsReference.data();
             if (!starsData) {
@@ -189,40 +203,47 @@ export const subscribeToProfileProjects = (
     isProfileOwner: boolean,
     dispatch: (any) => void
 ): (() => void) => {
-    const unsubscribe = (isProfileOwner
-        ? projects.where("userUid", "==", profileUid)
-        : projects
-              .where("userUid", "==", profileUid)
-              .where("public", "==", true)
-    ).onSnapshot(async (projectSnaps) => {
-        const currentProfileProjects = pipe(
-            pathOr([], ["ProjectsReducer", "projects"]),
-            filter(propEq("userUid", profileUid))
-        )(store.getState());
-        const projectsDeleted = difference(
-            keys(currentProfileProjects).sort(),
-            map(prop("id"), projectSnaps.docs).sort()
-        );
-        if (!projectSnaps.empty) {
-            Promise.all(
-                projectSnaps.docs.map(async (projSnap) => {
-                    const projTags = await tags
-                        .where(projSnap.id, "==", profileUid)
-                        .get()
-                        .then((d) => d.docs.map(prop("id")));
-                    const proj = await convertProjectSnapToProject(projSnap);
-                    return assoc("tags", projTags, proj) as IProject;
-                })
-            ).then((localProjects) => {
-                dispatch(storeProjectLocally(localProjects));
-            });
-        }
+    const unsubscribe = onSnapshot(
+        isProfileOwner
+            ? query(projects, where("userUid", "==", profileUid))
+            : query(
+                  projects,
+                  where("public", "==", true)
+                  // query(
+                  //     query(projects, where("userUid", "==", profileUid)),
+                  // )
+              ),
+        async (projectSnaps) => {
+            const currentProfileProjects = pipe(
+                pathOr([], ["ProjectsReducer", "projects"]),
+                filter(propEq("userUid", profileUid))
+            )(store.getState());
+            const projectsDeleted = difference(
+                keys(currentProfileProjects).sort(),
+                map(prop("id"), projectSnaps.docs).sort()
+            );
+            if (!projectSnaps.empty) {
+                Promise.all(
+                    projectSnaps.docs.map(async (projSnap) => {
+                        const projTags = await getDocs(
+                            query(tags, where(projSnap.id, "==", profileUid))
+                        ).then((d) => d.docs.map(prop("id")));
+                        const proj = await convertProjectSnapToProject(
+                            projSnap
+                        );
+                        return assoc("tags", projTags, proj) as IProject;
+                    })
+                ).then((localProjects) => {
+                    dispatch(storeProjectLocally(localProjects));
+                });
+            }
 
-        if (!isEmpty(projectsDeleted)) {
-            projectsDeleted.forEach(async (projectUid) => {
-                await dispatch(unsetProject(projectUid));
-            });
+            if (!isEmpty(projectsDeleted)) {
+                projectsDeleted.forEach(async (projectUid) => {
+                    await dispatch(unsetProject(projectUid));
+                });
+            }
         }
-    });
+    );
     return unsubscribe;
 };

@@ -1,3 +1,4 @@
+import { doc, getDoc } from "firebase/firestore";
 import ProfileLists from "./profile-lists";
 import React, { useEffect, useState, RefObject } from "react";
 import ReactTooltip from "react-tooltip";
@@ -96,9 +97,8 @@ const Profile = ({ classes, ...properties }) => {
     const allUserProjectsUids = useSelector(
         selectAllUserProjectUids(loggedInUserUid)
     );
-    const [lastAllUserProjectUids, setLastAllUserProjectUids] = useState(
-        allUserProjectsUids
-    );
+    const [lastAllUserProjectUids, setLastAllUserProjectUids] =
+        useState(allUserProjectsUids);
     const filteredProjects = useSelector(
         selectFilteredUserProjects(profileUid)
     );
@@ -162,27 +162,24 @@ const Profile = ({ classes, ...properties }) => {
             if (!username && !loggedInUserUid) {
                 dispatch(push("/"));
             } else if (username) {
-                usernames
-                    .doc(username)
-                    .get()
-                    .then((userSnap) => {
-                        if (!userSnap.exists) {
-                            dispatch(
-                                push("/404", {
-                                    message: "User not found"
-                                })
-                            );
-                        } else {
-                            const data = userSnap.data();
-                            data && data.userUid
-                                ? setProfileUid(data.userUid)
-                                : dispatch(
-                                      push("/404", {
-                                          message: "User not found"
-                                      })
-                                  );
-                        }
-                    });
+                getDoc(doc(usernames, username)).then((userSnap) => {
+                    if (!userSnap.exists()) {
+                        dispatch(
+                            push("/404", {
+                                message: "User not found"
+                            })
+                        );
+                    } else {
+                        const data = userSnap.data();
+                        data && data.userUid
+                            ? setProfileUid(data.userUid)
+                            : dispatch(
+                                  push("/404", {
+                                      message: "User not found"
+                                  })
+                              );
+                    }
+                });
             }
         }
     }, [dispatch, username, loggedInUserUid, isRequestingLogin]);
@@ -233,8 +230,14 @@ const Profile = ({ classes, ...properties }) => {
         };
     }, []);
 
-    const { displayName, bio, link1, link2, link3, backgroundIndex = 0 } =
-        profile || {};
+    const {
+        displayName,
+        bio,
+        link1,
+        link2,
+        link3,
+        backgroundIndex = 0
+    } = profile || {};
 
     return (
         <div className={classes.root}>

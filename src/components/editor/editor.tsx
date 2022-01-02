@@ -83,12 +83,10 @@ const CodeEditor = ({
 
         if (editorReference) {
             editorReference.off("scroll", onScroll);
-            cursorState[
-                `${documentUid}:cursor_pos`
-            ] = editorReference.getCursor();
-            cursorState[
-                `${documentUid}:history`
-            ] = editorReference.getHistory();
+            cursorState[`${documentUid}:cursor_pos`] =
+                editorReference.getCursor();
+            cursorState[`${documentUid}:history`] =
+                editorReference.getHistory();
         }
         updateReduxDocumentValue && updateReduxDocumentValue.cancel();
     }, [dispatch, projectUid, documentUid, editorReference, onChangedCallback]);
@@ -156,9 +154,7 @@ const CodeEditor = ({
                         // eslint-disable-next-line @typescript-eslint/no-empty-function
                         "Cmd-Y": () => {}
                     },
-                    mode: ["csd", "orc", "sco", "udo"].some(
-                        (t) => t === documentType
-                    )
+                    mode: ["csd", "orc", "sco", "udo"].includes(documentType)
                         ? { name: "csound", documentType }
                         : "text/plain"
                 } as any

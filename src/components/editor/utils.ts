@@ -131,6 +131,7 @@ export const editorEvalCode = curry(
             if (isNil(evalString)) {
                 return;
             }
+            /* eslint-disable-next-line unicorn/prefer-switch */
             if (documentType === "orc" || documentType === "udo") {
                 csound &&
                     csound.evalCode(evalString).then((result) => {

@@ -153,7 +153,7 @@ const TargetDropdown = ({
                         setMenuIsOpen(true);
                     }}
                     onMenuClose={() => setMenuIsOpen(false)}
-                    onChange={(event) => {
+                    onChange={(event: any) => {
                         event.value === "___toggle-configure"
                             ? dispatch(showTargetsConfigDialog())
                             : dispatch(
@@ -165,21 +165,24 @@ const TargetDropdown = ({
                     }}
                     isSearchable={false}
                     options={options}
-                    styles={{
-                        control: (provided, state) => SS.control,
-                        container: (provided, state) =>
-                            SS.dropdownContainer(theme),
-                        groupHeading: (provided, state) =>
-                            SS.groupHeading(theme),
-                        placeholder: (provided, state) => SS.placeholder(theme),
-                        menu: (provided, state) => SS.menu(theme),
-                        menuList: (provided, state) => SS.menuList(theme),
-                        option: (provided, state) => SS.menuOption(theme),
-                        indicatorsContainer: (provided, state) =>
-                            SS.indicatorContainer(theme),
-                        indicatorSeparator: (provided, state) =>
-                            SS.indicatorSeparator
-                    }}
+                    styles={
+                        {
+                            control: (provided, state) => SS.control,
+                            container: (provided, state) =>
+                                SS.dropdownContainer(theme),
+                            groupHeading: (provided, state) =>
+                                SS.groupHeading(theme),
+                            placeholder: (provided, state) =>
+                                SS.placeholder(theme),
+                            menu: (provided, state) => SS.menu(theme),
+                            menuList: (provided, state) => SS.menuList(theme),
+                            option: (provided, state) => SS.menuOption(theme),
+                            indicatorsContainer: (provided, state) =>
+                                SS.indicatorContainer(theme),
+                            indicatorSeparator: (provided, state) =>
+                                SS.indicatorSeparator
+                        } as any
+                    }
                 />
             </div>
         </Tooltip>

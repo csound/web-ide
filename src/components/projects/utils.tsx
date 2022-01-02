@@ -1,5 +1,6 @@
-import firebase from "firebase/app";
-import { getType as mimeLookup } from "mime/lite";
+import { doc, getDoc, QueryDocumentSnapshot } from "firebase/firestore";
+import { getDownloadURL } from "firebase/storage";
+import { lookup as mimeLookup } from "mime";
 import {
     storageReference,
     getFirebaseTimestamp,
@@ -68,37 +69,37 @@ export const addDocumentToEMFS = async (
     }
 
     if (document.type === "folder") {
-        csound.fs.mkdirpSync(document.filename);
+        csound.fs.mkdir(document.filename);
         return;
     }
 
     const steps = absolutePath.split("/").filter((p) => p.length > 0);
 
     if (steps.length > 1) {
-        csound.fs.mkdirpSync(dropLast(1, steps).join("/"));
+        csound.fs.mkdir(dropLast(1, steps).join("/"));
     }
 
     if (document.type === "bin") {
         const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
         try {
-            const downloadUrl = await storageReference
-                .child(path)
-                .getDownloadURL();
+            const downloadUrl = await getDownloadURL(
+                await storageReference(path)
+            );
             const response = await fetch(downloadUrl);
             const arrayBuffer = await response.arrayBuffer();
             const blob = new Uint8Array(arrayBuffer);
-            csound.fs.writeFileSync(absolutePath, blob);
+            await csound.fs.writeFile(absolutePath, blob);
         } catch (error) {
             console.error(error);
         }
     } else {
         const encoder = new TextEncoder();
         csound &&
-            typeof csound.fs.writeFileSync === "function" &&
-            csound.fs.writeFileSync(
+            typeof csound.fs.writeFile === "function" &&
+            (await csound.fs.writeFile(
                 absolutePath,
                 encoder.encode(document.currentValue)
-            );
+            ));
     }
 };
 
@@ -126,9 +127,8 @@ export const convertDocumentSnapToDocumentsMap = (
         map(prop("doc")),
         map((d: any) => assoc("documentUid", d.id, d.data())),
         reduce((accumulator: IDocumentsMap, documentData: any) => {
-            accumulator[
-                documentData["documentUid"]
-            ] = fileDocumentDataToDocumentType(documentData);
+            accumulator[documentData["documentUid"]] =
+                fileDocumentDataToDocumentType(documentData);
             return accumulator;
         }, {})
     )(documentsToAdd);
@@ -150,11 +150,11 @@ export const firestoreProjectToIProject = (
 });
 
 export const convertProjectSnapToProject = async (
-    projSnap: firebase.firestore.QueryDocumentSnapshot
+    projSnap: QueryDocumentSnapshot
 ): Promise<IProject> => {
     const projData = projSnap.data();
-    const lastModified = await projectLastModified.doc(projSnap.id).get();
-    const lastModifiedData = lastModified.exists && lastModified.data();
+    const lastModified = await getDoc(doc(projectLastModified, projSnap.id));
+    const lastModifiedData = lastModified.exists() && lastModified.data();
     const project = firestoreProjectToIProject(projData as IFirestoreProject);
     project["projectUid"] = projSnap.id;
 

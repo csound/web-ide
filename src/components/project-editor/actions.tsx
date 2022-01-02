@@ -85,7 +85,9 @@ export const tabDockInit = (
             });
         });
     } else if (
+        /* eslint-disable-next-line unicorn/no-useless-length-check */
         allDocuments.length > 0 &&
+        /* eslint-disable-next-line unicorn/no-useless-length-check */
         allDocuments.some((d) => d.filename === "project.csd")
     ) {
         const projectCsd = find(

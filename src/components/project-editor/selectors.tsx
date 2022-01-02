@@ -1,14 +1,11 @@
-import firebase from "firebase/app";
-import "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { IStore } from "@store/types";
 import { curry, equals, path, pathOr } from "ramda";
 import { IOpenDocument } from "./types";
 
-export const selectIsOwner: (
-    projectUid: string
-) => (store: IStore) => boolean = curry(
-    (projectUid: string, store: IStore): boolean => {
-        const currentUser = firebase.auth().currentUser;
+export const selectIsOwner: (projectUid: string) => (store: IStore) => boolean =
+    curry((projectUid: string, store: IStore): boolean => {
+        const currentUser = getAuth().currentUser;
         if (typeof currentUser !== "object") {
             return false;
         }
@@ -18,8 +15,7 @@ export const selectIsOwner: (
             store
         );
         return equals(owner, (currentUser && currentUser.uid) || -1);
-    }
-);
+    });
 
 export const selectTabDockIndex = (store: IStore): number =>
     pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"], store);

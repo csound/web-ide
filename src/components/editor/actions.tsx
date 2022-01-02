@@ -25,7 +25,7 @@ export const manualEntryAtPoint = (editorReference: CodeMirror.Editor) => {
         const token = editorReference
             .getTokenAt(cursor)
             .string.replace(/:.*/, "");
-        if (opcodes.some((opc) => opc === token)) {
+        if (opcodes.includes(token)) {
             const manualId = synopsis[token]["id"];
             dispatch(lookupManualString());
             setTimeout(() => dispatch(lookupManualString(manualId)), 10);
