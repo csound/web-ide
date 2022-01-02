@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Provider, ReactReduxContext, useDispatch } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
 import ReactTooltip from "react-tooltip";
@@ -9,12 +9,10 @@ import Profile from "../profile/profile";
 import Page404 from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
 import { closeTabDock } from "@comp/project-editor/actions";
-
+import { history, store } from "@store";
 import { closeProject } from "@comp/projects/actions";
+import { HistoryRouter as Router } from "redux-first-history/rr6";
 import { Route, Routes } from "react-router-dom";
-// import { ConnectedRouter } from "connected-react-router";
-import { store } from "../../store";
-// import { History } from "history";
 import { stopCsound } from "../csound/actions";
 import SiteDocuments from "../site-documents/site-documents";
 
@@ -72,36 +70,37 @@ const CsoundManualWithStyleOverrides = ({
     );
 };
 
-const RouterComponent = ({
-    context
-}: {
-    context: typeof ReactReduxContext;
-}): React.ReactElement => {
+const RouterComponent = (): React.ReactElement => {
     const theme = useTheme();
     ReactTooltip.rebuild();
-    return (
-        <Routes>
-            <Route index element={<Home />} />
-            <Route path="profile" element={<Profile />}>
-                <Route path=":username" element={<Profile />} />
-            </Route>
-            <Route path="editor" element={<EditorLayout />}>
-                <Route path=":id" element={<EditorLayout />} />
-            </Route>
-            <Route
-                path="manual"
-                element={<CsoundManualWithStyleOverrides theme={theme} />}
-            >
-                <Route
-                    path=":id"
-                    element={<CsoundManualWithStyleOverrides theme={theme} />}
-                />
-            </Route>
 
-            <Route path="documentation" element={<SiteDocuments />} />
-            <Route path="404" element={<Page404 />} />
-            <Route path="*" element={<Page404 />} />
-        </Routes>
+    return (
+        <Router history={history}>
+            <Routes>
+                <Route index element={<Home />} />
+                <Route path="profile" element={<Profile />}>
+                    <Route path=":username" element={<Profile />} />
+                </Route>
+                <Route path="editor" element={<EditorLayout />}>
+                    <Route path=":id" element={<EditorLayout />} />
+                </Route>
+                <Route
+                    path="manual"
+                    element={<CsoundManualWithStyleOverrides theme={theme} />}
+                >
+                    <Route
+                        path=":id"
+                        element={
+                            <CsoundManualWithStyleOverrides theme={theme} />
+                        }
+                    />
+                </Route>
+
+                <Route path="documentation" element={<SiteDocuments />} />
+                <Route path="404" element={<Page404 />} />
+                <Route path="*" element={<Page404 />} />
+            </Routes>
+        </Router>
     );
 };
 

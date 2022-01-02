@@ -19,6 +19,7 @@
     "dependencies": {
         "@csound/browser": "^6.17.0-beta1",
         "@hlolli/react-modal-resizable-draggable": "^0.1.5",
+        "connected-react-router": "^6.9.2",
         "history": "^5.2.0",
         "mime": "^3.0.0",
         "ramda": "^0.27.1",
@@ -49,6 +50,7 @@
         "react-split-pane": "^0.1.92",
         "react-tooltip": "^4.2.21",
         "redux": "^4.1.2",
+        "redux-first-history": "^5.0.8",
         "redux-thunk": "^2.4.1",
         "url": "^0.11.0"
     },
@@ -123,7 +125,6 @@
         "file-loader": "6.2.0",
         "file-saver": "^2.0.5",
         "firebase": "^9.6.1",
-        "firebase-tools": "^10.0.1",
         "fork-ts-checker-webpack-plugin": "^6.5.0",
         "fuse.js": "^6.5.3",
         "hex-rgb": "^5.0.0",
@@ -177,7 +178,11 @@
         "node": ">=15"
     },
     "browserslist": {
-        "production": [">0.2%", "not dead", "not op_mini all"],
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
         "development": [
             "last 1 chrome version",
             "last 1 firefox version",

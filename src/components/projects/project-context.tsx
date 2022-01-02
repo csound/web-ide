@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Path } from "history";
 import LoaderSpinner from "react-loader-spinner";
-import { push } from "connected-react-router";
+import { useParams } from "react-router-dom";
+import { push } from "connected-react-router/esm/index.js";
 import { useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
@@ -26,10 +27,12 @@ const ProjectContext = (
 ): React.ReactElement => {
     const dispatch = useDispatch();
     const theme = useTheme();
+    const routeParams: { id?: string } = useParams();
+
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
-    const projectUid = properties.match.params.id;
+    const projectUid = routeParams.id ? routeParams.id : "";
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
     invalidUrl &&

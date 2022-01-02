@@ -10,7 +10,7 @@ import {
     updateDoc,
     writeBatch
 } from "firebase/firestore";
-import { push } from "connected-react-router";
+import { push } from "connected-react-router/esm/index.js";
 import { CsoundObj } from "@csound/browser";
 import {
     tabOpenByDocumentUid,

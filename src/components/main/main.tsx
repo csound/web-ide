@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, ReactReduxContext } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { useDispatch } from "react-redux";
+// import { BrowserRouter } from "react-router-dom";
+// import { ConnectedRouter } from "connected-react-router/esm/index.js";
+// import { history } from "@store";
 import { isMobile } from "@root/utils";
 import Router from "@comp/router/router";
 import ThemeProvider from "@styles/theme-provider";
@@ -16,11 +18,7 @@ import {
 import { getAuth } from "firebase/auth";
 import HotKeys from "@comp/hot-keys/hot-keys";
 
-const Main = ({
-    context
-}: {
-    context: typeof ReactReduxContext;
-}): React.ReactElement => {
+const Main = (): React.ReactElement => {
     const dispatch = useDispatch();
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 
@@ -65,21 +63,19 @@ const Main = ({
     }, []);
 
     return (
-        <BrowserRouter>
-            <ThemeProvider>
-                <div style={{ position: "absolute" }}>
-                    <ReactTooltip />
-                </div>
-                <HotKeys>
-                    <>
-                        <Modal />
-                        <IosWarning />
-                        <Snackbar />
-                        <Router context={context} />
-                    </>
-                </HotKeys>
-            </ThemeProvider>
-        </BrowserRouter>
+        <ThemeProvider>
+            <div style={{ position: "absolute" }}>
+                <ReactTooltip />
+            </div>
+            <HotKeys>
+                <>
+                    <Modal />
+                    <IosWarning />
+                    <Snackbar />
+                    <Router />
+                </>
+            </HotKeys>
+        </ThemeProvider>
     );
 };
 

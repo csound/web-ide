@@ -112,6 +112,7 @@ module.exports = function (webpackEnv = "production") {
                 "@elem": path.resolve(__dirname, "../src/elements"),
                 "@config": path.resolve(__dirname, "../src/config"),
                 "@store": path.resolve(__dirname, "../src/store"),
+                history: process.cwd() + "/node_modules/history",
                 "react-native": "react-native-web",
                 react: process.cwd() + "/node_modules/react",
                 "react-dom": process.cwd() + "/node_modules/react-dom",
