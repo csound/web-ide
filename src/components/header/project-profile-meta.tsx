@@ -68,7 +68,7 @@ const ProjectProfileMeta = (): React.ReactElement => {
                                 <div css={SS.projectIcon}>
                                     <ProjectAvatar project={project} />
                                 </div>
-                                <div>
+                                <div style={{ marginLeft: 24 }}>
                                     <h1 css={SS.projectProfileMetaH1}>
                                         {projectName}
                                     </h1>

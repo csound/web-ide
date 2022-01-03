@@ -79,6 +79,7 @@ const RouterComponent = (): React.ReactElement => {
             <Routes>
                 <Route index element={<Home />} />
                 <Route path="profile/:username" element={<Profile />} />
+                <Route path="profile/:username/*" element={<Profile />} />
                 <Route path="editor" element={<EditorLayout />}>
                     <Route path=":id" element={<EditorLayout />} />
                 </Route>

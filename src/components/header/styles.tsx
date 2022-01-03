@@ -156,18 +156,24 @@ export const projectProfileMetaP = (theme: Theme): SerializedStyles => css`
 `;
 
 export const projectIcon = css`
+    position: relative;
+    width: 36px;
+    height: 36px;
+    bottom: 2px;
+    right: 6px;
     & > div {
         box-sizing: content-box;
-        height: 34px;
-        width: 34px;
+        height: 100%;
+        width: 100%;
         padding: 5px;
         margin: 0 9px;
         cursor: default;
+        border-radius: 100%;
         & svg {
             height: 20px !important;
             width: 20px !important;
-            margin-top: 7px;
-            margin-left: 7px;
+            margin-top: 1px;
+            margin-left: 1px;
         }
     }
 `;

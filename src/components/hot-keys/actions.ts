@@ -28,10 +28,12 @@ import { filenameToCsoundType } from "@comp/csound/utils";
 import { editorEvalCode } from "@comp/editor/utils";
 import * as EditorActions from "@comp/editor/actions";
 
-const withPreventDefault = (callback: any) => (event: KeyboardEvent): void => {
-    event && event.preventDefault();
-    callback();
-};
+const withPreventDefault =
+    (callback: any) =>
+    (event: KeyboardEvent): void => {
+        event && event.preventDefault();
+        callback();
+    };
 
 export const storeProjectEditorKeyboardCallbacks = (
     projectUid: string
@@ -72,7 +74,7 @@ export const storeProjectEditorKeyboardCallbacks = (
                 dispatch(saveAllFiles())
             ),
             save_and_close: withPreventDefault(() =>
-                dispatch(saveAllAndClose("/profile"))
+                dispatch(saveAllAndClose("/"))
             ),
             save_document: withPreventDefault(() => dispatch(saveFile())),
             stop_playback: withPreventDefault(() => dispatch(stopCsound()))

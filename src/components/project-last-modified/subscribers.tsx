@@ -9,10 +9,11 @@ export const subscribeToProjectLastModified = async (
     const unsubscribe: () => void = onSnapshot(
         doc(projectLastModified, projectUid),
         async (timestampDocument) => {
-            if (!timestampDocument.exists) {
+            if (!timestampDocument.exists()) {
                 return;
             }
-            const { timestamp } = timestampDocument.data() as any;
+
+            const { timestamp } = timestampDocument.data();
             timestamp &&
                 (await dispatch(
                     updateProjectLastModifiedLocally(projectUid, timestamp)
