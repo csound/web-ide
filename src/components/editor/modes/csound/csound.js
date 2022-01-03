@@ -28,16 +28,6 @@ function readHereDocument(phrase) {
     };
 }
 
-function readBlockComment(stream, state) {
-    if (/.*\*\//.test(stream)) {
-        state.tokenize.pop();
-        stream.skipTo("*/");
-    } else {
-        stream.skipToEnd();
-    }
-    return "comment";
-}
-
 const keywords = new Set([
     "ksmps",
     "opcode",
@@ -80,10 +70,6 @@ export const registerCsoundMode = (CodeMirror) => {
         let currentPunctuation;
 
         function tokenBase(stream, state) {
-            if (/\/\*/.test(stream)) {
-                state.tokenize.push(readBlockComment);
-                return "comment";
-            }
             if (stream.eatSpace()) {
                 return;
             }
@@ -137,6 +123,19 @@ export const registerCsoundMode = (CodeMirror) => {
                 );
             } else if (ch === ";" || (ch === "/" && stream.eat("/"))) {
                 stream.skipToEnd();
+                return "comment";
+            } else if (
+                state.withinBlockComment ||
+                (ch === "/" && stream.eat("*"))
+            ) {
+                if (stream.string.includes("*/")) {
+                    state.withinBlockComment = false;
+                    stream.pos = stream.string.indexOf("*/") + 2;
+                } else {
+                    stream.skipToEnd();
+                    state.withinBlockComment = true;
+                }
+
                 return "comment";
             } else if (
                 ch === "<" &&
@@ -297,6 +296,7 @@ export const registerCsoundMode = (CodeMirror) => {
                     tokenize: [tokenBase],
                     indented: 0,
                     context: { type: "top", indented: 0 },
+                    withinBlockComment: false,
                     continuedLine: false,
                     lastTok: undefined,
                     varList: false,
@@ -434,6 +434,8 @@ export const registerCsoundMode = (CodeMirror) => {
 
             electricInput: /^\s*(?:end|rescue|elsif|else|od|})$/,
             lineComment: ";",
+            blockCommentStart: "/*",
+            blockCommentEnd: "*/",
             fold: "indent"
         };
     });
