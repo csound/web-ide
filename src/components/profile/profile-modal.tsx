@@ -193,6 +193,8 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
                                 control: (provided, state) => TargetSS.control,
                                 container: (provided, state) =>
                                     TargetSS.dropdownContainer(theme),
+                                valueContainer: (provided, state) =>
+                                    TargetSS.valueContainer(theme),
                                 groupHeading: (provided, state) =>
                                     TargetSS.groupHeading,
                                 placeholder: (provided, state) =>

@@ -9,7 +9,7 @@ import { CsoundObj } from "@csound/browser";
 import { isAudioFile } from "@comp/projects/utils";
 import { closeModal } from "@comp/modal/actions";
 import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
-import { lookup as mimeLookup } from "mime";
+import { getType as mimeLookup } from "mime";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import Fab from "@material-ui/core/Fab";

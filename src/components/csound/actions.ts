@@ -29,7 +29,11 @@ export const setCsoundPlayState = (
 };
 
 export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
-    csound.on("realtimePerformanceEnded", () => {
+    csound.on("realtimePerformanceEnded", async () => {
+        try {
+            await csound.cleanup();
+        } catch {}
+
         dispatch(setCsoundPlayState("stopped"));
     });
     csound.on("realtimePerformancePaused", () =>
@@ -103,46 +107,57 @@ export const syncFs = async (
         const filepath = isEmpty(realPath)
             ? document.filename
             : realPath.join("/") + "/" + document.filename;
+
         await addDocumentToEMFS(projectUid, csound, document, filepath);
     }
 };
 
-export const fetchSetStartCsound = (
-    activeProjectUid: string,
-    playCallback: (dispatch: any, csound: CsoundObj) => void
-): ((dispatch: (any) => void) => Promise<void>) => {
-    return async (dispatch: any) => {
-        const Csound = await fetchCsound(dispatch);
-        // eslint-disable-next-line unicorn/prevent-abbreviations
-        const csoundObj = await newCsound(Csound, dispatch);
+// export const fetchSetStartCsound = (
+//     activeProjectUid: string,
+//     MaybeCsound: any,
+// ): ((dispatch: (any) => void) => Promise<void>) => {
+//     return async (dispatch: any) => {
+//         const Csound = MaybeCsound || await fetchCsound(dispatch);
+//         // eslint-disable-next-line unicorn/prevent-abbreviations
+//         const csoundObj = await newCsound(Csound, dispatch);
 
-        if (!csoundObj) {
-            dispatch(
-                openSnackbar(
-                    "Error: fetching csound failed",
-                    SnackbarType.Error
-                )
-            );
-            return;
-        }
-
-        const storeState: IStore = store.getState();
-
-        await syncFs(csoundObj, activeProjectUid, storeState);
-        playCallback && (await playCallback(dispatch, csoundObj));
-    };
-};
+//         if (!csoundObj) {
+//             await dispatch(
+//                 openSnackbar(
+//                     "Error: fetching csound failed",
+//                     SnackbarType.Error
+//                 )
+//             );
+//         }
+//         return csoundObj;
+//     };
+// };
 
 export const playCsdFromFs = (
     projectUid: string,
     csdPath: string
-): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
-    return async (dispatch: any, csound) => {
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch: any) => {
         const state = store.getState();
+        // const csoundStatus = csound || path(["csound", "status"], state);
+        const hasCsound =
+            typeof path(["csound", "factory"], store) === "function";
 
-        // eslint-disable-next-line unicorn/prevent-abbreviations
-        const csoundObj = csound || path(["csound", "csound"], state);
-        const csoundStatus = csound || path(["csound", "status"], state);
+        const Csound = hasCsound
+            ? path(["csound", "factory"], store)
+            : await fetchCsound(dispatch);
+
+        const oldCsoundObj = path(["csound", "csound"], state);
+
+        if (oldCsoundObj) {
+            try {
+                await oldCsoundObj.destroy();
+            } catch (error: any) {
+                console.error(error);
+            }
+        }
+
+        const csoundObj = await newCsound(Csound, dispatch);
 
         const clearConsoleCallback = path(
             ["ConsoleReducer", "clearConsole"],
@@ -152,16 +167,23 @@ export const playCsdFromFs = (
         if (csoundObj) {
             typeof clearConsoleCallback === "function" &&
                 clearConsoleCallback();
-            csoundStatus !== "initialized" && (await csoundObj.reset());
-            csoundObj.setOption("-odac");
-            csoundObj.setOption("-+msg_color=false");
 
-            await syncFs(csoundObj, projectUid, state);
+            await csoundObj.setOption("-odac");
+
+            const storeState = store.getState();
+            await syncFs(csoundObj, projectUid, storeState);
             const result = await csoundObj.compileCsd(csdPath);
 
             if (result === 0) {
                 await csoundObj.start();
+                dispatch(setCsoundPlayState("playing"));
             } else {
+                try {
+                    await csoundObj.cleanup();
+                } catch (error: any) {
+                    console.error(error);
+                }
+
                 dispatch(setCsoundPlayState("error"));
             }
         }
@@ -171,24 +193,56 @@ export const playCsdFromFs = (
 export const playCSDFromString = (
     projectUid: string,
     csd: string
-): ((dispatch: any, csound: CsoundObj | undefined) => Promise<void>) => {
-    return async (dispatch, csound) => {
-        const cs =
-            csound ||
-            (path(["csound", "csound"], store.getState()) as
-                | CsoundObj
-                | undefined);
-        if (cs) {
-            // await cs.setCurrentDirFS(projectUid);
-            // cs.audioContext.resume();
-            cs.setOption("-odac");
-            cs.setOption("-+msg_color=false");
-            const storeState = store.getState();
-            await syncFs(cs, projectUid, storeState);
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch) => {
+        const state = store.getState();
 
-            cs.compileCsdText(csd);
-            cs.start();
-            dispatch(setCsoundPlayState("playing"));
+        const hasCsound =
+            typeof path(["csound", "factory"], store) === "function";
+
+        const Csound = hasCsound
+            ? path(["csound", "factory"], store)
+            : await fetchCsound(dispatch);
+
+        const oldCsoundObj = path(["csound", "csound"], state);
+
+        if (oldCsoundObj) {
+            try {
+                await oldCsoundObj.destroy();
+            } catch (error: any) {
+                console.error(error);
+            }
+        }
+
+        const clearConsoleCallback = path(
+            ["ConsoleReducer", "clearConsole"],
+            state
+        );
+
+        const csoundObj = await newCsound(Csound, dispatch);
+
+        if (csoundObj) {
+            typeof clearConsoleCallback === "function" &&
+                clearConsoleCallback();
+
+            await csoundObj.setOption("-odac");
+
+            const storeState = store.getState();
+            await syncFs(csoundObj, projectUid, storeState);
+            const result = await csoundObj.compileCsdText(csd);
+
+            if (result === 0) {
+                await csoundObj.start();
+                dispatch(setCsoundPlayState("playing"));
+            } else {
+                try {
+                    await csoundObj.cleanup();
+                } catch (error: any) {
+                    console.error(error);
+                }
+
+                dispatch(setCsoundPlayState("error"));
+            }
         }
     };
 };
@@ -198,34 +252,55 @@ export const playORCFromString = (
     orc: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch) => {
-        const cs = path(["csound", "csound"], store.getState()) as
-            | CsoundObj
-            | undefined;
-        if (cs) {
-            cs.setOption("-odac");
-            cs.setOption("-+msg_color=false");
-            cs.setOption("-d");
+        const state = store.getState();
 
-            const storeState = store.getState();
-            await syncFs(cs, projectUid, storeState);
+        const hasCsound =
+            typeof path(["csound", "factory"], store) === "function";
 
-            cs.compileOrc(orc);
-            cs.start();
-            dispatch(setCsoundPlayState("playing"));
+        const Csound = hasCsound
+            ? path(["csound", "factory"], store)
+            : await fetchCsound(dispatch);
+
+        const oldCsoundObj = path(["csound", "csound"], state);
+
+        if (oldCsoundObj) {
+            try {
+                await oldCsoundObj.destroy();
+            } catch (error: any) {
+                console.error(error);
+            }
         }
 
-        // FIXME
-        // if (cs) {
-        //     // await cs.setCurrentDirFS(projectUid);
-        //     if (cs.getPlayState() === "paused") {
-        //         dispatch(setCsoundPlayState("playing"));
-        //         cs.play();
-        //     } else {
-        //         // cs.audioContext.resume();
-        //         // cs.reset();
+        const clearConsoleCallback = path(
+            ["ConsoleReducer", "clearConsole"],
+            state
+        );
 
-        //     }
-        // }
+        const csoundObj = await newCsound(Csound, dispatch);
+
+        if (csoundObj) {
+            typeof clearConsoleCallback === "function" &&
+                clearConsoleCallback();
+
+            await csoundObj.setOption("-odac");
+
+            const storeState = store.getState();
+            await syncFs(csoundObj, projectUid, storeState);
+            const result = await csoundObj.compileOrc(orc);
+
+            if (result === 0) {
+                await csoundObj.start();
+                dispatch(setCsoundPlayState("playing"));
+            } else {
+                try {
+                    await csoundObj.cleanup();
+                } catch (error: any) {
+                    console.error(error);
+                }
+
+                dispatch(setCsoundPlayState("error"));
+            }
+        }
     };
 };
 
@@ -278,17 +353,15 @@ export const resumePausedCsound = (): ((
 };
 
 function lsAll(fs, tree = {}, root = "/") {
-    if (fs.existsSync(root)) {
-        fs.readdirSync(root).forEach((file) => {
-            const currentPath = `${root}/${file}`.replace("//", "/");
-            if (fs.lstatSync(currentPath).isDirectory()) {
-                return (tree[currentPath] = lsAll(fs, tree, currentPath));
-            } else {
-                tree[currentPath] = fs.statSync(currentPath).size;
-            }
-        });
-        return tree;
-    }
+    fs.readdirSync(root).forEach((file) => {
+        const currentPath = `${root}/${file}`.replace("//", "/");
+        if (fs.lstatSync(currentPath).isDirectory()) {
+            return (tree[currentPath] = lsAll(fs, tree, currentPath));
+        } else {
+            tree[currentPath] = fs.statSync(currentPath).size;
+        }
+    });
+    return tree;
 }
 
 export const renderToDisk = (): ((dispatch: (any) => void) => void) => {

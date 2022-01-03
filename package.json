@@ -17,7 +17,7 @@
         "prepare": "husky install"
     },
     "dependencies": {
-        "@csound/browser": "^6.17.0-beta1",
+        "@csound/browser": "^6.17.0-beta2",
         "@hlolli/react-modal-resizable-draggable": "^0.1.5",
         "connected-react-router": "^6.9.2",
         "history": "^5.2.0",
@@ -178,11 +178,7 @@
         "node": ">=15"
     },
     "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
+        "production": [">0.2%", "not dead", "not op_mini all"],
         "development": [
             "last 1 chrome version",
             "last 1 firefox version",

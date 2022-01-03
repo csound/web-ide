@@ -1,6 +1,6 @@
 import { doc, getDoc, QueryDocumentSnapshot } from "firebase/firestore";
 import { getDownloadURL } from "firebase/storage";
-import { lookup as mimeLookup } from "mime";
+import { getType as mimeLookup } from "mime";
 import {
     storageReference,
     getFirebaseTimestamp,

@@ -335,7 +335,7 @@ export const addProject = () => {
             openSimpleModal(ProjectModal, {
                 name: "New Project",
                 description: "",
-                labe: "Create Project",
+                label: "Create Project",
                 newProject: true,
                 projectID: "",
                 iconName: undefined,

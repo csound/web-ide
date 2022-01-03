@@ -5,7 +5,7 @@ import * as SS from "./styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "@store/types";
-import { path, pathOr } from "ramda";
+import { pathOr } from "ramda";
 import {
     getDefaultTargetDocument,
     getPlayActionFromProject,
@@ -13,7 +13,7 @@ import {
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
 import {
-    fetchSetStartCsound,
+    // fetchSetStartCsound,
     pauseCsound,
     resumePausedCsound
 } from "@comp/csound/actions";
@@ -38,10 +38,6 @@ const PlayButton = ({
 
     const csoundPlayState: string = useSelector((store: IStore) => {
         return pathOr("stopped", ["csound", "status"], store);
-    });
-
-    const csoundConstructorReady: boolean = useSelector((store: IStore) => {
-        return typeof path(["csound", "factory"], store) === "function";
     });
 
     const selectedTargetName: string | null = useSelector(
@@ -93,15 +89,7 @@ const PlayButton = ({
                             if (isOwner) {
                                 dispatch(saveAllFiles());
                             }
-                            if (!csoundConstructorReady) {
-                                await fetchSetStartCsound(
-                                    activeProjectUid,
-                                    playAction as any
-                                )(dispatch);
-                            } else {
-                                playAction &&
-                                    (await (playAction as any)(dispatch));
-                            }
+                            playAction && (await (playAction as any)(dispatch));
                         }
                     }
                     setIsLoading(false);
