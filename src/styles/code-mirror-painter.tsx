@@ -4,7 +4,8 @@ export const CodeMirrorPainter = ({ theme }) => (
     <style>
         {`.CodeMirror { background: ${theme.background};
                         color: ${theme.textColor};
-                        font-size: 16px;
+                        font-size: 16px!important;
+                        line-height: 22px!important;
                        }
           .CodeMirror-selected { background: ${theme.highlightBackground}; }
           .CodeMirror-focused .CodeMirror-selected,
