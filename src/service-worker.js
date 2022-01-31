@@ -1,3 +1,7 @@
+import { precacheAndRoute } from "workbox-precaching";
+
+precacheAndRoute(self.__WB_MANIFEST);
+
 // This optional code is used to register a service worker.
 // register() is not called by default.
 

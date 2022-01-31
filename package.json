@@ -6,7 +6,7 @@
     "scripts": {
         "start": "cross-env REACT_APP_DATABASE=DEV node scripts/start.js",
         "build": "cross-env NODE_ENV=production REACT_APP_DATABASE=PROD npx webpack --mode production -c config/webpack.config.js",
-        "build:dev": "cross-env cross-env NODE_ENV=production REACT_APP_DATABASE=DEV npx webpack --mode production -c config/webpack.config.js",
+        "build:dev": "cross-env cross-env NODE_ENV=production REACT_APP_DATABASE=DEV node scripts/build.js",
         "test": "cross-env REACT_APP_DATABASE=DEV jest",
         "lint": "prettier --write src/**/*.{js,jsx,ts,tsx}",
         "lint:check": "eslint --ext js,jsx,ts,tsx src",

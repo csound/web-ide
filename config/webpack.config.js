@@ -320,7 +320,7 @@ module.exports = function (webpackEnv = "production") {
 
             isEnvProduction &&
                 new WorkboxWebpackPlugin.InjectManifest({
-                    swSrc,
+                    swSrc: path.resolve(__dirname, "../src/service-worker.js"),
                     dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
                     exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
                     // Bump up the default maximum size (2mb) that's precached,
