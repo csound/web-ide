@@ -28,6 +28,7 @@ body {
      annoying padding and overflow */
     padding: 0!important;
     overflow: auto!important;
+    min-height: 100vh;
 }
 
 #root {
