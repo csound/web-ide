@@ -4,6 +4,7 @@ import {
     IProfile,
     ProfileActionTypes,
     SET_CURRENTLY_PLAYING_PROJECT,
+    CLOSE_CURRENTLY_PLAYING_PROJECT,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING,
     STORE_USER_PROFILE,
@@ -58,10 +59,10 @@ const profileKeys = [
     "username"
 ];
 
-export default (
+const ProfileReducer = (
     state: IProfileReducer = INITIAL_STATE,
     action: ProfileActionTypes
-) => {
+): IProfileReducer => {
     switch (action.type) {
         case SET_FOLLOWING_FILTER_STRING: {
             return assoc("followingFilterString", action.payload, state);
@@ -80,15 +81,13 @@ export default (
             );
         }
         case STORE_USER_PROFILE: {
-            if (!hasPath(["profiles", (action as any).profileUid], state)) {
-                return assocPath(
-                    ["profiles", (action as any).profileUid],
-                    action.profile,
-                    state
-                );
-            } else {
-                return state;
-            }
+            return !hasPath(["profiles", (action as any).profileUid], state)
+                ? assocPath(
+                      ["profiles", (action as any).profileUid],
+                      action.profile,
+                      state
+                  )
+                : state;
         }
         case GET_ALL_TAGS: {
             return assocPath(
@@ -155,11 +154,12 @@ export default (
         case SET_CURRENTLY_PLAYING_PROJECT: {
             return assoc("currentlyPlayingProject", action.projectUid, state);
         }
+        case CLOSE_CURRENTLY_PLAYING_PROJECT: {
+            return dissoc("currentlyPlayingProject", state);
+        }
         case SET_CSOUND_PLAY_STATE: {
-            if (state.currentlyPlayingProject) {
-                if (action.status === "stopped") {
-                    return dissoc("currentlyPlayingProject", state);
-                }
+            if (state.currentlyPlayingProject && action.status === "stopped") {
+                return dissoc("currentlyPlayingProject", state);
             }
             return state;
         }
@@ -168,3 +168,5 @@ export default (
         }
     }
 };
+
+export default ProfileReducer;

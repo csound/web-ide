@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import { useTheme } from "@emotion/react";
+import { TailSpin } from "react-loader-spinner";
 import * as SS from "./styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,10 +12,24 @@ import {
     getPlayActionFromTarget
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
-import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
+import {
+    // fetchSetStartCsound,
+    pauseCsound,
+    resumePausedCsound
+} from "@comp/csound/actions";
 import { saveAllFiles } from "@comp/projects/actions";
 
-const PlayButton = ({ activeProjectUid, isOwner }) => {
+const PlayButton = ({
+    activeProjectUid,
+    isOwner
+}: {
+    activeProjectUid: string;
+    isOwner: boolean;
+}): React.ReactElement => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const theme = useTheme();
+
     const playActionDefault = useSelector(getPlayActionFromTarget);
 
     const playActionFallback = useSelector(
@@ -46,10 +62,18 @@ const PlayButton = ({ activeProjectUid, isOwner }) => {
     const playAction = playActionDefault || playActionFallback;
 
     return (
-        <Tooltip title={tooltipText}>
+        <Tooltip title={isLoading ? "loading..." : tooltipText}>
             <div
                 css={SS.playButtonContainer}
-                onClick={() => {
+                onClick={async () => {
+                    if (isLoading) {
+                        return;
+                    }
+                    setIsLoading(true);
+                    if (!playAction) {
+                        console.error("Don't know how to play this project");
+                        return;
+                    }
                     switch (csoundPlayState) {
                         case "playing": {
                             dispatch(pauseCsound());
@@ -65,14 +89,24 @@ const PlayButton = ({ activeProjectUid, isOwner }) => {
                             if (isOwner) {
                                 dispatch(saveAllFiles());
                             }
-                            dispatch(playAction);
+                            playAction && (await (playAction as any)(dispatch));
                         }
                     }
+                    setIsLoading(false);
                 }}
             >
-                <button
-                    css={SS.playButtonStyle(csoundPlayState === "playing")}
-                />
+                {isLoading ? (
+                    <TailSpin
+                        css={SS.playButtonLoadingSpinner}
+                        color={theme.buttonIcon}
+                        height={25}
+                        width={25}
+                    />
+                ) : (
+                    <button
+                        css={SS.playButtonStyle(csoundPlayState === "playing")}
+                    />
+                )}
             </div>
         </Tooltip>
     );

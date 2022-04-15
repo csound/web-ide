@@ -1,12 +1,17 @@
-import { Theme } from "@material-ui/core";
+import React from "react";
+import { Avatar, Theme as MaterialTheme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
-import { css } from "@emotion/core";
+import styled from "@emotion/styled";
+import { css, SerializedStyles, Theme } from "@emotion/react";
+import { shadow } from "@styles/_common";
 
-const profileStyles = (theme: Theme) =>
+export const createButtonAddIcon = css`
+    margin-bottom: 2px;
+    margin-left: 2px;
+`;
+
+const profileStyles = (theme: MaterialTheme) =>
     createStyles({
-        root: {
-            fontFamily: "'Space Mono', monospace"
-        },
         centerBox: {
             position: "absolute",
             width: "600px",
@@ -30,8 +35,11 @@ const profileStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const withStyles_ = (ClassComponent: any) =>
     withStyles(profileStyles)(ClassComponent);
+
+export default withStyles_;
 
 export const iconPreviewBox = css`
     margin-left: -16px;
@@ -42,6 +50,196 @@ export const iconPreviewBox = css`
     padding: 28px;
     justify-content: center;
     cursor: pointer;
+`;
+
+// export const previewAvatarColor = (
+//     foregroundColor: string
+// ): SerializedStyles => css`
+//     & > svg {
+//         ${avatarIconForeground(foregroundColor)}
+//     }
+// `;
+
+export const loadingSpinner = (theme: Theme): SerializedStyles => css`
+@keyframes cricle {
+  from {
+    transform: rotate(-25deg);
+  }
+  to {
+    transform: rotate(335deg);
+  }
+}
+    padding-right: 25px;
+    padding-bottom: 25px;
+    position: absolute;
+
+    & > span {
+      display: inline-block;
+      position: absolute;
+      border-radius: 100px;
+      padding: 8px;
+      border: 5px solid transparent;
+
+      animation: cricle 1s ease-in-out infinite;
+      border-top: 5px solid ${theme.allowed};
+
+      &:nth-of-type(1) {
+        animation-delay: -0.15s;
+      }
+
+`;
+
+export const pauseIcon = (theme: Theme): SerializedStyles => css`
+    position: absolute;
+    transform: rotate(90deg);
+    cursor: pointer;
+    border-color: ${theme.allowed};
+    border-style: double;
+    border-width: 0px 0 0px 20px;
+    height: 26px;
+`;
+
+export const settingsIconContainer = css`
+    position: absolute;
+    top: calc(50% - 24px);
+    right: 66px;
+`;
+
+export const settingsIcon = (theme: Theme): SerializedStyles => css`
+    align-self: center;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 1px 3px black, 0 1px 2px black;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
+    background-color: ${theme.highlightBackgroundAlt};
+    position: relative;
+    border-radius: 50%;
+    padding: 6px;
+    margin: 4px;
+    color: ${theme.settingsIcon};
+    & svg {
+        fill: ${theme.settingsIcon}!important;
+    }
+    &:after {
+        content: "";
+        width: 100%;
+        height: 100%;
+        border: solid 2px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    &:hover {
+        background-color: ${theme.settingsIcon};
+        color: ${theme.settingsIcon};
+        border-color: ${theme.highlightBackgroundAlt};
+        background-color: transparent;
+        transform: rotate(90deg);
+        cursor: pointer;
+        box-shadow: none;
+    }
+    &:hover:after {
+        transform: scale(1);
+        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
+            6px 0 6px rgba(0, 0, 0, 0.53);
+    }
+    &:active {
+        bottom: -2px;
+    }
+
+    & > svg {
+        align-self: center;
+        width: 100%;
+        height: 100%;
+    }
+`;
+
+export const deleteIconContainer = css`
+    ${settingsIconContainer}
+    right: 12px;
+`;
+
+export const deleteIcon = (theme: Theme): SerializedStyles => css`
+    align-self: center;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 1px 3px black, 0 1px 2px black;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.5s ease;
+    background-color: ${theme.highlightBackgroundAlt};
+    color: ${theme.errorText};
+    & svg {
+        fill: ${theme.errorText}!important;
+    }
+    position: relative;
+    border-radius: 50%;
+    padding: 6px;
+    margin: 4px;
+
+    &:after {
+        content: "";
+        width: 100%;
+        height: 100%;
+        border: solid 2px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        border-radius: 50%;
+        transition: all 1s ease;
+        & svg {
+            transition: all 1s ease;
+        }
+    }
+    &:hover {
+        background-color: ${theme.errorText};
+        color: ${theme.errorText};
+        border-color: ${theme.highlightBackgroundAlt};
+        background-color: transparent;
+        cursor: pointer;
+        box-shadow: none;
+        & svg {
+            transform: scale(1.1);
+        }
+    }
+    &:hover:after {
+        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
+            6px 0 6px rgba(0, 0, 0, 0.53);
+    }
+    &:active {
+        bottom: -2px;
+    }
+
+    & > svg {
+        align-self: center;
+        width: 100%;
+        height: 100%;
+    }
+`;
+
+export const publicIconContainer = css`
+    position: absolute;
+    top: calc(50% - 24px);
+    right: 120px;
+`;
+
+export const publicIcon = (theme: Theme): SerializedStyles => css`
+    ${deleteIcon(theme)}
+    color: ${theme.altButtonBackground};
+    & svg {
+        fill: ${theme.altButtonBackground}!important;
+    }
+
+    &:hover {
+        color: ${theme.altButtonBackground};
+        & svg {
+            transform: scale(1.1, 0.9);
+        }
+    }
 `;
 
 export const showAvatarPlayButton = css`
@@ -94,199 +292,51 @@ export const avatar = css`
     }
 `;
 
-export const avatarIconForeground = (foregroundColor: string) => css`
-    & path {
-        fill: ${foregroundColor};
-    }
-    & path:first-of-type {
-        fill: black;
-    }
-    & path:last-of-type {
-        fill: ${foregroundColor};
-    }
-`;
+type StyledAvatarType = {
+    isPlaying: boolean;
+    hasError: boolean;
+    isPaused: boolean;
+    isStop: boolean;
+    isStartingUp: boolean;
+    iconBackgroundColorProp: string;
+    children: React.ReactElement;
+    theme: Theme;
+};
 
-export const avatarIcon = (foregroundColor: string) => css`
-    width: calc(100% - 32px);
-    height: calc(100% - 32px);
-    ${avatarIconForeground(foregroundColor)}
-`;
-
-export const previewAvatarColor = (foregroundColor: string) => css`
-    & > svg {
-        ${avatarIconForeground(foregroundColor)}
-    }
-`;
-
-export const loadingSpinner = (theme) => css`
-@keyframes cricle {
-  from {
-    transform: rotate(-25deg);
-  }
-  to {
-    transform: rotate(335deg);
-  }
-}
-    padding-right: 25px;
-    padding-bottom: 25px;
-    position: absolute;
-
-    & > span {
-      display: inline-block;
-      position: absolute;
-      border-radius: 100px;
-      padding: 8px;
-      border: 5px solid transparent;
-
-      animation: cricle 1s ease-in-out infinite;
-      border-top: 5px solid ${theme.allowed};
-
-      &:nth-of-type(1) {
-        animation-delay: -0.15s;
-      }
-
-`;
-
-export const pauseIcon = (theme) => css`
-    position: absolute;
-    transform: rotate(90deg);
-    cursor: pointer;
-    border-color: ${theme.allowed};
-    border-style: double;
-    border-width: 0px 0 0px 20px;
-    height: 26px;
-`;
-
-export const settingsIconContainer = css`
-    position: absolute;
-    top: calc(50% - 24px);
-    right: 66px;
-`;
-
-export const settingsIcon = (theme) => css`
-    align-self: center;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    justify-content: center;
-    box-shadow: 0 1px 3px black, 0 1px 2px black;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
-    background-color: ${theme.highlightBackgroundAlt};
-    color: ${theme.settingsIcon};
-    position: relative;
-    border-radius: 50%;
-    padding: 6px;
-    margin: 4px;
-
-    &:after {
-        content: "";
-        width: 100%;
-        height: 100%;
-        border: solid 2px;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
+export const StyledAvatar = styled(Avatar as any, {
+    shouldForwardProp: (property) =>
+        ["children", "onClick", "src"].includes(property.toString())
+            ? true
+            : false
+})`
+    ${avatar}
+    ${(properties: StyledAvatarType) =>
+        ((properties.isPlaying &&
+            !properties.hasError &&
+            !properties.isStartingUp &&
+            !properties.isStop) ||
+            properties.isPaused) &&
+        showAvatarPlayButton}
+    background-color: ${(properties: StyledAvatarType) =>
+        properties.hasError
+            ? properties.theme.errorText
+            : properties.isPlaying || properties.isStartingUp
+            ? "black"
+            : properties.iconBackgroundColorProp};
+    ${shadow}
+    .project-avatar {
+        transition: all 400ms;
+        display: ${(properties: StyledAvatarType) =>
+            properties.isStartingUp || properties.isPlaying
+                ? "none"
+                : "inherit"};
+        opacity: ${(properties: StyledAvatarType) =>
+            properties.isPlaying ? 0 : 1};
     }
     &:hover {
-        background-color: ${theme.settingsIcon};
-        color: ${theme.settingsIcon};
-        border-color: ${theme.highlightBackgroundAlt};
-        background-color: transparent;
-        transform: rotate(90deg);
-        cursor: pointer;
-        box-shadow: none;
-    }
-    &:hover:after {
-        transform: scale(1);
-        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
-            6px 0 6px rgba(0, 0, 0, 0.53);
-    }
-    &:active {
-        bottom: -2px;
-    }
-
-    & > svg {
-        align-self: center;
-        width: 100%;
-        height: 100%;
-    }
-`;
-
-export const deleteIconContainer = css`
-    ${settingsIconContainer}
-    right: 12px;
-`;
-
-export const deleteIcon = (theme) => css`
-    align-self: center;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    justify-content: center;
-    box-shadow: 0 1px 3px black, 0 1px 2px black;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.5s ease;
-    background-color: ${theme.highlightBackgroundAlt};
-    color: ${theme.errorText};
-    position: relative;
-    border-radius: 50%;
-    padding: 6px;
-    margin: 4px;
-
-    &:after {
-        content: "";
-        width: 100%;
-        height: 100%;
-        border: solid 2px;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        border-radius: 50%;
-        transition: all 1s ease;
-        & svg {
-            transition: all 1s ease;
-        }
-    }
-    &:hover {
-        background-color: ${theme.errorText};
-        color: ${theme.errorText};
-        border-color: ${theme.highlightBackgroundAlt};
-        background-color: transparent;
-        cursor: pointer;
-        box-shadow: none;
-        & svg {
-            transform: scale(1.1);
-        }
-    }
-    &:hover:after {
-        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
-            6px 0 6px rgba(0, 0, 0, 0.53);
-    }
-    &:active {
-        bottom: -2px;
-    }
-
-    & > svg {
-        align-self: center;
-        width: 100%;
-        height: 100%;
-    }
-`;
-
-export const publicIconContainer = css`
-    position: absolute;
-    top: calc(50% - 24px);
-    right: 120px;
-`;
-
-export const publicIcon = (theme) => css`
-    ${deleteIcon(theme)}
-    color: ${theme.altButtonBackground};
-    &:hover {
-        color: ${theme.altButtonBackground};
-        & svg {
-            transform: scale(1.1, 0.9);
+        .project-avatar {
+            opacity: ${(properties: StyledAvatarType) =>
+                properties.isPlaying && !properties.isStop ? 1 : 0};
         }
     }
 `;

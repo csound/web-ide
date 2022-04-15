@@ -10,7 +10,7 @@ import {
 export const openSnackbar = (
     text: string,
     type: SnackbarType,
-    timeout: number = 6000
+    timeout = 6000
 ): SnackbarActionTypes => {
     const payload: ISnackbar = {
         text,

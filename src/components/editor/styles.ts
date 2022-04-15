@@ -1,27 +1,12 @@
-import { css } from "@emotion/core";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { _scrollbars } from "@root/styles/_common";
 
-export const root = (theme) => css`
-    font-size: 16px;
+export const root = (theme: Theme): SerializedStyles => css`
+    height: auto;
     width: 100%;
-    height: 100%;
-    & > div {
-        min-height: 100%;
-    }
+    overflow: auto;
+    flex: auto;
 
-    & .CodeMirror-fullscreen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: auto;
-        z-index: 9;
-    }
-
-    & .CodeMirror-sizer > div {
-        left: 3px;
-    }
     .CodeMirror-scroll,
     .CodeMirror-vscrollbar,
     .CodeMirror-hscrollbar {

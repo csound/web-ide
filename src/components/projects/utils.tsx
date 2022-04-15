@@ -1,13 +1,17 @@
+import { doc, getDoc, QueryDocumentSnapshot } from "firebase/firestore";
+import { getDownloadURL } from "firebase/storage";
+import { getType as mimeLookup } from "mime";
 import {
     storageReference,
     getFirebaseTimestamp,
     projectLastModified
 } from "@config/firestore";
+import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import {
     assoc,
-    curry,
+    dropLast,
     isNil,
     map,
     pipe,
@@ -21,20 +25,27 @@ export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
     const lowerName = filename.toLowerCase();
 
-    if (textFiles.find((extension) => lowerName.endsWith(extension))) {
+    if (textFiles.some((extension) => lowerName.endsWith(extension))) {
         return "txt";
     }
     return "bin";
 }
 
-export function isAudioFile(fileName: string) {
+export function isAudioFile(fileName: string): boolean {
     // currently does not deal with FLAC, not sure if browser supports it
-    const endings = [".wav", ".ogg", ".mp3"];
+    const mimeType = mimeLookup(fileName) || "";
+    const endings = [".wav", ".ogg", ".mp3", "aiff", "flac"];
     const lower = fileName.toLowerCase();
-    return endings.some((ending) => lower.endsWith(ending));
+    return (
+        endings.some((ending) => lower.endsWith(ending)) ||
+        mimeType.startsWith("audio")
+    );
 }
 
-export const generateEmptyDocument = (documentUid, filename): IDocument => ({
+export const generateEmptyDocument = (
+    documentUid: string,
+    filename: string
+): IDocument => ({
     filename,
     currentValue: "",
     created: getFirebaseTimestamp(),
@@ -47,50 +58,54 @@ export const generateEmptyDocument = (documentUid, filename): IDocument => ({
     path: []
 });
 
-export const addDocumentToEMFS = curry(
-    (
-        projectUid: string,
-        csound: ICsoundObject,
-        document: IDocument,
-        absolutePath: string
-    ) => {
-        if (document.type === "folder") {
-            return;
-        }
-        if (document.type === "bin") {
-            const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
-            return storageReference
-                .child(path)
-                .getDownloadURL()
-                .then(function (url) {
-                    // This can be downloaded directly:
-                    const xhr = new XMLHttpRequest();
-                    xhr.responseType = "arraybuffer";
-                    xhr.addEventListener("load", function (event) {
-                        const blob = xhr.response;
-                        csound &&
-                            typeof csound.writeToFS === "function" &&
-                            csound.writeToFS(absolutePath, blob);
-                    });
-                    xhr.open("GET", url);
-                    xhr.send();
-                })
-                .catch(function (error) {
-                    // Handle any errors
-                });
-        } else {
-            const encoder = new TextEncoder();
-            csound &&
-                typeof csound.writeToFS === "function" &&
-                csound.writeToFS(
-                    absolutePath,
-                    encoder.encode(document.savedValue)
-                );
-        }
+export const addDocumentToEMFS = async (
+    projectUid: string,
+    csound: CsoundObj,
+    document: IDocument,
+    absolutePath: string
+): Promise<void> => {
+    if (!document.filename) {
+        return;
     }
-);
 
-export const fileDocumentDataToDocumentType = (documentData) =>
+    if (document.type === "folder") {
+        csound.fs.mkdir(document.filename);
+        return;
+    }
+
+    const steps = absolutePath.split("/").filter((p) => p.length > 0);
+
+    if (steps.length > 1) {
+        csound.fs.mkdir(dropLast(1, steps).join("/"));
+    }
+
+    if (document.type === "bin") {
+        const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
+        try {
+            const downloadUrl = await getDownloadURL(
+                await storageReference(path)
+            );
+            const response = await fetch(downloadUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const blob = new Uint8Array(arrayBuffer);
+            await csound.fs.writeFile(absolutePath, blob);
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        const encoder = new TextEncoder();
+        csound &&
+            typeof csound.fs.writeFile === "function" &&
+            (await csound.fs.writeFile(
+                absolutePath,
+                encoder.encode(document.currentValue)
+            ));
+    }
+};
+
+export const fileDocumentDataToDocumentType = (
+    documentData: IFirestoreDocument
+): IDocument =>
     ({
         created: documentData["created"],
         currentValue: documentData["value"],
@@ -105,35 +120,49 @@ export const fileDocumentDataToDocumentType = (documentData) =>
         path: reject(isNil, documentData["path"] || [])
     } as IDocument);
 
-export const convertDocumentSnapToDocumentsMap = (documentsToAdd) =>
+export const convertDocumentSnapToDocumentsMap = (
+    documentsToAdd: IFirestoreDocument[]
+): Record<string, IDocument> =>
     (pipe as any)(
         map(prop("doc")),
         map((d: any) => assoc("documentUid", d.id, d.data())),
         reduce((accumulator: IDocumentsMap, documentData: any) => {
-            accumulator[
-                documentData["documentUid"]
-            ] = fileDocumentDataToDocumentType(documentData);
+            accumulator[documentData["documentUid"]] =
+                fileDocumentDataToDocumentType(documentData);
             return accumulator;
         }, {})
     )(documentsToAdd);
 
-export const convertProjectSnapToProject = async (projSnap) => {
+export const firestoreProjectToIProject = (
+    project: IFirestoreProject
+): IProject => ({
+    projectUid: project.id || "",
+    description: propOr("", "description", project),
+    documents: {},
+    isPublic: propOr(false, "public", project),
+    name: propOr("", "name", project),
+    userUid: propOr("", "userUid", project),
+    iconBackgroundColor: prop("iconBackgroundColor", project),
+    iconForegroundColor: prop("iconForegroundColor", project),
+    iconName: prop("iconName", project),
+    tags: [],
+    stars: {}
+});
+
+export const convertProjectSnapToProject = async (
+    projSnap: QueryDocumentSnapshot
+): Promise<IProject> => {
     const projData = projSnap.data();
-    const lastModified = await projectLastModified.doc(projSnap.id).get();
-    const lastModifiedData = lastModified.exists && lastModified.data();
-    return {
-        projectUid: projSnap.id,
-        description: propOr("", "description", projData),
-        created: prop("created", projData),
-        documents: {},
-        isPublic: propOr(false, "public", projData),
-        name: propOr("", "name", projData),
-        userUid: propOr("", "userUid", projData),
-        iconBackgroundColor: prop("iconBackgroundColor", projData),
-        iconForegroundColor: prop("iconForegroundColor", projData),
-        iconName: prop("iconName", projData),
-        tags: [],
-        stars: {},
-        cachedProjectLastModified: lastModifiedData && lastModifiedData.target
-    } as IProject;
+    const lastModified = await getDoc(doc(projectLastModified, projSnap.id));
+    const lastModifiedData = lastModified.exists() && lastModified.data();
+    const project = firestoreProjectToIProject(projData as IFirestoreProject);
+    project["projectUid"] = projSnap.id;
+
+    if (lastModifiedData && lastModifiedData.target) {
+        project["cachedProjectLastModified"] = lastModifiedData.target;
+    }
+    if (projData.created) {
+        project["created"] = projData.created;
+    }
+    return project;
 };

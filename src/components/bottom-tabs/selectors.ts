@@ -6,18 +6,10 @@ export const selectOpenBottomTabs = (
     store: IStore
 ): BottomTab[] | undefined => {
     const state: IBottomTabsReducer | undefined = store.BottomTabsReducer;
-    if (state) {
-        return state.openTabs;
-    } else {
-        return [] as BottomTab[];
-    }
+    return state ? state.openTabs : ([] as BottomTab[]);
 };
 
 export const selectBottomTabIndex = (store: IStore): number => {
     const state: IBottomTabsReducer | undefined = store.BottomTabsReducer;
-    if (state) {
-        return state.index;
-    } else {
-        return -1;
-    }
+    return state ? state.index : -1;
 };

@@ -1,5 +1,17 @@
-import { push } from "connected-react-router";
-import { ICsoundObject } from "@comp/csound/types";
+import { getAuth } from "firebase/auth";
+import { getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    writeBatch
+} from "firebase/firestore";
+import { push } from "connected-react-router/esm/index.js";
+import { CsoundObj } from "@csound/browser";
 import {
     tabOpenByDocumentUid,
     tabDockInit
@@ -69,17 +81,18 @@ import {
 import { store } from "@root/store";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import firebase from "firebase/app";
 import { v4 as uuidv4 } from "uuid";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
-export const downloadProjectOnce = (projectUid: string) => {
+export const downloadProjectOnce = (
+    projectUid: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const projReference = projects.doc(projectUid);
+        const projReference = doc(projects, projectUid);
         let projSnap;
         try {
-            projSnap = await projReference.get();
+            projSnap = await getDoc(projReference);
         } catch {
             return;
         }
@@ -92,16 +105,13 @@ export const downloadProjectOnce = (projectUid: string) => {
     };
 };
 
-// TODO: optimize
 export const downloadAllProjectDocumentsOnce = (
-    projectUid: string,
-    csound: ICsoundObject
-) => {
+    projectUid: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const filesReference = await projects
-            .doc(projectUid)
-            .collection("files")
-            .get();
+        const filesReference = await getDocs(
+            collection(doc(projects, projectUid), "files")
+        );
         const allDocuments = await Promise.all(
             filesReference.docs.map(async (d) => {
                 const data = await d.data();
@@ -117,26 +127,6 @@ export const downloadAllProjectDocumentsOnce = (
             allDocuments
         );
 
-        await allDocuments.forEach(async (document_) => {
-            if (document_.type !== "folder") {
-                const pathPrefix = (document_.path || [])
-                    .filter((p) => typeof p === "string")
-                    .map((documentUid) =>
-                        path([documentUid, "filename"], allDocumentsMap)
-                    );
-                const absolutePath = concat(
-                    [`/${projectUid}`],
-                    append(document_.filename, pathPrefix)
-                ).join("/");
-                await addDocumentToEMFS(
-                    projectUid,
-                    csound,
-                    document_,
-                    absolutePath
-                );
-            }
-        });
-
         await dispatch({
             type: ADD_PROJECT_DOCUMENTS,
             projectUid,
@@ -149,20 +139,22 @@ export const newEmptyDocumentAction = (
     projectUid: string,
     documentUid: string,
     filename: string
-) => ({
+): Record<string, any> => ({
     type: DOCUMENT_INITIALIZE,
     filename,
     documentUid,
     projectUid
 });
 
-export const closeProject = () => {
+export const closeProject = (): Record<string, any> => {
     return {
         type: CLOSE_PROJECT
     };
 };
 
-export const activateProject = (projectUid: string, csound) => {
+export const activateProject = (
+    projectUid: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: ACTIVATE_PROJECT,
@@ -171,14 +163,16 @@ export const activateProject = (projectUid: string, csound) => {
     };
 };
 
-export const storeProjectLocally = (projects: Array<IProject>) => {
+export const storeProjectLocally = (
+    projects: Array<IProject>
+): Record<string, any> => {
     return {
         type: STORE_PROJECT_LOCALLY,
         projects
     };
 };
 
-export const unsetProject = (projectUid: string) => {
+export const unsetProject = (projectUid: string): Record<string, any> => {
     return {
         type: UNSET_PROJECT,
         projectUid
@@ -188,7 +182,7 @@ export const unsetProject = (projectUid: string) => {
 export const addProjectDocuments = (
     projectUid: string,
     documents: IDocumentsMap
-) => {
+): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
     return async (dispatch: any, getState) => {
         const store: IStore = getState();
         const tabIndex: number = selectTabDockIndex(store);
@@ -198,9 +192,8 @@ export const addProjectDocuments = (
             documents
         });
         if (tabIndex < 0) {
-            const maybeDefaultTargetName:
-                | string
-                | undefined = selectDefaultTargetName(projectUid, store);
+            const maybeDefaultTargetName: string | undefined =
+                selectDefaultTargetName(projectUid, store);
             const maybeDefaultTarget: ITarget | undefined = selectTarget(
                 projectUid,
                 maybeDefaultTargetName,
@@ -214,7 +207,10 @@ export const addProjectDocuments = (
     };
 };
 
-export const resetDocumentValue = (projectUid: string, documentUid: string) => {
+export const resetDocumentValue = (
+    projectUid: string,
+    documentUid: string
+): Record<string, any> => {
     return {
         type: DOCUMENT_RESET,
         projectUid,
@@ -222,7 +218,7 @@ export const resetDocumentValue = (projectUid: string, documentUid: string) => {
     };
 };
 
-export const saveFile = () => {
+export const saveFile = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const state = store.getState() as IStore;
         const dock = state.ProjectEditorReducer.tabDock;
@@ -243,21 +239,24 @@ export const saveFile = () => {
             find(project.documents, (d) => d.documentUid === documentUid);
         if (project && document_) {
             try {
-                projects
-                    .doc(project.projectUid)
-                    .collection("files")
-                    .doc(document_.documentUid)
-                    .update({
+                updateDoc(
+                    doc(
+                        collection(doc(projects, project.projectUid), "files"),
+                        document_.documentUid
+                    ),
+                    {
                         value: document_.currentValue,
                         lastModified: getFirebaseTimestamp()
-                    });
+                    }
+                );
+
                 updateProjectLastModified(project.projectUid);
             } catch {}
         }
     };
 };
 
-export const saveAllFiles = () => {
+export const saveAllFiles = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const state = store.getState() as IStore;
         const activeProjectUid = pathOr(
@@ -276,14 +275,14 @@ export const saveAllFiles = () => {
                 Object.values(project.documents),
                 (d) => d.isModifiedLocally
             );
-        if (project && !isEmpty(documents)) {
-            const batch = database.batch();
-            documents!.forEach((document_) => {
+        if (project && documents && !isEmpty(documents)) {
+            const batch = writeBatch(database);
+            documents.forEach((document_) => {
                 batch.update(
-                    projects
-                        .doc(project.projectUid)
-                        .collection("files")
-                        .doc(document_.documentUid),
+                    doc(
+                        collection(doc(projects, project.projectUid), "files"),
+                        document_.documentUid
+                    ),
                     {
                         value: document_.currentValue,
                         lastModified: getFirebaseTimestamp()
@@ -296,7 +295,9 @@ export const saveAllFiles = () => {
     };
 };
 
-export const saveAllAndClose = (goTo: string) => {
+export const saveAllAndClose = (
+    goTo: string
+): ((dispatch: any) => Promise<void>) => {
     return function (dispatch) {
         return saveAllFiles()(dispatch).then(
             () => dispatch(push(goTo)),
@@ -307,11 +308,11 @@ export const saveAllAndClose = (goTo: string) => {
 
 // for unauthorized or offline playing
 export const saveFileOffline = (
-    csound: ICsoundObject,
+    csound: CsoundObj,
     activeProjectUid: string,
     document: IDocument,
     newValue: string
-) => {
+): void => {
     const pathPrefix = document.path || [];
     const absolutePath = concat(
         [`/${activeProjectUid}`],
@@ -326,7 +327,7 @@ export const saveFileOffline = (
 };
 
 // for unauthorized or offline playing
-export const saveAllOffline = (csound: ICsoundObject) => {
+export const saveAllOffline = (csound: CsoundObj): void => {
     const state = store.getState() as IStore;
     const activeProjectUid = pathOr(
         "",
@@ -355,7 +356,10 @@ export const saveAllOffline = (csound: ICsoundObject) => {
     }
 };
 
-export const deleteFile = (projectUid: string, documentUid: string) => {
+export const deleteFile = (
+    projectUid: string,
+    documentUid: string
+): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
     return async (dispatch: any, getState) => {
         const state = getState() as IStore;
         const project: IProject = pathOr(
@@ -380,13 +384,16 @@ export const deleteFile = (projectUid: string, documentUid: string) => {
                         document_,
                         values(allNestedFiles)
                     );
-                    const batch = database.batch();
+                    const batch = writeBatch(database);
                     allFilesToDelete.forEach((document__) => {
                         batch.delete(
-                            projects
-                                .doc(project.projectUid)
-                                .collection("files")
-                                .doc(document__.documentUid)
+                            doc(
+                                collection(
+                                    doc(projects, project.projectUid),
+                                    "files"
+                                ),
+                                document__.documentUid
+                            )
                         );
                     });
                     batch.commit().then(() => {
@@ -401,19 +408,17 @@ export const deleteFile = (projectUid: string, documentUid: string) => {
                     cancelCallback,
                     deleteCallback
                 );
-                dispatch(openSimpleModal(deleteDocumentPromptComp));
+                dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else if (document_) {
-                const cancelCallback = () => dispatch(closeModal());
-                const deleteCallback = () => {
-                    projects
-                        .doc(projectUid)
-                        .collection("files")
-                        .doc(documentUid)
-                        .delete()
-                        .then(() => {
-                            dispatch(closeModal());
-                        });
-                    updateProjectLastModified(projectUid);
+                const cancelCallback = async () => await dispatch(closeModal());
+                const deleteCallback = async () => {
+                    await deleteDoc(
+                        doc(
+                            collection(doc(projects, projectUid), "files"),
+                            documentUid
+                        )
+                    );
+                    await updateProjectLastModified(projectUid);
                 };
                 const deleteDocumentPromptComp = deleteDocumentPrompt(
                     document_.filename,
@@ -423,7 +428,7 @@ export const deleteFile = (projectUid: string, documentUid: string) => {
                     deleteCallback
                 );
 
-                dispatch(openSimpleModal(deleteDocumentPromptComp));
+                dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else {
                 console.error("No document found with id", projectUid);
             }
@@ -436,7 +441,7 @@ export const deleteFile = (projectUid: string, documentUid: string) => {
 export const saveUpdatedDocument = (
     projectUid: string,
     document: IDocument
-) => ({
+): Record<string, any> => ({
     type: DOCUMENT_SAVE,
     document,
     projectUid
@@ -446,7 +451,7 @@ export const updateDocumentValue = (
     value: string,
     projectUid: string,
     documentUid: string
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: DOCUMENT_UPDATE_VALUE,
@@ -461,7 +466,7 @@ export const updateDocumentModifiedLocally = (
     isModified: boolean,
     projectUid: string,
     documentUid: string
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: DOCUMENT_UPDATE_MODIFIED_LOCALLY,
@@ -472,7 +477,9 @@ export const updateDocumentModifiedLocally = (
     };
 };
 
-export const newFolder = (projectUid: string) => {
+export const newFolder = (
+    projectUid: string
+): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
     return async (dispatch: any, getState) => {
         const state = store.getState() as IStore;
         const project: IProject = pathOr(
@@ -495,10 +502,10 @@ export const newFolder = (projectUid: string) => {
                     lastModified: getFirebaseTimestamp(),
                     created: getFirebaseTimestamp()
                 };
-                await projects
-                    .doc(projectUid)
-                    .collection("files")
-                    .add(document_);
+                await addDoc(
+                    collection(doc(projects, projectUid), "files"),
+                    document_
+                );
                 updateProjectLastModified(projectUid);
             }
             dispatch(closeModal());
@@ -507,11 +514,14 @@ export const newFolder = (projectUid: string) => {
             newFolderSuccessCallback,
             project
         );
-        dispatch(openSimpleModal(newFolderPromptComp));
+        dispatch(openSimpleModal(newFolderPromptComp, {}));
     };
 };
 
-export const newDocument = (projectUid: string, value: string) => {
+export const newDocument = (
+    projectUid: string,
+    value: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const newDocumentSuccessCallback = async (filename: string) => {
             const state = store.getState() as IStore;
@@ -527,7 +537,8 @@ export const newDocument = (projectUid: string, value: string) => {
             );
 
             if (!isEmpty(project)) {
-                const uid = firebase.auth().currentUser!.uid;
+                const currentUser = getAuth().currentUser;
+                const uid = currentUser ? currentUser.uid : "";
                 const document_ = {
                     type: "txt",
                     name: filename,
@@ -537,10 +548,10 @@ export const newDocument = (projectUid: string, value: string) => {
                     created: getFirebaseTimestamp(),
                     path: []
                 };
-                const result = await projects
-                    .doc(project.projectUid)
-                    .collection("files")
-                    .add(document_);
+                const result = await addDoc(
+                    collection(doc(projects, project.projectUid), "files"),
+                    document_
+                );
 
                 const documentUid = result.id;
                 dispatch(tabOpenByDocumentUid(result.id, projectUid));
@@ -556,11 +567,13 @@ export const newDocument = (projectUid: string, value: string) => {
             false,
             ""
         );
-        dispatch(openSimpleModal(newDocumentPromptComp));
+        dispatch(openSimpleModal(newDocumentPromptComp, {}));
     };
 };
 
-export const addDocument = (projectUid: string) => {
+export const addDocument = (
+    projectUid: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const addDocumentSuccessCallback = async (files: FileList) => {
             const state = store.getState() as IStore;
@@ -580,12 +593,13 @@ export const addDocument = (projectUid: string) => {
                 const filename = file.name;
                 const fileType = textOrBinary(file.name);
                 const reader = new FileReader();
-                const uid = firebase.auth().currentUser!.uid;
+                const currentUser = getAuth().currentUser;
+                const uid = currentUser ? currentUser.uid : "";
 
                 console.log("File type found:", fileType);
 
                 if (fileType === "txt") {
-                    reader.addEventListener("load", () => {
+                    reader.addEventListener("load", async () => {
                         const txt = reader.result;
                         const document_ = {
                             type: fileType,
@@ -595,26 +609,26 @@ export const addDocument = (projectUid: string) => {
                             lastModified: getFirebaseTimestamp(),
                             created: getFirebaseTimestamp()
                         };
-                        projects
-                            .doc(project.projectUid)
-                            .collection("files")
-                            .add(document_)
-                            .then((result) => {
-                                const documentUid = result.id;
-                                dispatch(
-                                    tabOpenByDocumentUid(
-                                        result.id,
-                                        activeProjectUid
-                                    )
-                                );
-                                dispatch(
-                                    newEmptyDocumentAction(
-                                        project.projectUid,
-                                        documentUid,
-                                        filename
-                                    )
-                                );
-                            });
+
+                        const result = await addDoc(
+                            collection(
+                                doc(projects, project.projectUid),
+                                "files"
+                            ),
+                            document_
+                        );
+
+                        const documentUid = result.id;
+                        dispatch(
+                            tabOpenByDocumentUid(documentUid, activeProjectUid)
+                        );
+                        dispatch(
+                            newEmptyDocumentAction(
+                                project.projectUid,
+                                documentUid,
+                                filename
+                            )
+                        );
                         updateProjectLastModified(project.projectUid);
                     });
                     reader.readAsText(file);
@@ -631,12 +645,17 @@ export const addDocument = (projectUid: string) => {
                         }
                     };
 
-                    const uploadTask = storageReference
-                        .child(`${uid}/${project.projectUid}/${documentId}`)
-                        .put(file, metadata);
+                    const uploadTask = uploadBytesResumable(
+                        await storageReference(
+                            `${uid}/${project.projectUid}/${documentId}`
+                        ),
+                        file,
+                        metadata
+                    );
+
                     // Listen for state changes, errors, and completion of the upload.
                     uploadTask.on(
-                        firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                        "state_changed",
                         (snapshot) => {
                             // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                             const progress =
@@ -645,15 +664,15 @@ export const addDocument = (projectUid: string) => {
                                 100;
                             console.log("Upload is " + progress + "% done");
                             switch (snapshot.state) {
-                                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                                case "paused":
                                     console.log("Upload is paused");
                                     break;
-                                case firebase.storage.TaskState.RUNNING: // or 'running'
+                                case "running":
                                     console.log("Upload is running");
                                     break;
                             }
                         },
-                        function (error) {
+                        function (error: any) {
                             dispatch(
                                 openSnackbar(error.message, SnackbarType.Error)
                             );
@@ -686,11 +705,14 @@ export const addDocument = (projectUid: string) => {
         const addDocumentPromptComp = addDocumentPrompt(
             addDocumentSuccessCallback
         );
-        dispatch(openSimpleModal(addDocumentPromptComp));
+        dispatch(openSimpleModal(addDocumentPromptComp, {}));
     };
 };
 
-const renameDocumentLocally = (documentUid: string, newFilename: string) => {
+const renameDocumentLocally = (
+    documentUid: string,
+    newFilename: string
+): Record<string, any> => {
     return {
         type: DOCUMENT_RENAME_LOCALLY,
         newFilename,
@@ -701,7 +723,7 @@ const renameDocumentLocally = (documentUid: string, newFilename: string) => {
 export const removeDocumentLocally = (
     projectUid: string,
     documentUid: string
-) => {
+): Record<string, any> => {
     return {
         type: DOCUMENT_REMOVE_LOCALLY,
         projectUid,
@@ -709,7 +731,10 @@ export const removeDocumentLocally = (
     };
 };
 
-export const renameDocument = (projectUid: string, documentUid: string) => {
+export const renameDocument = (
+    projectUid: string,
+    documentUid: string
+): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
     return async (dispatch: any, getState) => {
         const state = getState() as IStore;
         const project: IProject = pathOr(
@@ -727,11 +752,13 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
             project
         );
         const renameDocumentSuccessCallback = async (filename: string) => {
-            await projects
-                .doc(projectUid)
-                .collection("files")
-                .doc(documentUid)
-                .update({ name: filename } as any);
+            await updateDoc(
+                doc(
+                    collection(doc(projects, projectUid), "files"),
+                    documentUid
+                ),
+                { name: filename } as any
+            );
 
             dispatch(renameDocumentLocally(documentUid, filename));
             updateProjectLastModified(projectUid);
@@ -742,11 +769,11 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
             true,
             currentFilename
         );
-        dispatch(openSimpleModal(renameDocumentPromptComp));
+        dispatch(openSimpleModal(renameDocumentPromptComp, {}));
     };
 };
 
-const createExportPath = (folders, document_) => {
+const createExportPath = (folders, document_): string => {
     if (!folders || pathOr([], ["path"], document_).length === 0) {
         return document_.filename;
     }
@@ -754,7 +781,7 @@ const createExportPath = (folders, document_) => {
     return `${paths.join("/")}/${document_.filename}`;
 };
 
-export const exportProject = () => {
+export const exportProject = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         const state = store.getState() as IStore;
         const activeProjectUid = pathOr(
@@ -775,6 +802,7 @@ export const exportProject = () => {
 
             const folders = documents
                 .filter((d) => d.type === "folder")
+                /* eslint-disable unicorn/prefer-object-from-entries */
                 .reduce((m, f) => {
                     return { ...m, [f.documentUid]: f };
                 }, {});
@@ -786,9 +814,9 @@ export const exportProject = () => {
             for (const document_ of documents) {
                 if (document_.type === "bin") {
                     const path = `${project.userUid}/${project.projectUid}/${document_.documentUid}`;
-                    const url = await storageReference
-                        .child(path)
-                        .getDownloadURL();
+                    const url = await getDownloadURL(
+                        await storageReference(path)
+                    );
 
                     const response = await fetch(url);
                     const blob = await response.arrayBuffer();
@@ -821,9 +849,7 @@ export const markProjectPublic = (
         if (!loggedInUserUid || !projectUid) {
             return;
         }
-        await projects.doc(projectUid).update({
-            public: isPublic
-        });
+        await updateDoc(doc(projects, projectUid), { public: isPublic });
         dispatch({
             type: SET_PROJECT_PUBLIC,
             projectUid,

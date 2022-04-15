@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { doc, getDoc } from "firebase/firestore";
 import { selectActiveProject } from "../projects/selectors";
 import { IProfile } from "@comp/profile/types";
 import { profiles } from "@root/config/firestore";
@@ -12,7 +13,7 @@ import {
     EmailShareButton
 } from "react-share";
 
-const ShareDialog = () => {
+const ShareDialog = (): React.ReactElement => {
     const project = useSelector(selectActiveProject);
     const [profile, setProfile]: [
         IProfile | undefined,
@@ -23,8 +24,8 @@ const ShareDialog = () => {
     useEffect(() => {
         (async () => {
             if (!error && !profile && project) {
-                const p = await profiles.doc(project.userUid).get();
-                if (p.exists) {
+                const p = await getDoc(doc(profiles, project.userUid));
+                if (p.exists()) {
                     setProfile(p.data() as IProfile);
                 } else {
                     setError(true);

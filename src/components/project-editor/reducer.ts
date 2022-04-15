@@ -54,7 +54,7 @@ const storeTabDockState = (
     projectUid: string,
     openDocuments: IOpenDocument[],
     tabIndex: number | undefined
-) => {
+): void => {
     try {
         const tabOrder: string[] = map(prop("uid"), openDocuments);
         const tabOrderString: string = JSON.stringify(tabOrder);
@@ -66,7 +66,10 @@ const storeTabDockState = (
     }
 };
 
-export default (state: IProjectEditorReducer, action: any) => {
+const ProjectEditorReducer = (
+    state: IProjectEditorReducer,
+    action: Record<string, any>
+): IProjectEditorReducer => {
     switch (action.type) {
         case MANUAL_LOOKUP_STRING: {
             return pipe(
@@ -191,23 +194,23 @@ export default (state: IProjectEditorReducer, action: any) => {
                 state.tabDock.openDocuments,
                 (od) => od.uid === action.documentUid
             );
-            if (openDocumentIndex < 0) {
-                return state;
-            } else {
-                return assocPath(
-                    [
-                        "tabDock",
-                        "openDocuments",
-                        openDocumentIndex,
-                        "editorInstance"
-                    ],
-                    action.editorInstance,
-                    state
-                );
-            }
+            return openDocumentIndex < 0
+                ? state
+                : assocPath(
+                      [
+                          "tabDock",
+                          "openDocuments",
+                          openDocumentIndex,
+                          "editorInstance"
+                      ],
+                      action.editorInstance,
+                      state
+                  );
         }
         default: {
             return state || initialLayoutState();
         }
     }
 };
+
+export default ProjectEditorReducer;

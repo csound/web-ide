@@ -12,17 +12,15 @@ export const sortByStoredTabOrder = (
                 propEq("documentUid", documentUid),
                 allDocuments
             );
-            if (maybeDocument) {
-                return append(
-                    {
-                        editorInstance: undefined,
-                        uid: maybeDocument.documentUid
-                    } as IOpenDocument,
-                    accumulator
-                );
-            } else {
-                return accumulator;
-            }
+            return maybeDocument
+                ? append(
+                      {
+                          editorInstance: undefined,
+                          uid: maybeDocument.documentUid
+                      } as IOpenDocument,
+                      accumulator
+                  )
+                : accumulator;
         },
         [],
         tabOrder

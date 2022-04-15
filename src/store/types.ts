@@ -9,11 +9,13 @@ import { ITargetControlsReducer } from "@comp/target-controls/reducer";
 import { IProjectLastModifiedReducer } from "@comp/project-last-modified/reducer";
 import { IProfileReducer } from "@comp/profile/reducer";
 import { IBottomTabsReducer } from "@comp/bottom-tabs/types";
+import { ISnackbarReducer } from "@comp/snackbar/reducer";
+import { IHomeReducer } from "@comp/home/reducer";
 
 export interface IStore {
+    router: any;
     ProjectsReducer: IProjectsReducer;
     csound: ICsoundReducer;
-    router: any;
     LoginReducer: any;
     ProjectEditorReducer: IProjectEditorReducer;
     userProfile?: IUserProfile;
@@ -24,6 +26,8 @@ export interface IStore {
     ProjectLastModifiedReducer: IProjectLastModifiedReducer;
     ProfileReducer: IProfileReducer;
     BottomTabsReducer: IBottomTabsReducer;
+    SnackbarReducer: ISnackbarReducer;
+    HomeReducer: IHomeReducer;
 }
 
 export type Selector = (x: IStore) => any;

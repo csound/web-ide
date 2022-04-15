@@ -1,23 +1,22 @@
-import React, { useEffect } from "react";
-import { Provider, useDispatch } from "react-redux";
-import { useTheme } from "emotion-theming";
+import React, { useEffect, useState } from "react";
+import { Provider as Provider_, useDispatch } from "react-redux";
+import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
+import ReactTooltip from "react-tooltip";
 import Home from "../home/home";
 import CsoundManual from "csound-manual-react";
 import Profile from "../profile/profile";
 import Page404 from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
-import { Route, Switch } from "react-router-dom";
-import { ConnectedRouter } from "connected-react-router";
-import { history, store } from "../../store";
-// import { History } from "history";
+import { closeTabDock } from "@comp/project-editor/actions";
+import { history, store } from "@store";
+import { closeProject } from "@comp/projects/actions";
+import { HistoryRouter as Router } from "redux-first-history/rr6";
+import { Route, Routes } from "react-router-dom";
 import { stopCsound } from "../csound/actions";
 import SiteDocuments from "../site-documents/site-documents";
 
-// interface IRouterComponent {
-//     isAuthenticated: boolean;
-//     history: History;
-// }
+const Provider = Provider_ as any;
 
 const EditorLayout = (properties: any) => {
     const dispatch = useDispatch();
@@ -25,6 +24,8 @@ const EditorLayout = (properties: any) => {
     useEffect(() => {
         return () => {
             dispatch(stopCsound());
+            dispatch(closeProject());
+            dispatch(closeTabDock());
         };
     }, [dispatch]);
 
@@ -35,49 +36,67 @@ const EditorLayout = (properties: any) => {
     );
 };
 
-const CsoundManualWithStyleOverrides = ({ theme, cmp }: any) => {
-    return (
-        <div style={{ overflow: "hidden" }}>
-            <style>{`#root {position: absolute!important; height: 100%!important;}`}</style>
-            <CsoundManual theme={theme} codeMirrorPainter={CodeMirrorPainter} />
-        </div>
+const CsoundManualWithStyleOverrides = ({
+    theme,
+    ...routerProperties
+}: any) => {
+    const [isMounted, setIsMounted] = useState(false);
+    const [{ fetched, Csound }, setFetchState]: [
+        { fetched: boolean; Csound: any },
+        any
+    ] = useState({ fetched: false, Csound: undefined });
+
+    useEffect(() => {
+        if (!isMounted) {
+            setIsMounted(true);
+            import("@csound/browser").then(({ Csound }) => {
+                setFetchState({ fetched: true, Csound });
+            });
+        }
+    }, [isMounted, setIsMounted, fetched, Csound, setFetchState]);
+
+    return !fetched ? (
+        <></>
+    ) : (
+        <CsoundManual
+            {...routerProperties}
+            theme={theme}
+            codeMirrorPainter={CodeMirrorPainter}
+            Csound={Csound}
+        />
     );
 };
 
-const RouterComponent = (properties: any) => {
+const RouterComponent = (): React.ReactElement => {
     const theme = useTheme();
+    ReactTooltip.rebuild();
+
     return (
-        <ConnectedRouter history={history} {...properties}>
-            <Switch>
+        <Router history={history}>
+            <Routes>
+                <Route index element={<Home />} />
+                <Route path="profile/:username" element={<Profile />} />
+                <Route path="profile/:username/*" element={<Profile />} />
+                <Route path="editor" element={<EditorLayout />}>
+                    <Route path=":id" element={<EditorLayout />} />
+                </Route>
                 <Route
-                    path="/editor/:id?"
-                    render={(matchProperties) => (
-                        <EditorLayout {...matchProperties} />
-                    )}
-                />
-                <Route
-                    path="/manual/"
-                    render={() => (
-                        <CsoundManualWithStyleOverrides theme={theme} />
-                    )}
-                />
-                <Route
-                    path="/manual/:id"
-                    render={() => (
-                        <CsoundManualWithStyleOverrides theme={theme} />
-                    )}
-                />
-                <Route path="/profile/:username?" component={Profile} />
-                <Route
-                    path="/"
-                    exact
-                    render={(matchProperties) => <Home {...matchProperties} />}
-                />
-                <Route path="/documentation" render={() => <SiteDocuments />} />
-                <Route path="/404" exact component={Page404} />
-                <Route component={Page404} />
-            </Switch>
-        </ConnectedRouter>
+                    path="manual"
+                    element={<CsoundManualWithStyleOverrides theme={theme} />}
+                >
+                    <Route
+                        path=":id"
+                        element={
+                            <CsoundManualWithStyleOverrides theme={theme} />
+                        }
+                    />
+                </Route>
+
+                <Route path="documentation" element={<SiteDocuments />} />
+                <Route path="404" element={<Page404 />} />
+                <Route path="*" element={<Page404 />} />
+            </Routes>
+        </Router>
     );
 };
 

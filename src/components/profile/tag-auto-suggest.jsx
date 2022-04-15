@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-use-before-define
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Autosuggest from "react-autosuggest";
@@ -40,7 +41,13 @@ const styles = (theme) => ({
 });
 
 const TagAutosuggest = (properties) => {
-    const { classes, modifiedTags, setModifiedTags, ...other } = properties;
+    const {
+        allowDuplicates,
+        classes,
+        modifiedTags,
+        setModifiedTags,
+        ...other
+    } = properties;
     const dispatch = useDispatch();
     const loggedInUserUid = useSelector(selectLoggedInUid);
     const allTags = useSelector(selectAllTagsFromUser(loggedInUserUid));
@@ -65,7 +72,7 @@ const TagAutosuggest = (properties) => {
     };
 
     const handleAddChip = (chip) => {
-        if (properties.allowDuplicates || !allTags.includes(chip)) {
+        if (allowDuplicates || !allTags.includes(chip)) {
             setModifiedTags(append(chip, modifiedTags));
             dispatch(setCurrentTagText(""));
         }

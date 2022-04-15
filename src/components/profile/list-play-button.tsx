@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { playListItem } from "./actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
 import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
-import {
-    selectCurrentlyPlayingProject,
-    selectProjectIconStyle
-} from "./selectors";
-import SVGPaths, { SVGComponents } from "./svg-paths";
+import { selectCurrentlyPlayingProject } from "./selectors";
 import { useDispatch, useSelector } from "react-redux";
-import AssignmentIcon from "@material-ui/icons/Assignment";
 import AlertIcon from "@material-ui/icons/ErrorOutline";
-import { useTheme } from "emotion-theming";
+import { Theme, useTheme } from "@emotion/react";
+import { IProject } from "@comp/projects/types";
+import ProjectAvatar from "@elem/project-avatar";
 import * as SS from "./styles";
-import { Avatar } from "@material-ui/core";
 
-const SvgPlayIcon = () => {
-    const theme = useTheme();
+const SvgPlayIcon = ({
+    shouldDisplay,
+    theme
+}: {
+    shouldDisplay: boolean;
+    theme: Theme;
+}) => {
     return (
         <svg
             x={0}
@@ -26,7 +27,8 @@ const SvgPlayIcon = () => {
                 height: "calc(100% - 24px)",
                 position: "absolute",
                 right: 12,
-                fill: (theme as any).allowed
+                fill: (theme as any).allowed,
+                display: shouldDisplay ? "inherit" : "none"
             }}
             enableBackground="new 0 0 58.752 58.752"
             viewBox="0 0 58.752 58.752"
@@ -38,39 +40,21 @@ const SvgPlayIcon = () => {
 };
 
 const ListPlayButton = ({
-    projectUid,
-    iconNameProp,
-    iconBackgroundColorProp,
-    iconForegroundColorProp
-}) => {
+    project
+}: {
+    project: IProject;
+}): React.ReactElement => {
     const theme: any = useTheme();
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
-    const { iconName, iconBackgroundColor, iconForegroundColor } = useSelector(
-        selectProjectIconStyle(projectUid)
-    );
+    const { projectUid, iconBackgroundColor = "#000" } = project;
 
-    iconNameProp = iconNameProp === false ? iconName : iconNameProp;
-    iconBackgroundColorProp =
-        iconBackgroundColorProp === false
-            ? iconBackgroundColor
-            : iconBackgroundColorProp;
-    iconForegroundColorProp =
-        iconForegroundColorProp === false
-            ? iconForegroundColor
-            : iconForegroundColorProp;
     const isPlaying = currentlyPlayingProject === projectUid;
     const hasError = isPlaying && csoundStatus === "error";
     const isPaused = isPlaying && csoundStatus === "paused";
+    const isStop = csoundStatus === "stopped";
     const [isStartingUp, setIsStartingUp] = useState(false);
     const dispatch = useDispatch();
-
-    let IconComponent;
-    if (iconNameProp && iconNameProp !== "default" && SVGPaths[iconNameProp]) {
-        IconComponent = SVGComponents[`${iconNameProp}Component`];
-    } else {
-        IconComponent = AssignmentIcon;
-    }
 
     useEffect(() => {
         if (
@@ -81,67 +65,77 @@ const ListPlayButton = ({
         }
     }, [isPlaying, csoundStatus, currentlyPlayingProject, isStartingUp]);
 
-    return (
-        <Avatar
-            css={
-                (isPlaying && !hasError && !isStartingUp) || isPaused
-                    ? [SS.avatar, SS.showAvatarPlayButton]
-                    : SS.avatar
+    const buttonCallback = useCallback(
+        async (event) => {
+            if (isStartingUp) {
+                return;
+            } else if (!isPlaying) {
+                setIsStartingUp(true);
             }
-            style={{
-                backgroundColor: hasError
-                    ? theme.errorText
-                    : isPlaying || isStartingUp
-                    ? "black"
-                    : iconBackgroundColorProp
-            }}
-            onClick={(event) => {
-                !isPlaying && !isStartingUp && setIsStartingUp(true);
-                isPaused
-                    ? dispatch(resumePausedCsound())
-                    : isPlaying && !hasError
-                    ? dispatch(pauseCsound())
-                    : dispatch(playListItem(projectUid));
 
-                event.stopPropagation();
-            }}
+            isPaused
+                ? dispatch(resumePausedCsound())
+                : isPlaying && !hasError
+                ? dispatch(pauseCsound())
+                : dispatch(playListItem(projectUid));
+        },
+        [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]
+    );
+
+    const IconComponent = <ProjectAvatar project={project} />;
+
+    return (
+        <SS.StyledAvatar
+            isPlaying={isPlaying}
+            isPaused={isPaused}
+            isStop={isStop}
+            isStartingUp={isStartingUp}
+            hasError={hasError}
+            iconBackgroundColorProp={iconBackgroundColor}
+            onClick={buttonCallback}
         >
             <>
-                {!isPlaying && !isStartingUp && (
-                    <IconComponent
-                        className={"projectIcon"}
-                        css={SS.avatarIcon(iconForegroundColorProp)}
-                        style={{
-                            fill: `${iconForegroundColorProp}!important`
-                        }}
-                    />
-                )}
-                {(isPaused || !isPlaying || hasError) && !isStartingUp && (
-                    <SvgPlayIcon />
-                )}
-                {hasError && (
-                    <AlertIcon
-                        className={"projectIcon"}
-                        style={{
-                            fill: "white",
-                            fontSize: 40
-                        }}
-                        fontSize="large"
-                        color="error"
-                    />
-                )}
-                {isStartingUp && (
-                    <span css={SS.loadingSpinner}>
-                        <span />
-                        <span />
-                    </span>
-                )}
-                {isPlaying && !hasError && !isPaused && (
-                    <span css={SS.pauseIcon} />
-                )}
+                {IconComponent}
+
+                <SvgPlayIcon
+                    shouldDisplay={
+                        (isPaused || isStop || !isPlaying) &&
+                        !isStartingUp &&
+                        !hasError
+                    }
+                    theme={theme}
+                />
+                <AlertIcon
+                    className={"projectIcon"}
+                    style={{
+                        fill: "white",
+                        fontSize: 40,
+                        display: hasError ? "inherit" : "none"
+                    }}
+                    fontSize="large"
+                    color="error"
+                />
+                <span
+                    css={SS.loadingSpinner}
+                    style={{
+                        display: isStartingUp ? "inherit" : "none"
+                    }}
+                >
+                    <span />
+                    <span />
+                </span>
+                <span
+                    style={{
+                        display:
+                            isPlaying && !hasError && !isPaused
+                                ? "inherit"
+                                : "none"
+                    }}
+                    css={SS.pauseIcon}
+                />
             </>
-        </Avatar>
+        </SS.StyledAvatar>
     );
 };
 
-export default ListPlayButton;
+export default React.memo(ListPlayButton);

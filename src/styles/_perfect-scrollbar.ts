@@ -1,4 +1,4 @@
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 
 export const perfectScrollbarStyleSheet = (theme) => css`
     & .ps__rail-x:hover,

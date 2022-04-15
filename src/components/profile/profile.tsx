@@ -1,14 +1,19 @@
+import { doc, getDoc } from "firebase/firestore";
+import { Path } from "history";
 import ProfileLists from "./profile-lists";
 import React, { useEffect, useState, RefObject } from "react";
+import ReactTooltip from "react-tooltip";
+import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
-
 import { useDispatch, useSelector } from "react-redux";
-import withStyles from "./styles";
+import withStyles, { createButtonAddIcon } from "./styles";
+import Button from "@material-ui/core/Button";
 import AddIcon from "@material-ui/icons/Add";
 import SearchIcon from "@material-ui/icons/Search";
+import TextField from "@material-ui/core/TextField";
 import Header from "../header/header";
 import ResizeObserver from "resize-observer-polyfill";
 import {
@@ -65,10 +70,9 @@ import {
     ContentSection,
     ContentTabsContainer,
     ContentActionsContainer,
-    SearchBox,
-    AddFab,
     ListContainer,
-    EditProfileButtonSection
+    EditProfileButtonSection,
+    fabButton
 } from "./profile-ui";
 
 const UserLink = ({ link }) => {
@@ -85,6 +89,7 @@ const UserLink = ({ link }) => {
 
 const Profile = ({ classes, ...properties }) => {
     const [profileUid, setProfileUid]: [string | undefined, any] = useState();
+    const theme = useTheme();
     const dispatch = useDispatch();
     const [username, profileUriPath] = useSelector(selectCurrentProfileRoute);
     const profile = useSelector(selectUserProfile(profileUid));
@@ -93,9 +98,8 @@ const Profile = ({ classes, ...properties }) => {
     const allUserProjectsUids = useSelector(
         selectAllUserProjectUids(loggedInUserUid)
     );
-    const [lastAllUserProjectUids, setLastAllUserProjectUids] = useState(
-        allUserProjectsUids
-    );
+    const [lastAllUserProjectUids, setLastAllUserProjectUids] =
+        useState(allUserProjectsUids);
     const filteredProjects = useSelector(
         selectFilteredUserProjects(profileUid)
     );
@@ -122,6 +126,7 @@ const Profile = ({ classes, ...properties }) => {
     }, []);
 
     useEffect(() => {
+        ReactTooltip.rebuild();
         if (username) {
             if (!profileUriPath && selectedSection !== 0) {
                 setSelectedSection(0);
@@ -158,30 +163,27 @@ const Profile = ({ classes, ...properties }) => {
             if (!username && !loggedInUserUid) {
                 dispatch(push("/"));
             } else if (username) {
-                usernames
-                    .doc(username)
-                    .get()
-                    .then((userSnap) => {
-                        if (!userSnap.exists) {
-                            dispatch(
-                                push("/404", {
-                                    message: "User not found"
-                                })
-                            );
-                        } else {
-                            const data = userSnap.data();
-                            data && data.userUid
-                                ? setProfileUid(data.userUid)
-                                : dispatch(
-                                      push("/404", {
-                                          message: "User not found"
-                                      })
-                                  );
-                        }
-                    });
+                getDoc(doc(usernames, username)).then((userSnap) => {
+                    if (!userSnap.exists()) {
+                        dispatch(
+                            push({ pathname: "/404" } as Path, {
+                                message: "User not found"
+                            })
+                        );
+                    } else {
+                        const data = userSnap.data();
+                        data && data.userUid
+                            ? setProfileUid(data.userUid)
+                            : dispatch(
+                                  push({ pathname: "/404" } as Path, {
+                                      message: "User not found"
+                                  })
+                              );
+                    }
+                });
             }
         }
-    }, [dispatch, username, loggedInUserUid, isRequestingLogin]);
+    }, [dispatch, username, loggedInUserUid, isRequestingLogin, setProfileUid]);
 
     useEffect(() => {
         if (!isRequestingLogin && profileUid) {
@@ -229,13 +231,19 @@ const Profile = ({ classes, ...properties }) => {
         };
     }, []);
 
-    const { displayName, bio, link1, link2, link3, backgroundIndex } =
-        profile || {};
+    const {
+        displayName,
+        bio,
+        link1,
+        link2,
+        link3,
+        backgroundIndex = 0
+    } = profile || {};
 
     return (
         <div className={classes.root}>
             <Header />
-            <div css={gradient(backgroundIndex || 0)}>
+            <div css={gradient(backgroundIndex)}>
                 <ProfileContainer>
                     {!isMobile() && (
                         <IDContainer>
@@ -264,6 +272,7 @@ const Profile = ({ classes, ...properties }) => {
                                             "target.files.0"
                                         );
                                         file &&
+                                            loggedInUserUid &&
                                             dispatch(
                                                 uploadProfileImage(
                                                     loggedInUserUid,
@@ -277,7 +286,7 @@ const Profile = ({ classes, ...properties }) => {
                                         onClick={() => {
                                             const input =
                                                 uploadReference.current;
-                                            input!.click();
+                                            input && input.click();
                                         }}
                                         imageHover={imageHover}
                                     >
@@ -315,9 +324,9 @@ const Profile = ({ classes, ...properties }) => {
                             </DescriptionSection>
                             {isProfileOwner && profileUid && (
                                 <EditProfileButtonSection>
-                                    <AddFab
+                                    <Button
+                                        css={fabButton}
                                         color="primary"
-                                        variant="extended"
                                         aria-label="Add"
                                         size="medium"
                                         onClick={() =>
@@ -335,14 +344,14 @@ const Profile = ({ classes, ...properties }) => {
                                         }
                                     >
                                         Edit Profile
-                                    </AddFab>
+                                    </Button>
                                 </EditProfileButtonSection>
                             )}
                             {!isProfileOwner && profileUid && loggedInUserUid && (
                                 <EditProfileButtonSection>
-                                    <AddFab
+                                    <Button
+                                        css={fabButton}
                                         color="primary"
-                                        variant="extended"
                                         aria-label="Add"
                                         size="medium"
                                         onClick={() => {
@@ -362,7 +371,7 @@ const Profile = ({ classes, ...properties }) => {
                                         }}
                                     >
                                         {isFollowing ? "Unfollow" : "Follow"}
-                                    </AddFab>
+                                    </Button>
                                 </EditProfileButtonSection>
                             )}
                         </IDContainer>
@@ -375,7 +384,10 @@ const Profile = ({ classes, ...properties }) => {
                         </NameSection>
                     </NameSectionWrapper>
 
-                    <ContentSection showSearch={selectedSection === 0}>
+                    <ContentSection
+                        theme={theme}
+                        showSearch={selectedSection === 0}
+                    >
                         <ContentTabsContainer>
                             <Tabs
                                 value={selectedSection}
@@ -383,28 +395,30 @@ const Profile = ({ classes, ...properties }) => {
                                     switch (index) {
                                         case 0:
                                             dispatch(
-                                                push(`/profile/${username}`)
+                                                push({
+                                                    pathname: `/profile/${username}`
+                                                } as Path)
                                             );
                                             break;
                                         case 1:
                                             dispatch(
-                                                push(
-                                                    `/profile/${username}/following`
-                                                )
+                                                push({
+                                                    pathname: `/profile/${username}/following`
+                                                } as Path)
                                             );
                                             break;
                                         case 2:
                                             dispatch(
-                                                push(
-                                                    `/profile/${username}/followers`
-                                                )
+                                                push({
+                                                    pathname: `/profile/${username}/followers`
+                                                } as Path)
                                             );
                                             break;
                                         case 3:
                                             dispatch(
-                                                push(
-                                                    `/profile/${username}/stars`
-                                                )
+                                                push({
+                                                    pathname: `/profile/${username}/stars`
+                                                } as Path)
                                             );
                                             break;
                                     }
@@ -418,9 +432,13 @@ const Profile = ({ classes, ...properties }) => {
                             </Tabs>
                         </ContentTabsContainer>
 
-                        <ContentActionsContainer>
+                        <ContentActionsContainer
+                            style={{
+                                display: selectedSection === 0 ? "flex" : "none"
+                            }}
+                        >
                             {selectedSection === 0 && (
-                                <SearchBox
+                                <TextField
                                     id="input-with-icon-adornment"
                                     label="Search Projects"
                                     InputProps={{
@@ -444,31 +462,30 @@ const Profile = ({ classes, ...properties }) => {
                             )}
 
                             {isProfileOwner && selectedSection === 0 && (
-                                <AddFab
+                                <Button
+                                    css={fabButton}
                                     color="primary"
-                                    variant="extended"
                                     aria-label="Add"
                                     size="medium"
-                                    className={classes.margin}
                                     onClick={() => dispatch(addProject())}
                                     data-tip={"Create new project"}
                                 >
                                     Create
-                                    <AddIcon className={classes.extendedIcon} />
-                                </AddFab>
+                                    <AddIcon css={createButtonAddIcon} />
+                                </Button>
                             )}
                         </ContentActionsContainer>
-
-                        <ListContainer>
-                            <ProfileLists
-                                profileUid={profileUid}
-                                isProfileOwner={isProfileOwner}
-                                selectedSection={selectedSection}
-                                setProfileUid={setProfileUid}
-                                filteredProjects={filteredProjects}
-                                username={username}
-                            />
-                        </ListContainer>
+                        {profileUid && username && (
+                            <ListContainer>
+                                <ProfileLists
+                                    profileUid={profileUid}
+                                    isProfileOwner={isProfileOwner}
+                                    selectedSection={selectedSection}
+                                    filteredProjects={filteredProjects}
+                                    username={username}
+                                />
+                            </ListContainer>
+                        )}
                     </ContentSection>
                 </ProfileContainer>
             </div>

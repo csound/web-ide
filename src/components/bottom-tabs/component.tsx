@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { isEmpty } from "ramda";
 import {
     Tabs,
@@ -9,7 +9,7 @@ import {
     PanelList,
     Panel
 } from "@hlolli/react-tabtab";
-import simpleSwitch from "array-move";
+import { arrayMoveImmutable as simpleSwitch } from "array-move";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -25,6 +25,7 @@ import {
     setBottomTabIndex
 } from "./actions";
 import { BottomTab } from "./types";
+import * as SS from "./styles";
 
 const TabStyles = tabStyles(true);
 
@@ -33,7 +34,7 @@ const DragTabWithCloseButton = ({
     thisIndex,
     closeCallback,
     children
-}) => {
+}): React.ReactElement => {
     const theme: any = useTheme();
 
     return (
@@ -80,7 +81,7 @@ const tabsData = {
     }
 };
 
-const BottomTabs = () => {
+const BottomTabs = (): React.ReactElement => {
     const dispatch = useDispatch();
 
     const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
@@ -102,7 +103,7 @@ const BottomTabs = () => {
     );
 
     return (
-        <>
+        <div css={SS.heightFix}>
             {!isEmpty(openTabs) && bottomTabIndex > -1 && (
                 <Tabs
                     activeIndex={bottomTabIndex}
@@ -115,14 +116,14 @@ const BottomTabs = () => {
                     onTabSequenceChange={handleTabSequenceChange}
                 >
                     <DragTabList id="drag-tab-list">
-                        {(openTabs || []).map((k, i) => (
-                            <DragTab key={i} closable={true}>
+                        {(openTabs || []).map((k, index) => (
+                            <DragTab key={index} closable={true}>
                                 <DragTabWithCloseButton
                                     closeCallback={() =>
                                         dispatch(closeBottomTab(k))
                                     }
                                     currentIndex={bottomTabIndex}
-                                    thisIndex={i}
+                                    thisIndex={index}
                                 >
                                     <p
                                         style={{
@@ -139,10 +140,10 @@ const BottomTabs = () => {
                     </DragTabList>
 
                     <PanelList>
-                        {(openTabs || []).map((k, i) => {
-                            const C = tabsData[k]["component"];
+                        {(openTabs || []).map((k, index) => {
+                            const C: any = tabsData[k]["component"];
                             return (
-                                <Panel key={i} isBottom>
+                                <Panel key={index} isBottom>
                                     <React.Suspense fallback={<></>}>
                                         <C />
                                     </React.Suspense>
@@ -152,7 +153,7 @@ const BottomTabs = () => {
                     </PanelList>
                 </Tabs>
             )}
-        </>
+        </div>
     );
 };
 

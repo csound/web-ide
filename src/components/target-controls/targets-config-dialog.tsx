@@ -2,20 +2,18 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { saveChangesToTarget } from "./actions";
 import { setOnCloseModal, closeModal } from "@comp/modal/actions";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import Select from "react-select";
 import {
     selectDefaultTargetName,
     selectProjectDocuments,
     selectProjectTargets
 } from "./selectors";
-import {
-    Checkbox,
-    Fab,
-    FormControlLabel,
-    FormGroup,
-    TextField
-} from "@material-ui/core";
+import Checkbox from "@material-ui/core/Checkbox";
+import Fab from "@material-ui/core/Fab";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormGroup from "@material-ui/core/FormGroup";
+import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
 import AddIcon from "@material-ui/icons/Add";
 import CloseIcon from "@material-ui/icons/Close";
@@ -75,19 +73,20 @@ const labelFromValue = (value) =>
 const validateTargetDocument = (targetDocumentUid) =>
     typeof targetDocumentUid === "string" ? !isEmpty(targetDocumentUid) : false;
 
-const makeOption = (value, disabled: boolean) => ({
+const makeOption = (value: string, disabled: boolean) => ({
     value,
     label: labelFromValue(value),
     disabled
 });
 
-const TargetsConfigDialog = () => {
+const TargetsConfigDialog = (): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 
     const dropdownStyle = {
         control: (provided, state) => SS.control(theme),
         container: (provided, state) => SS.dropdownContainerForDialog(theme),
+        valueContainer: (provided, state) => SS.valueContainer(theme),
         groupHeading: (provided, state) => SS.groupHeading,
         placeholder: (provided, state) => SS.placeholder,
         menu: (provided, state) => SS.menuForDialog(theme),
@@ -156,13 +155,9 @@ const TargetsConfigDialog = () => {
     const mainArea = map((index: number) => {
         const thisTarget = newTargets[index] as ITargetFromInput;
 
-        const {
-            targetName,
-            oldTargetName,
-            targetType,
-            isDefaultTarget
-        } = thisTarget;
-        const maybeMainTargetDocumentUid = thisTarget.targetDocumentUid;
+        const { targetName, oldTargetName, targetType, isDefaultTarget } =
+            thisTarget;
+        const { targetDocumentUid } = thisTarget;
         const validateTargetType = (targetType) =>
             typeof targetType === "string" ? !isEmpty(targetName) : false;
 
@@ -243,7 +238,7 @@ const TargetsConfigDialog = () => {
                             }
                             css={SS.closeIcon}
                             color="secondary"
-                            variant="round"
+                            variant="circular"
                             size="small"
                         >
                             <CloseIcon />
@@ -256,11 +251,13 @@ const TargetsConfigDialog = () => {
                         defaultValue={"main"}
                         value={targetType}
                         onChange={handleSelect("targetType")}
-                        options={[
-                            makeOption("main", false),
-                            makeOption("playlist", true),
-                            makeOption("render", true)
-                        ]}
+                        options={
+                            [
+                                makeOption("main", false),
+                                makeOption("playlist", true),
+                                makeOption("render", true)
+                            ] as any
+                        }
                         isOptionDisabled={prop("disabled")}
                         isSearchable={false}
                         closeMenuOnSelect={true}
@@ -273,7 +270,7 @@ const TargetsConfigDialog = () => {
                         <div style={{ marginLeft: 12 }}>
                             <p css={SS.targetLabel}>{"main document"}</p>
                             <Select
-                                value={maybeMainTargetDocumentUid || ""}
+                                value={targetDocumentUid || ""}
                                 onChange={handleSelect("targetDocumentUid")}
                                 options={pipe(
                                     filter<any, any>(
@@ -305,10 +302,7 @@ const TargetsConfigDialog = () => {
                                 closeMenuOnSelect={true}
                                 placeholder={pathOr(
                                     "Select main document",
-                                    [
-                                        maybeMainTargetDocumentUid || "",
-                                        "filename"
-                                    ],
+                                    [targetDocumentUid || "", "filename"],
                                     documentsMap
                                 )}
                                 styles={dropdownStyleWithValidation(
@@ -385,8 +379,8 @@ const TargetsConfigDialog = () => {
         newTargets.some(propEq("isNameValid", false)) ||
         newTargets.some(propEq("isTypeValid", false)) ||
         newTargets.some(propEq("isOtherwiseValid", false));
-    const someChangesMade: boolean = !equals(storedTargets, newTargets);
-    const shouldDisallowSave: boolean = someErrorPresent || !someChangesMade;
+    const someChangesMade = !equals(storedTargets, newTargets);
+    const shouldDisallowSave = someErrorPresent || !someChangesMade;
 
     useEffect(() => {
         dispatch(

@@ -9,15 +9,16 @@ import {
     selectUserImageURL,
     selectProfileProjectsCount
 } from "@comp/profile/selectors";
-import ProjectIcon from "@comp/profile/project-icon";
+import ProjectAvatar from "@elem/project-avatar";
 import { AccountBox } from "@material-ui/icons";
 import Avatar from "@material-ui/core/Avatar";
+import { IProject } from "@comp/projects/types";
 import Tooltip from "@material-ui/core/Tooltip";
 import * as SS from "./styles";
 import { isEmpty, prop, propOr } from "ramda";
 
-const ProjectProfileMeta = () => {
-    const project = useSelector(selectActiveProject);
+const ProjectProfileMeta = (): React.ReactElement => {
+    const project: IProject | undefined = useSelector(selectActiveProject);
     const projectName = propOr("unnamed", "name", project || {});
     const projectDescription = propOr("", "description", project || {});
 
@@ -31,9 +32,6 @@ const ProjectProfileMeta = () => {
         projectLastModified.timestamp.toDate &&
         projectLastModified.timestamp.toDate();
 
-    const iconName = prop("iconName", project || {});
-    const iconBackgroundColor = prop("iconBackgroundColor", project || {});
-    const iconForegroundColor = prop("iconForegroundColor", project || {});
     const projectOwnerUid = propOr("", "userUid", project || {});
     const profile = useSelector(selectUserProfile(projectOwnerUid));
     const profileUserName = propOr("", "username", profile || {});
@@ -68,18 +66,9 @@ const ProjectProfileMeta = () => {
                         <div>
                             <div css={SS.projectProfileTooltipTitleContainer}>
                                 <div css={SS.projectIcon}>
-                                    <ProjectIcon
-                                        iconName={iconName}
-                                        iconBackgroundColor={
-                                            iconBackgroundColor
-                                        }
-                                        iconForegroundColor={
-                                            iconForegroundColor
-                                        }
-                                        onClick={() => {}}
-                                    />
+                                    <ProjectAvatar project={project} />
                                 </div>
-                                <div>
+                                <div style={{ marginLeft: 24 }}>
                                     <h1 css={SS.projectProfileMetaH1}>
                                         {projectName}
                                     </h1>

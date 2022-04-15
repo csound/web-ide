@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import withStyles from "./styles";
 import Header from "../header/header";
 
-class SiteDocuments extends Component<any, {}> {
+class SiteDocuments extends Component<any, unknown> {
     public render() {
         const { classes } = this.props;
         return (

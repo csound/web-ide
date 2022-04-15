@@ -4,7 +4,7 @@ import { IProject } from "../projects/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderPlus, faWindowClose } from "@fortawesome/free-solid-svg-icons";
 import Tooltip from "@material-ui/core/Tooltip";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import { setFileTreePanelOpen } from "@comp/project-editor/actions";
 import { newFolder } from "@comp/projects/actions";
@@ -16,7 +16,7 @@ const FileTreeHeader = ({
 }: {
     project: IProject;
     isOwner: boolean;
-}) => {
+}): React.ReactElement => {
     const theme: any = useTheme();
     const dispatch = useDispatch();
     return (

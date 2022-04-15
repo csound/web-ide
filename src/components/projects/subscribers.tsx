@@ -1,7 +1,8 @@
-import { IDocument, IDocumentsMap } from "./types";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { store } from "@store/index";
-import { ICsoundObject } from "@comp/csound/types";
+import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
+import { IDocument, IDocumentsMap } from "./types";
 import {
     addDocumentToEMFS,
     convertDocumentSnapToDocumentsMap,
@@ -30,13 +31,12 @@ import {
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
-    dispatch: any,
-    csound: ICsoundObject
-) => {
-    const unsubscribe: () => void = projects
-        .doc(projectUid)
-        .collection("files")
-        .onSnapshot(async (files) => {
+    dispatch: (any) => void,
+    csound: CsoundObj | undefined
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        collection(doc(projects, projectUid), "files"),
+        async (files) => {
             const changedFiles = files.docChanges();
             const filesToAdd = filter(propEq("type", "added"), changedFiles);
             const filesToRemove = filter(
@@ -49,23 +49,28 @@ export const subscribeToProjectFilesChanges = (
             );
 
             if (!isEmpty(filesToAdd)) {
-                const documents: IDocumentsMap = convertDocumentSnapToDocumentsMap(
-                    filesToAdd
-                );
-                forEach((d) => {
-                    if (d.type !== "folder") {
-                        const pathPrefix = (d.path || [])
-                            .filter((p) => typeof p === "string")
-                            .map((documentUid) =>
-                                path([documentUid, "filename"], documents)
+                const documents: IDocumentsMap =
+                    convertDocumentSnapToDocumentsMap(filesToAdd);
+                csound &&
+                    forEach((d) => {
+                        if (d.type !== "folder") {
+                            const pathPrefix = (d.path || [])
+                                .filter((p) => typeof p === "string")
+                                .map((documentUid) =>
+                                    path([documentUid, "filename"], documents)
+                                );
+                            const absolutePath = concat(
+                                [`/${projectUid}`],
+                                append(d.filename, pathPrefix)
+                            ).join("/");
+                            addDocumentToEMFS(
+                                projectUid,
+                                csound,
+                                d,
+                                absolutePath
                             );
-                        const absolutePath = concat(
-                            [`/${projectUid}`],
-                            append(d.filename, pathPrefix)
-                        ).join("/");
-                        addDocumentToEMFS(projectUid, csound, d, absolutePath);
-                    }
-                }, values(documents));
+                        }
+                    }, values(documents));
                 dispatch(addProjectDocuments(projectUid, documents));
             }
 
@@ -89,7 +94,7 @@ export const subscribeToProjectFilesChanges = (
                 const documentDataReady = documentData.filter(
                     (d) => !!d.lastModified
                 );
-                documentDataReady.forEach((document_) => {
+                await documentDataReady.forEach(async (document_) => {
                     if (document_.type !== "folder") {
                         const oldFile =
                             currentReduxDocuments[document_.documentUid];
@@ -119,16 +124,18 @@ export const subscribeToProjectFilesChanges = (
                         ).join("/");
                         // Handle file moved
                         if (newAbsolutePath !== lastAbsolutePath) {
-                            csound.unlinkFromFS(lastAbsolutePath);
+                            csound &&
+                                (await csound.fs.unlink(lastAbsolutePath));
                         } else {
-                            csound.unlinkFromFS(newAbsolutePath);
+                            csound && (await csound.fs.unlink(newAbsolutePath));
                         }
-                        addDocumentToEMFS(
-                            projectUid,
-                            csound,
-                            document_,
-                            newAbsolutePath
-                        );
+                        csound &&
+                            addDocumentToEMFS(
+                                projectUid,
+                                csound,
+                                document_,
+                                newAbsolutePath
+                            );
                         dispatch(saveUpdatedDocument(projectUid, document_));
                     }
                 });
@@ -152,7 +159,7 @@ export const subscribeToProjectFilesChanges = (
                     dispatch(removeDocumentLocally(projectUid, uid));
                 });
 
-                documentData.forEach((document_) => {
+                await documentData.forEach(async (document_) => {
                     if (document_.type !== "folder") {
                         const pathPrefix = (document_.path || [])
                             .filter((p) => typeof p === "string")
@@ -166,24 +173,26 @@ export const subscribeToProjectFilesChanges = (
                             [`/${projectUid}`],
                             append(document_.filename, pathPrefix)
                         ).join("/");
-                        csound.unlinkFromFS(absolutePath);
+                        csound && (await csound.fs.unlink(absolutePath));
                     }
                 });
             }
-        });
+        }
+    );
     return unsubscribe;
 };
 
 export const subscribeToProjectTargetsChanges = (
     projectUid: string,
-    dispatch: any
-) => {
-    const unsubscribe: () => void = targets.doc(projectUid).onSnapshot(
-        (target) => {
-            if (!target.exists) {
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(targets, projectUid),
+        async (target) => {
+            if (!target.exists()) {
                 return;
             }
-            const { defaultTarget, targets } = target.data() as any;
+            const { defaultTarget, targets } = await target.data();
             updateAllTargetsLocally(
                 dispatch,
                 defaultTarget,
@@ -198,9 +207,9 @@ export const subscribeToProjectTargetsChanges = (
 
 export const subscribeToProjectChanges = (
     projectUid: string,
-    dispatch: any,
-    csound: ICsoundObject
-) => {
+    dispatch: (any) => void,
+    csound: CsoundObj | undefined
+): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(
         projectUid,
         dispatch,

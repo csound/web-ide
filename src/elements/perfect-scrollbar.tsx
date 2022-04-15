@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect } from "react";
-import { css } from "@emotion/core";
+import { css } from "@emotion/react";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 import { perfectScrollbarStyleSheet } from "@styles/_perfect-scrollbar";

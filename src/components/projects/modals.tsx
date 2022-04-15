@@ -14,8 +14,8 @@ export const deleteDocumentPrompt = (
     folderContents: string[],
     cancelCallback: () => void,
     deleteCallback: () => void
-) => {
-    return (() => {
+): (() => React.ReactElement) => {
+    return function DeleteDocumentPrompt() {
         return (
             <div style={{ display: "flex", flexDirection: "column" }}>
                 <h3>
@@ -54,7 +54,7 @@ export const deleteDocumentPrompt = (
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };
 
 // https://stackoverflow.com/questions/11100821/javascript-regex-for-validating-filenames
@@ -65,8 +65,8 @@ const isValidFolderName = (name: string) =>
 export const newFolderPrompt = (
     callback: (fileName: string) => void,
     project: IProject
-) => {
-    return (() => {
+): (() => React.ReactElement) => {
+    return function NewFolderPrompt() {
         const [input, setInput] = useState("");
         const [nameCollides, setNameCollides] = useState(false);
 
@@ -96,7 +96,7 @@ export const newFolderPrompt = (
                         setNameCollides(
                             some(
                                 reservedFilenames,
-                                (fn) => fn === event.target.value
+                                (function_) => function_ === event.target.value
                             )
                         );
                     }}
@@ -113,15 +113,15 @@ export const newFolderPrompt = (
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };
 
 export const newDocumentPrompt = (
     callback: (fileName: string) => void,
     renameAction: boolean,
     initFilename: string
-) => {
-    return (() => {
+): (() => React.ReactElement) => {
+    return function NewDocumentPrompt() {
         const [input, setInput] = useState(renameAction ? initFilename : "");
         const [nameCollides, setNameCollides] = useState(false);
 
@@ -163,7 +163,7 @@ export const newDocumentPrompt = (
                         setNameCollides(
                             some(
                                 reservedFilenames,
-                                (fn) => fn === event.target.value
+                                (function_) => function_ === event.target.value
                             )
                         );
                     }}
@@ -180,11 +180,13 @@ export const newDocumentPrompt = (
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };
 
-export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
-    return (() => {
+export const addDocumentPrompt = (
+    callback: (filelist: FileList) => void
+): (() => React.ReactElement) => {
+    return function AddDocumentPrompt() {
         const [files, setFiles]: [
             FileList | undefined | null,
             (files: FileList | null) => void
@@ -223,7 +225,10 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
                             const fileName = files ? files[0].name : "";
                             files && setFiles(files);
                             setNameCollides(
-                                some(reservedFilenames, (fn) => fn === fileName)
+                                some(
+                                    reservedFilenames,
+                                    (function_) => function_ === fileName
+                                )
                             );
                         }}
                     ></input>
@@ -233,12 +238,12 @@ export const addDocumentPrompt = (callback: (filelist: FileList) => void) => {
                     variant="outlined"
                     color="primary"
                     disabled={shouldDisable || nameCollides}
-                    onClick={() => callback(files!)}
+                    onClick={() => files && callback(files)}
                     style={{ marginTop: 11 }}
                 >
                     Upload
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };

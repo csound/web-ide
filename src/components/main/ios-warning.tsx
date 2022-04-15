@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Dialog from "@material-ui/core/Dialog";
 import Button from "@material-ui/core/Button";
 
-const IosWarning = () => {
+const IosWarning = (): React.ReactElement => {
     const [open, setOpen] = useState(true);
     if (isIOS()) {
         const alreadyShown = localStorage.getItem("ios:warning:shown") === "1";

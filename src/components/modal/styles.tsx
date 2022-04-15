@@ -1,11 +1,12 @@
-import { css } from "@emotion/core";
-import { shadow } from "@styles/_common";
+import { css, SerializedStyles, Theme } from "@emotion/react";
+import { shadow, _scrollbars } from "@styles/_common";
 
-export const content = (theme) => css`
+export const content = (theme: Theme): SerializedStyles => css`
     position: absolute;
     outline: none;
-    max-height: 100vh;
     & > div {
+        max-height: 80vh;
+        overflow-y: scroll;
         color: ${theme.textColor};
         position: relative;
         border: 2px solid ${theme.line};
@@ -14,5 +15,6 @@ export const content = (theme) => css`
         ${shadow}
         box-sizing: content-box;
         padding: 16px 32px 24px;
+        ${_scrollbars(theme)}
     }
 `;

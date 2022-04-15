@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "lib": ["es6", "dom", "dom.iterable", "esnext", "webworker"],
+        "jsxImportSource": "@emotion/react",
+        "jsx": "react-jsx",
+        "types": ["@emotion/react/types/css-prop", "jest"],
+        "typeRoots": ["./node_modules/@types"],
         "allowJs": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
@@ -16,11 +20,21 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "react",
         "downlevelIteration": true,
-        "baseUrl": "src"
+        "baseUrl": "src",
+        "paths": {
+            "@root/*": ["./*"],
+            "@store": ["./store/index.ts"],
+            "@store/*": ["./store/*"],
+            "@comp/*": ["./components/*"],
+            "@elem/*": ["./elements/*"],
+            "@config/*": ["./config/*"],
+            "@db/*": ["./db/*"],
+            "@styles": ["./styles/index.ts"],
+            "@styles/*": ["./styles/*"]
+        },
+        "noFallthroughCasesInSwitch": true
     },
     "include": ["./src/**/*"],
-    "extends": "./ts-aliases.json",
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

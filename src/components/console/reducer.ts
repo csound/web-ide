@@ -17,9 +17,9 @@ const initState: IConsoleReducer = {
     printToConsole: undefined
 };
 
-export default (
+const Console = (
     state: IConsoleReducer | undefined,
-    action: any
+    action: Record<string, any>
 ): IConsoleReducer => {
     switch (action.type) {
         case SET_CLEAR_CONSOLE_CALLBACK: {
@@ -33,3 +33,5 @@ export default (
         }
     }
 };
+
+export default Console;

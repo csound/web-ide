@@ -33,7 +33,10 @@ const INITIAL_STATE: IHotKeys = {
     }
 };
 
-export default (state: IHotKeys, action: HotKeysActionTypes) => {
+const HotKeysReducer = (
+    state: IHotKeys,
+    action: HotKeysActionTypes
+): IHotKeys => {
     switch (action.type) {
         case STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS: {
             return assoc(
@@ -54,3 +57,5 @@ export default (state: IHotKeys, action: HotKeysActionTypes) => {
         }
     }
 };
+
+export default HotKeysReducer;
