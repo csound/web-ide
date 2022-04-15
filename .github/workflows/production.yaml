@@ -20,7 +20,7 @@ jobs:
             - name: Deploy to Firebase
               uses: w9jds/firebase-action@master
               with:
-                  args: deploy -P default --only hosting && cd functions && deploy -P default --only functions
+                  args: deploy -P default
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_PROD }}
                   REACT_APP_DATABASE: PROD

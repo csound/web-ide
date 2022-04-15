@@ -1,6 +1,7 @@
 {
     "functions": {
-        "runtime": "nodejs10"
+        "runtime": "nodejs14",
+        "source": "./functions"
     },
     "hosting": {
         "public": "./build",
