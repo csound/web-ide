@@ -12,7 +12,6 @@ const InlineChunkHtmlPlugin = require("react-dev-utils/InlineChunkHtmlPlugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
-const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
 const paths = require("./paths");
 const getClientEnvironment = require("./env");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
@@ -317,16 +316,6 @@ module.exports = function (webpackEnv = "production") {
                 contextRegExp: /moment$/
             }),
 
-            isEnvProduction &&
-                new WorkboxWebpackPlugin.InjectManifest({
-                    swSrc: path.resolve(__dirname, "../src/service-worker.js"),
-                    dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
-                    exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
-                    // Bump up the default maximum size (2mb) that's precached,
-                    // to make lazy-loading failure scenarios less likely.
-                    // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
-                    maximumFileSizeToCacheInBytes: 10 * 1024 * 1024
-                }),
             new ForkTsCheckerWebpackPlugin({
                 async: isEnvDevelopment,
                 typescript: {
