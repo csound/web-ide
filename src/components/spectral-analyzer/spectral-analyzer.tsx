@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import withStyles from "./styles";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { path } from "ramda";
-import { ICsoundObject } from "../csound/types";
+import { assoc, path } from "ramda";
+import { CsoundObj } from "@csound/browser";
+import { ICsoundStatus } from "@comp/csound/types";
 import { scaleLinear } from "d3-scale";
 
 type ISpectralAnalyzerProperties = {
@@ -27,8 +27,8 @@ type CanvasReference = {
     current: HTMLCanvasElement | null;
 };
 
-const connectVisualizer = (
-    csound: ICsoundObject,
+const connectVisualizer = async (
+    csound: CsoundObj,
     canvasReference: CanvasReference
 ) => {
     if (!canvasReference || !canvasReference.current) {
@@ -43,17 +43,30 @@ const connectVisualizer = (
         }
 
         //console.log("Connect Visualizer!");
+        const node = await csound.getNode();
+        if (node === undefined) {
+            return;
+        }
 
-        const node = csound.getNode();
         const context = node.context;
         const scopeNode = context.createAnalyser();
+
         scopeNode.fftSize = 2048;
         node.connect(scopeNode);
 
+        let isConnected = true;
+
         const mags = () => {
             resize(canvas);
+
             const width = canvas.width;
             const height = canvas.height;
+
+            if (!isConnected) {
+                context_.clearRect(0, 0, width, height);
+                return;
+            }
+
             const freqData = new Uint8Array(scopeNode.frequencyBinCount);
 
             const scaleY = scaleLinear().domain([0, 256]).range([height, 0]);
@@ -78,39 +91,76 @@ const connectVisualizer = (
             context_.stroke();
             requestAnimationFrame(mags);
         };
+
         mags();
 
-        return scopeNode;
+        const disconnectionCallback = () => {
+            if (isConnected) {
+                isConnected = false;
+                node.disconnect(scopeNode);
+            }
+        };
+
+        return disconnectionCallback;
     }
 };
 
-const disconnectVisualizer = (
-    csound: ICsoundObject,
-    scopeNode: AnalyserNode
-) => {
-    const node = csound.getNode();
-    node.disconnect(scopeNode);
-};
+const SpectralAnalyzer = ({
+    classes
+}: ISpectralAnalyzerProperties): React.ReactElement => {
+    const [scopeNodeState, setScopeNodeState]: [
+        {
+            status: "init" | "running";
+            scopeNodeDisconnector: (() => void) | undefined;
+        },
+        any
+    ] = useState({
+        status: "init",
+        scopeNodeDisconnector: undefined
+    });
 
-const SpectralAnalyzer = ({ classes }: ISpectralAnalyzerProperties) => {
     const canvasReference = useRef() as CanvasReference;
 
-    const csound: ICsoundObject | undefined = useSelector(
+    const csound: CsoundObj | undefined = useSelector(
         path(["csound", "csound"])
     );
 
-    useEffect(() => {
-        let scopeNode: AnalyserNode | undefined;
-        if (csound && canvasReference.current) {
-            scopeNode = connectVisualizer(csound, canvasReference);
-        }
+    const csoundStatus: ICsoundStatus = useSelector(path(["csound", "status"]));
 
-        return () => {
-            if (csound && scopeNode) {
-                disconnectVisualizer(csound, scopeNode);
+    useEffect(() => {
+        if (
+            ["stopped", "error"].includes(csoundStatus) &&
+            scopeNodeState.status === "running"
+        ) {
+            if (csound && scopeNodeState.scopeNodeDisconnector) {
+                scopeNodeState.scopeNodeDisconnector();
             }
+            setScopeNodeState({
+                status: "init",
+                scopeNodeDisconnector: undefined
+            });
+        }
+        if (
+            csound &&
+            csoundStatus === "playing" &&
+            scopeNodeState.status !== "running"
+        ) {
+            setScopeNodeState(assoc("status", "running", scopeNodeState));
+            connectVisualizer(
+                csound,
+                canvasReference
+            ).then((scopeNodeDisconnector) =>
+                setScopeNodeState({ status: "running", scopeNodeDisconnector })
+            );
+        }
+    }, [csound, csoundStatus, scopeNodeState]);
+
+    useEffect(() => {
+        return () => {
+            scopeNodeState.scopeNodeDisconnector &&
+                scopeNodeState.scopeNodeDisconnector();
         };
-    }, [canvasReference, csound]);
+    }, [canvasReference, scopeNodeState]);
 
     return (
         <canvas
@@ -120,4 +170,4 @@ const SpectralAnalyzer = ({ classes }: ISpectralAnalyzerProperties) => {
     );
 };
 
-export default withStyles(SpectralAnalyzer);
+export default SpectralAnalyzer;

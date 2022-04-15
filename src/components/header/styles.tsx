@@ -1,16 +1,20 @@
-import { css as classCss } from "emotion";
-import { css } from "@emotion/core";
+// import { css as classCss } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
 import { headerHeight } from "@styles/constants";
 
 const drawerWidth = 260;
 
-export const headerRoot = (theme) => css`
+export const headerRoot = (theme: Theme): SerializedStyles => css`
     height: ${headerHeight}px;
     background-color: ${theme.headerBackground};
+    z-index: 3;
     & > div {
        height ${headerHeight}px;
     }
+    font-family: ${theme.font.regular};
+    /* because of mui's <Menu> */
+    padding: 0!important;
 `;
 
 export const drawer = css`
@@ -28,7 +32,7 @@ export const menuButton = css`
     margin-right: 6px;
 `;
 
-export const menuItemLink = (theme) => css`
+export const menuItemLink = (theme: Theme): SerializedStyles => css`
     text-decoration: none;
 `;
 
@@ -53,9 +57,9 @@ export const userMenu = css`
     }
 `;
 
-export const menuPaper = classCss`
-    top: 60px!important;
-    padding: 0!important;
+export const menuPaper = css`
+    top: 52px !important;
+    padding: 0 !important;
 `;
 
 export const loginButton = css`
@@ -64,7 +68,7 @@ export const loginButton = css`
     margin-left: 12px;
 `;
 
-export const accountTooltip = classCss`
+export const accountTooltip = css`
     margin-right: 24px;
 `;
 
@@ -107,14 +111,16 @@ export const projectProfileMetaContainer = css`
     margin-left: 12px;
 `;
 
-export const projectProfileMetaTextContainer = (theme) => css`
+export const projectProfileMetaTextContainer = (
+    theme: Theme
+): SerializedStyles => css`
     align-self: center;
     font-family: ${theme.font.regular};
     display: flex;
     flex-direction: column;
 `;
 
-export const projectProfileMetaH1 = (theme) => css`
+export const projectProfileMetaH1 = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-weight: 500;
     font-size: 16px;
@@ -122,7 +128,9 @@ export const projectProfileMetaH1 = (theme) => css`
     margin: 0;
 `;
 
-export const projectProfileDescription = (theme) => css`
+export const projectProfileDescription = (
+    theme: Theme
+): SerializedStyles => css`
     color: ${theme.altTextColor};
     font-weight: 300;
     font-size: 12px;
@@ -130,16 +138,16 @@ export const projectProfileDescription = (theme) => css`
     margin: 0;
 `;
 
-export const projectProfileBySpan = (theme) => css`
+export const projectProfileBySpan = (theme: Theme): SerializedStyles => css`
     color: ${theme.altTextColor};
 `;
 
-export const projectProfileLink = (theme) => css`
+export const projectProfileLink = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     text-decoration: underline;
 `;
 
-export const projectProfileMetaP = (theme) => css`
+export const projectProfileMetaP = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-weight: 400;
     font-size: 13px;
@@ -148,18 +156,24 @@ export const projectProfileMetaP = (theme) => css`
 `;
 
 export const projectIcon = css`
+    position: relative;
+    width: 36px;
+    height: 36px;
+    bottom: 2px;
+    right: 6px;
     & > div {
         box-sizing: content-box;
-        height: 34px;
-        width: 34px;
+        height: 100%;
+        width: 100%;
         padding: 5px;
         margin: 0 9px;
         cursor: default;
+        border-radius: 100%;
         & svg {
             height: 20px !important;
             width: 20px !important;
-            margin-top: 7px;
-            margin-left: 7px;
+            margin-top: 1px;
+            margin-left: 1px;
         }
     }
 `;
@@ -192,7 +206,7 @@ export const drawerIcon = css`
     fill: #fff;
 `;
 
-export const buttonContainer = (theme) => css`
+export const buttonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
     top: 0;
     color: ${theme.headerTextColor};

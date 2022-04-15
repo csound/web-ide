@@ -1,16 +1,17 @@
 import { Theme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
+import { headerHeight } from "@styles/constants";
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const siteDocumentsStyles = (theme: Theme) =>
     createStyles({
         root: {
             backgroundColor: "#e8e8e8",
             bottom: "0px",
-            top: "37px",
+            top: `${headerHeight}px`,
             left: 0,
             right: 0,
-            position: "absolute",
-            overflowY: "scroll"
+            position: "relative"
         },
         main: {
             maxWidth: "1024px",
@@ -29,5 +30,8 @@ const siteDocumentsStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+const withStyles_ = (ClassComponent: any) =>
     withStyles(siteDocumentsStyles)(ClassComponent);
+
+export default withStyles_;

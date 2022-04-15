@@ -2,7 +2,7 @@ import { IStore } from "@store/types";
 import { notEmpty } from "@root/utils";
 import { always, cond, equals, match, T } from "ramda";
 
-export const selectCurrentRoute = ({ router }: IStore) => {
+export const selectCurrentRoute = ({ router }: IStore): string => {
     return cond([
         [equals("/"), always("home")],
         [(x) => notEmpty(match(/^\/editor\/+/g, x)), always("editor")],
@@ -11,7 +11,9 @@ export const selectCurrentRoute = ({ router }: IStore) => {
     ])(router.location.pathname);
 };
 
-export const selectCurrentProfileRoute = ({ router }: IStore) => {
+export const selectCurrentProfileRoute = ({
+    router
+}: IStore): Array<string | undefined> => {
     if (notEmpty(match(/^\/profile\//g, router.location.pathname))) {
         const woPrefix = router.location.pathname.replace(/^\/profile\//g, "");
         const woPostfix = woPrefix.replace(/\/.*/g, "");

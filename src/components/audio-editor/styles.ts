@@ -1,7 +1,6 @@
-import { Theme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
 
-const audioEditorStyles = (theme: Theme) =>
+const audioEditorStyles = () =>
     createStyles({
         root: {
             width: "100%",
@@ -13,5 +12,4 @@ const audioEditorStyles = (theme: Theme) =>
         }
     });
 
-export default (ClassComponent: any) =>
-    withStyles(audioEditorStyles)(ClassComponent);
+export default withStyles(audioEditorStyles);

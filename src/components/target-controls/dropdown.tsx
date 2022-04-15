@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedTarget, showTargetsConfigDialog } from "./actions";
@@ -23,10 +23,10 @@ interface IDropdownOption {
 
 const paranoidNotNullChecker = (item: any): boolean =>
     allPass([
-        (i) => typeof i !== "undefined",
-        (i) => `${i}` !== "undefined",
-        (i) => !isNil(i),
-        (i) => i !== null
+        (item_) => typeof item_ !== "undefined",
+        (item_) => `${item_}` !== "undefined",
+        (item_) => !isNil(item_),
+        (item_) => item_ !== null
     ])(item);
 
 const titleTooltip = ({ documents, selectedTarget }) => {
@@ -34,14 +34,16 @@ const titleTooltip = ({ documents, selectedTarget }) => {
         typeof selectedTarget === "object" &&
         has("targetDocumentUid", selectedTarget) &&
         documents[(selectedTarget || ({} as any)).targetDocumentUid];
-    if (mainDocument && selectedTarget.targetType === "main") {
-        return `main: ${mainDocument.filename}`;
-    } else {
-        return `No document found for selected target: ${selectedTarget.targetName}`;
-    }
+    return mainDocument && selectedTarget.targetType === "main"
+        ? `main: ${mainDocument.filename}`
+        : `No document found for selected target: ${selectedTarget.targetName}`;
 };
 
-const TargetDropdown = ({ activeProjectUid }) => {
+const TargetDropdown = ({
+    activeProjectUid
+}: {
+    activeProjectUid: string;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const targets: ITargetMap | undefined = useSelector(
@@ -140,7 +142,7 @@ const TargetDropdown = ({ activeProjectUid }) => {
                     placeholder={
                         values(targets || []).length > 0
                             ? selectedTargetName &&
-                              selectedTargetName!.length > 0
+                              selectedTargetName.length > 0
                                 ? selectedTargetName
                                 : "Select target"
                             : "No targets found"
@@ -151,7 +153,7 @@ const TargetDropdown = ({ activeProjectUid }) => {
                         setMenuIsOpen(true);
                     }}
                     onMenuClose={() => setMenuIsOpen(false)}
-                    onChange={(event) => {
+                    onChange={(event: any) => {
                         event.value === "___toggle-configure"
                             ? dispatch(showTargetsConfigDialog())
                             : dispatch(
@@ -163,21 +165,26 @@ const TargetDropdown = ({ activeProjectUid }) => {
                     }}
                     isSearchable={false}
                     options={options}
-                    styles={{
-                        control: (provided, state) => SS.control,
-                        container: (provided, state) =>
-                            SS.dropdownContainer(theme),
-                        groupHeading: (provided, state) =>
-                            SS.groupHeading(theme),
-                        placeholder: (provided, state) => SS.placeholder(theme),
-                        menu: (provided, state) => SS.menu(theme),
-                        menuList: (provided, state) => SS.menuList(theme),
-                        option: (provided, state) => SS.menuOption(theme),
-                        indicatorsContainer: (provided, state) =>
-                            SS.indicatorContainer(theme),
-                        indicatorSeparator: (provided, state) =>
-                            SS.indicatorSeparator
-                    }}
+                    styles={
+                        {
+                            control: (provided, state) => SS.control,
+                            container: (provided, state) =>
+                                SS.dropdownContainer(theme),
+                            valueContainer: (provided, state) =>
+                                SS.valueContainer(theme),
+                            groupHeading: (provided, state) =>
+                                SS.groupHeading(theme),
+                            placeholder: (provided, state) =>
+                                SS.placeholder(theme),
+                            menu: (provided, state) => SS.menu(theme),
+                            menuList: (provided, state) => SS.menuList(theme),
+                            option: (provided, state) => SS.menuOption(theme),
+                            indicatorsContainer: (provided, state) =>
+                                SS.indicatorContainer(theme),
+                            indicatorSeparator: (provided, state) =>
+                                SS.indicatorSeparator
+                        } as any
+                    }
                 />
             </div>
         </Tooltip>

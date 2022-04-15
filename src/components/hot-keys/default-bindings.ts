@@ -16,7 +16,12 @@ const defaultBindings: BindingsMap = {
     doc_at_point: isMac ? "ctrl+." : "alt+.",
     find_simple: isMac ? "command+f" : "ctrl+f",
     undo: isMac ? "command+z" : "ctrl+z",
-    redo: isMac ? "shift+command+z" : "shift+ctrl+z"
+    redo: isMac ? "shift+command+z" : "shift+ctrl+z",
+    eval: isMac ? "command+e" : "ctrl+e",
+    eval_block: isMac ? "command+enter" : "ctrl+enter",
+    toggle_comment: isMac
+        ? ["command+;", "opt+command+;"]
+        : ["ctrl+;", "ctrl+shift+;"]
 };
 
 export default defaultBindings;

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { closeModal } from "../modal/actions";
+import { closeModal } from "@comp/modal/actions";
 import { TextField, Button } from "@material-ui/core";
 import { useDispatch } from "react-redux";
 import { deleteUserProject } from "./actions";
+import { IProject } from "@comp/projects/types";
 
-export const getDeleteProjectModal = (document_: any) =>
-    function DeleteProjectModal(properties: any) {
+export const getDeleteProjectModal = (
+    project: IProject
+): (() => React.ReactElement) =>
+    function DeleteProjectModal() {
         const [name, setName] = useState("");
         const dispatch = useDispatch();
         return (
@@ -22,11 +25,11 @@ export const getDeleteProjectModal = (document_: any) =>
                     variant="outlined"
                     color="secondary"
                     onClick={() => {
-                        dispatch(deleteUserProject(document_));
+                        dispatch(deleteUserProject(project));
                         dispatch(closeModal());
                     }}
                     style={{ marginTop: 11, marginLeft: 12 }}
-                    disabled={name !== document_.name}
+                    disabled={name !== project.name}
                 >
                     Delete
                 </Button>

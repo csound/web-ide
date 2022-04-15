@@ -37,7 +37,7 @@ import {
 import { showKeyboardShortcuts } from "@comp/site-documents/actions";
 import { openBottomTab } from "@comp/bottom-tabs/actions";
 
-function MenuBar(properties) {
+function MenuBar(): JSX.Element {
     const activeProjectUid: string = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
@@ -428,5 +428,4 @@ const clickOutsideConfig = {
     handleClickOutside: () => (MenuBar as any).handleClickOutside
 };
 
-// export default withShortcut(onClickOutside(MenuBar, clickOutsideConfig));
-export default onClickOutside(MenuBar, clickOutsideConfig);
+export default onClickOutside(MenuBar, clickOutsideConfig) as any as React.FC;

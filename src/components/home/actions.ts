@@ -1,177 +1,203 @@
+import { difference, keys, isEmpty, pluck } from "ramda";
+import { documentId, getDocs, query, where } from "firebase/firestore";
 import { profiles, projects } from "@config/firestore";
-import { firestore } from "firebase/app";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
-
-import { selectDisplayedStarredProjects } from "./selectors";
 import {
-    GET_DISPLAYED_RANDOM_PROJECTS,
-    GET_DISPLAYED_STARRED_PROJECTS,
-    GET_FEATURED_PROJECT_USER_PROFILES,
-    GET_SEARCHED_PROJECT_USER_PROFILES,
-    GET_STARS,
+    ADD_USER_PROFILES,
+    ADD_RANDOM_PROJECTS,
+    ADD_POPULAR_PROJECTS,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
-    GET_RANDOM_PROJECT_USER_PROFILES,
-    GET_POPULAR_PROJECT_USER_PROFILES
+    SET_POPULAR_PROJECTS_OFFSET,
+    SET_RANDOM_PROJECTS_LOADING,
+    HomeActionTypes
 } from "./types";
+import { IProject } from "@comp/projects/types";
+import {
+    convertProjectSnapToProject,
+    firestoreProjectToIProject
+} from "@comp/projects/utils";
+import { IStarredProjectSearchResult, IStarredProject } from "@db/search";
+import { IStore } from "@root/store/types";
 
 const databaseID = process.env.NODE_ENV === "development" ? "dev" : "prod";
 const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
-export const searchProjects = (
-    query: string,
-    offset: number
-): ThunkAction<void, any, null, Action<string>> => async (dispatch) => {
-    dispatch({ type: SEARCH_PROJECTS_REQUEST });
+export const searchProjects =
+    (
+        query_: string,
+        offset: number
+    ): ThunkAction<void, any, null, Action<string>> =>
+    async (dispatch) => {
+        dispatch({ type: SEARCH_PROJECTS_REQUEST, query: query_, offset });
 
-    const searchRequest = await fetch(
-        `${searchURL}/query/projects/${query}/8/${offset}/name/desc`
-    );
-    const projects = await searchRequest.json();
-    projects.data = projects.data.slice(0, 8);
-
-    const userIDs = [
-        ...new Set([...projects.data.map((item) => item.userUid)])
-    ];
-
-    if (userIDs.length === 0) {
-        dispatch({ type: GET_SEARCHED_PROJECT_USER_PROFILES, payload: false });
-        dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: false });
-
-        return;
-    }
-
-    const projectProfiles = {};
-
-    const profilesQuery = await profiles
-        .where(firestore.FieldPath.documentId(), "in", userIDs)
-        .get();
-
-    profilesQuery.forEach((snapshot) => {
-        projectProfiles[snapshot.id] = snapshot.data();
-    });
-
-    dispatch({
-        type: GET_SEARCHED_PROJECT_USER_PROFILES,
-        payload: projectProfiles
-    });
-
-    dispatch({ type: SEARCH_PROJECTS_SUCCESS, payload: projects });
-};
-
-export const getPopularProjects = (
-    withRandomProjects: Boolean = false,
-    startCount: number = 0
-): ThunkAction<void, any, null, Action<string>> => async (
-    dispatch,
-    getStore
-) => {
-    dispatch({
-        type: GET_POPULAR_PROJECT_USER_PROFILES,
-        payload: false
-    });
-    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: false });
-
-    const starsRequest = await fetch(
-        `${searchURL}/list/stars/8/${startCount * 4}/count/desc`
-    );
-    const starredProjects = (await starsRequest.json()).data;
-
-    const starsIDs = starredProjects.map((item) => (item as any).id);
-
-    if (starredProjects.length === 0) {
-        dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: [] });
-        return;
-    }
-    const splitStarProjectsQuery = await projects
-        .where("public", "==", true)
-        .where(firestore.FieldPath.documentId(), "in", starsIDs)
-        .get();
-
-    const starProjects: any[] = [];
-    splitStarProjectsQuery.forEach((snapshot) => {
-        starProjects.push({ id: snapshot.id, ...snapshot.data() });
-    });
-
-    const userIDs = [...new Set([...starProjects.map((item) => item.userUid)])];
-
-    const projectProfiles = {};
-
-    const profilesQuery = await profiles
-        .where(firestore.FieldPath.documentId(), "in", userIDs)
-        .get();
-
-    profilesQuery.forEach((snapshot) => {
-        projectProfiles[snapshot.id] = snapshot.data();
-    });
-    dispatch({
-        type: GET_POPULAR_PROJECT_USER_PROFILES,
-        payload: projectProfiles
-    });
-    dispatch({ type: GET_DISPLAYED_STARRED_PROJECTS, payload: starProjects });
-
-    dispatch({ type: GET_STARS, payload: starProjects });
-
-    if (withRandomProjects === true) {
-        dispatch(getRandomProjects());
-    }
-};
-
-export const getRandomProjects = (): ThunkAction<
-    void,
-    any,
-    null,
-    Action<string>
-> =>
-    // eslint-disable-next-line unicorn/consistent-function-scoping
-    async (dispatch, getStore) => {
-        dispatch({ type: GET_DISPLAYED_RANDOM_PROJECTS, payload: false });
-
-        const state = getStore();
-        const starProjects = selectDisplayedStarredProjects(state);
-        if (starProjects.length === 0) {
+        if (isEmpty(query_)) {
             return;
         }
 
-        const starProjectsIDs = new Set(starProjects.map((item) => item.id));
+        const searchRequest = await fetch(
+            `${searchURL}/query/projects/${query_}/8/${offset}/name/desc`
+        );
+        const projects = await searchRequest.json();
+        projects.data = projects.data.slice(0, 8);
+
+        const searchResult: IProject[] = projects.data.map(
+            firestoreProjectToIProject
+        );
+
+        const userIDs = pluck("userUid", searchResult);
+
+        if (!isEmpty(userIDs)) {
+            const projectProfiles = {};
+
+            const profilesQuery = await getDocs(
+                (query as any)(profiles, where(documentId(), "in", userIDs))
+            );
+
+            profilesQuery.forEach((snapshot) => {
+                projectProfiles[snapshot.id] = snapshot.data();
+            });
+
+            dispatch({
+                type: ADD_USER_PROFILES,
+                payload: projectProfiles
+            });
+        }
+
+        dispatch({
+            type: SEARCH_PROJECTS_SUCCESS,
+            result: searchResult,
+            totalRecords: projects.totalRecords
+        });
+    };
+
+export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
+    return async (
+        dispatch: (action: HomeActionTypes) => Promise<void>,
+        getState: () => IStore
+    ): Promise<void> => {
+        const nextOffset = Math.max(0, offset) + pageSize;
+
+        dispatch({
+            type: SET_POPULAR_PROJECTS_OFFSET,
+            newOffset: nextOffset
+        });
+
+        const state = getState().HomeReducer;
+
+        const starsRequest = await fetch(
+            `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
+        );
+        const starredProjects: IStarredProjectSearchResult =
+            await starsRequest.json();
+
+        const starsIDs = starredProjects.data.map(
+            (item: IStarredProject) => item.id
+        );
+
+        if (!isEmpty(starsIDs)) {
+            const publicProjectsSnapshots = await getDocs(
+                query(
+                    query(projects, where("public", "==", true)),
+                    where(documentId(), "in", starsIDs)
+                )
+            );
+            const popularProjects: IProject[] = await Promise.all(
+                publicProjectsSnapshots.docs.map(
+                    async (snap) => await convertProjectSnapToProject(snap)
+                )
+            );
+
+            const userIDs = pluck("userUid", popularProjects);
+
+            const missingProfiles = difference(userIDs, keys(state.profiles));
+            if (!isEmpty(missingProfiles)) {
+                const projectProfiles = {};
+
+                const profilesQuery = await getDocs(
+                    query(profiles, where(documentId(), "in", missingProfiles))
+                );
+
+                profilesQuery.forEach((snapshot) => {
+                    projectProfiles[snapshot.id] = snapshot.data();
+                });
+
+                dispatch({
+                    type: ADD_USER_PROFILES,
+                    payload: projectProfiles
+                });
+            }
+
+            dispatch({
+                type: ADD_POPULAR_PROJECTS,
+                payload: popularProjects,
+                totalRecords: starredProjects.totalRecords
+            });
+        }
+    };
+};
+
+export const fetchRandomProjects = () => {
+    return async (
+        dispatch: (action: HomeActionTypes) => Promise<void>,
+        getState: () => IStore
+    ): Promise<void> => {
+        dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: true });
+
+        const state = getState().HomeReducer;
 
         const randomProjectsRequest = await fetch(
             `${searchURL}/random/projects/8`
         );
-        let randomProjects = await randomProjectsRequest.json();
-        randomProjects = randomProjects.data
-            .filter((item) => {
-                return starProjectsIDs.has(item.id) === false;
-            })
-            .slice(0, 4);
 
-        const userIDs = [
-            ...new Set([...randomProjects.map((item) => item.userUid)])
-        ];
+        const randomProjects = await randomProjectsRequest.json();
 
-        const projectProfiles = {};
+        const randomProjectsIDs = randomProjects.data.map(
+            (item: IStarredProject) => item.id
+        );
 
-        const profilesQuery = await profiles
-            .where(firestore.FieldPath.documentId(), "in", userIDs)
-            .get();
+        if (!isEmpty(randomProjectsIDs)) {
+            const randomProjectsSnapshots = await getDocs(
+                query(
+                    query(projects, where("public", "==", true)),
+                    where(documentId(), "in", randomProjectsIDs)
+                )
+            );
 
-        profilesQuery.forEach((snapshot) => {
-            projectProfiles[snapshot.id] = snapshot.data();
-        });
+            const randomProjects: IProject[] = await Promise.all(
+                randomProjectsSnapshots.docs.map(
+                    async (snap) => await convertProjectSnapToProject(snap)
+                )
+            );
 
-        dispatch({
-            type: GET_FEATURED_PROJECT_USER_PROFILES,
-            payload: projectProfiles
-        });
+            const userIDs = pluck("userUid", randomProjects);
 
-        dispatch({
-            type: GET_RANDOM_PROJECT_USER_PROFILES,
-            payload: projectProfiles
-        });
-        dispatch({
-            type: GET_DISPLAYED_RANDOM_PROJECTS,
-            payload: randomProjects
-        });
+            const missingProfiles = difference(userIDs, keys(state.profiles));
+
+            if (!isEmpty(missingProfiles)) {
+                const projectProfiles = {};
+
+                const profilesQuery = await getDocs(
+                    query(profiles, where(documentId(), "in", missingProfiles))
+                );
+
+                profilesQuery.forEach((snapshot) => {
+                    projectProfiles[snapshot.id] = snapshot.data();
+                });
+
+                dispatch({
+                    type: ADD_USER_PROFILES,
+                    payload: projectProfiles
+                });
+            }
+
+            dispatch({
+                type: ADD_RANDOM_PROJECTS,
+                payload: randomProjects
+            });
+        }
+        dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: false });
     };
+};

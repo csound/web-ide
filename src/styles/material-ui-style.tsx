@@ -1,11 +1,42 @@
 import { DefaultTheme } from "@material-ui/core/styles/defaultTheme";
-import { assocPath, pipe } from "ramda";
+import { Theme } from "@emotion/react";
+import { assocPath, pipe, memoizeWith, reduce } from "ramda";
 // import { rgba } from "./utils";
 
 // assume darkmode = primary
 // (if consistent, the lightMode vs darkMode distinction becomes irrelevant)
 
-export const makeMuiTheme = (muiTheme, theme) => {
+const typographyOverride = (theme: Theme) =>
+    pipe(
+        // (x) => (console.log(x) as any) || x,
+        // assocPath(["typography", "fontFamily"], theme.font.regular),
+        assocPath(["typography", "button", "fontFamily"], theme.font.monospace),
+        (t) =>
+            reduce(
+                (acc, k) =>
+                    assocPath(
+                        ["typography", k, "fontFamily"],
+                        theme.font.regular,
+                        acc
+                    ),
+                t,
+                [
+                    "body1",
+                    "body2",
+                    "button",
+                    "caption",
+                    "h1",
+                    "h2",
+                    "h3",
+                    "h4",
+                    "h5",
+                    "subtitle1",
+                    "subtitle2"
+                ]
+            )
+    );
+
+const makeMuiTheme_ = (muiTheme, theme: Theme, themeName: string) => {
     // const primaryPalette = {
     //     light: theme.highlight.secondary,
     //     main: theme.highlight.primary,
@@ -19,9 +50,14 @@ export const makeMuiTheme = (muiTheme, theme) => {
     // };
 
     return (pipe as any)(
+        typographyOverride(theme),
         assocPath(["palette", "common"], {
             black: theme.textColor,
             white: theme.background
+        }),
+        assocPath(["palette", "background"], {
+            paper: theme.background,
+            default: theme.background
         }),
         // assocPath(["palette", "primary"], primaryPalette),
 
@@ -67,7 +103,7 @@ export const makeMuiTheme = (muiTheme, theme) => {
             color: `${theme.buttonTextColor}!important`,
             opacity: 0.95,
             "&:hover": {
-                backgroundColor: `${theme.buttonHover}!important`
+                backgroundColor: `${theme.buttonBackgroundHover}!important`
             }
         }),
         assocPath(["overrides", "MuiTouchRipple", "rippleVisible"], {
@@ -122,7 +158,6 @@ export const makeMuiTheme = (muiTheme, theme) => {
             backgroundColor: theme.background,
             border: `2px solid ${theme.line}`,
             borderRadius: "6px",
-            padding: "12px",
             "& ul": {
                 padding: 0
             },
@@ -135,16 +170,16 @@ export const makeMuiTheme = (muiTheme, theme) => {
                 padding: "12px 24px!important"
             }
         }),
-        // assocPath(["overrides", "MuiListItem", "button"], {
-        //     color: theme.color.primary,
-        //     backgroundColor: theme.background.primary,
-        //     "&:hover": {
-        //         backgroundColor: `${theme.highlightAlt.primary}`,
-        //         borderRadius: "2px"
-        //     }
+        // assocPath(["overrides", "MuiListItem"], {
+        //     cursor: "grabbing"
         // }),
         assocPath(["overrides", "MuiMenu", "list"], {
             color: theme.textColor
         })
     )(muiTheme) as DefaultTheme;
 };
+
+export const makeMuiTheme = memoizeWith(
+    (foo, bar, name) => name,
+    makeMuiTheme_
+);

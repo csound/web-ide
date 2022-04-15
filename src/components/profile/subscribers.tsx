@@ -1,5 +1,13 @@
 import { store } from "@store/index";
 import {
+    doc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    query,
+    where
+} from "firebase/firestore";
+import {
     following,
     followers,
     profiles,
@@ -19,7 +27,11 @@ import {
     storeProfileProjectsCount,
     storeProfileStars
 } from "./actions";
-import { UPDATE_PROFILE_FOLLOWING, UPDATE_PROFILE_FOLLOWERS } from "./types";
+import {
+    IProfile,
+    UPDATE_PROFILE_FOLLOWING,
+    UPDATE_PROFILE_FOLLOWERS
+} from "./types";
 import { listifyObject } from "@root/utils";
 import {
     assoc,
@@ -38,24 +50,32 @@ import {
 } from "ramda";
 import { IProject } from "../projects/types";
 
-export const subscribeToProfile = (profileUid: string, dispatch: any) => {
-    const unsubscribe: () => void = profiles.doc(profileUid).onSnapshot(
+export const subscribeToProfile = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(profiles, profileUid),
         (profile) => {
-            dispatch(storeUserProfile(profile.data(), profileUid));
+            dispatch(storeUserProfile(profile.data() as IProfile, profileUid));
         },
         (error: any) => console.error(error)
     );
     return unsubscribe;
 };
 
-export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
-    const unsubscribe: () => void = following.doc(profileUid).onSnapshot(
+export const subscribeToFollowing = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(following, profileUid),
         async (followingReference) => {
             const state = store.getState();
             const userProfileData = followingReference.data();
             const userProfileDataSorted = sort(
-                descend(propOr(-Infinity, "val")),
-                listifyObject(userProfileData)
+                descend(propOr(Number.NEGATIVE_INFINITY, "val")),
+                listifyObject(userProfileData || {})
             );
             const userProfileUids = map(prop("key"), userProfileDataSorted);
             const cachedProfileUids = keys(state.ProfileReducer.profiles);
@@ -66,14 +86,12 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
 
             const missingProfiles = await Promise.all(
                 missingProfileUids.map(async (followingProfileUid) => {
-                    const profPromise = await profiles
-                        .doc(followingProfileUid)
-                        .get();
-                    if (profPromise.exists) {
-                        return profPromise.data();
-                    } else {
-                        return { displayName: "Deleted user" };
-                    }
+                    const profPromise = await getDoc(
+                        doc(profiles, followingProfileUid)
+                    );
+                    return profPromise.exists()
+                        ? profPromise.data()
+                        : { displayName: "Deleted user" };
                 })
             );
             dispatch({
@@ -88,14 +106,18 @@ export const subscribeToFollowing = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
-    const unsubscribe: () => void = followers.doc(profileUid).onSnapshot(
+export const subscribeToFollowers = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(followers, profileUid),
         async (followersReference) => {
             const state = store.getState();
             const userProfileData = followersReference.data();
             const userProfileDataSorted = sort(
-                descend(propOr(-Infinity, "val")),
-                listifyObject(userProfileData)
+                descend(propOr(Number.NEGATIVE_INFINITY, "val")),
+                listifyObject(userProfileData || {})
             );
             const userProfileUids = map(prop("key"), userProfileDataSorted);
             const cachedProfileUids = keys(state.ProfileReducer.profiles);
@@ -106,14 +128,13 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
 
             const missingProfiles = await Promise.all(
                 missingProfileUids.map(async (followerProfileUid) => {
-                    const profPromise = await profiles
-                        .doc(followerProfileUid)
-                        .get();
-                    if (profPromise.exists) {
-                        return profPromise.data();
-                    } else {
-                        return { displayName: "Deleted user" };
-                    }
+                    const profPromise = await getDoc(
+                        doc(profiles, followerProfileUid)
+                    );
+
+                    return profPromise.exists()
+                        ? profPromise.data()
+                        : { displayName: "Deleted user" };
                 })
             );
             dispatch({
@@ -128,22 +149,41 @@ export const subscribeToFollowers = (profileUid: string, dispatch: any) => {
     return unsubscribe;
 };
 
-export const subscribeToProjectsCount = (profileUid: string, dispatch: any) => {
-    const unsubscribe: () => void = projectsCount.doc(profileUid).onSnapshot(
+export const subscribeToProjectsCount = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(projectsCount, profileUid),
         (projectsCount) => {
-            dispatch(
-                storeProfileProjectsCount(projectsCount.data(), profileUid)
-            );
+            const projectsCountData = projectsCount.data();
+            if (projectsCountData) {
+                const projectsCount_ = {
+                    public: projectsCountData.public || 0,
+                    all: projectsCountData.all || 0
+                };
+                projectsCountData &&
+                    dispatch(
+                        storeProfileProjectsCount(projectsCount_, profileUid)
+                    );
+            }
         },
         (error: any) => console.error(error)
     );
     return unsubscribe;
 };
 
-export const subscribeToProfileStars = (profileUid: string, dispatch: any) => {
-    const unsubscribe: () => void = profileStars.doc(profileUid).onSnapshot(
+export const subscribeToProfileStars = (
+    profileUid: string,
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe: () => void = onSnapshot(
+        doc(profileStars),
         (starsReference) => {
             const starsData = starsReference.data();
+            if (!starsData) {
+                return;
+            }
             const state = store.getState();
             const starredProjects = keys(starsData);
             const cachedProjects = keys(state.ProjectsReducer.projects);
@@ -161,42 +201,49 @@ export const subscribeToProfileStars = (profileUid: string, dispatch: any) => {
 export const subscribeToProfileProjects = (
     profileUid: string,
     isProfileOwner: boolean,
-    dispatch: any
-) => {
-    const unsubscribe = (isProfileOwner
-        ? projects.where("userUid", "==", profileUid)
-        : projects
-              .where("userUid", "==", profileUid)
-              .where("public", "==", true)
-    ).onSnapshot(async (projectSnaps) => {
-        const currentProfileProjects = pipe(
-            pathOr([], ["ProjectsReducer", "projects"]),
-            filter(propEq("userUid", profileUid))
-        )(store.getState());
-        const projectsDeleted = difference(
-            keys(currentProfileProjects).sort(),
-            map(prop("id"), projectSnaps.docs).sort()
-        );
-        if (!projectSnaps.empty) {
-            Promise.all(
-                projectSnaps.docs.map(async (projSnap) => {
-                    const projTags = await tags
-                        .where(projSnap.id, "==", profileUid)
-                        .get()
-                        .then((d) => d.docs.map(prop("id")));
-                    const proj = await convertProjectSnapToProject(projSnap);
-                    return assoc("tags", projTags, proj) as IProject;
-                })
-            ).then((localProjects) => {
-                dispatch(storeProjectLocally(localProjects));
-            });
-        }
+    dispatch: (any) => void
+): (() => void) => {
+    const unsubscribe = onSnapshot(
+        isProfileOwner
+            ? query(projects, where("userUid", "==", profileUid))
+            : query(
+                  projects,
+                  where("public", "==", true)
+                  // query(
+                  //     query(projects, where("userUid", "==", profileUid)),
+                  // )
+              ),
+        async (projectSnaps) => {
+            const currentProfileProjects = pipe(
+                pathOr([], ["ProjectsReducer", "projects"]),
+                filter(propEq("userUid", profileUid))
+            )(store.getState());
+            const projectsDeleted = difference(
+                keys(currentProfileProjects).sort(),
+                map(prop("id"), projectSnaps.docs).sort()
+            );
+            if (!projectSnaps.empty) {
+                Promise.all(
+                    projectSnaps.docs.map(async (projSnap) => {
+                        const projTags = await getDocs(
+                            query(tags, where(projSnap.id, "==", profileUid))
+                        ).then((d) => d.docs.map(prop("id")));
+                        const proj = await convertProjectSnapToProject(
+                            projSnap
+                        );
+                        return assoc("tags", projTags, proj) as IProject;
+                    })
+                ).then((localProjects) => {
+                    dispatch(storeProjectLocally(localProjects));
+                });
+            }
 
-        if (!isEmpty(projectsDeleted)) {
-            projectsDeleted.forEach(async (projectUid) => {
-                await dispatch(unsetProject(projectUid));
-            });
+            if (!isEmpty(projectsDeleted)) {
+                projectsDeleted.forEach(async (projectUid) => {
+                    await dispatch(unsetProject(projectUid));
+                });
+            }
         }
-    });
+    );
     return unsubscribe;
 };

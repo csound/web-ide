@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import LoaderSpinner from "react-loader-spinner";
-import { push } from "connected-react-router";
-import { useTheme } from "emotion-theming";
-import { ITheme } from "@styles/types";
+import { Path } from "history";
+import { Audio as AudioSpinner } from "react-loader-spinner";
+import { useParams } from "react-router-dom";
+import { push } from "connected-react-router/esm/index.js";
+import { useTheme } from "@emotion/react";
+// import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
 import { ConsoleProvider } from "@comp/console/context";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
-import { ICsoundObject } from "@comp/csound/types";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
@@ -17,20 +18,27 @@ interface IProjectContextProperties {
     match: any;
 }
 
-const ForceBackgroundColor = ({ theme }) => (
+const ForceBackgroundColor = ({ theme }): React.ReactElement => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-export default (properties: IProjectContextProperties) => {
+const ProjectContext = (
+    properties: IProjectContextProperties
+): React.ReactElement => {
     const dispatch = useDispatch();
-    const theme: ITheme = useTheme();
+    const theme = useTheme();
+    const routeParams: { id?: string } = useParams();
+
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
-    const projectUid = properties.match.params.id;
+    const projectUid = routeParams.id ? routeParams.id : "";
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
-    invalidUrl && dispatch(push("/404", { message: "Project not found" }));
+    invalidUrl &&
+        dispatch(
+            push({ pathname: "/404" } as Path, { message: "Project not found" })
+        );
 
     const activeProjectUid: string | undefined = useSelector(
         (store) =>
@@ -44,42 +52,40 @@ export default (properties: IProjectContextProperties) => {
             path(["ProjectsReducer", "projects", activeProjectUid], store)
     );
 
-    const csound: ICsoundObject | undefined = useSelector(
-        path(["csound", "csound"])
-    );
-
     const tabIndex: number = useSelector(
         pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
 
     useEffect(() => {
-        if (!projectFetchStarted && csound) {
+        if (!projectFetchStarted) {
             const initProject = async () => {
                 try {
                     await downloadProjectOnce(projectUid)(dispatch);
-                } catch (error) {
+                } catch (error: any) {
                     if (
                         typeof error === "object" &&
                         typeof error.code === "string"
                     ) {
                         error.code === "permission-denied" &&
                             dispatch(
-                                push("/404", { message: "Project not found" })
+                                push({ pathname: "/404" } as Path, {
+                                    message: "Project not found"
+                                })
                             );
                     }
                 }
-                await activateProject(projectUid, csound)(dispatch);
+                await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };
             setProjectFetchStarted(true);
             initProject();
         }
-        if (needsLoading && projectFetchStarted && projectIsReady && csound) {
+
+        if (needsLoading && projectFetchStarted && projectIsReady) {
             setNeedsLoading(false);
         }
     }, [
         dispatch,
-        csound,
         project,
         projectUid,
         activeProjectUid,
@@ -89,34 +95,27 @@ export default (properties: IProjectContextProperties) => {
         tabIndex
     ]);
 
-    if (!needsLoading && !invalidUrl && project) {
-        return (
-            <>
-                <ForceBackgroundColor theme={theme} />
-                <Header />
-                <ConsoleProvider activeProject={project} csound={csound}>
-                    <ProjectEditor
-                        {...properties}
-                        csound={csound as unknown}
-                        activeProject={project}
-                    />
-                </ConsoleProvider>
-            </>
-        );
-    } else {
-        return (
-            <>
-                <ForceBackgroundColor theme={theme} />
-                <Header />
-                <main css={SS.loadMain}>
-                    <LoaderSpinner
-                        type="Audio"
-                        color={theme.highlightBackground}
-                        height={80}
-                        width={80}
-                    />
-                </main>
-            </>
-        );
-    }
+    return !needsLoading && !invalidUrl && project ? (
+        <>
+            <ForceBackgroundColor theme={theme} />
+            <ConsoleProvider activeProject={project}>
+                <ProjectEditor {...properties} activeProject={project} />
+            </ConsoleProvider>
+            <Header />
+        </>
+    ) : (
+        <>
+            <ForceBackgroundColor theme={theme} />
+            <Header />
+            <main css={SS.loadMain}>
+                <AudioSpinner
+                    color={theme.highlightBackground}
+                    height={80}
+                    width={80}
+                />
+            </main>
+        </>
+    );
 };
+
+export default ProjectContext;

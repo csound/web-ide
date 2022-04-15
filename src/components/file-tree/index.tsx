@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import { rgba } from "@styles/utils";
 import { useDnD } from "./context";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useDispatch, useSelector } from "react-redux";
 import Collapse from "@material-ui/core/Collapse";
-import DescriptionIcon from "@material-ui/icons/Description";
+// import DescriptionIcon from "@material-ui/icons/Description";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
+import {
+    CsdFileIcon,
+    OrcFileIcon,
+    ScoFileIcon,
+    UdoFileIcon
+} from "@elem/filetype-icons";
 import EditIcon from "@material-ui/icons/EditTwoTone";
 import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
 import Tooltip from "@material-ui/core/Tooltip";
@@ -21,7 +27,10 @@ import FileTreeHeader from "./header";
 import { IDocument, IDocumentsMap, IProject } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { tabOpenByDocumentUid } from "@comp/project-editor/actions";
-import { selectIsOwner } from "@comp/project-editor/selectors";
+import {
+    selectIsOwner,
+    selectCurrentTabDocumentUid
+} from "@comp/project-editor/selectors";
 import {
     addIndex,
     append,
@@ -55,11 +64,11 @@ const RootReference = React.forwardRef((properties: any, reference: any) => (
 
 RootReference.displayName = "FileTree";
 
-const hopefulSorting = curry((documentIdx, documentA, documentB) => {
-    const idxA = path([documentA.documentUid, "index"], documentIdx);
-    const idxB = path([documentB.documentUid, "index"], documentIdx);
-    if (idxA && idxB) {
-        return idxA < idxB ? -1 : idxA > idxB ? 1 : 0;
+const hopefulSorting = curry((documentIndex, documentA, documentB) => {
+    const indexA = path([documentA.documentUid, "index"], documentIndex);
+    const indexB = path([documentB.documentUid, "index"], documentIndex);
+    if (indexA && indexB) {
+        return indexA < indexB ? -1 : indexA > indexB ? 1 : 0;
     } else {
         return documentA.filename < documentB.filename
             ? -1
@@ -71,13 +80,14 @@ const hopefulSorting = curry((documentIdx, documentA, documentB) => {
 
 const makeTree = (
     activeProjectUid,
+    currentTabDocumentUid,
     dispatch,
     collapseState,
     setCollapseState,
     isOwner,
     theme,
     path,
-    [documentIdx, elementArray],
+    [documentIndex, elementArray],
     filelist
 ) => {
     const allDirectories = filter(propEq("type", "folder"), filelist);
@@ -89,8 +99,8 @@ const makeTree = (
 
     // this could be problematic, but then again, we need to test what behaviour we want
     const sortedFiles = concat(
-        sort(hopefulSorting(documentIdx), allDirectories),
-        sort(hopefulSorting(documentIdx), allFiles)
+        sort(hopefulSorting(documentIndex), allDirectories),
+        sort(hopefulSorting(documentIndex), allFiles)
     );
 
     const currentFiles = filter(propEq("path", path || []), sortedFiles);
@@ -147,7 +157,7 @@ const makeTree = (
 
     return reduceIndexed(
         (
-            [documentIdx_, elementArray_],
+            [documentIndex_, elementArray_],
             document_: IDocument,
             index: number
         ) => {
@@ -160,7 +170,7 @@ const makeTree = (
                     <ListItemIcon
                         key={`${document_.documentUid}-folder`}
                         css={SS.listItemIcon}
-                        style={{ left: 22 + 24 * path.length }}
+                        style={{ left: 1 + (24 * path.length - 1) }}
                     >
                         {collapseState[document_.documentUid] ? (
                             <DirectoryOpen css={SS.directoryOpenIcon} />
@@ -169,15 +179,16 @@ const makeTree = (
                         )}
                     </ListItemIcon>
                 );
-                const [newDocumentIdx, newElementArray] = makeTree(
+                const [newDocumentIndex, newElementArray] = makeTree(
                     activeProjectUid,
+                    currentTabDocumentUid,
                     dispatch,
                     collapseState,
                     setCollapseState,
                     isOwner,
                     theme,
                     folderPath,
-                    [documentIdx_, []],
+                    [documentIndex_, []],
                     newFileList
                 );
                 return [
@@ -189,7 +200,7 @@ const makeTree = (
                                 ? folderDocument.documentUid
                                 : "root"
                         },
-                        newDocumentIdx
+                        newDocumentIndex
                     ),
                     pipe(
                         append(
@@ -233,22 +244,33 @@ const makeTree = (
                                                     className={`folder-${document_.documentUid}`}
                                                     {...provided.draggableProps}
                                                     {...provided.dragHandleProps}
-                                                    style={
+                                                    style={mergeAll([
                                                         snapshot.isDragging
                                                             ? provided
                                                                   .draggableProps
                                                                   .style
-                                                            : {}
-                                                    }
+                                                            : {},
+                                                        {
+                                                            paddingLeft: 40,
+                                                            height: 36
+                                                        }
+                                                    ])}
                                                     button
                                                 >
                                                     {FolderIcon}
                                                     {document_.filename}
+                                                    <div
+                                                        css={
+                                                            SS.delEditContainer
+                                                        }
+                                                    >
+                                                        {deleteIcon(document_)}
+                                                        {editIcon(document_)}
+                                                    </div>
                                                 </ListItem>
                                             )}
                                         </Draggable>
-                                        {deleteIcon(document_)}
-                                        {editIcon(document_)}
+
                                         <Collapse
                                             timeout={{
                                                 enter: 300,
@@ -281,7 +303,7 @@ const makeTree = (
                         <ListItemIcon
                             key={`${document_.documentUid}-bin-icon`}
                             css={SS.listItemIcon}
-                            style={{ left: 22 + 24 * path.length }}
+                            style={{ marginLeft: 24 * path.length }}
                         >
                             <WaveFormIcon css={SS.mediaIcon} />
                         </ListItemIcon>
@@ -296,9 +318,24 @@ const makeTree = (
                         <ListItemIcon
                             css={SS.listItemIconMui}
                             key={`${document_.documentUid}-csd-icon`}
-                            style={{ left: 12 + 24 * path.length }}
+                            style={{
+                                left: 6,
+                                marginLeft: 24 * path.length
+                            }}
                         >
-                            <DescriptionIcon css={SS.muiIcon} />
+                            <span css={SS.csoundFileIcon}>
+                                {document_.filename.endsWith(".csd") ? (
+                                    <CsdFileIcon />
+                                ) : document_.filename.endsWith(".orc") ? (
+                                    <OrcFileIcon />
+                                ) : document_.filename.endsWith(".sco") ? (
+                                    <ScoFileIcon />
+                                ) : document_.filename.endsWith(".udo") ? (
+                                    <UdoFileIcon />
+                                ) : (
+                                    <CsdFileIcon />
+                                )}
+                            </span>
                         </ListItemIcon>
                     );
                 } else {
@@ -306,7 +343,7 @@ const makeTree = (
                         <ListItemIcon
                             css={SS.listItemIconMui}
                             key={`${document_.documentUid}-txt-icon`}
-                            style={{ left: 12 + 24 * path.length }}
+                            style={{ left: 0 + 24 * path.length }}
                         >
                             <InsertDriveFileIcon css={SS.muiIcon} />
                         </ListItemIcon>
@@ -322,7 +359,7 @@ const makeTree = (
                                 ? folderDocument.documentUid
                                 : "root"
                         },
-                        documentIdx_
+                        documentIndex_
                     ),
                     append(
                         <Droppable
@@ -373,19 +410,34 @@ const makeTree = (
                                                             : {},
                                                         {
                                                             paddingLeft:
-                                                                32 +
-                                                                path.length * 24
+                                                                40 +
+                                                                24 *
+                                                                    path.length,
+                                                            height: 36,
+                                                            backgroundColor:
+                                                                currentTabDocumentUid ===
+                                                                document_.documentUid
+                                                                    ? "rgba(0,0,0,0.2)"
+                                                                    : "inherit"
                                                         }
                                                     ])}
                                                     button
                                                 >
                                                     {IconComp}
-                                                    {document_.filename}
+                                                    <p css={SS.filenameStyle}>
+                                                        {document_.filename}
+                                                    </p>
+                                                    <div
+                                                        css={
+                                                            SS.delEditContainer
+                                                        }
+                                                    >
+                                                        {deleteIcon(document_)}
+                                                        {editIcon(document_)}
+                                                    </div>
                                                 </ListItem>
                                             )}
                                         </Draggable>
-                                        {deleteIcon(document_)}
-                                        {editIcon(document_)}
                                     </React.Fragment>
                                     {droppableProvided.placeholder}
                                 </RootReference>
@@ -396,12 +448,12 @@ const makeTree = (
                 ];
             }
         },
-        [documentIdx, elementArray],
+        [documentIndex, elementArray],
         currentFiles
     );
 };
 
-const FileTree = () => {
+const FileTree = (): React.ReactElement => {
     const [collapseState, setCollapseState] = useState({});
     // const [isLoaded, setIsLoaded] = useState(false);
     const [stateDnD] = useDnD();
@@ -419,16 +471,19 @@ const FileTree = () => {
         path(["ProjectsReducer", "projects", activeProjectUid, "documents"])
     );
 
+    const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
+
     const filelist = values(documents || {});
 
     return (
         <React.Fragment>
-            {project && (
+            {stateDnD && project && (
                 <div css={SS.container}>
                     <List css={SS.listContainer} dense>
                         {
                             makeTree(
                                 activeProjectUid,
+                                currentTabDocumentUid,
                                 dispatch,
                                 collapseState,
                                 setCollapseState,

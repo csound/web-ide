@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { doc, getDoc, writeBatch } from "firebase/firestore";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { DebounceInput } from "react-debounce-input";
@@ -14,25 +15,34 @@ import {
     CREATE_CLEAR_ERROR,
     LOG_OUT
 } from "./types";
-import firebase from "firebase/app";
 import { closeModal, openSimpleModal } from "../modal/actions";
 import { database, profiles, usernames } from "../../config/firestore";
-import "firebase/auth";
+import {
+    createUserWithEmailAndPassword,
+    getAuth,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword
+} from "firebase/auth";
 import { isEmpty } from "lodash";
 import { push } from "connected-react-router";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 
-export const login = (email: string, password: string) => {
+export const login = (
+    email: string,
+    password: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: SIGNIN_REQUEST
         });
 
         try {
-            const user = await firebase
-                .auth()
-                .signInWithEmailAndPassword(email, password);
+            const user = await signInWithEmailAndPassword(
+                getAuth(),
+                email,
+                password
+            );
             dispatch({
                 type: SIGNIN_SUCCESS,
                 user
@@ -45,21 +55,11 @@ export const login = (email: string, password: string) => {
     };
 };
 
-function DebounceCuston(properties: any) {
-    const { inputRef, ...other } = properties;
-
-    return (
-        <DebounceInput
-            {...other}
-            ref={(reference: any) => {
-                inputRef(reference && reference.inputElement);
-            }}
-        />
-    );
-}
-
-const profileFinalize = (user: any, dispatch: any) => {
-    return (() => {
+const profileFinalize = (
+    user: { displayName: string | undefined; uid: string },
+    dispatch: (any) => void
+): (() => React.ReactElement) => {
+    return function ProfileFinalize() {
         const [input, setInput] = useState("");
         const [displayName, setDisplayName] = useState(user.displayName || "");
         const [nameReserved, setNameReserved] = useState(false);
@@ -68,21 +68,19 @@ const profileFinalize = (user: any, dispatch: any) => {
         const [link2, setLink2] = useState("");
         const [link3, setLink3] = useState("");
 
-        const checkReservedUsername = (candidate: string) => {
-            usernames
-                .doc(candidate)
-                .get()
-                .then((document_) => setNameReserved(document_.exists));
+        const checkReservedUsername = async (candidate: string) => {
+            const document_ = await getDoc(doc(usernames, candidate));
+            setNameReserved(document_.exists());
         };
 
-        const shouldDisable = isEmpty(input) || !input.match(/^[\dA-Za-z]+$/);
+        const shouldDisable = isEmpty(input) || !/^[\dA-Za-z]+$/.test(input);
 
         const handleOnSubmit = async () => {
             if (!nameReserved) {
-                const batch = database.batch();
+                const batch = writeBatch(database);
 
-                const usernameReference = usernames.doc(input);
-                const profileReference = profiles.doc(user.uid);
+                const usernameReference = doc(usernames, input);
+                const profileReference = doc(profiles, user.uid);
                 batch.set(
                     usernameReference,
                     { userUid: user.uid },
@@ -140,16 +138,30 @@ const profileFinalize = (user: any, dispatch: any) => {
                             ? input + " already exists!"
                             : "New username"
                     }
-                    InputProps={{ inputComponent: DebounceCuston as any }}
+                    InputProps={{
+                        inputComponent: function InputComponent({ inputRef }) {
+                            return (
+                                <DebounceInput
+                                    ref={(reference: any) => {
+                                        if (reference) {
+                                            inputRef = reference;
+                                        }
+                                    }}
+                                    onChange={(event) => {
+                                        event.target.value.length < 50 &&
+                                            setInput(event.target.value);
+                                        event.target.value.length < 50 &&
+                                            !isEmpty(event.target.value) &&
+                                            checkReservedUsername(
+                                                event.target.value
+                                            );
+                                    }}
+                                />
+                            );
+                        }
+                    }}
                     error={shouldDisable || nameReserved}
                     value={input}
-                    onChange={(event) => {
-                        event.target.value.length < 50 &&
-                            setInput(event.target.value);
-                        event.target.value.length < 50 &&
-                            !isEmpty(event.target.value) &&
-                            checkReservedUsername(event.target.value);
-                    }}
                 />
                 <TextField
                     style={textFieldStyle}
@@ -205,16 +217,19 @@ const profileFinalize = (user: any, dispatch: any) => {
                 </Button>
             </div>
         );
-    }) as React.FC;
+    };
 };
 
-export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
+export const thirdPartyAuthSuccess = (
+    user: { uid: string; displayName: string | undefined },
+    fromAutoLogin: boolean
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         let profile;
 
         try {
-            profile = await profiles.doc(user.uid).get();
-        } catch (fbError) {
+            profile = await getDoc(doc(profiles, user.uid));
+        } catch (fbError: any) {
             if (
                 fbError.name === "FirebaseError" &&
                 fbError.code === "unavailable"
@@ -232,10 +247,11 @@ export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
 
         if (
             profile !== undefined &&
-            (!profile.exists || isEmpty(profile.data()!.username))
+            (!profile.exists ||
+                (profile.data() && isEmpty(profile.data().username)))
         ) {
             const profileFinalizeComp = profileFinalize(user, dispatch);
-            dispatch(openSimpleModal(profileFinalizeComp));
+            dispatch(openSimpleModal(profileFinalizeComp, {}));
         } else {
             const profileData = profile.data();
             dispatch({
@@ -249,7 +265,7 @@ export const thirdPartyAuthSuccess = (user: any, fromAutoLogin: boolean) => {
     };
 };
 
-export const openLoginDialog = () => {
+export const openLoginDialog = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: OPEN_DIALOG
@@ -257,7 +273,7 @@ export const openLoginDialog = () => {
     };
 };
 
-export const closeLoginDialog = () => {
+export const closeLoginDialog = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: CLOSE_DIALOG
@@ -265,10 +281,10 @@ export const closeLoginDialog = () => {
     };
 };
 
-export const logOut = () => {
+export const logOut = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         try {
-            await firebase.auth().signOut();
+            await getAuth().signOut();
         } catch (error) {
             console.error(error);
         }
@@ -279,28 +295,32 @@ export const logOut = () => {
     };
 };
 
-export const createNewUser = (email: string, password: string) => {
+export const createNewUser = (
+    email: string,
+    password: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        firebase
-            .auth()
-            .createUserWithEmailAndPassword(email, password)
-            .then((creditendials: any) => {
-                dispatch({
-                    type: CREATE_USER_SUCCESS,
-                    creditendials
-                });
-            })
-            .catch((error: any) => {
-                dispatch({
-                    type: CREATE_USER_FAIL,
-                    errorCode: error.code,
-                    errorMessage: error.message
-                });
+        try {
+            const credentials = await createUserWithEmailAndPassword(
+                getAuth(),
+                email,
+                password
+            );
+            dispatch({
+                type: CREATE_USER_SUCCESS,
+                credentials
             });
+        } catch (error: any) {
+            dispatch({
+                type: CREATE_USER_FAIL,
+                errorCode: error.code,
+                errorMessage: error.message
+            });
+        }
     };
 };
 
-export const createUserClearError = () => {
+export const createUserClearError = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: CREATE_CLEAR_ERROR
@@ -308,7 +328,9 @@ export const createUserClearError = () => {
     };
 };
 
-export const setRequestingStatus = (status: boolean) => {
+export const setRequestingStatus = (
+    status: boolean
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: SET_REQUESTING_STATUS,
@@ -317,8 +339,10 @@ export const setRequestingStatus = (status: boolean) => {
     };
 };
 
-export const resetPassword = (email: string) => {
+export const resetPassword = (
+    email: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        firebase.auth().sendPasswordResetEmail(email);
+        await sendPasswordResetEmail(getAuth(), email);
     };
 };

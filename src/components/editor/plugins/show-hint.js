@@ -91,8 +91,8 @@ function Completion(cm, options) {
 
 const requestAnimationFrame =
     window.requestAnimationFrame ||
-    function (fn) {
-        return setTimeout(fn, 1000 / 60);
+    function (function_) {
+        return setTimeout(function_, 1000 / 60);
     };
 const cancelAnimationFrame = window.cancelAnimationFrame || clearTimeout;
 
@@ -118,8 +118,8 @@ Completion.prototype = {
         return this.cm.state.completionActive === this;
     },
 
-    pick: function (data, i) {
-        const completion = data.list[i];
+    pick: function (data, index) {
+        const completion = data.list[index];
         if (completion.hint) {
             completion.hint(this.cm, data, completion);
         } else {
@@ -229,11 +229,7 @@ function parseOptions(cm, pos, options) {
 }
 
 function getText(completion) {
-    if (typeof completion == "string") {
-        return completion;
-    } else {
-        return completion.text;
-    }
+    return typeof completion == "string" ? completion : completion.text;
 }
 
 function buildKeyMap(completion, handle) {
@@ -572,14 +568,14 @@ Widget.prototype = {
         this.completion.pick(this.data, this.selectedHint);
     },
 
-    changeActive: function (i, avoidWrap) {
-        if (i >= this.data.list.length) {
-            i = avoidWrap ? this.data.list.length - 1 : 0;
-        } else if (i < 0) {
-            i = avoidWrap ? 0 : this.data.list.length - 1;
+    changeActive: function (index, avoidWrap) {
+        if (index >= this.data.list.length) {
+            index = avoidWrap ? this.data.list.length - 1 : 0;
+        } else if (index < 0) {
+            index = avoidWrap ? 0 : this.data.list.length - 1;
         }
 
-        if (this.selectedHint === i) {
+        if (this.selectedHint === index) {
             return;
         }
         let node = this.hints.childNodes[this.selectedHint];
@@ -590,7 +586,7 @@ Widget.prototype = {
             );
         }
 
-        node = this.hints.childNodes[(this.selectedHint = i)];
+        node = this.hints.childNodes[(this.selectedHint = index)];
         node.className += " " + ACTIVE_HINT_ELEMENT_CLASS;
         this.scrollToActive();
         CodeMirror.signal(
@@ -659,15 +655,15 @@ function resolveAutoHints(cm, pos) {
     if (helpers.length > 0) {
         const resolved = function (cm, callback, options) {
             const app = applicableHelpers(cm, helpers);
-            function run(i) {
-                if (i === app.length) {
+            function run(index) {
+                if (index === app.length) {
                     return callback();
                 }
-                fetchHints(app[i], cm, options, function (result) {
+                fetchHints(app[index], cm, options, function (result) {
                     if (result && result.list.length > 0) {
                         callback(result);
                     } else {
-                        run(i + 1);
+                        run(index + 1);
                     }
                 });
             }

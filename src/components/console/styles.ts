@@ -1,29 +1,26 @@
-import { css } from "@emotion/core";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { _scrollbars } from "@styles/_common";
 // import { css as classCss } from "emotion";
 
-export const virtualizedListContainer = css`
-    height: 100%;
-    position: relative;
-`;
-
-export const listWrapper = (theme) => css`
-    height: 100%;
+export const ConsoleContainer = (theme: Theme): SerializedStyles => css`
+    height: calc(100% - 42px);
     width: 100%;
-    white-space: nowrap;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    white-space: break-spaces;
     font-family: ${theme.font.monospace};
-    background-color: ${theme.background};
     color: ${theme.console};
-    padding: 6px;
+    padding: 0 6px;
+    padding-top: 6px;
     outline: none;
-
-    & li {
-        height: 16px;
-        line-height: 16px;
-        font-size: 14px;
-        position: relative;
-        display: block;
-        padding: 0;
-    }
+    overflow-x: hidden;
+    overflow-y: scroll;
     ${_scrollbars(theme)}
+    code {
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
 `;

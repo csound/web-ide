@@ -14,6 +14,8 @@ export const SET_FOLLOWING_FILTER_STRING =
 export const SET_PROJECT_FILTER_STRING = "PROFILE.SET_PROJECT_FILTER_STRING";
 export const SET_CURRENTLY_PLAYING_PROJECT =
     "PROFILE.SET_CURRENTLY_PLAYING_PROJECT";
+export const CLOSE_CURRENTLY_PLAYING_PROJECT =
+    "PROFILE.CLOSE_CURRENTLY_PLAYING_PROJECT";
 export const SET_LIST_PLAY_STATE = "PROFILE.SET_LIST_PLAY_STATE";
 export const GET_ALL_TAGS = "PROFILE.GET_ALL_TAGS";
 export const REFRESH_USER_PROFILE = "PROFILE.REFRESH_USER_PROFILE";
@@ -32,6 +34,7 @@ type ProfileActionTypeValue =
     | typeof SET_TAGS_INPUT
     | typeof SET_CSOUND_PLAY_STATE
     | typeof SET_CURRENTLY_PLAYING_PROJECT
+    | typeof CLOSE_CURRENTLY_PLAYING_PROJECT
     | typeof SET_LIST_PLAY_STATE
     | typeof SET_USER_PROFILE
     | typeof REFRESH_USER_PROFILE
@@ -41,6 +44,11 @@ type ProfileActionTypeValue =
     | typeof SET_PROJECT_FILTER_STRING
     | typeof SET_FOLLOWING_FILTER_STRING;
 
+export type ProjectsCount = {
+    all: number;
+    public: number;
+};
+
 export type ProfileActionTypes = {
     type: ProfileActionTypeValue;
     [payload: string]: any;
@@ -48,9 +56,13 @@ export type ProfileActionTypes = {
 
 export interface IProfile {
     allTags?: any[];
-    profileUid?: string | null;
+    bio?: string;
+    profileUid?: string;
     userFollowing?: [];
-    userImageURL?: string | null | undefined;
+    projectsCount?: ProjectsCount;
+    userImageURL?: string;
     backgroundIndex: number;
     displayName: string;
+    username: string;
+    photoUrl?: string;
 }

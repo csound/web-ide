@@ -1,12 +1,12 @@
-import { css } from "@emotion/core";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { rgba } from "@styles/utils";
 
-export const main = css`
+export const main: SerializedStyles = css`
     top: 39px;
     min-height: calc(100vh - 40px); /* minus the header height! */
 `;
 
-export const loadMain = css`
+export const loadMain: SerializedStyles = css`
     overflow: hidden;
     > div {
         position: fixed;
@@ -15,14 +15,14 @@ export const loadMain = css`
     }
 `;
 
-export const modalSubmitButton = (theme) => css`
+export const modalSubmitButton = (theme: Theme): SerializedStyles => css`
     &.MuiButton-outlinedPrimary {
         color: ${theme.allowed};
         background-color: rgba(${rgba(theme.allowed, 0.05)});
     }
 `;
 
-export const loadingSpinner1 = css`
+export const loadingSpinner1: SerializedStyles = css`
     width: 300px;
     height: 300px;
     margin: 0 auto;
@@ -33,7 +33,7 @@ export const loadingSpinner1 = css`
     background-color: transparent;
 `;
 
-export const loadingSpinner2 = css`
+export const loadingSpinner2: SerializedStyles = css`
     @keyframes spin {
         from {
             transform: rotate(0);
@@ -58,7 +58,7 @@ export const loadingSpinner2 = css`
     animation: spin 0.8s linear 0s infinite;
 `;
 
-export const loadingSpinner3 = css`
+export const loadingSpinner3: SerializedStyles = css`
     width: 100%;
     height: 100%;
     background-color: #374040;

@@ -1,4 +1,4 @@
-import * as firebase from "firebase/app";
+import { deleteField, doc, getDoc, writeBatch } from "firebase/firestore";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import { openSimpleModal } from "@comp/modal/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -12,9 +12,9 @@ import {
 } from "./types";
 
 export const setSelectedTarget = (
-    projectUid,
+    projectUid: string,
     selectedTarget: string | null
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: SET_SELECTED_TARGET,
@@ -24,18 +24,20 @@ export const setSelectedTarget = (
     };
 };
 
-export const showTargetsConfigDialog = () => {
+export const showTargetsConfigDialog = (): ((
+    dispatch: any
+) => Promise<void>) => {
     return async (dispatch: any) => {
-        dispatch(openSimpleModal(TargetsConfigDialog));
+        dispatch(openSimpleModal(TargetsConfigDialog, {}));
     };
 };
 
 export const updateAllTargetsLocally = (
-    dispatch,
-    defaultTarget,
-    projectUid,
-    targets
-) =>
+    dispatch: (any) => void,
+    defaultTarget: string,
+    projectUid: string,
+    targets: ITargetMap
+): void =>
     dispatch({
         type: UPDATE_ALL_TARGETS_LOCALLY,
         defaultTarget,
@@ -43,12 +45,14 @@ export const updateAllTargetsLocally = (
         targets
     });
 
-export const downloadTargetsOnce = (projectUid: string) => {
+export const downloadTargetsOnce = (
+    projectUid: string
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const projTargetsReference = await targetsCollReference
-            .doc(projectUid)
-            .get();
-        if (projTargetsReference.exists) {
+        const projTargetsReference = await getDoc(
+            doc(targetsCollReference, projectUid)
+        );
+        if (projTargetsReference.exists()) {
             const data = projTargetsReference.data();
             data &&
                 (await updateAllTargetsLocally(
@@ -66,16 +70,16 @@ export const saveChangesToTarget = (
     targets: ITargetMap,
     defaultTarget: string | null,
     onSuccessCallback: () => void
-) => {
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const targetsReference = targetsCollReference.doc(projectUid);
-        try {
-            const batch = database.batch();
+        const targetsReference = doc(targetsCollReference, projectUid);
+        const batch = writeBatch(database);
 
+        try {
             batch.set(
                 targetsReference,
                 {
-                    targets: firebase.firestore.FieldValue.delete()
+                    targets: deleteField()
                 },
                 { merge: true }
             );
@@ -87,7 +91,7 @@ export const saveChangesToTarget = (
             await batch.commit();
             updateProjectLastModified(projectUid);
             onSuccessCallback && onSuccessCallback();
-        } catch (error) {
+        } catch (error: any) {
             dispatch(openSnackbar(error.toString(), SnackbarType.Error));
         }
     };

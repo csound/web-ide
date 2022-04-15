@@ -1,5 +1,4 @@
-import { combineReducers } from "redux";
-import { connectRouter } from "connected-react-router";
+import { combineReducers, Reducer } from "redux";
 import ProjectsReducer from "@comp/projects/reducer";
 import LoginReducer from "@comp/login/reducer";
 import ThemeReducer from "@comp/themes/reducer";
@@ -15,11 +14,10 @@ import HomeReducer from "@comp/home/reducer";
 import TargetControlsReducer from "@comp/target-controls/reducer";
 import BottomTabsReducer from "@comp/bottom-tabs/reducer";
 import ProjectLastModifiedReducer from "@comp/project-last-modified/reducer";
-import { History } from "history";
 
-export default (history: History) =>
+const RootReducer = ({ routerReducer }: { routerReducer: any }): Reducer =>
     combineReducers({
-        router: connectRouter(history),
+        router: routerReducer,
         ProjectsReducer,
         LoginReducer,
         ProjectEditorReducer,
@@ -36,3 +34,5 @@ export default (history: History) =>
         BottomTabsReducer,
         HomeReducer
     });
+
+export default RootReducer;

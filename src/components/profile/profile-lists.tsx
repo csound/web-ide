@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactTooltip from "react-tooltip";
 import { List, ListItem, ListItemText } from "@material-ui/core";
+import ReactTooltip from "react-tooltip";
 import FollowingList from "./tabs/following-list";
 import FollowersList from "./tabs/followers-list";
 import StarsList from "./tabs/stars-list";
@@ -24,16 +24,26 @@ import {
     selectFilteredUserFollowing,
     selectFilteredUserFollowers
 } from "./selectors";
+import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
 import { descend, sort, propOr } from "ramda";
 import * as SS from "./styles";
 
-const ProjectListItem = (properties) => {
-    const { isProfileOwner, project } = properties;
-    const dispatch = useDispatch();
-    const { projectUid, name, description, tags } = project;
+const ProjectListItem = ({
+    isProfileOwner,
+    project,
+    username,
+    csoundStatus
+}: {
+    isProfileOwner: boolean;
+    project: IProject;
+    username: string;
+    csoundStatus: string;
+}) => {
     ReactTooltip.rebuild();
+    const dispatch = useDispatch();
+    const { isPublic, projectUid, name, description, tags } = project;
 
     return (
         <div style={{ position: "relative" }}>
@@ -51,12 +61,12 @@ const ProjectListItem = (properties) => {
                                 tags.map(
                                     (
                                         t: React.ReactNode,
-                                        i: string | number | undefined
+                                        index: string | number | undefined
                                     ) => {
                                         return (
                                             <StyledChip
                                                 color="primary"
-                                                key={i}
+                                                key={index}
                                                 label={t}
                                             />
                                         );
@@ -68,12 +78,7 @@ const ProjectListItem = (properties) => {
                 {isProfileOwner && <StyledListButtonsContainer />}
             </Link>
             <StyledListPlayButtonContainer>
-                <ListPlayButton
-                    projectUid={projectUid}
-                    iconNameProp={false}
-                    iconBackgroundColorProp={false}
-                    iconForegroundColorProp={false}
-                />
+                <ListPlayButton project={project} />
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
                 <>
@@ -84,9 +89,6 @@ const ProjectListItem = (properties) => {
                         <div
                             css={SS.settingsIcon}
                             key={projectUid}
-                            onMouseOver={() => {
-                                ReactTooltip.rebuild();
-                            }}
                             onClick={(event) => {
                                 dispatch(editProject(project));
                                 event.preventDefault();
@@ -98,7 +100,7 @@ const ProjectListItem = (properties) => {
                     </div>
                     <div
                         css={SS.deleteIconContainer}
-                        data-tip={`Delete ${project.name}`}
+                        data-tip={`Delete ${name}`}
                     >
                         <div
                             css={SS.deleteIcon}
@@ -114,26 +116,23 @@ const ProjectListItem = (properties) => {
                     <div
                         css={SS.publicIconContainer}
                         data-tip={
-                            project.isPublic
+                            isPublic
                                 ? "Make the project private"
                                 : "Make the project public"
                         }
                     >
                         <div
                             css={SS.publicIcon}
-                            style={{ opacity: !project.isPublic ? 0.6 : 1 }}
+                            style={{ opacity: !isPublic ? 0.6 : 1 }}
                             onClick={(event) => {
                                 dispatch(
-                                    markProjectPublic(
-                                        project.projectUid,
-                                        !project.isPublic
-                                    )
+                                    markProjectPublic(projectUid, !isPublic)
                                 );
                                 event.preventDefault();
                                 event.stopPropagation();
                             }}
                         >
-                            {project.isPublic ? (
+                            {isPublic ? (
                                 <VisibilityIcon />
                             ) : (
                                 <VisibilityOffIcon />
@@ -151,9 +150,14 @@ const ProfileLists = ({
     selectedSection,
     isProfileOwner,
     filteredProjects,
-    username,
-    setProfileUid
-}) => {
+    username
+}: {
+    profileUid: string;
+    selectedSection: number;
+    isProfileOwner: boolean;
+    filteredProjects: Array<any>;
+    username: string;
+}): React.ReactElement => {
     const csoundStatus = useSelector(selectCsoundStatus);
     const filteredFollowing = useSelector(
         selectFilteredUserFollowing(profileUid)
@@ -167,14 +171,14 @@ const ProfileLists = ({
             {selectedSection === 0 &&
                 Array.isArray(filteredProjects) &&
                 sort(
-                    descend(propOr(-Infinity, "created")),
+                    descend(propOr(Number.NEGATIVE_INFINITY, "created")),
                     filteredProjects
-                ).map((p, i) => {
+                ).map((project) => {
                     return (
                         <ProjectListItem
-                            key={p.projectUid}
+                            key={project.projectUid}
                             isProfileOwner={isProfileOwner}
-                            project={p}
+                            project={project}
                             csoundStatus={csoundStatus}
                             username={username}
                         />

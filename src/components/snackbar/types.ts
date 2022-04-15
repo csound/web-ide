@@ -4,7 +4,7 @@ export const CLOSE_SNACKBAR = "SNACKBAR.CLOSE_SNACKBAR";
 export interface ISnackbar {
     type: SnackbarType;
     text: string;
-    timeout: Number | typeof Infinity;
+    timeout: number | typeof Number.POSITIVE_INFINITY;
 }
 interface OpenSnackbar {
     type: typeof OPEN_SNACKBAR;

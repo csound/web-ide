@@ -68,7 +68,7 @@ const StyledPublicOffIcon = styled(VisibilityOffIcon)`
     }
 `;
 
-const SocialControls = () => {
+const SocialControls = (): React.ReactElement => {
     const projectUid = useSelector(selectActiveProjectUid);
     const loggedInUserUid = useSelector(selectLoggedInUid);
     const starred = useSelector(
@@ -108,7 +108,7 @@ const SocialControls = () => {
                         <StyledIconButton
                             size="medium"
                             onClick={() => {
-                                dispatch(openSimpleModal(ShareDialog));
+                                dispatch(openSimpleModal(ShareDialog, {}));
                             }}
                         >
                             <StyledShareIcon fontSize="large" />
@@ -124,7 +124,7 @@ const SocialControls = () => {
                     <StyledIconButton
                         size="medium"
                         onClick={() => {
-                            if (projectUid) {
+                            if (projectUid && loggedInUserUid) {
                                 dispatch(
                                     starOrUnstarProject(
                                         projectUid,
@@ -134,8 +134,9 @@ const SocialControls = () => {
                             }
                         }}
                     >
-                        {starred && <StyledStarIcon fontSize="large" />}
-                        {!starred && (
+                        {starred ? (
+                            <StyledStarIcon fontSize="large" />
+                        ) : (
                             <StyledOutlinedStarIcon fontSize="large" />
                         )}
                     </StyledIconButton>

@@ -16,7 +16,7 @@ const fuzzyMatcher = new Fuse(opcodes, {
     distance: 10
 });
 
-async function hintFn(cm, callback) {
+async function hintFunction(cm, callback) {
     const cursor = cm.getDoc().getCursor();
     const tokenData = cm.getTokenAt(cursor);
     const token = propOr(false, "string", tokenData);
@@ -69,14 +69,14 @@ async function hintFn(cm, callback) {
     // });
 }
 
-hintFn.async = true;
+hintFunction.async = true;
 
 CodeMirror.defineOption("autoSuggest", [], function (cm, active) {
     cm.on("cursorActivity", function () {
         // const mode = cm.getModeAt(cm.getCursor());
         const options = {
             completeSingle: false,
-            hint: hintFn
+            hint: hintFunction
         };
         if (active) {
             cm.showHint(options);

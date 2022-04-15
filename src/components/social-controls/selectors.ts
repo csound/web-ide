@@ -26,7 +26,7 @@ export const selectUserStarredProject = curry(
     }
 );
 
-export const selectProjectPublic = (store: IStore) => {
+export const selectProjectPublic = (store: IStore): boolean => {
     const activeProject = selectActiveProject(store);
     return propOr(true, "isPublic", activeProject);
 };

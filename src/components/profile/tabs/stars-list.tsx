@@ -4,7 +4,8 @@ import {
     StyledListItemTopRowText,
     StyledUserListItemContainer
 } from "../profile-ui";
-import ProjectIcon from "../project-icon";
+import ProjectAvatar from "@elem/project-avatar";
+import { IProject } from "@comp/projects/types";
 import { selectProfileStars } from "../selectors";
 import { ListItem, ListItemText } from "@material-ui/core";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +13,11 @@ import { push } from "connected-react-router";
 import { isEmpty, prop } from "ramda";
 import * as SS from "./styles";
 
-const StarsList = ({ profileUid }) => {
+const StarsList = ({
+    profileUid
+}: {
+    profileUid: string;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const profileStars = useSelector(selectProfileStars(profileUid));
     const cachedProjects = useSelector(
@@ -22,7 +27,7 @@ const StarsList = ({ profileUid }) => {
         <></>
     ) : (
         profileStars.map((projectUid, index) => {
-            const project = prop(projectUid, cachedProjects);
+            const project: IProject = prop(projectUid, cachedProjects);
             return (
                 <ListItem
                     button
@@ -35,18 +40,7 @@ const StarsList = ({ profileUid }) => {
                 >
                     <StyledUserListItemContainer>
                         <div css={SS.starItemIcon}>
-                            {project && (
-                                <ProjectIcon
-                                    iconName={project.iconName}
-                                    iconBackgroundColor={
-                                        project.iconBackgroundColor
-                                    }
-                                    iconForegroundColor={
-                                        project.iconForegroundColor
-                                    }
-                                    onClick={() => {}}
-                                />
-                            )}
+                            {project && <ProjectAvatar project={project} />}
                         </div>
                         <StyledListItemTopRowText>
                             <ListItemText

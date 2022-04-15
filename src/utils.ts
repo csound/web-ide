@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
     addIndex,
     append,
@@ -15,10 +14,11 @@ import {
     pipe,
     reduce
 } from "ramda";
+import { ResizeObserverCallback } from "resize-observer-polyfill/src/ResizeObserver";
 import { debounce } from "throttle-debounce";
 
 // {a: 1, b: 2} => [{key: "a", val: 1}, {key: "b", val: 2}]
-export const listifyObject = (object) =>
+export const listifyObject: (object: Record<string, any>) => any[] = (object) =>
     reduce(
         (accumulator, k) =>
             append(
@@ -30,7 +30,7 @@ export const listifyObject = (object) =>
     );
 
 // https://stackoverflow.com/a/16016476/3714556
-export function validateEmail(emailAddress: string) {
+export function validateEmail(emailAddress: string): boolean {
     const sQtext = "[^\\x0d\\x22\\x5c\\x80-\\xff]";
     const sDtext = "[^\\x0d\\x5b-\\x5d\\x80-\\xff]";
     const sAtom =
@@ -84,7 +84,10 @@ export const formatFileSize = (filesize: number): string => {
     return filesize + " B";
 };
 
-export const deepMerge = (v1, v2) => {
+export const deepMerge = (
+    v1: Array<any> | Record<string, any>,
+    v2: Array<any> | Record<string, any>
+): Array<any> | Record<string, any> => {
     if (Array.isArray(v1) && Array.isArray(v2)) {
         return uniq(concat(v1, v2));
     } else if (
@@ -99,24 +102,9 @@ export const deepMerge = (v1, v2) => {
     }
 };
 
-// https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
-// local state throttling, use only for components needing re-render
-// for non-react actions, use import { debounce } from 'throttle-debounce';
-export function useDebounce(value, delay) {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-    return debouncedValue;
-}
-
-export const updateBodyScroller = (debounceTime) =>
+export const updateBodyScroller = (
+    debounceTime: number
+): ResizeObserverCallback =>
     debounce(debounceTime, () => {
         const maybeElement: any = (window as any).ps_body;
         if (
@@ -127,8 +115,8 @@ export const updateBodyScroller = (debounceTime) =>
         }
     });
 
-export const isMobile = () =>
+export const isMobile = (): boolean =>
     /android|webos|iphone|ipad|ipod|opera mini/i.test(navigator.userAgent);
 
-export const isIOS = () =>
+export const isIOS = (): boolean =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;

@@ -1,6 +1,8 @@
+import { collection, doc, updateDoc } from "firebase/firestore";
 import { DragDropContext } from "react-beautiful-dnd";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import React, { createContext, useContext, useReducer } from "react";
+import { IProject } from "@comp/projects/types";
 import { listifyObject } from "@root/utils";
 import { getFirebaseTimestamp, projects } from "@config/firestore";
 import {
@@ -9,7 +11,6 @@ import {
     ascend,
     assoc,
     assocPath,
-    curry,
     equals,
     filter,
     map,
@@ -22,16 +23,22 @@ import {
     sort
 } from "ramda";
 
-export const DnDStateContext = createContext({});
-export const DnDDispatchContext = createContext({});
+type DnDState = {
+    docIdx: Record<string, any>;
+};
 
-interface DnDState {
-    docIdx?: any;
-}
+const initialState: DnDState = { docIdx: {} };
+
+export const DnDStateContext = createContext(initialState);
+
+export const DnDDispatchContext = createContext(
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    (dispatch: Record<string, any>): void => {}
+);
 
 const reduceIndexed = addIndex(reduce);
 
-const reducer = curry((state, action) => {
+const reducer = (state: DnDState, action: Record<string, any>): DnDState => {
     switch (action.type) {
         case "handleDrop": {
             if (
@@ -45,29 +52,40 @@ const reducer = curry((state, action) => {
                 const sourceDocument = action.project.documents[sourceUid];
 
                 if (destinationDocument.type === "folder") {
-                    projects
-                        .doc(action.project.projectUid)
-                        .collection("files")
-                        .doc(sourceUid)
-                        .update({
+                    updateDoc(
+                        doc(
+                            collection(
+                                doc(projects, action.project.projectUid),
+                                "files"
+                            ),
+                            sourceUid
+                        ),
+                        {
                             path: append(
                                 destinationUid,
                                 destinationDocument.path || []
                             ),
                             lastModified: getFirebaseTimestamp()
-                        });
+                        }
+                    );
                     updateProjectLastModified(action.project.projectUid);
                 } else if (
                     !equals(destinationDocument.path, sourceDocument.path)
                 ) {
-                    projects
-                        .doc(action.project.projectUid)
-                        .collection("files")
-                        .doc(sourceUid)
-                        .update({
+                    updateDoc(
+                        doc(
+                            collection(
+                                doc(projects, action.project.projectUid),
+                                "files"
+                            ),
+                            sourceUid
+                        ),
+                        {
                             path: destinationDocument.path || [],
                             lastModified: getFirebaseTimestamp()
-                        });
+                        }
+                    );
+
                     updateProjectLastModified(action.project.projectUid);
                 }
             }
@@ -130,12 +148,17 @@ const reducer = curry((state, action) => {
             return state;
         }
     }
-});
+};
 
-export const DnDProvider = ({ children, project }) => {
-    const [state, dispatch]: [any, any] = useReducer(reducer, {
-        docIdx: {}
-    });
+export const DnDProvider = ({
+    children,
+    project
+}: {
+    children: React.ReactElement;
+    project: IProject;
+}): React.ReactElement => {
+    const [state, dispatch]: [DnDState, (action: Record<string, any>) => void] =
+        useReducer(reducer, initialState);
 
     return (
         <DragDropContext
@@ -143,7 +166,7 @@ export const DnDProvider = ({ children, project }) => {
                 dispatch({ type: "handleDrop", payload: result, project })
             }
         >
-            <DnDStateContext.Provider value={state as any}>
+            <DnDStateContext.Provider value={state}>
                 <DnDDispatchContext.Provider value={dispatch}>
                     {children}
                 </DnDDispatchContext.Provider>
@@ -152,7 +175,7 @@ export const DnDProvider = ({ children, project }) => {
     );
 };
 
-export const useDnDState = () => {
+export const useDnDState = (): DnDState | undefined => {
     const context = useContext(DnDStateContext);
     if (context === undefined) {
         throw new Error("useDnDState must be used within a DnDProvider");
@@ -160,7 +183,9 @@ export const useDnDState = () => {
     return context;
 };
 
-export const useDnDDispatch = () => {
+export const useDnDDispatch = ():
+    | undefined
+    | ((dispatch: Record<string, any>) => void) => {
     const context = useContext(DnDDispatchContext);
     if (context === undefined) {
         throw new Error("useDnD must be used within a DnDProvider");
@@ -168,4 +193,7 @@ export const useDnDDispatch = () => {
     return context;
 };
 
-export const useDnD = (): [DnDState, any] => [useDnDState(), useDnDDispatch()];
+export const useDnD = (): [DnDState | undefined, any] => [
+    useDnDState(),
+    useDnDDispatch()
+];

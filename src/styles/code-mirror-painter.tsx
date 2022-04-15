@@ -3,21 +3,23 @@ import React from "react";
 export const CodeMirrorPainter = ({ theme }) => (
     <style>
         {`.CodeMirror { background: ${theme.background};
-                        color: ${theme.textColor}; }
+                        color: ${theme.textColor};
+                        font-size: 16px!important;
+                        line-height: 22px!important;
+                       }
           .CodeMirror-selected { background: ${theme.highlightBackground}; }
           .CodeMirror-focused .CodeMirror-selected,
           .CodeMirror-line::selection,
           .CodeMirror-line > span::selection,
           .CodeMirror-line > span > span::selection
               { background: ${theme.selectedTextColor}; }
-          .CodeMirror-line { padding: 0!important; }
-          .CodeMirror-gutter { background: ${theme.gutterBackground}; }
+          .CodeMirror-gutter { background: ${theme.gutterBackground};  }
           .CodeMirror-gutters { background: ${theme.gutterBackground};
-                                border-right: 0px; }
+                                border-right: 1px solid ${theme.textColor};
+                               }
           .CodeMirror-guttermarker { color: ${theme.gutterMarker}; }
           .CodeMirror-guttermarker-subtle { color: ${theme.gutterMarkerSubtle}; }
-          .CodeMirror-gutter-wrapper { left: -51px!important; }
-          .CodeMirror-linenumber { color: ${theme.lineNumber}; min-width: 32px; }
+          .CodeMirror-linenumber { color: ${theme.lineNumber}; }
           .CodeMirror-cursor { border-left: 1px solid ${theme.cursor}; }
           .CodeMirror-hints {
                      z-index: 3;
@@ -32,8 +34,8 @@ export const CodeMirrorPainter = ({ theme }) => (
                      margin: 0;
                      padding: 0;
                      font-size: 16px;
-                      max-height: 138px;
-                      overflow: hidden;
+                     max-height: 138px;
+                     overflow: hidden;
           }
           .CodeMirror-hint {
                       line-height: 20px;

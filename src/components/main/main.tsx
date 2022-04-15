@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+// import { BrowserRouter } from "react-router-dom";
+// import { ConnectedRouter } from "connected-react-router/esm/index.js";
+// import { history } from "@store";
 import { isMobile } from "@root/utils";
 import Router from "@comp/router/router";
 import ThemeProvider from "@styles/theme-provider";
@@ -12,17 +15,10 @@ import {
     setRequestingStatus,
     thirdPartyAuthSuccess
 } from "@comp/login/actions";
-// import { History } from "history";
-import firebase from "firebase/app";
-import HotKeys from "../hot-keys/hot-keys";
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
+import { getAuth } from "firebase/auth";
+import HotKeys from "@comp/hot-keys/hot-keys";
 
-// interface IMain {
-//     history: History;
-// }
-
-const Main = () => {
+const Main = (): React.ReactElement => {
     const dispatch = useDispatch();
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 
@@ -32,22 +28,29 @@ const Main = () => {
         // change is a result of manual login or autologin
         // we determine this from a timeout
         !autoLoginTimeout && setTimeout(() => setAutoLoginTimeout(true), 1000);
-        const unsubscribeAuthObserver = firebase
-            .auth()
-            .onAuthStateChanged((user) => {
-                if (user) {
-                    unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
-                        user.uid,
-                        dispatch
-                    );
-                    dispatch(thirdPartyAuthSuccess(user, !autoLoginTimeout));
-                } else {
-                    dispatch(setRequestingStatus(false));
-                }
-            });
-        if (!isMobile()) {
-            (window as any).ps_body = new PerfectScrollbar("#root");
-        }
+        const unsubscribeAuthObserver = getAuth().onAuthStateChanged((user) => {
+            if (user && user.displayName) {
+                unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
+                    user.uid,
+                    dispatch
+                );
+                const tsIsSometimesStupidUser = {
+                    uid: user.uid,
+                    displayName: user.displayName
+                };
+                dispatch(
+                    thirdPartyAuthSuccess(
+                        tsIsSometimesStupidUser,
+                        !autoLoginTimeout
+                    )
+                );
+            } else {
+                dispatch(setRequestingStatus(false));
+            }
+        });
+        // if (!isMobile()) {
+        //     (window as any).ps_body = new PerfectScrollbar("#root");
+        // }
 
         return () => {
             unsubscribeAuthObserver();
@@ -60,15 +63,19 @@ const Main = () => {
     }, []);
 
     return (
-        <HotKeys>
-            <ThemeProvider>
-                <Modal />
-                <IosWarning />
-                <Snackbar />
+        <ThemeProvider>
+            <div style={{ position: "absolute" }}>
                 <ReactTooltip />
-                <Router />
-            </ThemeProvider>
-        </HotKeys>
+            </div>
+            <HotKeys>
+                <>
+                    <Modal />
+                    <IosWarning />
+                    <Snackbar />
+                    <Router />
+                </>
+            </HotKeys>
+        </ThemeProvider>
     );
 };
 

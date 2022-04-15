@@ -5,7 +5,7 @@ import { updateUserProfile } from "./actions";
 import { closeModal } from "../modal/actions";
 import { TextField, Button } from "@material-ui/core";
 import { useDispatch } from "react-redux";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import * as TargetSS from "@comp/target-controls/styles";
 import styled from "styled-components";
 import Select from "react-select";
@@ -44,7 +44,7 @@ const backgroundOptions = [
     { label: "yin yang", value: 4 }
 ];
 
-export const ProfileModal = (properties: IProfileModal) => {
+export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
     const [username, setUsername] = useState(properties.username);
     const [displayName, setDisplayName] = useState(properties.displayName);
     const [bio, setBio] = useState(properties.bio);
@@ -184,25 +184,32 @@ export const ProfileModal = (properties: IProfileModal) => {
                         value={backgroundIndex}
                         placeholder={backgroundOptions[backgroundIndex].label}
                         isSearchable={false}
-                        onChange={(event) => setBackgroundIndex(event.value)}
-                        options={backgroundOptions}
-                        styles={{
-                            control: (provided, state) => TargetSS.control,
-                            container: (provided, state) =>
-                                TargetSS.dropdownContainer(theme),
-                            groupHeading: (provided, state) =>
-                                TargetSS.groupHeading,
-                            placeholder: (provided, state) =>
-                                TargetSS.placeholder,
-                            menu: (provided, state) => TargetSS.menu,
-                            menuList: (provided, state) =>
-                                TargetSS.menuList(theme),
-                            option: (provided, state) => TargetSS.menuOption,
-                            indicatorsContainer: (provided, state) =>
-                                TargetSS.indicatorContainer(theme),
-                            indicatorSeparator: (provided, state) =>
-                                TargetSS.indicatorSeparator
-                        }}
+                        onChange={(event: any) =>
+                            setBackgroundIndex(event.value)
+                        }
+                        options={backgroundOptions as any}
+                        styles={
+                            {
+                                control: (provided, state) => TargetSS.control,
+                                container: (provided, state) =>
+                                    TargetSS.dropdownContainer(theme),
+                                valueContainer: (provided, state) =>
+                                    TargetSS.valueContainer(theme),
+                                groupHeading: (provided, state) =>
+                                    TargetSS.groupHeading,
+                                placeholder: (provided, state) =>
+                                    TargetSS.placeholder,
+                                menu: (provided, state) => TargetSS.menu,
+                                menuList: (provided, state) =>
+                                    TargetSS.menuList(theme),
+                                option: (provided, state) =>
+                                    TargetSS.menuOption,
+                                indicatorsContainer: (provided, state) =>
+                                    TargetSS.indicatorContainer(theme),
+                                indicatorSeparator: (provided, state) =>
+                                    TargetSS.indicatorSeparator
+                            } as any
+                        }
                     />
                 </div>
             </FieldRow>

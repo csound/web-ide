@@ -1,6 +1,6 @@
 import React from "react";
 
-export const closeModal = () => {
+export const closeModal = (): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: "MODAL_CLOSE"
@@ -8,7 +8,9 @@ export const closeModal = () => {
     };
 };
 
-export const setOnCloseModal = (onClose: () => void) => {
+export const setOnCloseModal = (
+    onClose: () => void
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: "MODAL_SET_ON_CLOSE",
@@ -17,11 +19,15 @@ export const setOnCloseModal = (onClose: () => void) => {
     };
 };
 
-export const openSimpleModal = (component: React.FC) => {
+export const openSimpleModal = (
+    component: (properties: any) => React.ReactElement,
+    properties: Record<string, any> | undefined
+): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: "MODAL_OPEN_SIMPLE",
             onClose: () => dispatch({ type: "MODAL_CLOSE" }),
+            properties,
             component
         });
     };

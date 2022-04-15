@@ -1,25 +1,31 @@
 import { IStore } from "@store/types";
 
-export const selectLoginRequesting = ({ LoginReducer }: IStore) => {
+export const selectLoginRequesting = ({ LoginReducer }: IStore): boolean => {
     return LoginReducer.requesting;
 };
 
-export const selectErrorCode = ({ LoginReducer }: IStore) => {
+export const selectErrorCode = ({
+    LoginReducer
+}: IStore): number | undefined => {
     return LoginReducer.errorCode;
 };
 
-export const selectErrorMessage = ({ LoginReducer }: IStore) => {
+export const selectErrorMessage = ({
+    LoginReducer
+}: IStore): string | undefined => {
     return LoginReducer.errorMessaage;
 };
 
-export const selectLoginFail = ({ LoginReducer }: IStore) => {
+export const selectLoginFail = ({ LoginReducer }: IStore): boolean => {
     return LoginReducer.failed;
 };
 
-export const selectAuthenticated = ({ LoginReducer }: IStore) => {
+export const selectAuthenticated = ({ LoginReducer }: IStore): boolean => {
     return LoginReducer.authenticated;
 };
 
-export const selectLoggedInUid = ({ LoginReducer }: IStore) => {
+export const selectLoggedInUid = ({
+    LoginReducer
+}: IStore): string | undefined => {
     return LoginReducer.loggedInUid;
 };

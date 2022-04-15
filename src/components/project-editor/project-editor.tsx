@@ -1,7 +1,9 @@
-import React, { CElement, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
+import { CsoundObj } from "@csound/browser";
+import { IDocument, IProject } from "@comp/projects/types";
 import {
     Tabs,
     DragTabList,
@@ -9,26 +11,24 @@ import {
     PanelList,
     Panel
 } from "@hlolli/react-tabtab";
-import simpleSwitch from "array-move";
+import { arrayMoveImmutable as simpleSwitch } from "array-move";
 import { subscribeToProjectLastModified } from "@comp/project-last-modified/subscribers";
 import {
     subscribeToProfile,
     subscribeToProjectsCount
 } from "@comp/profile/subscribers";
 import tabStyles from "./tab-styles";
-import { Prompt } from "react-router";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
-import { IDocument } from "../projects/types";
 import { IOpenDocument } from "./types";
-import SplitterLayout from "react-splitter-layout";
+import SplitPane_ from "react-split-pane";
 import { IStore } from "@store/types";
 import Editor from "../editor/editor";
 import AudioEditor from "../audio-editor/audio-editor";
-import { useTheme } from "emotion-theming";
+import { useTheme } from "@emotion/react";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 // import { toggleEditorFullScreen } from "../Editor/actions";
 import CsoundManualWindow from "./csound-manual";
@@ -39,16 +39,13 @@ import {
 } from "@comp/hot-keys/actions";
 import { append, reduce, pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
-import "react-splitter-layout/lib/index.css";
 import {
-    closeTabDock,
     rearrangeTabs,
     tabClose,
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
 import { mapIndexed, isMobile } from "@root/utils";
-import { closeProject } from "../projects/actions";
 import { isAudioFile } from "../projects/utils";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../csound/actions";
@@ -61,12 +58,42 @@ import {
 import { BottomTab } from "../bottom-tabs/types";
 
 const TabStyles = tabStyles(false);
+const SplitPane = SplitPane_ as any;
 
 type IEditorForDocumentProperties = {
     uid: any;
     doc: IDocument;
     projectUid: string;
     isOwner: boolean;
+};
+
+const MySplit = ({
+    primary,
+    split,
+    minSize,
+    maxSize,
+    defaultSize,
+    onDragStarted,
+    onDragFinished,
+    children
+}) => {
+    /* eslint-disable-next-line  unicorn/prefer-native-coercion-functions */
+    const filteredChildren = children.filter(Boolean);
+    return filteredChildren.length === 1 ? (
+        filteredChildren[0]
+    ) : (
+        <SplitPane
+            primary={primary}
+            split={split}
+            minSize={minSize}
+            maxSize={maxSize}
+            defaultSize={defaultSize}
+            onDragStarted={onDragStarted}
+            onDragFinished={onDragFinished}
+        >
+            {filteredChildren}
+        </SplitPane>
+    );
 };
 
 function EditorForDocument({
@@ -94,55 +121,59 @@ function EditorForDocument({
     );
 }
 
-type IMainSectionProperties = {
-    tabDock: CElement<"div", any>;
+const MainSection = ({
+    tabDock,
+    setIsDragging
+}: {
+    tabDock: React.ReactElement;
+    setIsDragging?: (isDragging: boolean) => void;
+}) => {
+    const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
+        selectOpenBottomTabs(store)
+    );
+
+    const bottomTabIndex = useSelector((store: IStore) =>
+        selectBottomTabIndex(store)
+    );
+    const showBottomTabs = !isEmpty(openTabs) && bottomTabIndex > -1;
+
+    return (
+        <div>
+            <SplitPane
+                split="horizontal"
+                primary="first"
+                minSize={showBottomTabs ? "25%" : "100%"}
+                defaultSize="75%"
+                className={"main-tab-panels"}
+                onDragStarted={() => setIsDragging && setIsDragging(true)}
+                onDragFinished={() => setIsDragging && setIsDragging(false)}
+            >
+                {[tabDock, <BottomTabs key="2" />]}
+            </SplitPane>
+        </div>
+    );
 };
-
-const MainSection = React.forwardRef(
-    (properties: IMainSectionProperties, reference) => {
-        const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
-            selectOpenBottomTabs(store)
-        );
-
-        const bottomTabIndex = useSelector((store: IStore) =>
-            selectBottomTabIndex(store)
-        );
-
-        return (
-            <div css={SS.mainTabsSplitter}>
-                {!isEmpty(openTabs) && bottomTabIndex > -1 ? (
-                    <SplitterLayout
-                        vertical
-                        secondaryInitialSize={250}
-                        ref={reference}
-                        customClassName={"main-tab-panels"}
-                    >
-                        {properties.tabDock}
-                        <BottomTabs />
-                    </SplitterLayout>
-                ) : (
-                    properties.tabDock
-                )}
-            </div>
-        );
-    }
-);
 
 MainSection.displayName = "MainSection";
 
-const ProjectEditor = ({ activeProject, csound }) => {
+const ProjectEditor = ({
+    activeProject
+}: {
+    activeProject: IProject;
+}): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
     // resizing the manual panel.
-    const [manualDrag, setManualDrag] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     const projectUid: string = propOr("", "projectUid", activeProject);
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
     const isOwner: boolean = useSelector(selectIsOwner(projectUid));
-    const tabPanelReference = useRef();
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    const csound: CsoundObj | undefined = undefined;
 
     useEffect(() => {
         // start at top on init
@@ -165,19 +196,19 @@ const ProjectEditor = ({ activeProject, csound }) => {
         );
 
         // get some metadata from other people's projects
-        const unsubscribeToProfile = !isOwner
-            ? subscribeToProfile(projectOwnerUid, dispatch)
-            : () => {};
-        const unsubscribeToProjectsCount = !isOwner
-            ? subscribeToProjectsCount(projectOwnerUid, dispatch)
-            : () => {};
+        const unsubscribeToProfile =
+            !isOwner && subscribeToProfile(projectOwnerUid, dispatch);
+
+        const unsubscribeToProjectsCount =
+            !isOwner && subscribeToProjectsCount(projectOwnerUid, dispatch);
+
         return () => {
             unsubscribeProjectChanges();
-            unsubscribeToProjectLastModified();
-            unsubscribeToProfile();
-            unsubscribeToProjectsCount();
+            unsubscribeToProjectLastModified.then((unsub) => unsub());
+            unsubscribeToProfile && unsubscribeToProfile();
+            unsubscribeToProjectsCount && unsubscribeToProjectsCount();
         };
-    }, [csound, dispatch, isOwner, projectOwnerUid, projectUid]);
+    }, [dispatch, isOwner, projectOwnerUid, projectUid, csound]);
 
     useEffect(() => {
         dispatch(enableMidiInput());
@@ -233,16 +264,18 @@ const ProjectEditor = ({ activeProject, csound }) => {
                 <Tooltip
                     placement="right-end"
                     title={
-                        document.path
+                        document && document.path
                             ? document.path.length > 0
                                 ? documentPathHuman
-                                : document!.filename
+                                : document.filename
                             : ""
                     }
                 >
                     <p style={{ margin: 0 }}>
-                        {document!.filename +
-                            (isOwner && isModified ? "*" : "")}
+                        {document
+                            ? document.filename +
+                              (isOwner && isModified ? "*" : "")
+                            : ""}
                     </p>
                 </Tooltip>
                 <Tooltip title={"close"} placement="right-end">
@@ -300,14 +333,14 @@ const ProjectEditor = ({ activeProject, csound }) => {
     const unsavedDataExitPrompt = someUnsavedData && (
         <React.Fragment>
             <Beforeunload onBeforeunload={() => unsavedDataExitText} />
-            <Prompt when={someUnsavedData} message={unsavedDataExitText} />
         </React.Fragment>
     );
 
-    const tabDock = isEmpty(openDocuments) ? (
-        <div style={{ position: "relative" }} />
+    const tabDock: React.ReactElement = isEmpty(openDocuments) ? (
+        <div key="0" style={{ position: "relative" }} />
     ) : (
         <Tabs
+            key="1"
             activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
             onTabChange={switchTab}
             customStyle={TabStyles}
@@ -355,57 +388,52 @@ const ProjectEditor = ({ activeProject, csound }) => {
         }
     }, [dispatch, projectUid]);
 
-    useEffect(() => {
-        document.body.scrollTo(0, 0);
-        return () => {
-            dispatch(closeTabDock());
-            dispatch(closeProject());
-        };
-    }, [dispatch]);
-
-    if (isMobile()) {
-        return (
-            <MobileTabs
-                activeProject={activeProject}
-                projectUid={projectUid}
-                tabDock={tabDock}
-            />
-        );
-    } else {
-        return (
+    return isMobile() ? (
+        <MobileTabs
+            activeProject={activeProject}
+            projectUid={projectUid}
+            tabDock={tabDock}
+        />
+    ) : (
+        <>
+            {unsavedDataExitPrompt}
             <DnDProvider project={activeProject}>
-                <div css={SS.splitterLayoutContainer}>
-                    {unsavedDataExitPrompt}
-                    <SplitterLayout
-                        primaryIndex={1}
-                        primaryMinSize={400}
-                        secondaryInitialSize={250}
-                        secondaryMinSize={250}
+                <div css={SS.splitterRoot}>
+                    <MySplit
+                        primary="second"
+                        split="vertical"
+                        minSize="80%"
+                        maxSize="0"
+                        defaultSize="80%"
+                        onDragStarted={() => setIsDragging(true)}
+                        onDragFinished={() => setIsDragging(false)}
                     >
                         {isFileTreeVisible && <FileTree />}
-
-                        <SplitterLayout
-                            horizontal
-                            secondaryInitialSize={500}
-                            onDragStart={() => setManualDrag(true)}
-                            onDragEnd={() => setManualDrag(false)}
+                        <MySplit
+                            primary="first"
+                            split="vertical"
+                            minSize="80%"
+                            maxSize="0"
+                            defaultSize="60%"
+                            onDragStarted={() => setIsDragging(true)}
+                            onDragFinished={() => setIsDragging(false)}
                         >
                             <MainSection
-                                ref={tabPanelReference}
                                 tabDock={tabDock}
+                                setIsDragging={setIsDragging}
                             />
                             {isManualVisible && (
                                 <CsoundManualWindow
-                                    manualDrag={manualDrag}
                                     projectUid={projectUid}
+                                    isDragging={isDragging}
                                 />
                             )}
-                        </SplitterLayout>
-                    </SplitterLayout>
+                        </MySplit>
+                    </MySplit>
                 </div>
             </DnDProvider>
-        );
-    }
+        </>
+    );
 };
 
 export default ProjectEditor;
