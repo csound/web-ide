@@ -1,0 +1,26 @@
+name: "Deploy Develop"
+on:
+    push:
+        branches:
+            - develop
+jobs:
+    deploy-dev:
+        name: deploy-develop
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@master
+            - name: Build
+              run: |
+                  yarn install
+                  PRODUCTION=1 yarn build:dev
+                  cp build/index.html functions
+                  cd functions
+                  yarn install
+            - name: Deploy to Firebase
+              uses: w9jds/firebase-action@master
+              with:
+                  args: deploy -P develop --only hosting
+              env:
+                  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
+                  REACT_APP_DATABASE: DEV
