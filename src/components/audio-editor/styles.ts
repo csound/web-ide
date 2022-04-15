@@ -1,4 +1,3 @@
-import { Theme } from "@material-ui/core";
 import { createStyles, withStyles } from "@material-ui/styles";
 
 const audioEditorStyles = () =>

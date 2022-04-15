@@ -4,7 +4,11 @@
         "es6": true
     },
     "plugins": ["@typescript-eslint", "import", "unicorn", "react", "react-hooks"],
+    "globals": {
+        "JSX": true
+    },
     "extends": [
+        "react-app",
         "plugin:@typescript-eslint/recommended",
         "eslint:recommended",
         "plugin:import/errors",

@@ -1,5 +1,5 @@
 import "@emotion/react";
-import CreateStyleOriginal "@emotion/styled"
+import CreateStyleOriginal from "@emotion/styled";
 
 type ThemeFont = {
     regular: string;
@@ -7,7 +7,7 @@ type ThemeFont = {
 };
 
 declare module "@emotion/react" {
-    export interface Theme  {
+    export interface Theme {
         // fonts
         font: ThemeFont;
         // basic colors

@@ -77,7 +77,8 @@ const MySplit = ({
     onDragFinished,
     children
 }) => {
-    const filteredChildren = children.filter((c) => c);
+    /* eslint-disable-next-line  unicorn/prefer-native-coercion-functions */
+    const filteredChildren = children.filter(Boolean);
     return filteredChildren.length === 1 ? (
         filteredChildren[0]
     ) : (
