@@ -73,8 +73,7 @@ module.exports = function (webpackEnv = "production") {
                 : (info) =>
                       path
                           .resolve(info.absoluteResourcePath)
-                          .replace(/\\/g, "/"),
-            globalObject: "this"
+                          .replace(/\\/g, "/")
         },
         optimization: {
             minimize: isEnvProduction,
