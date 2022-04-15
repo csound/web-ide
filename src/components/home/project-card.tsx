@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from "react-loader-spinner";
+import { Bars as BarsSpinner } from "react-loader-spinner";
 import { Theme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
 import ListPlayButton from "@comp/profile/list-play-button";
@@ -30,12 +30,7 @@ export const ProjectCardSkeleton = ({
         <span className="skeleton-photo" />
         <span className="skeleton-name" />
         <span className="skeleton-description" />
-        <Loader
-            type="Bars"
-            color={theme.altTextColor}
-            height={100}
-            width={100}
-        />
+        <BarsSpinner color={theme.altTextColor} height={100} width={100} />
     </div>
 );
 

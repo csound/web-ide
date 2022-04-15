@@ -134,8 +134,9 @@ const SocialControls = (): React.ReactElement => {
                             }
                         }}
                     >
-                        {starred && <StyledStarIcon fontSize="large" />}
-                        {!starred && (
+                        {starred ? (
+                            <StyledStarIcon fontSize="large" />
+                        ) : (
                             <StyledOutlinedStarIcon fontSize="large" />
                         )}
                     </StyledIconButton>

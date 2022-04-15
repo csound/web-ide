@@ -24,7 +24,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "@material-ui/core/IconButton";
 import { IOpenDocument } from "./types";
-import SplitPane from "react-split-pane";
+import SplitPane_ from "react-split-pane";
 import { IStore } from "@store/types";
 import Editor from "../editor/editor";
 import AudioEditor from "../audio-editor/audio-editor";
@@ -58,6 +58,7 @@ import {
 import { BottomTab } from "../bottom-tabs/types";
 
 const TabStyles = tabStyles(false);
+const SplitPane = SplitPane_ as any;
 
 type IEditorForDocumentProperties = {
     uid: any;

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { useConsole } from "./context";
 import * as SS from "./styles";
 
-const Console = ({ height = 200 }: { height?: number }): React.ReactElement => {
+const Console = (): React.ReactElement => {
     const logs = useConsole();
     const consoleReference: any = useRef();
 

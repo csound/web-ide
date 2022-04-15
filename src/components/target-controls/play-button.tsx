@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTheme } from "@emotion/react";
-import Loader from "react-loader-spinner";
+import { TailSpin } from "react-loader-spinner";
 import * as SS from "./styles";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
@@ -96,9 +96,8 @@ const PlayButton = ({
                 }}
             >
                 {isLoading ? (
-                    <Loader
+                    <TailSpin
                         css={SS.playButtonLoadingSpinner}
-                        type="TailSpin"
                         color={theme.buttonIcon}
                         height={25}
                         width={25}

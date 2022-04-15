@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Path } from "history";
-import LoaderSpinner from "react-loader-spinner";
+import { Audio as AudioSpinner } from "react-loader-spinner";
 import { useParams } from "react-router-dom";
 import { push } from "connected-react-router/esm/index.js";
 import { useTheme } from "@emotion/react";
@@ -108,8 +108,7 @@ const ProjectContext = (
             <ForceBackgroundColor theme={theme} />
             <Header />
             <main css={SS.loadMain}>
-                <LoaderSpinner
-                    type="Audio"
+                <AudioSpinner
                     color={theme.highlightBackground}
                     height={80}
                     width={80}

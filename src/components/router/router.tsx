@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Provider, useDispatch } from "react-redux";
+import { Provider as Provider_, useDispatch } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { CodeMirrorPainter } from "@styles/code-mirror-painter";
 import ReactTooltip from "react-tooltip";
@@ -16,10 +16,7 @@ import { Route, Routes } from "react-router-dom";
 import { stopCsound } from "../csound/actions";
 import SiteDocuments from "../site-documents/site-documents";
 
-// interface IRouterComponent {
-//     isAuthenticated: boolean;
-//     history: History;
-// }
+const Provider = Provider_ as any;
 
 const EditorLayout = (properties: any) => {
     const dispatch = useDispatch();

@@ -3,9 +3,8 @@
         "browser": true,
         "es6": true
     },
-    "plugins": ["import", "unicorn", "react", "react-hooks"],
+    "plugins": ["@typescript-eslint", "import", "unicorn", "react", "react-hooks"],
     "extends": [
-        "react-app",
         "plugin:@typescript-eslint/recommended",
         "eslint:recommended",
         "plugin:import/errors",

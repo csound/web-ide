@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from "react-loader-spinner";
+import { ThreeDots } from "react-loader-spinner";
 import { useTheme } from "@emotion/react";
 import { isEmpty, path } from "ramda";
 import { searchProjects } from "./actions";
@@ -116,8 +116,7 @@ const Search = (): React.ReactElement => {
                 variant="outlined"
             />
             <div css={SS.searchLoaderSpinner}>
-                <Loader
-                    type="ThreeDots"
+                <ThreeDots
                     visible={searchProjectsRequest}
                     color={theme.buttonIcon}
                     height={200}

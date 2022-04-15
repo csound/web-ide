@@ -389,10 +389,7 @@ module.exports = function (webpackEnv = "production") {
                 ),
                 // ESLint class options
                 cwd: paths.appPath,
-                resolvePluginsRelativeTo: __dirname,
-                baseConfig: {
-                    extends: [require.resolve("eslint-config-react-app/base")]
-                }
+                resolvePluginsRelativeTo: __dirname
             })
         ].filter((x) => x),
         performance: false
