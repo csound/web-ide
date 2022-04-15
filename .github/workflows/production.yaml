@@ -13,7 +13,7 @@ jobs:
             - name: Build
               run: |
                   yarn install
-                  PRODUCTION=1 yarn build:prod
+                  PRODUCTION=1 yarn build
                   cp build/index.html functions
                   cd functions
                   yarn install
