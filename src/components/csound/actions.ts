@@ -63,6 +63,7 @@ export const newCsound = async (
         dispatch(setCsoundPlayState("error"));
     } else {
         setCsound(csoundObj, dispatch);
+        // await csoundObj.setDebug(1);
         return csoundObj;
     }
 };
@@ -229,6 +230,7 @@ export const playCSDFromString = (
 
             const storeState = store.getState();
             await syncFs(csoundObj, projectUid, storeState);
+
             const result = await csoundObj.compileCsdText(csd);
 
             if (result === 0) {
@@ -286,6 +288,7 @@ export const playORCFromString = (
 
             const storeState = store.getState();
             await syncFs(csoundObj, projectUid, storeState);
+
             const result = await csoundObj.compileOrc(orc);
 
             if (result === 0) {
