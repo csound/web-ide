@@ -29,7 +29,7 @@ const Main = (): React.ReactElement => {
         // we determine this from a timeout
         !autoLoginTimeout && setTimeout(() => setAutoLoginTimeout(true), 1000);
         const unsubscribeAuthObserver = getAuth().onAuthStateChanged((user) => {
-            if (user && user.displayName) {
+            if (user) {
                 unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
                     user.uid,
                     dispatch

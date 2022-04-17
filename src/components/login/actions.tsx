@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { doc, getDoc, writeBatch } from "firebase/firestore";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import { DebounceInput } from "react-debounce-input";
 import {
     SET_REQUESTING_STATUS,
     SIGNIN_FAIL,
@@ -43,6 +42,7 @@ export const login = (
                 email,
                 password
             );
+
             dispatch({
                 type: SIGNIN_SUCCESS,
                 user
@@ -138,27 +138,12 @@ const profileFinalize = (
                             ? input + " already exists!"
                             : "New username"
                     }
-                    InputProps={{
-                        inputComponent: function InputComponent({ inputRef }) {
-                            return (
-                                <DebounceInput
-                                    ref={(reference: any) => {
-                                        if (reference) {
-                                            inputRef = reference;
-                                        }
-                                    }}
-                                    onChange={(event) => {
-                                        event.target.value.length < 50 &&
-                                            setInput(event.target.value);
-                                        event.target.value.length < 50 &&
-                                            !isEmpty(event.target.value) &&
-                                            checkReservedUsername(
-                                                event.target.value
-                                            );
-                                    }}
-                                />
-                            );
-                        }
+                    onChange={(event) => {
+                        event.target.value.length < 50 &&
+                            setInput(event.target.value);
+                        event.target.value.length < 50 &&
+                            !isEmpty(event.target.value) &&
+                            checkReservedUsername(event.target.value);
                     }}
                     error={shouldDisable || nameReserved}
                     value={input}
@@ -203,7 +188,7 @@ const profileFinalize = (
                     onChange={(event) => {
                         setBio(event.target.value || "");
                     }}
-                    rows={4}
+                    minRows={4}
                     multiline={true}
                 />
                 <Button
@@ -254,6 +239,7 @@ export const thirdPartyAuthSuccess = (
             dispatch(openSimpleModal(profileFinalizeComp, {}));
         } else {
             const profileData = profile.data();
+
             dispatch({
                 type: SIGNIN_SUCCESS,
                 user
