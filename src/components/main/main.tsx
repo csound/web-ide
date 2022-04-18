@@ -36,7 +36,7 @@ const Main = (): React.ReactElement => {
                 );
                 const tsIsSometimesStupidUser = {
                     uid: user.uid,
-                    displayName: user.displayName
+                    displayName: user.displayName || undefined
                 };
                 dispatch(
                     thirdPartyAuthSuccess(

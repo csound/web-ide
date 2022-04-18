@@ -2162,10 +2162,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@csound/browser@^6.17.0-beta5":
-  version "6.17.0-beta5"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.17.0-beta5.tgz#6943bfa246eda145f51e7c773ba308ee49a8f5e7"
-  integrity sha512-oJOBIRHMB3KMyvVHj8Ukgrq4E11xv1v0cBoEIm85AHXPNm2oMFLByZ/H8gO0ajhkhE9mHW4EKNH4HJZF0AoO3w==
+"@csound/browser@^6.17.0-beta6":
+  version "6.17.0-beta6"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.17.0-beta6.tgz#7bee8961f75df856c6cebdf09ed4d5ba4307d01d"
+  integrity sha512-/VJs6jxA6BXPnvn/KExtDS9QtndEsajlbqWSjKKyx7vhGikP95vnPDR2j5vqQGP9igmAEtUio5+IC3kxAgQMrg==
   dependencies:
     comlink "^4.3.1"
     eventemitter3 "^4.0.7"
