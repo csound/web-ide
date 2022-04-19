@@ -28,9 +28,9 @@ const imageInlineSizeLimit = parseInt(
     process.env.IMAGE_INLINE_SIZE_LIMIT || "10000"
 );
 
-module.exports = function (webpackEnv = "production") {
-    const isEnvDevelopment = webpackEnv === "development";
-    const isEnvProduction = webpackEnv === "production";
+module.exports = function (webpackEnv, { mode }) {
+    const isEnvDevelopment = mode === "development";
+    const isEnvProduction = mode === "production";
     const isProdDeployment = R.propEq(
         "REACT_APP_DATABASE",
         "PROD",
@@ -39,6 +39,7 @@ module.exports = function (webpackEnv = "production") {
 
     const isEnvProductionProfile =
         isEnvProduction && process.argv.includes("--profile");
+    console.log({ isEnvProduction, mode });
     const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1));
 
     return {
@@ -91,10 +92,6 @@ module.exports = function (webpackEnv = "production") {
             splitChunks: {
                 chunks: "all",
                 name: false
-            },
-            // Keep the runtime chunk separated to enable long term caching
-            runtimeChunk: {
-                name: (entrypoint) => `runtime-${entrypoint.name}`
             }
         },
         resolve: {
@@ -317,15 +314,15 @@ module.exports = function (webpackEnv = "production") {
                 contextRegExp: /moment$/
             }),
 
-            isEnvProduction &&
-                new WorkboxWebpackPlugin.InjectManifest({
-                    dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
-                    exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
-                    // Bump up the default maximum size (2mb) that's precached,
-                    // to make lazy-loading failure scenarios less likely.
-                    // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
-                    maximumFileSizeToCacheInBytes: 10 * 1024 * 1024
-                }),
+            // isEnvProduction &&
+            //     new WorkboxWebpackPlugin.InjectManifest({
+            //         dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
+            //         exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
+            //         // Bump up the default maximum size (2mb) that's precached,
+            //         // to make lazy-loading failure scenarios less likely.
+            //         // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
+            //         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024
+            //     }),
             new ForkTsCheckerWebpackPlugin({
                 async: isEnvDevelopment,
                 typescript: {
