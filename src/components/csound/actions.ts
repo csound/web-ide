@@ -58,7 +58,9 @@ export const newCsound = async (
     dispatch: (any) => void
 ): Promise<CsoundObj | undefined> => {
     // eslint-disable-next-line unicorn/prevent-abbreviations
-    const csoundObj = await Csound({ useWorker: false });
+    const csoundObj = await Csound({
+        useWorker: localStorage.getItem("sab") === "true"
+    });
     if (!csoundObj) {
         dispatch(setCsoundPlayState("error"));
     } else {
@@ -404,7 +406,9 @@ export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
         }
 
         // vanilla mode should work everywhere
-        const csound = await Csound({ useWorker: true, useSAB: false });
+        const csound = await Csound({
+            useWorker: localStorage.getItem("sab") === "true"
+        });
 
         if (!csound) {
             dispatch(

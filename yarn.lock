@@ -12056,6 +12056,11 @@ react-transition-group@^4.3.0, react-transition-group@^4.4.0, react-transition-g
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
+react-use-storage@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/react-use-storage/-/react-use-storage-0.5.1.tgz#f3a4cd08c01e62c9ddeabee9699999bcdd53929a"
+  integrity sha512-CUIjDuTZzJU5jpzdLuR+1uGwqQ6CnjbJYJf5eDBT5AdhHEQMSNbBAEjbN9ZculWQPiw0t5S3vyF0qoZnq7eweg==
+
 react@^15.4.2, react@^17.0.0, react@^17.0.1:
   version "17.0.1"
   resolved "https://registry.yarnpkg.com/react/-/react-17.0.1.tgz#6e0600416bd57574e3f86d92edba3d9008726127"

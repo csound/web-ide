@@ -28,7 +28,8 @@ const imageInlineSizeLimit = parseInt(
     process.env.IMAGE_INLINE_SIZE_LIMIT || "10000"
 );
 
-module.exports = function (webpackEnv, { mode }) {
+module.exports = function (webpackEnv, env_ = {}) {
+    const { mode = "development" } = env_;
     const isEnvDevelopment = mode === "development";
     const isEnvProduction = mode === "production";
     const isProdDeployment = R.propEq(

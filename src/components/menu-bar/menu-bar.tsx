@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import onClickOutside from "react-onclickoutside";
 import { useSelector, useDispatch } from "react-redux";
+import { useLocalStorage } from "react-use-storage";
 import SelectedIcon from "@material-ui/icons/DoneSharp";
 import NestedMenuIcon from "@material-ui/icons/ArrowRightSharp";
 import * as SS from "./styles";
@@ -72,6 +73,8 @@ function MenuBar(): JSX.Element {
     const isMidiPianoVisible = useSelector((store: IStore) =>
         store.BottomTabsReducer.openTabs.includes("piano")
     );
+
+    const [isSabEnabled, setIsSabEnabled] = useLocalStorage("sab", "false");
 
     const menuBarItems: MenuItemDef[] = [
         {
@@ -218,6 +221,18 @@ function MenuBar(): JSX.Element {
                     label: "Refresh Audio Input",
                     callback: () => {
                         dispatch(enableAudioInput());
+                    }
+                },
+                {
+                    seperator: true
+                },
+                {
+                    label: "Enable SharedArrayBuffer",
+                    checked: isSabEnabled === "true",
+                    callback: () => {
+                        setIsSabEnabled(
+                            isSabEnabled === "true" ? "false" : "true"
+                        );
                     }
                 }
             ]
