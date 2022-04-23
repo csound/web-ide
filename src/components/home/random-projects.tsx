@@ -16,7 +16,13 @@ const RandomProjects = (): React.ReactElement => {
     React.useEffect(() => {
         if (!isMounted) {
             setIsMounted(true);
-            dispatch(fetchRandomProjects());
+            let randomProjects;
+            try {
+                randomProjects = fetchRandomProjects();
+            } catch (error) {
+                console.error(error);
+            }
+            randomProjects && dispatch(randomProjects);
         }
     }, [dispatch, isMounted, setIsMounted]);
     const theme = useTheme();
