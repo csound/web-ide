@@ -16,15 +16,11 @@ const Home = (): React.ReactElement => {
     ReactTooltip.rebuild();
     const dispatch = useDispatch();
 
-    const [
-        popularProjectsFetchOffset,
-        popularProjectsTotalRecords
-    ] = useSelector(selectPopularProjectsFetchOffset);
+    const [popularProjectsFetchOffset, popularProjectsTotalRecords] =
+        useSelector(selectPopularProjectsFetchOffset);
 
-    const [
-        currentPopularProjectsOffset,
-        setCurrentPopularProjectsOffset
-    ] = useState(0);
+    const [currentPopularProjectsOffset, setCurrentPopularProjectsOffset] =
+        useState(0);
 
     const currentPopularProjectsPagination = useSelector(
         selectPopularProjectsSlice(
@@ -40,8 +36,20 @@ const Home = (): React.ReactElement => {
             popularProjectsTotalRecords > 0 &&
             currentPopularProjectsOffset < popularProjectsTotalRecords
         ) {
-            dispatch(fetchPopularProjects(currentPopularProjectsOffset));
-            setCurrentPopularProjectsOffset(currentPopularProjectsOffset + 8);
+            let popularProjects;
+            try {
+                popularProjects = fetchPopularProjects(
+                    currentPopularProjectsOffset
+                );
+            } catch (error) {
+                console.error(error);
+            }
+            if (popularProjects) {
+                dispatch(popularProjects);
+                setCurrentPopularProjectsOffset(
+                    currentPopularProjectsOffset + 8
+                );
+            }
         }
     }, [dispatch, popularProjectsTotalRecords, currentPopularProjectsOffset]);
 
