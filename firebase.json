@@ -29,24 +29,7 @@
             },
             {
                 "source": "/editor/**",
-                "function": "host"
-            },
-            {
-                "source": "/profile/**",
-                "function": "host"
-            },
-            {
-                "source": "/@(manual|documentation)",
-                "destination": "/index.html"
-            },
-            {
-                "source": "/@(manual|documentation)/**",
-                "destination": "/index.html"
-            }
-        ],
-        "headers": [
-            {
-                "source": "**",
+                "function": "host",
                 "headers": [
                     {
                         "key": "Cache-Control",
@@ -62,6 +45,20 @@
                     }
                 ]
             },
+            {
+                "source": "/profile/**",
+                "function": "host"
+            },
+            {
+                "source": "/@(manual|documentation)",
+                "destination": "/index.html"
+            },
+            {
+                "source": "/@(manual|documentation)/**",
+                "destination": "/index.html"
+            }
+        ],
+        "headers": [
             {
                 "source": "**/*.@(jpg|svg|jpeg|png|eot|otf|ttf|ttc|woff|css|wasm|ico)",
                 "headers": [
