@@ -12,6 +12,7 @@ import {
     getPlayActionFromTarget
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
+import { useSetConsole } from "@comp/console/context";
 import {
     // fetchSetStartCsound,
     pauseCsound,
@@ -26,6 +27,7 @@ const PlayButton = ({
     activeProjectUid: string;
     isOwner: boolean;
 }): React.ReactElement => {
+    const setConsole = useSetConsole();
     const [isLoading, setIsLoading] = useState(false);
 
     const theme = useTheme();
@@ -89,7 +91,11 @@ const PlayButton = ({
                             if (isOwner) {
                                 dispatch(saveAllFiles());
                             }
-                            playAction && (await (playAction as any)(dispatch));
+                            playAction &&
+                                (await (playAction as any)(
+                                    dispatch,
+                                    setConsole
+                                ));
                         }
                     }
                     setIsLoading(false);

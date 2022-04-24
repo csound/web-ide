@@ -6,7 +6,6 @@ import { push } from "connected-react-router/esm/index.js";
 import { useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
-import { ConsoleProvider } from "@comp/console/context";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import Header from "@comp/header/header";
@@ -98,9 +97,7 @@ const ProjectContext = (
     return !needsLoading && !invalidUrl && project ? (
         <>
             <ForceBackgroundColor theme={theme} />
-            <ConsoleProvider activeProject={project}>
-                <ProjectEditor {...properties} activeProject={project} />
-            </ConsoleProvider>
+            <ProjectEditor {...properties} activeProject={project} />
             <Header />
         </>
     ) : (

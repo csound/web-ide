@@ -16,8 +16,7 @@ import { selectCsoundFactory } from "./selectors";
 import { addDocumentToEMFS } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import RenderModal from "./render-modal";
-import { isEmpty, path, pathOr, pipe, values } from "ramda";
-// import { storageReference } from "@config/firestore";
+import { append, isEmpty, path, pathOr, pipe, values } from "ramda";
 
 export const setCsoundPlayState = (
     playState: ICsoundStatus
@@ -139,8 +138,8 @@ export const syncFs = async (
 export const playCsdFromFs = (
     projectUid: string,
     csdPath: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+): ((dispatch: any, setConsole: any) => Promise<void>) => {
+    return async (dispatch: any, setConsole: any) => {
         const state = store.getState();
         // const csoundStatus = csound || path(["csound", "status"], state);
         const hasCsound =
@@ -162,15 +161,14 @@ export const playCsdFromFs = (
 
         const csoundObj = await newCsound(Csound, dispatch);
 
-        const clearConsoleCallback = path(
-            ["ConsoleReducer", "clearConsole"],
-            state
-        );
+        if (csoundObj && setConsole) {
+            setConsole([""]);
+            csoundObj.on("message", (message: string) =>
+                setConsole(append(message + "\n"))
+            );
+        }
 
         if (csoundObj) {
-            typeof clearConsoleCallback === "function" &&
-                clearConsoleCallback();
-
             await csoundObj.setOption("-odac");
 
             const storeState = store.getState();
@@ -196,8 +194,8 @@ export const playCsdFromFs = (
 export const playCSDFromString = (
     projectUid: string,
     csd: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch) => {
+): ((dispatch: any, setConsole: any) => Promise<void>) => {
+    return async (dispatch, setConsole: any) => {
         const state = store.getState();
 
         const hasCsound =
@@ -217,17 +215,16 @@ export const playCSDFromString = (
             }
         }
 
-        const clearConsoleCallback = path(
-            ["ConsoleReducer", "clearConsole"],
-            state
-        );
-
         const csoundObj = await newCsound(Csound, dispatch);
 
-        if (csoundObj) {
-            typeof clearConsoleCallback === "function" &&
-                clearConsoleCallback();
+        if (csoundObj && setConsole) {
+            setConsole([""]);
+            csoundObj.on("message", (message: string) =>
+                setConsole(append(message + "\n"))
+            );
+        }
 
+        if (csoundObj) {
             await csoundObj.setOption("-odac");
 
             const storeState = store.getState();
@@ -254,8 +251,8 @@ export const playCSDFromString = (
 export const playORCFromString = (
     projectUid: string,
     orc: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch) => {
+): ((dispatch: any, setConsole: any) => Promise<void>) => {
+    return async (dispatch, setConsole: any) => {
         const state = store.getState();
 
         const hasCsound =
@@ -275,17 +272,16 @@ export const playORCFromString = (
             }
         }
 
-        const clearConsoleCallback = path(
-            ["ConsoleReducer", "clearConsole"],
-            state
-        );
-
         const csoundObj = await newCsound(Csound, dispatch);
 
-        if (csoundObj) {
-            typeof clearConsoleCallback === "function" &&
-                clearConsoleCallback();
+        if (csoundObj && setConsole) {
+            setConsole([""]);
+            csoundObj.on("message", (message: string) =>
+                setConsole(append(message + "\n"))
+            );
+        }
 
+        if (csoundObj) {
             await csoundObj.setOption("-odac");
 
             const storeState = store.getState();

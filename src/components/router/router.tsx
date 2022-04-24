@@ -15,6 +15,7 @@ import { HistoryRouter as Router } from "redux-first-history/rr6";
 import { Route, Routes } from "react-router-dom";
 import { stopCsound } from "../csound/actions";
 import SiteDocuments from "../site-documents/site-documents";
+import { ConsoleProvider } from "@comp/console/context";
 
 const Provider = Provider_ as any;
 
@@ -31,7 +32,9 @@ const EditorLayout = (properties: any) => {
 
     return (
         <Provider store={store}>
-            <ProjectContext {...properties}></ProjectContext>
+            <ConsoleProvider>
+                <ProjectContext {...properties}></ProjectContext>
+            </ConsoleProvider>
         </Provider>
     );
 };
