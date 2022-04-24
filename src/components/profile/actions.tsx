@@ -609,7 +609,7 @@ export const playListItem =
         const playAction = getPlayActionFromProject(projectUid, state);
 
         if (playAction) {
-            playAction(dispatch, csound);
+            playAction(dispatch);
             await dispatch({
                 type: SET_CURRENTLY_PLAYING_PROJECT,
                 projectUid
