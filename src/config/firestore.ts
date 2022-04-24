@@ -4,7 +4,6 @@ import {
     collection,
     deleteField,
     getFirestore,
-    setLogLevel,
     serverTimestamp
 } from "firebase/firestore";
 import { getStorage, ref } from "firebase/storage";
@@ -28,11 +27,7 @@ const PROD = {
     messagingSenderId: "1089526309602"
 };
 
-setLogLevel("debug");
-
 let firebaseApp;
-
-console.log("firebaseApp", firebaseApp);
 
 // INITIALIZE FIREBASE WITH SETTINGS
 if (!firebaseApp) {
@@ -44,12 +39,10 @@ if (!firebaseApp) {
     }
     // firebase.settings();
     firebaseApp = initializeApp(target);
-    console.log("firebaseApp init", target);
 }
 
 // CREATE REFERENCES FOR USE BY APP CODE
 export const database = getFirestore();
-console.log({ database });
 export const projectLastModified = collection(database, "projectLastModified");
 export const projects = collection(database, "projects");
 export const projectsCount = collection(database, "projectsCount");
