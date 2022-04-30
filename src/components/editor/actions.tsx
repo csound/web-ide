@@ -1,11 +1,7 @@
 import CodeMirror from "codemirror";
-import synopsis from "csound-manual-react/lib/manual/synopsis";
 import { store } from "@root/store";
 import { IStore } from "@store/types";
 import { lookupManualString } from "../project-editor/actions";
-import { keys } from "ramda";
-
-const opcodes = keys(synopsis);
 
 export const toggleEditorFullScreen = (): void => {
     const storeState = store.getState() as IStore;
@@ -18,17 +14,20 @@ export const toggleEditorFullScreen = (): void => {
 
 export const manualEntryAtPoint = (editorReference: CodeMirror.Editor) => {
     return async (dispatch: (any) => void): Promise<void> => {
-        if (!editorReference) {
+        if (!editorReference || !window.csoundSynopsis) {
             return;
         }
+
         const cursor = editorReference.getCursor();
         const token = editorReference
             .getTokenAt(cursor)
             .string.replace(/:.*/, "");
-        if (opcodes.includes(token)) {
-            const manualId = synopsis[token]["id"];
+        const manualEntry = window.csoundSynopsis.find(
+            (opc) => opc.opname === token
+        );
+        if (manualEntry) {
             dispatch(lookupManualString());
-            setTimeout(() => dispatch(lookupManualString(manualId)), 10);
+            setTimeout(() => dispatch(lookupManualString(manualEntry.id)), 10);
         }
     };
 };
