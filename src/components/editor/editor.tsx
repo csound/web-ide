@@ -31,6 +31,12 @@ import "codemirror/lib/codemirror.css";
 
 registerCsoundMode(CodeMirror);
 
+declare global {
+    interface Window {
+        csoundSynopsis: any;
+    }
+}
+
 const cursorState = {};
 
 const onScroll = debounce(100, (editor: any) => {
@@ -54,6 +60,7 @@ const CodeEditor = ({
     isOwner: boolean;
 }): React.ReactElement => {
     const [isMounted, setIsMounted] = useState(false);
+    const [hasSynopsis, setHasSynopsis] = useState(false);
 
     const [editorReference, setEditorReference]: [
         CodeMirror.Editor | undefined,
@@ -92,10 +99,19 @@ const CodeEditor = ({
     }, [dispatch, projectUid, documentUid, editorReference, onChangedCallback]);
 
     useEffect(() => {
+        if (!window.csoundSynopsis) {
+            fetch("/static-manual-index.json").then(async (response) => {
+                window.csoundSynopsis = await response.json();
+                setHasSynopsis(true);
+            });
+        } else {
+            setHasSynopsis(true);
+        }
+
         return () => {
             textfieldReference && isMounted && onUnmount();
         };
-    }, [textfieldReference, isMounted, onUnmount]);
+    }, [textfieldReference, isMounted, onUnmount, setHasSynopsis]);
 
     const activeProjectUid = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
@@ -120,7 +136,12 @@ const CodeEditor = ({
     const documentType: string = maybeCsoundFile ? maybeCsoundFile : "txt";
 
     useEffect(() => {
-        if (!isMounted && textfieldReference && textfieldReference.current) {
+        if (
+            !isMounted &&
+            hasSynopsis &&
+            textfieldReference &&
+            textfieldReference.current
+        ) {
             const editor = CodeMirror.fromTextArea(
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 textfieldReference.current!,
@@ -219,10 +240,12 @@ const CodeEditor = ({
         projectUid,
         isMounted,
         setIsMounted,
-        documentType
+        documentType,
+        hasSynopsis,
+        setHasSynopsis
     ]);
 
-    return typeof currentDocumentValue === "string" ? (
+    return typeof currentDocumentValue === "string" && hasSynopsis ? (
         <form style={{ overflowY: "hidden", height: "100%" }}>
             <textarea
                 ref={textfieldReference}

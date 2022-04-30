@@ -45,7 +45,7 @@ const ManualWindow = ({
         >
             <IframeComm
                 attributes={{
-                    src: "/manual/main?cache=1002",
+                    src: "/manual?cache=1002",
                     width: "100%",
                     height: "100%"
                 }}

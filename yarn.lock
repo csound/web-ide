@@ -4734,11 +4734,6 @@ crypto-random-string@^2.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-2.0.0.tgz#ef2a7a966ec11083388369baa02ebead229b30d5"
   integrity sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==
 
-csound-manual-react@^1.0.0-alpha22:
-  version "1.0.0-alpha22"
-  resolved "https://registry.yarnpkg.com/csound-manual-react/-/csound-manual-react-1.0.0-alpha22.tgz#72967306689bb3f14b863c48600a17fa34041c94"
-  integrity sha512-8F5bbboredMYdhhXsTUfF6CMqaD0zgMRDcPBPgoPbv8xmg8MWajlGcagOxIpOzrYPRXYuWIiTturP7gfBiNP7A==
-
 css-box-model@^1.2.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/css-box-model/-/css-box-model-1.2.1.tgz#59951d3b81fd6b2074a62d49444415b0d2b4d7c1"

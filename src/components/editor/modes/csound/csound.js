@@ -2,8 +2,6 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
-import synopsis from "csound-manual-react/lib/manual/synopsis";
-
 function wordsToObject(words) {
     const o = {};
     words.forEach((word) => {
@@ -56,7 +54,9 @@ const attributes = new Set([
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const registerCsoundMode = (CodeMirror) => {
     CodeMirror.defineMode("csound", function (config, parserConfig) {
-        const opcodes = new Set(Object.keys(synopsis));
+        // console.log(window.csoundSynopsis);
+        // window.csoundSynopsis
+        const opcodes = new Set([]);
         const documentType = parserConfig.documentType || "csd";
         const indentWords = wordsToObject([
             "opcode",

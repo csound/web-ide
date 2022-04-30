@@ -49,6 +49,7 @@ export const projectsCount = collection(database, "projectsCount");
 export const profiles = collection(database, "profiles");
 export const followers = collection(database, "followers");
 export const following = collection(database, "following");
+export const manual = collection(database, "manual");
 export const usernames = collection(database, "usernames");
 export const targets = collection(database, "targets");
 export const tags = collection(database, "tags");

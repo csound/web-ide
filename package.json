@@ -102,7 +102,6 @@
         "codemirror": "^5.65.3",
         "concurrently": "^7.1.0",
         "cross-env": "^7.0.3",
-        "csound-manual-react": "^1.0.0-alpha22",
         "css-loader": "6.7.1",
         "d3-scale": "^4.0.2",
         "dom-to-image-more": "^2.9.5",

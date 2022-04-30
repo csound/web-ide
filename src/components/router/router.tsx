@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Provider as Provider_, useDispatch } from "react-redux";
-import { useTheme } from "@emotion/react";
-import { CodeMirrorPainter } from "@styles/code-mirror-painter";
 import ReactTooltip from "react-tooltip";
 import Home from "../home/home";
-import CsoundManual from "csound-manual-react";
+import CsoundManual from "@comp/manual/manual";
 import Profile from "../profile/profile";
 import Page404 from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
@@ -39,39 +37,38 @@ const EditorLayout = (properties: any) => {
     );
 };
 
-const CsoundManualWithStyleOverrides = ({
-    theme,
-    ...routerProperties
-}: any) => {
-    const [isMounted, setIsMounted] = useState(false);
-    const [{ fetched, Csound }, setFetchState]: [
-        { fetched: boolean; Csound: any },
-        any
-    ] = useState({ fetched: false, Csound: undefined });
+// const CsoundManualWithStyleOverrides = ({
+//     theme,
+//     ...routerProperties
+// }: any) => {
+//     const [isMounted, setIsMounted] = useState(false);
+//     const [{ fetched, Csound }, setFetchState]: [
+//         { fetched: boolean; Csound: any },
+//         any
+//     ] = useState({ fetched: false, Csound: undefined });
 
-    useEffect(() => {
-        if (!isMounted) {
-            setIsMounted(true);
-            import("@csound/browser").then(({ Csound }) => {
-                setFetchState({ fetched: true, Csound });
-            });
-        }
-    }, [isMounted, setIsMounted, fetched, Csound, setFetchState]);
+//     useEffect(() => {
+//         if (!isMounted) {
+//             setIsMounted(true);
+//             import("@csound/browser").then(({ Csound }) => {
+//                 setFetchState({ fetched: true, Csound });
+//             });
+//         }
+//     }, [isMounted, setIsMounted, fetched, Csound, setFetchState]);
 
-    return !fetched ? (
-        <></>
-    ) : (
-        <CsoundManual
-            {...routerProperties}
-            theme={theme}
-            codeMirrorPainter={CodeMirrorPainter}
-            Csound={Csound}
-        />
-    );
-};
+//     return !fetched ? (
+//         <></>
+//     ) : (
+//         <CsoundManual
+//             {...routerProperties}
+//             theme={theme}
+//             codeMirrorPainter={CodeMirrorPainter}
+//             Csound={Csound}
+//         />
+//     );
+// };
 
 const RouterComponent = (): React.ReactElement => {
-    const theme = useTheme();
     ReactTooltip.rebuild();
 
     return (
@@ -83,16 +80,8 @@ const RouterComponent = (): React.ReactElement => {
                 <Route path="editor" element={<EditorLayout />}>
                     <Route path=":id" element={<EditorLayout />} />
                 </Route>
-                <Route
-                    path="manual"
-                    element={<CsoundManualWithStyleOverrides theme={theme} />}
-                >
-                    <Route
-                        path=":id"
-                        element={
-                            <CsoundManualWithStyleOverrides theme={theme} />
-                        }
-                    />
+                <Route path="manual" element={<CsoundManual />}>
+                    <Route path=":id" element={<CsoundManual />} />
                 </Route>
 
                 <Route path="documentation" element={<SiteDocuments />} />
