@@ -1,22 +1,21 @@
 import * as CodeMirror from "codemirror";
 import "./show-hint";
-import synopsis from "csound-manual-react/lib/manual/synopsis";
 import { append, take, propOr, reduce, reject } from "ramda";
 import Fuse from "fuse.js";
 
-const opcodes = reject(
-    (s) => s.includes("(") || s.includes(")"),
-    Object.keys(synopsis)
-);
-
-const fuzzyMatcher = new Fuse(opcodes, {
-    shouldSort: false,
-    caseSensitive: true,
-    threshold: 0.1,
-    distance: 10
-});
-
 async function hintFunction(cm, callback) {
+    const opcodes = reject(
+        (s) => s.includes("(") || s.includes(")"),
+        window.csoundSynopsis.map((opc) => opc.opname)
+    );
+
+    const fuzzyMatcher = new Fuse(opcodes, {
+        shouldSort: false,
+        caseSensitive: true,
+        threshold: 0.1,
+        distance: 10
+    });
+
     const cursor = cm.getDoc().getCursor();
     const tokenData = cm.getTokenAt(cursor);
     const token = propOr(false, "string", tokenData);

@@ -54,9 +54,7 @@ const attributes = new Set([
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const registerCsoundMode = (CodeMirror) => {
     CodeMirror.defineMode("csound", function (config, parserConfig) {
-        // console.log(window.csoundSynopsis);
-        // window.csoundSynopsis
-        const opcodes = new Set([]);
+        const opcodes = new Set(window.csoundSynopsis.map((opc) => opc.opname));
         const documentType = parserConfig.documentType || "csd";
         const indentWords = wordsToObject([
             "opcode",
