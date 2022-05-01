@@ -101,6 +101,7 @@
         "case-sensitive-paths-webpack-plugin": "2.4.0",
         "codemirror": "^5.65.3",
         "concurrently": "^7.1.0",
+        "copy-webpack-plugin": "^10.2.4",
         "cross-env": "^7.0.3",
         "css-loader": "6.7.1",
         "d3-scale": "^4.0.2",
@@ -179,7 +180,11 @@
         "node": ">=15"
     },
     "browserslist": {
-        "production": [">0.2%", "not dead", "not op_mini all"],
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
         "development": [
             "last 1 chrome version",
             "last 1 firefox version",

@@ -5,6 +5,7 @@ const path = require("path");
 const R = require("ramda");
 const webpack = require("webpack");
 const resolve = require("resolve");
+const CopyPlugin = require("copy-webpack-plugin");
 const PnpWebpackPlugin = require("pnp-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
@@ -386,6 +387,9 @@ module.exports = function (webpackEnv, env_ = {}) {
                 // ESLint class options
                 cwd: paths.appPath,
                 resolvePluginsRelativeTo: __dirname
+            }),
+            new CopyPlugin({
+                patterns: [{ from: "public/static-manual-index.json" }]
             })
         ].filter((x) => x),
         performance: false
