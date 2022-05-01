@@ -8,20 +8,24 @@
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
         "rewrites": [
             {
-                "source": "/manual_main.js",
-                "destination": "/manual/main.js"
-            },
-            {
                 "source": "/robots.txt",
-                "destination": "/robots.txt"
+                "destination": "/robots.txt",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
             },
             {
                 "source": "/sitemap.xml",
-                "destination": "/sitemap.xml"
-            },
-            {
-                "source": "/sitemap.xml.gz",
-                "destination": "/sitemap.xml.gz"
+                "destination": "/sitemap.xml",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
             },
             {
                 "source": "/",
@@ -59,37 +63,71 @@
             },
             {
                 "source": "/android-chrome-192x192.png",
-                "destination": "/android-chrome-192x192.png"
-            },
-            {
-                "source": "/android-chrome-512x512.png",
-                "destination": "/android-chrome-512x512.png"
-            },
-            { "source": "/favicon.ico", "destination": "/favicon.ico" },
-            {
-                "source": "/favicon-16x16.ico",
-                "destination": "/favicon-16x16.ico"
-            },
-            {
-                "source": "/favicon-32x32.ico",
-                "destination": "/favicon-32x32.ico"
-            },
-            {
-                "source": "/asset-manifest.json",
-                "destination": "/asset-manifest.json"
-            },
-            {
-                "source": "/static-manual-index.json",
-                "destination": "/static-manual-index.json"
-            }
-        ],
-        "headers": [
-            {
-                "source": "**/*.@(jpg|svg|jpeg|png|eot|otf|ttf|ttc|woff|css|wasm|ico)",
+                "destination": "/android-chrome-192x192.png",
                 "headers": [
                     {
                         "key": "Cache-Control",
-                        "value": "max-age=31536000,public,immutable"
+                        "value": "max-age=86400"
+                    }
+                ]
+            },
+            {
+                "source": "/android-chrome-512x512.png",
+                "destination": "/android-chrome-512x512.png",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
+            },
+            {
+                "source": "/favicon.ico",
+                "destination": "/favicon.ico",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
+            },
+            {
+                "source": "/favicon-16x16.ico",
+                "destination": "/favicon-16x16.ico",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
+            },
+            {
+                "source": "/favicon-32x32.ico",
+                "destination": "/favicon-32x32.ico",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
+            },
+            {
+                "source": "/asset-manifest.json",
+                "destination": "/asset-manifest.json",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
+                    }
+                ]
+            },
+            {
+                "source": "/static-manual-index.json",
+                "destination": "/static-manual-index.json",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=86400"
                     }
                 ]
             }
