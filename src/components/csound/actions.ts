@@ -353,16 +353,9 @@ export const resumePausedCsound = (): ((
     };
 };
 
-function lsAll(fs, tree = {}, root = "/") {
-    fs.readdirSync(root).forEach((file) => {
-        const currentPath = `${root}/${file}`.replace("//", "/");
-        if (fs.lstatSync(currentPath).isDirectory()) {
-            return (tree[currentPath] = lsAll(fs, tree, currentPath));
-        } else {
-            tree[currentPath] = fs.statSync(currentPath).size;
-        }
-    });
-    return tree;
+async function lsAll(fs, tree = {}, root = "/") {
+    const files = await fs.readdir(root);
+    return files;
 }
 
 export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
@@ -416,7 +409,7 @@ export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
             return;
         }
         await syncFs(csound, project.projectUid, state);
-        const preStartTree = lsAll(csound.fs);
+        const preStartTree = await lsAll(csound.fs);
 
         csound.on("renderEnded", () => {
             dispatch(
