@@ -358,7 +358,9 @@ async function lsAll(fs, tree = {}, root = "/") {
     return files;
 }
 
-export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
+export const renderToDisk = (
+    setConsole: any
+): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const state: IStore = store.getState();
         const project: IProject | undefined = selectActiveProject(state);
@@ -396,7 +398,7 @@ export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
 
         // vanilla mode should work everywhere
         const csound = await Csound({
-            useWorker: localStorage.getItem("sab") === "true"
+            useWorker: true
         });
 
         if (!csound) {
@@ -408,18 +410,14 @@ export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
             );
             return;
         }
+
+        setConsole([""]);
+        csound.on("message", (message: string) =>
+            setConsole(append(message + "\n"))
+        );
+
         await syncFs(csound, project.projectUid, state);
         const preStartTree = await lsAll(csound.fs);
-
-        csound.on("renderEnded", () => {
-            dispatch(
-                openSimpleModal(RenderModal, {
-                    csound,
-                    preStartTree,
-                    disableOnClose: true
-                })
-            );
-        });
 
         const targetDocumentName =
             project.documents[targetDocumentUid].filename;
@@ -450,6 +448,16 @@ export const renderToDisk = (): ((dispatch: (any) => void) => void) => {
                     SnackbarType.Info
                 )
             );
+
+            csound.once("stop", () => {
+                dispatch(
+                    openSimpleModal(RenderModal, {
+                        csound,
+                        preStartTree,
+                        disableOnClose: true
+                    })
+                );
+            });
         });
 
         const result = await csound.start();
