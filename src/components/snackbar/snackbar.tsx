@@ -29,16 +29,20 @@ const variantIcon = {
 
 const styles = makeStyles((theme: Theme) => ({
     success: {
-        backgroundColor: green[600]
+        backgroundColor: green[600],
+        color: theme.palette.common.white
     },
     error: {
-        backgroundColor: theme.palette.error.dark
+        backgroundColor: theme.palette.error.dark,
+        color: theme.palette.common.white
     },
     info: {
-        backgroundColor: theme.palette.primary.main
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.common.white
     },
     warning: {
-        backgroundColor: amber[700]
+        backgroundColor: amber[700],
+        color: theme.palette.common.white
     },
     icon: {
         fontSize: 20

@@ -7,6 +7,7 @@ import NestedMenuIcon from "@material-ui/icons/ArrowRightSharp";
 import * as SS from "./styles";
 import { hr as hrCss } from "@styles/_common";
 import { MenuItemDef } from "./types";
+import { useSetConsole } from "@comp/console/context";
 import { invokeHotKeyCallback } from "@comp/hot-keys/actions";
 import { BindingsMap } from "@comp/hot-keys/types";
 import { humanizeKeySequence } from "@comp/hot-keys/utils";
@@ -39,6 +40,8 @@ import { showKeyboardShortcuts } from "@comp/site-documents/actions";
 import { openBottomTab } from "@comp/bottom-tabs/actions";
 
 function MenuBar(): JSX.Element {
+    const setConsole = useSetConsole();
+
     const activeProjectUid: string = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
@@ -104,8 +107,8 @@ function MenuBar(): JSX.Element {
                     seperator: true
                 },
                 {
-                    label: "Render to Disk and Download",
-                    callback: () => dispatch(renderToDisk())
+                    label: "Render to Disk",
+                    callback: () => dispatch(renderToDisk(setConsole))
                 },
                 {
                     label: "Export Project (.zip)",

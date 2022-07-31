@@ -22,6 +22,7 @@ export const openSnackbar = (
         payload
     };
 };
+
 export const closeSnackbar = (): SnackbarActionTypes => {
     return {
         type: CLOSE_SNACKBAR

@@ -63,7 +63,9 @@ const PlayButton = ({
 
     const playAction = playActionDefault || playActionFallback;
 
-    return (
+    return csoundPlayState === "rendering" ? (
+        <></>
+    ) : (
         <Tooltip title={isLoading ? "loading..." : tooltipText}>
             <div
                 css={SS.playButtonContainer}
@@ -110,7 +112,9 @@ const PlayButton = ({
                     />
                 ) : (
                     <button
-                        css={SS.playButtonStyle(csoundPlayState === "playing")}
+                        css={SS.playButtonStyle(
+                            ["playing", "rendering"].includes(csoundPlayState)
+                        )}
                     />
                 )}
             </div>

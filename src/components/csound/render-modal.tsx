@@ -35,20 +35,6 @@ import {
     UdoFileIcon
 } from "@elem/filetype-icons";
 
-function lsStatAll(fs, tree = {}, root = "/") {
-    if (fs.existsSync(root)) {
-        fs.readdirSync(root).forEach((file) => {
-            const currentPath = `${root}/${file}`.replace("//", "/");
-            if (fs.lstatSync(currentPath).isDirectory()) {
-                return (tree[currentPath] = lsStatAll(fs, tree, currentPath));
-            } else {
-                tree[currentPath] = fs.statSync(currentPath);
-            }
-        });
-        return tree;
-    }
-}
-
 const humanizeBytes = (size: number) => {
     const gb = Math.pow(1024, 3);
     const mb = Math.pow(1024, 2);
@@ -383,7 +369,7 @@ function RenderModal({
 }): React.ReactElement {
     ReactTooltip.rebuild();
     const dispatch = useDispatch();
-    const allFiles = lsStatAll(csound.fs) || {};
+    const allFiles = csound.fs.readdir("/");
     const [selectedFiles, setSelectedFiles] = useState([] as string[]);
     const [currentlyPlaying, setCurrentlyPlaying]: [
         { filename?: string; url?: string },
