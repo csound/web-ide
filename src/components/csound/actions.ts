@@ -2,7 +2,7 @@ import { store } from "@store";
 import { IStore } from "@store/types";
 import { IProject } from "../projects/types";
 import { CsoundObj, Csound } from "@csound/browser";
-import { openSimpleModal } from "@comp/modal/actions";
+import { addNonCloudFile } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import {
@@ -15,8 +15,7 @@ import { selectActiveProject } from "@comp/projects/selectors";
 import { selectCsoundFactory } from "./selectors";
 import { addDocumentToEMFS } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
-import RenderModal from "./render-modal";
-import { append, isEmpty, path, pathOr, pipe, values } from "ramda";
+import { append, difference, isEmpty, path, pathOr, pipe, values } from "ramda";
 
 export const setCsoundPlayState = (
     playState: ICsoundStatus
@@ -309,15 +308,6 @@ export const stopCsound = (): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
         const cs = path(["csound", "csound"], store.getState());
         cs && cs.stop();
-        // FIXME
-        // if (cs && typeof cs.stop === "function") {
-        //     dispatch(setCsoundPlayState("stopped"));
-        //     cs.stop();
-        // } else {
-        //     if (cs && typeof cs.getPlayState === "function") {
-        //         dispatch(setCsoundPlayState(cs.getPlayState()));
-        //     }
-        // }
     };
 };
 
@@ -332,12 +322,6 @@ export const pauseCsound = (): ((
         cs && (await cs.pause());
 
         dispatch(setCsoundPlayState("paused"));
-        // if (cs && cs.getPlayState() === "playing") {
-        //     cs.pause();
-        //     dispatch(setCsoundPlayState("paused"));
-        // } else {
-        //     cs && dispatch(setCsoundPlayState(cs.getPlayState()));
-        // }
     };
 };
 
@@ -352,11 +336,6 @@ export const resumePausedCsound = (): ((
         cs && cs.resume();
     };
 };
-
-async function lsAll(fs, tree = {}, root = "/") {
-    const files = await fs.readdir(root);
-    return files;
-}
 
 export const renderToDisk = (
     setConsole: any
@@ -417,7 +396,9 @@ export const renderToDisk = (
         );
 
         await syncFs(csound, project.projectUid, state);
-        const preStartTree = await lsAll(csound.fs);
+
+        const filesPre = await csound.fs.readdir("/");
+        console.log({ filesPre });
 
         const targetDocumentName =
             project.documents[targetDocumentUid].filename;
@@ -441,25 +422,45 @@ export const renderToDisk = (
             await csound.setOption(`-o${outputName}`);
         }
 
-        csound.on("renderStarted", () => {
+        csound.once("renderStarted", () => {
             dispatch(
                 openSnackbar(
                     `Render of ${targetDocumentName} started`,
                     SnackbarType.Info
                 )
             );
-
-            csound.once("stop", () => {
-                dispatch(
-                    openSimpleModal(RenderModal, {
-                        csound,
-                        preStartTree,
-                        disableOnClose: true
-                    })
-                );
-            });
         });
 
+        csound.once("renderEnded", async () => {
+            const filesPost = await csound.fs.readdir("/");
+            const newFiles = difference(filesPost, filesPre);
+
+            for (const newFile of newFiles) {
+                dispatch(
+                    addNonCloudFile({
+                        buffer: await csound.fs.readFile(newFile),
+                        createdAt: new Date(),
+                        name: newFile
+                    })
+                );
+            }
+
+            await syncFs(csound, project.projectUid, state);
+            dispatch(
+                openSnackbar(
+                    `Render of ${targetDocumentName} done`,
+                    SnackbarType.Success
+                )
+            );
+
+            // dispatch(
+            //     openSimpleModal(RenderModal, {
+            //         csound,
+            //         preStartTree,
+            //         disableOnClose: true
+            //     })
+            // );
+        });
         const result = await csound.start();
 
         if (result !== 0) {

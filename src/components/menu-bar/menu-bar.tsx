@@ -107,7 +107,7 @@ function MenuBar(): JSX.Element {
                     seperator: true
                 },
                 {
-                    label: "Render to Disk and Download",
+                    label: "Render to Disk",
                     callback: () => dispatch(renderToDisk(setConsole))
                 },
                 {

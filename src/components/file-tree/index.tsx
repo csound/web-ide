@@ -1,36 +1,4 @@
-import React, { useState } from "react";
-import { rgba } from "@styles/utils";
-import { useDnD } from "./context";
-import { useTheme } from "@emotion/react";
-import { Droppable, Draggable } from "react-beautiful-dnd";
-import { useDispatch, useSelector } from "react-redux";
-import Collapse from "@material-ui/core/Collapse";
-// import DescriptionIcon from "@material-ui/icons/Description";
-import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
-import {
-    CsdFileIcon,
-    OrcFileIcon,
-    ScoFileIcon,
-    UdoFileIcon
-} from "@elem/filetype-icons";
-import EditIcon from "@material-ui/icons/EditTwoTone";
-import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
-import Tooltip from "@material-ui/core/Tooltip";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import { ReactComponent as DirectoryClose } from "@root/svgs/fad-close.svg";
-import { ReactComponent as DirectoryOpen } from "@root/svgs/fad-open.svg";
-import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
-import * as SS from "./styles";
-import FileTreeHeader from "./header";
-import { IDocument, IDocumentsMap, IProject } from "../projects/types";
-import { deleteFile, renameDocument } from "../projects/actions";
-import { tabOpenByDocumentUid } from "@comp/project-editor/actions";
-import {
-    selectIsOwner,
-    selectCurrentTabDocumentUid
-} from "@comp/project-editor/selectors";
+import React, { useState, useCallback } from "react";
 import {
     addIndex,
     append,
@@ -54,6 +22,42 @@ import {
     propOr,
     values
 } from "ramda";
+import { rgba } from "@styles/utils";
+import { useTheme } from "@emotion/react";
+import { Droppable, Draggable } from "react-beautiful-dnd";
+import { useDispatch, useSelector } from "react-redux";
+import Collapse from "@material-ui/core/Collapse";
+// import DescriptionIcon from "@material-ui/icons/Description";
+import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
+import {
+    CsdFileIcon,
+    OrcFileIcon,
+    ScoFileIcon,
+    UdoFileIcon
+} from "@elem/filetype-icons";
+import EditIcon from "@material-ui/icons/EditTwoTone";
+import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
+import DownloadIcon from "@mui/icons-material/Download";
+import Tooltip from "@material-ui/core/Tooltip";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import { ReactComponent as DirectoryClose } from "@root/svgs/fad-close.svg";
+import { ReactComponent as DirectoryOpen } from "@root/svgs/fad-open.svg";
+import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
+import { IDocument, IDocumentsMap, IProject } from "../projects/types";
+import { deleteFile, renameDocument } from "../projects/actions";
+import { tabOpenByDocumentUid } from "@comp/project-editor/actions";
+import {
+    selectIsOwner,
+    selectCurrentTabDocumentUid
+} from "@comp/project-editor/selectors";
+import { useDnD } from "./context";
+import * as SS from "./styles";
+import FileTreeHeader from "./header";
+import { selectNonCloudFiles } from "./selectors";
+import { NonCloudFile } from "./types";
+
 const reduceIndexed = addIndex(reduce);
 
 const RootReference = React.forwardRef((properties: any, reference: any) => (
@@ -77,6 +81,82 @@ const hopefulSorting = curry((documentIndex, documentA, documentB) => {
             : 0;
     }
 });
+
+function DownloadNonCloudFileIcon({
+    file
+}: {
+    file: NonCloudFile;
+}): JSX.Element {
+    const onClick = useCallback(() => {
+        const blob = new Blob([file.buffer], { type: "audio/wav" });
+        const tmpUrl = URL.createObjectURL(blob);
+        (window as any).open(tmpUrl);
+    }, [file]);
+
+    return (
+        <Tooltip
+            placement="right"
+            title={`Download ${propOr("", "name", file)}`}
+        >
+            <DownloadIcon css={SS.editIcon} onClick={onClick} />
+        </Tooltip>
+    );
+}
+
+function FileExtIcon({
+    isBinary,
+    filename,
+    nestingDepth = 0
+}: {
+    isBinary: boolean;
+    filename: string;
+    nestingDepth?: number;
+}): JSX.Element {
+    if (isBinary) {
+        return (
+            <ListItemIcon
+                css={SS.listItemIcon}
+                style={{ marginLeft: 24 * nestingDepth }}
+            >
+                <WaveFormIcon css={SS.mediaIcon} />
+            </ListItemIcon>
+        );
+    }
+
+    return filename.endsWith(".csd") ||
+        filename.endsWith(".sco") ||
+        filename.endsWith(".orc") ||
+        filename.endsWith(".udo") ? (
+        <ListItemIcon
+            css={SS.listItemIconMui}
+            style={{
+                left: 6,
+                marginLeft: 24 * nestingDepth
+            }}
+        >
+            <span css={SS.csoundFileIcon}>
+                {filename.endsWith(".csd") ? (
+                    <CsdFileIcon />
+                ) : filename.endsWith(".orc") ? (
+                    <OrcFileIcon />
+                ) : filename.endsWith(".sco") ? (
+                    <ScoFileIcon />
+                ) : filename.endsWith(".udo") ? (
+                    <UdoFileIcon />
+                ) : (
+                    <CsdFileIcon />
+                )}
+            </span>
+        </ListItemIcon>
+    ) : (
+        <ListItemIcon
+            css={SS.listItemIconMui}
+            style={{ left: 0 + 24 * nestingDepth }}
+        >
+            <InsertDriveFileIcon css={SS.muiIcon} />
+        </ListItemIcon>
+    );
+}
 
 const makeTree = (
     activeProjectUid,
@@ -297,59 +377,6 @@ const makeTree = (
                     )(elementArray_)
                 ];
             } else {
-                let IconComp;
-                if (document_.type === "bin") {
-                    IconComp = (
-                        <ListItemIcon
-                            key={`${document_.documentUid}-bin-icon`}
-                            css={SS.listItemIcon}
-                            style={{ marginLeft: 24 * path.length }}
-                        >
-                            <WaveFormIcon css={SS.mediaIcon} />
-                        </ListItemIcon>
-                    );
-                } else if (
-                    document_.filename.endsWith(".csd") ||
-                    document_.filename.endsWith(".sco") ||
-                    document_.filename.endsWith(".orc") ||
-                    document_.filename.endsWith(".udo")
-                ) {
-                    IconComp = (
-                        <ListItemIcon
-                            css={SS.listItemIconMui}
-                            key={`${document_.documentUid}-csd-icon`}
-                            style={{
-                                left: 6,
-                                marginLeft: 24 * path.length
-                            }}
-                        >
-                            <span css={SS.csoundFileIcon}>
-                                {document_.filename.endsWith(".csd") ? (
-                                    <CsdFileIcon />
-                                ) : document_.filename.endsWith(".orc") ? (
-                                    <OrcFileIcon />
-                                ) : document_.filename.endsWith(".sco") ? (
-                                    <ScoFileIcon />
-                                ) : document_.filename.endsWith(".udo") ? (
-                                    <UdoFileIcon />
-                                ) : (
-                                    <CsdFileIcon />
-                                )}
-                            </span>
-                        </ListItemIcon>
-                    );
-                } else {
-                    IconComp = (
-                        <ListItemIcon
-                            css={SS.listItemIconMui}
-                            key={`${document_.documentUid}-txt-icon`}
-                            style={{ left: 0 + 24 * path.length }}
-                        >
-                            <InsertDriveFileIcon css={SS.muiIcon} />
-                        </ListItemIcon>
-                    );
-                }
-
                 return [
                     assoc(
                         document_.documentUid,
@@ -423,7 +450,19 @@ const makeTree = (
                                                     ])}
                                                     button
                                                 >
-                                                    {IconComp}
+                                                    <FileExtIcon
+                                                        isBinary={
+                                                            document_.type ===
+                                                            "bin"
+                                                        }
+                                                        filename={
+                                                            document_.filename
+                                                        }
+                                                        nestingDepth={
+                                                            path.length
+                                                        }
+                                                    />
+
                                                     <p css={SS.filenameStyle}>
                                                         {document_.filename}
                                                     </p>
@@ -462,6 +501,9 @@ const FileTree = (): React.ReactElement => {
     const activeProjectUid: string = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
+
+    const nonCloudFiles = useSelector(selectNonCloudFiles);
+
     const isOwner: boolean = useSelector(selectIsOwner(activeProjectUid));
     const project: IProject | undefined = useSelector(
         path(["ProjectsReducer", "projects", activeProjectUid])
@@ -474,6 +516,8 @@ const FileTree = (): React.ReactElement => {
     const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
 
     const filelist = values(documents || {});
+    // console.log({ nonCloudFiles });
+    // const nonCloudFiles_ = [{ name: "xxx.wav" }];
 
     return (
         <React.Fragment>
@@ -494,6 +538,23 @@ const FileTree = (): React.ReactElement => {
                                 filelist
                             )[1]
                         }
+                        {nonCloudFiles.length > 0 && <hr />}
+                        {nonCloudFiles.map((file, index) => (
+                            <div
+                                key={file.name + index}
+                                style={{ paddingLeft: "6px" }}
+                            >
+                                <ListItem css={SS.listItem}>
+                                    <FileExtIcon
+                                        filename={file.name}
+                                        isBinary={true}
+                                        nestingDepth={0}
+                                    />
+                                    <p css={SS.filenameStyle}>{file.name}</p>
+                                    <DownloadNonCloudFileIcon file={file} />
+                                </ListItem>
+                            </div>
+                        ))}
                     </List>
                     <FileTreeHeader isOwner={isOwner} project={project} />
                 </div>
