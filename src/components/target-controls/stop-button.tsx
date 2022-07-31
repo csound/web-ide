@@ -4,7 +4,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import { useSelector, useDispatch } from "react-redux";
 import { IStore } from "@store/types";
 import { pathOr } from "ramda";
-import { stopCsound } from "@comp/csound/actions";
+import { stopCsound, stopRender } from "@comp/csound/actions";
 import { IconButton } from "@material-ui/core";
 import StopIcon from "@material-ui/icons/Stop";
 
@@ -21,7 +21,8 @@ const StopButton = ({
 
     const dispatch = useDispatch();
 
-    const tooltipText = "stop playback";
+    const tooltipText =
+        csoundPlayState === "rendering" ? "stop render" : "stop playback";
 
     return (
         <Tooltip title={tooltipText}>
@@ -34,6 +35,10 @@ const StopButton = ({
                             case "playing":
                             case "paused": {
                                 dispatch(stopCsound());
+                                break;
+                            }
+                            case "rendering": {
+                                dispatch(stopRender());
                                 break;
                             }
                         }

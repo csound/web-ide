@@ -9,7 +9,9 @@ import {
     FETCH_CSOUND,
     SET_CSOUND,
     ICsoundStatus,
-    SET_CSOUND_PLAY_STATE
+    SET_CSOUND_PLAY_STATE,
+    SET_STOP_RENDER,
+    STOP_RENDER
 } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
 import { selectCsoundFactory } from "./selectors";
@@ -337,6 +339,15 @@ export const resumePausedCsound = (): ((
     };
 };
 
+export const stopRender = (): ((
+    dispatch: (any) => void,
+    getState: () => IStore
+) => void) => {
+    return async (dispatch: any, getState) => {
+        dispatch({ type: STOP_RENDER });
+    };
+};
+
 export const renderToDisk = (
     setConsole: any
 ): ((dispatch: (any) => void) => void) => {
@@ -421,6 +432,8 @@ export const renderToDisk = (
             await csound.setOption(`-o${outputName}`);
         }
 
+        dispatch(setCsoundPlayState("rendering"));
+
         csound.once("renderStarted", () => {
             dispatch(
                 openSnackbar(
@@ -454,6 +467,7 @@ export const renderToDisk = (
                 await csound.terminateInstance();
             } catch {}
 
+            dispatch(setCsoundPlayState("stopped"));
             dispatch(
                 openSnackbar(
                     `Render of ${targetDocumentName} done`,
@@ -461,6 +475,15 @@ export const renderToDisk = (
                 )
             );
         });
+
+        await dispatch({
+            type: SET_STOP_RENDER,
+            callback: async () => {
+                await csound.stop();
+                dispatch(setCsoundPlayState("stopped"));
+            }
+        });
+
         const result = await csound.start();
 
         if (result !== 0) {
