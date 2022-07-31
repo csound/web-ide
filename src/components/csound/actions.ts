@@ -435,13 +435,16 @@ export const renderToDisk = (
             const newFiles = difference(filesPost, filesPre);
 
             for (const newFile of newFiles) {
-                dispatch(
-                    addNonCloudFile({
-                        buffer: await csound.fs.readFile(newFile),
-                        createdAt: new Date(),
-                        name: newFile
-                    })
-                );
+                const buffer = await csound.fs.readFile(newFile);
+                if (buffer) {
+                    dispatch(
+                        addNonCloudFile({
+                            buffer: await csound.fs.readFile(newFile),
+                            createdAt: new Date(),
+                            name: newFile
+                        })
+                    );
+                }
             }
 
             await syncFs(csound, project.projectUid, state);
