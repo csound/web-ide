@@ -17,7 +17,7 @@
         "prepare": "husky install"
     },
     "dependencies": {
-        "@csound/browser": "^6.17.2",
+        "@csound/browser": "^6.17.3",
         "@hlolli/react-modal-resizable-draggable": "^0.1.5",
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.9.2",

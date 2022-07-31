@@ -8,6 +8,7 @@ import { useTheme } from "@emotion/react";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
+import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
@@ -73,6 +74,7 @@ const ProjectContext = (
                             );
                     }
                 }
+                dispatch(cleanupNonCloudFiles());
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };

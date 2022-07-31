@@ -1,5 +1,10 @@
 import { append, assoc, pipe } from "ramda";
-import { ADD_NON_CLOUD_FILE, NonCloudFile, FileTreeActionTypes } from "./types";
+import {
+    ADD_NON_CLOUD_FILE,
+    CLEANUP_NON_CLOUD_FILES,
+    NonCloudFile,
+    FileTreeActionTypes
+} from "./types";
 
 export interface IFileTreeReducer {
     nonCloudFiles: NonCloudFile[];
@@ -22,6 +27,9 @@ const FileTreeReducer = (
                         append(action.file, state.nonCloudFiles)
                     )
                 )(state);
+            }
+            case CLEANUP_NON_CLOUD_FILES: {
+                return { nonCloudFiles: [] };
             }
             default: {
                 return state || INIT_STATE;
