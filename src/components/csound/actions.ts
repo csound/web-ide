@@ -398,7 +398,6 @@ export const renderToDisk = (
         await syncFs(csound, project.projectUid, state);
 
         const filesPre = await csound.fs.readdir("/");
-        console.log({ filesPre });
 
         const targetDocumentName =
             project.documents[targetDocumentUid].filename;
@@ -446,20 +445,18 @@ export const renderToDisk = (
             }
 
             await syncFs(csound, project.projectUid, state);
+
+            try {
+                await csound.cleanup();
+                await csound.terminateInstance();
+            } catch {}
+
             dispatch(
                 openSnackbar(
                     `Render of ${targetDocumentName} done`,
                     SnackbarType.Success
                 )
             );
-
-            // dispatch(
-            //     openSimpleModal(RenderModal, {
-            //         csound,
-            //         preStartTree,
-            //         disableOnClose: true
-            //     })
-            // );
         });
         const result = await csound.start();
 

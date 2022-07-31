@@ -22,6 +22,8 @@ import {
     propOr,
     values
 } from "ramda";
+import { getType as mimeLookup } from "mime";
+import moment from "moment";
 import { rgba } from "@styles/utils";
 import { useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
@@ -82,21 +84,49 @@ const hopefulSorting = curry((documentIndex, documentA, documentB) => {
     }
 });
 
+const humanizeBytes = (size: number) => {
+    const gb = Math.pow(1024, 3);
+    const mb = Math.pow(1024, 2);
+    const kb = 1024;
+
+    if (size >= gb) {
+        return Math.floor(size / gb) + " GB";
+    } else if (size >= mb) {
+        return Math.floor(size / mb) + " MB";
+    } else if (size >= kb) {
+        return Math.floor(size / kb) + " KB";
+    } else {
+        return size + " Bytes";
+    }
+};
+
 function DownloadNonCloudFileIcon({
-    file
+    file,
+    mimeType
 }: {
     file: NonCloudFile;
+    mimeType: string;
 }): JSX.Element {
     const onClick = useCallback(() => {
-        const blob = new Blob([file.buffer], { type: "audio/wav" });
+        const blob = new Blob([file.buffer], { type: mimeType });
         const tmpUrl = URL.createObjectURL(blob);
         (window as any).open(tmpUrl);
-    }, [file]);
+    }, [file, mimeType]);
 
     return (
         <Tooltip
             placement="right"
-            title={`Download ${propOr("", "name", file)}`}
+            title={
+                <>
+                    {`Download ${propOr("", "name", file)} (${humanizeBytes(
+                        file.buffer.length
+                    )})`}
+                    <br />{" "}
+                    <small>{`Created: ${moment(
+                        file.createdAt
+                    ).fromNow()}`}</small>
+                </>
+            }
         >
             <DownloadIcon css={SS.editIcon} onClick={onClick} />
         </Tooltip>
@@ -539,22 +569,33 @@ const FileTree = (): React.ReactElement => {
                             )[1]
                         }
                         {nonCloudFiles.length > 0 && <hr />}
-                        {nonCloudFiles.map((file, index) => (
-                            <div
-                                key={file.name + index}
-                                style={{ paddingLeft: "6px" }}
-                            >
-                                <ListItem css={SS.listItem}>
-                                    <FileExtIcon
-                                        filename={file.name}
-                                        isBinary={true}
-                                        nestingDepth={0}
-                                    />
-                                    <p css={SS.filenameStyle}>{file.name}</p>
-                                    <DownloadNonCloudFileIcon file={file} />
-                                </ListItem>
-                            </div>
-                        ))}
+                        {nonCloudFiles.map((file, index) => {
+                            const mimeType = mimeLookup(file.name);
+
+                            return (
+                                <div
+                                    key={file.name + index}
+                                    style={{ paddingLeft: "6px" }}
+                                >
+                                    <ListItem css={SS.listItem}>
+                                        <FileExtIcon
+                                            filename={file.name}
+                                            isBinary={mimeType.startsWith(
+                                                "audio"
+                                            )}
+                                            nestingDepth={0}
+                                        />
+                                        <p css={SS.filenameStyle}>
+                                            {file.name}
+                                        </p>
+                                        <DownloadNonCloudFileIcon
+                                            file={file}
+                                            mimeType={mimeType}
+                                        />
+                                    </ListItem>
+                                </div>
+                            );
+                        })}
                     </List>
                     <FileTreeHeader isOwner={isOwner} project={project} />
                 </div>
