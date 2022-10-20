@@ -17,7 +17,7 @@ import {
     subscribeToProfile,
     subscribeToProjectsCount
 } from "@comp/profile/subscribers";
-import tabStyles from "./tab-styles";
+import tabStyles, { tabListStyle } from "./tab-styles";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -260,7 +260,31 @@ const ProjectEditor = ({
             )
         ).join("/");
         return (
-            <DragTab closable={true} key={index}>
+            <DragTab
+                closable={true}
+                key={index}
+                closeElement={
+                    <Tooltip title={"close"} placement="right-end">
+                        <IconButton
+                            size="small"
+                            css={SS.closeButton}
+                            onClick={(event) => {
+                                closeTab(document.documentUid, isModified);
+                            }}
+                        >
+                            <FontAwesomeIcon
+                                icon={faTimes}
+                                size="sm"
+                                color={
+                                    isActive
+                                        ? theme.textColor
+                                        : theme.unfocusedTextColor
+                                }
+                            />
+                        </IconButton>
+                    </Tooltip>
+                }
+            >
                 <Tooltip
                     placement="right-end"
                     title={
@@ -277,26 +301,6 @@ const ProjectEditor = ({
                               (isOwner && isModified ? "*" : "")
                             : ""}
                     </p>
-                </Tooltip>
-                <Tooltip title={"close"} placement="right-end">
-                    <IconButton
-                        size="small"
-                        css={SS.closeButton}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            closeTab(document.documentUid, isModified);
-                        }}
-                    >
-                        <FontAwesomeIcon
-                            icon={faTimes}
-                            size="sm"
-                            color={
-                                isActive
-                                    ? theme.textColor
-                                    : theme.unfocusedTextColor
-                            }
-                        />
-                    </IconButton>
                 </Tooltip>
             </DragTab>
         );
@@ -339,26 +343,27 @@ const ProjectEditor = ({
     const tabDock: React.ReactElement = isEmpty(openDocuments) ? (
         <div key="0" style={{ position: "relative" }} />
     ) : (
-        <Tabs
-            key="1"
-            activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
-            onTabChange={switchTab}
-            customStyle={TabStyles}
-            showModalButton={false}
-            showArrowButton={"auto"}
-            onTabSequenceChange={({ oldIndex, newIndex }) => {
-                dispatch(
-                    rearrangeTabs(
-                        projectUid,
-                        simpleSwitch(tabDockDocuments, oldIndex, newIndex),
-                        newIndex
-                    )
-                );
-            }}
-        >
-            <DragTabList id="drag-tab-list">{openTabList}</DragTabList>
-            <PanelList>{openTabPanels}</PanelList>
-        </Tabs>
+        <div key="1" css={tabListStyle}>
+            <Tabs
+                activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
+                onTabChange={switchTab}
+                customStyle={TabStyles}
+                showModalButton={false}
+                showArrowButton={"auto"}
+                onTabSequenceChange={({ oldIndex, newIndex }) => {
+                    dispatch(
+                        rearrangeTabs(
+                            projectUid,
+                            simpleSwitch(tabDockDocuments, oldIndex, newIndex),
+                            newIndex
+                        )
+                    );
+                }}
+            >
+                <DragTabList id="drag-tab-list">{openTabList}</DragTabList>
+                <PanelList>{openTabPanels}</PanelList>
+            </Tabs>
+        </div>
     );
 
     const isManualVisible = useSelector(

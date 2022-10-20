@@ -1,10 +1,48 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { styled as themeStyled } from "@hlolli/react-tabtab";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 import { tabListHeight } from "@styles/constants";
 import { _shadow } from "@styles/_common";
 import { isMobile } from "@root/utils";
 let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
+
+export const tabListStyle = (theme: Theme): SerializedStyles => css`
+    & li::after {
+        z-index: 0;
+    }
+    ${!isMobile() ? "" : "display: none;"}
+
+    & > div {
+        height: ${tabListHeight}px;
+        bottom: 0;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+            0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    }
+    .tablist {
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        background-color: ${theme.background}!important;
+    }
+    .tablist > div {
+        height: 100%;
+    }
+
+    .tablist > div > ul {
+        height: 100%;
+    }
+    .tablist > div > ul > li {
+        height: 100%;
+    }
+    .tablist > div > ul > li > span {
+        margin: auto 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+    }
+`;
 
 TabListStyle = styled(TabListStyle)`
     z-index: 1;
@@ -78,18 +116,7 @@ TabStyle = styled(TabStyle)`
                 ? properties.theme.tabHighlightActive
                 : properties.theme.tabHighlight};
     }
-    & > button {
-        display: none;
-    }
 
-    & > button:hover {
-        color: ${(properties) => properties.theme.textColor};
-        background-color: ${(properties) =>
-            properties.active
-                ? properties.theme.highlightBackgroundAlt
-                : properties.theme.highlightBackground};
-        border-radius: 50%;
-    }
     p {
         user-select: none;
     }

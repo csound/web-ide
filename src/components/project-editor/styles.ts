@@ -17,7 +17,10 @@ export const closeButton = css`
     right: 8px;
     padding: 6px;
     position: absolute;
-    z-index: 1;
+    z-index: 10;
+    span {
+        pointer-events: none;
+    }
 `;
 
 export const headIconsContainer = (theme: Theme): SerializedStyles => css`

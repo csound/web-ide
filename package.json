@@ -19,6 +19,7 @@
     "dependencies": {
         "@csound/browser": "^6.18.0-beta1",
         "@hlolli/react-modal-resizable-draggable": "^0.1.5",
+        "@hlolli/react-tabtab": "^3.0.0",
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.9.2",
         "connected-react-router": "^6.9.2",
@@ -75,7 +76,6 @@
         "@fortawesome/fontawesome-svg-core": "^6.1.1",
         "@fortawesome/free-solid-svg-icons": "^6.1.1",
         "@fortawesome/react-fontawesome": "^0.1.18",
-        "@hlolli/react-tabtab": "^2.1.2",
         "@material-ui/core": "^4.12.4",
         "@material-ui/icons": "^4.11.3",
         "@material-ui/styles": "^4.11.5",

@@ -15,7 +15,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { IStore } from "@store/types";
-import tabStyles from "@comp/project-editor/tab-styles";
+import tabStyles, { tabListStyle } from "@comp/project-editor/tab-styles";
 import Console from "@comp/console/console";
 import { closeButton as ProjectEditorCloseButtonStyle } from "@comp/project-editor/styles";
 import { selectOpenBottomTabs, selectBottomTabIndex } from "./selectors";
@@ -103,7 +103,7 @@ const BottomTabs = (): React.ReactElement => {
     );
 
     return (
-        <div css={SS.heightFix}>
+        <div css={[SS.heightFix, tabListStyle]}>
             {!isEmpty(openTabs) && bottomTabIndex > -1 && (
                 <Tabs
                     activeIndex={bottomTabIndex}
