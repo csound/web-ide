@@ -53,6 +53,7 @@
         "react-split-pane": "^0.1.92",
         "react-tooltip": "^4.2.21",
         "react-use-storage": "^0.5.1",
+        "recharts": "^2.1.15",
         "redux": "^4.2.0",
         "redux-first-history": "^5.0.9",
         "redux-thunk": "^2.4.1",
@@ -182,7 +183,11 @@
         "node": ">=15"
     },
     "browserslist": {
-        "production": [">0.2%", "not dead", "not op_mini all"],
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
         "development": [
             "last 1 chrome version",
             "last 1 firefox version",

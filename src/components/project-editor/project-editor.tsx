@@ -46,7 +46,8 @@ import {
     setManualPanelOpen
 } from "./actions";
 import { mapIndexed, isMobile } from "@root/utils";
-import { isAudioFile } from "../projects/utils";
+import { isAudioFile, isPlotDataFile } from "../projects/utils";
+import DataPlotter from "@comp/data-plotter/data-plotter";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../csound/actions";
 import BottomTabs from "@comp/bottom-tabs/component";
@@ -102,7 +103,10 @@ function EditorForDocument({
     doc,
     isOwner
 }: IEditorForDocumentProperties) {
-    if (doc.type === "txt") {
+    console.log(doc);
+    if (isPlotDataFile(doc.filename)) {
+        return <DataPlotter />;
+    } else if (doc.type === "txt") {
         return (
             <Editor
                 documentUid={doc.documentUid}
@@ -114,6 +118,7 @@ function EditorForDocument({
         const path = `${uid}/${projectUid}/${doc.documentUid}`;
         return <AudioEditor audioFileUrl={path} />;
     }
+
     return (
         <div>
             <p>Unknown document type</p>

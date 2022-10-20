@@ -42,6 +42,10 @@ export function isAudioFile(fileName: string): boolean {
     );
 }
 
+export function isPlotDataFile(fileName: string): boolean {
+    return fileName.endsWith(".plot.csv") || fileName.endsWith(".plot.tsv");
+}
+
 export const generateEmptyDocument = (
     documentUid: string,
     filename: string
