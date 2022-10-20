@@ -14,16 +14,22 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
     ${!isMobile() ? "" : "display: none;"}
 
     & > div {
-        height: ${tabListHeight}px;
-        bottom: 0;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-            0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        height: 100%;
+        position: relative;
+    }
+    & > div > div {
+        height: 100%;
+        position: absolute;
+        width: 100%;
     }
     .tablist {
         width: 100%;
         height: 100%;
         z-index: 1;
         background-color: ${theme.background}!important;
+        height: ${tabListHeight}px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+            0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
     }
     .tablist > div {
         height: 100%;
@@ -42,12 +48,14 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
         align-items: center;
         padding-left: 12px;
     }
+    form {
+        padding-top: ${tabListHeight}px;
+    }
 `;
 
 TabListStyle = styled(TabListStyle)`
     z-index: 1;
     background-color: ${(properties) => properties.theme.background}!important;
-    height: ${tabListHeight}px;
     bottom: 0;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
         0 3px 1px -2px rgba(0, 0, 0, 0.2);
@@ -59,6 +67,7 @@ TabListStyle = styled(TabListStyle)`
 
     .tablist {
         width: 100%;
+        height: ${tabListHeight}px;
     }
     & > div {
         height: 100%;

@@ -5,7 +5,6 @@ import { _scrollbars } from "@styles/_common";
 export const ConsoleContainer = (theme: Theme): SerializedStyles => css`
     height: calc(100% - 42px);
     width: 100%;
-    top: 0;
     bottom: 0;
     left: 0;
     position: absolute;
