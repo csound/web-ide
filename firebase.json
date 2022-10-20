@@ -4,32 +4,12 @@
         "source": "./functions"
     },
     "hosting": {
-        "public": "./build",
+        "public": "build",
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
         "rewrites": [
             {
                 "source": "/manual_main.js",
                 "destination": "/manual/main.js"
-            },
-            {
-                "source": "/favicon.ico",
-                "destination": "/favicon.ico"
-            },
-            {
-                "source": "/manifest.json",
-                "destination": "/manifest.json"
-            },
-            {
-                "source": "/robots.txt",
-                "destination": "/robots.txt"
-            },
-            {
-                "source": "/sitemap.xml",
-                "destination": "/sitemap.xml"
-            },
-            {
-                "source": "/sitemap.xml.gz",
-                "destination": "/sitemap.xml.gz"
             },
             {
                 "source": "/",
