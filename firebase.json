@@ -12,6 +12,14 @@
                 "destination": "/manual/main.js"
             },
             {
+                "source": "/favicon.ico",
+                "destination": "/favicon.ico"
+            },
+            {
+                "source": "/manifest.json",
+                "destination": "/manifest.json"
+            },
+            {
                 "source": "/robots.txt",
                 "destination": "/robots.txt"
             },
