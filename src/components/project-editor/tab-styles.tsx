@@ -48,9 +48,6 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
         align-items: center;
         padding-left: 12px;
     }
-    form {
-        padding-top: ${tabListHeight}px;
-    }
 `;
 
 TabListStyle = styled(TabListStyle)`
@@ -160,6 +157,7 @@ PanelStyle = styled(PanelStyle)`
     height: 100%;
     position: absolute !important;
     padding: 0 !important;
+    padding-top: 38px !important;
     background-color: ${(properties) => properties.theme.background}!important;
     ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
 `;
