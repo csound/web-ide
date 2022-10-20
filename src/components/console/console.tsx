@@ -13,12 +13,7 @@ const Console = (): React.ReactElement => {
                 scrollHeight = 0,
                 scrollTop = 0
             } = consoleReference.current;
-            if (clientHeight >= scrollHeight) {
-                consoleReference.current.scrollTop = scrollHeight;
-            } else if (
-                scrollHeight - scrollTop < clientHeight ||
-                scrollTop < clientHeight * 2
-            ) {
+            if (scrollTop + clientHeight < scrollHeight) {
                 consoleReference.current.scrollTop = scrollHeight;
             }
         }

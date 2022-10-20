@@ -46,7 +46,6 @@ const DragTabWithCloseButton = ({
                     css={ProjectEditorCloseButtonStyle}
                     onClick={(event) => {
                         closeCallback();
-                        event.stopPropagation();
                     }}
                 >
                     <FontAwesomeIcon
@@ -139,7 +138,7 @@ const BottomTabs = (): React.ReactElement => {
                         ))}
                     </DragTabList>
 
-                    <PanelList>
+                    <PanelList style={{ height: "100%", width: "100%" }}>
                         {(openTabs || []).map((k, index) => {
                             const C: any = tabsData[k]["component"];
                             return (

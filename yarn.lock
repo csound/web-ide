@@ -1777,10 +1777,10 @@
     react-motion "^0.5.2"
     react-transition-group "^4.4.1"
 
-"@hlolli/react-tabtab@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@hlolli/react-tabtab/-/react-tabtab-3.0.0.tgz#6ecdb7fa6a657fca6a6329c93ec25b06ff9b3224"
-  integrity sha512-nUi/LVgoBoZ37KJemamORjhJwvIzjjRPh7tCicc9bJBVlQNG5xTVCR6J517MUq6/sT5RMMto4VioX9/r5BKojg==
+"@hlolli/react-tabtab@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@hlolli/react-tabtab/-/react-tabtab-3.0.1.tgz#10a57bf662c380e3d0fd1350f81d6b5c34e443e1"
+  integrity sha512-DXSR1BuoTVCmx/FZyqrsI/tFmZSUpCuDQNB3v8BZyCvGbjwrmSDwBWoYY3I9aA5WwQf0D+QmMGpL5zMiqEUHNg==
   dependencies:
     array-move "^4.0.0"
     invariant "^2.2.4"

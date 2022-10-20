@@ -149,7 +149,7 @@ const bottomPanelStyle = `
 PanelStyle = styled(PanelStyle)`
     width: 100%;
     height: 100%;
-    position: absolute;
+    position: absolute !important;
     padding: 0 !important;
     background-color: ${(properties) => properties.theme.background}!important;
     ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
