@@ -389,7 +389,12 @@ module.exports = function (webpackEnv, env_ = {}) {
                 resolvePluginsRelativeTo: __dirname
             }),
             new CopyPlugin({
-                patterns: [{ from: "public/static-manual-index.json" }]
+                patterns: [
+                    { from: "public/*.json" },
+                    { from: "public/*.png" },
+                    { from: "public/*.ico" },
+                    { from: "public/img", to: "img" }
+                ]
             })
         ].filter((x) => x),
         performance: false
