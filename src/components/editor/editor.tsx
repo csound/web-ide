@@ -100,10 +100,17 @@ const CodeEditor = ({
 
     useEffect(() => {
         if (!window.csoundSynopsis) {
-            fetch("/static-manual-index.json").then(async (response) => {
-                window.csoundSynopsis = await response.json();
-                setHasSynopsis(true);
-            });
+            fetch("/static-manual-index.json")
+                .then(async (response) => {
+                    window.csoundSynopsis = await response.json();
+                    setHasSynopsis(true);
+                })
+                .catch((error: any) =>
+                    console.error(
+                        "Error while getting static-manual-index.json",
+                        error
+                    )
+                );
         } else {
             setHasSynopsis(true);
         }

@@ -390,9 +390,13 @@ module.exports = function (webpackEnv, env_ = {}) {
             }),
             new CopyPlugin({
                 patterns: [
-                    { from: "public/*.json" },
-                    { from: "public/*.png" },
-                    { from: "public/*.ico" },
+                    { from: "public/manifest.json", to: "." },
+                    { from: "public/static-manual-index.json", to: "." },
+                    { from: "public/favicon.ico", to: "." },
+                    { from: "public/favicon-16x16.png", to: "." },
+                    { from: "public/favicon-32x32.png", to: "." },
+                    { from: "public/android-chrome-192x192.png", to: "." },
+                    { from: "public/android-chrome-512x512.png", to: "." },
                     { from: "public/img", to: "img" }
                 ]
             })
