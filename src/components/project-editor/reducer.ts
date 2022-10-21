@@ -123,11 +123,15 @@ const ProjectEditorReducer = (
                     newAppendedState.tabDock.openDocuments.length - 1,
                     newAppendedState
                 );
-                storeTabDockState(
-                    action.projectUid,
-                    newState.tabDock.openDocuments,
-                    newState.tabDock.tabIndex
-                );
+
+                if (!action.isNonCloudDocument) {
+                    storeTabDockState(
+                        action.projectUid,
+                        newState.tabDock.openDocuments,
+                        newState.tabDock.tabIndex
+                    );
+                }
+
                 return newState;
             } else {
                 return assocPath(

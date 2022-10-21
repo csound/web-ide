@@ -1,35 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import {
+    LineChart,
+    Line,
+    ResponsiveContainer,
+    XAxis,
+    YAxis
+    // ResponsiveContainer,
+    // Line,
+    // XAxis,
+    // YAxis,
+    // ReferenceLine,
+    // ReferenceArea,
+    // ReferenceDot,
+    // Tooltip,
+    // CartesianGrid,
+    // Legend,
+    // Brush,
+    // ErrorBar,
+    // AreaChart,
+    // Area,
+    // Label,
+    // LabelList
+} from "recharts";
+// import { NonCloudFile } from "@comp/file-tree/types";
+// import { IDocument } from "@comp/projects/types";
 
-type DataPlotterProperties = {
-    dataFileUrl: string;
-};
+type PlotterDataType = "csv" | "tsv";
 
-const DataPlotter = ({ dataFileUrl }: DataPlotterProperties) => {
-    return <h1>HELLO!</h1>;
-    // const [data, setData] = useState("");
-    // // console.log("AFURL: " + audioFileUrl)
-    // // console.log("Data: " + data)
-    // useEffect(() => {
-    //     if (!data) {
-    //         storageReference(audioFileUrl).then((storage) => {
-    //             getDownloadURL(storage).then((fileUrl) => {
-    //                 setData(fileUrl);
-    //             });
-    //         });
-    //     }
-    // }, [data, setData, audioFileUrl]);
+const DataPlotter = ({
+    dataString,
+    dataType
+}: {
+    dataString: string;
+    dataType: PlotterDataType;
+}) => {
+    const [data, setData] = useState([] as any[]);
+    useEffect(() => {
+        const nextData = dataString
+            .split(dataType === "csv" ? "," : /\t|\n/)
+            .map((numericString, index) => ({
+                value: Number.parseFloat(numericString),
+                label: `${index}`
+            }));
+        setData(nextData);
+    }, [dataString, dataType, setData]);
 
-    // return !data ? (
-    //     <div>
-    //         <p>Looking up audio file URL...</p>
-    //     </div>
-    // ) : (
-    //     <div className={classes.root}>
-    //         <audio controls>
-    //             <source src={data} />
-    //         </audio>
-    //     </div>
-    // );
+    return (
+        <div style={{ width: "100%", height: "100%", padding: "24px" }}>
+            <ResponsiveContainer>
+                <LineChart
+                    style={{ margin: "auto" }}
+                    data={data}
+                    key={dataString}
+                >
+                    <XAxis />
+                    <YAxis />
+                    <Line type="linear" dataKey="value" dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
 };
 
 export default DataPlotter;

@@ -18,6 +18,7 @@ export const STORE_EDITOR_INSTANCE = PREFIX + "STORE_EDITOR_INSTANCE";
 export interface IOpenDocument {
     editorInstance: any;
     uid: string;
+    isNonCloudDocument?: boolean;
 }
 
 export interface ITabDock {

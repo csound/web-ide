@@ -49,7 +49,10 @@ import { ReactComponent as DirectoryOpen } from "@root/svgs/fad-open.svg";
 import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
 import { IDocument, IDocumentsMap, IProject } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
-import { tabOpenByDocumentUid } from "@comp/project-editor/actions";
+import {
+    tabOpenByDocumentUid,
+    tabOpenNonCloudDocument
+} from "@comp/project-editor/actions";
 import {
     selectIsOwner,
     selectCurrentTabDocumentUid
@@ -488,9 +491,6 @@ const makeTree = (
                                                         filename={
                                                             document_.filename
                                                         }
-                                                        nestingDepth={
-                                                            path.length
-                                                        }
                                                     />
 
                                                     <p css={SS.filenameStyle}>
@@ -546,8 +546,6 @@ const FileTree = (): React.ReactElement => {
     const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
 
     const filelist = values(documents || {});
-    // console.log({ nonCloudFiles });
-    // const nonCloudFiles_ = [{ name: "xxx.wav" }];
 
     return (
         <React.Fragment>
@@ -575,9 +573,25 @@ const FileTree = (): React.ReactElement => {
                             return (
                                 <div
                                     key={file.name + index}
-                                    style={{ paddingLeft: "6px" }}
+                                    style={{
+                                        paddingLeft: "6px",
+                                        cursor: "pointer"
+                                    }}
                                 >
-                                    <ListItem css={SS.listItem}>
+                                    <ListItem
+                                        onClick={() =>
+                                            dispatch(
+                                                tabOpenNonCloudDocument(
+                                                    file.name
+                                                )
+                                            )
+                                        }
+                                        css={SS.listItem}
+                                        style={{
+                                            position: "relative",
+                                            height: "42px"
+                                        }}
+                                    >
                                         <FileExtIcon
                                             filename={file.name}
                                             isBinary={mimeType.startsWith(

@@ -177,6 +177,28 @@ export const playCsdFromFs = (
             const result = await csoundObj.compileCsd(csdPath);
 
             if (result === 0) {
+                const filesPre = await csoundObj.fs.readdir("/");
+                csoundObj.once("realtimePerformanceEnded", async () => {
+                    const filesPost = await csoundObj.fs.readdir("/");
+                    const newFiles = difference(filesPost, filesPre);
+
+                    for (const newFile of newFiles) {
+                        const buffer = await csoundObj.fs.readFile(newFile);
+                        if (buffer) {
+                            dispatch(
+                                addNonCloudFile({
+                                    buffer: await csoundObj.fs.readFile(
+                                        newFile
+                                    ),
+                                    createdAt: new Date(),
+                                    name: newFile
+                                })
+                            );
+                        }
+                    }
+
+                    await syncFs(csoundObj, projectUid, storeState);
+                });
                 await csoundObj.start();
                 dispatch(setCsoundPlayState("playing"));
             } else {

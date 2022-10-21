@@ -142,6 +142,18 @@ export const tabOpenByDocumentUid = (
     };
 };
 
+export const tabOpenNonCloudDocument = (
+    documentName: string
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch: any) => {
+        dispatch({
+            type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
+            isNonCloudDocument: true,
+            documentUid: documentName
+        });
+    };
+};
+
 export const closeTabDock = (): Record<string, any> => {
     return {
         type: TAB_DOCK_CLOSE
