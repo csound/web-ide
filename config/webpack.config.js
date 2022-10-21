@@ -392,9 +392,9 @@ module.exports = function (webpackEnv, env_ = {}) {
                 patterns: [
                     { from: "public/manifest.json", to: "." },
                     { from: "public/static-manual-index.json", to: "." },
-                    { from: "public/facivon.ico", to: "." },
-                    { from: "public/facivon-16x16.ico", to: "." },
-                    { from: "public/facivon-32x32.ico", to: "." },
+                    { from: "public/favicon.ico", to: "." },
+                    { from: "public/favicon-16x16.ico", to: "." },
+                    { from: "public/favicon-32x32.ico", to: "." },
                     { from: "public/android-chrome-192x192.png", to: "." },
                     { from: "public/android-chrome-512x512.png", to: "." },
                     { from: "public/img", to: "img" }
