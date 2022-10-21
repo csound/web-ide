@@ -110,7 +110,7 @@ function EditorForDocument({
         )
     ) {
         const utf8decoder = new TextDecoder();
-        console.log(doc);
+
         return (
             <DataPlotter
                 dataType={
@@ -122,8 +122,9 @@ function EditorForDocument({
                         : "csv"
                 }
                 dataString={
-                    (doc as IDocument).currentValue ??
-                    (doc as NonCloudFile).buffer
+                    (doc as IDocument).currentValue
+                        ? (doc as IDocument).currentValue
+                        : (doc as NonCloudFile).buffer
                         ? utf8decoder.decode((doc as NonCloudFile).buffer)
                         : ""
                 }
@@ -369,7 +370,6 @@ const ProjectEditor = ({
         ),
         openDocuments
     );
-
     const switchTab = (index: number) => {
         localStorage.setItem(projectUid + ":tabIndex", `${index}`);
         dispatch(tabSwitch(index));
