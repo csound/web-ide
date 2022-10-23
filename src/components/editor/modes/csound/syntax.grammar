@@ -1,0 +1,207 @@
+@dialects { csd }
+
+@top Program { rootstatement }
+
+
+@precedence {
+  Identifier,
+  left @left,
+  right @right
+}
+
+
+
+@skip { space | LineComment | BlockComment | newline }
+
+
+rootstatement {
+  CsdOrcPre
+  (InstrDeclaration | Statement)*
+}
+
+
+BinaryExpression {
+  expression !right ArithOpRight expression |
+  expression !left ArithOpLeft expression
+  
+}
+
+
+commaSep<expr> { expr ("," expr)*  }
+commaSepStrict<expr> { expr "," expr  }
+
+CallbackExpression {
+  "(" expressionsOptional ")"
+}
+
+expression {
+  BinaryExpression |
+  Number |
+  String
+}
+
+
+expressionsOptional { (commaSep<expression>)* }
+expressions { (commaSep<expression>) | CallbackExpression }
+
+ArgumentsOptional { (commaSep<Identifier>) }
+ArgumentsStrict { (commaSepStrict<Identifier>) }
+
+Statement {
+  Identifier AssignOp Opcode expressions |
+  
+  GlobalConstants AssignOp (Number | String |Identifier) |
+  ArgumentsStrict AssignOp Opcode expressions |
+  ArgumentsStrict Opcode ArgumentsStrict |
+  ArgumentsStrict Opcode expressions |
+  Identifier AssignOp Identifier |
+  Opcode expressions
+  
+}
+
+InstrName {
+  String | Number
+}
+
+InstrDeclaration {
+  Instr InstrName Statement* Endin
+}
+
+Identifier {
+  AudioRateIdentifier | 
+  KontrolRateIdentifier | 
+  InitRateIdentifier |
+  PFieldIdentifier
+}
+
+ CsdOrcPre {
+    (XmlOpen | XmlClose)*
+    XmlCsInstrumentsOpen
+  }
+
+@tokens {
+
+  LineComment { ";" ![\n]* | "//" ![\n]* }
+
+  BlockComment { "/*" blockCommentRest }
+
+  blockCommentRest { ![*] blockCommentRest | "*" blockCommentAfterStar }
+
+  blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
+
+  newline { $[\r\n\u2028\u2029] }
+
+
+  space { $[ \t]+ }
+
+  String { '"' (![\\\n"] | "\\" _)* '"'? }
+
+  Number { (@digit+ | ".") @digit* }
+  Instr { "instr" }
+  Endin { "endin" }
+
+
+  XmlOpen { "<" @asciiLetter+ ">" }
+  XmlClose {"<" "/" @asciiLetter+ ">"  }
+  XmlCsInstrumentsOpen { "<CsInstruments>" }
+  XmlCsInstrumentsClose { "</CsInstruments>" }
+ 
+
+  GlobalConstants {
+    "0dbfs" |
+    "ksmps" |
+    "sr" |
+    "kr" |
+    "nchnls" |
+    "nchnls_i"
+  }
+
+  // CsoundXmlText[@dialect=csd] {  ($[A-Za-z]+) }
+
+  AudioRateIdentifier {  ("a" $[A-Za-z_0-9]+) }
+  KontrolRateIdentifier { ("k" $[A-Zb-z_0-9]+) }
+  InitRateIdentifier { ("i" $[A-Za-z_0-9]+) }
+  PFieldIdentifier {  ("p" $[0-9]+) }
+
+  opcode {
+    //DONT_DELETE
+  }
+
+  Opcode {
+    opcode (":a" | ":k" | ":i" | ":f")?
+  }
+  
+  "(" ")" "[" "]" "{" "}"
+
+  AssignOp {
+    "="  |
+    "+=" |
+    "-=" |
+    "*=" |
+    "/=" |
+    "|=" |
+    "&="
+  }
+  ArithOpRight {
+    "~" |
+    "!" |
+    "¬"
+  }
+
+  ArithOpLeft {
+    ("/" ![/|*]+ ) |
+    "+"  |
+    "-"  |
+    "*"  |
+    "%"  |
+    "^"  |
+    "#"  |
+    "&"  |
+    "|"  |
+    "?"  |
+    "&&" |
+    "||" |
+    "<"  |
+    ">"  |
+    "<=" |
+    ">=" |
+    "==" |
+    "!=" |
+    ">>" |
+    "<<"
+  }
+
+  ControlFlowOp {
+    "if"     |
+    "then"   |
+    "else"   |
+    "elseif" |
+    "while"  |
+    "do"     |
+    "od"
+  }
+
+
+  @precedence {
+    XmlOpen,
+    XmlClose,
+    XmlCsInstrumentsOpen,
+    XmlCsInstrumentsClose,
+    CsdOrcPre,
+    Instr,
+    Endin,
+    GlobalConstants,
+    AssignOp,
+    ArithOpRight,
+    ArithOpLeft,
+    Number,
+    Opcode,
+    AudioRateIdentifier,
+    KontrolRateIdentifier,
+    InitRateIdentifier,
+    PFieldIdentifier,
+    CsoundOptionsText
+  }
+
+
+}

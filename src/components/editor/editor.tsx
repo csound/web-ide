@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import CodeMirror from "codemirror";
+import {
+    EditorView,
+    drawSelection,
+    keymap,
+    lineNumbers
+} from "@codemirror/view";
+import { autocompletion } from "@codemirror/autocomplete";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import { bracketMatching, syntaxHighlighting } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
 // import { editorEvalCode, uncommentLine } from "./utils";
 import { debounce } from "throttle-debounce";
 import { IDocument, IProject } from "../projects/types";
@@ -10,26 +19,12 @@ import { pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
 import * as projectEditorActions from "../project-editor/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
-import { registerCsoundMode } from "./modes/csound/csound";
+import {
+    monokaiEditor,
+    monokaiHighlightStyle
+} from "@styles/code-mirror-painter";
+import { csoundMode } from "./modes/csound/csound";
 import * as SS from "./styles";
-import "./plugins/autosuggest";
-import "codemirror/addon/comment/comment";
-import "codemirror/addon/edit/matchbrackets";
-import "codemirror/addon/edit/closebrackets";
-import "codemirror/addon/search/search";
-import "codemirror/addon/search/searchcursor";
-import "codemirror/addon/search/jump-to-line";
-import "codemirror/addon/search/matchesonscrollbar";
-import "codemirror/addon/search/matchesonscrollbar.css";
-import "codemirror/addon/dialog/dialog";
-import "codemirror/addon/dialog/dialog.css";
-import "codemirror/keymap/vim";
-import "codemirror/keymap/emacs";
-import "codemirror/addon/scroll/simplescrollbars";
-import "codemirror/addon/scroll/simplescrollbars.css";
-import "codemirror/lib/codemirror.css";
-
-registerCsoundMode(CodeMirror);
 
 declare global {
     interface Window {
@@ -39,16 +34,26 @@ declare global {
 
 const cursorState = {};
 
-const onScroll = debounce(100, (editor: any) => {
-    const documentUid = editor.state.documentUid;
-    if (documentUid) {
-        cursorState[`${documentUid}:scrollTop`] = (editor as any).doc.scrollTop
-            ? (editor as any).doc.scrollTop
-            : 0;
-    }
-});
+// const onScroll = debounce(100, (editor: any) => {
+//     const documentUid = editor.state.documentUid;
+//     if (documentUid) {
+//         cursorState[`${documentUid}:scrollTop`] = (editor as any).doc.scrollTop
+//             ? (editor as any).doc.scrollTop
+//             : 0;
+//     }
+// });
 
 let updateReduxDocumentValue;
+
+// const autoLanguage = EditorState.transactionExtender.of((tr) => {
+//     if (!tr.docChanged) return null;
+//     let docIsHTML = /^\s*</.test(tr.newDoc.sliceString(0, 100));
+//     let stateIsHTML = tr.startState.facet(language) == htmlLanguage;
+//     if (docIsHTML == stateIsHTML) return null;
+//     return {
+//         effects: languageConf.reconfigure(docIsHTML ? html() : javascript())
+//     };
+// });
 
 const CodeEditor = ({
     documentUid,
@@ -63,12 +68,17 @@ const CodeEditor = ({
     const [hasSynopsis, setHasSynopsis] = useState(false);
 
     const [editorReference, setEditorReference]: [
-        CodeMirror.Editor | undefined,
-        (argument: CodeMirror.Editor) => void
+        EditorView | undefined,
+        (argument: EditorView) => void
+    ] = useState();
+
+    const [, setEditorState]: [
+        EditorState | undefined,
+        (argument: EditorState) => void
     ] = useState();
 
     const [onChangedCallback, setOnChangedCallback]: [
-        ((cm: CodeMirror.Editor) => void) | undefined,
+        ((cm: EditorView) => void) | undefined,
         any
     ] = useState();
 
@@ -85,15 +95,15 @@ const CodeEditor = ({
             )
         );
         if (editorReference && onChangedCallback) {
-            editorReference.off("change", onChangedCallback);
+            // editorReference.off("change", onChangedCallback);
         }
 
         if (editorReference) {
-            editorReference.off("scroll", onScroll);
-            cursorState[`${documentUid}:cursor_pos`] =
-                editorReference.getCursor();
-            cursorState[`${documentUid}:history`] =
-                editorReference.getHistory();
+            // editorReference.off("scroll", onScroll);
+            cursorState[`${documentUid}:anchor`] =
+                editorReference.state.selection.main.anchor;
+            // cursorState[`${documentUid}:history`] =
+            //     editorReference.getHistory();
         }
         updateReduxDocumentValue && updateReduxDocumentValue.cancel();
     }, [dispatch, projectUid, documentUid, editorReference, onChangedCallback]);
@@ -149,46 +159,70 @@ const CodeEditor = ({
             textfieldReference &&
             textfieldReference.current
         ) {
-            const editor = CodeMirror.fromTextArea(
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                textfieldReference.current!,
-                {
-                    autoCloseBrackets: true,
-                    autoSuggest: true,
-                    fullScreen: false,
-                    height: "auto",
-                    lineNumbers: true,
-                    lineWrapping: true,
-                    matchBrackets: true,
-                    viewportMargin: Number.POSITIVE_INFINITY,
-                    scrollbarStyle: "simple",
-                    extraKeys: {
-                        // noop default keybindings and handle from react
-                        // all defaults: code-mirror/src/input/keymap.js
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Ctrl-F": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Cmd-F": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Ctrl-Z": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Cmd-Z": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Shift-Ctrl-Z": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Ctrl-Y": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Shift-Cmd-Z": () => {},
-                        // eslint-disable-next-line @typescript-eslint/no-empty-function
-                        "Cmd-Y": () => {}
-                    },
-                    mode: ["csd", "orc", "sco", "udo"].includes(documentType)
-                        ? { name: "csound", documentType }
-                        : "text/plain"
-                } as any
-            );
+            const initialState = EditorState.create({
+                doc: currentDocumentValue,
+                extensions: [
+                    syntaxHighlighting(monokaiHighlightStyle, {
+                        fallback: true
+                    }),
+                    drawSelection(),
+                    csoundMode(),
+                    history(),
+                    keymap.of([...defaultKeymap, ...historyKeymap]),
+                    lineNumbers(),
+                    bracketMatching(),
+                    monokaiEditor,
+                    autocompletion()
+                ]
+            });
 
-            setEditorReference(editor as any);
+            const editor = new EditorView(
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
+                {
+                    parent: textfieldReference.current!,
+                    state: initialState
+                    // lineWrapping: true
+                    // extensions: {
+                    //     autoCloseBrackets: true,
+                    // autoSuggest: true,
+                    // fullScreen: false,
+                    // height: "auto",
+                    // lineNumbers: true,
+                    // lineWrapping: true,
+                    // matchBrackets: true,
+                    // viewportMargin: Number.POSITIVE_INFINITY,
+                    // scrollbarStyle: "simple",
+                    // extraKeys: {
+                    //     // noop default keybindings and handle from react
+                    //     // all defaults: code-mirror/src/input/keymap.js
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Ctrl-F": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Cmd-F": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Ctrl-Z": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Cmd-Z": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Shift-Ctrl-Z": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Ctrl-Y": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Shift-Cmd-Z": () => {},
+                    //     // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    //     "Cmd-Y": () => {}
+                    // },
+                    // mode: ["csd", "orc", "sco", "udo"].includes(
+                    //     documentType
+                    // )
+                    //     ? { name: "csound", documentType }
+                    //     : "text/plain"
+                    // }
+                }
+            );
+            setEditorReference(editor);
+            setEditorState(initialState);
 
             dispatch(
                 projectEditorActions.storeEditorInstance(
@@ -198,22 +232,21 @@ const CodeEditor = ({
                 )
             );
             editor.focus();
-            const lastLine = pathOr(
-                0,
-                [`${documentUid}:cursor_pos`, "line"],
-                cursorState
-            );
-            const lastColumn = pathOr(
-                0,
-                [`${documentUid}:cursor_pos`, "ch"],
-                cursorState
-            );
-            editor.state.documentUid = documentUid;
+            const lastAnchor = propOr(0, `${documentUid}:anchor`, cursorState);
+            // const lastColumn = pathOr(
+            //     0,
+            //     [`${documentUid}:cursor_pos`, "ch"],
+            //     cursorState
+            // );
 
-            editor.setCursor({ line: lastLine, ch: lastColumn });
+            (editor.state as any).documentUid = documentUid;
 
-            const lastScrollTop = cursorState[`${documentUid}:scrollTop`] || 0;
-            editor.scrollTo(0, lastScrollTop);
+            editor.dispatch({
+                selection: { anchor: lastAnchor }
+            });
+
+            // const lastScrollTop = cursorState[`${documentUid}:scrollTop`] || 0;
+            // editor.scrollTo(0, lastScrollTop);
 
             setIsMounted(true);
             updateReduxDocumentValue = debounce(
@@ -238,10 +271,11 @@ const CodeEditor = ({
                     );
             };
             setOnChangedCallback(changeCallback);
-            editor.on("change", changeCallback);
-            editor.on("scroll", onScroll);
+            // editor.on("change", changeCallback);
+            // editor.on("scroll", onScroll);
         }
     }, [
+        currentDocumentValue,
         dispatch,
         documentUid,
         projectUid,
@@ -253,14 +287,11 @@ const CodeEditor = ({
     ]);
 
     return typeof currentDocumentValue === "string" && hasSynopsis ? (
-        <form style={{ overflowY: "hidden", height: "100%" }}>
-            <textarea
-                ref={textfieldReference}
-                css={SS.root}
-                style={{ fontSize: `16px !important` }}
-                defaultValue={currentDocumentValue}
-            ></textarea>
-        </form>
+        <div
+            ref={textfieldReference}
+            css={SS.root}
+            style={{ fontSize: `16px !important` }}
+        />
     ) : (
         <></>
     );

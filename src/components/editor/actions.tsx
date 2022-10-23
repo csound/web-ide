@@ -1,7 +1,7 @@
-import CodeMirror from "codemirror";
+import { EditorView } from "codemirror";
 import { store } from "@root/store";
 import { IStore } from "@store/types";
-import { lookupManualString } from "../project-editor/actions";
+// import { lookupManualString } from "../project-editor/actions";
 
 export const toggleEditorFullScreen = (): void => {
     const storeState = store.getState() as IStore;
@@ -12,22 +12,21 @@ export const toggleEditorFullScreen = (): void => {
     editorInstance.display.wrapper.requestFullscreen();
 };
 
-export const manualEntryAtPoint = (editorReference: CodeMirror.Editor) => {
+export const manualEntryAtPoint = (editorReference: EditorView) => {
     return async (dispatch: (any) => void): Promise<void> => {
-        if (!editorReference || !window.csoundSynopsis) {
-            return;
-        }
-
-        const cursor = editorReference.getCursor();
-        const token = editorReference
-            .getTokenAt(cursor)
-            .string.replace(/:.*/, "");
-        const manualEntry = window.csoundSynopsis.find(
-            (opc) => opc.opname === token
-        );
-        if (manualEntry) {
-            dispatch(lookupManualString());
-            setTimeout(() => dispatch(lookupManualString(manualEntry.id)), 10);
-        }
+        // if (!editorReference || !window.csoundSynopsis) {
+        //     return;
+        // }
+        // const cursor = editorReference.getCursor();
+        // const token = editorReference
+        //     .getTokenAt(cursor)
+        //     .string.replace(/:.*/, "");
+        // const manualEntry = window.csoundSynopsis.find(
+        //     (opc) => opc.opname === token
+        // );
+        // if (manualEntry) {
+        //     dispatch(lookupManualString());
+        //     setTimeout(() => dispatch(lookupManualString(manualEntry.id)), 10);
+        // }
     };
 };

@@ -2,14 +2,9 @@ import { css, SerializedStyles, Theme } from "@emotion/react";
 import { _scrollbars } from "@root/styles/_common";
 
 export const root = (theme: Theme): SerializedStyles => css`
-    height: auto;
+    height: 100%;
     width: 100%;
-    overflow: auto;
+    overflow-y: scroll;
     flex: auto;
-
-    .CodeMirror-scroll,
-    .CodeMirror-vscrollbar,
-    .CodeMirror-hscrollbar {
-        ${_scrollbars(theme)}
-    }
+    ${_scrollbars(theme)}
 `;

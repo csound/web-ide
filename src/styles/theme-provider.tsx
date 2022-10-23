@@ -9,8 +9,6 @@ import { useSelector } from "react-redux";
 import { ThemeProvider } from "@emotion/react";
 import { assocPath, path, pipe } from "ramda";
 import { Theme } from "@emotion/react";
-import { CodeMirrorPainter } from "./code-mirror-painter";
-import themeMonokai from "./_theme-monokai";
 import { makeMuiTheme } from "./material-ui-style";
 
 const ThirdPartyLibraryPainter = ({ theme }) => (
@@ -61,7 +59,6 @@ const CsoundWebIdeThemeProvider = (properties) => {
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <WebIdeCssBaseline theme={theme} />
-                <CodeMirrorPainter theme={theme} />
                 <ThirdPartyLibraryPainter theme={theme} />
                 {properties.children}
             </ThemeProvider>

@@ -1,100 +1,62 @@
 import React from "react";
 
-export const CodeMirrorPainter = ({ theme }) => (
-    <style>
-        {`.CodeMirror { background: ${theme.background};
-                        color: ${theme.textColor};
-                        font-size: 16px!important;
-                        line-height: 22px!important;
-                       }
-          .CodeMirror-selected { background: ${theme.highlightBackground}; }
-          .CodeMirror-focused .CodeMirror-selected,
-          .CodeMirror-line::selection,
-          .CodeMirror-line > span::selection,
-          .CodeMirror-line > span > span::selection
-              { background: ${theme.selectedTextColor}; }
-          .CodeMirror-gutter { background: ${theme.gutterBackground};  }
-          .CodeMirror-gutters { background: ${theme.gutterBackground};
-                                border-right: 1px solid ${theme.textColor};
-                               }
-          .CodeMirror-guttermarker { color: ${theme.gutterMarker}; }
-          .CodeMirror-guttermarker-subtle { color: ${theme.gutterMarkerSubtle}; }
-          .CodeMirror-linenumber { color: ${theme.lineNumber}; }
-          .CodeMirror-cursor { border-left: 1px solid ${theme.cursor}; }
-          .CodeMirror-hints {
-                     z-index: 3;
-                     background-color: ${theme.background};
-                     position: absolute;
-                     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-                     color: ${theme.lineNumber};
-                     border: 2px solid ${theme.line};
-                     border-radius: 6px;
-                     list-style: none;
-                     font-family: ${theme.font.monospace};
-                     margin: 0;
-                     padding: 0;
-                     font-size: 16px;
-                     max-height: 138px;
-                     overflow: hidden;
-          }
-          .CodeMirror-hint {
-                      line-height: 20px;
-                      padding: 6px!important;
-                      padding-right: 6px!important;
-                      position: relative;
-                      display: block;
-                      margin: 0;}
-          .CodeMirror-hint-active {
-                   background-color: ${theme.highlightBackgroundAlt};
-                   color: ${theme.opcode};
-                   font-weight: 500;
-          }
-          .CodeMirror-dialog-top {
-            font-family: ${theme.font.monospace};
-          }
+import { EditorView } from "@codemirror/view";
+import { HighlightStyle } from "@codemirror/language";
+import { tags } from "@lezer/highlight";
+import {
+    opcodeTag,
+    bracketTag,
+    iRateVarTag,
+    kRateVarTag,
+    aRateVarTag,
+    pFieldTag,
+    xmlTag,
+    globalConstantTag,
+    defineOperatorTag
+} from "@comp/editor/modes/csound/csound";
+import monokaiTheme from "./_theme-monokai";
 
-          .cm-attribute { color: ${theme.attribute}!important; }
-          .cm-variable   {color: ${theme.opcode}; font-weight: 500;}
-          .cm-keyword   {color: ${theme.keyword}!important; font-weight: 500;}
-          .cm-string   {color: ${theme.string}!important; font-weight: 500;}
-          .cm-variable-2,.cm-tag {color: ${theme.aRateVar}!important; font-weight: 500;}
-          .cm-variable-3 {color: ${theme.iRateVar}!important; font-weight: 500;}
-          .cm-variable-4 {color: ${theme.kRateVar}; font-weight: 500;}
-          .cm-variable-5 {color: ${theme.fRateVar}; font-weight: 500;}
-          .cm-variable-6 {color: ${theme.pField}; font-weight: 800;}
-          .cm-number {color: ${theme.number}!important;}
-          .cm-operator {color: ${theme.operator};}
-          .cm-global {font-style: italic; font-weight: 800;}
-          .cm-s-default {color: ${theme.textColor};}
-          .cm-bracket { color: ${theme.textColor}; ]
-}
-
-          .cm-error { color: ${theme.errorText}; }
-          .cm-comment { color: ${theme.comment}!important; }
-          .cm-comment.cm-attribute { color: ${theme.commentAttribute}; }
-          .cm-comment.cm-def { color: ${theme.commentDef}; }
-          .cm-comment.cm-tag { color: ${theme.commentTag}; }
-          .cm-comment.cm-type { color: ${theme.commentType}; }
-
-          /* blink eval */
-          @keyframes flash-animation {
-              0% {
-                 background-color: ${theme.flash};
-              }
-              100% {
-                 background-color: ${theme.flashFade};
-              }
-          }
-          .blinkEval {
-              z-index: 9999999;
-              animation-name: flash-animation;
-              animation-duration: 0.1s;
-              animation-fill-mode: forwards;
-          }
-          .blinkEvalError {
-              z-index: 9999999;
-              background-color: ${theme.errorText};
-          }
-    `}
-    </style>
+export const monokaiEditor = EditorView.theme(
+    {
+        "&": {
+            color: "white",
+            backgroundColor: monokaiTheme.background
+        },
+        ".cm-content": {
+            caretColor: "#0e9",
+            fontSize: "18px",
+            fontFamily: "'Fira Mono', monospace"
+        },
+        "&.cm-focused .cm-cursor": {
+            borderLeftColor: "#0e9"
+        },
+        "&.cm-focused .cm-selectionBackground, ::selection": {
+            backgroundColor: "#074"
+        },
+        ".cm-gutters": {
+            backgroundColor: "#3E3D31",
+            color: "#ddd",
+            border: "none"
+        },
+        ".cm-lineNumbers": {
+            fontFamily: "'Fira Mono', monospace",
+            fontSize: "16px"
+        }
+    },
+    { dark: true }
 );
+
+export const monokaiHighlightStyle = HighlightStyle.define([
+    { tag: tags.comment, color: monokaiTheme.comment },
+    { tag: tags.lineComment, color: monokaiTheme.comment },
+    { tag: tags.string, color: monokaiTheme.string },
+    { tag: opcodeTag, color: monokaiTheme.opcode },
+    { tag: globalConstantTag, color: monokaiTheme.keyword },
+    { tag: defineOperatorTag, color: monokaiTheme.keyword },
+    { tag: bracketTag, color: monokaiTheme.bracket },
+    { tag: iRateVarTag, color: monokaiTheme.iRateVar },
+    { tag: kRateVarTag, color: monokaiTheme.kRateVar },
+    { tag: aRateVarTag, color: monokaiTheme.aRateVar },
+    { tag: pFieldTag, color: monokaiTheme.pField },
+    { tag: xmlTag, color: monokaiTheme.opcode }
+]);

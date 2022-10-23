@@ -83,7 +83,7 @@ const theme = {
     keyword: orchid,
     string: monokaiYellow,
     number: monokaiEmphasis,
-    bracket: monokaiHighlightAlt,
+    bracket: monokaiBlueHighContrast,
     aRateVar: monokaiViolet,
     iRateVar: monokaiCyan,
     kRateVar: monokaiLightBlue,

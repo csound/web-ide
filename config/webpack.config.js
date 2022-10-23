@@ -133,8 +133,11 @@ module.exports = function (webpackEnv, env_ = {}) {
             plugins: [PnpWebpackPlugin.moduleLoader(module)]
         },
         module: {
-            strictExportPresence: true,
             rules: [
+                {
+                    test: /\.grammar$/,
+                    use: require.resolve("./lezer-loader.js")
+                },
                 {
                     enforce: "pre",
                     exclude: /@babel(?:\/|\\{1,2})runtime/,
