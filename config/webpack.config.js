@@ -135,7 +135,7 @@ module.exports = function (webpackEnv, env_ = {}) {
         module: {
             rules: [
                 {
-                    test: /\.grammar$/,
+                    test: /\.(grammar|terms|terms\.js)$/,
                     use: require.resolve("./lezer-loader.js")
                 },
                 {

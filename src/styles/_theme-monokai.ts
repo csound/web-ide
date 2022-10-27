@@ -79,6 +79,7 @@ const theme = {
     cursor: monokaiForeground,
     opcode: monokaiMagenta,
     operator: monokaiEmphasis,
+    controlFlow: monokaiBlueHighContrast,
     attribute: monokaiBlueHighContrast,
     keyword: orchid,
     string: monokaiYellow,

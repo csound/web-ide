@@ -1,17 +1,13 @@
 import React from "react";
-
 import { EditorView } from "@codemirror/view";
 import { HighlightStyle } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import {
+    ambiguousTag,
     opcodeTag,
     bracketTag,
-    iRateVarTag,
-    kRateVarTag,
-    aRateVarTag,
-    pFieldTag,
+    controlFlowTag,
     xmlTag,
-    globalConstantTag,
     defineOperatorTag
 } from "@comp/editor/modes/csound/csound";
 import monokaiTheme from "./_theme-monokai";
@@ -41,6 +37,42 @@ export const monokaiEditor = EditorView.theme(
         ".cm-lineNumbers": {
             fontFamily: "'Fira Mono', monospace",
             fontSize: "16px"
+        },
+        ".cm-csound-global-var": {
+            "& > span": {
+                fontWeight: 600
+            }
+        },
+        ".cm-csound-a-rate-var": {
+            "& > span": {
+                color: monokaiTheme.aRateVar
+            }
+        },
+        ".cm-csound-p-field-var": {
+            "& > span": {
+                color: monokaiTheme.pField,
+                fontWeight: 600
+            }
+        },
+        ".cm-csound-opcode": {
+            "& > span": {
+                color: monokaiTheme.opcode
+            }
+        },
+        ".cm-csound-xml-tag": {
+            "& > span": {
+                color: monokaiTheme.opcode
+            }
+        },
+        ".cm-csound-k-rate-var": {
+            "& > span": {
+                color: monokaiTheme.kRateVar
+            }
+        },
+        ".cm-csound-s-rate-var": {
+            "& > span": {
+                color: monokaiTheme.string
+            }
         }
     },
     { dark: true }
@@ -50,13 +82,10 @@ export const monokaiHighlightStyle = HighlightStyle.define([
     { tag: tags.comment, color: monokaiTheme.comment },
     { tag: tags.lineComment, color: monokaiTheme.comment },
     { tag: tags.string, color: monokaiTheme.string },
+    { tag: ambiguousTag, color: monokaiTheme.iRateVar },
     { tag: opcodeTag, color: monokaiTheme.opcode },
-    { tag: globalConstantTag, color: monokaiTheme.keyword },
     { tag: defineOperatorTag, color: monokaiTheme.keyword },
     { tag: bracketTag, color: monokaiTheme.bracket },
-    { tag: iRateVarTag, color: monokaiTheme.iRateVar },
-    { tag: kRateVarTag, color: monokaiTheme.kRateVar },
-    { tag: aRateVarTag, color: monokaiTheme.aRateVar },
-    { tag: pFieldTag, color: monokaiTheme.pField },
+    { tag: controlFlowTag, color: monokaiTheme.controlFlow },
     { tag: xmlTag, color: monokaiTheme.opcode }
 ]);

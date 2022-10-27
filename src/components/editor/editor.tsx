@@ -29,6 +29,7 @@ import * as SS from "./styles";
 declare global {
     interface Window {
         csoundSynopsis: any;
+        csoundBuiltinOpcodes: any;
     }
 }
 
@@ -112,7 +113,11 @@ const CodeEditor = ({
         if (!window.csoundSynopsis) {
             fetch("/static-manual-index.json")
                 .then(async (response) => {
-                    window.csoundSynopsis = await response.json();
+                    const csoundSynopsis: any = await response.json();
+                    window.csoundSynopsis = csoundSynopsis;
+                    window.csoundBuiltinOpcodes = csoundSynopsis.map(
+                        ({ opname }) => opname
+                    );
                     setHasSynopsis(true);
                 })
                 .catch((error: any) =>

@@ -2,82 +2,143 @@
 
 @top Program { rootstatement }
 
+@skip { BlockComment | LineComment | space }
 
 @precedence {
-  Identifier,
-  left @left,
-  right @right
+  call,
+  prefix,
+  plus @left,
+  arithOpL @left,
+  arithOpR @right,
+  number,
+  opcodeargs @left,
+  ternary @left,
+  comma @left
 }
 
-
-
-@skip { space | LineComment | BlockComment | newline }
-
+xmlStatement {
+  XmlOpen | XmlClose
+}
 
 rootstatement {
-  CsdOrcPre
-  (InstrDeclaration | Statement)*
+  (xmlStatement | statement | InstrumentDeclaration | UdoDeclaration)*
+}
+
+statement {
+  AssignStatement |
+  OpcodeStatement |
+  GotoStatement |
+  ControlFlowElseStatement |
+  ControlFlowStatement |
+  newline
 }
 
 
-BinaryExpression {
-  expression !right ArithOpRight expression |
-  expression !left ArithOpLeft expression
-  
+GotoStatement {
+  GotoLabel newline
 }
 
 
-commaSep<expr> { expr ("," expr)*  }
-commaSepStrict<expr> { expr "," expr  }
-
-CallbackExpression {
-  "(" expressionsOptional ")"
+InstrumentDeclaration {
+  kw<"instr"> (FunctionName | Number) newline
+  statement*
+  kw<"endin"> newline
 }
 
-expression {
-  BinaryExpression |
+UdoDeclaration {
+  kw<"opcode"> FunctionName "," OpcodeArguments "," OpcodeArguments newline
+  statement*
+  kw<"endop"> newline
+}
+
+
+AssignStatement {
+  SignalRateIdentifier AssignOp expressionNoComma newline
+}
+
+CallbackExpression { AmbiguousIdentifier !call ArgList newline? }
+
+expressionNoComma {
+  String |
+  AmbiguousIdentifier ("[" "]" )* |
+  ParenthesizedExpression { "(" expressionNoComma ")" } |
+  BracketedExpression { AmbiguousIdentifier ("[" expressionNoComma "]")+ } |
   Number |
-  String
-}
-
-
-expressionsOptional { (commaSep<expression>)* }
-expressions { (commaSep<expression>) | CallbackExpression }
-
-ArgumentsOptional { (commaSep<Identifier>) }
-ArgumentsStrict { (commaSepStrict<Identifier>) }
-
-Statement {
-  Identifier AssignOp Opcode expressions |
-  
-  GlobalConstants AssignOp (Number | String |Identifier) |
-  ArgumentsStrict AssignOp Opcode expressions |
-  ArgumentsStrict Opcode ArgumentsStrict |
-  ArgumentsStrict Opcode expressions |
-  Identifier AssignOp Identifier |
-  Opcode expressions
-  
-}
-
-InstrName {
-  String | Number
-}
-
-InstrDeclaration {
-  Instr InstrName Statement* Endin
-}
-
-Identifier {
-  AudioRateIdentifier | 
-  KontrolRateIdentifier | 
-  InitRateIdentifier |
-  PFieldIdentifier
-}
-
- CsdOrcPre {
-    (XmlOpen | XmlClose)*
-    XmlCsInstrumentsOpen
+  UnaryExpression {
+    !plus ArithOp<"+" | "-"> expressionNoComma
+  } |
+  BinaryExpression {
+    expressionNoComma !arithOpR arithOpRight expressionNoComma |
+    expressionNoComma !arithOpL arithOpLeft expressionNoComma |
+    expressionNoComma !plus ArithOp<"+" | "-"> expressionNoComma
+  } |
+  CallbackExpression |
+  ConditionalExpression { 
+    expressionNoComma !ternary "?" expressionNoComma ":" expressionNoComma 
   }
+}
+
+opcodeOutputExpression {
+  commaSep<SignalRateIdentifier>
+}
+
+ArgList {
+  "(" commaSep<expressionNoComma> ")" |
+  "(" ")"
+}
+
+
+OpcodeStatement {
+  commaSep<expressionNoComma>+ newline
+}
+
+ConstrolFlowBeginToken {
+  kw<"if"> | kw<"while"> | kw<"until">
+}
+
+ControlFlowDoTokens {
+  kw<"do"> | ControlFlowDoToken
+}
+
+ControlFlowEndTokens {
+  kw<"fi"> | ControlFlowEndToken
+}
+
+ControlFlowStatement {
+  ConstrolFlowBeginToken expressionNoComma ControlFlowDoTokens newline
+  statement*
+  ControlFlowEndTokens |
+  ConstrolFlowBeginToken expressionNoComma ControlFlowGotoToken
+  DeclareGotoLabel { word } newline
+}
+
+ControlFlowElseStatement {
+  ElseStatement {
+    ControlFlowElseIfToken expressionNoComma ControlFlowDoTokens | ControlFlowElseToken ControlFlowDoTokens
+  }
+}
+
+FunctionName { word }
+
+SignalRateIdentifier { AmbiguousIdentifier }
+
+Opcode { AmbiguousIdentifier }
+
+AssignOp {
+  kw<"init"> | assigners
+}
+
+XmlAttribute {
+  XmlTagName "=" String
+}
+
+XmlOpen { "<" AmbiguousIdentifier XmlAttribute* ">"  }
+
+XmlClose { xmlCloseChars AmbiguousIdentifier ">"   }
+
+XmlOptionsOpen { "<" XmlTagCsOptions XmlAttribute* ">"  }
+
+XmlOptionsClose { xmlCloseChars XmlTagCsOptions ">"  }
 
 @tokens {
 
@@ -89,51 +150,32 @@ Identifier {
 
   blockCommentAfterStar { "/" | "*" blockCommentAfterStar | ![/*] blockCommentRest }
 
-  newline { $[\r\n\u2028\u2029] }
+  identifierChar { @asciiLetter | $[_$\u{a1}-\u{10ffff}] }
 
+  Number { @digit? "."? @digit+ | @digit+ "."? @digit* }
 
-  space { $[ \t]+ }
+  word { identifierChar (identifierChar | @digit)* }
 
-  String { '"' (![\\\n"] | "\\" _)* '"'? }
-
-  Number { (@digit+ | ".") @digit* }
-  Instr { "instr" }
-  Endin { "endin" }
-
-
-  XmlOpen { "<" @asciiLetter+ ">" }
-  XmlClose {"<" "/" @asciiLetter+ ">"  }
-  XmlCsInstrumentsOpen { "<CsInstruments>" }
-  XmlCsInstrumentsClose { "</CsInstruments>" }
- 
-
-  GlobalConstants {
-    "0dbfs" |
-    "ksmps" |
-    "sr" |
-    "kr" |
-    "nchnls" |
-    "nchnls_i"
-  }
-
-  // CsoundXmlText[@dialect=csd] {  ($[A-Za-z]+) }
-
-  AudioRateIdentifier {  ("a" $[A-Za-z_0-9]+) }
-  KontrolRateIdentifier { ("k" $[A-Zb-z_0-9]+) }
-  InitRateIdentifier { ("i" $[A-Za-z_0-9]+) }
-  PFieldIdentifier {  ("p" $[0-9]+) }
-
-  opcode {
-    //DONT_DELETE
-  }
-
-  Opcode {
-    opcode (":a" | ":k" | ":i" | ":f")?
-  }
+  xmlCloseChars { "<" "/" }
   
-  "(" ")" "[" "]" "{" "}"
+  OpcodeArguments {  ( $[aijkOPVJKopS0\[\]]+) }
 
-  AssignOp {
+  AmbiguousIdentifier {
+    ZeroDbFs | word (":" $[iak])?
+  }
+
+  XmlTagName { word }
+
+  GotoLabel {
+    word ":"
+  }
+
+  newline { $[\n\r]+ }
+  space { $[ \t]+ }
+  String { '"' (![\\\n"] | "\\" _)* '"'? }
+  ZeroDbFs { "0dbfs" }
+
+  assigners {
     "="  |
     "+=" |
     "-=" |
@@ -142,23 +184,23 @@ Identifier {
     "|=" |
     "&="
   }
-  ArithOpRight {
+
+  ArithOp<expr> { expr }
+
+  arithOpRight {
     "~" |
     "!" |
     "¬"
   }
 
-  ArithOpLeft {
-    ("/" ![/|*]+ ) |
-    "+"  |
-    "-"  |
+  arithOpLeft {
+    "/"  |
     "*"  |
     "%"  |
     "^"  |
     "#"  |
     "&"  |
     "|"  |
-    "?"  |
     "&&" |
     "||" |
     "<"  |
@@ -171,37 +213,61 @@ Identifier {
     "<<"
   }
 
-  ControlFlowOp {
-    "if"     |
-    "then"   |
-    "else"   |
-    "elseif" |
-    "while"  |
-    "do"     |
-    "od"
-  }
-
-
   @precedence {
-    XmlOpen,
-    XmlClose,
-    XmlCsInstrumentsOpen,
-    XmlCsInstrumentsClose,
-    CsdOrcPre,
-    Instr,
-    Endin,
-    GlobalConstants,
-    AssignOp,
-    ArithOpRight,
-    ArithOpLeft,
-    Number,
-    Opcode,
-    AudioRateIdentifier,
-    KontrolRateIdentifier,
-    InitRateIdentifier,
-    PFieldIdentifier,
-    CsoundOptionsText
+    space,
+    newline,
+    BlockComment,
+    LineComment,
+    ZeroDbFs,
+    xmlCloseChars,
+    xmlContent,
+    arithOpLeft,
+    arithOpRight,
+    numberPrefix,
+    ControlFlowElseIfToken,
+    ControlFlowElseToken,
+    ControlFlowDoToken,
+    ControlFlowGotoToken,
+    ControlFlowEndToken,
+    AmbiguousIdentifier,
+    GotoLabel,
+    assigners,
+    Number
   }
 
+  ControlFlowElseToken { "else" }
+
+  ControlFlowElseIfToken { "elseif" }
+
+  ControlFlowDoToken {
+    "then" |
+    "ithen" |
+    "kthen"
+  }
+
+  ControlFlowGotoToken {
+    "goto" |
+    "igoto" |
+    "kgoto"
+  }
+
+  ControlFlowEndToken {
+    "endif" |
+    "od" |
+    "enduntil"
+  }
 
 }
+
+
+// Keywords
+
+kw<term> { @specialize[@name={term}]<AmbiguousIdentifier, term> }
+
+
+commaSep<content> {
+  content (!comma "," content?)*
+}
+
+
+@detectDelim

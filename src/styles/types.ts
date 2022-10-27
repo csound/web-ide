@@ -59,6 +59,7 @@ declare module "@emotion/react" {
         cursor: string;
         opcode: string;
         operator: string;
+        controlFlow: string;
         attribute: string;
         keyword: string;
         string: string;
