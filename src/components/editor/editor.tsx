@@ -7,9 +7,14 @@ import {
     lineNumbers
 } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import {
+    defaultKeymap,
+    history,
+    historyKeymap,
+    indentWithTab
+} from "@codemirror/commands";
 import { bracketMatching, syntaxHighlighting } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
+import { EditorState, StateField } from "@codemirror/state";
 // import { editorEvalCode, uncommentLine } from "./utils";
 import { debounce } from "throttle-debounce";
 import { IDocument, IProject } from "../projects/types";
@@ -24,7 +29,6 @@ import {
     monokaiHighlightStyle
 } from "@styles/code-mirror-painter";
 import { csoundMode } from "./modes/csound/csound";
-import * as SS from "./styles";
 
 declare global {
     interface Window {
@@ -164,8 +168,13 @@ const CodeEditor = ({
             textfieldReference &&
             textfieldReference.current
         ) {
+            const documentUdField = StateField.define({
+                create: () => ({ documentUid }),
+                update: () => ({ documentUid })
+            });
             const initialState = EditorState.create({
                 doc: currentDocumentValue,
+
                 extensions: [
                     syntaxHighlighting(monokaiHighlightStyle, {
                         fallback: true
@@ -173,13 +182,20 @@ const CodeEditor = ({
                     drawSelection(),
                     csoundMode(),
                     history(),
-                    keymap.of([...defaultKeymap, ...historyKeymap]),
+                    keymap.of([
+                        ...defaultKeymap,
+                        ...historyKeymap,
+                        indentWithTab
+                    ]),
                     lineNumbers(),
                     bracketMatching(),
                     monokaiEditor,
-                    autocompletion()
+                    autocompletion(),
+                    documentUdField
                 ]
             });
+
+            (initialState as any).documentUid = documentUid;
 
             const editor = new EditorView(
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -292,11 +308,7 @@ const CodeEditor = ({
     ]);
 
     return typeof currentDocumentValue === "string" && hasSynopsis ? (
-        <div
-            ref={textfieldReference}
-            css={SS.root}
-            style={{ fontSize: `16px !important` }}
-        />
+        <div ref={textfieldReference} style={{ height: "100%" }} />
     ) : (
         <></>
     );

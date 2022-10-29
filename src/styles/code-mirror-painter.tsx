@@ -18,9 +18,12 @@ export const monokaiEditor = EditorView.theme(
             color: "white",
             backgroundColor: monokaiTheme.background
         },
+        ".cm-editor": {
+            height: "100%"
+        },
         ".cm-content": {
             caretColor: "#0e9",
-            fontSize: "18px",
+            fontSize: "16px",
             fontFamily: "'Fira Mono', monospace"
         },
         "&.cm-focused .cm-cursor": {
@@ -54,9 +57,25 @@ export const monokaiEditor = EditorView.theme(
                 fontWeight: 600
             }
         },
+        ".cm-csound-f-rate-var": {
+            "& > span": {
+                color: monokaiTheme.fRateVar
+            }
+        },
         ".cm-csound-opcode": {
             "& > span": {
                 color: monokaiTheme.opcode
+            }
+        },
+        ".cm-csound-global-constant": {
+            "& > span": {
+                color: monokaiTheme.keyword
+            }
+        },
+        ".cm-csound-macro-token": {
+            "& > span": {
+                color: monokaiTheme.macro,
+                fontWeight: 600
             }
         },
         ".cm-csound-xml-tag": {

@@ -55,6 +55,7 @@ declare module "@emotion/react" {
         profilePlayButtonActive: string;
         scrollbar: string;
         scrollbarHover: string;
+        macro: string;
         console: string;
         cursor: string;
         opcode: string;

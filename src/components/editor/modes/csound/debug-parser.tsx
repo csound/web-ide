@@ -5,20 +5,20 @@ import { printTree } from "./print-tree";
 
 const instrBlock = `
 
-<CsoundSynthesizer>
-<CsOptions>
--o dac -m0 --daemon
-</CsOptions>
-<CsInstruments>
-sr=48000
-ksmps=32
-0dbfs=1
-nchnls=2
-#include "livecode.orc"
-</CsInstruments>
-<CsScore>
-</CsScore>
-</CsoundSynthesizer>
+opcode contains, i, ik[]
+  ival, karr[] xin
+  indx = 0
+  iret = 0
+  while (indx < lenarray:i(karr)) do
+    if (i(karr,indx) == ival) then
+      iret = 1
+      igoto end
+    endif
+    indx += 1
+  od
+end:
+  xout iret
+endop 
 
 `;
 

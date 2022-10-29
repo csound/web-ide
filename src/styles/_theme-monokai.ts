@@ -76,6 +76,7 @@ const theme = {
     scrollbar: monokaiLightGray,
     scrollbarHover: monokaiLightGray, // don't keep using this one
     console: monokaiLightGray,
+    macro: monokaiOrange,
     cursor: monokaiForeground,
     opcode: monokaiMagenta,
     operator: monokaiEmphasis,

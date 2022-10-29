@@ -146,183 +146,6 @@ a {text-decoration: none;}
   position: relative;
 }
 
-.CodeMirror {
-    min-height: 50px;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-}
-
-.CodeMirror-scroll {
-   box-sizing: content-box !important;
-   overflow: scroll !important;
-   height: 100%;
-   outline: none;
-   position: relative;
-   margin-bottom: -50px;
-    margin-right: -50px;
-    padding-bottom: 50px;
-}
-
-.CodeMirror-sizer {
-   box-sizing: content-box !important;
-   position: relative;
-}
-
-.CodeMirror-simplescroll-vertical {
-    right: 0;
-    top: 0;
-    position: absolute;
-    z-index: 6;
-    margin-bottom: -8px;
-}
-
-.CodeMirror-simplescroll-horizontal {
-    bottom: 0;
-    left: 0;
-    position: absolute;
-    z-index: 6;
-}
-
-.CodeMirror-simplescroll-horizontal,
-.CodeMirror-simplescroll-vertical {
-  background: ${theme.highlightBackgroundAlt}!important;
-}
-
-.CodeMirror-simplescroll-horizontal div,
-.CodeMirror-simplescroll-vertical div {
-  background: ${theme.scrollbar}!important;
-  border-radius: 6px!important;
-  border: 3px solid transparent!important;
-  opacity: 0.8;
-}
-
-.CodeMirror-simplescroll-horizontal div:hover,
-.CodeMirror-simplescroll-vertical div:hover {
-    -webkit-transition: all 0.2s ease;
-   transition: all 0.2s ease;
-   opacity: 1;
-}
-
-.CodeMirror-vscrollbar,.CodeMirror-hscrollbar {
-  display: none;
-}
-
-.CodeMirror-scrollbar-filler {
-    right: 0;
-    bottom: 0;
-    position: absolute;
-    z-index: 6;
-    display: none;
-}
-
-.CodeMirror-gutter-filler {
-    left: 0;
-    bottom: 0;
-    position: absolute;
-    z-index: 6;
-    display: none;
-}
-
-.CodeMirror-gutters {
-    box-sizing: content-box!important;
-    position: absolute;
-    top: 0;
-    min-height: 100%;
-    z-index: 0;
-    white-space: nowrap;
-}
-
-.CodeMirror-lint-markers {
-    width: 16px;
-}
-
-.CodeMirror-foldgutter {
-    width: .7em;
-}
-
-.CodeMirror-cursors {
-    position: relative;
-    z-index: 3;
-}
-
-.CodeMirror-cursor {
-    position: absolute;
-    pointer-events: none;
-}
-
-.CodeMirror-cursor {
-    border-left: 1px solid black;
-    border-right: none;
-    width: 0;
-}
-
-.CodeMirror-lines {
-    cursor: text;
-    min-height: 1px;
-    padding: 4px 0;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.CodeMirror-linenumber {
-    position: absolute;
-    cursor: default;
-    z-index: 4;
-    padding: 1px 8px 0 5px;
-    min-width: 32px;
-    text-align: right;
-    white-space: nowrap;
-}
-
-.CodeMirror-line {
-    padding: 0 4px;
-    display: block;
-    white-space: pre-wrap;
-    word-break: normal;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
-    border-radius: 0;
-    border-width: 0;
-    background: transparent;
-    font-size: inherit;
-    margin: 0;
-    white-space: pre;
-    word-wrap: normal;
-    line-height: inherit;
-    color: inherit;
-    z-index: 2;
-    position: relative;
-    overflow: visible;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-font-variant-ligatures: contextual;
-    font-variant-ligatures: contextual;
-}
-
-.CodeMirror-scroll,
-.CodeMirror-sizer,
-.CodeMirror-gutter,
-.CodeMirror-gutters,
-.CodeMirror-linenumber {
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-}
-
-.CodeMirror-gutter-wrapper {
-    position: absolute;
-    z-index: 1;
-    background: none !important;
-    border: none !important;
-}
-
-.CodeMirror-measure {
-    position: absolute;
-    width: 100%;
-    height: 0;
-    overflow: hidden;
-    visibility: hidden;
-}
-
  [data-rbd-drag-handle-context-id="0"] {
       cursor: inherit!important;
  }
@@ -333,7 +156,35 @@ a {text-decoration: none;}
 
 .MuiListItem-button {
   cursor: grabbing!important;
+}
 
+.cm-editor {
+  height: 100%;
+}
+
+.cm-scroller {
+  overflow: auto;
+}
+
+.cm-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb {
+  background-color: ${theme.scrollbar};
+  border-radius: 6px;
+  border: 3px solid transparent;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background: transparent;
+}
+
+.cm-scroller::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
     `}</style>
