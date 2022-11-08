@@ -10,6 +10,7 @@
   plus @left,
   arithOpL @left,
   arithOpR @right,
+  gettr @right,
   number,
   opcodeargs @left,
   ternary @left,
@@ -21,7 +22,7 @@ xmlStatement {
 }
 
 rootstatement {
-  (xmlStatement | statement | InstrumentDeclaration | UdoDeclaration)*
+  (xmlStatement | statement | InstrumentDeclaration | UdoDeclaration | StructDeclaration | DeclareDeclaration)*
 }
 
 statement {
@@ -40,17 +41,29 @@ GotoStatement {
 
 
 InstrumentDeclaration {
-  kw<"instr"> (FunctionName | Number) newline
+  kw<"instr"> commaSep<(FunctionName | Number)> newline
   statement*
   kw<"endin"> newline
 }
 
 UdoDeclaration {
-  kw<"opcode"> FunctionName "," OpcodeArguments "," OpcodeArguments newline
+  (
+    kw<"opcode"> FunctionName "," OpcodeArguments "," OpcodeArguments newline |
+    kw<"opcode"> FunctionName "(" commaSep<SignalRateIdentifier> ")" ":" "(" commaSep<SignalRateIdentifier> ")" newline |
+    kw<"opcode"> FunctionName "(" commaSep<SignalRateIdentifier> ")" ":" SignalRateIdentifier newline
+  )
   statement*
   kw<"endop"> newline
 }
 
+StructDeclaration {
+  kw<"struct"> FunctionName commaSep<SignalRateIdentifier> newline
+}
+
+DeclareDeclaration {
+  kw<"declare"> FunctionName "(" commaSep<SignalRateIdentifier> ")" ":" "(" commaSep<SignalRateIdentifier> ")" newline |
+  kw<"declare"> FunctionName "(" commaSep<SignalRateIdentifier> ")" ":" SignalRateIdentifier newline
+}
 
 AssignStatement {
   SignalRateIdentifier AssignOp expressionNoComma newline
@@ -60,12 +73,12 @@ CallbackExpression { AmbiguousIdentifier !call ArgList newline? }
 
 expressionNoComma {
   String |
-  AmbiguousIdentifier ("[" "]" )* |
+  AmbiguousIdentifier ("[" "]" )? (!gettr PropertyIdentifier ("[" expressionNoComma? "]" )? )? |
   ParenthesizedExpression { "(" expressionNoComma ")" } |
   BracketedExpression { AmbiguousIdentifier ("[" expressionNoComma "]")+ } |
-  Number |
+  !number Number |
   UnaryExpression {
-    !plus ArithOp<"+" | "-"> expressionNoComma
+    !plus  ArithOp<"+" | "-"> expressionNoComma
   } |
   BinaryExpression {
     expressionNoComma !arithOpR arithOpRight expressionNoComma |
@@ -73,8 +86,8 @@ expressionNoComma {
     expressionNoComma !plus ArithOp<"+" | "-"> expressionNoComma
   } |
   CallbackExpression |
-  ConditionalExpression { 
-    expressionNoComma !ternary "?" expressionNoComma ":" expressionNoComma 
+  ConditionalExpression {
+    expressionNoComma !ternary "?" expressionNoComma ":" expressionNoComma
   }
 }
 
@@ -152,17 +165,19 @@ XmlOptionsClose { xmlCloseChars XmlTagCsOptions ">"  }
 
   identifierChar { @asciiLetter | $[_$\u{a1}-\u{10ffff}] }
 
-  Number { @digit? "."? @digit+ | @digit+ "."? @digit* }
+  Number { @digit+ | @digit? "." @digit+ | @digit+ "." @digit* }
 
   word { identifierChar (identifierChar | @digit)* }
 
   xmlCloseChars { "<" "/" }
-  
+
   OpcodeArguments {  ( $[aijkOPVJKopS0\[\]]+) }
 
   AmbiguousIdentifier {
-    ZeroDbFs | word (":" $[iak])?
+    ZeroDbFs | word (":" word)?
   }
+
+  PropertyIdentifier { "." AmbiguousIdentifier }
 
   XmlTagName { word }
 
@@ -229,6 +244,7 @@ XmlOptionsClose { xmlCloseChars XmlTagCsOptions ">"  }
     ControlFlowDoToken,
     ControlFlowGotoToken,
     ControlFlowEndToken,
+    PropertyIdentifier,
     AmbiguousIdentifier,
     GotoLabel,
     assigners,
