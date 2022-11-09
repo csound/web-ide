@@ -37,6 +37,16 @@ export const monokaiEditor = EditorView.theme(
             color: "#ddd",
             border: "none"
         },
+        ".cm-panels-bottom": {
+            fontFamily: "'Fira Mono', monospace",
+            fontSize: "14px",
+            fontStyle: "italic",
+            userSelect: "none",
+            backgroundColor: "#3E3D31",
+            "& > div": {
+                marginLeft: "12px"
+            }
+        },
         ".cm-lineNumbers": {
             fontFamily: "'Fira Mono', monospace",
             fontSize: "16px"

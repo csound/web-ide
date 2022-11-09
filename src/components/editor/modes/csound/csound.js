@@ -11,7 +11,13 @@ import {
 } from "@codemirror/language";
 import { completeFromList } from "@codemirror/autocomplete";
 import { Tag, styleTags, tags as t } from "@lezer/highlight";
-import { Decoration, ViewPlugin } from "@codemirror/view";
+import {
+    EditorView,
+    Decoration,
+    Panel,
+    ViewPlugin,
+    showPanel
+} from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { debounce } from "throttle-debounce";
 import { parser } from "./syntax.grammar";
@@ -199,6 +205,96 @@ function variableHighlighter(view) {
     return builder.finish();
 }
 
+const findOperatorName = (view, tree) => {
+    const treeRoot = tree.node;
+    let maybeArgList = treeRoot;
+
+    while (maybeArgList && maybeArgList.type.name !== "ArgList") {
+        maybeArgList = maybeArgList.node.parent;
+    }
+
+    if (
+        maybeArgList &&
+        maybeArgList.node?.parent?.type.name === "CallbackExpression"
+    ) {
+        const tokenSlice = view.state.doc.slice(
+            maybeArgList.node.parent.from,
+            maybeArgList.node.parent.to
+        );
+        const token = tokenSlice.text[0].replace(/:.*/, "").replace(/\(.*/, "");
+        return token;
+    }
+
+    let maybeOpcodeStatement = treeRoot;
+
+    while (
+        maybeOpcodeStatement &&
+        maybeOpcodeStatement.type.name !== "OpcodeStatement"
+    ) {
+        maybeOpcodeStatement = maybeOpcodeStatement.node.parent;
+    }
+
+    if (maybeOpcodeStatement) {
+        const tokenSlice = view.state.doc.slice(
+            maybeOpcodeStatement.from,
+            maybeOpcodeStatement.to
+        );
+
+        const result = tokenSlice.text[0].split(/\s/).reduce(
+            ({ cand, stop, lastComma }, curr) => {
+                if (!stop) {
+                    if (curr.includes(",")) {
+                        return {
+                            cand: undefined,
+                            stop: false,
+                            lastComma: true
+                        };
+                    } else if (!lastComma) {
+                        return { cand: curr, stop: true, lastComma: true };
+                    } else {
+                        return {
+                            cand: undefined,
+                            stop: false,
+                            lastComma: false
+                        };
+                    }
+                } else {
+                    return { cand, stop, lastComma };
+                }
+            },
+            { cand: undefined, stop: false, lastComma: false }
+        );
+
+        return result.cand;
+    }
+};
+
+const csoundInfoPanel = (view) => {
+    const dom = document.createElement("div");
+
+    return {
+        dom,
+        update(update) {
+            if (update.heightChanged || update.selectionSet) {
+                const treeRoot = syntaxTree(view.state).cursorAt(
+                    view.state.selection.main.head
+                );
+                const operatorName = findOperatorName(view, treeRoot);
+                const synopsis =
+                    operatorName &&
+                    window.csoundSynopsis.find(
+                        (value) => value.opname === operatorName
+                    );
+                dom.textContent = synopsis && synopsis.synopsis[0];
+            }
+        }
+    };
+};
+
+const csoundInfo = () => {
+    return showPanel.of(csoundInfoPanel);
+};
+
 const csoundModePlugin = ViewPlugin.fromClass(
     class {
         constructor(view) {
@@ -328,6 +424,7 @@ export function csoundMode() {
     return new LanguageSupport(csdLanguage, [
         completionList,
         csoundModePlugin,
+        csoundInfo(),
         indentUnit.of("  ")
     ]);
 }
