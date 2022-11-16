@@ -1,6 +1,7 @@
 import React from "react";
 import { EditorView } from "@codemirror/view";
 import { HighlightStyle } from "@codemirror/language";
+import { createTheme } from "@uiw/codemirror-themes";
 import { tags } from "@lezer/highlight";
 import {
     ambiguousTag,
@@ -12,7 +13,7 @@ import {
 } from "@comp/editor/modes/csound/csound";
 import monokaiTheme from "./_theme-monokai";
 
-export const monokaiEditor = EditorView.theme(
+export const monokaiThemeEditor = EditorView.theme(
     {
         "&": {
             color: "white",
@@ -107,14 +108,22 @@ export const monokaiEditor = EditorView.theme(
     { dark: true }
 );
 
-export const monokaiHighlightStyle = HighlightStyle.define([
-    { tag: tags.comment, color: monokaiTheme.comment },
-    { tag: tags.lineComment, color: monokaiTheme.comment },
-    { tag: tags.string, color: monokaiTheme.string },
-    { tag: ambiguousTag, color: monokaiTheme.iRateVar },
-    { tag: opcodeTag, color: monokaiTheme.opcode },
-    { tag: defineOperatorTag, color: monokaiTheme.keyword },
-    { tag: bracketTag, color: monokaiTheme.bracket },
-    { tag: controlFlowTag, color: monokaiTheme.controlFlow },
-    { tag: xmlTag, color: monokaiTheme.opcode }
-]);
+export const monokaiThemeReact = createTheme({
+    theme: "dark",
+    settings: {
+        background: monokaiTheme.background,
+        foreground: monokaiTheme.textColor,
+        lineHighlight: "rgba(0,0,0,0)"
+    },
+    styles: [
+        { tag: tags.comment, color: monokaiTheme.comment },
+        { tag: tags.lineComment, color: monokaiTheme.comment },
+        { tag: tags.string, color: monokaiTheme.string },
+        { tag: ambiguousTag, color: monokaiTheme.iRateVar },
+        { tag: opcodeTag, color: monokaiTheme.opcode },
+        { tag: defineOperatorTag, color: monokaiTheme.keyword },
+        { tag: bracketTag, color: monokaiTheme.bracket },
+        { tag: controlFlowTag, color: monokaiTheme.controlFlow },
+        { tag: xmlTag, color: monokaiTheme.opcode }
+    ]
+});

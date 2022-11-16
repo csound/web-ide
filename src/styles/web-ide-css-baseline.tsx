@@ -158,7 +158,7 @@ a {text-decoration: none;}
   cursor: grabbing!important;
 }
 
-.cm-editor {
+.cm-theme,.cm-editor {
   height: 100%;
 }
 

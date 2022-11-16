@@ -299,7 +299,8 @@ const csoundModePlugin = ViewPlugin.fromClass(
     class {
         constructor(view) {
             const documentUidFieldState = view.state.values.find(
-                (state) => typeof state === "object" && state.documentUid
+                (state) =>
+                    state && typeof state === "object" && state.documentUid
             );
 
             if (
