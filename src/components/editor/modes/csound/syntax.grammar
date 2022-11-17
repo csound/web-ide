@@ -91,10 +91,6 @@ expressionNoComma {
   }
 }
 
-opcodeOutputExpression {
-  commaSep<SignalRateIdentifier>
-}
-
 ArgList {
   "(" commaSep<expressionNoComma> ")" |
   "(" ")"
@@ -135,8 +131,6 @@ FunctionName { word }
 
 SignalRateIdentifier { AmbiguousIdentifier }
 
-Opcode { AmbiguousIdentifier }
-
 AssignOp {
   kw<"init"> | assigners
 }
@@ -149,9 +143,6 @@ XmlOpen { "<" AmbiguousIdentifier XmlAttribute* ">"  }
 
 XmlClose { xmlCloseChars AmbiguousIdentifier ">"   }
 
-XmlOptionsOpen { "<" XmlTagCsOptions XmlAttribute* ">"  }
-
-XmlOptionsClose { xmlCloseChars XmlTagCsOptions ">"  }
 
 @tokens {
 
@@ -233,12 +224,9 @@ XmlOptionsClose { xmlCloseChars XmlTagCsOptions ">"  }
     newline,
     BlockComment,
     LineComment,
-    ZeroDbFs,
     xmlCloseChars,
-    xmlContent,
     arithOpLeft,
     arithOpRight,
-    numberPrefix,
     ControlFlowElseIfToken,
     ControlFlowElseToken,
     ControlFlowDoToken,

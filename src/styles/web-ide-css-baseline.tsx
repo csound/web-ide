@@ -187,6 +187,26 @@ a {text-decoration: none;}
   background: transparent;
 }
 
+/* blink eval */
+@keyframes flash-animation {
+    0% {
+       background-color: ${theme.flash};
+    }
+    100% {
+       background-color: ${theme.flashFade};
+    }
+}
+.cm-line:has(.blink-eval) {
+    z-index: 9999999;
+    animation-name: flash-animation;
+    animation-duration: 0.1s;
+    animation-fill-mode: forwards;
+}
+.blink-eval-error {
+    z-index: 9999999;
+    background-color: ${theme.errorText};
+}
+
     `}</style>
 );
 

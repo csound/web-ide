@@ -1,66 +1,92 @@
-import { curry, isNil, propOr } from "ramda";
+import { curry } from "ramda";
+import { syntaxTree } from "@codemirror/language";
+import { StateEffect, StateField, Transaction } from "@codemirror/state";
+import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
+import { TreeCursor } from "@lezer/common";
+import { CsoundObj } from "@csound/browser";
 
-const findOrcBlock = (editorReference) => {
-    const value = editorReference
-        ? (editorReference as any)?.doc?.getValue()
-        : "";
-    const lines = value.split("\n");
-    const cursorLine = editorReference
-        ? propOr(0, "line", editorReference.getCursor())
-        : 0;
+const addBlinkSuccessMarks = StateEffect.define();
+const removeBlinkSuccessMarks = StateEffect.define();
 
-    const currentLineEndOfBound = uncommentLine(lines[cursorLine]).match(
-        /endin|endop/g
-    );
+const blinkSuccessMarks = Decoration.mark({
+    attributes: { class: "blink-eval" }
+});
 
-    const cursorBoundry = Math.min(
-        cursorLine +
-            (currentLineEndOfBound && currentLineEndOfBound.length > 0 ? 0 : 1),
-        lines.length
-    );
+const addBlinkErrorMarks = StateEffect.define();
+const removeBlinkErrorMarks = StateEffect.define();
 
-    let lastBlockLine, lineNumber;
+const blinkErrorMarks = Decoration.mark({
+    attributes: { class: "blink-eval-error" }
+});
 
-    for (lineNumber = 0; lineNumber < cursorBoundry; lineNumber++) {
-        const line = uncommentLine(lines[lineNumber]);
-        if (/instr|opcode/g.test(line)) {
-            lastBlockLine = lineNumber;
-        } else if (/endin|endop/g.test(line)) {
-            lastBlockLine = undefined;
+export const evalBlinkExtension = StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(value: DecorationSet, tr: Transaction) {
+        value = value.map(tr.changes);
+        for (const effect of tr.effects) {
+            if (effect.is(addBlinkSuccessMarks)) {
+                value = value.update({ add: effect.value, sort: true } as any);
+            }
+            if (effect.is(removeBlinkSuccessMarks)) {
+                value = value.update({ filter: effect.value } as any);
+            }
+
+            if (effect.is(addBlinkErrorMarks)) {
+                value = value.update({ add: effect.value, sort: true } as any);
+            }
+            if (effect.is(removeBlinkErrorMarks)) {
+                value = value.update({ filter: effect.value } as any);
+            }
+        }
+        return value;
+    },
+    // Indicate that this field provides a set of decorations
+    provide: (f) => EditorView.decorations.from(f)
+});
+
+const findSurroundingContext = (view: EditorView, tree: TreeCursor) => {
+    const treeRoot = tree.node;
+    let maybeContext: any = treeRoot;
+
+    while (maybeContext) {
+        if (
+            ["InstrumentDeclaration", "UdoDeclaration"].includes(
+                maybeContext.type.name
+            )
+        ) {
+            return maybeContext;
+        }
+        maybeContext = maybeContext.node.parent;
+    }
+};
+
+const evalSelection = async ({
+    csound,
+    documentType,
+    evalString
+}: {
+    csound: CsoundObj;
+    documentType: string;
+    evalString: string;
+}): Promise<number> => {
+    switch (documentType) {
+        case "orc":
+        case "udo": {
+            return await csound.evalCode(evalString);
+        }
+        case "sco": {
+            return (await csound.readScore(evalString)) || 0;
+        }
+        case "csd": {
+            return await csound.evalCode(evalString);
+        }
+        default: {
+            console.error("document type isn't csound!");
+            return -1;
         }
     }
-
-    if (isNil(lastBlockLine)) {
-        return {
-            from: { line: cursorLine, ch: 0 },
-            to: { line: cursorLine, ch: lines[cursorLine].length },
-            evalStr: lines[cursorLine]
-        };
-    }
-
-    let blockEnd;
-
-    for (lineNumber = cursorLine; lineNumber < lines.length + 1; lineNumber++) {
-        if (blockEnd) {
-            break;
-        }
-        const line = uncommentLine(lines[lineNumber]);
-
-        if (/endin|endop/g.test(line)) {
-            blockEnd = lineNumber;
-        }
-    }
-    return !blockEnd
-        ? {
-              from: { line: cursorLine, ch: 0 },
-              to: { line: cursorLine, ch: lines[cursorLine - 1].length },
-              evalStr: lines[cursorLine]
-          }
-        : {
-              from: { line: lastBlockLine, ch: 0 },
-              to: { line: blockEnd, ch: lines[blockEnd].length },
-              evalStr: lines.slice(lastBlockLine, blockEnd + 1).join("\n")
-          };
 };
 
 export const editorEvalCode = curry(
@@ -68,83 +94,75 @@ export const editorEvalCode = curry(
         csound,
         csoundStatus,
         documentType,
-        editorInstance,
+        view: EditorView,
         blockEval: boolean
     ) => {
         if (csoundStatus !== "playing") {
             return;
-        } else if (editorInstance) {
-            // selection takes precedence
-            const selection = editorInstance.getSelection();
-            const cursor = editorInstance.getCursor();
-            let markerCallback;
-            let evalString = "";
-            // let csdLoc: "orc" | "sco" | null = null;
+        }
+        const userHasSelection =
+            view.state.selection.main.from !== view.state.selection.main.to;
 
-            if (!blockEval) {
-                const line = editorInstance.getLine(cursor.line);
-                evalString = isNil(selection) ? line : selection;
-                markerCallback = (hasError) => {
-                    const textMarker = editorInstance.markText(
-                        { line: cursor.line, ch: 0 },
-                        { line: cursor.line, ch: line.length },
-                        {
-                            className: hasError ? "blinkEvalError" : "blinkEval"
-                        }
-                    );
-                    setTimeout(() => textMarker.clear(), 200);
-                };
-            } else {
-                let result;
-                if (documentType === "orc" || documentType === "udo") {
-                    result = findOrcBlock(editorInstance);
-                } else if (documentType === "sco") {
-                    // FIXME
-                    result = {
-                        from: { line: cursor.line, ch: 0 },
-                        to: {
-                            line: cursor.line,
-                            ch: editorInstance.getLine(cursor.line).length
-                        },
-                        evalStr: editorInstance.getLine(cursor.line)
-                    };
-                }
-                if (result) {
-                    if (!result) {
-                        return;
+        let selection;
+        let context;
+
+        if (userHasSelection && !blockEval) {
+            selection = view.state.sliceDoc(
+                view.state.selection.main.from,
+                view.state.selection.main.to
+            );
+        } else if (blockEval) {
+            const treeRoot = syntaxTree(view.state).cursorAt(
+                view.state.selection.main.head
+            );
+
+            context = findSurroundingContext(view, treeRoot);
+            if (context) {
+                selection = view.state.sliceDoc(context.from, context.to);
+            }
+        }
+
+        if (selection) {
+            evalSelection({ csound, documentType, evalString: selection }).then(
+                (result: number) => {
+                    if (result === 0) {
+                        view.dispatch({
+                            effects: addBlinkSuccessMarks.of([
+                                blinkSuccessMarks.range(
+                                    context.from,
+                                    context.to
+                                )
+                            ] as any)
+                        });
+                    } else {
+                        view.dispatch({
+                            effects: addBlinkErrorMarks.of([
+                                blinkErrorMarks.range(context.from, context.to)
+                            ] as any)
+                        });
                     }
-                    evalString = result.evalStr;
-                    markerCallback = (hasError) => {
-                        const textMarker = editorInstance.markText(
-                            result.from,
-                            result.to,
-                            {
-                                className: hasError
-                                    ? "blinkEvalError"
-                                    : "blinkEval"
-                            }
-                        );
-                        setTimeout(() => textMarker.clear(), 200);
-                    };
+
+                    setTimeout(
+                        () =>
+                            result === 0
+                                ? view.dispatch({
+                                      effects: removeBlinkSuccessMarks.of(
+                                          ((from: number, to: number) =>
+                                              to <= context.from ||
+                                              from >= context.to) as any
+                                      )
+                                  })
+                                : view.dispatch({
+                                      effects: removeBlinkErrorMarks.of(
+                                          ((from: number, to: number) =>
+                                              to <= context.from ||
+                                              from >= context.to) as any
+                                      )
+                                  }),
+                        200
+                    );
                 }
-            }
-            if (isNil(evalString)) {
-                return;
-            }
-            /* eslint-disable-next-line unicorn/prefer-switch */
-            if (documentType === "orc" || documentType === "udo") {
-                csound &&
-                    csound.evalCode(evalString).then((result) => {
-                        markerCallback && markerCallback(result !== 0);
-                    });
-            } else if (documentType === "sco") {
-                csound && csound.readScore(evalString);
-            } else if (documentType === "csd") {
-                csound &&
-                    csound.evalCode(evalString).then((result) => {
-                        markerCallback && markerCallback(result !== 0);
-                    });
-            }
+            );
         }
     }
 );

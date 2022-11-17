@@ -6,6 +6,7 @@ import {
     STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
 } from "./types";
 import { path, pathOr } from "ramda";
+import { Transaction } from "@codemirror/state";
 import { IStore } from "@store/types";
 import {
     newDocument,
@@ -114,35 +115,35 @@ export const storeEditorKeyboardCallbacks = (
                 const editor = selectCurrentEditor(getStore());
                 editor && dispatch(EditorActions.manualEntryAtPoint(editor));
             }),
-            find_simple: withPreventDefault(() => {
-                const editor = selectCurrentEditor(getStore());
+            // find_simple: withPreventDefault(() => {
+            //     const editor = selectCurrentEditor(getStore());
 
-                const searchField = document.querySelector(
-                    ".CodeMirror-dialog.CodeMirror-dialog-top"
-                );
-                if (!searchField) {
-                    editor && editor.execCommand("findPersistent");
-                    const maybeDialog = document.querySelector(
-                        ".CodeMirror-search-field"
-                    );
-                    setTimeout(() => {
-                        maybeDialog && maybeDialog[0] && maybeDialog[0].focus();
-                    }, 100);
-                } else {
-                    const dialogTop = document.querySelector(
-                        ".CodeMirror-dialog-top"
-                    );
-                    dialogTop && dialogTop.remove();
-                    editor && editor.focus();
-                }
-            }),
+            //     const searchField = document.querySelector(
+            //         ".CodeMirror-dialog.CodeMirror-dialog-top"
+            //     );
+            //     if (!searchField) {
+            //         editor && editor.execCommand("findPersistent");
+            //         const maybeDialog = document.querySelector(
+            //             ".CodeMirror-search-field"
+            //         );
+            //         setTimeout(() => {
+            //             maybeDialog && maybeDialog[0] && maybeDialog[0].focus();
+            //         }, 100);
+            //     } else {
+            //         const dialogTop = document.querySelector(
+            //             ".CodeMirror-dialog-top"
+            //         );
+            //         dialogTop && dialogTop.remove();
+            //         editor && editor.focus();
+            //     }
+            // }),
             undo: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
-                editor && editor.execCommand("undo");
+                editor && editor.dispatch(Transaction.userEvent.of("undo"));
             }),
             redo: withPreventDefault(() => {
                 const editor = selectCurrentEditor(getStore());
-                editor && editor.execCommand("redo");
+                editor && editor.dispatch(Transaction.userEvent.of("redo"));
             }),
             eval_block: withPreventDefault(() => {
                 const storeState = getStore();

@@ -14,7 +14,7 @@ exports.default = function loader() {
         warn: (message) => {
             if (!isRequestingTerms) {
                 console.error(message);
-                // throw new Error(message);
+                throw new Error(message);
             }
         }
     });

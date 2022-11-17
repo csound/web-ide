@@ -11,13 +11,7 @@ import {
 } from "@codemirror/language";
 import { completeFromList } from "@codemirror/autocomplete";
 import { Tag, styleTags, tags as t } from "@lezer/highlight";
-import {
-    EditorView,
-    Decoration,
-    Panel,
-    ViewPlugin,
-    showPanel
-} from "@codemirror/view";
+import { Decoration, ViewPlugin, showPanel } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { debounce } from "throttle-debounce";
 import { parser } from "./syntax.grammar";
@@ -323,7 +317,7 @@ const csoundModePlugin = ViewPlugin.fromClass(
 
             if (!this.scrollPositionInitialized) {
                 const view = update.view;
-
+                view.focus();
                 const documentUid = this.documentUid;
 
                 if (

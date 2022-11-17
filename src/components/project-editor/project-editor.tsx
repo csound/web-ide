@@ -139,7 +139,6 @@ function EditorForDocument({
                     ""
                 }
                 projectUid={projectUid}
-                isOwner={isOwner}
             ></Editor>
         );
     } else if (
