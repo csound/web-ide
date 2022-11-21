@@ -49,6 +49,7 @@ export const evalBlinkExtension = StateField.define({
 const findSurroundingContext = (view: EditorView, tree: TreeCursor) => {
     const treeRoot = tree.node;
     let maybeContext: any = treeRoot;
+    let lastContext: any = maybeContext;
 
     while (maybeContext) {
         if (
@@ -58,6 +59,17 @@ const findSurroundingContext = (view: EditorView, tree: TreeCursor) => {
         ) {
             return maybeContext;
         }
+
+        // if we find ourselves in global scope, check if the user wanted to evaluate a global statement
+        if (
+            maybeContext.type.name === "Program" &&
+            ["OpcodeStatement", "CallbackExpression"].includes(
+                lastContext.type.name
+            )
+        ) {
+            return lastContext;
+        }
+        lastContext = maybeContext;
         maybeContext = maybeContext.node.parent;
     }
 };
@@ -117,7 +129,11 @@ export const editorEvalCode = curry(
             );
 
             context = findSurroundingContext(view, treeRoot);
-            if (context) {
+
+            if (
+                typeof context === "object" &&
+                typeof context.from === "number"
+            ) {
                 selection = view.state.sliceDoc(context.from, context.to);
             }
         }

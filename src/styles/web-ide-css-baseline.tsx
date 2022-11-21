@@ -196,13 +196,27 @@ a {text-decoration: none;}
        background-color: ${theme.flashFade};
     }
 }
+
+.blink-eval {
+    z-index: 9999999;
+    animation-name: flash-animation;
+    animation-duration: 0.1s;
+    animation-fill-mode: forwards;
+}
+
 .cm-line:has(.blink-eval) {
     z-index: 9999999;
     animation-name: flash-animation;
     animation-duration: 0.1s;
     animation-fill-mode: forwards;
 }
+
 .blink-eval-error {
+    z-index: 9999999;
+    background-color: ${theme.errorText};
+}
+
+.cm-line:has(.blink-eval-error) {
     z-index: 9999999;
     background-color: ${theme.errorText};
 }
