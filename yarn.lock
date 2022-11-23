@@ -1192,10 +1192,10 @@
     style-mod "^4.0.0"
     w3c-keyname "^2.2.4"
 
-"@csound/browser@^6.18.1":
-  version "6.18.1"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.18.1.tgz#e811d63e90b4973d1db557ce1b08d1f70a84c3dc"
-  integrity sha512-zJaCc3IQitixt0gKfmiqLn+/IxSx7kMnbglenegBsemJpWZxowhuzkbnugPU71Rq3hSLuEBGlp4v9S056BlAyw==
+"@csound/browser@^6.18.2":
+  version "6.18.2"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.18.2.tgz#bff384a2af94e6e4230a3f361da693a178257184"
+  integrity sha512-0+kyxpFt2QZuCbUDxKV9ri2WcVT0HigMX7iAJOeHT6GiJJV59kLFPmLFs/sgSnP4CYBbWFCEL3kT8WzOo41lcg==
   dependencies:
     comlink "^4.3.1"
     eventemitter3 "^4.0.7"
