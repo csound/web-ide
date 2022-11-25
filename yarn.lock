@@ -1060,7 +1060,7 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.18.6":
+"@babel/runtime@^7.18.6", "@babel/runtime@^7.20.1":
   version "7.20.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.20.1.tgz#1148bb33ab252b165a06698fde7576092a78b4a9"
   integrity sha512-mrzLkl6U9YLF8qpqI7TB82PESyEGjm/0Ly91jG575eVxMMlb8fYfOXFZIJ8XfLrJZQbm7dlKry2bJmXBUEkdFg==
@@ -1192,22 +1192,23 @@
     style-mod "^4.0.0"
     w3c-keyname "^2.2.4"
 
-"@csound/browser@^6.18.2":
-  version "6.18.2"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.18.2.tgz#bff384a2af94e6e4230a3f361da693a178257184"
-  integrity sha512-0+kyxpFt2QZuCbUDxKV9ri2WcVT0HigMX7iAJOeHT6GiJJV59kLFPmLFs/sgSnP4CYBbWFCEL3kT8WzOo41lcg==
+"@csound/browser@^6.18.3":
+  version "6.18.3"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.18.3.tgz#a7e91ef738ffba17d6838f91522e9fc0a6dc6498"
+  integrity sha512-udvedLjNZjEvrCFxMItirRh/gKFbY/dED4SKbUoinhImJzVTRtykiCZv9CHMCmD6ixWPo4BByVkV2NuYNsBQ+g==
   dependencies:
     comlink "^4.3.1"
+    eslint-plugin-n "^15.5.1"
     eventemitter3 "^4.0.7"
-    google-closure-compiler "^20211201.0.0"
-    google-closure-library "^20211201.0.0"
+    google-closure-compiler "^20221102.0.1"
+    google-closure-library "^20221102.0.0"
     path-browserify "^1.0.1"
-    rambda "^7.0.1"
+    rambda "^7.4.0"
     rimraf "^3.0.2"
-    standardized-audio-context "^25.3.18"
+    standardized-audio-context "^25.3.35"
     text-encoding-shim "^1.0.5"
     unmute-ios-audio "^3.3.0"
-    web-midi-api "^2.1.3"
+    web-midi-api "^2.1.8"
 
 "@develar/schema-utils@~2.6.5":
   version "2.6.5"
@@ -3951,13 +3952,13 @@ atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-automation-events@^4.0.15:
-  version "4.0.15"
-  resolved "https://registry.yarnpkg.com/automation-events/-/automation-events-4.0.15.tgz#c162ece257d66b7f9b3c7f5547bf2387b1f9e1e8"
-  integrity sha512-58S7TZEii10lx4SABD/B52uMZXN30FWbfM06+3Kgo602YvWbhPQG2IiOvr/7iI5x7fjrqPNVjAigA0C/kOA28g==
+automation-events@^4.0.24:
+  version "4.0.24"
+  resolved "https://registry.yarnpkg.com/automation-events/-/automation-events-4.0.24.tgz#34dcd9cf8a7d3194c04e016cef1a54181b7060c1"
+  integrity sha512-v/c//VCE1TGU3R56cyTFnebXFR3NOOx5Kiuaz7TXwLGpYMp9VgKCwelODRW3ZZ5TP2OFymfrWsvNVuPSi6vVPQ==
   dependencies:
-    "@babel/runtime" "^7.17.9"
-    tslib "^2.3.1"
+    "@babel/runtime" "^7.20.1"
+    tslib "^2.4.1"
 
 autosuggest-highlight@^3.2.1:
   version "3.2.1"
@@ -4435,6 +4436,13 @@ builtin-modules@^3.0.0, builtin-modules@^3.1.0:
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-3.2.0.tgz#45d5db99e7ee5e6bc4f362e008bf917ab5049887"
   integrity sha512-lGzLKcioL90C7wMczpkY0n/oART3MbBa8R9OFGE1rJxoVI86u4WAGfEk8Wjv10eKSyTHVGkSo3bvBylCEtk7LA==
 
+builtins@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/builtins/-/builtins-5.0.1.tgz#87f6db9ab0458be728564fa81d876d8d74552fa9"
+  integrity sha512-qwVpFEHNfhYJIzNRBvd2C1kyo6jz3ZSMPyyuR47OPdiKWlbYnZNyDWuyR175qDnAJLiCo5fBBqPb3RiXgWlkOQ==
+  dependencies:
+    semver "^7.0.0"
+
 bytes@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.0.0.tgz#d32815404d689699f85a4ea4fa8755dd13a96048"
@@ -4540,7 +4548,15 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
 
-chalk@2.x, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.4.2:
+chalk@4.x, chalk@^4.0.0, chalk@^4.0.2, chalk@^4.1.0, chalk@^4.1.1, chalk@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.2.tgz#aac4e2b7734a740867aeb16bf02aad556a1e7a01"
+  integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
+  dependencies:
+    ansi-styles "^4.1.0"
+    supports-color "^7.1.0"
+
+chalk@^2.0.0, chalk@^2.0.1, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
   integrity sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==
@@ -4548,14 +4564,6 @@ chalk@2.x, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.4.2:
     ansi-styles "^3.2.1"
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
-
-chalk@^4.0.0, chalk@^4.0.2, chalk@^4.1.0, chalk@^4.1.1, chalk@^4.1.2:
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.2.tgz#aac4e2b7734a740867aeb16bf02aad556a1e7a01"
-  integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
-  dependencies:
-    ansi-styles "^4.1.0"
-    supports-color "^7.1.0"
 
 char-regex@^1.0.2:
   version "1.0.2"
@@ -6033,6 +6041,14 @@ eslint-module-utils@^2.7.3:
     debug "^3.2.7"
     find-up "^2.1.0"
 
+eslint-plugin-es@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-es/-/eslint-plugin-es-4.1.0.tgz#f0822f0c18a535a97c3e714e89f88586a7641ec9"
+  integrity sha512-GILhQTnjYE2WorX5Jyi5i4dz5ALWxBIdQECVQavL6s7cI76IZTDWleTHkxz/QT3kvcs2QlGHvKLYsSlPOlPXnQ==
+  dependencies:
+    eslint-utils "^2.0.0"
+    regexpp "^3.0.0"
+
 eslint-plugin-flowtype@8.0.3, eslint-plugin-flowtype@^8.0.3:
   version "8.0.3"
   resolved "https://registry.yarnpkg.com/eslint-plugin-flowtype/-/eslint-plugin-flowtype-8.0.3.tgz#e1557e37118f24734aa3122e7536a038d34a4912"
@@ -6084,6 +6100,20 @@ eslint-plugin-jsx-a11y@6.5.1, eslint-plugin-jsx-a11y@^6.5.1:
     jsx-ast-utils "^3.2.1"
     language-tags "^1.0.5"
     minimatch "^3.0.4"
+
+eslint-plugin-n@^15.5.1:
+  version "15.5.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-n/-/eslint-plugin-n-15.5.1.tgz#b3991857d1edaa47e0108ead825470ce63f391c1"
+  integrity sha512-kAd+xhZm7brHoFLzKLB7/FGRFJNg/srmv67mqb7tto22rpr4wv/LV6RuXzAfv3jbab7+k1wi42PsIhGviywaaw==
+  dependencies:
+    builtins "^5.0.1"
+    eslint-plugin-es "^4.1.0"
+    eslint-utils "^3.0.0"
+    ignore "^5.1.1"
+    is-core-module "^2.11.0"
+    minimatch "^3.1.2"
+    resolve "^1.22.1"
+    semver "^7.3.8"
 
 eslint-plugin-prettier@^4.0.0:
   version "4.0.0"
@@ -6160,6 +6190,13 @@ eslint-scope@^7.1.1:
     esrecurse "^4.3.0"
     estraverse "^5.2.0"
 
+eslint-utils@^2.0.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-utils/-/eslint-utils-2.1.0.tgz#d2de5e03424e707dc10c74068ddedae708741b27"
+  integrity sha512-w94dQYoauyvlDc43XnGB8lU3Zt713vNChgt4EWwhXAP2XkBvndfxF0AgIqKOOasjPIPzj9JqgwkwbCYD0/V3Zg==
+  dependencies:
+    eslint-visitor-keys "^1.1.0"
+
 eslint-utils@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/eslint-utils/-/eslint-utils-3.0.0.tgz#8aebaface7345bb33559db0a1f13a1d2d48c3672"
@@ -6167,7 +6204,7 @@ eslint-utils@^3.0.0:
   dependencies:
     eslint-visitor-keys "^2.0.0"
 
-eslint-visitor-keys@^1.0.0:
+eslint-visitor-keys@^1.0.0, eslint-visitor-keys@^1.1.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.3.0.tgz#30ebd1ef7c2fdff01c3a4f151044af25fab0523e"
   integrity sha512-6J72N8UNa462wa/KFODt/PJ3IU60SDpC3QXC1Hjc1BXXpfL2C9R5+AU7jhe0F6GREqVMh4Juu+NY7xn+6dipUQ==
@@ -7084,45 +7121,45 @@ globby@^12.0.2:
     merge2 "^1.4.1"
     slash "^4.0.0"
 
-google-closure-compiler-java@^20211201.0.0:
-  version "20211201.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-compiler-java/-/google-closure-compiler-java-20211201.0.0.tgz#41eb570189ad35d9b09a2331e37157951dd99e75"
-  integrity sha512-TQop4dF0k/mb9sPu0aZsvW8OVfuZG4+t4ITZeA/u43deiAA4AFScZQQUMUmoVmXzR8Jz0eeucKoZPTwKAwcSmQ==
+google-closure-compiler-java@^20221102.0.1:
+  version "20221102.0.1"
+  resolved "https://registry.yarnpkg.com/google-closure-compiler-java/-/google-closure-compiler-java-20221102.0.1.tgz#5c70e98026bd0a38e7dadc585426666597494f9c"
+  integrity sha512-rMKLEma3uSe/6MGHtivDezTv4u5iaDEyxoy9No+1WruPSZ5h1gBZLONcfCA8JaoGojFPdHZI1qbwT0EveEWnAg==
 
-google-closure-compiler-linux@^20211201.0.0:
-  version "20211201.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-compiler-linux/-/google-closure-compiler-linux-20211201.0.0.tgz#6f84f745d9c0f79677b270cc3007d70ce4a741e1"
-  integrity sha512-7nMgBFZYYQTvDLcO+LqqwtibgZJu8qaFJbK84T12xneY1Yy1fUSn56NXaZ9cgdS7p30Hqy6tYcw9ZSuxK7fuEA==
+google-closure-compiler-linux@^20221102.0.1:
+  version "20221102.0.1"
+  resolved "https://registry.yarnpkg.com/google-closure-compiler-linux/-/google-closure-compiler-linux-20221102.0.1.tgz#31b8088433261007d1ccf19b8074676ef74acfc1"
+  integrity sha512-rj1E1whT4j/giidQ44v4RoO8GcvU81VU9YB5RlRM0hWDvCGWjQasDABGnF/YLWLl5PXAAfJpa/hy8ckv5/r97g==
 
-google-closure-compiler-osx@^20211201.0.0:
-  version "20211201.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-compiler-osx/-/google-closure-compiler-osx-20211201.0.0.tgz#9ba8231a68cfaacc02d47367af43171a383dbe96"
-  integrity sha512-eJKmvYm5C82BAcfK64/7nR3RbR4bwIXO2Dmhmb5AR6FXxD/J1svaG3BMINlS+U/GT7NeV4Z7bKb2TcPIAfGO9A==
+google-closure-compiler-osx@^20221102.0.1:
+  version "20221102.0.1"
+  resolved "https://registry.yarnpkg.com/google-closure-compiler-osx/-/google-closure-compiler-osx-20221102.0.1.tgz#8fffe3344c40ab293504f7572ab1e2a01377c393"
+  integrity sha512-Cv993yr9a2DLFgYnsv4m6dNUk5jousd6W6la12x2fDbhxTLewYrw7CrCaVEVw1SU3XErVmdHOZQjFsVMhcZjCw==
 
-google-closure-compiler-windows@^20211201.0.0:
-  version "20211201.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-compiler-windows/-/google-closure-compiler-windows-20211201.0.0.tgz#e81c1b2d68df5730065c08cd80daed84bf0013fc"
-  integrity sha512-OPZYA0+tJSjutt1EYrECmXChNsY5USoMbQkBEmwI29riVvNnK5Ot+/SE66/NPHwm3qI/p3O7TnOTKhVpXKed5Q==
+google-closure-compiler-windows@^20221102.0.1:
+  version "20221102.0.1"
+  resolved "https://registry.yarnpkg.com/google-closure-compiler-windows/-/google-closure-compiler-windows-20221102.0.1.tgz#332be7852c647e37ddab092bda9a7c083fcb97c9"
+  integrity sha512-jRwHGekG/oDihHdKAEiYN5z0cBF+brL0bYtuEOXx4fAmq5tHe4OxKtSEEprCnVZZL0aG/boGprACPvsDRsXT7Q==
 
-google-closure-compiler@^20211201.0.0:
-  version "20211201.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-compiler/-/google-closure-compiler-20211201.0.0.tgz#e767dc74b72b1d9b2203450185120abcb9278d5f"
-  integrity sha512-QPNp6uHR94EKbi17XCsdISHAqIgk1Ep7LpB+rmPDY7VoNAX4784WT/0bz6HyVK4QYRVLlNAy2X+1+VlFhS0FzQ==
+google-closure-compiler@^20221102.0.1:
+  version "20221102.0.1"
+  resolved "https://registry.yarnpkg.com/google-closure-compiler/-/google-closure-compiler-20221102.0.1.tgz#6953e94bc9345b70338ae3021002f79775829a05"
+  integrity sha512-edAlsyJEsy2I983xWBlBfdSme16uyY007HM2OwPOoWPEFgmR100ggUabJbIegXZgbSLH51kyeJMQKuWhiHgzcA==
   dependencies:
-    chalk "2.x"
-    google-closure-compiler-java "^20211201.0.0"
+    chalk "4.x"
+    google-closure-compiler-java "^20221102.0.1"
     minimist "1.x"
     vinyl "2.x"
     vinyl-sourcemaps-apply "^0.2.0"
   optionalDependencies:
-    google-closure-compiler-linux "^20211201.0.0"
-    google-closure-compiler-osx "^20211201.0.0"
-    google-closure-compiler-windows "^20211201.0.0"
+    google-closure-compiler-linux "^20221102.0.1"
+    google-closure-compiler-osx "^20221102.0.1"
+    google-closure-compiler-windows "^20221102.0.1"
 
-google-closure-library@^20211201.0.0:
-  version "20211201.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-library/-/google-closure-library-20211201.0.0.tgz#257dcaf7071b9aabbf1611204e5477c490bccc08"
-  integrity sha512-yMwimtds4GVPBKyUGRQ2x1V5/+FTYSkh+y4PSK1LdYi15Ux9nXkD59hBX8IFAFuoqkiXq4Nm8jSZnEth6iV8Gg==
+google-closure-library@^20221102.0.0:
+  version "20221102.0.0"
+  resolved "https://registry.yarnpkg.com/google-closure-library/-/google-closure-library-20221102.0.0.tgz#5561dd360414bb64a265a060682038e4e64c15fd"
+  integrity sha512-M5+LWPS99tMB9dOGpZjLT9CdIYpnwBZiwB+dCmZFOOvwJiOWytntzJ/a/hoNF6zxD15l3GWwRJiEkL636D6DRQ==
 
 got@^9.6.0:
   version "9.6.0"
@@ -7505,7 +7542,7 @@ ieee754@^1.1.13:
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
-ignore@^5.1.8, ignore@^5.1.9, ignore@^5.2.0:
+ignore@^5.1.1, ignore@^5.1.8, ignore@^5.1.9, ignore@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.2.0.tgz#6d3bac8fa7fe0d45d9f9be7bac2fc279577e345a"
   integrity sha512-CmxgYGiEPCLhfLnpPp1MoRmifwEIOgjcHXxOBjv7mY96c+eWScsOP9c112ZyLdWHi0FxHjI+4uVhKYp/gcdRmQ==
@@ -7711,6 +7748,13 @@ is-ci@^3.0.0:
   integrity sha512-ZYvCgrefwqoQ6yTyYUbQu64HsITZ3NfKX1lzaEYdkTDcfKzzCI/wthRRYKkdjHKFVgNiXKAKm65Zo1pk2as/QQ==
   dependencies:
     ci-info "^3.2.0"
+
+is-core-module@^2.11.0, is-core-module@^2.9.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.11.0.tgz#ad4cb3e3863e814523c96f3f58d26cc570ff0144"
+  integrity sha512-RRjxlvLDkD1YJwDbroBHMb+cukurkDWNyHx7D3oNB5x9rb5ogcksMC5wHCadcXoo67gVr/+3GFySh3134zi6rw==
+  dependencies:
+    has "^1.0.3"
 
 is-core-module@^2.2.0, is-core-module@^2.8.1:
   version "2.9.0"
@@ -8075,10 +8119,10 @@ jake@^10.8.5:
     filelist "^1.0.1"
     minimatch "^3.0.4"
 
-jazz-midi@^1.7.5:
-  version "1.7.5"
-  resolved "https://registry.yarnpkg.com/jazz-midi/-/jazz-midi-1.7.5.tgz#2ddcc390de7e534073003fb8cf296272f4912487"
-  integrity sha512-RUxChhn388CZfSymwwgucfaBxGu4Z0eeJOSTnUMsDN2tMx5E8G+o7h2gk/xPaDTfOORnQsJk71VhSuqiw1Hy9Q==
+jazz-midi@^1.7.6:
+  version "1.7.6"
+  resolved "https://registry.yarnpkg.com/jazz-midi/-/jazz-midi-1.7.6.tgz#6bd3a9cb6dce0109271252c8c682ac04184c4018"
+  integrity sha512-vKCmBpotb1y+kEbRlu43COar2LzV46uOTTzyM/zTx5LR7WUTWle7FFC8rphqBVdryW66QtOyUA2N/DWZToBang==
 
 jest-changed-files@^27.5.1:
   version "27.5.1"
@@ -8886,13 +8930,13 @@ just-range@^2.1.0:
   resolved "https://registry.yarnpkg.com/just-range/-/just-range-2.2.0.tgz#75c858f79b474ecf9ac463d2cad0320ea86a2472"
   integrity sha512-JKHygNvIu+tX/+oOI+zNznQE0M8jM241fsjuac2i9OBlIXD7w4CGGuakXYc6Dne5vv9pEXgmCv8+WEFKwiGFTg==
 
-jzz@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/jzz/-/jzz-1.5.0.tgz#b72063f124f8ea6a82a7167133a53590df103d23"
-  integrity sha512-M3FrFdVulFMti3jxfjyt0h96w8Wrwe6SI6FKTW0/c+HxQg0j9P55NacpMt3dgPO9bwQaPQGujWdUBgexVMsbNw==
+jzz@^1.5.4:
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/jzz/-/jzz-1.5.5.tgz#89b1564fee0f44de9ae2952459c3c743f59fcaed"
+  integrity sha512-+zaw42xTBFm5KlqykKpD0kFaTZbjYwIQjkfhXsLkPWsg4jDVmgme/WLgFqevHPHJEFlPlUdEYI3RrzN0PBAbCw==
   dependencies:
     "@types/webmidi" "^2.0.6"
-    jazz-midi "^1.7.5"
+    jazz-midi "^1.7.6"
 
 keyv@^3.0.0:
   version "3.1.0"
@@ -10379,10 +10423,10 @@ raf@^3.1.0, raf@^3.4.1:
   dependencies:
     performance-now "^2.1.0"
 
-rambda@^7.0.1:
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/rambda/-/rambda-7.0.3.tgz#35730cb9ac24943c1231f74e6fddd46ae594d3c0"
-  integrity sha512-vRkFoukpx9PTmYyOjMZ6+anbDI9BrjaAepigsSOVQcgy7dZKMHM26m1/r8BvegeBCM8qBwr1m/+rufgNKRrofw==
+rambda@^7.4.0:
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/rambda/-/rambda-7.4.0.tgz#61ec9de31d3dd6affe804de3bae04a5b818781e5"
+  integrity sha512-A9hihu7dUTLOUCM+I8E61V4kRXnN4DwYeK0DwCBydC1MqNI1PidyAtbtpsJlBBzK4icSctEcCQ1bGcLpBuETUQ==
 
 ramda@^0.28.0:
   version "0.28.0"
@@ -11070,7 +11114,7 @@ regexp.prototype.flags@^1.4.1:
     define-properties "^1.1.3"
     functions-have-names "^1.2.2"
 
-regexpp@^3.2.0:
+regexpp@^3.0.0, regexpp@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-3.2.0.tgz#0425a2768d8f23bad70ca4b90461fa2f1213e1b2"
   integrity sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==
@@ -11265,6 +11309,15 @@ resolve@1.22.0, resolve@^1.1.6, resolve@^1.10.0, resolve@^1.12.0, resolve@^1.14.
   integrity sha512-Hhtrw0nLeSrFQ7phPp4OOcVjLPIeMnRlr5mcnVuMe7M/7eBn98A3hmFRLoFo3DLZkivSYwhRUJTyPyWAk56WLw==
   dependencies:
     is-core-module "^2.8.1"
+    path-parse "^1.0.7"
+    supports-preserve-symlinks-flag "^1.0.0"
+
+resolve@^1.22.1:
+  version "1.22.1"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.1.tgz#27cb2ebb53f91abb49470a928bba7558066ac177"
+  integrity sha512-nBpuuYuY5jFsli/JIs1oldw6fOQCBioohqWZg/2hiaOybXOft4lonv85uDOKXdf8rhyK159cxU5cDcK/NKk8zw==
+  dependencies:
+    is-core-module "^2.9.0"
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
@@ -11571,6 +11624,13 @@ semver@^6.0.0, semver@^6.1.1, semver@^6.1.2, semver@^6.2.0, semver@^6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.0.tgz#ee0a64c8af5e8ceea67687b133761e1becbd1d3d"
   integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
+
+semver@^7.0.0, semver@^7.3.8:
+  version "7.3.8"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.8.tgz#07a78feafb3f7b32347d725e33de7e2a2df67798"
+  integrity sha512-NB1ctGL5rlHrPJtFDVIVzTyQylMLu9N9VICA6HSFJo8MCGVTMW6gfpicwKmmK/dAjTOrqu5l63JJOpDSrAis3A==
+  dependencies:
+    lru-cache "^6.0.0"
 
 send@0.17.2:
   version "0.17.2"
@@ -12008,14 +12068,14 @@ stackframe@^1.1.1:
   resolved "https://registry.yarnpkg.com/stackframe/-/stackframe-1.2.1.tgz#1033a3473ee67f08e2f2fc8eba6aef4f845124e1"
   integrity sha512-h88QkzREN/hy8eRdyNhhsO7RSJ5oyTqxxmmn0dzBIMUclZsjpfmrsg81vp8mjjAs2vAZ72nyWxRUwSwmh0e4xg==
 
-standardized-audio-context@^25.3.18:
-  version "25.3.23"
-  resolved "https://registry.yarnpkg.com/standardized-audio-context/-/standardized-audio-context-25.3.23.tgz#f0634c802629e54e9cadf8e02dfb2474f8435ec0"
-  integrity sha512-4pDsYpOql/qAe+3iWnV0otsUyZYGCPA8h5UVSBclwc3gzsPN9pHCPWXGgI453JoM7IGLxNIdX0W1LOIdi5AgHQ==
+standardized-audio-context@^25.3.35:
+  version "25.3.35"
+  resolved "https://registry.yarnpkg.com/standardized-audio-context/-/standardized-audio-context-25.3.35.tgz#ebe98fa5e91936fb10dbf120f3f947da74147981"
+  integrity sha512-61KBkor9fOsMEl3NZllnis8KDmTJzonuuW8h6JBmxXXcUDucypGCJp+hlbyKG+olav8wgA+VKlqFmiJEbh4CfA==
   dependencies:
-    "@babel/runtime" "^7.17.9"
-    automation-events "^4.0.15"
-    tslib "^2.3.1"
+    "@babel/runtime" "^7.20.1"
+    automation-events "^4.0.24"
+    tslib "^2.4.1"
 
 stat-mode@^1.0.0:
   version "1.0.0"
@@ -12585,10 +12645,15 @@ tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@^2.0.3, tslib@^2.1.0, tslib@^2.3.1:
+tslib@^2.0.3, tslib@^2.1.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
   integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
+
+tslib@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.1.tgz#0d0bfbaac2880b91e22df0768e55be9753a5b17e"
+  integrity sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==
 
 tsutils@^3.21.0:
   version "3.21.0"
@@ -12997,12 +13062,12 @@ wbuf@^1.1.0, wbuf@^1.7.3:
   dependencies:
     minimalistic-assert "^1.0.0"
 
-web-midi-api@^2.1.3:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/web-midi-api/-/web-midi-api-2.1.5.tgz#b05ab6fa346b26a9eb7e7a268128c1ebd099d609"
-  integrity sha512-eWddFIL9jSBNe0qVA0PgGcelySpjVTfp+5vP6sNZf8OlHpbmDi1iQ3aOv/5/9GmZ8tjVB/6A3petIJEbGtaoOQ==
+web-midi-api@^2.1.8:
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/web-midi-api/-/web-midi-api-2.1.8.tgz#d1f311a2fbcb4dcbfcbce2d62738525f7650b90c"
+  integrity sha512-kk0SmjU3nufE29MWBpdf3D0J4HboA1ybz386KVsytGmNesKIDS7TgqyD1UGeRXYZs+cn3OnJ9Th9oEmsPcce5A==
   dependencies:
-    jzz "^1.5.0"
+    jzz "^1.5.4"
 
 webidl-conversions@^3.0.0:
   version "3.0.1"
