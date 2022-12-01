@@ -1192,10 +1192,10 @@
     style-mod "^4.0.0"
     w3c-keyname "^2.2.4"
 
-"@csound/browser@^6.18.3":
-  version "6.18.3"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.18.3.tgz#a7e91ef738ffba17d6838f91522e9fc0a6dc6498"
-  integrity sha512-udvedLjNZjEvrCFxMItirRh/gKFbY/dED4SKbUoinhImJzVTRtykiCZv9CHMCmD6ixWPo4BByVkV2NuYNsBQ+g==
+"@csound/browser@^6.18.4":
+  version "6.18.4"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-6.18.4.tgz#aa53b42aab247b91fffad5c560c15f7db0ed7636"
+  integrity sha512-ckfkZj4X6azqw6EqAPLzXrlQReLvxc1YQVCccld2U8jWjrIXzEf0PUQHKo1xMSm146BaFTJett/Mkf0iSzGMYQ==
   dependencies:
     comlink "^4.3.1"
     eslint-plugin-n "^15.5.1"
