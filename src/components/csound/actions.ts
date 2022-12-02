@@ -1,12 +1,12 @@
 import { store } from "@store";
 import { IStore } from "@store/types";
 import { IProject } from "../projects/types";
-import { CsoundObj, Csound } from "@csound/browser";
+import { CsoundObj, Csound as Csound6 } from "@csound/browser";
+import { Csound as Csound7 } from "csound7";
 import { addNonCloudFile } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import {
-    FETCH_CSOUND,
     SET_CSOUND,
     ICsoundStatus,
     SET_CSOUND_PLAY_STATE,
@@ -14,7 +14,6 @@ import {
     STOP_RENDER
 } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
-import { selectCsoundFactory } from "./selectors";
 import { addDocumentToEMFS } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { append, difference, isEmpty, path, pathOr, pipe, values } from "ramda";
@@ -54,7 +53,7 @@ export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
 };
 
 export const newCsound = async (
-    Csound: Csound,
+    Csound: Csound6 | Csound7,
     dispatch: (any) => void
 ): Promise<CsoundObj | undefined> => {
     // eslint-disable-next-line unicorn/prevent-abbreviations
@@ -70,16 +69,16 @@ export const newCsound = async (
     }
 };
 
-export const fetchCsound = async (dispatch: (any) => void): Promise<Csound> => {
-    const { Csound } = await import("@csound/browser");
-    if (Csound) {
-        dispatch({
-            type: FETCH_CSOUND,
-            factory: Csound
-        });
-    }
-    return Csound;
-};
+// export const fetchCsound = async (dispatch: (any) => void): Promise<Csound> => {
+//     const { Csound } = await import("@csound/browser");
+//     if (Csound) {
+//         dispatch({
+//             type: FETCH_CSOUND,
+//             factory: Csound
+//         });
+//     }
+//     return Csound;
+// };
 
 export const syncFs = async (
     csound: CsoundObj,
@@ -136,19 +135,22 @@ export const syncFs = async (
 //     };
 // };
 
-export const playCsdFromFs = (
-    projectUid: string,
-    csdPath: string
-): ((dispatch: any, setConsole: any) => Promise<void>) => {
+export const playCsdFromFs = ({
+    projectUid,
+    csdPath,
+    useCsound7
+}: {
+    projectUid: string;
+    csdPath: string;
+    useCsound7: boolean;
+}): ((dispatch: any, setConsole: any) => Promise<void>) => {
     return async (dispatch: any, setConsole: any) => {
         const state = store.getState();
         // const csoundStatus = csound || path(["csound", "status"], state);
-        const hasCsound =
-            typeof path(["csound", "factory"], store) === "function";
+        // const hasCsound =
+        //     typeof path(["csound", "factory"], store) === "function";
 
-        const Csound = hasCsound
-            ? path(["csound", "factory"], store)
-            : await fetchCsound(dispatch);
+        const Csound = useCsound7 ? Csound7 : Csound6;
 
         const oldCsoundObj = path(["csound", "csound"], state);
 
@@ -214,76 +216,25 @@ export const playCsdFromFs = (
     };
 };
 
-export const playCSDFromString = (
-    projectUid: string,
-    csd: string
-): ((dispatch: any, setConsole: any) => Promise<void>) => {
+export const playORCFromString = ({
+    projectUid,
+    orc,
+    useCsound7
+}: {
+    projectUid: string;
+    orc: string;
+    useCsound7: boolean;
+}): ((dispatch: any, setConsole: any) => Promise<void>) => {
     return async (dispatch, setConsole: any) => {
         const state = store.getState();
 
-        const hasCsound =
-            typeof path(["csound", "factory"], store) === "function";
+        const Csound = useCsound7 ? Csound7 : Csound6;
 
-        const Csound = hasCsound
-            ? path(["csound", "factory"], store)
-            : await fetchCsound(dispatch);
-
-        const oldCsoundObj = path(["csound", "csound"], state);
-
-        if (oldCsoundObj) {
-            try {
-                await oldCsoundObj.destroy();
-            } catch (error: any) {
-                console.error(error);
-            }
-        }
-
-        const csoundObj = await newCsound(Csound, dispatch);
-
-        if (csoundObj && setConsole) {
-            setConsole([""]);
-            csoundObj.on("message", (message: string) =>
-                setConsole(append(message + "\n"))
-            );
-        }
-
-        if (csoundObj) {
-            await csoundObj.setOption("-odac");
-
-            const storeState = store.getState();
-            await syncFs(csoundObj, projectUid, storeState);
-
-            const result = await csoundObj.compileCsdText(csd);
-
-            if (result === 0) {
-                await csoundObj.start();
-                dispatch(setCsoundPlayState("playing"));
-            } else {
-                try {
-                    await csoundObj.cleanup();
-                } catch (error: any) {
-                    console.error(error);
-                }
-
-                dispatch(setCsoundPlayState("error"));
-            }
-        }
-    };
-};
-
-export const playORCFromString = (
-    projectUid: string,
-    orc: string
-): ((dispatch: any, setConsole: any) => Promise<void>) => {
-    return async (dispatch, setConsole: any) => {
-        const state = store.getState();
-
-        const hasCsound =
-            typeof path(["csound", "factory"], store) === "function";
-
-        const Csound = hasCsound
-            ? path(["csound", "factory"], store)
-            : await fetchCsound(dispatch);
+        // const Csound = useCsound7
+        //     ? Csound7
+        //     : hasCsound
+        //     ? path(["csound", "factory"], store)
+        //     : await fetchCsound(dispatch);
 
         const oldCsoundObj = path(["csound", "csound"], state);
 
@@ -402,11 +353,8 @@ export const renderToDisk = (
             return;
         }
 
-        let Csound = selectCsoundFactory(state);
-
-        if (!Csound) {
-            Csound = await fetchCsound(dispatch);
-        }
+        const Csound = Csound6;
+        // const Csound = useCsound7 ? Csound7 : Csound6;
 
         // vanilla mode should work everywhere
         const csound = await Csound({

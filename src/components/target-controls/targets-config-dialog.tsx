@@ -59,6 +59,7 @@ interface ITargetFromInput {
     isNameValid: boolean;
     isTypeValid: boolean;
     isOtherwiseValid: boolean;
+    useCsound7: boolean;
     csoundOptions?: ICsoundOptions;
     targetDocumentUid?: string;
 }
@@ -155,8 +156,13 @@ const TargetsConfigDialog = (): React.ReactElement => {
     const mainArea = map((index: number) => {
         const thisTarget = newTargets[index] as ITargetFromInput;
 
-        const { targetName, oldTargetName, targetType, isDefaultTarget } =
-            thisTarget;
+        const {
+            targetName,
+            oldTargetName,
+            targetType,
+            isDefaultTarget,
+            useCsound7
+        } = thisTarget;
         const { targetDocumentUid } = thisTarget;
         const validateTargetType = (targetType) =>
             typeof targetType === "string" ? !isEmpty(targetName) : false;
@@ -311,20 +317,49 @@ const TargetsConfigDialog = (): React.ReactElement => {
                             />
                         </div>
                     )}
-                </FormGroup>{" "}
+                </FormGroup>
+
+                <FormGroup row>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                color="primary"
+                                checked={isDefaultTarget}
+                                onChange={(event) =>
+                                    setNewTargets(
+                                        map(
+                                            (target: ITargetFromInput) =>
+                                                assoc(
+                                                    "isDefaultTarget",
+                                                    target.targetName ===
+                                                        targetName
+                                                        ? event.target.checked
+                                                        : false,
+                                                    target
+                                                ),
+                                            newTargets
+                                        )
+                                    )
+                                }
+                            />
+                        }
+                        label="Mark as default target"
+                    />
+                </FormGroup>
+
                 {targetType === "main" && (
                     <FormGroup row>
                         <FormControlLabel
                             control={
                                 <Checkbox
                                     color="primary"
-                                    checked={isDefaultTarget}
+                                    checked={useCsound7 || false}
                                     onChange={(event) =>
                                         setNewTargets(
                                             map(
                                                 (target: ITargetFromInput) =>
                                                     assoc(
-                                                        "isDefaultTarget",
+                                                        "useCsound7",
                                                         target.targetName ===
                                                             targetName
                                                             ? event.target
@@ -338,7 +373,7 @@ const TargetsConfigDialog = (): React.ReactElement => {
                                     }
                                 />
                             }
-                            label="Mark as default target"
+                            label="Run with csound7-alpha"
                         />
                     </FormGroup>
                 )}
@@ -398,14 +433,16 @@ const TargetsConfigDialog = (): React.ReactElement => {
                     targetName,
                     targetType,
                     targetDocumentUid,
-                    csoundOptions
+                    csoundOptions,
+                    useCsound7
                 }: ITargetFromInput
             ) => {
                 const firebaseTarget = {
                     targetName,
                     targetType,
                     targetDocumentUid,
-                    csoundOptions
+                    csoundOptions,
+                    useCsound7
                 };
                 return assoc(targetName, firebaseTarget, accumulator);
             },

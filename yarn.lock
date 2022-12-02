@@ -5097,6 +5097,23 @@ crypto-random-string@^2.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-2.0.0.tgz#ef2a7a966ec11083388369baa02ebead229b30d5"
   integrity sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==
 
+"csound7@npm:@csound/browser@^7.0.1":
+  version "7.0.0-alpha1"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-alpha1.tgz#696f76f9014b10994888a33731760bd18db2e3b0"
+  integrity sha512-KbCfA5woqQwoSBMVNOKqSE1b0HNaKEHgOKambw1hIQGe4CDNh8CqrZibrfCKqCUgyHahR0AwgJSWF4whByDT9w==
+  dependencies:
+    comlink "^4.3.1"
+    eventemitter3 "^4.0.7"
+    google-closure-compiler "^20221102.0.1"
+    google-closure-library "^20221102.0.0"
+    path-browserify "^1.0.1"
+    rambda "^7.4.0"
+    rimraf "^3.0.2"
+    standardized-audio-context "^25.3.35"
+    text-encoding-shim "^1.0.5"
+    unmute-ios-audio "^3.3.0"
+    web-midi-api "^2.1.8"
+
 css-box-model@^1.2.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/css-box-model/-/css-box-model-1.2.1.tgz#59951d3b81fd6b2074a62d49444415b0d2b4d7c1"

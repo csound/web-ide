@@ -13,11 +13,7 @@ import {
 } from "./utils";
 import { selectSelectedTarget } from "./selectors";
 import { useSetConsole } from "@comp/console/context";
-import {
-    // fetchSetStartCsound,
-    pauseCsound,
-    resumePausedCsound
-} from "@comp/csound/actions";
+import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { saveAllFiles } from "@comp/projects/actions";
 
 const PlayButton = ({

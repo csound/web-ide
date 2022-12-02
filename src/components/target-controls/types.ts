@@ -11,6 +11,7 @@ export const UPDATE_DEFAULT_TARGET_LOCALLY =
 
 export interface ITarget {
     csoundOptions: ICsoundOptions;
+    useCsound7: boolean;
     targetName: string;
     targetType: string;
     targetDocumentUid?: string;

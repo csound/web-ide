@@ -9,76 +9,92 @@ import { filenameToCsoundType } from "@comp/csound/utils";
 const getDefaultTargetName = (store, projectUid): string | undefined =>
     path(["TargetControlsReducer", projectUid, "defaultTarget"], store);
 
-export const getDefaultTargetDocument = curry((projectUid, store):
-    | IDocument
-    | undefined => {
-    const maybeDefaultTarget: ITarget | undefined = path(
-        [
-            "TargetControlsReducer",
-            projectUid,
-            "targets",
-            getDefaultTargetName(store, projectUid) || ""
-        ],
-        store
-    );
+export const getDefaultTargetDocument = curry(
+    (projectUid, store): IDocument | undefined => {
+        const maybeDefaultTarget: ITarget | undefined = path(
+            [
+                "TargetControlsReducer",
+                projectUid,
+                "targets",
+                getDefaultTargetName(store, projectUid) || ""
+            ],
+            store
+        );
 
-    const projectCsdFallback = find(
-        propEq("filename", "project.csd"),
-        values(
-            pathOr(
-                {},
-                ["ProjectsReducer", "projects", projectUid, "documents"],
-                store
+        const projectCsdFallback = find(
+            propEq("filename", "project.csd"),
+            values(
+                pathOr(
+                    {},
+                    ["ProjectsReducer", "projects", projectUid, "documents"],
+                    store
+                )
             )
-        )
-    );
+        );
 
-    // ATT: fallback to project.csd is to prevserve fallback behaviour
-    // This should be marked as a deprecated fallback, soonish
-    const targetDocument: IDocument | undefined = maybeDefaultTarget
-        ? path(
-              [
-                  "ProjectsReducer",
-                  "projects",
-                  projectUid,
-                  "documents",
-                  (maybeDefaultTarget as ITarget).targetType === "main"
-                      ? maybeDefaultTarget &&
-                        maybeDefaultTarget.targetDocumentUid
-                      : maybeDefaultTarget &&
-                        pathOr(
-                            "",
-                            ["playlistDocumentsUid", 0],
-                            maybeDefaultTarget as ITarget
-                        )
-              ],
-              store
-          )
-        : projectCsdFallback;
-    return targetDocument;
-});
+        // ATT: fallback to project.csd is to prevserve fallback behaviour
+        // This should be marked as a deprecated fallback, soonish
+        const targetDocument: IDocument | undefined = maybeDefaultTarget
+            ? path(
+                  [
+                      "ProjectsReducer",
+                      "projects",
+                      projectUid,
+                      "documents",
+                      (maybeDefaultTarget as ITarget).targetType === "main"
+                          ? maybeDefaultTarget &&
+                            maybeDefaultTarget.targetDocumentUid
+                          : maybeDefaultTarget &&
+                            pathOr(
+                                "",
+                                ["playlistDocumentsUid", 0],
+                                maybeDefaultTarget as ITarget
+                            )
+                  ],
+                  store
+              )
+            : projectCsdFallback;
+        return targetDocument;
+    }
+);
 
 export const getPlayActionFromProject = curry(
     (projectUid: string, store: IStore) => {
         const targetDocument = getDefaultTargetDocument(projectUid, store);
+
         if (!targetDocument) {
             return;
         }
+
+        const target: ITarget | undefined = path(
+            [
+                "TargetControlsReducer",
+                projectUid,
+                "targets",
+                targetDocument.documentUid
+            ],
+            store
+        );
+
+        const useCsound7 = target?.useCsound7 ?? false;
+
         const csoundDocumentType = filenameToCsoundType(
             (targetDocument as IDocument).filename
         );
         switch (csoundDocumentType) {
             case "csd": {
-                return playCsdFromFs(
+                return playCsdFromFs({
                     projectUid,
-                    (targetDocument as IDocument).filename
-                );
+                    csdPath: (targetDocument as IDocument).filename,
+                    useCsound7
+                });
             }
             case "orc": {
-                return playORCFromString(
+                return playORCFromString({
                     projectUid,
-                    (targetDocument as IDocument).savedValue
-                );
+                    orc: (targetDocument as IDocument).savedValue,
+                    useCsound7
+                });
             }
         }
     }
@@ -106,19 +122,15 @@ export const getPlayActionFromTarget = (
     }
 
     const target: ITarget | undefined = path(
-        [
-            "ProjectsReducer",
-            "projects",
-            activeProjectUid,
-            "targets",
-            selectedTarget
-        ],
+        ["TargetControlsReducer", activeProjectUid, "targets", selectedTarget],
         store
     );
 
     if (!target) {
         return;
     }
+
+    const useCsound7 = target.useCsound7 || false;
 
     const targetDocument: IDocument | undefined =
         target &&
@@ -146,16 +158,18 @@ export const getPlayActionFromTarget = (
         );
         switch (csoundDocumentType) {
             case "csd": {
-                return playCsdFromFs(
-                    activeProjectUid,
-                    (targetDocument as IDocument).filename
-                );
+                return playCsdFromFs({
+                    projectUid: activeProjectUid,
+                    csdPath: (targetDocument as IDocument).filename,
+                    useCsound7
+                });
             }
             case "orc": {
-                return playORCFromString(
-                    activeProjectUid,
-                    (targetDocument as IDocument).savedValue
-                );
+                return playORCFromString({
+                    projectUid: activeProjectUid,
+                    orc: (targetDocument as IDocument).savedValue,
+                    useCsound7
+                });
             }
         }
     }

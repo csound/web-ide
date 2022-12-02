@@ -77,7 +77,7 @@ const ListPlayButton = ({
                 ? dispatch(resumePausedCsound())
                 : isPlaying && !hasError
                 ? dispatch(pauseCsound())
-                : dispatch(playListItem(projectUid));
+                : dispatch(playListItem({ projectUid }));
         },
         [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]
     );

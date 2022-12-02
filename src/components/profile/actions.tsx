@@ -43,7 +43,6 @@ import {
     SET_TAGS_INPUT,
     GET_ALL_TAGS,
     SET_CURRENTLY_PLAYING_PROJECT,
-    CLOSE_CURRENTLY_PLAYING_PROJECT,
     REFRESH_USER_PROFILE,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING
@@ -64,7 +63,6 @@ import { getProjectLastModifiedOnce } from "@comp/project-last-modified/actions"
 import { getPlayActionFromProject } from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
-import { fetchCsound, newCsound } from "@comp/csound/actions";
 import { ProfileModal } from "./profile-modal";
 import {
     assoc,
@@ -528,16 +526,13 @@ export const uploadProfileImage =
     };
 
 export const playListItem =
-    (
-        projectUid: string | false
-    ): ((dispatch: (any) => void, getState: () => IStore) => Promise<void>) =>
+    ({
+        projectUid
+    }: {
+        projectUid: string | false;
+    }): ((dispatch: (any) => void, getState: () => IStore) => Promise<void>) =>
     async (dispatch, getState) => {
         const state = getState();
-        let Csound = state.csound.factory;
-
-        if (!Csound) {
-            Csound = await fetchCsound(dispatch);
-        }
 
         const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
 
@@ -590,22 +585,23 @@ export const playListItem =
             await downloadTargetsOnce(projectUid)(dispatch);
             await getProjectLastModifiedOnce(projectUid)(dispatch);
             // recursion
-            return await playListItem(projectUid)(dispatch, getState);
+            return await playListItem({ projectUid })(dispatch, getState);
         }
 
-        let csound = state.csound.csound;
+        // let csound = state.csound.csound;
 
-        if (!csound) {
-            csound = await newCsound(Csound, dispatch);
-        } else {
-            csound && (await csound.terminateInstance());
-            csound = await newCsound(Csound, dispatch);
-        }
+        // if (!csound) {
+        //     csound = await newCsound(Csound, dispatch);
+        // } else {
+        //     csound && (await csound.terminateInstance());
+        //     csound = await newCsound(Csound, dispatch);
+        // }
 
-        csound &&
-            csound.on("realtimePerformanceEnded", () =>
-                dispatch({ type: CLOSE_CURRENTLY_PLAYING_PROJECT })
-            );
+        // csound &&
+        //     csound.on("realtimePerformanceEnded", () =>
+        //         dispatch({ type: CLOSE_CURRENTLY_PLAYING_PROJECT })
+        //     );
+
         const playAction = getPlayActionFromProject(projectUid, state);
 
         if (playAction) {
