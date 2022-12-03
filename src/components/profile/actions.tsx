@@ -60,7 +60,10 @@ import {
     downloadProjectOnce
 } from "@comp/projects/actions";
 import { getProjectLastModifiedOnce } from "@comp/project-last-modified/actions";
-import { getPlayActionFromProject } from "@comp/target-controls/utils";
+import {
+    getPlayActionFromProject,
+    getPlayActionFromTarget
+} from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
 import { ProfileModal } from "./profile-modal";
@@ -588,21 +591,9 @@ export const playListItem =
             return await playListItem({ projectUid })(dispatch, getState);
         }
 
-        // let csound = state.csound.csound;
-
-        // if (!csound) {
-        //     csound = await newCsound(Csound, dispatch);
-        // } else {
-        //     csound && (await csound.terminateInstance());
-        //     csound = await newCsound(Csound, dispatch);
-        // }
-
-        // csound &&
-        //     csound.on("realtimePerformanceEnded", () =>
-        //         dispatch({ type: CLOSE_CURRENTLY_PLAYING_PROJECT })
-        //     );
-
-        const playAction = getPlayActionFromProject(projectUid, state);
+        const playAction =
+            getPlayActionFromTarget(projectUid)(state) ||
+            getPlayActionFromProject(projectUid, state);
 
         if (playAction) {
             playAction(dispatch);

@@ -52,7 +52,7 @@ export const storeProjectEditorKeyboardCallbacks = (
             ),
             pause_playback: withPreventDefault(() => dispatch(pauseCsound())),
             run_project: withPreventDefault(() => {
-                const playActionDefault = (getPlayActionFromTarget as any)(
+                const playActionDefault = getPlayActionFromTarget(projectUid)(
                     getStore()
                 );
                 const playActionFallback = getPlayActionFromProject(

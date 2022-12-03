@@ -1,3 +1,10 @@
+import { CsoundObj as CsoundObj6 } from "@csound/browser";
+import { CsoundObj as CsoundObj7 } from "csound7";
+
+export interface CsoundObj extends CsoundObj6, CsoundObj7 {
+    getAudioContext: any;
+}
+
 const PREFIX = "CSOUND.";
 
 export type ICsoundStatus =
@@ -9,7 +16,6 @@ export type ICsoundStatus =
     | "error";
 
 // ACTION TYPES
-export const FETCH_CSOUND = PREFIX + "FETCH_CSOUND";
 export const SET_CSOUND = PREFIX + "SET_CSOUND";
 export const SET_CSOUND_PLAY_STATE = PREFIX + "SET_CSOUND_PLAY_STATE";
 export const STOP_RENDER = PREFIX + "STOP_RENDER";

@@ -1,10 +1,11 @@
+import { always } from "ramda";
 import { deleteField, doc, getDoc, writeBatch } from "firebase/firestore";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import { openSimpleModal } from "@comp/modal/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { database, targets as targetsCollReference } from "@config/firestore";
-import TargetsConfigDialog from "./targets-config-dialog";
+import { TargetControlsConfigDialog } from "./config-dialog";
 import {
     ITargetMap,
     SET_SELECTED_TARGET,
@@ -28,7 +29,9 @@ export const showTargetsConfigDialog = (): ((
     dispatch: any
 ) => Promise<void>) => {
     return async (dispatch: any) => {
-        dispatch(openSimpleModal(TargetsConfigDialog, {}));
+        dispatch(
+            openSimpleModal(TargetControlsConfigDialog, { onClose: always })
+        );
     };
 };
 

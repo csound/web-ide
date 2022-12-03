@@ -1,14 +1,15 @@
 import { store } from "@store";
 import { IStore } from "@store/types";
 import { IProject } from "../projects/types";
-import { CsoundObj, Csound as Csound6 } from "@csound/browser";
+import { Csound as Csound6 } from "@csound/browser";
 import { Csound as Csound7 } from "csound7";
 import { addNonCloudFile } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import {
-    SET_CSOUND,
+    CsoundObj,
     ICsoundStatus,
+    SET_CSOUND,
     SET_CSOUND_PLAY_STATE,
     SET_STOP_RENDER,
     STOP_RENDER
@@ -52,34 +53,6 @@ export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
     });
 };
 
-export const newCsound = async (
-    Csound: Csound6 | Csound7,
-    dispatch: (any) => void
-): Promise<CsoundObj | undefined> => {
-    // eslint-disable-next-line unicorn/prevent-abbreviations
-    const csoundObj = await Csound({
-        useWorker: localStorage.getItem("sab") === "true"
-    });
-    if (!csoundObj) {
-        dispatch(setCsoundPlayState("error"));
-    } else {
-        setCsound(csoundObj, dispatch);
-        // await csoundObj.setDebug(1);
-        return csoundObj;
-    }
-};
-
-// export const fetchCsound = async (dispatch: (any) => void): Promise<Csound> => {
-//     const { Csound } = await import("@csound/browser");
-//     if (Csound) {
-//         dispatch({
-//             type: FETCH_CSOUND,
-//             factory: Csound
-//         });
-//     }
-//     return Csound;
-// };
-
 export const syncFs = async (
     csound: CsoundObj,
     projectUid: string,
@@ -114,27 +87,6 @@ export const syncFs = async (
     }
 };
 
-// export const fetchSetStartCsound = (
-//     activeProjectUid: string,
-//     MaybeCsound: any,
-// ): ((dispatch: (any) => void) => Promise<void>) => {
-//     return async (dispatch: any) => {
-//         const Csound = MaybeCsound || await fetchCsound(dispatch);
-//         // eslint-disable-next-line unicorn/prevent-abbreviations
-//         const csoundObj = await newCsound(Csound, dispatch);
-
-//         if (!csoundObj) {
-//             await dispatch(
-//                 openSnackbar(
-//                     "Error: fetching csound failed",
-//                     SnackbarType.Error
-//                 )
-//             );
-//         }
-//         return csoundObj;
-//     };
-// };
-
 export const playCsdFromFs = ({
     projectUid,
     csdPath,
@@ -145,24 +97,19 @@ export const playCsdFromFs = ({
     useCsound7: boolean;
 }): ((dispatch: any, setConsole: any) => Promise<void>) => {
     return async (dispatch: any, setConsole: any) => {
-        const state = store.getState();
-        // const csoundStatus = csound || path(["csound", "status"], state);
-        // const hasCsound =
-        //     typeof path(["csound", "factory"], store) === "function";
-
         const Csound = useCsound7 ? Csound7 : Csound6;
 
-        const oldCsoundObj = path(["csound", "csound"], state);
+        console.log({ Csound, useCsound7 });
 
-        if (oldCsoundObj) {
-            try {
-                await oldCsoundObj.destroy();
-            } catch (error: any) {
-                console.error(error);
-            }
+        const csoundObj = await Csound({
+            useWorker: localStorage.getItem("sab") === "true"
+        });
+
+        if (!csoundObj) {
+            return;
         }
 
-        const csoundObj = await newCsound(Csound, dispatch);
+        await setCsound(csoundObj, dispatch);
 
         if (csoundObj && setConsole) {
             setConsole([""]);
@@ -226,27 +173,17 @@ export const playORCFromString = ({
     useCsound7: boolean;
 }): ((dispatch: any, setConsole: any) => Promise<void>) => {
     return async (dispatch, setConsole: any) => {
-        const state = store.getState();
-
         const Csound = useCsound7 ? Csound7 : Csound6;
 
-        // const Csound = useCsound7
-        //     ? Csound7
-        //     : hasCsound
-        //     ? path(["csound", "factory"], store)
-        //     : await fetchCsound(dispatch);
+        const csoundObj = await Csound({
+            useWorker: localStorage.getItem("sab") === "true"
+        });
 
-        const oldCsoundObj = path(["csound", "csound"], state);
-
-        if (oldCsoundObj) {
-            try {
-                await oldCsoundObj.destroy();
-            } catch (error: any) {
-                console.error(error);
-            }
+        if (!csoundObj) {
+            return;
         }
 
-        const csoundObj = await newCsound(Csound, dispatch);
+        await setCsound(csoundObj, dispatch);
 
         if (csoundObj && setConsole) {
             setConsole([""]);

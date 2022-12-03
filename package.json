@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "@codemirror/text": "^0.19.6",
-        "csound7": "npm:@csound/browser@^7.0.1",
+        "csound7": "npm:@csound/browser@^7.0.0-alpha2",
         "@csound/browser": "^6.18.5",
         "@hlolli/react-modal-resizable-draggable": "^0.1.5",
         "@hlolli/react-tabtab": "^3.0.2",

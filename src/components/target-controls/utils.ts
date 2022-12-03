@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-function-scoping */
 import { curry, find, path, pathOr, propEq, values } from "ramda";
 import { IStore } from "@store/types";
 import { ITarget } from "./types";
@@ -100,77 +101,79 @@ export const getPlayActionFromProject = curry(
     }
 );
 
-export const getPlayActionFromTarget = (
-    store: IStore
-): undefined | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
-    const selectedTarget = path(
-        ["TargetControlsReducer", "selectedTarget"],
-        store
-    );
+export const getPlayActionFromTarget =
+    (projectUid: string) =>
+    (
+        store: IStore
+    ): undefined | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
+        const selectedTarget = path(
+            ["TargetControlsReducer", projectUid, "selectedTarget"],
+            store
+        );
 
-    const selectedTargetPlaylistIndex = pathOr(
-        -1,
-        ["TargetControlsReducer", "selectedTargetPlaylistIndex"],
-        store
-    );
-    const activeProjectUid = path(
-        ["ProjectsReducer", "activeProjectUid"],
-        store
-    );
-    if (!selectedTarget || !activeProjectUid) {
-        return;
-    }
-
-    const target: ITarget | undefined = path(
-        ["TargetControlsReducer", activeProjectUid, "targets", selectedTarget],
-        store
-    );
-
-    if (!target) {
-        return;
-    }
-
-    const useCsound7 = target.useCsound7 || false;
-
-    const targetDocument: IDocument | undefined =
-        target &&
-        path(
+        const selectedTargetPlaylistIndex = pathOr(
+            -1,
             [
-                "ProjectsReducer",
-                "projects",
-                activeProjectUid,
-                "documents",
-                target && (target as ITarget).targetType === "main"
-                    ? target && (target as ITarget).targetDocumentUid
-                    : target &&
-                      pathOr(
-                          "",
-                          ["playlistDocumentsUid", selectedTargetPlaylistIndex],
-                          target as ITarget
-                      )
+                "TargetControlsReducer",
+                projectUid,
+                "selectedTargetPlaylistIndex"
             ],
             store
         );
 
-    if (targetDocument && (targetDocument as IDocument).filename) {
-        const csoundDocumentType = filenameToCsoundType(
-            (targetDocument as IDocument).filename
+        const target: ITarget | undefined = path(
+            ["TargetControlsReducer", projectUid, "targets", selectedTarget],
+            store
         );
-        switch (csoundDocumentType) {
-            case "csd": {
-                return playCsdFromFs({
-                    projectUid: activeProjectUid,
-                    csdPath: (targetDocument as IDocument).filename,
-                    useCsound7
-                });
-            }
-            case "orc": {
-                return playORCFromString({
-                    projectUid: activeProjectUid,
-                    orc: (targetDocument as IDocument).savedValue,
-                    useCsound7
-                });
+
+        if (!target) {
+            return;
+        }
+
+        const useCsound7 = target.useCsound7 || false;
+
+        const targetDocument: IDocument | undefined =
+            target &&
+            path(
+                [
+                    "ProjectsReducer",
+                    "projects",
+                    projectUid,
+                    "documents",
+                    target && (target as ITarget).targetType === "main"
+                        ? target && (target as ITarget).targetDocumentUid
+                        : target &&
+                          pathOr(
+                              "",
+                              [
+                                  "playlistDocumentsUid",
+                                  selectedTargetPlaylistIndex
+                              ],
+                              target as ITarget
+                          )
+                ],
+                store
+            );
+
+        if (targetDocument && (targetDocument as IDocument).filename) {
+            const csoundDocumentType = filenameToCsoundType(
+                (targetDocument as IDocument).filename
+            );
+            switch (csoundDocumentType) {
+                case "csd": {
+                    return playCsdFromFs({
+                        projectUid,
+                        csdPath: (targetDocument as IDocument).filename,
+                        useCsound7
+                    });
+                }
+                case "orc": {
+                    return playORCFromString({
+                        projectUid,
+                        orc: (targetDocument as IDocument).savedValue,
+                        useCsound7
+                    });
+                }
             }
         }
-    }
-};
+    };

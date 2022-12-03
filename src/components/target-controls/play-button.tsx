@@ -28,7 +28,9 @@ const PlayButton = ({
 
     const theme = useTheme();
 
-    const playActionDefault = useSelector(getPlayActionFromTarget);
+    const playActionDefault = useSelector(
+        getPlayActionFromTarget(activeProjectUid)
+    );
 
     const playActionFallback = useSelector(
         getPlayActionFromProject(activeProjectUid)

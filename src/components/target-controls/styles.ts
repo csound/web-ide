@@ -292,35 +292,16 @@ export const menuForDialog = (theme: Theme): SerializedStyles => css`
     margin: 0;
 `;
 
-export const targetsDialog = (theme: Theme): SerializedStyles => css`
-    min-width: 400px;
-`;
-
-export const targetsDialogBottom = (theme: Theme): SerializedStyles => css`
-    padding-top: 12px;
-    & button {
-        padding: 0 18px !important;
-    }
-    & svg {
-        margin-left: 6px;
-    }
-`;
-
-export const targetsDialogMain = (theme: Theme): SerializedStyles => css`
-    ${shadow}
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-    margin-bottom: 12px;
-    border: 2px solid ${theme.line};
-    border-radius: 6px;
-    padding: 12px;
-`;
-
-export const targetLabel = (theme: Theme): SerializedStyles => css`
-    color: ${theme.altTextColor};
-    position: absolute;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1;
-    margin: 0;
-    margin-top: -4px;
-`;
+export const reactSelectDropdownStyle = (theme: Theme) => ({
+    control: (provided, state) => control(theme),
+    container: (provided, state) => dropdownContainerForDialog(theme),
+    valueContainer: (provided, state) => valueContainer(theme),
+    groupHeading: (provided, state) => groupHeading,
+    placeholder: (provided, state) => placeholder,
+    menu: (provided, state) => menuForDialog(theme),
+    menuList: (provided, state) => menuList(theme),
+    option: (provided, { isDisabled }) =>
+        isDisabled ? menuOptionDisabled(theme) : menuOption(theme),
+    indicatorsContainer: (provided, state) => indicatorContainer(theme),
+    indicatorSeparator: (provided, state) => indicatorSeparator
+});

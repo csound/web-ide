@@ -1,8 +1,7 @@
 import { assoc } from "ramda";
-import { Csound, CsoundObj } from "@csound/browser";
+import { CsoundObj } from "@csound/browser";
 import {
     ICsoundStatus,
-    FETCH_CSOUND,
     SET_CSOUND,
     SET_CSOUND_PLAY_STATE,
     STOP_RENDER,
@@ -10,7 +9,6 @@ import {
 } from "./types";
 
 export interface ICsoundReducer {
-    factory: Csound | undefined;
     csound: CsoundObj | undefined;
     status: ICsoundStatus;
     stopRender: (() => void) | undefined;
@@ -21,9 +19,6 @@ const CsoundReducer = (
     action: Record<string, any>
 ): ICsoundReducer => {
     switch (action.type) {
-        case FETCH_CSOUND: {
-            return assoc("factory", action.factory, state);
-        }
         case SET_CSOUND: {
             return assoc("csound", action.csound, state);
         }

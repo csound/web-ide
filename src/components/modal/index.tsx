@@ -62,7 +62,7 @@ export default function GlobalModal(): React.ReactElement {
         setTimeout(() => {
             if (modalReference.current) {
                 resizeObserver.observe(
-                    (modalReference.current as unknown) as Element
+                    modalReference.current as unknown as Element
                 );
                 copiedReference = modalReference.current;
             }
@@ -82,7 +82,11 @@ export default function GlobalModal(): React.ReactElement {
                 timeout: 500
             }}
             open={isOpen}
-            onClose={modalProperties.disableOnClose ? always : onClose}
+            onClose={
+                modalProperties.disableOnClose
+                    ? always
+                    : modalProperties.onClose || onClose
+            }
             style={{ zIndex: 3 }}
         >
             <Fade in={isOpen}>

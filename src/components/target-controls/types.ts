@@ -19,3 +19,16 @@ export interface ITarget {
 }
 
 export type ITargetMap = { [targetName: string]: ITarget };
+
+export interface ITargetFromInput {
+    targetName: string;
+    oldTargetName: string;
+    targetType: string;
+    isDefaultTarget: boolean;
+    isNameValid: boolean;
+    isTypeValid: boolean;
+    isOtherwiseValid: boolean;
+    useCsound7: boolean;
+    csoundOptions?: ICsoundOptions;
+    targetDocumentUid?: string;
+}

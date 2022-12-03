@@ -5097,17 +5097,15 @@ crypto-random-string@^2.0.0:
   resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-2.0.0.tgz#ef2a7a966ec11083388369baa02ebead229b30d5"
   integrity sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==
 
-"csound7@npm:@csound/browser@^7.0.1":
-  version "7.0.0-alpha1"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-alpha1.tgz#696f76f9014b10994888a33731760bd18db2e3b0"
-  integrity sha512-KbCfA5woqQwoSBMVNOKqSE1b0HNaKEHgOKambw1hIQGe4CDNh8CqrZibrfCKqCUgyHahR0AwgJSWF4whByDT9w==
+"csound7@npm:@csound/browser@^7.0.0-alpha2":
+  version "7.0.0-alpha2"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-alpha2.tgz#6c91de77582c620834383160868dcda375f2a5fe"
+  integrity sha512-YGtdThHDudHMJ5Ms0MHmq9hodryfru1W1/quAfC1wr1ZYv8iUuz7chEg+OVmGhQdk+612qwa00doqHk9fFo0Cg==
   dependencies:
-    comlink "^4.3.1"
     eventemitter3 "^4.0.7"
     google-closure-compiler "^20221102.0.1"
     google-closure-library "^20221102.0.0"
-    path-browserify "^1.0.1"
-    rambda "^7.4.0"
+    ramda "^0.28.0"
     rimraf "^3.0.2"
     standardized-audio-context "^25.3.35"
     text-encoding-shim "^1.0.5"
