@@ -19,6 +19,8 @@ html,
 body {
     padding: 0;
     margin: 0;
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
 }
 
 body {

@@ -216,6 +216,7 @@ const findOperatorName = (view, tree) => {
             maybeArgList.node.parent.to
         );
         const token = tokenSlice.text[0].replace(/:.*/, "").replace(/\(.*/, "");
+
         return token;
     }
 
@@ -234,7 +235,8 @@ const findOperatorName = (view, tree) => {
             maybeOpcodeStatement.to
         );
 
-        const result = tokenSlice.text[0].split(/\s/).reduce(
+        const splitStatement = tokenSlice.text[0].split(/\s/);
+        const result = splitStatement.reduce(
             ({ cand, stop, lastComma }, curr) => {
                 if (!stop) {
                     if (curr.includes(",")) {
@@ -244,7 +246,13 @@ const findOperatorName = (view, tree) => {
                             lastComma: true
                         };
                     } else if (!lastComma) {
-                        return { cand: curr, stop: true, lastComma: true };
+                        const tokenExists = window.csoundSynopsis.some(
+                            (value) => value.opname === curr
+                        );
+
+                        return tokenExists
+                            ? { cand: curr, stop: true, lastComma: true }
+                            : { cand, stop: false, lastComma: false };
                     } else {
                         return {
                             cand: undefined,
@@ -253,7 +261,11 @@ const findOperatorName = (view, tree) => {
                         };
                     }
                 } else {
-                    return { cand, stop, lastComma };
+                    return {
+                        cand,
+                        stop,
+                        lastComma
+                    };
                 }
             },
             { cand: undefined, stop: false, lastComma: false }
