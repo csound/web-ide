@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror from "@hlolli/react-codemirror";
 import {
-    EditorView,
+    // EditorView,
     drawSelection,
     keymap,
     lineNumbers
@@ -16,15 +16,14 @@ import {
 } from "@codemirror/commands";
 import { bracketMatching } from "@codemirror/language";
 import { StateField } from "@codemirror/state";
+import { CsoundTheme } from "@comp/themes/types";
+import { filenameToCsoundType } from "@comp/csound/utils";
 import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
 import { reject, pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
 import * as projectEditorActions from "../project-editor/actions";
-import {
-    monokaiThemeEditor,
-    monokaiThemeReact
-} from "@styles/code-mirror-painter";
+import { resolveTheme } from "@styles/code-mirror-painter";
 import { csoundMode } from "./modes/csound/csound";
 
 declare global {
@@ -71,11 +70,14 @@ const CodeEditor = ({
     documentUid: string;
     projectUid: string;
 }): React.ReactElement => {
+    const currentThemeName: CsoundTheme = useSelector(
+        pathOr("monokai", ["ThemeReducer", "selectedThemeName"])
+    );
+
+    const [editorTheme, highlightedTags] = resolveTheme(currentThemeName);
+
     const [isMounted, setIsMounted] = useState(false);
     const [hasSynopsis, setHasSynopsis] = useState(false);
-    const [documentIdStateField, setDocumentIdStateField] = useState(
-        undefined as StateField<{ documentUid: string }> | undefined
-    );
 
     const dispatch = useDispatch();
 
@@ -134,6 +136,14 @@ const CodeEditor = ({
         project
     );
 
+    const csoundFileType = filenameToCsoundType(document.filename || "");
+
+    const [csoundDocumentStateField, setCsoundDocumentStateField] = useState(
+        undefined as
+            | StateField<{ documentUid: string; documentType: string }>
+            | undefined
+    );
+
     const currentDocumentValue: string = propOr("", "currentValue", document);
 
     useEffect(() => {
@@ -143,22 +153,33 @@ const CodeEditor = ({
     }, [isMounted, setIsMounted]);
 
     useEffect(() => {
-        if (isMounted && documentUid && !documentIdStateField) {
-            setDocumentIdStateField(
+        if (isMounted && documentUid && !csoundDocumentStateField) {
+            setCsoundDocumentStateField(
                 StateField.define({
-                    create: () => ({ documentUid }),
-                    update: () => ({ documentUid })
+                    create: () => ({
+                        documentUid,
+                        documentType: csoundFileType || ""
+                    }),
+                    update: () => ({
+                        documentUid,
+                        documentType: csoundFileType || ""
+                    })
                 })
             );
         }
-    }, [isMounted, documentUid, documentIdStateField, setDocumentIdStateField]);
+    }, [
+        isMounted,
+        documentUid,
+        csoundFileType,
+        csoundDocumentStateField,
+        setCsoundDocumentStateField
+    ]);
 
-    return documentIdStateField &&
+    return csoundDocumentStateField &&
         typeof currentDocumentValue === "string" &&
         hasSynopsis ? (
         <CodeMirror
             height="100%"
-            theme={monokaiThemeReact}
             value={currentDocumentValue}
             initialState={getInitialState(documentUid)}
             extensions={[
@@ -174,9 +195,10 @@ const CodeEditor = ({
                 ]),
                 lineNumbers(),
                 bracketMatching(),
-                monokaiThemeEditor,
+                editorTheme,
+                highlightedTags,
                 autocompletion(),
-                documentIdStateField,
+                csoundDocumentStateField,
                 evalBlinkExtension
             ]}
             onChange={(value, viewUpdate) => {
@@ -191,7 +213,7 @@ const CodeEditor = ({
                     )
                 );
             }}
-            onCreateEditor={(editorView: EditorView) => {
+            onCreateEditor={(editorView: any) => {
                 dispatch(
                     projectEditorActions.storeEditorInstance(
                         editorView,

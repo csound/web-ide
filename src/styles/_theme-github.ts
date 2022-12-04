@@ -19,7 +19,7 @@ const headerBg1 = "#24292e";
 const headerFg1 = "#bcbdc0";
 const htmlTag = "#22863a";
 // const keyword = "#d73a49";
-const selection = "#3390ff";
+const selection = "#6199ff2f";
 const string = "#032f62";
 const text = "#24292e";
 const white = "#ffffff";
@@ -36,6 +36,7 @@ const theme = {
     disabledButtonBackground: headerFg1,
     highlightBackground: headerFg1,
     highlightBackgroundAlt: headerFg1,
+    textFieldBackground: selection,
     // Text colors
     headerTextColor: white,
     textColor: text,
@@ -89,7 +90,8 @@ const theme = {
     gutterBackground: white,
     gutterMarker: headerBg2,
     gutterMarkerSubtle: headerBg2,
-    lineNumber: text
+    lineNumber: text,
+    caretColor: text
     /*
     comment: monokaiComments,
     commentAttribute: henn1nk,
@@ -99,4 +101,4 @@ const theme = {
 */
 };
 
-export default deepMerge(themeMonokai, theme);
+export default deepMerge(themeMonokai, theme) as any;

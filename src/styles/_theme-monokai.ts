@@ -42,6 +42,7 @@ const theme = {
     highlightBackground: monokaiHighlight,
     highlightBackgroundAlt: monokaiHighlightAlt,
     textFieldBackground: sundriedClay,
+    gutterBackground: monokaiHighlightAlt,
     // Text colors
     headerTextColor: monokaiForeground,
     textColor: monokaiForeground,
@@ -93,7 +94,6 @@ const theme = {
     pField: monokaiYellow,
     flash: monokaiHighlight,
     flashFade: monokaiHighlightAlt,
-    gutterBackground: monokaiHighlightLine,
     gutterMarker: monokaiForeground,
     gutterMarkerSubtle: monokaiForeground,
     lineNumber: monokaiLineNumber,
@@ -101,7 +101,8 @@ const theme = {
     commentAttribute: henn1nk,
     commentDef: monokaiOrange,
     commentTag: monokaiMagenta,
-    commentType: monokaiCyan
+    commentType: monokaiCyan,
+    caretColor: monokaiCyan
 };
 
 export default theme;

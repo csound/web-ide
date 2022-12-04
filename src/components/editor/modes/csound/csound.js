@@ -13,7 +13,10 @@ import { completeFromList } from "@codemirror/autocomplete";
 import { Tag, styleTags, tags as t } from "@lezer/highlight";
 import { Decoration, ViewPlugin, showPanel } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
+import { createRoot } from "react-dom/client";
 import { debounce } from "throttle-debounce";
+import { renderFtgenPlotterElement, isFtgenPlottable } from "./ftgen-plotter";
+import { renderSynopsis } from "./render-synopsis";
 import { parser } from "./syntax.grammar";
 
 window.editorCursorState = {};
@@ -217,7 +220,7 @@ const findOperatorName = (view, tree) => {
         );
         const token = tokenSlice.text[0].replace(/:.*/, "").replace(/\(.*/, "");
 
-        return token;
+        return { token, statement: tokenSlice };
     }
 
     let maybeOpcodeStatement = treeRoot;
@@ -271,27 +274,72 @@ const findOperatorName = (view, tree) => {
             { cand: undefined, stop: false, lastComma: false }
         );
 
-        return result.cand;
+        return { token: result.cand, statement: tokenSlice };
     }
+
+    return {};
 };
 
 const csoundInfoPanel = (view) => {
     const dom = document.createElement("div");
+    let root = createRoot(dom);
 
+    const unmount = () => {
+        if (root && typeof root.unmount === "function") {
+            try {
+                root.unmount();
+            } catch {}
+
+            root = undefined;
+        }
+    };
     return {
         dom,
+        destroy() {
+            unmount();
+        },
         update(update) {
             if (update.heightChanged || update.selectionSet) {
+                const isEmptyLine =
+                    view.lineBlockAt(view.state.selection.main.to).length < 2;
+
+                if (isEmptyLine) {
+                    renderSynopsis({ root, synopsis: "" });
+                    return;
+                }
+
                 const treeRoot = syntaxTree(view.state).cursorAt(
                     view.state.selection.main.head
                 );
-                const operatorName = findOperatorName(view, treeRoot);
+                const { token: operatorName, statement } = findOperatorName(
+                    view,
+                    treeRoot
+                );
                 const synopsis =
                     operatorName &&
                     window.csoundSynopsis.find(
                         (value) => value.opname === operatorName
                     );
-                dom.textContent = synopsis && synopsis.synopsis[0];
+
+                const hasSynopsis =
+                    Boolean(synopsis) &&
+                    Array.isArray(synopsis.synopsis) &&
+                    synopsis.synopsis.length > 0;
+
+                const isPlottable =
+                    hasSynopsis && isFtgenPlottable(operatorName);
+
+                if (hasSynopsis && isPlottable) {
+                    renderFtgenPlotterElement({
+                        root,
+                        statement,
+                        synopsis: synopsis.synopsis[0]
+                    });
+                } else if (hasSynopsis) {
+                    renderSynopsis({ root, synopsis: synopsis.synopsis[0] });
+                } else {
+                    renderSynopsis({ root, synopsis: "" });
+                }
             }
         }
     };

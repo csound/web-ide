@@ -1,17 +1,48 @@
 import { Theme } from "@emotion/react";
 import MonokaiTheme from "@styles/_theme-monokai";
 import GitHubTheme from "@styles/_theme-github";
-import { THEMES_CHANGE_THEME } from "./types";
+import { CsoundTheme, THEMES_CHANGE_THEME } from "./types";
 
 export interface IThemeReducer {
     selectedTheme: Theme;
-    selectedThemeName: string;
+    selectedThemeName: CsoundTheme;
 }
 
-const initialState = {
-    selectedTheme: MonokaiTheme as Theme,
-    selectedThemeName: "monokai"
-};
+function getInitialTheme(): IThemeReducer {
+    const storedThemeName = localStorage.getItem("theme");
+    if (
+        typeof storedThemeName === "string" &&
+        ["monokai", "github"].includes(storedThemeName)
+    ) {
+        switch (storedThemeName) {
+            case "monokai": {
+                return {
+                    selectedTheme: MonokaiTheme as unknown as Theme,
+                    selectedThemeName: "monokai"
+                };
+            }
+            case "github": {
+                return {
+                    selectedTheme: GitHubTheme as unknown as Theme,
+                    selectedThemeName: "github"
+                };
+            }
+            default: {
+                return {
+                    selectedTheme: MonokaiTheme as unknown as Theme,
+                    selectedThemeName: "monokai"
+                };
+            }
+        }
+    } else {
+        return {
+            selectedTheme: MonokaiTheme as unknown as Theme,
+            selectedThemeName: "monokai"
+        };
+    }
+}
+
+const initialState = getInitialTheme();
 
 const ThemeReducer = (
     state: IThemeReducer,
@@ -19,22 +50,23 @@ const ThemeReducer = (
 ): IThemeReducer => {
     switch (action.type) {
         case THEMES_CHANGE_THEME: {
+            localStorage.setItem("theme", action.newTheme || "");
             switch (action.newTheme) {
                 case "monokai": {
                     return {
-                        selectedTheme: MonokaiTheme as Theme,
+                        selectedTheme: MonokaiTheme as unknown as Theme,
                         selectedThemeName: "monokai"
                     };
                 }
                 case "github": {
                     return {
-                        selectedTheme: GitHubTheme as Theme,
+                        selectedTheme: GitHubTheme as unknown as Theme,
                         selectedThemeName: "github"
                     };
                 }
                 default: {
                     return {
-                        selectedTheme: MonokaiTheme as Theme,
+                        selectedTheme: MonokaiTheme as unknown as Theme,
                         selectedThemeName: "monokai"
                     };
                 }

@@ -54,6 +54,7 @@
         "unicorn/no-array-reduce": "off",
         "unicorn/no-array-callback-reference": "off",
         "unicorn/prevent-abbreviations": "off",
+        "unicorn/no-abusive-eslint-disable": "off",
         "react/jsx-uses-react": "error",
         "react-hooks/exhaustive-deps": "error"
     },
