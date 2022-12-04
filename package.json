@@ -116,7 +116,7 @@
         "dom-to-image-more": "^2.9.5",
         "dotenv": "16.0.0",
         "dotenv-expand": "8.0.3",
-        "electron": "^18.1.0",
+        "electron": "^18.3.7",
         "electron-builder": "^23.0.3",
         "electron-is-dev": "^2.0.0",
         "eslint": "^8.14.0",
