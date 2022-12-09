@@ -33,7 +33,10 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const FtgenPlotter = ({ csoundCode, selectedTheme }) => {
+const FtgenPlotter = ({ selectedTheme, statementObject }) => {
+    const csoundCode = `i_ ${
+        statementObject.operator
+    } 1,${statementObject.outputArgs.slice(1).join(",")}`;
     const [isOpen, setIsOpen] = useState(false);
     const [data, setData] = useState();
     const [error, setError] = useState();
@@ -227,8 +230,15 @@ const FtgenPlotter = ({ csoundCode, selectedTheme }) => {
 export const isFtgenPlottable = (token) =>
     ["ftgen", "ftgenonce", "ftgentmp"].includes(token);
 
-export const renderFtgenPlotterElement = ({ root, statement, synopsis }) => {
-    const csoundCode = statement.text.join("\n");
+export const renderFtgenPlotterElement = ({
+    root,
+    statement,
+    synopsis,
+    statementObject
+}) => {
+    // const csoundCode =
+    //     (statementObject.statementType === "CallbackExpression" ? "i_ =" : "") +
+    //     statement.text.join("\n");
     const storeState = store.getState();
     const selectedTheme = storeState.ThemeReducer.selectedTheme;
 
@@ -243,8 +253,8 @@ export const renderFtgenPlotterElement = ({ root, statement, synopsis }) => {
                 {synopsis}
             </p>
             <FtgenPlotter
-                csoundCode={csoundCode}
                 selectedTheme={selectedTheme}
+                statementObject={statementObject}
             />
         </div>
     );

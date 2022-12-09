@@ -17,6 +17,7 @@ import { createRoot } from "react-dom/client";
 import { debounce } from "throttle-debounce";
 import { renderFtgenPlotterElement, isFtgenPlottable } from "./ftgen-plotter";
 import { renderSynopsis } from "./render-synopsis";
+import { resolveExpressionFromNode } from "./parser-utils";
 import { parser } from "./syntax.grammar";
 
 window.editorCursorState = {};
@@ -205,8 +206,10 @@ function variableHighlighter(view) {
 const findOperatorName = (view, tree) => {
     const treeRoot = tree.node;
     let maybeArgList = treeRoot;
+    let maybeArgListNode = tree.node;
 
     while (maybeArgList && maybeArgList.type.name !== "ArgList") {
+        maybeArgListNode = maybeArgList?.node?.parent ?? maybeArgList.node;
         maybeArgList = maybeArgList.node.parent;
     }
 
@@ -220,15 +223,22 @@ const findOperatorName = (view, tree) => {
         );
         const token = tokenSlice.text[0].replace(/:.*/, "").replace(/\(.*/, "");
 
-        return { token, statement: tokenSlice };
+        return {
+            token,
+            statement: tokenSlice,
+            treeNode: maybeArgListNode.node.parent.node
+        };
     }
 
     let maybeOpcodeStatement = treeRoot;
+    let maybeOpcodeStatementNode = treeRoot;
 
     while (
         maybeOpcodeStatement &&
         maybeOpcodeStatement.type.name !== "OpcodeStatement"
     ) {
+        maybeOpcodeStatementNode =
+            maybeOpcodeStatement?.node?.parent ?? maybeOpcodeStatement.node;
         maybeOpcodeStatement = maybeOpcodeStatement.node.parent;
     }
 
@@ -274,7 +284,11 @@ const findOperatorName = (view, tree) => {
             { cand: undefined, stop: false, lastComma: false }
         );
 
-        return { token: result.cand, statement: tokenSlice };
+        return {
+            token: result.cand,
+            statement: tokenSlice,
+            treeNode: maybeOpcodeStatementNode
+        };
     }
 
     return {};
@@ -287,10 +301,11 @@ const csoundInfoPanel = (view) => {
     const unmount = () => {
         if (root && typeof root.unmount === "function") {
             try {
-                root.unmount();
+                setTimeout(() => {
+                    typeof root.unmount === "function" && root.unmount();
+                    root = undefined;
+                }, 0);
             } catch {}
-
-            root = undefined;
         }
     };
     return {
@@ -311,10 +326,11 @@ const csoundInfoPanel = (view) => {
                 const treeRoot = syntaxTree(view.state).cursorAt(
                     view.state.selection.main.head
                 );
-                const { token: operatorName, statement } = findOperatorName(
-                    view,
-                    treeRoot
-                );
+                const {
+                    token: operatorName,
+                    statement,
+                    treeNode
+                } = findOperatorName(view, treeRoot);
                 const synopsis =
                     operatorName &&
                     window.csoundSynopsis.find(
@@ -330,10 +346,15 @@ const csoundInfoPanel = (view) => {
                     hasSynopsis && isFtgenPlottable(operatorName);
 
                 if (hasSynopsis && isPlottable) {
+                    const statementObject = resolveExpressionFromNode(
+                        view,
+                        treeNode
+                    );
                     renderFtgenPlotterElement({
                         root,
                         statement,
-                        synopsis: synopsis.synopsis[0]
+                        synopsis: synopsis.synopsis[0],
+                        statementObject
                     });
                 } else if (hasSynopsis) {
                     renderSynopsis({ root, synopsis: synopsis.synopsis[0] });
