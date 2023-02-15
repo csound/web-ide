@@ -53,6 +53,7 @@
         "unicorn/no-array-for-each": "off",
         "unicorn/no-array-reduce": "off",
         "unicorn/no-array-callback-reference": "off",
+        "unicorn/no-useless-undefined": "off",
         "unicorn/prevent-abbreviations": "off",
         "unicorn/no-abusive-eslint-disable": "off",
         "react/jsx-uses-react": "error",

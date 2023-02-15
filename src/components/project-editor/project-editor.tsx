@@ -19,6 +19,7 @@ import {
     subscribeToProjectsCount
 } from "@comp/profile/subscribers";
 import tabStyles, { tabListStyle } from "./tab-styles";
+import { isAudioFile } from "../projects/utils";
 import { Beforeunload } from "react-beforeunload";
 import Tooltip from "@material-ui/core/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -38,7 +39,7 @@ import {
     storeEditorKeyboardCallbacks,
     storeProjectEditorKeyboardCallbacks
 } from "@comp/hot-keys/actions";
-import { append, reduce, pathOr, propEq, propOr } from "ramda";
+import { append, reduce, pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
 import {
     rearrangeTabs,
@@ -47,8 +48,6 @@ import {
     setManualPanelOpen
 } from "./actions";
 import { mapIndexed, isMobile } from "@root/utils";
-import { isAudioFile, isPlotDataFile } from "../projects/utils";
-import DataPlotter from "@comp/data-plotter/data-plotter";
 import * as SS from "./styles";
 import { enableMidiInput, enableAudioInput } from "../csound/actions";
 import BottomTabs from "@comp/bottom-tabs/component";
@@ -64,7 +63,7 @@ const SplitPane = SplitPane_ as any;
 
 type IEditorForDocumentProperties = {
     uid: any;
-    doc: IDocument | NonCloudFile;
+    doc: IDocument | IOpenDocument;
     projectUid: string;
     isOwner: boolean;
 };
@@ -104,40 +103,10 @@ function EditorForDocument({
     doc,
     isOwner
 }: IEditorForDocumentProperties) {
-    if (
-        isPlotDataFile(
-            (doc as IDocument).filename || (doc as NonCloudFile).name
-        )
-    ) {
-        const utf8decoder = new TextDecoder();
-
-        return (
-            <DataPlotter
-                dataType={
-                    (
-                        (doc as IDocument).filename ||
-                        (doc as NonCloudFile).name
-                    ).endsWith("tsv")
-                        ? "tsv"
-                        : "csv"
-                }
-                dataString={
-                    (doc as IDocument).currentValue
-                        ? (doc as IDocument).currentValue
-                        : (doc as NonCloudFile).buffer
-                        ? utf8decoder.decode((doc as NonCloudFile).buffer)
-                        : ""
-                }
-            />
-        );
-    } else if ((doc as IDocument).type === "txt") {
+    if ((doc as IDocument).type === "txt") {
         return (
             <Editor
-                documentUid={
-                    (doc as IDocument).documentUid ||
-                    (doc as NonCloudFile).name ||
-                    ""
-                }
+                documentUid={(doc as IDocument).documentUid}
                 projectUid={projectUid}
             ></Editor>
         );
@@ -147,6 +116,17 @@ function EditorForDocument({
     ) {
         const path = `${uid}/${projectUid}/${(doc as IDocument).documentUid}`;
         return <AudioEditor audioFileUrl={path} />;
+    } else if (
+        (doc as IOpenDocument).isNonCloudDocument &&
+        (doc as IOpenDocument).nonCloudFileAudioUrl
+    ) {
+        return (
+            <AudioEditor
+                audioFileUrl={
+                    (doc as IOpenDocument).nonCloudFileAudioUrl as string
+                }
+            />
+        );
     }
 
     return (
@@ -258,17 +238,17 @@ const ProjectEditor = ({
         ])
     );
 
-    const nonCloudFiles: NonCloudFile[] = useSelector(
-        pathOr([] as NonCloudFile[], ["FileTreeReducer", "nonCloudFiles"])
-    );
+    // const nonCloudFiles: NonCloudFile[] = useSelector(
+    //     pathOr([] as NonCloudFile[], ["FileTreeReducer", "nonCloudFiles"])
+    // );
 
     const tabIndex: number = useSelector(
         pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
 
-    const openDocuments: (IDocument | NonCloudFile)[] = reduce(
+    const openDocuments: (IDocument | IOpenDocument)[] = reduce(
         (
-            accumulator: (IDocument | NonCloudFile)[],
+            accumulator: (IDocument | IOpenDocument)[],
             tabDocument: IOpenDocument
         ) => {
             const maybeDocument = pathOr(
@@ -277,13 +257,10 @@ const ProjectEditor = ({
                 activeProject
             );
 
-            const maybeNonCloudFile = nonCloudFiles.find(
-                propEq("name", tabDocument.uid),
-                tabDocument.uid
-            );
+            const isNonCloudFile = tabDocument.isNonCloudDocument || false;
 
-            return maybeNonCloudFile
-                ? append(maybeNonCloudFile, accumulator)
+            return isNonCloudFile
+                ? append(tabDocument, accumulator)
                 : maybeDocument && Object.keys(maybeDocument).length > 0
                 ? append(maybeDocument, accumulator)
                 : accumulator;
@@ -342,12 +319,14 @@ const ProjectEditor = ({
                             ? document.path.length > 0
                                 ? documentPathHuman
                                 : document.filename || document.name
-                            : ""
+                            : document.uid
                     }
                 >
                     <p style={{ margin: 0 }}>
                         {document
-                            ? (document.filename || document.name) +
+                            ? (document.filename ||
+                                  document.name ||
+                                  document.uid) +
                               (isOwner && isModified ? "*" : "")
                             : ""}
                     </p>

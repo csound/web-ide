@@ -7,8 +7,10 @@ import { IDocument } from "@comp/projects/types";
 import { ITarget } from "@comp/target-controls/types";
 import { find, propEq } from "ramda";
 import { sortByStoredTabOrder } from "./utils";
+import { NonCloudFile } from "@comp/file-tree/types";
 import {
     MANUAL_LOOKUP_STRING,
+    TAB_DOCK_OPEN_NON_CLOUD_FILE,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_CLOSE,
     TAB_DOCK_INIT,
@@ -143,13 +145,15 @@ export const tabOpenByDocumentUid = (
 };
 
 export const tabOpenNonCloudDocument = (
-    documentName: string
+    file: NonCloudFile,
+    mimeType: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
-            type: TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
+            type: TAB_DOCK_OPEN_NON_CLOUD_FILE,
             isNonCloudDocument: true,
-            documentUid: documentName
+            file,
+            mimeType
         });
     };
 };

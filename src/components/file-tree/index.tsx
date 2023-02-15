@@ -582,7 +582,8 @@ const FileTree = (): React.ReactElement => {
                                         onClick={() =>
                                             dispatch(
                                                 tabOpenNonCloudDocument(
-                                                    file.name
+                                                    file,
+                                                    mimeType
                                                 )
                                             )
                                         }

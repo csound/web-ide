@@ -5,6 +5,7 @@ import {
     TAB_DOCK_INIT,
     TAB_DOCK_REARRANGE_TABS,
     TAB_DOCK_SWITCH_TAB,
+    TAB_DOCK_OPEN_NON_CLOUD_FILE,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_CLOSE,
     TAB_CLOSE,
@@ -98,6 +99,66 @@ const ProjectEditorReducer = (
                 assocPath(["tabDock", "openDocuments"], action.modifiedDock)
             )(state);
         }
+        case TAB_DOCK_OPEN_NON_CLOUD_FILE: {
+            if (action.init) {
+                return state;
+            }
+            const currentOpenDocuments: IOpenDocument[] = pathOr(
+                [] as IOpenDocument[],
+                ["tabDock", "openDocuments"],
+                state
+            );
+            const documentAlreadyOpenIndex = findIndex(
+                currentOpenDocuments,
+                (od: IOpenDocument) =>
+                    od.isNonCloudDocument ? od.uid === action.file?.name : false
+            );
+            if (documentAlreadyOpenIndex < 0) {
+                let nonCloudFileAudioUrl: string | undefined = undefined;
+                let nonCloudFileData: string | undefined = undefined;
+
+                if (action.mimeType.startsWith("audio")) {
+                    const blob = new Blob([action.file.buffer], {
+                        type: action.mimeType
+                    });
+                    nonCloudFileAudioUrl = URL.createObjectURL(blob);
+                } else {
+                    const utf8decoder = new TextDecoder();
+                    nonCloudFileData = utf8decoder.decode(action.file.buffer);
+                }
+
+                const newAppendedState = addTabToOpenDocuments(
+                    {
+                        uid: action.file.name,
+                        isNonCloudDocument: true,
+                        nonCloudFileAudioUrl,
+                        nonCloudFileData,
+                        editorInstance: undefined
+                    },
+                    state
+                );
+
+                // Focus on open action (can be made configureable)
+                const newState = assocPath(
+                    ["tabDock", "tabIndex"],
+                    newAppendedState.tabDock.openDocuments.length - 1,
+                    newAppendedState
+                );
+                storeTabDockState(
+                    action.projectUid,
+                    newState.tabDock.openDocuments,
+                    newState.tabDock.tabIndex
+                );
+
+                return newState;
+            } else {
+                return assocPath(
+                    ["tabDock", "tabIndex"],
+                    documentAlreadyOpenIndex,
+                    state
+                );
+            }
+        }
         case TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID: {
             const currentOpenDocuments: IOpenDocument[] = pathOr(
                 [] as IOpenDocument[],
@@ -123,14 +184,6 @@ const ProjectEditorReducer = (
                     newAppendedState.tabDock.openDocuments.length - 1,
                     newAppendedState
                 );
-
-                if (!action.isNonCloudDocument) {
-                    storeTabDockState(
-                        action.projectUid,
-                        newState.tabDock.openDocuments,
-                        newState.tabDock.tabIndex
-                    );
-                }
 
                 return newState;
             } else {

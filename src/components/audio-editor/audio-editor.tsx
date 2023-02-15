@@ -11,15 +11,23 @@ type IAudioEditorProperties = {
 
 const AudioEditor = ({ audioFileUrl, classes }: IAudioEditorProperties) => {
     const [data, setData] = useState("");
-    // console.log("AFURL: " + audioFileUrl)
-    // console.log("Data: " + data)
+
     useEffect(() => {
-        if (!data) {
+        if (
+            !data &&
+            typeof audioFileUrl === "string" &&
+            !audioFileUrl.startsWith("blob")
+        ) {
             storageReference(audioFileUrl).then((storage) => {
                 getDownloadURL(storage).then((fileUrl) => {
                     setData(fileUrl);
                 });
             });
+        } else if (
+            typeof audioFileUrl === "string" &&
+            audioFileUrl.startsWith("blob")
+        ) {
+            setData(audioFileUrl);
         }
     }, [data, setData, audioFileUrl]);
     return !data ? (
