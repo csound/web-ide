@@ -1,4 +1,14 @@
 import React, { useState, useCallback } from "react";
+import { useDispatch, useSelector } from "@root/store";
+import { getAuth } from "firebase/auth";
+import { uploadBytesResumable } from "firebase/storage";
+import { addDoc, collection, doc } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid";
+import {
+    getFirebaseTimestamp,
+    projects,
+    storageReference
+} from "@config/firestore";
 import {
     addIndex,
     append,
@@ -24,32 +34,36 @@ import {
 } from "ramda";
 import { getType as mimeLookup } from "mime";
 import moment from "moment";
+import { openSnackbar } from "@comp/snackbar/actions";
+import { SnackbarType } from "@comp/snackbar/types";
 import { rgba } from "@styles/utils";
 import { useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { useDispatch, useSelector } from "react-redux";
-import Collapse from "@material-ui/core/Collapse";
-// import DescriptionIcon from "@material-ui/icons/Description";
-import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
+import Collapse from "@mui/material/Collapse";
+import Box from "@mui/material/Box";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import {
     CsdFileIcon,
     OrcFileIcon,
     ScoFileIcon,
     UdoFileIcon
 } from "@elem/filetype-icons";
-import EditIcon from "@material-ui/icons/EditTwoTone";
-import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
+import EditIcon from "@mui/icons-material/EditTwoTone";
+import DeleteIcon from "@mui/icons-material/DeleteTwoTone";
 import DownloadIcon from "@mui/icons-material/Download";
-import Tooltip from "@material-ui/core/Tooltip";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
+import UploadIcon from "@mui/icons-material/Upload";
+import Tooltip from "@mui/material/Tooltip";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
 import { ReactComponent as DirectoryClose } from "@root/svgs/fad-close.svg";
 import { ReactComponent as DirectoryOpen } from "@root/svgs/fad-open.svg";
 import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
 import { IDocument, IDocumentsMap, IProject } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
+import { textOrBinary } from "@comp/projects/utils";
 import {
+    tabClose,
     tabOpenByDocumentUid,
     tabOpenNonCloudDocument
 } from "@comp/project-editor/actions";
@@ -57,6 +71,7 @@ import {
     selectIsOwner,
     selectCurrentTabDocumentUid
 } from "@comp/project-editor/selectors";
+import { nonCloudFiles, deleteNonCloudFiles } from "./actions";
 import { useDnD } from "./context";
 import * as SS from "./styles";
 import FileTreeHeader from "./header";
@@ -102,6 +117,146 @@ const humanizeBytes = (size: number) => {
         return size + " Bytes";
     }
 };
+
+function UploadNonCloudFileIcon({
+    file,
+    projectUid,
+    mimeType
+}: {
+    file: NonCloudFile;
+    projectUid: string;
+    mimeType: string;
+}): JSX.Element {
+    const dispatch = useDispatch();
+    const [uploadProgress, setUploadProgress] = useState(-1);
+
+    const handleUpload = React.useCallback(() => {
+        const txtOrBin = textOrBinary(file.name);
+        const currentUser = getAuth().currentUser;
+        const uid = currentUser ? currentUser.uid : "";
+        const documentId = uuidv4();
+
+        if (txtOrBin === "txt") {
+            const utf8decoder = new TextDecoder();
+            const txt = utf8decoder.decode(file.buffer);
+            const document_ = {
+                type: txtOrBin,
+                name: file.name,
+                value: txt,
+                userUid: uid,
+                lastModified: getFirebaseTimestamp(),
+                created: getFirebaseTimestamp()
+            };
+
+            addDoc(
+                collection(doc(projects, projectUid), "files"),
+                document_
+            ).then((result) => {
+                const documentUid = result.id;
+                dispatch(tabOpenByDocumentUid(documentUid, projectUid));
+            });
+        } else {
+            const metadata = {
+                contentType:
+                    mimeType ??
+                    mimeType ??
+                    (txtOrBin ? "application/octet-stream" : "text/plain"),
+                customMetadata: {
+                    filename: file.name,
+                    projectUid,
+                    userUid: uid,
+                    docUid: documentId
+                }
+            };
+
+            storageReference(`${uid}/${projectUid}/${documentId}`).then(
+                (ref) => {
+                    const uploadTask = uploadBytesResumable(
+                        ref,
+                        file.buffer,
+                        metadata
+                    );
+                    uploadTask.on(
+                        "state_changed",
+                        (snapshot) => {
+                            const progress =
+                                (snapshot.bytesTransferred /
+                                    snapshot.totalBytes) *
+                                100;
+                            setUploadProgress(progress);
+                            // console.log("Upload is " + progress + "% done");
+                        },
+                        (error) => {
+                            console.error(error);
+                            dispatch(
+                                openSnackbar(error.message, SnackbarType.Error)
+                            );
+                        },
+                        () => {
+                            dispatch(tabClose(projectUid, file.name, false));
+                            dispatch(deleteNonCloudFiles(file.name));
+                            nonCloudFiles.delete(file.name);
+                            setUploadProgress(-1);
+                            dispatch(
+                                openSnackbar(
+                                    "Upload done, the file should appear in a second...",
+                                    SnackbarType.Info
+                                )
+                            );
+                        }
+                    );
+                }
+            );
+        }
+    }, [dispatch, file, projectUid, setUploadProgress, mimeType]);
+
+    return uploadProgress > -1 ? (
+        <div
+            style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                left: 0,
+                top: 0,
+                backgroundColor: "rebeccapurple",
+                zIndex: 10,
+                userSelect: "none",
+                cursor: "initial"
+            }}
+        >
+            <div
+                style={{
+                    margin: "auto",
+                    width: "100%",
+                    height: "100%",
+                    textAlign: "center",
+                    lineHeight: "35px"
+                }}
+            >{`Upload: ${uploadProgress}%`}</div>
+        </div>
+    ) : (
+        <Tooltip
+            placement="right"
+            title={
+                <>
+                    {`Upload ${propOr("", "name", file)} (${humanizeBytes(
+                        file.buffer.length
+                    )}) to your project`}
+                    <br />{" "}
+                    <small>{`Created: ${moment(
+                        file.createdAt
+                    ).fromNow()}`}</small>
+                </>
+            }
+        >
+            <UploadIcon
+                css={SS.editIcon}
+                onClick={handleUpload}
+                style={{ marginRight: "6px" }}
+            />
+        </Tooltip>
+    );
+}
 
 function DownloadNonCloudFileIcon({
     file,
@@ -149,7 +304,10 @@ function FileExtIcon({
         return (
             <ListItemIcon
                 css={SS.listItemIcon}
-                style={{ marginLeft: 24 * nestingDepth }}
+                style={{
+                    left: 6,
+                    marginLeft: 24 * nestingDepth
+                }}
             >
                 <WaveFormIcon css={SS.mediaIcon} />
             </ListItemIcon>
@@ -184,7 +342,10 @@ function FileExtIcon({
     ) : (
         <ListItemIcon
             css={SS.listItemIconMui}
-            style={{ left: 0 + 24 * nestingDepth }}
+            style={{
+                left: 0,
+                marginLeft: 24 * nestingDepth
+            }}
         >
             <InsertDriveFileIcon css={SS.muiIcon} />
         </ListItemIcon>
@@ -368,10 +529,14 @@ const makeTree = (
                                                             height: 36
                                                         }
                                                     ])}
-                                                    button
                                                 >
                                                     {FolderIcon}
-                                                    {document_.filename}
+                                                    <Box
+                                                        marginLeft="24px"
+                                                        padding="0"
+                                                    >
+                                                        {document_.filename}
+                                                    </Box>
                                                     <div
                                                         css={
                                                             SS.delEditContainer
@@ -456,6 +621,12 @@ const makeTree = (
                                                             )
                                                         )
                                                     }
+                                                    sx={{
+                                                        paddingLeft:
+                                                            40 +
+                                                            24 * path.length +
+                                                            "px !important"
+                                                    }}
                                                     style={mergeAll([
                                                         snapshot.isDragging
                                                             ? mergeAll([
@@ -469,10 +640,6 @@ const makeTree = (
                                                               ])
                                                             : {},
                                                         {
-                                                            paddingLeft:
-                                                                40 +
-                                                                24 *
-                                                                    path.length,
                                                             height: 36,
                                                             backgroundColor:
                                                                 currentTabDocumentUid ===
@@ -481,9 +648,11 @@ const makeTree = (
                                                                     : "inherit"
                                                         }
                                                     ])}
-                                                    button
                                                 >
                                                     <FileExtIcon
+                                                        nestingDepth={
+                                                            path.length
+                                                        }
                                                         isBinary={
                                                             document_.type ===
                                                             "bin"
@@ -496,14 +665,14 @@ const makeTree = (
                                                     <p css={SS.filenameStyle}>
                                                         {document_.filename}
                                                     </p>
-                                                    <div
+                                                    <Box
                                                         css={
                                                             SS.delEditContainer
                                                         }
                                                     >
                                                         {deleteIcon(document_)}
                                                         {editIcon(document_)}
-                                                    </div>
+                                                    </Box>
                                                 </ListItem>
                                             )}
                                         </Draggable>
@@ -532,8 +701,17 @@ const FileTree = (): React.ReactElement => {
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
     );
 
-    const nonCloudFiles = useSelector(selectNonCloudFiles);
+    const nonCloudFileTreeEntries: string[] = useSelector(selectNonCloudFiles);
+    const nonCloudFileSources: NonCloudFile[] = [];
 
+    for (const ncfEntry of nonCloudFileTreeEntries) {
+        if (nonCloudFiles.has(ncfEntry)) {
+            nonCloudFileSources.push(
+                nonCloudFiles.get(ncfEntry) as NonCloudFile
+            );
+        }
+    }
+    // console.log({ nonCloudFileSources, nonCloudFileTreeEntries });
     const isOwner: boolean = useSelector(selectIsOwner(activeProjectUid));
     const project: IProject | undefined = useSelector(
         path(["ProjectsReducer", "projects", activeProjectUid])
@@ -566,8 +744,8 @@ const FileTree = (): React.ReactElement => {
                                 filelist
                             )[1]
                         }
-                        {nonCloudFiles.length > 0 && <hr />}
-                        {nonCloudFiles.map((file, index) => {
+                        {nonCloudFileSources.length > 0 && <hr />}
+                        {nonCloudFileSources.map((file, index) => {
                             const mimeType = mimeLookup(file.name);
 
                             return (
@@ -582,7 +760,7 @@ const FileTree = (): React.ReactElement => {
                                         onClick={() =>
                                             dispatch(
                                                 tabOpenNonCloudDocument(
-                                                    file,
+                                                    file.name,
                                                     mimeType
                                                 )
                                             )
@@ -600,13 +778,29 @@ const FileTree = (): React.ReactElement => {
                                             )}
                                             nestingDepth={0}
                                         />
-                                        <p css={SS.filenameStyle}>
+                                        <p
+                                            css={SS.filenameStyle}
+                                            style={{
+                                                marginLeft: "16px",
+                                                marginRight: "8px"
+                                            }}
+                                        >
                                             {file.name}
                                         </p>
-                                        <DownloadNonCloudFileIcon
-                                            file={file}
-                                            mimeType={mimeType}
-                                        />
+                                        <Box
+                                            display="flex"
+                                            justifyContent="space-between"
+                                        >
+                                            <UploadNonCloudFileIcon
+                                                file={file}
+                                                mimeType={mimeType}
+                                                projectUid={activeProjectUid}
+                                            />
+                                            <DownloadNonCloudFileIcon
+                                                file={file}
+                                                mimeType={mimeType}
+                                            />
+                                        </Box>
                                     </ListItem>
                                 </div>
                             );

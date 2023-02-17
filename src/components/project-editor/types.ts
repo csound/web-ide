@@ -14,11 +14,9 @@ export const TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID =
 export const TAB_DOCK_CLOSE = PREFIX + "TAB_DOCK_CLOSE";
 export const TAB_CLOSE = PREFIX + "TAB_CLOSE";
 export const TOGGLE_MANUAL_PANEL = PREFIX + "TOGGLE_MANUAL_PANEL";
-export const STORE_EDITOR_INSTANCE = PREFIX + "STORE_EDITOR_INSTANCE";
 
 // DATA TYPES
 export interface IOpenDocument {
-    editorInstance: any;
     uid: string;
     isNonCloudDocument?: boolean;
     nonCloudFileAudioUrl?: string | undefined;

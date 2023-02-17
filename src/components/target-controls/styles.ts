@@ -15,7 +15,7 @@ export const dropdownContainer = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const valueContainer = (theme: Theme): SerializedStyles => css`
+export const valueContainer = (): SerializedStyles => css`
     padding: 0 6px;
     display: flex;
     width: 100%;
@@ -69,7 +69,7 @@ export const menu = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const dropdownTooltip = (theme: Theme): SerializedStyles => css`
+export const dropdownTooltip = (): SerializedStyles => css`
     padding: 12px;
     & h4 {
         font-size: 15px;
@@ -197,7 +197,7 @@ export const playButtonContainer = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const playButtonLoadingSpinner = (theme: Theme): SerializedStyles => css`
+export const playButtonLoadingSpinner = css`
     cursor: auto;
     margin-top: 6px;
     margin-left: 6px;
@@ -264,7 +264,7 @@ export const buttonContainer = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const iconButton = (theme: Theme): SerializedStyles => css`
+export const iconButton = (): SerializedStyles => css`
     border-radius: 0;
     padding: 2px;
 `;
@@ -293,15 +293,15 @@ export const menuForDialog = (theme: Theme): SerializedStyles => css`
 `;
 
 export const reactSelectDropdownStyle = (theme: Theme) => ({
-    control: (provided, state) => control(theme),
-    container: (provided, state) => dropdownContainerForDialog(theme),
-    valueContainer: (provided, state) => valueContainer(theme),
-    groupHeading: (provided, state) => groupHeading,
-    placeholder: (provided, state) => placeholder,
-    menu: (provided, state) => menuForDialog(theme),
-    menuList: (provided, state) => menuList(theme),
-    option: (provided, { isDisabled }) =>
+    control: () => control(theme),
+    container: () => dropdownContainerForDialog(theme),
+    valueContainer: () => valueContainer,
+    groupHeading: () => groupHeading,
+    placeholder: () => placeholder,
+    menu: () => menuForDialog(theme),
+    menuList: () => menuList(theme),
+    option: (_, { isDisabled }) =>
         isDisabled ? menuOptionDisabled(theme) : menuOption(theme),
-    indicatorsContainer: (provided, state) => indicatorContainer(theme),
-    indicatorSeparator: (provided, state) => indicatorSeparator
+    indicatorsContainer: () => indicatorContainer(theme),
+    indicatorSeparator: () => indicatorSeparator
 });

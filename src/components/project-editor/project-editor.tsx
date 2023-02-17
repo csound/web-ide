@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
 import { NonCloudFile } from "@comp/file-tree/types";
@@ -11,7 +11,7 @@ import {
     DragTab,
     PanelList,
     Panel
-} from "@hlolli/react-tabtab";
+} from "@root/tabtab/index.js";
 import { arrayMoveImmutable as simpleSwitch } from "array-move";
 import { subscribeToProjectLastModified } from "@comp/project-last-modified/subscribers";
 import {
@@ -21,18 +21,11 @@ import {
 import tabStyles, { tabListStyle } from "./tab-styles";
 import { isAudioFile } from "../projects/utils";
 import { Beforeunload } from "react-beforeunload";
-import Tooltip from "@material-ui/core/Tooltip";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import IconButton from "@material-ui/core/IconButton";
 import { IOpenDocument } from "./types";
 import SplitPane_ from "react-split-pane";
-import { IStore } from "@store/types";
 import Editor from "../editor/editor";
-import AudioEditor from "../audio-editor/audio-editor";
-import { useTheme } from "@emotion/react";
+import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
-// import { toggleEditorFullScreen } from "../Editor/actions";
 import CsoundManualWindow from "./csound-manual";
 import FileTree from "../file-tree";
 import {
@@ -49,7 +42,6 @@ import {
 } from "./actions";
 import { mapIndexed, isMobile } from "@root/utils";
 import * as SS from "./styles";
-import { enableMidiInput, enableAudioInput } from "../csound/actions";
 import BottomTabs from "@comp/bottom-tabs/component";
 import MobileTabs from "@comp/bottom-tabs/mobile-tabs";
 import {
@@ -100,8 +92,7 @@ const MySplit = ({
 function EditorForDocument({
     uid,
     projectUid,
-    doc,
-    isOwner
+    doc
 }: IEditorForDocumentProperties) {
     if ((doc as IDocument).type === "txt") {
         return (
@@ -143,11 +134,11 @@ const MainSection = ({
     tabDock: React.ReactElement;
     setIsDragging?: (isDragging: boolean) => void;
 }) => {
-    const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
+    const openTabs: BottomTab[] | undefined = useSelector((store: RootState) =>
         selectOpenBottomTabs(store)
     );
 
-    const bottomTabIndex = useSelector((store: IStore) =>
+    const bottomTabIndex = useSelector((store: RootState) =>
         selectBottomTabIndex(store)
     );
     const showBottomTabs = !isEmpty(openTabs) && bottomTabIndex > -1;
@@ -177,7 +168,6 @@ const ProjectEditor = ({
     activeProject: IProject;
 }): React.ReactElement => {
     const dispatch = useDispatch();
-    const theme: any = useTheme();
 
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
@@ -205,10 +195,8 @@ const ProjectEditor = ({
             dispatch,
             csound
         );
-        const unsubscribeToProjectLastModified = subscribeToProjectLastModified(
-            projectUid,
-            dispatch
-        );
+        const unsubscribeToProjectLastModified =
+            subscribeToProjectLastModified(projectUid);
 
         // get some metadata from other people's projects
         const unsubscribeToProfile =
@@ -225,11 +213,6 @@ const ProjectEditor = ({
         };
     }, [dispatch, isOwner, projectOwnerUid, projectUid, csound]);
 
-    useEffect(() => {
-        dispatch(enableMidiInput());
-        dispatch(enableAudioInput());
-    }, [dispatch]);
-
     const tabDockDocuments: IOpenDocument[] = useSelector(
         pathOr([] as IOpenDocument[], [
             "ProjectEditorReducer",
@@ -237,10 +220,6 @@ const ProjectEditor = ({
             "openDocuments"
         ])
     );
-
-    // const nonCloudFiles: NonCloudFile[] = useSelector(
-    //     pathOr([] as NonCloudFile[], ["FileTreeReducer", "nonCloudFiles"])
-    // );
 
     const tabIndex: number = useSelector(
         pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
@@ -274,63 +253,21 @@ const ProjectEditor = ({
     };
 
     const openTabList = mapIndexed((document: any, index) => {
-        const isActive: boolean = index === tabIndex;
         const isModified: boolean = document.isModifiedLocally;
-        const documentPathHuman = append(
-            document.filename,
-            (document.path || []).map((documentUid) =>
-                pathOr(
-                    "<unknown>",
-                    ["documents", documentUid, "filename"],
-                    activeProject
-                )
-            )
-        ).join("/");
         return (
             <DragTab
                 closable={true}
                 key={index}
-                closeElement={
-                    <Tooltip title={"close"} placement="right-end">
-                        <IconButton
-                            size="small"
-                            css={SS.closeButton}
-                            onClick={(event) => {
-                                closeTab(document.documentUid, isModified);
-                            }}
-                        >
-                            <FontAwesomeIcon
-                                icon={faTimes}
-                                size="sm"
-                                color={
-                                    isActive
-                                        ? theme.textColor
-                                        : theme.unfocusedTextColor
-                                }
-                            />
-                        </IconButton>
-                    </Tooltip>
-                }
+                closeCallback={() => closeTab(document.documentUid, isModified)}
+                currentIndex={tabIndex}
+                thisIndex={index}
             >
-                <Tooltip
-                    placement="right-end"
-                    title={
-                        document && document.path
-                            ? document.path.length > 0
-                                ? documentPathHuman
-                                : document.filename || document.name
-                            : document.uid
-                    }
-                >
-                    <p style={{ margin: 0 }}>
-                        {document
-                            ? (document.filename ||
-                                  document.name ||
-                                  document.uid) +
-                              (isOwner && isModified ? "*" : "")
-                            : ""}
-                    </p>
-                </Tooltip>
+                <p style={{ margin: 0 }}>
+                    {document
+                        ? (document.filename || document.name || document.uid) +
+                          (isOwner && isModified ? "*" : "")
+                        : ""}
+                </p>
             </DragTab>
         );
     }, openDocuments as IDocument[]);
@@ -373,6 +310,7 @@ const ProjectEditor = ({
     ) : (
         <div key="1" css={tabListStyle}>
             <Tabs
+                defaultIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
                 activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
                 onTabChange={switchTab}
                 customStyle={TabStyles}
@@ -395,11 +333,11 @@ const ProjectEditor = ({
     );
 
     const isManualVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.manualVisible
+        (store: RootState) => store.ProjectEditorReducer.manualVisible
     );
 
     const isFileTreeVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
+        (store: RootState) => store.ProjectEditorReducer.fileTreeVisible
     );
 
     useEffect(() => {
@@ -416,8 +354,8 @@ const ProjectEditor = ({
 
     useEffect(() => {
         if (projectUid) {
-            dispatch(storeProjectEditorKeyboardCallbacks(projectUid));
-            dispatch(storeEditorKeyboardCallbacks(projectUid));
+            storeProjectEditorKeyboardCallbacks(projectUid);
+            storeEditorKeyboardCallbacks(projectUid);
         }
     }, [dispatch, projectUid]);
 

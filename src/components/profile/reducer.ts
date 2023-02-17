@@ -81,13 +81,13 @@ const ProfileReducer = (
             );
         }
         case STORE_USER_PROFILE: {
-            return !hasPath(["profiles", (action as any).profileUid], state)
-                ? assocPath(
+            return hasPath(["profiles", (action as any).profileUid], state)
+                ? state
+                : assocPath(
                       ["profiles", (action as any).profileUid],
                       action.profile,
                       state
-                  )
-                : state;
+                  );
         }
         case GET_ALL_TAGS: {
             return assocPath(

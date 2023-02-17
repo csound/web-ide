@@ -1,7 +1,7 @@
-import Card from "@material-ui/core/Card";
-import Chip from "@material-ui/core/Chip";
+import Card from "@mui/material/Card";
+import Chip from "@mui/material/Chip";
 import { isMobile } from "@root/utils";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
 export const ProfileContainer = styled.div`
@@ -131,7 +131,7 @@ export const ContentSection = styled.div<any>`
 export const ContentTabsContainer = styled.div`
     background-color: rgba(0, 0, 0, 0.2);
 `;
-export const ContentActionsContainer = styled.div`
+export const contentActionsStyle = css`
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -140,6 +140,7 @@ export const ContentActionsContainer = styled.div`
     padding-left: 24px;
     padding-right: 12px;
     margin-top: 12px;
+    margin-bottom: 24px;
 `;
 
 export const ListContainer = styled.div`

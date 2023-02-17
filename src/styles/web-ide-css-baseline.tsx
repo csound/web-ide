@@ -259,6 +259,12 @@ a {text-decoration: none;}
     z-index: 9999999;
     background-color: ${theme.errorText};
 }
+.cm-lineNumbers {
+  margin-right: 2px;
+}
+.cm-scroller {
+  width: calc(100% + 32px);
+}
 
     `}</style>
 );

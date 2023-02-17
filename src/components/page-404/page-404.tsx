@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "@comp/header/header";
 import styled from "@emotion/styled";
-import withStyles from "./styles";
+import { rootStyle } from "./styles";
 import CSLogo from "../cs-logo/cs-logo";
 import { get } from "lodash";
 import { Gradient } from "./gradient";
@@ -46,20 +46,20 @@ const MessageText = styled.div<ILogoContainer>`
     line-height: 0;
 `;
 
-const Page404 = (properties) => {
-    const { classes } = properties;
-
+export const Page404 = (properties) => {
     const message =
         get(properties, "location.state.message") || "Page Not Found";
 
     return (
         <div
-            className={classes.root}
-            css={Gradient({
-                colorA: "rgba(30, 30, 30, 1)",
-                colorB: "rgba(40, 40, 40, 1)",
-                colorC: "rgba(20, 20, 20, 1)"
-            })}
+            css={[
+                rootStyle,
+                Gradient({
+                    colorA: "rgba(30, 30, 30, 1)",
+                    colorB: "rgba(40, 40, 40, 1)",
+                    colorC: "rgba(20, 20, 20, 1)"
+                })
+            ]}
         >
             <Header />
             <main>
@@ -75,5 +75,3 @@ const Page404 = (properties) => {
         </div>
     );
 };
-
-export default withStyles(Page404);

@@ -1,62 +1,56 @@
-import { store } from "@store";
-import { IStore } from "@store/types";
+import { RootState, store } from "@root/store";
 import { IProject } from "../projects/types";
 import { Csound as Csound6 } from "@csound/browser";
 import { Csound as Csound7 } from "csound7";
-import { addNonCloudFile } from "@comp/file-tree/actions";
+import {
+    cleanupNonCloudFiles,
+    nonCloudFiles,
+    addNonCloudFile
+} from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
-import {
-    CsoundObj,
-    ICsoundStatus,
-    SET_CSOUND,
-    SET_CSOUND_PLAY_STATE,
-    SET_STOP_RENDER,
-    STOP_RENDER
-} from "./types";
+import { CsoundObj, ICsoundStatus, SET_CSOUND_PLAY_STATE } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
 import { addDocumentToEMFS } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { append, difference, isEmpty, path, pathOr, pipe, values } from "ramda";
 
+export let csoundInstance: CsoundObj;
+
 export const setCsoundPlayState = (
     playState: ICsoundStatus
-): Record<string, any> => {
+): { type: typeof SET_CSOUND_PLAY_STATE; status: ICsoundStatus } => {
     return {
         type: SET_CSOUND_PLAY_STATE,
         status: playState
     };
 };
 
-export const setCsound = (csound: CsoundObj, dispatch: (any) => void): void => {
+export const setCsound = (csound: CsoundObj): void => {
     csound.on("realtimePerformanceEnded", async () => {
         try {
             await csound.cleanup();
         } catch {}
 
-        dispatch(setCsoundPlayState("stopped"));
+        store.dispatch(setCsoundPlayState("stopped"));
     });
     csound.on("realtimePerformancePaused", () =>
-        dispatch(setCsoundPlayState("paused"))
+        store.dispatch(setCsoundPlayState("paused"))
     );
 
     csound.on("realtimePerformanceResumed", () =>
-        dispatch(setCsoundPlayState("playing"))
+        store.dispatch(setCsoundPlayState("playing"))
     );
 
     csound.on("realtimePerformanceStarted", () =>
-        dispatch(setCsoundPlayState("playing"))
+        store.dispatch(setCsoundPlayState("playing"))
     );
-    dispatch({
-        type: SET_CSOUND,
-        csound
-    });
 };
 
 export const syncFs = async (
     csound: CsoundObj,
     projectUid: string,
-    storeState: IStore
+    storeState: RootState
 ): Promise<void> => {
     const documents = pipe(
         pathOr({}, ["ProjectsReducer", "projects", projectUid, "documents"]),
@@ -99,8 +93,6 @@ export const playCsdFromFs = ({
     return async (dispatch: any, setConsole: any) => {
         const Csound = useCsound7 ? Csound7 : Csound6;
 
-        console.log({ Csound, useCsound7 });
-
         const csoundObj = await Csound({
             useWorker: localStorage.getItem("sab") === "true"
         });
@@ -108,8 +100,9 @@ export const playCsdFromFs = ({
         if (!csoundObj) {
             return;
         }
+        csoundInstance = csoundObj;
 
-        await setCsound(csoundObj, dispatch);
+        setCsound(csoundInstance);
 
         if (csoundObj && setConsole) {
             setConsole([""]);
@@ -134,12 +127,14 @@ export const playCsdFromFs = ({
                     for (const newFile of newFiles) {
                         const buffer = await csoundObj.fs.readFile(newFile);
                         if (buffer) {
+                            nonCloudFiles.set(newFile, {
+                                buffer,
+                                createdAt: new Date(),
+                                name: newFile
+                            });
                             dispatch(
                                 addNonCloudFile({
-                                    buffer: await csoundObj.fs.readFile(
-                                        newFile
-                                    ),
-                                    createdAt: new Date(),
+                                    createdAt: Date.now(),
                                     name: newFile
                                 })
                             );
@@ -183,7 +178,9 @@ export const playORCFromString = ({
             return;
         }
 
-        await setCsound(csoundObj, dispatch);
+        csoundInstance = csoundObj;
+
+        setCsound(csoundInstance);
 
         if (csoundObj && setConsole) {
             setConsole([""]);
@@ -216,54 +213,37 @@ export const playORCFromString = ({
     };
 };
 
-export const stopCsound = (): ((dispatch: (any) => void) => void) => {
-    return async (dispatch: any) => {
-        const cs = path(["csound", "csound"], store.getState());
-        cs && cs.stop();
-    };
+export const stopCsound = () => {
+    const cs = path(["csound", "csound"], store.getState());
+    cs && cs.stop();
+    return setCsoundPlayState("stopped");
 };
 
-export const pauseCsound = (): ((
-    dispatch: (any) => void,
-    getState: () => IStore
-) => void) => {
-    return async (dispatch: any, getState) => {
-        const cs = path(["csound", "csound"], getState()) as
-            | CsoundObj
-            | undefined;
-        cs && (await cs.pause());
-
-        dispatch(setCsoundPlayState("paused"));
-    };
+export const pauseCsound = () => {
+    const cs = path(["csound", "csound"], store.getState()) as
+        | CsoundObj
+        | undefined;
+    cs && cs.pause();
+    return setCsoundPlayState("paused");
 };
 
-export const resumePausedCsound = (): ((
-    dispatch: (any) => void,
-    getState: () => IStore
-) => void) => {
-    return async (dispatch: any, getState) => {
-        const cs = path(["csound", "csound"], getState()) as
-            | CsoundObj
-            | undefined;
-        cs && cs.resume();
-    };
-};
-
-export const stopRender = (): ((
-    dispatch: (any) => void,
-    getState: () => IStore
-) => void) => {
-    return async (dispatch: any, getState) => {
-        dispatch({ type: STOP_RENDER });
-    };
+export const resumePausedCsound = () => {
+    const cs = path(["csound", "csound"], store.getState()) as
+        | CsoundObj
+        | undefined;
+    cs && cs.resume();
+    return setCsoundPlayState("playing");
 };
 
 export const renderToDisk = (
     setConsole: any
 ): ((dispatch: (any) => void) => void) => {
     return async (dispatch: any) => {
-        const state: IStore = store.getState();
+        const state: RootState = store.getState();
         const project: IProject | undefined = selectActiveProject(state);
+        if (project) {
+            dispatch(cleanupNonCloudFiles({ projectUid: project.projectUid }));
+        }
 
         if (!project) {
             dispatch(
@@ -339,9 +319,8 @@ export const renderToDisk = (
             await csound.setOption(`-o${outputName}`);
         }
 
-        dispatch(setCsoundPlayState("rendering"));
-
         csound.once("renderStarted", () => {
+            dispatch(setCsoundPlayState("rendering"));
             dispatch(
                 openSnackbar(
                     `Render of ${targetDocumentName} started`,
@@ -357,10 +336,14 @@ export const renderToDisk = (
             for (const newFile of newFiles) {
                 const buffer = await csound.fs.readFile(newFile);
                 if (buffer) {
+                    nonCloudFiles.set(newFile, {
+                        buffer,
+                        createdAt: new Date(),
+                        name: newFile
+                    });
                     dispatch(
                         addNonCloudFile({
-                            buffer: await csound.fs.readFile(newFile),
-                            createdAt: new Date(),
+                            createdAt: Date.now(),
                             name: newFile
                         })
                     );
@@ -383,14 +366,6 @@ export const renderToDisk = (
             );
         });
 
-        await dispatch({
-            type: SET_STOP_RENDER,
-            callback: async () => {
-                await csound.stop();
-                dispatch(setCsoundPlayState("stopped"));
-            }
-        });
-
         const result = await csound.start();
 
         if (result !== 0) {
@@ -401,35 +376,8 @@ export const renderToDisk = (
                 )
             );
         }
-    };
-};
 
-export const enableMidiInput = (): ((
-    dispatch: (any) => void,
-    getState: () => IStore
-) => void) => {
-    return async (dispatch: any, getState) => {
-        // FIXME
-        // const cs = path(["csound", "csound"], getState()) as
-        //     | CsoundObj
-        //     | undefined;
-        // cs?.enableMidiInput(() => {
-        //     console.log("enableMidiInput done");
-        // });
-    };
-};
-
-export const enableAudioInput = (): ((
-    dispatch: (any) => void,
-    getState: () => IStore
-) => void) => {
-    return async (dispatch: any, getState) => {
-        // FIXME
-        // const cs = path(["csound", "csound"], getState()) as
-        //     | CsoundObj
-        //     | undefined;
-        // cs?.enableAudioInput(() => {
-        //     console.log("enableAudioInput done");
-        // });
+        dispatch(setCsoundPlayState("stopped"));
+        await csound.stop();
     };
 };

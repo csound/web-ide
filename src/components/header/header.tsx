@@ -1,10 +1,10 @@
 import React, { RefObject, useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectCurrentRoute } from "@comp/router/selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import { selectUserImageURL, selectUserName } from "@comp/profile/selectors";
 import { selectLoggedInUid } from "@comp/login/selectors";
-import AppBar from "@material-ui/core/AppBar";
+import AppBar from "@mui/material/AppBar";
 import Login from "@comp/login/login";
 import * as loginActions from "@comp/login/actions";
 import CSLogo from "@comp/cs-logo/cs-logo";
@@ -20,17 +20,16 @@ import {
     ListItemIcon,
     ListItemText,
     Divider
-} from "@material-ui/core";
-import { AccountBox } from "@material-ui/icons";
-import Avatar from "@material-ui/core/Avatar";
-import Button from "@material-ui/core/Button";
-import MenuIcon from "@material-ui/icons/Menu";
-import HelpIcon from "@material-ui/icons/Help";
-import GitHubIcon from "@material-ui/icons/GitHub";
-import ReportProblemIcon from "@material-ui/icons/ReportProblem";
+} from "@mui/material";
+import { AccountBox } from "@mui/icons-material";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import MenuIcon from "@mui/icons-material/Menu";
+import HelpIcon from "@mui/icons-material/Help";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import * as SS from "./styles";
 // import { tooltipClasses } from "@comp/styles";
-import { IStore } from "@store/types";
 import { isEmpty } from "ramda";
 import MenuBar from "@comp/menu-bar/menu-bar";
 import ProjectProfileMeta from "./project-profile-meta";
@@ -41,10 +40,10 @@ const Header = (): React.ReactElement => {
     const dispatch = useDispatch();
 
     const authenticated = useSelector(
-        (store: IStore) => store.LoginReducer.authenticated
+        (store: RootState) => store.LoginReducer.authenticated
     );
     const activeProjectUid = useSelector(
-        (store: IStore) => store.ProjectsReducer.activeProjectUid
+        (store: RootState) => store.ProjectsReducer.activeProjectUid
     );
 
     const currentRoute = useSelector(selectCurrentRoute);
@@ -64,7 +63,7 @@ const Header = (): React.ReactElement => {
     const avatarUrl = useSelector(selectUserImageURL(loggedInUid || ""));
 
     const isLoginDialogOpen = useSelector(
-        (store: IStore) => store.LoginReducer.isLoginDialogOpen
+        (store: RootState) => store.LoginReducer.isLoginDialogOpen
     );
 
     const anchorElement = useRef() as RefObject<HTMLButtonElement>;
@@ -73,11 +72,11 @@ const Header = (): React.ReactElement => {
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    const handleProfileMenuOpen = (event?: any) => {
+    const handleProfileMenuOpen = () => {
         setIsProfileMenuOpen(true);
     };
 
-    const handleProfileMenuClose = (event?: any) => {
+    const handleProfileMenuClose = () => {
         setIsProfileMenuOpen(false);
     };
 
@@ -119,16 +118,16 @@ const Header = (): React.ReactElement => {
             >
                 <Link to={`/profile/${loggedInUserName}`} css={SS.menuItemLink}>
                     <MenuItem
-                        onClick={(event) => {
-                            handleProfileMenuClose(event);
+                        onClick={() => {
+                            handleProfileMenuClose();
                         }}
                     >
                         View Profile
                     </MenuItem>
                 </Link>
                 <MenuItem
-                    onClick={(event) => {
-                        handleProfileMenuClose(event);
+                    onClick={() => {
+                        handleProfileMenuClose();
                         logout();
                     }}
                 >

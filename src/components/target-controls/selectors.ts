@@ -1,10 +1,10 @@
-import { IStore } from "@store/types";
+import { RootState } from "@store/types";
 // import { ITarget, ITargetMap } from "./types";
 // import { IDocumentsMap } from "@comp/Projects/types";
 import { curry, find, path, propEq } from "ramda";
 
 export const selectProjectTargets = curry(
-    (activeProjectUid: string | undefined, store: IStore) => {
+    (activeProjectUid: string | undefined, store: RootState) => {
         if (activeProjectUid) {
             return path(
                 ["TargetControlsReducer", activeProjectUid, "targets"],
@@ -17,7 +17,7 @@ export const selectProjectTargets = curry(
 export const selectSelectedTarget = (curry as any)(
     (
         activeProjectUid: string | undefined,
-        store: IStore
+        store: RootState
     ): string | undefined => {
         return (
             activeProjectUid &&
@@ -33,7 +33,7 @@ export const selectSelectedTarget = (curry as any)(
 export const getSelectedTargetDocumentUid = (curry as any)(
     (
         activeProjectUid: string | undefined,
-        store: IStore
+        store: RootState
     ): string | undefined => {
         if (activeProjectUid) {
             const targetName = path(
@@ -79,7 +79,7 @@ export const getSelectedTargetDocumentUid = (curry as any)(
 );
 
 export const selectProjectDocuments = (curry as any)(
-    (activeProjectUid: string | undefined, store: IStore) => {
+    (activeProjectUid: string | undefined, store: RootState) => {
         return (
             activeProjectUid &&
             path(
@@ -91,7 +91,7 @@ export const selectProjectDocuments = (curry as any)(
 );
 
 export const selectDefaultTargetName = curry(
-    (activeProjectUid: string | undefined, store: IStore) => {
+    (activeProjectUid: string | undefined, store: RootState) => {
         return (
             activeProjectUid &&
             path(
@@ -106,7 +106,7 @@ export const selectTarget = (curry as any)(
     (
         activeProjectUid: string | undefined,
         targetName: string,
-        store: IStore
+        store: RootState
     ) => {
         return (
             activeProjectUid &&

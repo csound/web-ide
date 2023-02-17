@@ -1,4 +1,4 @@
-import { css } from "styled-components";
+import styled from "@emotion/styled";
 
 interface IGradient {
     colorA: string;
@@ -6,7 +6,7 @@ interface IGradient {
     colorC: string;
 }
 
-export const Gradient = css<IGradient>`
+export const Gradient = styled.span<IGradient>`
     background-color: ${(properties) => properties.colorB};
     background-image: linear-gradient(
             30deg,

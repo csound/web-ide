@@ -4,7 +4,7 @@ import {
     StyledListItemTopRowText,
     StyledUserListItemContainer
 } from "../profile-ui";
-import { ListItem, Avatar, ListItemText } from "@material-ui/core";
+import { ListItem, Avatar, ListItemText } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { push } from "connected-react-router";
 

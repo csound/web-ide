@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-// import domToImage from "dom-to-image-more/src/dom-to-image-more.js";
+import Tooltip from "@mui/material/Tooltip";
 import { Link } from "react-router-dom";
 
 interface ILogoContainer {
@@ -65,13 +65,15 @@ export default function CsLogo(properties: ILogoContainer): React.ReactElement {
     */
 
     return (
-        <Link to="/" data-tip="Go back home">
-            <LogoContainer
-                size={properties.size}
-                interactive={properties.interactive}
-            >
-                <p>Cs</p>
-            </LogoContainer>
+        <Link to="/">
+            <Tooltip title="Go back home" followCursor>
+                <LogoContainer
+                    size={properties.size}
+                    interactive={properties.interactive}
+                >
+                    <p>Cs</p>
+                </LogoContainer>
+            </Tooltip>
         </Link>
     );
 }

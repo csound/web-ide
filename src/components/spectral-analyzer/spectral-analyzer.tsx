@@ -3,11 +3,8 @@ import { useSelector } from "react-redux";
 import { assoc, path } from "ramda";
 import { CsoundObj } from "@csound/browser";
 import { ICsoundStatus } from "@comp/csound/types";
+import { csoundInstance } from "../csound";
 import { scaleLinear } from "d3-scale";
-
-type ISpectralAnalyzerProperties = {
-    classes: any;
-};
 
 // resize code used from https://webglfundamentals.org/webgl/lessons/webgl-resizing-the-canvas.html
 function resize(canvas) {
@@ -105,9 +102,7 @@ const connectVisualizer = async (
     }
 };
 
-const SpectralAnalyzer = ({
-    classes
-}: ISpectralAnalyzerProperties): React.ReactElement => {
+const SpectralAnalyzer = (): React.ReactElement => {
     const [scopeNodeState, setScopeNodeState]: [
         {
             status: "init" | "running";
@@ -121,10 +116,6 @@ const SpectralAnalyzer = ({
 
     const canvasReference = useRef() as CanvasReference;
 
-    const csound: CsoundObj | undefined = useSelector(
-        path(["csound", "csound"])
-    );
-
     const csoundStatus: ICsoundStatus = useSelector(path(["csound", "status"]));
 
     useEffect(() => {
@@ -132,7 +123,7 @@ const SpectralAnalyzer = ({
             ["stopped", "error"].includes(csoundStatus) &&
             scopeNodeState.status === "running"
         ) {
-            if (csound && scopeNodeState.scopeNodeDisconnector) {
+            if (csoundInstance && scopeNodeState.scopeNodeDisconnector) {
                 scopeNodeState.scopeNodeDisconnector();
             }
             setScopeNodeState({
@@ -141,19 +132,20 @@ const SpectralAnalyzer = ({
             });
         }
         if (
-            csound &&
+            csoundInstance &&
             csoundStatus === "playing" &&
             scopeNodeState.status !== "running"
         ) {
             setScopeNodeState(assoc("status", "running", scopeNodeState));
-            connectVisualizer(
-                csound,
-                canvasReference
-            ).then((scopeNodeDisconnector) =>
-                setScopeNodeState({ status: "running", scopeNodeDisconnector })
+            connectVisualizer(csoundInstance, canvasReference).then(
+                (scopeNodeDisconnector) =>
+                    setScopeNodeState({
+                        status: "running",
+                        scopeNodeDisconnector
+                    })
             );
         }
-    }, [csound, csoundStatus, scopeNodeState]);
+    }, [csoundStatus, scopeNodeState]);
 
     useEffect(() => {
         return () => {

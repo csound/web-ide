@@ -12,7 +12,9 @@ const container = document.getElementById("root");
 const root = createRoot(container as any);
 const Provider = Provider_ as any;
 root.render(
-    <Provider store={store}>
-        <Main />
-    </Provider>
+    <>
+        <Provider store={store}>
+            <Main />
+        </Provider>
+    </>
 );

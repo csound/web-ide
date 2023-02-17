@@ -69,7 +69,6 @@ const theme = {
 
     // Other
     starActive: monokaiYellow,
-    starInactive: monokaiGray,
     buttonIcon: monokaiGray,
     settingsIcon: monokaiViolet,
     profilePlayButton: henn1nk,

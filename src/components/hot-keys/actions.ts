@@ -1,13 +1,9 @@
 import "firebase/auth";
-import {
-    IEditorCallbacks,
-    IProjectEditorCallbacks,
-    STORE_EDITOR_KEYBOARD_CALLBACKS,
-    STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
-} from "./types";
-import { path, pathOr } from "ramda";
+import { RootState, store } from "@root/store";
+import { CsoundEditorView } from "@codemirror/view";
 import { Transaction } from "@codemirror/state";
-import { IStore } from "@store/types";
+import { keyboardCallbacks } from "./index";
+import { path, pathOr } from "ramda";
 import {
     newDocument,
     saveAllAndClose,
@@ -26,6 +22,7 @@ import {
 } from "@comp/target-controls/utils";
 import { pauseCsound, stopCsound } from "@comp/csound/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
+import { openEditors } from "@comp/editor";
 import { editorEvalCode } from "@comp/editor/utils";
 import * as EditorActions from "@comp/editor/actions";
 
@@ -36,65 +33,77 @@ const withPreventDefault =
         callback();
     };
 
-export const storeProjectEditorKeyboardCallbacks = (
-    projectUid: string
-): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
-    return async (dispatch, getStore) => {
-        const callbacks: IProjectEditorCallbacks = {
-            add_file: withPreventDefault(() =>
-                dispatch(addDocument(projectUid))
-            ),
-            new_document: withPreventDefault(() =>
-                dispatch(newDocument(projectUid, ""))
-            ),
-            open_target_config_dialog: withPreventDefault(() =>
-                dispatch(showTargetsConfigDialog())
-            ),
-            pause_playback: withPreventDefault(() => dispatch(pauseCsound())),
-            run_project: withPreventDefault(() => {
-                const playActionDefault = getPlayActionFromTarget(projectUid)(
-                    getStore()
-                );
-                const playActionFallback = getPlayActionFromProject(
-                    projectUid,
-                    getStore()
-                );
-                const playAction = playActionDefault || playActionFallback;
+export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
+    keyboardCallbacks.set(
+        "add_file",
+        withPreventDefault(() => store.dispatch(addDocument(projectUid)))
+    );
+    keyboardCallbacks.set(
+        "new_document",
+        withPreventDefault(() => store.dispatch(newDocument(projectUid, "")))
+    );
+    keyboardCallbacks.set(
+        "open_target_config_dialog",
+        withPreventDefault(() => store.dispatch(showTargetsConfigDialog()))
+    );
+    keyboardCallbacks.set(
+        "pause_playback",
+        withPreventDefault(() => store.dispatch(pauseCsound()))
+    );
+    keyboardCallbacks.set(
+        "run_project",
+        withPreventDefault(() => {
+            const playActionDefault = getPlayActionFromTarget(projectUid)(
+                store.getState()
+            );
+            const playActionFallback = getPlayActionFromProject(
+                projectUid,
+                store.getState()
+            );
+            const playAction = playActionDefault || playActionFallback;
 
-                if (playAction) {
-                    const isOwner = projectUid
-                        ? selectIsOwner(projectUid)(getStore())
-                        : false;
-                    if (isOwner) {
-                        dispatch(saveAllFiles());
-                    }
-                    dispatch(playAction);
+            if (playAction) {
+                const isOwner = projectUid
+                    ? selectIsOwner(projectUid)(store.getState())
+                    : false;
+                if (isOwner) {
+                    store.dispatch(saveAllFiles());
                 }
-            }),
-            save_all_documents: withPreventDefault(() =>
-                dispatch(saveAllFiles())
-            ),
-            save_and_close: withPreventDefault(() =>
-                dispatch(saveAllAndClose("/"))
-            ),
-            save_document: withPreventDefault(() => dispatch(saveFile())),
-            stop_playback: withPreventDefault(() => dispatch(stopCsound()))
-        };
-        dispatch({
-            type: STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS,
-            callbacks
-        });
-    };
+                store.dispatch(playAction);
+            }
+        })
+    );
+    keyboardCallbacks.set(
+        "save_all_documents",
+        withPreventDefault(() => store.dispatch(saveAllFiles()))
+    );
+    keyboardCallbacks.set(
+        "save_and_close",
+        withPreventDefault(() => saveAllAndClose(store.dispatch, "/"))
+    );
+    keyboardCallbacks.set(
+        "save_document",
+        withPreventDefault(() => store.dispatch(saveFile()))
+    );
+    keyboardCallbacks.set(
+        "stop_playback",
+        withPreventDefault(() => store.dispatch(stopCsound()))
+    );
 };
 
-const selectCurrentEditor = (store): any | undefined => {
+const selectCurrentEditor = (
+    store: RootState
+): CsoundEditorView | undefined => {
     const currentTab = selectCurrentTab(store);
-    return currentTab && currentTab.editorInstance;
+    const currentDocId = currentTab && currentTab.uid;
+    if (currentDocId && openEditors.has(currentDocId)) {
+        return openEditors.get(currentDocId);
+    }
 };
 
 const selectDocumentName = (store, projectUid): any | undefined => {
     const currentTab = selectCurrentTab(store);
-    if (currentTab && currentTab.editorInstance) {
+    if (currentTab) {
         const documentUid = currentTab.uid;
         if (documentUid) {
             const document =
@@ -106,120 +115,107 @@ const selectDocumentName = (store, projectUid): any | undefined => {
     }
 };
 
-export const storeEditorKeyboardCallbacks = (
-    projectUid: string
-): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
-    return async (dispatch, getStore) => {
-        const callbacks: IEditorCallbacks = {
-            doc_at_point: withPreventDefault(() => {
-                const editor = selectCurrentEditor(getStore());
-                editor && dispatch(EditorActions.manualEntryAtPoint(editor));
-            }),
-            // find_simple: withPreventDefault(() => {
-            //     const editor = selectCurrentEditor(getStore());
+export const storeEditorKeyboardCallbacks = (projectUid: string) => {
+    keyboardCallbacks.set(
+        "doc_at_point",
+        withPreventDefault(() => {
+            const editor = selectCurrentEditor(store.getState());
+            editor && store.dispatch(EditorActions.manualEntryAtPoint(editor));
+        })
+    );
 
-            //     const searchField = document.querySelector(
-            //         ".CodeMirror-dialog.CodeMirror-dialog-top"
-            //     );
-            //     if (!searchField) {
-            //         editor && editor.execCommand("findPersistent");
-            //         const maybeDialog = document.querySelector(
-            //             ".CodeMirror-search-field"
-            //         );
-            //         setTimeout(() => {
-            //             maybeDialog && maybeDialog[0] && maybeDialog[0].focus();
-            //         }, 100);
-            //     } else {
-            //         const dialogTop = document.querySelector(
-            //             ".CodeMirror-dialog-top"
-            //         );
-            //         dialogTop && dialogTop.remove();
-            //         editor && editor.focus();
-            //     }
-            // }),
-            undo: withPreventDefault(() => {
-                const editor = selectCurrentEditor(getStore());
-                editor && editor.dispatch(Transaction.userEvent.of("undo"));
-            }),
-            redo: withPreventDefault(() => {
-                const editor = selectCurrentEditor(getStore());
-                editor && editor.dispatch(Transaction.userEvent.of("redo"));
-            }),
-            eval_block: withPreventDefault(() => {
-                const storeState = getStore();
-                const editor = selectCurrentEditor(storeState);
-                const csound = path(["csound", "csound"], storeState);
+    keyboardCallbacks.set(
+        "undo",
+        withPreventDefault(() => {
+            const editor = selectCurrentEditor(store.getState());
+            editor &&
+                editor.dispatch({
+                    annotations: Transaction.userEvent.of("undo")
+                });
+        })
+    );
 
-                const csoundStatus = pathOr(
-                    "stopped",
-                    ["csound", "status"],
-                    storeState
+    keyboardCallbacks.set(
+        "redo",
+        withPreventDefault(() => {
+            const editor = selectCurrentEditor(store.getState());
+            editor &&
+                editor.dispatch({
+                    annotations: Transaction.userEvent.of("redo")
+                });
+        })
+    );
+
+    keyboardCallbacks.set(
+        "toggle_comment",
+        withPreventDefault(() => {
+            const editor = selectCurrentEditor(store.getState());
+            if (editor && typeof editor.toggleComment === "function") {
+                editor.toggleComment();
+            }
+        })
+    );
+
+    keyboardCallbacks.set(
+        "eval_block",
+        withPreventDefault(() => {
+            const storeState = store.getState();
+            const editor = selectCurrentEditor(storeState);
+            const csound = path(["csound", "csound"], storeState);
+
+            const csoundStatus = pathOr(
+                "stopped",
+                ["csound", "status"],
+                storeState
+            );
+            const documentName = selectDocumentName(storeState, projectUid);
+            const documentType =
+                documentName && filenameToCsoundType(documentName);
+
+            if (editor && csound && documentName && documentType) {
+                editorEvalCode(
+                    csound,
+                    csoundStatus,
+                    documentType,
+                    editor,
+                    true
                 );
-                const documentName = selectDocumentName(storeState, projectUid);
-                const documentType =
-                    documentName && filenameToCsoundType(documentName);
+            }
+        })
+    );
 
-                if (editor && csound && documentName && documentType) {
-                    editorEvalCode(
-                        csound,
-                        csoundStatus,
-                        documentType,
-                        editor,
-                        true
-                    );
-                }
-            }),
-            eval: withPreventDefault(() => {
-                const storeState = getStore();
-                const editor = selectCurrentEditor(storeState);
-                const csound = path(["csound", "csound"], storeState);
+    keyboardCallbacks.set(
+        "eval",
+        withPreventDefault(() => {
+            const storeState = store.getState();
+            const editor = selectCurrentEditor(storeState);
+            const csound = path(["csound", "csound"], storeState);
 
-                const csoundStatus = pathOr(
-                    "stopped",
-                    ["csound", "status"],
-                    storeState
+            const csoundStatus = pathOr(
+                "stopped",
+                ["csound", "status"],
+                storeState
+            );
+            const documentName = selectDocumentName(storeState, projectUid);
+            const documentType =
+                documentName && filenameToCsoundType(documentName);
+
+            if (editor && csound && documentName && documentType) {
+                editorEvalCode(
+                    csound,
+                    csoundStatus,
+                    documentType,
+                    editor,
+                    false
                 );
-                const documentName = selectDocumentName(storeState, projectUid);
-                const documentType =
-                    documentName && filenameToCsoundType(documentName);
-
-                if (editor && csound && documentName && documentType) {
-                    editorEvalCode(
-                        csound,
-                        csoundStatus,
-                        documentType,
-                        editor,
-                        false
-                    );
-                }
-            }),
-            toggle_comment: withPreventDefault(() => {
-                const storeState = getStore();
-                const editor = selectCurrentEditor(storeState);
-                if (editor && typeof editor.toggleComment === "function") {
-                    editor.toggleComment();
-                }
-            })
-        };
-
-        dispatch({
-            type: STORE_EDITOR_KEYBOARD_CALLBACKS,
-            callbacks
-        });
-    };
+            }
+        })
+    );
 };
 
-export const invokeHotKeyCallback = (
-    hotKey: string
-): ((dispatch: (any) => void, getStore: () => IStore) => Promise<void>) => {
-    return async (dispatch, getState) => {
-        const state = getState();
-        const maybeCallback = path(
-            ["HotKeysReducer", "callbacks", hotKey],
-            state
-        );
-        if (typeof maybeCallback === "function") {
-            maybeCallback();
-        }
-    };
+export const invokeHotKeyCallback = (hotKey: string) => {
+    if (keyboardCallbacks.has(hotKey)) {
+        const callback = keyboardCallbacks.get(hotKey) as any;
+        callback();
+    }
 };

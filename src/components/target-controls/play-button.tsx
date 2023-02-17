@@ -1,10 +1,9 @@
 import React, { useState } from "react";
+import { RootState, useDispatch, useSelector } from "@store";
 import { useTheme } from "@emotion/react";
 import { TailSpin } from "react-loader-spinner";
 import * as SS from "./styles";
-import Tooltip from "@material-ui/core/Tooltip";
-import { useSelector, useDispatch } from "react-redux";
-import { IStore } from "@store/types";
+import Tooltip from "@mui/material/Tooltip";
 import { pathOr } from "ramda";
 import {
     getDefaultTargetDocument,
@@ -36,7 +35,7 @@ const PlayButton = ({
         getPlayActionFromProject(activeProjectUid)
     );
 
-    const csoundPlayState: string = useSelector((store: IStore) => {
+    const csoundPlayState: string = useSelector((store: RootState) => {
         return pathOr("stopped", ["csound", "status"], store);
     });
 

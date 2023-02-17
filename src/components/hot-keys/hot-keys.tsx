@@ -11,7 +11,7 @@ configure({
     stopEventPropagationAfterHandling: true,
     stopEventPropagationAfterIgnoring: true,
     allowCombinationSubmatches: false,
-    ignoreEventsCondition: (event) => {
+    ignoreEventsCondition: () => {
         return false;
     },
     ignoreTags: []

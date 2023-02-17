@@ -1,13 +1,13 @@
 import React, { useState } from "react";
+import styled from "@emotion/styled";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 import { updateUserProfile } from "./actions";
 import { closeModal } from "../modal/actions";
-import { TextField, Button } from "@material-ui/core";
-import { useDispatch } from "react-redux";
+import { TextField, Button } from "@mui/material";
+import { useDispatch } from "@root/store";
 import { useTheme } from "@emotion/react";
 import * as TargetSS from "@comp/target-controls/styles";
-import styled from "styled-components";
 import Select from "react-select";
 
 const ModalContainer = styled.div`
@@ -190,23 +190,18 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
                         options={backgroundOptions as any}
                         styles={
                             {
-                                control: (provided, state) => TargetSS.control,
-                                container: (provided, state) =>
+                                control: () => TargetSS.control,
+                                container: () =>
                                     TargetSS.dropdownContainer(theme),
-                                valueContainer: (provided, state) =>
-                                    TargetSS.valueContainer(theme),
-                                groupHeading: (provided, state) =>
-                                    TargetSS.groupHeading,
-                                placeholder: (provided, state) =>
-                                    TargetSS.placeholder,
-                                menu: (provided, state) => TargetSS.menu,
-                                menuList: (provided, state) =>
-                                    TargetSS.menuList(theme),
-                                option: (provided, state) =>
-                                    TargetSS.menuOption,
-                                indicatorsContainer: (provided, state) =>
+                                valueContainer: () => TargetSS.valueContainer,
+                                groupHeading: () => TargetSS.groupHeading,
+                                placeholder: () => TargetSS.placeholder,
+                                menu: () => TargetSS.menu,
+                                menuList: () => TargetSS.menuList(theme),
+                                option: () => TargetSS.menuOption,
+                                indicatorsContainer: () =>
                                     TargetSS.indicatorContainer(theme),
-                                indicatorSeparator: (provided, state) =>
+                                indicatorSeparator: () =>
                                     TargetSS.indicatorSeparator
                             } as any
                         }

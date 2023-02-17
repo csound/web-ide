@@ -10,10 +10,10 @@ import {
     selectProfileProjectsCount
 } from "@comp/profile/selectors";
 import ProjectAvatar from "@elem/project-avatar";
-import { AccountBox } from "@material-ui/icons";
-import Avatar from "@material-ui/core/Avatar";
+import { AccountBox } from "@mui/icons-material";
+import Avatar from "@mui/material/Avatar";
 import { IProject } from "@comp/projects/types";
-import Tooltip from "@material-ui/core/Tooltip";
+import Tooltip from "@mui/material/Tooltip";
 import * as SS from "./styles";
 import { isEmpty, prop, propOr } from "ramda";
 
@@ -27,10 +27,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
     );
 
     const projectLastModifiedDate =
-        projectLastModified &&
-        projectLastModified.timestamp &&
-        projectLastModified.timestamp.toDate &&
-        projectLastModified.timestamp.toDate();
+        typeof projectLastModified?.timestamp === "number"
+            ? new Date(projectLastModified?.timestamp)
+            : undefined;
 
     const projectOwnerUid = propOr("", "userUid", project || {});
     const profile = useSelector(selectUserProfile(projectOwnerUid));

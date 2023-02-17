@@ -1,11 +1,10 @@
 import React from "react";
+import { RootState, useSelector } from "@root/store";
 import { isEmpty, path, range } from "ramda";
-import { useSelector } from "react-redux";
-import { IStore } from "@store/types";
 import { IProject } from "@comp/projects/types";
-import LeftIcon from "@material-ui/icons/ArrowBack";
-import RightIcon from "@material-ui/icons/ArrowForward";
-import IconButton from "@material-ui/core/IconButton";
+import LeftIcon from "@mui/icons-material/ArrowBack";
+import RightIcon from "@mui/icons-material/ArrowForward";
+import IconButton from "@mui/material/IconButton";
 import { Theme, useTheme } from "@emotion/react";
 import ProjectCard, { ProjectCardSkeleton } from "./project-card";
 import * as SS from "./styles";
@@ -25,11 +24,11 @@ const PopularProjects = ({
 }): React.ReactElement => {
     const theme: Theme = useTheme();
 
-    const profiles = useSelector((store: IStore) => {
+    const profiles = useSelector((store: RootState) => {
         return path(["HomeReducer", "profiles"], store);
     });
 
-    const isLoading = useSelector((store: IStore) => {
+    const isLoading = useSelector((store: RootState) => {
         const totalRecords = path(
             ["HomeReducer", "popularProjectsTotalRecords"],
             store

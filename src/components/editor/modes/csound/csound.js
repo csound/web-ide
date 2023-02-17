@@ -251,14 +251,26 @@ const findOperatorName = (view, tree) => {
         const splitStatement = tokenSlice.text[0].split(/\s/);
         const result = splitStatement.reduce(
             ({ cand, stop, lastComma }, curr) => {
-                if (!stop) {
+                if (stop) {
+                    return {
+                        cand,
+                        stop,
+                        lastComma
+                    };
+                } else {
                     if (curr.includes(",")) {
                         return {
                             cand: undefined,
                             stop: false,
                             lastComma: true
                         };
-                    } else if (!lastComma) {
+                    } else if (lastComma) {
+                        return {
+                            cand: undefined,
+                            stop: false,
+                            lastComma: false
+                        };
+                    } else {
                         const tokenExists = window.csoundSynopsis.some(
                             (value) => value.opname === curr
                         );
@@ -266,19 +278,7 @@ const findOperatorName = (view, tree) => {
                         return tokenExists
                             ? { cand: curr, stop: true, lastComma: true }
                             : { cand, stop: false, lastComma: false };
-                    } else {
-                        return {
-                            cand: undefined,
-                            stop: false,
-                            lastComma: false
-                        };
                     }
-                } else {
-                    return {
-                        cand,
-                        stop,
-                        lastComma
-                    };
                 }
             },
             { cand: undefined, stop: false, lastComma: false }

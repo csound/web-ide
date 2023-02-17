@@ -1,9 +1,9 @@
 import React from "react";
-import { AccountTree, FormatTextdirectionLToR } from "@material-ui/icons";
+import { AccountTree, FormatTextdirectionLToR } from "@mui/icons-material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStream, faBook } from "@fortawesome/free-solid-svg-icons";
-import BottomNavigation from "@material-ui/core/BottomNavigation";
-import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
+import BottomNavigation from "@mui/material/BottomNavigation";
+import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import * as SS from "./styles";
 
 const MobileNavigation = ({

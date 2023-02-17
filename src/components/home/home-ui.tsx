@@ -1,14 +1,15 @@
-// import { TextField, IconButton, Grid } from "@material-ui/core";
+// import { TextField, IconButton, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
-import styled, { createGlobalStyle } from "styled-components";
-import { Gradient } from "./gradient";
+import styled from "@emotion/styled";
+// import styled, { createGlobalStyle } from "styled-components";
+// import { Gradient } from "./gradient";
 import { headerHeight } from "@styles/constants";
 
-export const GlobalStyle = createGlobalStyle`
-  body {
-    ${Gradient}
-  }
-`;
+// export const GlobalStyle = createGlobalStyle`
+//   body {
+//     ${Gradient}
+//   }
+// `;
 
 export const StyledGrid = styled.div`
     && {
@@ -92,9 +93,7 @@ interface IProjectCardSpinnerContainer {
     duration: number;
 }
 
-export const ProjectCardSpinnerContainer = styled.div<
-    IProjectCardSpinnerContainer
->`
+export const ProjectCardSpinnerContainer = styled.div<IProjectCardSpinnerContainer>`
     position: absolute;
     height: 100%;
     width: 100%;
@@ -137,9 +136,7 @@ interface IProjectCardContentContainer {
     duration: number;
 }
 
-export const ProjectCardContentContainer = styled.div<
-    IProjectCardContentContainer
->`
+export const ProjectCardContentContainer = styled.div<IProjectCardContentContainer>`
     position: absolute;
     height: 100%;
     width: 100%;

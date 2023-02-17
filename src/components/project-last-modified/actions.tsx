@@ -1,9 +1,5 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import {
-    getFirebaseTimestamp,
-    projectLastModified,
-    Timestamp
-} from "@config/firestore";
+import { getFirebaseTimestamp, projectLastModified } from "@config/firestore";
 import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "./types";
 
 export const updateProjectLastModified = async (
@@ -18,8 +14,8 @@ export const updateProjectLastModified = async (
 
 export const updateProjectLastModifiedLocally = (
     projectUid: string,
-    timestamp: Timestamp
-): Record<string, any> => ({
+    timestamp: number
+): { type: string; projectUid: string; timestamp: number } => ({
     type: UPDATE_PROJECT_LAST_MODIFIED_LOCALLY,
     projectUid,
     timestamp
@@ -33,7 +29,7 @@ export const getProjectLastModifiedOnce = (
             doc(projectLastModified, projectUid)
         );
         const timestampData = timestampReference.data() as any;
-        const timestamp = timestampData && timestampData.timestamp;
+        const timestamp = timestampData && timestampData.timestamp.toMillis();
         return await dispatch(
             updateProjectLastModifiedLocally(projectUid, timestamp)
         );

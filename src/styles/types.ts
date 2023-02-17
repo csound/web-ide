@@ -48,7 +48,6 @@ declare module "@emotion/react" {
 
         // Other
         starActive: string;
-        starInactive: string;
         buttonIcon: string;
         settingsIcon: string;
         profilePlayButton: string;

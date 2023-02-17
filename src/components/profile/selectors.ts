@@ -1,4 +1,4 @@
-import { IStore } from "@store/types";
+import { RootState } from "@store/types";
 import { createSelector } from "reselect";
 import { IProfileReducer } from "./reducer";
 // import { IProfile } from "./types";
@@ -6,65 +6,69 @@ import { IFirestoreProfile } from "@db/types";
 import { path, pathOr, pickBy, propEq, values } from "ramda";
 import Fuse from "fuse.js";
 
-export const selectUserFollowing = (
-    profileUid: string | undefined
-): ((store: IStore) => Array<any>) => (store: IStore) => {
-    if (!profileUid) {
-        return [];
-    } else {
-        const state: IProfileReducer = store.ProfileReducer;
-        return pathOr([], ["profiles", profileUid, "following"], state);
-    }
-};
+export const selectUserFollowing =
+    (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
+    (store: RootState) => {
+        if (profileUid) {
+            const state: IProfileReducer = store.ProfileReducer;
+            return pathOr([], ["profiles", profileUid, "following"], state);
+        } else {
+            return [];
+        }
+    };
 
-export const selectUserProjects = (
-    profileUid: string | undefined
-): ((store: IStore) => Array<any>) => (store: IStore) => {
-    if (!profileUid) {
-        return [];
-    } else {
-        const state = store.ProjectsReducer.projects;
-        return values((pickBy as any)(propEq("userUid", profileUid), state));
-    }
-};
+export const selectUserProjects =
+    (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
+    (store: RootState) => {
+        if (profileUid) {
+            const state = store.ProjectsReducer.projects;
+            return values(
+                (pickBy as any)(propEq("userUid", profileUid), state)
+            );
+        } else {
+            return [];
+        }
+    };
 
 export const selectProjectFilterString = (
-    store: IStore
+    store: RootState
 ): string | undefined => {
     const state: IProfileReducer = store.ProfileReducer;
     return state.projectFilterString;
 };
 
 export const selectFollowingFilterString = (
-    store: IStore
+    store: RootState
 ): string | undefined => {
     const state: IProfileReducer = store.ProfileReducer;
     return state.followingFilterString;
 };
 
-export const selectUserProfile = (
-    profileUid: string | undefined
-): ((store: any) => IFirestoreProfile) => (store: any) => {
-    if (!profileUid) {
-        return;
-    } else {
-        const state: IProfileReducer = store.ProfileReducer;
-        return path(["profiles", profileUid], state);
-    }
-};
+export const selectUserProfile =
+    (profileUid: string | undefined): ((store: any) => IFirestoreProfile) =>
+    (store: any) => {
+        if (profileUid) {
+            const state: IProfileReducer = store.ProfileReducer;
+            return path(["profiles", profileUid], state);
+        } else {
+            return;
+        }
+    };
 
-export const selectUserName = (
-    profileUid: string | undefined
-): ((store: IStore) => string | undefined) => (store) => {
-    if (!profileUid) {
-        return;
-    } else {
-        const state: IProfileReducer = store.ProfileReducer;
-        return path(["profiles", profileUid, "username"], state);
-    }
-};
+export const selectUserName =
+    (
+        profileUid: string | undefined
+    ): ((store: RootState) => string | undefined) =>
+    (store) => {
+        if (profileUid) {
+            const state: IProfileReducer = store.ProfileReducer;
+            return path(["profiles", profileUid, "username"], state);
+        } else {
+            return;
+        }
+    };
 
-export const selectLoggedInUserStars = (store: IStore): Array<any> => {
+export const selectLoggedInUserStars = (store: RootState): Array<any> => {
     const loggedInUid: string | undefined = store.LoginReducer.loggedInUid;
     if (loggedInUid) {
         const state: IProfileReducer = store.ProfileReducer;
@@ -78,15 +82,11 @@ export const selectFilteredUserProjects = (
     profileUid: string | undefined
 ): ((any) => any) =>
     createSelector(
-        [
-            selectUserProjects(profileUid),
-            selectProjectFilterString,
-            selectLoggedInUserStars
-        ],
-        (userProjects, projectFilterString, stars) => {
+        [selectUserProjects(profileUid), selectProjectFilterString],
+        (userProjects, projectFilterString) => {
             let result: any = [];
             if (
-                typeof projectFilterString === "undefined" ||
+                projectFilterString === undefined ||
                 projectFilterString === ""
             ) {
                 result = userProjects;
@@ -104,127 +104,127 @@ export const selectFilteredUserProjects = (
         }
     );
 
-export const selectFilteredUserFollowing = (
-    profileUid: string
-): ((store: IStore) => any) => (store) =>
-    createSelector(
-        [selectUserFollowing(profileUid), selectFollowingFilterString],
-        (userFollowing, followingFilterString) => {
-            const followingProfiles = userFollowing.map(
-                (profileUid) => selectUserProfile(profileUid)(store) || {}
-            );
+export const selectFilteredUserFollowing =
+    (profileUid: string): ((store: RootState) => any) =>
+    (store) =>
+        createSelector(
+            [selectUserFollowing(profileUid), selectFollowingFilterString],
+            (userFollowing, followingFilterString) => {
+                const followingProfiles = userFollowing.map(
+                    (profileUid) => selectUserProfile(profileUid)(store) || {}
+                );
 
-            if (
-                typeof followingFilterString === "undefined" ||
-                followingFilterString === ""
-            ) {
-                return followingProfiles;
+                if (
+                    followingFilterString === undefined ||
+                    followingFilterString === ""
+                ) {
+                    return followingProfiles;
+                }
+
+                const options = {
+                    shouldSort: true,
+                    threshold: 0.4,
+                    location: 0,
+                    distance: 100,
+                    maxPatternLength: 32,
+                    minMatchCharLength: 1,
+                    keys: ["username", "bio", "displayName"]
+                };
+                const fuse = new Fuse(followingProfiles, options);
+                const result = fuse.search(followingFilterString);
+                return result;
             }
+        )(store);
 
-            const options = {
-                shouldSort: true,
-                threshold: 0.4,
-                location: 0,
-                distance: 100,
-                maxPatternLength: 32,
-                minMatchCharLength: 1,
-                keys: ["username", "bio", "displayName"]
-            };
-            const fuse = new Fuse(followingProfiles, options);
-            const result = fuse.search(followingFilterString);
-            return result;
-        }
-    )(store);
-
-export const selectFilteredUserFollowers = (
-    profileUid: string
-): ((store: IStore) => any) => (store) => {
-    const state: IProfileReducer = store.ProfileReducer;
-    const followerUids = pathOr(
-        [],
-        ["profiles", profileUid, "followers"],
-        state
-    );
-    return (followerUids || []).map((followerUid) =>
-        path(["profiles", followerUid], state)
-    );
-};
-
-export const selectUserImageURL = (
-    profileUid: string | undefined
-): ((store: IStore) => any) => (store) => {
-    if (!profileUid) {
-        return;
-    } else {
+export const selectFilteredUserFollowers =
+    (profileUid: string): ((store: RootState) => any) =>
+    (store) => {
         const state: IProfileReducer = store.ProfileReducer;
-        return pathOr("", ["profiles", profileUid, "photoUrl"], state);
-    }
-};
+        const followerUids = pathOr(
+            [],
+            ["profiles", profileUid, "followers"],
+            state
+        );
+        return (followerUids || []).map((followerUid) =>
+            path(["profiles", followerUid], state)
+        );
+    };
+
+export const selectUserImageURL =
+    (profileUid: string | undefined): ((store: RootState) => any) =>
+    (store) => {
+        if (profileUid) {
+            const state: IProfileReducer = store.ProfileReducer;
+            return pathOr("", ["profiles", profileUid, "photoUrl"], state);
+        } else {
+            return;
+        }
+    };
 
 export const selectCurrentlyPlayingProject = (
-    store: IStore
+    store: RootState
 ): string | undefined => {
     const state: IProfileReducer = store.ProfileReducer;
     return state.currentlyPlayingProject;
 };
 
-export const selectCurrentTagText = (store: IStore): string => {
+export const selectCurrentTagText = (store: RootState): string => {
     const state: IProfileReducer = store.ProfileReducer;
     return state.currentTagText;
 };
 
-export const selectTags = (projectUid: string): ((store: IStore) => any) => (
-    store
-) => {
-    return pathOr(
-        [],
-        ["ProjectsReducer", "projects", projectUid, "tags"],
-        store
-    );
-};
+export const selectTags =
+    (projectUid: string): ((store: RootState) => any) =>
+    (store) => {
+        return pathOr(
+            [],
+            ["ProjectsReducer", "projects", projectUid, "tags"],
+            store
+        );
+    };
 
-export const selectProfileStars = (
-    profileUid: string
-): ((store: IStore) => any) => (store) => {
-    return pathOr(
-        [],
-        ["ProfileReducer", "profiles", profileUid, "stars"],
-        store
-    );
-};
+export const selectProfileStars =
+    (profileUid: string): ((store: RootState) => any) =>
+    (store) => {
+        return pathOr(
+            [],
+            ["ProfileReducer", "profiles", profileUid, "stars"],
+            store
+        );
+    };
 
-export const selectAllUserProjectUids = (
-    profileUid: string | undefined
-): ((store: IStore) => any) => (store) => {
-    if (!profileUid) {
-        return [];
-    } else {
-        const allUserProjects = values(
-            pathOr({}, ["ProjectsReducer", "projects"], store)
-        ).filter((p) => p.userUid === profileUid);
-        return allUserProjects.map((p) => p.projectUid);
-    }
-};
+export const selectAllUserProjectUids =
+    (profileUid: string | undefined): ((store: RootState) => any) =>
+    (store) => {
+        if (profileUid) {
+            const allUserProjects = values(
+                pathOr({}, ["ProjectsReducer", "projects"], store)
+            ).filter((p) => p.userUid === profileUid);
+            return allUserProjects.map((p) => p.projectUid);
+        } else {
+            return [];
+        }
+    };
 
-export const selectAllTagsFromUser = (
-    profileUid: string
-): ((store: IStore) => any) => (store) => {
-    return pathOr(
-        [],
-        ["ProfileReducer", "profiles", profileUid, "allTags"],
-        store
-    );
-};
+export const selectAllTagsFromUser =
+    (profileUid: string): ((store: RootState) => any) =>
+    (store) => {
+        return pathOr(
+            [],
+            ["ProfileReducer", "profiles", profileUid, "allTags"],
+            store
+        );
+    };
 
-export const selectProfileProjectsCount = (
-    profileUid: string
-): ((store: IStore) => any) => (store) => {
-    return pathOr(
-        { all: 0, default: 0 },
-        ["ProfileReducer", "profiles", profileUid, "projectsCount"],
-        store
-    );
-};
+export const selectProfileProjectsCount =
+    (profileUid: string): ((store: RootState) => any) =>
+    (store) => {
+        return pathOr(
+            { all: 0, default: 0 },
+            ["ProfileReducer", "profiles", profileUid, "projectsCount"],
+            store
+        );
+    };
 
 // export const selectProjectIconStyle = (
 //     projectUid: string

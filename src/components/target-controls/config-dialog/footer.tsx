@@ -1,7 +1,7 @@
 import React from "react";
-import Fab from "@material-ui/core/Fab";
-import AddIcon from "@material-ui/icons/Add";
-import SaveIcon from "@material-ui/icons/Save";
+import Fab from "@mui/material/Fab";
+import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
 import * as SS from "./styles";
 
 interface TargetControlsConfigDialogFooterProps {

@@ -54,9 +54,9 @@ export function validateEmail(emailAddress: string): boolean {
 const dirtyWindow: any = window as any;
 
 export const isElectron: boolean =
-    typeof dirtyWindow.process !== "undefined" &&
-    typeof dirtyWindow.process.versions !== "undefined" &&
-    typeof dirtyWindow.process.versions["electron"] !== "undefined";
+    dirtyWindow.process !== undefined &&
+    dirtyWindow.process.versions !== undefined &&
+    dirtyWindow.process.versions["electron"] !== undefined;
 
 export function filterUndef<T>(ts: (T | undefined)[]): T[] {
     return ts.filter((t: T | undefined): t is T => !!t);
@@ -108,7 +108,7 @@ export const updateBodyScroller = (
     debounce(debounceTime, () => {
         const maybeElement: any = (window as any).ps_body;
         if (
-            typeof maybeElement !== "undefined" &&
+            maybeElement !== undefined &&
             typeof maybeElement.update === "function"
         ) {
             maybeElement.update();

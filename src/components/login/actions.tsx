@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { doc, getDoc, writeBatch } from "firebase/firestore";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
+import { useDispatch } from "@root/store";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 import {
     SET_REQUESTING_STATUS,
     SIGNIN_FAIL,
@@ -55,155 +56,170 @@ export const login = (
     };
 };
 
-const profileFinalize = (
-    user: { displayName: string | undefined; uid: string },
-    dispatch: (any) => void
-): (() => React.ReactElement) => {
-    return function ProfileFinalize() {
-        const [input, setInput] = useState("");
-        const [displayName, setDisplayName] = useState(user.displayName || "");
-        const [nameReserved, setNameReserved] = useState(false);
-        const [bio, setBio] = useState("");
-        const [link1, setLink1] = useState("");
-        const [link2, setLink2] = useState("");
-        const [link3, setLink3] = useState("");
+// const profileFinalize = (
+//     user: { displayName: string | undefined; uid: string },
+//     dispatch: (any) => void
+// ): (() => React.ReactElement) => {
+//     return
+// };
 
-        const checkReservedUsername = async (candidate: string) => {
-            const document_ = await getDoc(doc(usernames, candidate));
-            setNameReserved(document_.exists());
-        };
+export function ProfileFinalize({
+    user
+}: {
+    user: { displayName: string | undefined; uid: string };
+}) {
+    const dispatch = useDispatch();
+    const [input, setInput] = useState("");
+    const [displayName, setDisplayName] = useState(user.displayName || "");
+    const [nameReserved, setNameReserved] = useState(false);
+    const [bio, setBio] = useState("");
+    const [link1, setLink1] = useState("");
+    const [link2, setLink2] = useState("");
+    const [link3, setLink3] = useState("");
 
-        const shouldDisable = isEmpty(input) || !/^[\dA-Za-z]+$/.test(input);
-
-        const handleOnSubmit = async () => {
-            if (!nameReserved) {
-                const batch = writeBatch(database);
-
-                const usernameReference = doc(usernames, input);
-                const profileReference = doc(profiles, user.uid);
-                batch.set(
-                    usernameReference,
-                    { userUid: user.uid },
-                    { merge: true }
-                );
-                batch.set(
-                    profileReference,
-                    {
-                        username: input,
-                        displayName,
-                        bio,
-                        link1,
-                        link2,
-                        link3
-                    },
-                    { merge: true }
-                );
-
-                try {
-                    await batch.commit();
-                    dispatch(closeModal());
-                    dispatch(
-                        openSnackbar("Profile created!", SnackbarType.Success)
-                    );
-                    dispatch({
-                        type: SIGNIN_SUCCESS,
-                        user
-                    });
-                } catch (error) {
-                    dispatch(
-                        openSnackbar(
-                            "Could not create profile: " + error,
-                            SnackbarType.Error
-                        )
-                    );
-                }
-            }
-        };
-
-        const textFieldStyle = { marginBottom: 12 };
-        return (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-                <h2>Almost there...</h2>
-                <p>
-                    Please choose a unique username and tell us something about
-                    you (if you want to).
-                    <br />
-                    You can change this data at anytime, except for your
-                    username, so choose it carefully.
-                </p>
-                <TextField
-                    style={textFieldStyle}
-                    label={
-                        nameReserved
-                            ? input + " already exists!"
-                            : "New username"
-                    }
-                    onChange={(event) => {
-                        event.target.value.length < 50 &&
-                            setInput(event.target.value);
-                        event.target.value.length < 50 &&
-                            !isEmpty(event.target.value) &&
-                            checkReservedUsername(event.target.value);
-                    }}
-                    error={shouldDisable || nameReserved}
-                    value={input}
-                />
-                <TextField
-                    style={textFieldStyle}
-                    label={"Full name (your display name)"}
-                    value={displayName || ""}
-                    onChange={(event) => {
-                        event.target.value.length < 50 &&
-                            setDisplayName(event.target.value || "");
-                    }}
-                />
-                <TextField
-                    style={textFieldStyle}
-                    label={"Composer/Artist/Faculty homepage URL"}
-                    value={link1 || ""}
-                    onChange={(event) => {
-                        setLink1(event.target.value || "");
-                    }}
-                />
-                <TextField
-                    style={textFieldStyle}
-                    label={"Optional social media URL"}
-                    value={link2 || ""}
-                    onChange={(event) => {
-                        setLink2(event.target.value || "");
-                    }}
-                />
-                <TextField
-                    style={textFieldStyle}
-                    label={"Optional social media URL"}
-                    value={link3 || ""}
-                    onChange={(event) => {
-                        setLink3(event.target.value || "");
-                    }}
-                />
-                <TextField
-                    style={textFieldStyle}
-                    label={"Bio"}
-                    value={bio || ""}
-                    onChange={(event) => {
-                        setBio(event.target.value || "");
-                    }}
-                    minRows={4}
-                    multiline={true}
-                />
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    disabled={shouldDisable || nameReserved}
-                    onClick={handleOnSubmit}
-                    style={{ marginTop: 11 }}
-                >
-                    Create Profile
-                </Button>
-            </div>
-        );
+    const checkReservedUsername = async (candidate: string) => {
+        const document_ = await getDoc(doc(usernames, candidate));
+        setNameReserved(document_.exists());
     };
-};
+
+    const shouldDisable = isEmpty(input) || !/^[\dA-Za-z]+$/.test(input);
+
+    const handleOnSubmit = useCallback(async () => {
+        if (!nameReserved) {
+            const batch = writeBatch(database);
+
+            const usernameReference = doc(usernames, input);
+            const profileReference = doc(profiles, user.uid);
+            batch.set(
+                usernameReference,
+                { userUid: user.uid },
+                { merge: true }
+            );
+            batch.set(
+                profileReference,
+                {
+                    username: input,
+                    displayName,
+                    bio,
+                    link1,
+                    link2,
+                    link3
+                },
+                { merge: true }
+            );
+
+            try {
+                await batch.commit();
+                dispatch(closeModal());
+                dispatch(
+                    openSnackbar("Profile created!", SnackbarType.Success)
+                );
+                dispatch({
+                    type: SIGNIN_SUCCESS,
+                    user
+                });
+            } catch (error) {
+                dispatch(
+                    openSnackbar(
+                        "Could not create profile: " + error,
+                        SnackbarType.Error
+                    )
+                );
+            }
+        }
+    }, [
+        dispatch,
+        nameReserved,
+        input,
+        bio,
+        displayName,
+        link1,
+        link2,
+        link3,
+        user
+    ]);
+
+    const textFieldStyle = { marginBottom: 12 };
+    return (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            <h2>Almost there...</h2>
+            <p>
+                Please choose a unique username and tell us something about you
+                (if you want to).
+                <br />
+                You can change this data at anytime, except for your username,
+                so choose it carefully.
+            </p>
+            <TextField
+                style={textFieldStyle}
+                label={
+                    nameReserved ? input + " already exists!" : "New username"
+                }
+                onChange={(event) => {
+                    event.target.value.length < 50 &&
+                        setInput(event.target.value);
+                    event.target.value.length < 50 &&
+                        !isEmpty(event.target.value) &&
+                        checkReservedUsername(event.target.value);
+                }}
+                error={shouldDisable || nameReserved}
+                value={input}
+            />
+            <TextField
+                style={textFieldStyle}
+                label={"Full name (your display name)"}
+                value={displayName || ""}
+                onChange={(event) => {
+                    event.target.value.length < 50 &&
+                        setDisplayName(event.target.value || "");
+                }}
+            />
+            <TextField
+                style={textFieldStyle}
+                label={"Composer/Artist/Faculty homepage URL"}
+                value={link1 || ""}
+                onChange={(event) => {
+                    setLink1(event.target.value || "");
+                }}
+            />
+            <TextField
+                style={textFieldStyle}
+                label={"Optional social media URL"}
+                value={link2 || ""}
+                onChange={(event) => {
+                    setLink2(event.target.value || "");
+                }}
+            />
+            <TextField
+                style={textFieldStyle}
+                label={"Optional social media URL"}
+                value={link3 || ""}
+                onChange={(event) => {
+                    setLink3(event.target.value || "");
+                }}
+            />
+            <TextField
+                style={textFieldStyle}
+                label={"Bio"}
+                value={bio || ""}
+                onChange={(event) => {
+                    setBio(event.target.value || "");
+                }}
+                minRows={4}
+                multiline={true}
+            />
+            <Button
+                variant="outlined"
+                color="primary"
+                disabled={shouldDisable || nameReserved}
+                onClick={handleOnSubmit}
+                style={{ marginTop: 11 }}
+            >
+                Create Profile
+            </Button>
+        </div>
+    );
+}
 
 export const thirdPartyAuthSuccess = (
     user: { uid: string; displayName: string | undefined },
@@ -235,8 +251,11 @@ export const thirdPartyAuthSuccess = (
             (!profile.exists ||
                 (profile.data() && isEmpty(profile.data().username)))
         ) {
-            const profileFinalizeComp = profileFinalize(user, dispatch);
-            dispatch(openSimpleModal(profileFinalizeComp, {}));
+            dispatch(
+                openSimpleModal("project-finalize", {
+                    user
+                })
+            );
         } else {
             const profileData = profile.data();
 
@@ -325,10 +344,8 @@ export const setRequestingStatus = (
     };
 };
 
-export const resetPassword = (
-    email: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const resetPassword = (email: string) => {
+    return async () => {
         await sendPasswordResetEmail(getAuth(), email);
     };
 };

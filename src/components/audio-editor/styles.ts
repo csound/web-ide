@@ -1,15 +1,11 @@
-import { createStyles, withStyles } from "@material-ui/styles";
+import { css } from "@emotion/react";
 
-const audioEditorStyles = () =>
-    createStyles({
-        root: {
-            width: "100%",
-            height: "100%",
-            "& audio": {
-                borderRightWidth: 30,
-                margin: 30
-            }
-        }
-    });
-
-export default withStyles(audioEditorStyles);
+export const rootStyle = css({
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    "& audio": {
+        borderRightWidth: 30,
+        margin: "auto"
+    }
+});

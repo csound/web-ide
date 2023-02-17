@@ -1,6 +1,6 @@
 import React from "react";
 import { isEmpty } from "ramda";
-// import CloseIcon from "@material-ui/icons/Close";
+// import CloseIcon from "@mui/icons-material/Close";
 import { hr as hrCss } from "@styles/_common";
 import { TargetControlsConfigDialogFooter } from "./footer";
 import { TargetControlsConfigDialogSingleTarget } from "./single-target";

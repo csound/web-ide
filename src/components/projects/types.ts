@@ -1,5 +1,3 @@
-import { Timestamp } from "@config/firestore";
-
 const PREFIX = "PROJECTS.";
 
 // ACTION TYPES
@@ -24,10 +22,10 @@ export type IDocumentFileType = "txt" | "bin" | "folder";
 // INTERFACES
 export interface IDocument {
     currentValue: string;
-    created: Timestamp | null;
+    created: number | undefined;
     documentUid: string;
     filename: string;
-    lastModified: Timestamp | null;
+    lastModified: number | undefined;
     savedValue: string;
     type: IDocumentFileType;
     userUid: string;
@@ -37,7 +35,7 @@ export interface IDocument {
 
 export type IDocumentsMap = { [documentUid: string]: IDocument };
 
-type IStar = { [userUid: string]: Timestamp };
+type IStar = { [userUid: string]: number };
 
 export interface IProject {
     description: string;
@@ -46,7 +44,7 @@ export interface IProject {
     name: string;
     isPublic: boolean;
     documents: IDocumentsMap;
-    cachedProjectLastModified?: Timestamp;
+    cachedProjectLastModified?: number;
     iconBackgroundColor?: string;
     iconForegroundColor?: string;
     iconName?: string;

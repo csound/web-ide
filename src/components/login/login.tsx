@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "@root/store";
 import {
     Button,
     Dialog,
@@ -10,7 +10,7 @@ import {
     TextField,
     LinearProgress,
     Link
-} from "@material-ui/core";
+} from "@mui/material";
 import {
     login,
     closeLoginDialog,
@@ -340,12 +340,15 @@ const Login = (): React.ReactElement => {
 
     const renderView = (loginMode: LoginMode) => {
         switch (loginMode) {
-            case "login":
+            case "login": {
                 return loginView();
-            case "create":
+            }
+            case "create": {
                 return signupView();
-            case "reset":
+            }
+            case "reset": {
                 return resetView();
+            }
         }
     };
 

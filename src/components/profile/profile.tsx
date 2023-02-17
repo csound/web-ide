@@ -1,19 +1,24 @@
 import { doc, getDoc } from "firebase/firestore";
+import { useDispatch, useSelector } from "@root/store";
 import { Path } from "history";
 import ProfileLists from "./profile-lists";
 import React, { useEffect, useState, RefObject } from "react";
-import ReactTooltip from "react-tooltip";
 import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
-import { useDispatch, useSelector } from "react-redux";
-import withStyles, { createButtonAddIcon } from "./styles";
-import Button from "@material-ui/core/Button";
-import AddIcon from "@material-ui/icons/Add";
-import SearchIcon from "@material-ui/icons/Search";
-import TextField from "@material-ui/core/TextField";
+import { createButtonAddIcon } from "./styles";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import CameraIcon from "@mui/icons-material/CameraAltOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import Box from "@mui/material/Box";
+import SearchIcon from "@mui/icons-material/Search";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
 import Header from "../header/header";
 import ResizeObserver from "resize-observer-polyfill";
 import {
@@ -31,29 +36,19 @@ import { selectCurrentProfileRoute } from "@comp/router/selectors";
 import {
     uploadProfileImage,
     addProject,
-    getAllTagsFromUser,
-    // getTags,
     editProfile,
     followUser,
     unfollowUser,
     setProjectFilterString
-    // setFollowingFilterString
-    // getLoggedInUserStars
 } from "./actions";
 import {
     selectUserFollowing,
     selectUserProfile,
     selectUserImageURL,
-    selectAllUserProjectUids,
     selectFilteredUserProjects,
     selectProjectFilterString
-    // selectFollowingFilterString
 } from "./selectors";
-
 import { get } from "lodash";
-import { equals } from "ramda";
-import { Typography, Tabs, Tab, InputAdornment } from "@material-ui/core";
-import CameraIcon from "@material-ui/icons/CameraAltOutlined";
 import { stopCsound } from "../csound/actions";
 import {
     ProfileContainer,
@@ -69,7 +64,7 @@ import {
     NameSection,
     ContentSection,
     ContentTabsContainer,
-    ContentActionsContainer,
+    contentActionsStyle,
     ListContainer,
     EditProfileButtonSection,
     fabButton
@@ -87,7 +82,7 @@ const UserLink = ({ link }) => {
     );
 };
 
-const Profile = ({ classes, ...properties }) => {
+export const Profile = () => {
     const [profileUid, setProfileUid]: [string | undefined, any] = useState();
     const theme = useTheme();
     const dispatch = useDispatch();
@@ -95,11 +90,7 @@ const Profile = ({ classes, ...properties }) => {
     const profile = useSelector(selectUserProfile(profileUid));
     const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
-    const allUserProjectsUids = useSelector(
-        selectAllUserProjectUids(loggedInUserUid)
-    );
-    const [lastAllUserProjectUids, setLastAllUserProjectUids] =
-        useState(allUserProjectsUids);
+
     const filteredProjects = useSelector(
         selectFilteredUserProjects(profileUid)
     );
@@ -126,7 +117,6 @@ const Profile = ({ classes, ...properties }) => {
     }, []);
 
     useEffect(() => {
-        ReactTooltip.rebuild();
         if (username) {
             if (!profileUriPath && selectedSection !== 0) {
                 setSelectedSection(0);
@@ -147,30 +137,12 @@ const Profile = ({ classes, ...properties }) => {
     }, [profileUriPath, selectedSection, username]);
 
     useEffect(() => {
-        if (
-            loggedInUserUid &&
-            isProfileOwner &&
-            !equals(lastAllUserProjectUids, allUserProjectsUids)
-        ) {
-            dispatch(getAllTagsFromUser(loggedInUserUid, allUserProjectsUids));
-            setLastAllUserProjectUids(allUserProjectsUids);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allUserProjectsUids]);
-
-    useEffect(() => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
                 dispatch(push("/"));
             } else if (username) {
                 getDoc(doc(usernames, username)).then((userSnap) => {
-                    if (!userSnap.exists()) {
-                        dispatch(
-                            push({ pathname: "/404" } as Path, {
-                                message: "User not found"
-                            })
-                        );
-                    } else {
+                    if (userSnap.exists()) {
                         const data = userSnap.data();
                         data && data.userUid
                             ? setProfileUid(data.userUid)
@@ -179,6 +151,12 @@ const Profile = ({ classes, ...properties }) => {
                                       message: "User not found"
                                   })
                               );
+                    } else {
+                        dispatch(
+                            push({ pathname: "/404" } as Path, {
+                                message: "User not found"
+                            })
+                        );
                     }
                 });
             }
@@ -241,9 +219,9 @@ const Profile = ({ classes, ...properties }) => {
     } = profile || {};
 
     return (
-        <div className={classes.root}>
+        <Box>
             <Header />
-            <div css={gradient(backgroundIndex)}>
+            <Box css={gradient(backgroundIndex)}>
                 <ProfileContainer>
                     {!isMobile() && (
                         <IDContainer>
@@ -347,33 +325,37 @@ const Profile = ({ classes, ...properties }) => {
                                     </Button>
                                 </EditProfileButtonSection>
                             )}
-                            {!isProfileOwner && profileUid && loggedInUserUid && (
-                                <EditProfileButtonSection>
-                                    <Button
-                                        css={fabButton}
-                                        color="primary"
-                                        aria-label="Add"
-                                        size="medium"
-                                        onClick={() => {
-                                            isFollowing
-                                                ? dispatch(
-                                                      unfollowUser(
-                                                          loggedInUserUid,
-                                                          profileUid
+                            {!isProfileOwner &&
+                                profileUid &&
+                                loggedInUserUid && (
+                                    <EditProfileButtonSection>
+                                        <Button
+                                            css={fabButton}
+                                            color="primary"
+                                            aria-label="Add"
+                                            size="medium"
+                                            onClick={() => {
+                                                isFollowing
+                                                    ? dispatch(
+                                                          unfollowUser(
+                                                              loggedInUserUid,
+                                                              profileUid
+                                                          )
                                                       )
-                                                  )
-                                                : dispatch(
-                                                      followUser(
-                                                          loggedInUserUid,
-                                                          profileUid
-                                                      )
-                                                  );
-                                        }}
-                                    >
-                                        {isFollowing ? "Unfollow" : "Follow"}
-                                    </Button>
-                                </EditProfileButtonSection>
-                            )}
+                                                    : dispatch(
+                                                          followUser(
+                                                              loggedInUserUid,
+                                                              profileUid
+                                                          )
+                                                      );
+                                            }}
+                                        >
+                                            {isFollowing
+                                                ? "Unfollow"
+                                                : "Follow"}
+                                        </Button>
+                                    </EditProfileButtonSection>
+                                )}
                         </IDContainer>
                     )}
                     <NameSectionWrapper>
@@ -391,36 +373,40 @@ const Profile = ({ classes, ...properties }) => {
                         <ContentTabsContainer>
                             <Tabs
                                 value={selectedSection}
-                                onChange={(event, index) => {
+                                onChange={(_, index) => {
                                     switch (index) {
-                                        case 0:
+                                        case 0: {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}`
                                                 } as Path)
                                             );
                                             break;
-                                        case 1:
+                                        }
+                                        case 1: {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/following`
                                                 } as Path)
                                             );
                                             break;
-                                        case 2:
+                                        }
+                                        case 2: {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/followers`
                                                 } as Path)
                                             );
                                             break;
-                                        case 3:
+                                        }
+                                        case 3: {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/stars`
                                                 } as Path)
                                             );
                                             break;
+                                        }
                                     }
                                 }}
                                 indicatorColor={"primary"}
@@ -432,15 +418,22 @@ const Profile = ({ classes, ...properties }) => {
                             </Tabs>
                         </ContentTabsContainer>
 
-                        <ContentActionsContainer
+                        <Box
+                            css={contentActionsStyle}
                             style={{
                                 display: selectedSection === 0 ? "flex" : "none"
                             }}
+                            component="form"
+                            noValidate
+                            autoComplete="off"
                         >
                             {selectedSection === 0 && (
                                 <TextField
                                     id="input-with-icon-adornment"
                                     label="Search Projects"
+                                    value={projectFilterString || ""}
+                                    variant="outlined"
+                                    margin="dense"
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="end">
@@ -448,9 +441,6 @@ const Profile = ({ classes, ...properties }) => {
                                             </InputAdornment>
                                         )
                                     }}
-                                    value={projectFilterString}
-                                    variant="outlined"
-                                    margin="dense"
                                     onChange={(event) => {
                                         dispatch(
                                             setProjectFilterString(
@@ -474,7 +464,7 @@ const Profile = ({ classes, ...properties }) => {
                                     <AddIcon css={createButtonAddIcon} />
                                 </Button>
                             )}
-                        </ContentActionsContainer>
+                        </Box>
                         {profileUid && username && (
                             <ListContainer>
                                 <ProfileLists
@@ -482,15 +472,12 @@ const Profile = ({ classes, ...properties }) => {
                                     isProfileOwner={isProfileOwner}
                                     selectedSection={selectedSection}
                                     filteredProjects={filteredProjects}
-                                    username={username}
                                 />
                             </ListContainer>
                         )}
                     </ContentSection>
                 </ProfileContainer>
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 };
-
-export default withStyles(Profile);

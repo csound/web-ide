@@ -12,7 +12,6 @@ import {
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
-    STORE_EDITOR_INSTANCE,
     ITabDock,
     IOpenDocument
 } from "./types";
@@ -29,6 +28,7 @@ import {
     pipe,
     prop
 } from "ramda";
+import { nonCloudFiles } from "../file-tree/actions";
 
 export interface IProjectEditorReducer {
     tabDock: ITabDock;
@@ -111,25 +111,27 @@ const ProjectEditorReducer = (
             const documentAlreadyOpenIndex = findIndex(
                 currentOpenDocuments,
                 (od: IOpenDocument) =>
-                    od.isNonCloudDocument ? od.uid === action.file?.name : false
+                    od.isNonCloudDocument ? od.uid === action?.filename : false
             );
-            if (documentAlreadyOpenIndex < 0) {
+            const file = nonCloudFiles.get(action?.filename);
+
+            if (file && documentAlreadyOpenIndex < 0) {
                 let nonCloudFileAudioUrl: string | undefined = undefined;
                 let nonCloudFileData: string | undefined = undefined;
 
                 if (action.mimeType.startsWith("audio")) {
-                    const blob = new Blob([action.file.buffer], {
+                    const blob = new Blob([file.buffer], {
                         type: action.mimeType
                     });
                     nonCloudFileAudioUrl = URL.createObjectURL(blob);
                 } else {
                     const utf8decoder = new TextDecoder();
-                    nonCloudFileData = utf8decoder.decode(action.file.buffer);
+                    nonCloudFileData = utf8decoder.decode(file.buffer);
                 }
 
                 const newAppendedState = addTabToOpenDocuments(
                     {
-                        uid: action.file.name,
+                        uid: file.name,
                         isNonCloudDocument: true,
                         nonCloudFileAudioUrl,
                         nonCloudFileData,
@@ -245,24 +247,6 @@ const ProjectEditorReducer = (
         }
         case SET_FILE_TREE_PANEL_OPEN: {
             return assoc("fileTreeVisible", action.open, state);
-        }
-        case STORE_EDITOR_INSTANCE: {
-            const openDocumentIndex = findIndex(
-                state.tabDock.openDocuments,
-                (od) => od.uid === action.documentUid
-            );
-            return openDocumentIndex < 0
-                ? state
-                : assocPath(
-                      [
-                          "tabDock",
-                          "openDocuments",
-                          openDocumentIndex,
-                          "editorInstance"
-                      ],
-                      action.editorInstance,
-                      state
-                  );
         }
         default: {
             return state || initialLayoutState();

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { IStore } from "@store/types";
+import { RootState, useDispatch, useSelector } from "@store";
 import TargetDropdown from "./dropdown";
 import PlayButton from "./play-button";
 import { selectProjectTargets, selectSelectedTarget } from "./selectors";
@@ -7,18 +7,16 @@ import { selectIsOwner } from "@comp/project-editor/selectors";
 import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
 import { path, pathOr, values } from "ramda";
-import { useDispatch, useSelector } from "react-redux";
 import StopButton from "./stop-button";
 
 const TargetControls = (): React.ReactElement => {
     const dispatch = useDispatch();
 
-    const selectedTarget: string | undefined = useSelector(
-        selectSelectedTarget
-    );
+    const selectedTarget: string | undefined =
+        useSelector(selectSelectedTarget);
 
     const activeProjectUid: string | undefined = useSelector(
-        (store: IStore) => {
+        (store: RootState) => {
             return path(["ProjectsReducer", "activeProjectUid"], store);
         }
     );
@@ -32,7 +30,7 @@ const TargetControls = (): React.ReactElement => {
     const targetsValues: ITarget[] | undefined = targets && values(targets);
 
     const savedDefaultTarget: string | undefined = useSelector(
-        (store: IStore) => {
+        (store: RootState) => {
             return (
                 activeProjectUid &&
                 pathOr(
@@ -84,7 +82,7 @@ const TargetControls = (): React.ReactElement => {
     return activeProjectUid ? (
         <>
             <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
-            <StopButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
+            <StopButton />
             {isOwner && <TargetDropdown activeProjectUid={activeProjectUid} />}
         </>
     ) : (

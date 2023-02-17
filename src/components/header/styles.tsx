@@ -21,10 +21,11 @@ export const drawer = css`
     width: ${drawerWidth};
 `;
 
-export const drawerHeader = css`
+export const drawerHeader = (theme: Theme): SerializedStyles => css`
     width: ${drawerWidth};
     padding-left: 16px;
     height: 40px;
+    color: ${theme.textColor};
 `;
 
 export const menuButton = css`
@@ -32,7 +33,7 @@ export const menuButton = css`
     margin-right: 6px;
 `;
 
-export const menuItemLink = (theme: Theme): SerializedStyles => css`
+export const menuItemLink = css`
     text-decoration: none;
 `;
 

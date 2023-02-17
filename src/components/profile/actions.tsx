@@ -1,6 +1,4 @@
-import { ThunkAction } from "redux-thunk";
-import { Action } from "redux";
-import { IStore } from "@store/types";
+import { RootState } from "@root/store";
 import { getDownloadURL, uploadBytes } from "firebase/storage";
 import {
     collection,
@@ -51,8 +49,6 @@ import { defaultCsd, defaultOrc, defaultSco } from "@root/templates";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { openSimpleModal } from "@comp/modal/actions";
-import { ProjectModal } from "./project-modal";
-import { getDeleteProjectModal } from "./delete-project-modal";
 import { selectLoggedInUid } from "@comp/login/selectors";
 import { selectCurrentlyPlayingProject } from "./selectors";
 import {
@@ -66,7 +62,6 @@ import {
 } from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
-import { ProfileModal } from "./profile-modal";
 import {
     assoc,
     concat,
@@ -145,7 +140,7 @@ export const addUserProject =
         iconName: string,
         iconForegroundColor: string,
         iconBackgroundColor: string
-    ): ThunkAction<void, any, null, Action<string>> =>
+    ) =>
     async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
@@ -220,7 +215,7 @@ export const editUserProject =
         iconName: string,
         iconForegroundColor: string,
         iconBackgroundColor: string
-    ): ThunkAction<void, any, null, Action<string>> =>
+    ) =>
     async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
@@ -263,16 +258,15 @@ const deleteUserProjectAction = (): ProfileActionTypes => {
 };
 
 export const deleteUserProject =
-    (project: IProject): ThunkAction<void, any, null, Action<string>> =>
-    async (dispatch, getState) => {
+    (projectUid: string) => async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
             const files = await getDocs(
-                collection(doc(projects, project.projectUid), "files")
+                collection(doc(projects, projectUid), "files")
             );
             const batch = writeBatch(database);
-            const documentReference = doc(projects, project.projectUid);
+            const documentReference = doc(projects, projectUid);
             batch.delete(documentReference);
             files.forEach((d) => batch.delete(d.ref));
 
@@ -304,10 +298,7 @@ export const setTagsInput = (tags: Array<any>): ProfileActionTypes => {
 };
 
 export const getAllTagsFromUser =
-    (
-        loggedInUserUid: string | undefined,
-        allUserProjectsUids: string[]
-    ): ThunkAction<void, any, null, Action<string>> =>
+    (loggedInUserUid: string | undefined, allUserProjectsUids: string[]) =>
     async (dispatch, getStore) => {
         const store = getStore();
 
@@ -323,7 +314,7 @@ export const getAllTagsFromUser =
                 [],
                 allUserProjectsUids
             );
-            // console.log();
+
             if (!equals(currentAllTags, allTags)) {
                 dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
             }
@@ -331,28 +322,20 @@ export const getAllTagsFromUser =
     };
 
 export const addProject = () => {
-    return async (dispatch: (any) => void): Promise<void> => {
-        dispatch(
-            openSimpleModal(ProjectModal, {
-                name: "New Project",
-                description: "",
-                label: "Create Project",
-                newProject: true,
-                projectID: "",
-                iconName: undefined,
-                iconForegroundColor: undefined,
-                iconBackgroundColor: undefined
-            })
-        );
-    };
+    return openSimpleModal("new-project-prompt", {
+        name: "New Project",
+        description: "",
+        label: "Create Project",
+        newProject: true,
+        projectID: "",
+        iconName: undefined,
+        iconForegroundColor: undefined,
+        iconBackgroundColor: undefined
+    });
 };
 
 export const followUser =
-    (
-        loggedInUserUid: string,
-        profileUid: string
-    ): ThunkAction<void, any, null, Action<string>> =>
-    async (dispatch) => {
+    (loggedInUserUid: string, profileUid: string) => async () => {
         const batch = writeBatch(database);
         const followersReference = doc(followers, profileUid);
         const followersData = await getDoc(followersReference);
@@ -383,11 +366,7 @@ export const followUser =
     };
 
 export const unfollowUser =
-    (
-        loggedInUserUid: string,
-        profileUid: string
-    ): ThunkAction<void, any, null, Action<string>> =>
-    async (dispatch) => {
+    (loggedInUserUid: string, profileUid: string) => async () => {
         const batch = writeBatch(database);
         batch.update(doc(followers, profileUid), {
             [loggedInUserUid]: fieldDelete()
@@ -408,7 +387,7 @@ export const updateUserProfile =
         link2: string,
         link3: string,
         backgroundIndex: number
-    ): ThunkAction<void, any, null, Action<string>> =>
+    ) =>
     async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
@@ -442,7 +421,7 @@ export const editProfile = (
     link2: string,
     link3: string,
     backgroundIndex: number
-): ((dispatch: (any) => void, getState: () => IStore) => Promise<void>) => {
+): ((dispatch: (any) => void, getState: () => RootState) => Promise<void>) => {
     return async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
@@ -456,7 +435,7 @@ export const editProfile = (
             });
 
             dispatch(
-                openSimpleModal(ProfileModal, {
+                openSimpleModal("profile-edit-dialog", {
                     existingNames: existingNames,
                     username: username,
                     displayName: displayName,
@@ -471,40 +450,28 @@ export const editProfile = (
     };
 };
 
-export const editProject = (
-    project: IProject
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch) => {
-        dispatch(
-            openSimpleModal(ProjectModal, {
-                name: project.name,
-                description: project.description,
-                label: "Apply changes",
-                projectID: project.projectUid,
-                iconName: project.iconName,
-                iconForegroundColor: project.iconForegroundColor,
-                iconBackgroundColor: project.iconBackgroundColor,
-                newProject: false
-            })
-        );
-    };
+export const editProject = (project: IProject) => {
+    return openSimpleModal("new-project-prompt", {
+        name: project.name,
+        description: project.description,
+        label: "Apply changes",
+        projectID: project.projectUid,
+        iconName: project.iconName,
+        iconForegroundColor: project.iconForegroundColor,
+        iconBackgroundColor: project.iconBackgroundColor,
+        newProject: false
+    });
 };
 
-export const deleteProject = (
-    project: IProject
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch) => {
-        const DeleteProjectModal = getDeleteProjectModal(project);
-        dispatch(openSimpleModal(DeleteProjectModal, {}));
-    };
+export const deleteProject = (project: IProject) => {
+    return openSimpleModal("delete-project-prompt", {
+        projectUid: project.projectUid,
+        projectName: project.name
+    });
 };
 
 export const uploadProfileImage =
-    (
-        loggedInUserUid: string,
-        file: File
-    ): ThunkAction<void, any, null, Action<string>> =>
-    async (dispatch) => {
+    (loggedInUserUid: string, file: File) => async (dispatch) => {
         try {
             const uploadStorage = await storageReference(
                 `images/${loggedInUserUid}/profile.jpeg`
@@ -529,11 +496,7 @@ export const uploadProfileImage =
     };
 
 export const playListItem =
-    ({
-        projectUid
-    }: {
-        projectUid: string | false;
-    }): ((dispatch: (any) => void, getState: () => IStore) => Promise<void>) =>
+    ({ projectUid }: { projectUid: string | false }) =>
     async (dispatch, getState) => {
         const state = getState();
 
@@ -674,7 +637,14 @@ export const starOrUnstarProject = (
             loggedInUserUid
         );
 
-        if (!currentlyStarred) {
+        if (currentlyStarred) {
+            batch.update(doc(stars, projectUid), {
+                [loggedInUserUid]: fieldDelete()
+            });
+            batch.update(doc(profileStars, loggedInUserUid), {
+                [projectUid]: fieldDelete()
+            });
+        } else {
             batch.set(
                 doc(stars, projectUid),
                 { [loggedInUserUid]: getFirebaseTimestamp() },
@@ -685,13 +655,6 @@ export const starOrUnstarProject = (
                 { [projectUid]: getFirebaseTimestamp() },
                 { merge: true }
             );
-        } else {
-            batch.update(doc(stars, projectUid), {
-                [loggedInUserUid]: fieldDelete()
-            });
-            batch.update(doc(profileStars, loggedInUserUid), {
-                [projectUid]: fieldDelete()
-            });
         }
         await batch.commit();
     };

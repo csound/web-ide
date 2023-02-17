@@ -1,17 +1,17 @@
 import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "@store";
 import * as SS from "./styles";
 import { subscribeToProjectStars } from "./subscribers";
-import Tooltip from "@material-ui/core/Tooltip";
-import { useSelector, useDispatch } from "react-redux";
-import { IconButton } from "@material-ui/core";
+import Tooltip from "@mui/material/Tooltip";
+import { IconButton } from "@mui/material";
 import { exportProject, markProjectPublic } from "@comp/projects/actions";
-import StarIcon from "@material-ui/icons/Star";
-import OutlinedStarIcon from "@material-ui/icons/StarBorderOutlined";
-import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
-import ShareIcon from "@material-ui/icons/Share";
-import styled from "styled-components";
+import StarIcon from "@mui/icons-material/Star";
+import OutlinedStarIcon from "@mui/icons-material/StarBorderOutlined";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import ShareIcon from "@mui/icons-material/Share";
+import styled from "@emotion/styled";
 import {
     selectUserStarredProject,
     selectActiveProjectUid,
@@ -25,7 +25,6 @@ import {
 import { starOrUnstarProject } from "@comp/profile/actions";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import { openSimpleModal } from "../modal/actions";
-import ShareDialog from "../share-dialog";
 
 const StyledIconButton = styled(IconButton)`
     && {
@@ -35,7 +34,7 @@ const StyledIconButton = styled(IconButton)`
 `;
 const StyledDownloadIcon = styled(CloudDownloadIcon)`
     && {
-        fill: ${(properties) => properties.theme.socialIcon};
+        fill: ${(properties) => properties.theme.altTextColor};
     }
 `;
 const StyledStarIcon = styled(StarIcon)`
@@ -46,25 +45,25 @@ const StyledStarIcon = styled(StarIcon)`
 
 const StyledOutlinedStarIcon = styled(OutlinedStarIcon)`
     && {
-        fill: ${(properties) => properties.theme.starInactive};
+        fill: ${(properties) => properties.theme.altTextColor};
     }
 `;
 
 const StyledShareIcon = styled(ShareIcon)`
     && {
-        fill: ${(properties) => properties.theme.socialIcon};
+        fill: ${(properties) => properties.theme.altTextColor};
     }
 `;
 
 const StyledPublicIcon = styled(VisibilityIcon)`
     && {
-        fill: ${(properties) => properties.theme.publicIcon};
+        fill: ${(properties) => properties.theme.altTextColor};
     }
 `;
 
 const StyledPublicOffIcon = styled(VisibilityOffIcon)`
     && {
-        fill: ${(properties) => properties.theme.publicIcon};
+        fill: ${(properties) => properties.theme.altTextColor};
     }
 `;
 
@@ -108,7 +107,7 @@ const SocialControls = (): React.ReactElement => {
                         <StyledIconButton
                             size="medium"
                             onClick={() => {
-                                dispatch(openSimpleModal(ShareDialog, {}));
+                                dispatch(openSimpleModal("share-dialog", {}));
                             }}
                         >
                             <StyledShareIcon fontSize="large" />

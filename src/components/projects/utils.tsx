@@ -1,11 +1,7 @@
 import { doc, getDoc, QueryDocumentSnapshot } from "firebase/firestore";
 import { getDownloadURL } from "firebase/storage";
 import { getType as mimeLookup } from "mime";
-import {
-    storageReference,
-    getFirebaseTimestamp,
-    projectLastModified
-} from "@config/firestore";
+import { storageReference, projectLastModified } from "@config/firestore";
 import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@csound/browser";
@@ -52,9 +48,9 @@ export const generateEmptyDocument = (
 ): IDocument => ({
     filename,
     currentValue: "",
-    created: getFirebaseTimestamp(),
+    created: Date.now(),
     documentUid,
-    lastModified: getFirebaseTimestamp(),
+    lastModified: Date.now(),
     savedValue: "",
     type: "txt",
     userUid: "",
@@ -111,13 +107,13 @@ export const fileDocumentDataToDocumentType = (
     documentData: IFirestoreDocument
 ): IDocument =>
     ({
-        created: documentData["created"],
+        created: documentData?.created?.toMillis() ?? undefined,
         currentValue: documentData["value"],
         description: documentData["description"],
         documentUid: documentData["documentUid"],
         filename: documentData["name"],
         isModifiedLocally: false,
-        lastModified: documentData["lastModified"],
+        lastModified: documentData?.lastModified?.toMillis() ?? undefined,
         savedValue: documentData["value"],
         type: documentData["type"],
         userUid: documentData["userUid"],
@@ -163,10 +159,11 @@ export const convertProjectSnapToProject = async (
     project["projectUid"] = projSnap.id;
 
     if (lastModifiedData && lastModifiedData.target) {
-        project["cachedProjectLastModified"] = lastModifiedData.target;
+        project["cachedProjectLastModified"] =
+            lastModifiedData.target.toMillis();
     }
     if (projData.created) {
-        project["created"] = projData.created;
+        project["created"] = projData.created.toMillis();
     }
     return project;
 };

@@ -1,10 +1,10 @@
 import { doc, onSnapshot } from "firebase/firestore";
+import { store } from "@root/store";
 import { projectLastModified } from "@config/firestore";
 import { updateProjectLastModifiedLocally } from "./actions";
 
 export const subscribeToProjectLastModified = async (
-    projectUid: string,
-    dispatch: (any) => void
+    projectUid: string
 ): Promise<() => void> => {
     const unsubscribe: () => void = onSnapshot(
         doc(projectLastModified, projectUid),
@@ -15,8 +15,11 @@ export const subscribeToProjectLastModified = async (
 
             const { timestamp } = timestampDocument.data();
             timestamp &&
-                (await dispatch(
-                    updateProjectLastModifiedLocally(projectUid, timestamp)
+                (await store.dispatch(
+                    updateProjectLastModifiedLocally(
+                        projectUid,
+                        timestamp.toMillis()
+                    )
                 ));
         },
         (error: any) => console.error(error)

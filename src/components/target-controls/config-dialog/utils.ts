@@ -28,8 +28,8 @@ export const firestoreNewTargets = (newTargets: ITargetFromInput[]) =>
 
 export const validateTargetName = ({ targetName, oldTargetName, newTargets }) =>
     !isEmpty(targetName) &&
-    (oldTargetName !== targetName
-        ? !reject(propEq("oldTargetName", oldTargetName), newTargets).some(
+    (oldTargetName === targetName
+        ? true
+        : !reject(propEq("oldTargetName", oldTargetName), newTargets).some(
               propEq("targetName", targetName)
-          )
-        : true);
+          ));

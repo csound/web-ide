@@ -1,17 +1,16 @@
 import React from "react";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import { ThreeDots } from "react-loader-spinner";
 import { useTheme } from "@emotion/react";
 import { isEmpty, path } from "ramda";
 import { searchProjects } from "./actions";
 import { selectSearchResult } from "./selectors";
-import { IStore } from "@store/types";
 import { IProject } from "@comp/projects/types";
-import TextField from "@material-ui/core/TextField";
-import { useDispatch, useSelector } from "react-redux";
+import TextField from "@mui/material/TextField";
 import { debounce } from "throttle-debounce";
-import LeftIcon from "@material-ui/icons/ArrowBack";
-import RightIcon from "@material-ui/icons/ArrowForward";
-import IconButton from "@material-ui/core/IconButton";
+import LeftIcon from "@mui/icons-material/ArrowBack";
+import RightIcon from "@mui/icons-material/ArrowForward";
+import IconButton from "@mui/material/IconButton";
 import ProjectCard from "./project-card";
 import * as SS from "./styles";
 
@@ -24,23 +23,23 @@ const Search = (): React.ReactElement => {
     const theme = useTheme();
 
     const searchResult: IProject[] = useSelector(selectSearchResult);
-    const profiles = useSelector((store: IStore) => {
+    const profiles = useSelector((store: RootState) => {
         return path(["HomeReducer", "profiles"], store);
     });
 
-    const searchQuery = useSelector((store: IStore) => {
+    const searchQuery = useSelector((store: RootState) => {
         return path(["HomeReducer", "searchQuery"], store);
     });
 
-    const searchProjectsRequest = useSelector((store: IStore) => {
+    const searchProjectsRequest = useSelector((store: RootState) => {
         return path(["HomeReducer", "searchProjectsRequest"], store);
     });
 
-    const searchPaginationOffset = useSelector((store: IStore) => {
+    const searchPaginationOffset = useSelector((store: RootState) => {
         return path(["HomeReducer", "searchPaginationOffset"], store);
     });
 
-    const searchResultTotalRecords = useSelector((store: IStore) => {
+    const searchResultTotalRecords = useSelector((store: RootState) => {
         return path(["HomeReducer", "searchResultTotalRecords"], store);
     });
 

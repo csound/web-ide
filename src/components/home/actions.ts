@@ -1,8 +1,7 @@
 import { difference, keys, isEmpty, pluck } from "ramda";
 import { documentId, getDocs, query, where } from "firebase/firestore";
 import { profiles, projects } from "@config/firestore";
-import { Action } from "redux";
-import { ThunkAction } from "redux-thunk";
+import { RootState } from "@root/store";
 import {
     ADD_USER_PROFILES,
     ADD_RANDOM_PROJECTS,
@@ -19,7 +18,6 @@ import {
     firestoreProjectToIProject
 } from "@comp/projects/utils";
 import { IStarredProjectSearchResult, IStarredProject } from "@db/search";
-import { IStore } from "@root/store/types";
 
 const databaseID =
     process.env.NODE_ENV === "development" ||
@@ -30,11 +28,7 @@ const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
 export const searchProjects =
-    (
-        query_: string,
-        offset: number
-    ): ThunkAction<void, any, null, Action<string>> =>
-    async (dispatch) => {
+    (query_: string, offset: number) => async (dispatch) => {
         dispatch({ type: SEARCH_PROJECTS_REQUEST, query: query_, offset });
 
         if (isEmpty(query_)) {
@@ -62,6 +56,10 @@ export const searchProjects =
 
             profilesQuery.forEach((snapshot) => {
                 projectProfiles[snapshot.id] = snapshot.data();
+                if (projectProfiles[snapshot.id]?.userJoinDate) {
+                    projectProfiles[snapshot.id].userJoinDate =
+                        projectProfiles[snapshot.id].userJoinDate.toMillis();
+                }
             });
 
             dispatch({
@@ -80,7 +78,7 @@ export const searchProjects =
 export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
     return async (
         dispatch: (action: HomeActionTypes) => Promise<void>,
-        getState: () => IStore
+        getState: () => RootState
     ): Promise<void> => {
         const nextOffset = Math.max(0, offset) + pageSize;
 
@@ -126,6 +124,12 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
 
                 profilesQuery.forEach((snapshot) => {
                     projectProfiles[snapshot.id] = snapshot.data();
+                    if (projectProfiles[snapshot.id]?.userJoinDate) {
+                        projectProfiles[snapshot.id].userJoinDate =
+                            projectProfiles[
+                                snapshot.id
+                            ].userJoinDate.toMillis();
+                    }
                 });
 
                 dispatch({
@@ -146,7 +150,7 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
 export const fetchRandomProjects = () => {
     return async (
         dispatch: (action: HomeActionTypes) => Promise<void>,
-        getState: () => IStore
+        getState: () => RootState
     ): Promise<void> => {
         dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: true });
 
@@ -189,6 +193,12 @@ export const fetchRandomProjects = () => {
 
                 profilesQuery.forEach((snapshot) => {
                     projectProfiles[snapshot.id] = snapshot.data();
+                    if (projectProfiles[snapshot.id]?.userJoinDate) {
+                        projectProfiles[snapshot.id].userJoinDate =
+                            projectProfiles[
+                                snapshot.id
+                            ].userJoinDate.toMillis();
+                    }
                 });
 
                 dispatch({

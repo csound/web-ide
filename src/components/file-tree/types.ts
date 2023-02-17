@@ -9,9 +9,14 @@ export interface NonCloudFile {
     buffer: Uint8Array;
 }
 
+export interface NonCloudFileTreeEntry {
+    createdAt: number;
+    name: string;
+}
+
 export interface AddNonCloudFile {
     type: typeof ADD_NON_CLOUD_FILE;
-    file: NonCloudFile;
+    file: NonCloudFileTreeEntry;
 }
 
 export interface CleanupNonCloudFile {
@@ -20,6 +25,7 @@ export interface CleanupNonCloudFile {
 
 export interface DeleteNonCloudFile {
     type: typeof DELETE_NON_CLOUD_FILE;
+    filename: string;
 }
 
 export type FileTreeActionTypes =

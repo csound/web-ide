@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useTheme } from "@emotion/react";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import { isEmpty } from "ramda";
 import {
     Tabs,
@@ -8,16 +7,10 @@ import {
     DragTab,
     PanelList,
     Panel
-} from "@hlolli/react-tabtab";
+} from "@root/tabtab/index.js";
 import { arrayMoveImmutable as simpleSwitch } from "array-move";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { IStore } from "@store/types";
 import tabStyles, { tabListStyle } from "@comp/project-editor/tab-styles";
 import Console from "@comp/console/console";
-import { closeButton as ProjectEditorCloseButtonStyle } from "@comp/project-editor/styles";
 import { selectOpenBottomTabs, selectBottomTabIndex } from "./selectors";
 import {
     closeBottomTab,
@@ -28,40 +21,6 @@ import { BottomTab } from "./types";
 import * as SS from "./styles";
 
 const TabStyles = tabStyles(true);
-
-const DragTabWithCloseButton = ({
-    currentIndex,
-    thisIndex,
-    closeCallback,
-    children
-}): React.ReactElement => {
-    const theme: any = useTheme();
-
-    return (
-        <>
-            {children}
-            <Tooltip title={"close"} placement="right-end">
-                <IconButton
-                    size="small"
-                    css={ProjectEditorCloseButtonStyle}
-                    onClick={(event) => {
-                        closeCallback();
-                    }}
-                >
-                    <FontAwesomeIcon
-                        icon={faTimes}
-                        size="sm"
-                        color={
-                            currentIndex === thisIndex
-                                ? theme.textColor
-                                : theme.unfocusedTextColor
-                        }
-                    />
-                </IconButton>
-            </Tooltip>
-        </>
-    );
-};
 
 const tabsData = {
     console: {
@@ -83,11 +42,11 @@ const tabsData = {
 const BottomTabs = (): React.ReactElement => {
     const dispatch = useDispatch();
 
-    const openTabs: BottomTab[] | undefined = useSelector((store: IStore) =>
+    const openTabs: BottomTab[] | undefined = useSelector((store: RootState) =>
         selectOpenBottomTabs(store)
     );
 
-    const bottomTabIndex = useSelector((store: IStore) =>
+    const bottomTabIndex = useSelector((store: RootState) =>
         selectBottomTabIndex(store)
     );
 
@@ -105,6 +64,7 @@ const BottomTabs = (): React.ReactElement => {
         <div css={[SS.heightFix, tabListStyle]}>
             {!isEmpty(openTabs) && bottomTabIndex > -1 && (
                 <Tabs
+                    defaultIndex={bottomTabIndex}
                     activeIndex={bottomTabIndex}
                     onTabChange={(newIndex: number) =>
                         dispatch(setBottomTabIndex(newIndex))
@@ -116,24 +76,24 @@ const BottomTabs = (): React.ReactElement => {
                 >
                     <DragTabList id="drag-tab-list">
                         {(openTabs || []).map((k, index) => (
-                            <DragTab key={index} closable={true}>
-                                <DragTabWithCloseButton
-                                    closeCallback={() =>
-                                        dispatch(closeBottomTab(k))
-                                    }
-                                    currentIndex={bottomTabIndex}
-                                    thisIndex={index}
+                            <DragTab
+                                key={index}
+                                closable={true}
+                                closeCallback={() =>
+                                    dispatch(closeBottomTab(k))
+                                }
+                                currentIndex={bottomTabIndex}
+                                thisIndex={index}
+                            >
+                                <p
+                                    style={{
+                                        margin: 0,
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap"
+                                    }}
                                 >
-                                    <p
-                                        style={{
-                                            margin: 0,
-                                            overflow: "hidden",
-                                            whiteSpace: "nowrap"
-                                        }}
-                                    >
-                                        {tabsData[k]["title"]}
-                                    </p>
-                                </DragTabWithCloseButton>
+                                    {tabsData[k]["title"]}
+                                </p>
                             </DragTab>
                         ))}
                     </DragTabList>

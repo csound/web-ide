@@ -32,7 +32,7 @@ const initialState: DnDState = { docIdx: {} };
 export const DnDStateContext = createContext(initialState);
 
 export const DnDDispatchContext = createContext(
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-empty-function,@typescript-eslint/no-unused-vars
     (dispatch: Record<string, any>): void => {}
 );
 

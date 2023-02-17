@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "@root/store";
 import CodeMirror from "@hlolli/react-codemirror";
 import {
-    // EditorView,
+    CsoundEditorView,
     drawSelection,
     keymap,
     lineNumbers
@@ -22,7 +22,6 @@ import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
 import { reject, pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
-import * as projectEditorActions from "../project-editor/actions";
 import { resolveTheme } from "@styles/code-mirror-painter";
 import { csoundMode } from "./modes/csound/csound";
 
@@ -32,6 +31,8 @@ declare global {
         csoundBuiltinOpcodes: any;
     }
 }
+
+export const openEditors: Map<string, CsoundEditorView> = new Map();
 
 const stateFields: Record<string, any> = {};
 const histories: Record<string, any> = {};
@@ -82,18 +83,14 @@ const CodeEditor = ({
     const dispatch = useDispatch();
 
     const onUnmount = useCallback(() => {
-        dispatch(
-            projectEditorActions.storeEditorInstance(
-                undefined,
-                projectUid,
-                documentUid
-            )
-        );
+        openEditors.delete(documentUid);
         updateReduxDocumentValue && updateReduxDocumentValue.cancel();
-    }, [dispatch, projectUid, documentUid]);
+    }, [documentUid]);
 
     useEffect(() => {
-        if (!window.csoundSynopsis) {
+        if (window.csoundSynopsis) {
+            setHasSynopsis(true);
+        } else {
             fetch("/static-manual-index.json")
                 .then(async (response) => {
                     const csoundSynopsis: any = await response.json();
@@ -109,8 +106,6 @@ const CodeEditor = ({
                         error
                     )
                 );
-        } else {
-            setHasSynopsis(true);
         }
 
         return () => {
@@ -213,14 +208,8 @@ const CodeEditor = ({
                     )
                 );
             }}
-            onCreateEditor={(editorView: any) => {
-                dispatch(
-                    projectEditorActions.storeEditorInstance(
-                        editorView,
-                        projectUid,
-                        documentUid
-                    )
-                );
+            onCreateEditor={(editorView: CsoundEditorView) => {
+                openEditors.set(documentUid, editorView);
             }}
             basicSetup={false}
             indentWithTab

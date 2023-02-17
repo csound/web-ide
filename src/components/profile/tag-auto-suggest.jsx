@@ -4,50 +4,44 @@ import { useSelector, useDispatch } from "react-redux";
 import Autosuggest from "react-autosuggest";
 import match from "autosuggest-highlight/match";
 import parse from "autosuggest-highlight/parse";
-import Paper from "@material-ui/core/Paper";
-import MenuItem from "@material-ui/core/MenuItem";
-import { withStyles } from "@material-ui/core/styles";
-import ChipInput from "material-ui-chip-input";
+import Paper from "@mui/material/Paper";
+import MenuItem from "@mui/material/MenuItem";
+import ChipInput from "./chip-input";
 import { selectLoggedInUid } from "@comp/login/selectors";
 import { selectAllTagsFromUser, selectCurrentTagText } from "./selectors";
 import { setCurrentTagText } from "./actions";
 import { append, dissoc, equals, pickAll, pipe, reject, values } from "ramda";
 import Fuse from "fuse.js";
 
-const styles = (theme) => ({
-    container: {
-        flexGrow: 1,
-        position: "relative"
-    },
-    suggestionsContainerOpen: {
-        position: "absolute",
-        marginTop: theme.spacing(),
-        marginBottom: theme.spacing(3),
-        left: 0,
-        right: 0,
-        zIndex: 1
-    },
-    suggestion: {
-        display: "block"
-    },
-    suggestionsList: {
-        margin: 0,
-        padding: 0,
-        listStyleType: "none"
-    },
-    textField: {
-        width: "100%"
-    }
-});
+// const styles = (theme) => ({
+//     container: {
+//         flexGrow: 1,
+//         position: "relative"
+//     },
+//     suggestionsContainerOpen: {
+//         position: "absolute",
+//         marginTop: theme.spacing(),
+//         marginBottom: theme.spacing(3),
+//         left: 0,
+//         right: 0,
+//         zIndex: 1
+//     },
+//     suggestion: {
+//         display: "block"
+//     },
+//     suggestionsList: {
+//         margin: 0,
+//         padding: 0,
+//         listStyleType: "none"
+//     },
+//     textField: {
+//         width: "100%"
+//     }
+// });
 
 const TagAutosuggest = (properties) => {
-    const {
-        allowDuplicates,
-        classes,
-        modifiedTags,
-        setModifiedTags,
-        ...other
-    } = properties;
+    const { allowDuplicates, modifiedTags, setModifiedTags, ...other } =
+        properties;
     const dispatch = useDispatch();
     const loggedInUserUid = useSelector(selectLoggedInUid);
     const allTags = useSelector(selectAllTagsFromUser(loggedInUserUid));
@@ -85,12 +79,12 @@ const TagAutosuggest = (properties) => {
     return (
         <Autosuggest
             alwaysRenderSuggestions={true}
-            theme={{
-                container: classes.container,
-                suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                suggestionsList: classes.suggestionsList,
-                suggestion: classes.suggestion
-            }}
+            // theme={{
+            //     container: classes.container,
+            //     suggestionsContainerOpen: classes.suggestionsContainerOpen,
+            //     suggestionsList: classes.suggestionsList,
+            //     suggestion: classes.suggestion
+            // }}
             getSuggestionValue={(s) => s}
             onSuggestionSelected={(event, { suggestionValue }) => {
                 handleAddChip(suggestionValue);
@@ -153,4 +147,4 @@ const TagAutosuggest = (properties) => {
     );
 };
 
-export default withStyles(styles)(TagAutosuggest);
+export default TagAutosuggest;

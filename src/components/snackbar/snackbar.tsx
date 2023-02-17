@@ -1,15 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
-import clsx from "clsx";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ErrorIcon from "@material-ui/icons/Error";
-import InfoIcon from "@material-ui/icons/Info";
-import CloseIcon from "@material-ui/icons/Close";
-import { amber, green } from "@material-ui/core/colors";
-import IconButton from "@material-ui/core/IconButton";
-import Snackbar from "@material-ui/core/Snackbar";
-import SnackbarContent from "@material-ui/core/SnackbarContent";
-import WarningIcon from "@material-ui/icons/Warning";
-import { makeStyles, Theme } from "@material-ui/core/styles";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import InfoIcon from "@mui/icons-material/Info";
+import CloseIcon from "@mui/icons-material/Close";
+import { amber, green } from "@mui/material/colors";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
+import SnackbarContent from "@mui/material/SnackbarContent";
+import WarningIcon from "@mui/icons-material/Warning";
+import { Theme, useTheme } from "@emotion/react";
 import { closeSnackbar } from "./actions";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -27,36 +27,36 @@ const variantIcon = {
     info: InfoIcon
 };
 
-const styles = makeStyles((theme: Theme) => ({
-    success: {
-        backgroundColor: green[600],
-        color: theme.palette.common.white
-    },
-    error: {
-        backgroundColor: theme.palette.error.dark,
-        color: theme.palette.common.white
-    },
-    info: {
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.common.white
-    },
-    warning: {
-        backgroundColor: amber[700],
-        color: theme.palette.common.white
-    },
-    icon: {
-        fontSize: 20
-    },
-    iconVariant: {
-        opacity: 0.9,
-        marginRight: theme.spacing(1)
-    },
-    message: {
-        display: "flex",
-        alignItems: "center",
-        color: theme.palette.common.black
-    }
-}));
+// const styles = (theme: Theme) => ({
+//     success: {
+//         backgroundColor: green[600],
+//         color: theme.palette.common.white
+//     },
+//     error: {
+//         backgroundColor: theme.palette.error.dark,
+//         color: theme.palette.common.white
+//     },
+//     info: {
+//         backgroundColor: theme.palette.primary.main,
+//         color: theme.palette.common.white
+//     },
+//     warning: {
+//         backgroundColor: amber[700],
+//         color: theme.palette.common.white
+//     },
+//     icon: {
+//         fontSize: 20
+//     },
+//     iconVariant: {
+//         opacity: 0.9,
+//         marginRight: theme.spacing(1)
+//     },
+//     message: {
+//         display: "flex",
+//         alignItems: "center",
+//         color: theme.palette.common.black
+//     }
+// });
 
 export interface IProperties {
     className?: string;
@@ -66,43 +66,47 @@ export interface IProperties {
 }
 
 const SnackbarContentWrapper = (properties: IProperties) => {
-    const classes = styles();
+    const theme = useTheme();
     const { className, message, onClose, variant, ...rest } = properties;
 
     let Icon;
     let cssClass;
 
-    switch (variant) {
-        case SnackbarType.Info:
-            Icon = variantIcon["info"];
-            cssClass = classes["info"];
-            break;
-        case SnackbarType.Warning:
-            Icon = variantIcon["warning"];
-            cssClass = classes["warning"];
-            break;
-        case SnackbarType.Success:
-            Icon = variantIcon["success"];
-            cssClass = classes["success"];
-            break;
-        case SnackbarType.Error:
-            Icon = variantIcon["error"];
-            cssClass = classes["error"];
-            break;
-        default:
-            Icon = variantIcon["error"];
-            cssClass = classes["error"];
+    // switch (variant) {
+    //     case SnackbarType.Info: {
+    //         Icon = variantIcon["info"];
+    //         cssClass = classes["info"];
+    //         break;
+    //     }
+    //     case SnackbarType.Warning: {
+    //         Icon = variantIcon["warning"];
+    //         cssClass = classes["warning"];
+    //         break;
+    //     }
+    //     case SnackbarType.Success: {
+    //         Icon = variantIcon["success"];
+    //         cssClass = classes["success"];
+    //         break;
+    //     }
+    //     case SnackbarType.Error: {
+    //         Icon = variantIcon["error"];
+    //         cssClass = classes["error"];
+    //         break;
+    //     }
+    //     default: {
+    //         Icon = variantIcon["error"];
+    //         cssClass = classes["error"];
 
-            break;
-    }
+    //         break;
+    //     }
+    // }
 
     return (
         <SnackbarContent
-            className={clsx(cssClass, className)}
             aria-describedby="client-snackbar"
             message={
-                <span id="client-snackbar" className={classes.message}>
-                    <Icon className={clsx(classes.icon, classes.iconVariant)} />
+                <span id="client-snackbar">
+                    <Icon />
                     {message}
                 </span>
             }
@@ -113,7 +117,7 @@ const SnackbarContentWrapper = (properties: IProperties) => {
                     color="inherit"
                     onClick={onClose}
                 >
-                    <CloseIcon className={classes.icon} />
+                    <CloseIcon />
                 </IconButton>
             ]}
             {...rest}
@@ -140,14 +144,9 @@ const CustomSnackbar = (): React.ReactElement => {
             }}
             open={open}
             autoHideDuration={timeout}
+            message={text}
             onClose={handleClose}
-        >
-            <SnackbarContentWrapper
-                onClose={handleClose}
-                variant={type}
-                message={text}
-            />
-        </Snackbar>
+        />
     );
 };
 

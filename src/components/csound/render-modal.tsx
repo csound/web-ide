@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-import ReactTooltip from "react-tooltip";
+import { useDispatch } from "@root/store";
 import JSZip from "jszip";
 import { closeIcon } from "@comp/target-controls/styles";
 import { append, equals, last, reject } from "ramda";
@@ -12,20 +11,20 @@ import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
 import { getType as mimeLookup } from "mime";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
-import Fab from "@material-ui/core/Fab";
-import Button from "@material-ui/core/Button";
-import Checkbox from "@material-ui/core/Checkbox";
-import CloseIcon from "@material-ui/icons/Close";
-import DescriptionIcon from "@material-ui/icons/Description";
-import DownloadIcon from "@material-ui/icons/GetApp";
-import PlayIcon from "@material-ui/icons/PlayCircleOutline";
-import PauseIcon from "@material-ui/icons/PauseCircleOutline";
-import IconButton from "@material-ui/core/IconButton";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import ListItemText from "@material-ui/core/ListItemText";
+import Fab from "@mui/material/Fab";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import CloseIcon from "@mui/icons-material/Close";
+import DescriptionIcon from "@mui/icons-material/Description";
+import DownloadIcon from "@mui/icons-material/GetApp";
+import PlayIcon from "@mui/icons-material/PlayCircleOutline";
+import PauseIcon from "@mui/icons-material/PauseCircleOutline";
+import IconButton from "@mui/material/IconButton";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
+import ListItemText from "@mui/material/ListItemText";
 import { hr as hrCss } from "@styles/_common";
 import { saveAs } from "file-saver";
 import {
@@ -367,7 +366,6 @@ function RenderModal({
     csound: CsoundObj;
     preStartTree: Record<string, any>;
 }): React.ReactElement {
-    ReactTooltip.rebuild();
     const dispatch = useDispatch();
     const allFiles = csound.fs.readdir("/");
     const [selectedFiles, setSelectedFiles] = useState([] as string[]);
@@ -382,11 +380,11 @@ function RenderModal({
         ([aNewFiles, aModifiedFiles, aNonModifiedFiles], filename) => {
             if (!Object.keys(preStartTree).includes(filename)) {
                 aNewFiles[fixLeadingSlash(filename)] = allFiles[filename];
-            } else if (preStartTree[filename] !== allFiles[filename].size) {
-                aModifiedFiles[fixLeadingSlash(filename)] = allFiles[filename];
-            } else {
+            } else if (preStartTree[filename] === allFiles[filename].size) {
                 aNonModifiedFiles[fixLeadingSlash(filename)] =
                     allFiles[filename];
+            } else {
+                aModifiedFiles[fixLeadingSlash(filename)] = allFiles[filename];
             }
 
             return [aNewFiles, aModifiedFiles, aNonModifiedFiles];

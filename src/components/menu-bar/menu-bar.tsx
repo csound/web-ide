@@ -1,9 +1,9 @@
 import React, { useState } from "react";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import onClickOutside from "react-onclickoutside";
-import { useSelector, useDispatch } from "react-redux";
 import { useLocalStorage } from "react-use-storage";
-import SelectedIcon from "@material-ui/icons/DoneSharp";
-import NestedMenuIcon from "@material-ui/icons/ArrowRightSharp";
+import SelectedIcon from "@mui/icons-material/DoneSharp";
+import NestedMenuIcon from "@mui/icons-material/ArrowRightSharp";
 import * as SS from "./styles";
 import { hr as hrCss } from "@styles/_common";
 import { MenuItemDef } from "./types";
@@ -12,17 +12,12 @@ import { invokeHotKeyCallback } from "@comp/hot-keys/actions";
 import { BindingsMap } from "@comp/hot-keys/types";
 import { humanizeKeySequence } from "@comp/hot-keys/utils";
 import { showTargetsConfigDialog } from "@comp/target-controls/actions";
-import { IStore } from "@store/types";
 import { exportProject } from "@comp/projects/actions";
 import {
     toggleManualPanel,
     setFileTreePanelOpen
 } from "@comp/project-editor/actions";
-import {
-    renderToDisk,
-    enableMidiInput,
-    enableAudioInput
-} from "@comp/csound/actions";
+import { renderToDisk } from "@comp/csound/actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import { changeTheme } from "@comp/themes/action";
@@ -61,19 +56,19 @@ function MenuBar(): JSX.Element {
         path(["ProjectEditorReducer", "manualVisible"], store)
     );
 
-    const isConsoleVisible = useSelector((store: IStore) =>
+    const isConsoleVisible = useSelector((store: RootState) =>
         (store.BottomTabsReducer.openTabs || []).includes("console")
     );
 
     const isFileTreeVisible = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.fileTreeVisible
+        (store: RootState) => store.ProjectEditorReducer.fileTreeVisible
     );
 
-    const isSpectralAnalyzerVisible = useSelector((store: IStore) =>
+    const isSpectralAnalyzerVisible = useSelector((store: RootState) =>
         store.BottomTabsReducer.openTabs.includes("spectralAnalyzer")
     );
 
-    const isMidiPianoVisible = useSelector((store: IStore) =>
+    const isMidiPianoVisible = useSelector((store: RootState) =>
         store.BottomTabsReducer.openTabs.includes("piano")
     );
 
@@ -214,21 +209,21 @@ function MenuBar(): JSX.Element {
         {
             label: "I/O",
             submenu: [
-                {
-                    label: "Refresh MIDI Input",
-                    callback: () => {
-                        dispatch(enableMidiInput());
-                    }
-                },
-                {
-                    label: "Refresh Audio Input",
-                    callback: () => {
-                        dispatch(enableAudioInput());
-                    }
-                },
-                {
-                    seperator: true
-                },
+                // {
+                //     label: "Refresh MIDI Input",
+                //     callback: () => {
+                //         dispatch(enableMidiInput());
+                //     }
+                // },
+                // {
+                //     label: "Refresh Audio Input",
+                //     callback: () => {
+                //         dispatch(enableAudioInput());
+                //     }
+                // },
+                // {
+                //     seperator: true
+                // },
                 {
                     label: "Enable SharedArrayBuffer",
                     checked: isSabEnabled === "true",
@@ -278,7 +273,7 @@ function MenuBar(): JSX.Element {
         }
     ];
 
-    (MenuBar as any).handleClickOutside = (event_) => {
+    (MenuBar as any).handleClickOutside = () => {
         setOpenPath([]);
     };
 
@@ -291,7 +286,7 @@ function MenuBar(): JSX.Element {
             (accumulator: React.ReactNode[], item: MenuItemDef) => {
                 const index = accumulator.length;
                 const thisRowNesting = append(index, rowNesting);
-                const hasChild: boolean = typeof item.submenu !== "undefined";
+                const hasChild: boolean = item.submenu !== undefined;
 
                 if (item.seperator) {
                     accumulator.push(<hr key={index} css={hrCss} />);
@@ -301,7 +296,7 @@ function MenuBar(): JSX.Element {
                             key={index}
                             onClick={(event) => {
                                 if (item.hotKey) {
-                                    dispatch(invokeHotKeyCallback(item.hotKey));
+                                    invokeHotKeyCallback(item.hotKey);
                                 } else {
                                     item.callback &&
                                         !item.disabled &&

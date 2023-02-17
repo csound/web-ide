@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "@emotion/react";
-import { IStore } from "@store/types";
+import { RootState } from "@store/types";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWindowClose } from "@fortawesome/free-solid-svg-icons";
-import Tooltip from "@material-ui/core/Tooltip";
+import Tooltip from "@mui/material/Tooltip";
 import IframeComm from "react-iframe-comm";
 import { setManualPanelOpen } from "./actions";
 import * as SS from "./styles";
@@ -21,7 +21,7 @@ const ManualWindow = ({
     const theme: any = useTheme();
 
     const manualLookupString = useSelector(
-        (store: IStore) => store.ProjectEditorReducer.manualLookupString
+        (store: RootState) => store.ProjectEditorReducer.manualLookupString
     );
 
     // const onManualMessage = (event_) => {

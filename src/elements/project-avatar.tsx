@@ -40,7 +40,7 @@ const ProjectAvatar = ({
     const iconName =
         project.iconName === "" ||
         !project.iconName ||
-        typeof project.iconName === "undefined" ||
+        project.iconName === undefined ||
         project.iconName === "default"
             ? "fadwaveform"
             : project.iconName;

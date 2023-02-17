@@ -1,22 +1,19 @@
 import React, { useEffect } from "react";
-import { Provider as Provider_, useDispatch } from "react-redux";
-import ReactTooltip from "react-tooltip";
+import { useDispatch, history, store } from "@store";
+import { Provider } from "react-redux";
 import Home from "../home/home";
 import CsoundManual from "@comp/manual/manual";
-import Profile from "../profile/profile";
-import Page404 from "../page-404/page-404";
+import { Profile } from "../profile/profile";
+import { Page404 } from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
 import { closeTabDock } from "@comp/project-editor/actions";
-import { history, store } from "@store";
 import { closeProject } from "@comp/projects/actions";
 import { HistoryRouter as Router } from "redux-first-history/rr6";
 import { Route, Routes } from "react-router-dom";
 import { stopCsound } from "../csound/actions";
-import SiteDocuments from "../site-documents/site-documents";
+import { SiteDocuments } from "../site-documents/site-documents";
 import { ConsoleProvider } from "@comp/console/context";
 import { ParserDebugger } from "@comp/editor/modes/csound/debug-parser";
-
-const Provider = Provider_ as any;
 
 const EditorLayout = (properties: any) => {
     const dispatch = useDispatch();
@@ -70,27 +67,30 @@ const EditorLayout = (properties: any) => {
 // };
 
 const RouterComponent = (): React.ReactElement => {
-    ReactTooltip.rebuild();
-
     return (
-        <Router history={history}>
-            <Routes>
-                <Route index element={<Home />} />
-                <Route path="profile/:username" element={<Profile />} />
-                <Route path="profile/:username/*" element={<Profile />} />
-                <Route path="editor" element={<EditorLayout />}>
-                    <Route path=":id" element={<EditorLayout />} />
-                </Route>
-                <Route path="manual" element={<CsoundManual />}>
-                    <Route path=":id" element={<CsoundManual />} />
-                </Route>
+        <>
+            <Router history={history}>
+                <Routes>
+                    <Route index element={<Home />} />
+                    <Route path="profile/:username" element={<Profile />} />
+                    <Route path="profile/:username/*" element={<Profile />} />
+                    <Route path="editor" element={<EditorLayout />}>
+                        <Route path=":id" element={<EditorLayout />} />
+                    </Route>
+                    <Route path="manual" element={<CsoundManual />}>
+                        <Route path=":id" element={<CsoundManual />} />
+                    </Route>
 
-                <Route path="documentation" element={<SiteDocuments />} />
-                <Route path="404" element={<Page404 />} />
-                <Route path="parser-debugger" element={<ParserDebugger />} />
-                <Route path="*" element={<Page404 />} />
-            </Routes>
-        </Router>
+                    <Route path="documentation" element={<SiteDocuments />} />
+                    <Route path="404" element={<Page404 />} />
+                    <Route
+                        path="parser-debugger"
+                        element={<ParserDebugger />}
+                    />
+                    <Route path="*" element={<Page404 />} />
+                </Routes>
+            </Router>
+        </>
     );
 };
 

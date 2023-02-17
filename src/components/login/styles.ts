@@ -4,7 +4,7 @@ export const errorBox = (theme: Theme): SerializedStyles => css`
     color: ${theme.errorText};
 `;
 
-export const centerLink = (theme: Theme): SerializedStyles => css`
+export const centerLink = css`
     text-align: center;
     margin-bottom: 10px;
 `;

@@ -1,23 +1,14 @@
-import React from "react";
-import { assoc } from "ramda";
+import { assoc, pipe } from "ramda";
 
 export interface IModalReducer {
     isOpen: boolean;
-    component: (properties: any) => React.ReactElement;
     properties: Record<string, any> | undefined;
     title?: string;
-    onClose?: () => void;
+    modalComponentName?: string;
 }
-
-const dummyComp = (): React.ReactElement => (
-    <>
-        <div />
-    </>
-);
 
 const initialModalState: IModalReducer = {
     isOpen: false,
-    component: dummyComp,
     properties: undefined
 };
 
@@ -29,7 +20,6 @@ const ModalReducer = (
         case "MODAL_CLOSE": {
             return {
                 isOpen: false,
-                component: dummyComp,
                 properties: undefined
             };
         }
@@ -37,11 +27,11 @@ const ModalReducer = (
             return assoc("onClose", action.onClose, state);
         }
         case "MODAL_OPEN_SIMPLE": {
-            state.isOpen = true;
-            state.component = action.component;
-            state.onClose = action.onClose;
-            state.properties = action.properties;
-            return { ...state };
+            return pipe(
+                assoc("isOpen", true),
+                assoc("properties", action.properties),
+                assoc("modalComponentName", action.modalComponentName)
+            )(state);
         }
         default: {
             return state || initialModalState;

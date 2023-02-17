@@ -1,12 +1,25 @@
 import React, { RefObject, useEffect, useState, useRef } from "react";
-import { useSelector } from "react-redux";
+import { RootState, useDispatch, useSelector } from "@root/store";
+import { TargetControlsConfigDialog } from "@comp/target-controls/config-dialog";
+import ShareDialog from "@comp/share-dialog";
+import { KeyboardShortcuts } from "@comp/site-documents/keyboard-shortcuts";
+import {
+    AddDocumentPrompt,
+    DeleteDocumentPrompt,
+    NewDocumentPrompt,
+    NewFolderPrompt
+} from "@comp/projects/modals";
+import { CloseUnsavedFilePrompt } from "@comp/project-editor/modals";
+import { ProjectModal } from "@comp/profile/project-modal";
+import { ProfileModal } from "@comp/profile/profile-modal";
+import { DeleteProjectModal } from "@comp/profile/delete-project-modal";
+import { ProfileFinalize } from "@comp/login/actions";
 import { always } from "ramda";
 import * as SS from "./styles";
-import Modal from "@material-ui/core/Modal";
-import Backdrop from "@material-ui/core/Backdrop";
-import Fade from "@material-ui/core/Fade";
-import { IStore } from "@store/types";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
 import ResizeObserver from "resize-observer-polyfill";
+import { closeModal } from "./actions";
 
 function getModalStyle(width, height) {
     if (!width || !height) {
@@ -24,18 +37,19 @@ function getModalStyle(width, height) {
 export default function GlobalModal(): React.ReactElement {
     const modalReference = useRef() as RefObject<HTMLDivElement>;
     const [[width, height], setDimensions] = useState([0, 0]);
+    const dispatch = useDispatch();
     const isOpen: boolean = useSelector(
-        (store: IStore) => store.ModalReducer.isOpen
+        (store: RootState) => store.ModalReducer.isOpen
     );
 
-    const ModalComponent = useSelector(
-        (store: IStore) => store.ModalReducer.component
+    const modalComponentName = useSelector(
+        (store: RootState) => store.ModalReducer.modalComponentName
     );
 
     const modalProperties =
-        useSelector((store: IStore) => store.ModalReducer.properties) || {};
+        useSelector((store: RootState) => store.ModalReducer.properties) || {};
 
-    const onClose = useSelector((store: IStore) => store.ModalReducer.onClose);
+    const onClose = () => dispatch(closeModal());
 
     const updateDimensions = (focus: boolean) => {
         const element = document.querySelector("#modal-window");
@@ -77,13 +91,15 @@ export default function GlobalModal(): React.ReactElement {
     return (
         <Modal
             closeAfterTransition
-            BackdropComponent={Backdrop}
-            BackdropProps={{
-                timeout: 500
-            }}
             open={isOpen}
             onClose={
-                modalProperties.disableOnClose
+                [
+                    "profile-edit-dialog",
+                    "add-document-prompt",
+                    "new-folder-prompt"
+                ].includes(modalComponentName)
+                    ? onClose
+                    : modalProperties.disableOnClose
                     ? always
                     : modalProperties.onClose || onClose
             }
@@ -96,7 +112,42 @@ export default function GlobalModal(): React.ReactElement {
                     ref={modalReference}
                     style={getModalStyle(width, height)}
                 >
-                    {ModalComponent && <ModalComponent {...modalProperties} />}
+                    {modalComponentName === "target-controls" && (
+                        <TargetControlsConfigDialog {...modalProperties} />
+                    )}
+                    {modalComponentName === "share-dialog" && (
+                        <ShareDialog {...modalProperties} />
+                    )}
+                    {modalComponentName === "keyboard-shortcuts" && (
+                        <KeyboardShortcuts {...modalProperties} />
+                    )}
+                    {modalComponentName === "new-document-prompt" && (
+                        <NewDocumentPrompt {...modalProperties} />
+                    )}
+                    {modalComponentName === "delete-document-prompt" && (
+                        <DeleteDocumentPrompt {...modalProperties} />
+                    )}
+                    {modalComponentName === "add-document-prompt" && (
+                        <AddDocumentPrompt {...modalProperties} />
+                    )}
+                    {modalComponentName === "new-folder-prompt" && (
+                        <NewFolderPrompt {...modalProperties} />
+                    )}
+                    {modalComponentName === "close-unsaved-prompt" && (
+                        <CloseUnsavedFilePrompt {...modalProperties} />
+                    )}
+                    {modalComponentName === "new-project-prompt" && (
+                        <ProjectModal {...modalProperties} />
+                    )}
+                    {modalComponentName === "profile-edit-dialog" && (
+                        <ProfileModal {...modalProperties} />
+                    )}
+                    {modalComponentName === "delete-project-prompt" && (
+                        <DeleteProjectModal {...modalProperties} />
+                    )}
+                    {modalComponentName === "project-finalize" && (
+                        <ProfileFinalize {...modalProperties} />
+                    )}
                 </div>
             </Fade>
         </Modal>

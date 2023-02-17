@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setOnCloseModal, closeModal } from "@comp/modal/actions";
+import { closeModal } from "@comp/modal/actions";
 import { useTheme } from "@emotion/react";
-import { IStore } from "@store/types";
+import { RootState, useDispatch, useSelector } from "@store";
 import { IDocument, IDocumentsMap } from "@comp/projects/types";
 import { ICsoundOptions } from "@comp/csound/types";
 import {
@@ -36,7 +35,7 @@ export const useTargetControlsDialog = () => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 
-    const activeProjectUid: string = useSelector((store: IStore) => {
+    const activeProjectUid: string = useSelector((store: RootState) => {
         return pathOr("", ["ProjectsReducer", "activeProjectUid"], store);
     });
 
@@ -98,14 +97,6 @@ export const useTargetControlsDialog = () => {
         newTargets.some(propEq("isOtherwiseValid", false));
     const someChangesMade = !equals(storedTargets, newTargets);
     const shouldDisallowSave = someErrorPresent || !someChangesMade;
-
-    useEffect(() => {
-        dispatch(
-            setOnCloseModal(() => {
-                shouldDisallowSave && dispatch(closeModal());
-            })
-        );
-    }, [dispatch, shouldDisallowSave]);
 
     const handleCreateNewTarget = useCallback(() => {
         setNewTargets(
@@ -246,6 +237,7 @@ export const useTargetControlsDialog = () => {
         handleSelectTargetDocument,
         handleTargetDelete,
         handleEnableCsound7,
-        handleSave
+        handleSave,
+        shouldDisallowSave
     };
 };

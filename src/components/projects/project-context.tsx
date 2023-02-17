@@ -32,7 +32,7 @@ const ProjectContext = (
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
-    const projectUid = routeParams.id ? routeParams.id : "";
+    const projectUid = routeParams.id ?? "";
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
     invalidUrl &&
@@ -74,7 +74,7 @@ const ProjectContext = (
                             );
                     }
                 }
-                dispatch(cleanupNonCloudFiles());
+                dispatch(cleanupNonCloudFiles({ projectUid }));
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };

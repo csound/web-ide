@@ -1,4 +1,4 @@
-import firestore from "firebase/firestore";
+import firestore, { DocumentData } from "firebase/firestore";
 
 export interface IUserProfile {
     name: string;
@@ -7,7 +7,7 @@ export interface IUserProfile {
     photoUrl?: string;
 }
 
-export interface IFirestoreDocument {
+export interface IFirestoreDocument extends DocumentData {
     lastModified: firestore.Timestamp;
     name: string;
     type: string;
@@ -15,7 +15,7 @@ export interface IFirestoreDocument {
     value: string;
 }
 
-export interface IFirestoreProject {
+export interface IFirestoreProject extends DocumentData {
     created: firestore.Timestamp;
     description: string;
     iconBackgroundColor: string;

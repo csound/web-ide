@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-// import { BrowserRouter } from "react-router-dom";
-// import { ConnectedRouter } from "connected-react-router/esm/index.js";
-// import { history } from "@store";
+import { useDispatch } from "@root/store";
 import { isMobile } from "@root/utils";
 import Router from "@comp/router/router";
 import ThemeProvider from "@styles/theme-provider";
-import ReactTooltip from "react-tooltip";
 import Modal from "@comp/modal";
 import IosWarning from "./ios-warning";
 import Snackbar from "@comp/snackbar/snackbar";
@@ -64,9 +60,6 @@ const Main = (): React.ReactElement => {
 
     return (
         <ThemeProvider>
-            <div style={{ position: "absolute" }}>
-                <ReactTooltip />
-            </div>
             <HotKeys>
                 <>
                     <Modal />

@@ -14,7 +14,7 @@ export const closeIcon = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const targetsDialog = (theme: Theme): SerializedStyles => css`
+export const targetsDialog = css`
     min-width: 400px;
 `;
 
@@ -27,7 +27,7 @@ export const targetsDialogMain = (theme: Theme): SerializedStyles => css`
     padding: 12px;
 `;
 
-export const targetsDialogFooter = (theme: Theme): SerializedStyles => css`
+export const targetsDialogFooter = css`
     padding-top: 12px;
     & button {
         padding: 0 18px !important;

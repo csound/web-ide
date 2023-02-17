@@ -74,30 +74,30 @@ export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const listContainer = (theme: Theme): SerializedStyles => css`
+export const listContainer = css`
     margin-top: -3px;
 `;
 
-export const listItem = (theme: Theme): SerializedStyles => css`
+export const listItem = css`
     padding-left: 32px;
     display: flex;
     justify-content: space-between;
 `;
 
 export const draggingOver = (theme: Theme): SerializedStyles => css`
-    ${listItem(theme)}
+    ${listItem}
     & .MuiTouchRipple-root {
         background-color: rgba(${rgba(theme.allowed, 0.1)}) !important;
     }
 `;
 
-export const listItemIcon = (theme: Theme): SerializedStyles => css`
+export const listItemIcon = css`
     position: absolute;
     min-width: 18px;
 `;
 
-export const listItemIconMui = (theme: Theme): SerializedStyles => css`
-    ${listItemIcon(theme)}
+export const listItemIconMui = css`
+    ${listItemIcon}
     left: 12px;
     top: 4px;
 `;
@@ -109,32 +109,31 @@ export const muiIcon = (theme: Theme): SerializedStyles => css`
     margin-left: 1px;
 `;
 
-export const csoundFileIcon = (theme: Theme): SerializedStyles => css`
+export const csoundFileIcon = css`
     svg {
         width: 28px;
         height: 28px;
     }
 `;
 
-export const newFolderIcon = (theme: Theme): SerializedStyles => css`
+export const newFolderIcon = css`
     margin-right: 12px;
 `;
 
-const musicIconBase = (theme: Theme): SerializedStyles => css`
+const musicIconBase = css`
     position: relative;
     width: 32px;
     height: 24px;
 `;
 
 export const mediaIcon = (theme: Theme): SerializedStyles => css`
-    ${musicIconBase(theme)}
+    ${musicIconBase}
     margin-top: 1px;
-    left: -36px;
     fill: ${theme.aRateVar};
 `;
 
 export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
-    ${musicIconBase(theme)}
+    ${musicIconBase}
     width: 36px;
     height: 32px;
     margin-left: 2px;
@@ -146,8 +145,8 @@ export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const directoryOpenIcon = (theme: Theme): SerializedStyles => css`
-    ${musicIconBase(theme)}
+export const directoryOpenIcon = css`
+    ${musicIconBase}
     width: 36px;
     height: 32px;
 `;
@@ -159,4 +158,5 @@ export const filenameStyle = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     padding: 0;
     margin: 0;
+    margin-left: 12px;
 `;

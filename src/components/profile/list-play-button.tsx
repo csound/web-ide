@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "@root/store";
 import { playListItem } from "./actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
 import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { selectCurrentlyPlayingProject } from "./selectors";
-import { useDispatch, useSelector } from "react-redux";
-import AlertIcon from "@material-ui/icons/ErrorOutline";
+import AlertIcon from "@mui/icons-material/ErrorOutline";
 import { Theme, useTheme } from "@emotion/react";
 import { IProject } from "@comp/projects/types";
 import ProjectAvatar from "@elem/project-avatar";
@@ -65,22 +65,19 @@ const ListPlayButton = ({
         }
     }, [isPlaying, csoundStatus, currentlyPlayingProject, isStartingUp]);
 
-    const buttonCallback = useCallback(
-        async (event) => {
-            if (isStartingUp) {
-                return;
-            } else if (!isPlaying) {
-                setIsStartingUp(true);
-            }
+    const buttonCallback = useCallback(async () => {
+        if (isStartingUp) {
+            return;
+        } else if (!isPlaying) {
+            setIsStartingUp(true);
+        }
 
-            isPaused
-                ? dispatch(resumePausedCsound())
-                : isPlaying && !hasError
-                ? dispatch(pauseCsound())
-                : dispatch(playListItem({ projectUid }));
-        },
-        [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]
-    );
+        isPaused
+            ? dispatch(resumePausedCsound())
+            : isPlaying && !hasError
+            ? dispatch(pauseCsound())
+            : dispatch(playListItem({ projectUid }));
+    }, [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]);
 
     const IconComponent = <ProjectAvatar project={project} />;
 

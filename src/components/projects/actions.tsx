@@ -1,9 +1,6 @@
-import { getAuth } from "firebase/auth";
-import { getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { getDownloadURL } from "firebase/storage";
 import {
-    addDoc,
     collection,
-    deleteDoc,
     doc,
     getDoc,
     getDocs,
@@ -12,16 +9,7 @@ import {
 } from "firebase/firestore";
 import { push } from "connected-react-router/esm/index.js";
 import { CsoundObj } from "@csound/browser";
-import {
-    tabOpenByDocumentUid,
-    tabDockInit
-} from "@comp/project-editor/actions";
-import {
-    addDocumentPrompt,
-    deleteDocumentPrompt,
-    newDocumentPrompt,
-    newFolderPrompt
-} from "./modals";
+import { tabDockInit } from "@comp/project-editor/actions";
 import {
     selectDefaultTargetName,
     selectTarget
@@ -29,9 +17,7 @@ import {
 import { selectLoggedInUid } from "@comp/login/selectors";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import { selectTabDockIndex } from "@comp/project-editor/selectors";
-import { closeModal, openSimpleModal } from "../modal/actions";
-import { openSnackbar } from "@comp/snackbar/actions";
-import { SnackbarType } from "@comp/snackbar/types";
+import { openSimpleModal } from "../modal/actions";
 import { filter as _filter, find, isEmpty } from "lodash";
 import {
     append,
@@ -39,10 +25,8 @@ import {
     concat,
     filter,
     forEach,
-    map,
     path,
     pathOr,
-    prop,
     reduce,
     values
 } from "ramda";
@@ -68,10 +52,9 @@ import { ITarget } from "@comp/target-controls/types";
 import {
     addDocumentToEMFS,
     convertProjectSnapToProject,
-    fileDocumentDataToDocumentType,
-    textOrBinary
+    fileDocumentDataToDocumentType
 } from "./utils";
-import { IStore } from "@store/types";
+import { RootState } from "@store/types";
 import {
     database,
     getFirebaseTimestamp,
@@ -81,9 +64,6 @@ import {
 import { store } from "@root/store";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { v4 as uuidv4 } from "uuid";
-import { Action } from "redux";
-import { ThunkAction } from "redux-thunk";
 
 export const downloadProjectOnce = (
     projectUid: string
@@ -139,14 +119,19 @@ export const newEmptyDocumentAction = (
     projectUid: string,
     documentUid: string,
     filename: string
-): Record<string, any> => ({
+): {
+    type: typeof DOCUMENT_INITIALIZE;
+    filename: string;
+    documentUid: string;
+    projectUid: string;
+} => ({
     type: DOCUMENT_INITIALIZE,
     filename,
     documentUid,
     projectUid
 });
 
-export const closeProject = (): Record<string, any> => {
+export const closeProject = () => {
     return {
         type: CLOSE_PROJECT
     };
@@ -182,9 +167,9 @@ export const unsetProject = (projectUid: string): Record<string, any> => {
 export const addProjectDocuments = (
     projectUid: string,
     documents: IDocumentsMap
-): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
+): ((dispatch: any, getState: () => RootState) => Promise<void>) => {
     return async (dispatch: any, getState) => {
-        const store: IStore = getState();
+        const store: RootState = getState();
         const tabIndex: number = selectTabDockIndex(store);
         await dispatch({
             type: ADD_PROJECT_DOCUMENTS,
@@ -207,10 +192,7 @@ export const addProjectDocuments = (
     };
 };
 
-export const resetDocumentValue = (
-    projectUid: string,
-    documentUid: string
-): Record<string, any> => {
+export const resetDocumentValue = (projectUid: string, documentUid: string) => {
     return {
         type: DOCUMENT_RESET,
         projectUid,
@@ -219,8 +201,8 @@ export const resetDocumentValue = (
 };
 
 export const saveFile = (): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        const state = store.getState() as IStore;
+    return async () => {
+        const state = store.getState() as RootState;
         const dock = state.ProjectEditorReducer.tabDock;
         const activeTab = dock.openDocuments[dock.tabIndex];
         const documentUid = activeTab.uid;
@@ -256,9 +238,9 @@ export const saveFile = (): ((dispatch: any) => Promise<void>) => {
     };
 };
 
-export const saveAllFiles = (): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        const state = store.getState() as IStore;
+export const saveAllFiles = () => {
+    return async () => {
+        const state = store.getState() as RootState;
         const activeProjectUid = pathOr(
             "",
             ["ProjectsReducer", "activeProjectUid"],
@@ -295,15 +277,8 @@ export const saveAllFiles = (): ((dispatch: any) => Promise<void>) => {
     };
 };
 
-export const saveAllAndClose = (
-    goTo: string
-): ((dispatch: any) => Promise<void>) => {
-    return function (dispatch) {
-        return saveAllFiles()(dispatch).then(
-            () => dispatch(push(goTo)),
-            console.error
-        );
-    };
+export const saveAllAndClose = (dispatch: any, goTo: string) => {
+    return saveAllFiles()().then(() => dispatch(push(goTo)), console.error);
 };
 
 // for unauthorized or offline playing
@@ -328,7 +303,7 @@ export const saveFileOffline = (
 
 // for unauthorized or offline playing
 export const saveAllOffline = (csound: CsoundObj): void => {
-    const state = store.getState() as IStore;
+    const state = store.getState() as RootState;
     const activeProjectUid = pathOr(
         "",
         ["ProjectsReducer", "activeProjectUid"],
@@ -359,9 +334,9 @@ export const saveAllOffline = (csound: CsoundObj): void => {
 export const deleteFile = (
     projectUid: string,
     documentUid: string
-): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
+): ((dispatch: any, getState: () => RootState) => Promise<void>) => {
     return async (dispatch: any, getState) => {
-        const state = getState() as IStore;
+        const state = getState() as RootState;
         const project: IProject = pathOr(
             {} as IProject,
             ["ProjectsReducer", "projects", projectUid],
@@ -370,65 +345,33 @@ export const deleteFile = (
         if (project) {
             const document_ = project.documents[documentUid];
             if (document_ && document_.type === "folder") {
-                const cancelCallback = () => dispatch(closeModal());
                 const allNestedFiles = filter(
-                    (d) => (d.path || []).includes(documentUid),
+                    (d: IDocument) => (d.path || []).includes(documentUid),
                     project.documents
                 );
-                const allNestedFilenames = map(
-                    prop("filename"),
+                const allFilesToDelete = append(
+                    document_,
                     values(allNestedFiles)
                 );
-                const deleteCallback = () => {
-                    const allFilesToDelete = append(
-                        document_,
-                        values(allNestedFiles)
-                    );
-                    const batch = writeBatch(database);
-                    allFilesToDelete.forEach((document__) => {
-                        batch.delete(
-                            doc(
-                                collection(
-                                    doc(projects, project.projectUid),
-                                    "files"
-                                ),
-                                document__.documentUid
-                            )
-                        );
-                    });
-                    batch.commit().then(() => {
-                        dispatch(closeModal());
-                        updateProjectLastModified(projectUid);
-                    });
-                };
-                const deleteDocumentPromptComp = deleteDocumentPrompt(
-                    document_.filename,
-                    true,
-                    allNestedFilenames,
-                    cancelCallback,
-                    deleteCallback
+                dispatch(
+                    openSimpleModal("delete-document-prompt", {
+                        filename: document_.filename,
+                        isFolder: true,
+                        folderContents: allFilesToDelete,
+                        documentUid,
+                        projectUid
+                    })
                 );
-                dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else if (document_) {
-                const cancelCallback = async () => await dispatch(closeModal());
-                const deleteCallback = async () => {
-                    await deleteDoc(
-                        doc(
-                            collection(doc(projects, projectUid), "files"),
-                            documentUid
-                        )
-                    );
-                    await updateProjectLastModified(projectUid);
-                };
-                const deleteDocumentPromptComp = deleteDocumentPrompt(
-                    document_.filename,
-                    false,
-                    [],
-                    cancelCallback,
-                    deleteCallback
+                dispatch(
+                    openSimpleModal("delete-document-prompt", {
+                        filename: document_.filename,
+                        isFolder: false,
+                        folderContents: [],
+                        documentUid,
+                        projectUid
+                    })
                 );
-
-                dispatch(openSimpleModal(deleteDocumentPromptComp, {}));
             } else {
                 console.error("No document found with id", projectUid);
             }
@@ -477,242 +420,30 @@ export const updateDocumentModifiedLocally = (
     };
 };
 
-export const newFolder = (
-    projectUid: string
-): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
-    return async (dispatch: any, getState) => {
-        const state = store.getState() as IStore;
-        const project: IProject = pathOr(
-            {} as IProject,
-            ["ProjectsReducer", "projects", projectUid],
-            state
-        );
-        const userUid: string = pathOr(
-            {} as IProject,
-            ["LoginReducer", "loggedInUid"],
-            state
-        );
-        const newFolderSuccessCallback = async (filename: string) => {
-            if (!isEmpty(project)) {
-                const document_ = {
-                    type: "folder",
-                    name: filename,
-                    userUid,
-                    path: [],
-                    lastModified: getFirebaseTimestamp(),
-                    created: getFirebaseTimestamp()
-                };
-                await addDoc(
-                    collection(doc(projects, projectUid), "files"),
-                    document_
-                );
-                updateProjectLastModified(projectUid);
-            }
-            dispatch(closeModal());
-        };
-        const newFolderPromptComp = newFolderPrompt(
-            newFolderSuccessCallback,
-            project
-        );
-        dispatch(openSimpleModal(newFolderPromptComp, {}));
-    };
+export const newFolder = (projectUid: string) => {
+    return openSimpleModal("new-folder-prompt", { projectUid });
 };
 
-export const newDocument = (
-    projectUid: string,
-    value: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        const newDocumentSuccessCallback = async (filename: string) => {
-            const state = store.getState() as IStore;
-            const activeProjectUid = pathOr(
-                "",
-                ["ProjectsReducer", "activeProjectUid"],
-                state
-            );
-            const project: IProject = pathOr(
-                {} as IProject,
-                ["ProjectsReducer", "projects", activeProjectUid],
-                state
-            );
-
-            if (!isEmpty(project)) {
-                const currentUser = getAuth().currentUser;
-                const uid = currentUser ? currentUser.uid : "";
-                const document_ = {
-                    type: "txt",
-                    name: filename,
-                    value: value,
-                    userUid: uid,
-                    lastModified: getFirebaseTimestamp(),
-                    created: getFirebaseTimestamp(),
-                    path: []
-                };
-                const result = await addDoc(
-                    collection(doc(projects, project.projectUid), "files"),
-                    document_
-                );
-
-                const documentUid = result.id;
-                dispatch(tabOpenByDocumentUid(result.id, projectUid));
-                dispatch(
-                    newEmptyDocumentAction(projectUid, documentUid, filename)
-                );
-                updateProjectLastModified(project.projectUid);
-            }
-            dispatch(closeModal());
-        };
-        const newDocumentPromptComp = newDocumentPrompt(
-            newDocumentSuccessCallback,
-            false,
-            ""
-        );
-        dispatch(openSimpleModal(newDocumentPromptComp, {}));
-    };
+export const newDocument = (projectUid: string, initFilename) => {
+    return openSimpleModal("new-document-prompt", {
+        isRenameAction: false,
+        initFilename,
+        projectUid
+    });
 };
 
-export const addDocument = (
-    projectUid: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        const addDocumentSuccessCallback = async (files: FileList) => {
-            const state = store.getState() as IStore;
-            const activeProjectUid = pathOr(
-                "",
-                ["ProjectsReducer", "activeProjectUid"],
-                state
-            );
-            const project: IProject = pathOr(
-                {} as IProject,
-                ["ProjectsReducer", "projects", activeProjectUid],
-                state
-            );
-
-            if (!isEmpty(project) && files && files.length > 0) {
-                const file = files[0];
-                const filename = file.name;
-                const fileType = textOrBinary(file.name);
-                const reader = new FileReader();
-                const currentUser = getAuth().currentUser;
-                const uid = currentUser ? currentUser.uid : "";
-
-                console.log("File type found:", fileType);
-
-                if (fileType === "txt") {
-                    reader.addEventListener("load", async () => {
-                        const txt = reader.result;
-                        const document_ = {
-                            type: fileType,
-                            name: filename,
-                            value: txt,
-                            userUid: uid,
-                            lastModified: getFirebaseTimestamp(),
-                            created: getFirebaseTimestamp()
-                        };
-
-                        const result = await addDoc(
-                            collection(
-                                doc(projects, project.projectUid),
-                                "files"
-                            ),
-                            document_
-                        );
-
-                        const documentUid = result.id;
-                        dispatch(
-                            tabOpenByDocumentUid(documentUid, activeProjectUid)
-                        );
-                        dispatch(
-                            newEmptyDocumentAction(
-                                project.projectUid,
-                                documentUid,
-                                filename
-                            )
-                        );
-                        updateProjectLastModified(project.projectUid);
-                    });
-                    reader.readAsText(file);
-                } else if (fileType === "bin") {
-                    // generate UUID
-                    const documentId = uuidv4();
-
-                    const metadata = {
-                        customMetadata: {
-                            filename,
-                            projectUid,
-                            userUid: uid,
-                            docUid: documentId
-                        }
-                    };
-
-                    const uploadTask = uploadBytesResumable(
-                        await storageReference(
-                            `${uid}/${project.projectUid}/${documentId}`
-                        ),
-                        file,
-                        metadata
-                    );
-
-                    // Listen for state changes, errors, and completion of the upload.
-                    uploadTask.on(
-                        "state_changed",
-                        (snapshot) => {
-                            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                            const progress =
-                                (snapshot.bytesTransferred /
-                                    snapshot.totalBytes) *
-                                100;
-                            console.log("Upload is " + progress + "% done");
-                            switch (snapshot.state) {
-                                case "paused":
-                                    console.log("Upload is paused");
-                                    break;
-                                case "running":
-                                    console.log("Upload is running");
-                                    break;
-                            }
-                        },
-                        function (error: any) {
-                            dispatch(
-                                openSnackbar(error.message, SnackbarType.Error)
-                            );
-                            // A full list of error codes is available at
-                            // https://firebase.google.com/docs/storage/web/handle-errors
-                            switch (error.name) {
-                                case "storage/unauthorized":
-                                    // User doesn't have permission to access the object
-                                    break;
-
-                                case "storage/canceled":
-                                    // User canceled the upload
-                                    break;
-
-                                case "storage/unknown":
-                                    // Unknown error occurred, inspect error.serverResponse
-                                    break;
-                            }
-                        },
-                        function () {
-                            // Upload completed successfully, now we can get the download URL
-                            // uploadTask.snapshot.ref.getDownloadURL()
-                            // cloud function updates firestore for file entry
-                        }
-                    );
-                }
-            }
-            dispatch(closeModal());
-        };
-        const addDocumentPromptComp = addDocumentPrompt(
-            addDocumentSuccessCallback
-        );
-        dispatch(openSimpleModal(addDocumentPromptComp, {}));
-    };
+export const addDocument = (projectUid: string) => {
+    return openSimpleModal("add-document-prompt", { projectUid });
 };
 
-const renameDocumentLocally = (
+export const renameDocumentLocally = (
     documentUid: string,
     newFilename: string
-): Record<string, any> => {
+): {
+    type: typeof DOCUMENT_RENAME_LOCALLY;
+    newFilename: string;
+    documentUid: string;
+} => {
     return {
         type: DOCUMENT_RENAME_LOCALLY,
         newFilename,
@@ -731,46 +462,27 @@ export const removeDocumentLocally = (
     };
 };
 
-export const renameDocument = (
-    projectUid: string,
-    documentUid: string
-): ((dispatch: any, getState: () => IStore) => Promise<void>) => {
-    return async (dispatch: any, getState) => {
-        const state = getState() as IStore;
-        const project: IProject = pathOr(
-            {} as IProject,
-            ["ProjectsReducer", "projects", projectUid],
-            state
-        );
-        if (!project) {
-            console.error("Project", projectUid, "was not found!");
-            return;
-        }
-        const currentFilename = pathOr(
-            "",
-            ["documents", documentUid, "filename"],
-            project
-        );
-        const renameDocumentSuccessCallback = async (filename: string) => {
-            await updateDoc(
-                doc(
-                    collection(doc(projects, projectUid), "files"),
-                    documentUid
-                ),
-                { name: filename } as any
-            );
-
-            dispatch(renameDocumentLocally(documentUid, filename));
-            updateProjectLastModified(projectUid);
-            dispatch(closeModal());
-        };
-        const renameDocumentPromptComp = newDocumentPrompt(
-            renameDocumentSuccessCallback,
-            true,
-            currentFilename
-        );
-        dispatch(openSimpleModal(renameDocumentPromptComp, {}));
-    };
+export const renameDocument = (projectUid: string, documentUid: string) => {
+    const state = store.getState() as RootState;
+    const project: IProject = pathOr(
+        {} as IProject,
+        ["ProjectsReducer", "projects", projectUid],
+        state
+    );
+    if (!project) {
+        console.error("Project", projectUid, "was not found!");
+        return;
+    }
+    const currentFilename = pathOr(
+        "",
+        ["documents", documentUid, "filename"],
+        project
+    );
+    return openSimpleModal("new-document-prompt", {
+        isRenameAction: true,
+        initFilename: currentFilename,
+        documentUid
+    });
 };
 
 const createExportPath = (folders, document_): string => {
@@ -782,8 +494,8 @@ const createExportPath = (folders, document_): string => {
 };
 
 export const exportProject = (): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        const state = store.getState() as IStore;
+    return async () => {
+        const state = store.getState() as RootState;
         const activeProjectUid = pathOr(
             "",
             ["ProjectsReducer", "activeProjectUid"],
@@ -839,10 +551,7 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
     };
 };
 
-export const markProjectPublic = (
-    projectUid: string,
-    isPublic: boolean
-): ThunkAction<void, any, null, Action<string>> => {
+export const markProjectPublic = (projectUid: string, isPublic: boolean) => {
     return async (dispatch, getState) => {
         const state = getState();
         const loggedInUserUid = selectLoggedInUid(state);

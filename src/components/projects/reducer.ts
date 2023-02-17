@@ -81,9 +81,7 @@ const ProjectsReducer = (
     state: IProjectsReducer | undefined,
     action: Record<string, any>
 ): IProjectsReducer => {
-    if (!state) {
-        return initialProjectsState;
-    } else {
+    if (state) {
         switch (action.type) {
             case STORE_PROJECT_LOCALLY: {
                 if (isEmpty(action.projects)) {
@@ -129,8 +127,9 @@ const ProjectsReducer = (
                     action.isPublic
                 )(state) as IProjectsReducer;
             }
-            case ACTIVATE_PROJECT:
+            case ACTIVATE_PROJECT: {
                 return assoc("activeProjectUid", action.projectUid, state);
+            }
             case CLOSE_PROJECT: {
                 return dissoc("activeProjectUid", state);
             }
@@ -260,6 +259,8 @@ const ProjectsReducer = (
                 return (state as IProjectsReducer) || initialProjectsState;
             }
         }
+    } else {
+        return initialProjectsState;
     }
 };
 

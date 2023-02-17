@@ -1,0 +1,1 @@
+export { openEditors } from "./editor";

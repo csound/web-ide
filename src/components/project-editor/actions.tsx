@@ -1,13 +1,8 @@
-import React from "react";
-import Button from "@material-ui/core/Button";
-import { EditorView } from "codemirror";
-import { closeModal, openSimpleModal } from "@comp/modal/actions";
-import { resetDocumentValue } from "@comp/projects/actions";
+import { openSimpleModal } from "@comp/modal/actions";
 import { IDocument } from "@comp/projects/types";
 import { ITarget } from "@comp/target-controls/types";
 import { find, propEq } from "ramda";
 import { sortByStoredTabOrder } from "./utils";
-import { NonCloudFile } from "@comp/file-tree/types";
 import {
     MANUAL_LOOKUP_STRING,
     TAB_DOCK_OPEN_NON_CLOUD_FILE,
@@ -20,7 +15,6 @@ import {
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
-    STORE_EDITOR_INSTANCE,
     IOpenDocument
 } from "./types";
 
@@ -71,8 +65,7 @@ export const tabDockInit = (
         allDocuments.length > 0
     ) {
         initialOpenDocuments.push({
-            uid: defaultTarget.targetDocumentUid,
-            editorInstance: undefined
+            uid: defaultTarget.targetDocumentUid
         });
     } else if (
         defaultTarget &&
@@ -82,8 +75,7 @@ export const tabDockInit = (
     ) {
         defaultTarget.playlistDocumentsUid.forEach((documentUid) => {
             initialOpenDocuments.push({
-                uid: documentUid,
-                editorInstance: undefined
+                uid: documentUid
             });
         });
     } else if (
@@ -102,8 +94,7 @@ export const tabDockInit = (
                 initialOpenDocuments
             ) &&
             initialOpenDocuments.push({
-                uid: projectCsd.documentUid,
-                editorInstance: undefined
+                uid: projectCsd.documentUid
             });
     }
 
@@ -145,50 +136,25 @@ export const tabOpenByDocumentUid = (
 };
 
 export const tabOpenNonCloudDocument = (
-    file: NonCloudFile,
+    filename: string,
     mimeType: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        dispatch({
-            type: TAB_DOCK_OPEN_NON_CLOUD_FILE,
-            isNonCloudDocument: true,
-            file,
-            mimeType
-        });
+): {
+    type: typeof TAB_DOCK_OPEN_NON_CLOUD_FILE;
+    isNonCloudDocument: boolean;
+    filename: string;
+    mimeType: string;
+} => {
+    return {
+        type: TAB_DOCK_OPEN_NON_CLOUD_FILE,
+        isNonCloudDocument: true,
+        filename,
+        mimeType
     };
 };
 
-export const closeTabDock = (): Record<string, any> => {
+export const closeTabDock = () => {
     return {
         type: TAB_DOCK_CLOSE
-    };
-};
-
-const closeUnsavedTabPrompt = (
-    cancelCallback,
-    closeWithoutSavingCallback
-): (() => React.ReactElement) => {
-    return function CloseUnsavedFilePrompt() {
-        return (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => cancelCallback()}
-                    style={{ marginTop: 12 }}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => closeWithoutSavingCallback()}
-                    style={{ marginTop: 12 }}
-                >
-                    Close without saveing
-                </Button>
-            </div>
-        );
     };
 };
 
@@ -196,81 +162,49 @@ export const tabClose = (
     activeProjectUid: string,
     documentUid: string,
     isModified: boolean
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        if (!isModified) {
-            dispatch({
-                type: TAB_CLOSE,
-                projectUid: activeProjectUid,
-                documentUid
-            });
-        } else {
-            const cancelCallback = () => dispatch(closeModal());
-            const closeWithoutSavingCallback = () => {
-                dispatch(closeModal());
-                dispatch({
-                    type: TAB_CLOSE,
-                    documentUid
-                });
-                dispatch(resetDocumentValue(activeProjectUid, documentUid));
-            };
-
-            const closeUnsavedTabPromptComp = closeUnsavedTabPrompt(
-                cancelCallback,
-                closeWithoutSavingCallback
-            );
-            dispatch(openSimpleModal(closeUnsavedTabPromptComp, {}));
-        }
-    };
+) => {
+    return isModified
+        ? openSimpleModal("close-unsaved-prompt", {
+              projectUid: activeProjectUid,
+              documentUid
+          })
+        : {
+              type: TAB_CLOSE,
+              projectUid: activeProjectUid,
+              documentUid
+          };
 };
 
-export const tabSwitch = (index: number): Record<string, any> => {
+export const tabSwitch = (index: number) => {
     return {
         type: TAB_DOCK_SWITCH_TAB,
         tabIndex: index
     };
 };
 
-export const lookupManualString = (
-    manualLookupString?: string
-): Record<string, any> => {
+export const lookupManualString = (manualLookupString?: string) => {
     return {
         type: MANUAL_LOOKUP_STRING,
         manualLookupString
     };
 };
 
-export const toggleManualPanel = (): Record<string, any> => {
+export const toggleManualPanel = () => {
     return {
         type: TOGGLE_MANUAL_PANEL
     };
 };
 
-export const setManualPanelOpen = (open: boolean): Record<string, any> => {
+export const setManualPanelOpen = (open: boolean) => {
     return {
         type: SET_MANUAL_PANEL_OPEN,
         open
     };
 };
 
-export const setFileTreePanelOpen = (open: boolean): Record<string, any> => {
+export const setFileTreePanelOpen = (open: boolean) => {
     return {
         type: SET_FILE_TREE_PANEL_OPEN,
         open
-    };
-};
-
-export const storeEditorInstance = (
-    editorInstance: EditorView | undefined,
-    projectUid: string,
-    documentUid: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        dispatch({
-            type: STORE_EDITOR_INSTANCE,
-            editorInstance,
-            projectUid,
-            documentUid
-        });
     };
 };

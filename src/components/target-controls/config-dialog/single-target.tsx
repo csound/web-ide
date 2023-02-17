@@ -2,14 +2,14 @@ import React from "react";
 import Select from "react-select";
 import { ascend, either, filter, equals, map, pipe, prop, sort } from "ramda";
 import { useTheme } from "@emotion/react";
-import DeleteIcon from "@material-ui/icons/DeleteTwoTone";
-import Radio from "@material-ui/core/Radio";
-import Checkbox from "@material-ui/core/Checkbox";
-import Fab from "@material-ui/core/Fab";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormGroup from "@material-ui/core/FormGroup";
-import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
+import DeleteIcon from "@mui/icons-material/DeleteTwoTone";
+import Radio from "@mui/material/Radio";
+import Checkbox from "@mui/material/Checkbox";
+import Fab from "@mui/material/Fab";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
+import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 import { IDocument } from "@comp/projects/types";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { ITargetFromInput } from "../types";
@@ -88,7 +88,7 @@ export const TargetControlsConfigDialogSingleTarget = ({
                             <Radio
                                 color="primary"
                                 checked={isDefaultTarget}
-                                onChange={(event) =>
+                                onChange={() =>
                                     !isDefaultTarget &&
                                     handleMarkAsDefaultTarget(targetName)
                                 }

@@ -69,18 +69,18 @@ export const mobileNavigationButtonAwesome = (
     margin-bottom: 5px;
 `;
 
-export const mobileConsole = (theme: Theme): SerializedStyles => css`
+export const mobileConsole = css`
     height: calc(100vh - 130px);
 `;
 
-export const mobileManual = (theme: Theme): SerializedStyles => css`
+export const mobileManual = css`
     height: calc(100vh - 130px);
     & > div {
         padding: 0 !important;
     }
 `;
 
-export const mobileFileTree = (theme: Theme): SerializedStyles => css`
+export const mobileFileTree = css`
     zoom: 140%;
     & > div {
         padding: 0 !important;

@@ -1,10 +1,8 @@
-import { EditorView } from "codemirror";
-import { store } from "@root/store";
-import { IStore } from "@store/types";
-// import { lookupManualString } from "../project-editor/actions";
+import { CsoundEditorView } from "@codemirror/view";
+import { RootState, store } from "@root/store";
 
 export const toggleEditorFullScreen = (): void => {
-    const storeState = store.getState() as IStore;
+    const storeState = store.getState() as RootState;
     const session = storeState.ProjectEditorReducer;
     const tabIndex = session.tabDock.tabIndex;
     const editorInstance =
@@ -12,8 +10,9 @@ export const toggleEditorFullScreen = (): void => {
     editorInstance.display.wrapper.requestFullscreen();
 };
 
-export const manualEntryAtPoint = (editorReference: EditorView) => {
-    return async (dispatch: (any) => void): Promise<void> => {
+export const manualEntryAtPoint = (editorReference: CsoundEditorView) => {
+    return async (): Promise<void> => {
+        console.log("FIXME", editorReference);
         // if (!editorReference || !window.csoundSynopsis) {
         //     return;
         // }

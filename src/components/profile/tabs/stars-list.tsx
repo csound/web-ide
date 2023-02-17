@@ -1,5 +1,5 @@
 import React from "react";
-import { IStore } from "@store/types";
+import { RootState } from "@store/types";
 import {
     StyledListItemTopRowText,
     StyledUserListItemContainer
@@ -7,7 +7,7 @@ import {
 import ProjectAvatar from "@elem/project-avatar";
 import { IProject } from "@comp/projects/types";
 import { selectProfileStars } from "../selectors";
-import { ListItem, ListItemText } from "@material-ui/core";
+import { ListItem, ListItemText } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { push } from "connected-react-router";
 import { isEmpty, prop } from "ramda";
@@ -21,7 +21,7 @@ const StarsList = ({
     const dispatch = useDispatch();
     const profileStars = useSelector(selectProfileStars(profileUid));
     const cachedProjects = useSelector(
-        (store: IStore) => store.ProjectsReducer.projects
+        (store: RootState) => store.ProjectsReducer.projects
     );
     return isEmpty(profileStars) ? (
         <></>

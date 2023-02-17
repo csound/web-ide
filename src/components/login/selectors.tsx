@@ -1,31 +1,31 @@
-import { IStore } from "@store/types";
+import { RootState } from "@root/store";
 
-export const selectLoginRequesting = ({ LoginReducer }: IStore): boolean => {
+export const selectLoginRequesting = ({ LoginReducer }: RootState): boolean => {
     return LoginReducer.requesting;
 };
 
 export const selectErrorCode = ({
     LoginReducer
-}: IStore): number | undefined => {
+}: RootState): number | undefined => {
     return LoginReducer.errorCode;
 };
 
 export const selectErrorMessage = ({
     LoginReducer
-}: IStore): string | undefined => {
+}: RootState): string | undefined => {
     return LoginReducer.errorMessaage;
 };
 
-export const selectLoginFail = ({ LoginReducer }: IStore): boolean => {
+export const selectLoginFail = ({ LoginReducer }: RootState): boolean => {
     return LoginReducer.failed;
 };
 
-export const selectAuthenticated = ({ LoginReducer }: IStore): boolean => {
+export const selectAuthenticated = ({ LoginReducer }: RootState): boolean => {
     return LoginReducer.authenticated;
 };
 
 export const selectLoggedInUid = ({
     LoginReducer
-}: IStore): string | undefined => {
+}: RootState): string | undefined => {
     return LoginReducer.loggedInUid;
 };

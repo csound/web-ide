@@ -1,10 +1,9 @@
 import React from "react";
-import IconButton from "@material-ui/core/IconButton";
-import ShuffleIcon from "@material-ui/icons/Shuffle";
+import { RootState, useDispatch, useSelector } from "@root/store";
+import IconButton from "@mui/material/IconButton";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
 import { path, range } from "ramda";
-import { useDispatch, useSelector } from "react-redux";
 import { fetchRandomProjects } from "./actions";
-import { IStore } from "@store/types";
 import { useTheme } from "@emotion/react";
 import ProjectCard, { ProjectCardSkeleton } from "./project-card";
 import * as SS from "./styles";
@@ -27,15 +26,15 @@ const RandomProjects = (): React.ReactElement => {
     }, [dispatch, isMounted, setIsMounted]);
     const theme = useTheme();
 
-    const profiles = useSelector((store: IStore) => {
+    const profiles = useSelector((store: RootState) => {
         return path(["HomeReducer", "profiles"], store);
     });
 
-    const randomProjects = useSelector((store: IStore) => {
+    const randomProjects = useSelector((store: RootState) => {
         return path(["HomeReducer", "randomProjects"], store);
     });
 
-    const randomProjectsLoading = useSelector((store: IStore) => {
+    const randomProjectsLoading = useSelector((store: RootState) => {
         return path(["HomeReducer", "randomProjectsLoading"], store);
     });
 

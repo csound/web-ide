@@ -65,4 +65,5 @@ export interface IProfile {
     displayName: string;
     username: string;
     photoUrl?: string;
+    userJoinDate?: number;
 }

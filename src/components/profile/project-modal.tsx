@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import Tooltip from "@material-ui/core/Tooltip";
+import { useDispatch } from "@store";
+import Tooltip from "@mui/material/Tooltip";
 import SVGPaths from "@elem/svg-icons";
 import ProjectAvatar from "@elem/project-avatar";
 import { IProject } from "@comp/projects/types";
@@ -8,16 +9,14 @@ import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 import { closeModal } from "../modal/actions";
 import { SliderPicker } from "react-color";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import { TextField, Button, Popover, Grid } from "@material-ui/core";
-import { useDispatch } from "react-redux";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import { TextField, Button, Popover, Grid } from "@mui/material";
 import { css } from "@emotion/react";
-import styled from "styled-components";
-import IconButton from "@material-ui/core/IconButton";
+import styled from "@emotion/styled";
+import IconButton from "@mui/material/IconButton";
 import ReactAutosuggestExample from "./tag-auto-suggest";
-// import { selectTags } from "./selectors";
 import { isEmpty } from "ramda";
 
 const avatarContainer = css`

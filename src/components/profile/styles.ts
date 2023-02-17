@@ -1,6 +1,5 @@
 import React from "react";
-import { Avatar, Theme as MaterialTheme } from "@material-ui/core";
-import { createStyles, withStyles } from "@material-ui/styles";
+import Avatar from "@mui/material/Avatar";
 import styled from "@emotion/styled";
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
@@ -9,37 +8,6 @@ export const createButtonAddIcon = css`
     margin-bottom: 2px;
     margin-left: 2px;
 `;
-
-const profileStyles = (theme: MaterialTheme) =>
-    createStyles({
-        centerBox: {
-            position: "absolute",
-            width: "600px",
-            height: "50px",
-            top: "120px",
-            left: "50%",
-            marginTop: "-25px",
-            marginLeft: "-50px"
-        },
-        startCodingButton: {
-            fontSize: "22px",
-            border: "4px solid #518C82",
-            borderRadius: "80%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "220px",
-            height: "220px",
-            textDecoration: "none",
-            background: "#00DFCB"
-        }
-    });
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const withStyles_ = (ClassComponent: any) =>
-    withStyles(profileStyles)(ClassComponent);
-
-export default withStyles_;
 
 export const iconPreviewBox = css`
     margin-left: -16px;
@@ -51,14 +19,6 @@ export const iconPreviewBox = css`
     justify-content: center;
     cursor: pointer;
 `;
-
-// export const previewAvatarColor = (
-//     foregroundColor: string
-// ): SerializedStyles => css`
-//     & > svg {
-//         ${avatarIconForeground(foregroundColor)}
-//     }
-// `;
 
 export const loadingSpinner = (theme: Theme): SerializedStyles => css`
 @keyframes cricle {

@@ -1,16 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { List, ListItem, ListItemText } from "@material-ui/core";
-import ReactTooltip from "react-tooltip";
+import { useDispatch, useSelector } from "@root/store";
+import { List, ListItem, ListItemText } from "@mui/material";
 import FollowingList from "./tabs/following-list";
 import FollowersList from "./tabs/followers-list";
 import StarsList from "./tabs/stars-list";
 import ListPlayButton from "./list-play-button";
-import SettingsIcon from "@material-ui/icons/Settings";
-import DeleteIcon from "@material-ui/icons/DeleteOutline";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
-import { useDispatch, useSelector } from "react-redux";
+import SettingsIcon from "@mui/icons-material/Settings";
+import DeleteIcon from "@mui/icons-material/DeleteOutline";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import Tooltip from "@mui/material/Tooltip";
 import {
     StyledListItemContainer,
     StyledListItemTopRowText,
@@ -19,7 +19,6 @@ import {
     StyledListPlayButtonContainer,
     StyledListButtonsContainer
 } from "./profile-ui";
-import { selectCsoundStatus } from "@comp/csound/selectors";
 import {
     selectFilteredUserFollowing,
     selectFilteredUserFollowers
@@ -32,23 +31,17 @@ import * as SS from "./styles";
 
 const ProjectListItem = ({
     isProfileOwner,
-    project,
-    username,
-    csoundStatus
+    project
 }: {
     isProfileOwner: boolean;
     project: IProject;
-    username: string;
-    csoundStatus: string;
 }) => {
-    ReactTooltip.rebuild();
     const dispatch = useDispatch();
     const { isPublic, projectUid, name, description, tags } = project;
-
     return (
         <div style={{ position: "relative" }}>
             <Link to={"/editor/" + projectUid}>
-                <ListItem button alignItems="flex-start">
+                <ListItem alignItems="flex-start">
                     <StyledListItemContainer isProfileOwner={isProfileOwner}>
                         <StyledListItemTopRowText>
                             <ListItemText
@@ -82,63 +75,63 @@ const ProjectListItem = ({
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
                 <>
-                    <div
-                        css={SS.settingsIconContainer}
-                        data-tip={"Toggle project settings"}
-                    >
-                        <div
-                            css={SS.settingsIcon}
-                            key={projectUid}
-                            onClick={(event) => {
-                                dispatch(editProject(project));
-                                event.preventDefault();
-                                event.stopPropagation();
-                            }}
-                        >
-                            <SettingsIcon />
+                    <Tooltip title="Toggle project settings" followCursor>
+                        <div css={SS.settingsIconContainer}>
+                            <div
+                                css={SS.settingsIcon}
+                                key={projectUid}
+                                onClick={(event) => {
+                                    dispatch(editProject(project));
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                }}
+                            >
+                                <SettingsIcon />
+                            </div>
                         </div>
-                    </div>
-                    <div
-                        css={SS.deleteIconContainer}
-                        data-tip={`Delete ${name}`}
-                    >
-                        <div
-                            css={SS.deleteIcon}
-                            onClick={(event) => {
-                                dispatch(deleteProject(project));
-                                event.preventDefault();
-                                event.stopPropagation();
-                            }}
-                        >
-                            <DeleteIcon />
+                    </Tooltip>
+                    <Tooltip title={`Delete ${name}`} followCursor>
+                        <div css={SS.deleteIconContainer}>
+                            <div
+                                css={SS.deleteIcon}
+                                onClick={(event) => {
+                                    dispatch(deleteProject(project));
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                }}
+                            >
+                                <DeleteIcon />
+                            </div>
                         </div>
-                    </div>
-                    <div
-                        css={SS.publicIconContainer}
-                        data-tip={
+                    </Tooltip>
+                    <Tooltip
+                        title={
                             isPublic
                                 ? "Make the project private"
                                 : "Make the project public"
                         }
+                        followCursor
                     >
-                        <div
-                            css={SS.publicIcon}
-                            style={{ opacity: !isPublic ? 0.6 : 1 }}
-                            onClick={(event) => {
-                                dispatch(
-                                    markProjectPublic(projectUid, !isPublic)
-                                );
-                                event.preventDefault();
-                                event.stopPropagation();
-                            }}
-                        >
-                            {isPublic ? (
-                                <VisibilityIcon />
-                            ) : (
-                                <VisibilityOffIcon />
-                            )}
+                        <div css={SS.publicIconContainer}>
+                            <div
+                                css={SS.publicIcon}
+                                style={{ opacity: isPublic ? 1 : 0.6 }}
+                                onClick={(event) => {
+                                    dispatch(
+                                        markProjectPublic(projectUid, !isPublic)
+                                    );
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                }}
+                            >
+                                {isPublic ? (
+                                    <VisibilityIcon />
+                                ) : (
+                                    <VisibilityOffIcon />
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    </Tooltip>
                 </>
             )}
         </div>
@@ -149,16 +142,13 @@ const ProfileLists = ({
     profileUid,
     selectedSection,
     isProfileOwner,
-    filteredProjects,
-    username
+    filteredProjects
 }: {
     profileUid: string;
     selectedSection: number;
     isProfileOwner: boolean;
     filteredProjects: Array<any>;
-    username: string;
 }): React.ReactElement => {
-    const csoundStatus = useSelector(selectCsoundStatus);
     const filteredFollowing = useSelector(
         selectFilteredUserFollowing(profileUid)
     );
@@ -179,8 +169,6 @@ const ProfileLists = ({
                             key={project.projectUid}
                             isProfileOwner={isProfileOwner}
                             project={project}
-                            csoundStatus={csoundStatus}
-                            username={username}
                         />
                     );
                 })}

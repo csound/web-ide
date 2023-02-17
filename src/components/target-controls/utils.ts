@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/consistent-function-scoping */
 import { curry, find, path, pathOr, propEq, values } from "ramda";
-import { IStore } from "@store/types";
+import { RootState } from "@store/types";
 import { ITarget } from "./types";
 import { IDocument } from "@comp/projects/types";
 import { CsoundObj } from "@csound/browser";
@@ -60,7 +60,7 @@ export const getDefaultTargetDocument = curry(
 );
 
 export const getPlayActionFromProject = curry(
-    (projectUid: string, store: IStore) => {
+    (projectUid: string, store: RootState) => {
         const targetDocument = getDefaultTargetDocument(projectUid, store);
 
         if (!targetDocument) {
@@ -104,7 +104,7 @@ export const getPlayActionFromProject = curry(
 export const getPlayActionFromTarget =
     (projectUid: string) =>
     (
-        store: IStore
+        store: RootState
     ): undefined | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
         const selectedTarget = path(
             ["TargetControlsReducer", projectUid, "selectedTarget"],

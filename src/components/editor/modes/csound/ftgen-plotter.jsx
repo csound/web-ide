@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import Slide from "@mui/material/Slide";
-import Fab from "@material-ui/core/Fab";
+import Fab from "@mui/material/Fab";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import InsightsIcon from "@mui/icons-material/Insights";

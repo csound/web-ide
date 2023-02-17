@@ -1,17 +1,21 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { styled as themeStyled } from "@hlolli/react-tabtab";
+import {
+    TabListStyle,
+    ActionButtonStyle,
+    TabStyle,
+    PanelStyle
+} from "@root/tabtab/index.js";
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { tabListHeight } from "@styles/constants";
 import { _shadow } from "@styles/_common";
 import { isMobile } from "@root/utils";
-let { TabListStyle, ActionButtonStyle, TabStyle, PanelStyle } = themeStyled;
 
 export const tabListStyle = (theme: Theme): SerializedStyles => css`
     & li::after {
         z-index: 0;
     }
-    ${!isMobile() ? "" : "display: none;"}
+    ${isMobile() ? "display: none;" : ""}
 
     & > div {
         height: 100%;
@@ -50,7 +54,7 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-TabListStyle = styled(TabListStyle)`
+const TabListStyleCustom = styled(TabListStyle)`
     z-index: 1;
     background-color: ${(properties) => properties.theme.background}!important;
     bottom: 0;
@@ -60,7 +64,7 @@ TabListStyle = styled(TabListStyle)`
     & li::after {
         z-index: 0;
     }
-    ${!isMobile() ? "" : "display: none;"}
+    ${isMobile() ? "display: none;" : ""}
 
     .tablist {
         width: 100%;
@@ -84,19 +88,20 @@ TabListStyle = styled(TabListStyle)`
     }
 `;
 
-TabStyle = styled(TabStyle)`
+const TabStyleCustom = styled(TabStyle)`
     z-index: 1;
     position: relative;
-    color: ${(properties) =>
+    color: ${(properties: any) =>
         properties.active
             ? properties.theme.textColor
             : properties.theme.unfocusedTextColor};
-    font-weight: ${(properties) => (properties.active ? 500 : 400)};
-    background-color: ${(properties) =>
+    font-weight: ${(properties: any) => (properties.active ? 500 : 400)};
+    background-color: ${(properties: any) =>
         properties.active
             ? properties.theme.highlightBackground
             : properties.theme.background};
     border: 0;
+    font-size: 14px;
     padding: 0 !important;
     padding-right: 42px !important;
     padding-bottom: 2px !important;
@@ -104,7 +109,7 @@ TabStyle = styled(TabStyle)`
     margin-bottom: -1px;
     &:hover {
         color: ${(properties) => properties.theme.textColor}!important;
-        background-color: ${(properties) =>
+        background-color: ${(properties: any) =>
             properties.active
                 ? properties.theme.highlightBackground
                 : properties.theme.highlightBackgroundAlt};
@@ -117,7 +122,7 @@ TabStyle = styled(TabStyle)`
         bottom: 0;
         right: 0;
         height: 3px;
-        background-color: ${(properties) =>
+        background-color: ${(properties: any) =>
             properties.active
                 ? properties.theme.tabHighlightActive
                 : properties.theme.tabHighlight};
@@ -128,7 +133,7 @@ TabStyle = styled(TabStyle)`
     }
 `;
 
-ActionButtonStyle = styled(ActionButtonStyle)`
+const ActionButtonStyleCustom = styled(ActionButtonStyle)`
     background-color: ${(properties) => properties.theme.gutterBackground};
     border: 2px solid ${(properties) => properties.theme.line};
     ${_shadow}
@@ -152,29 +157,31 @@ const bottomPanelStyle = `
   position: relative;
 `;
 
-PanelStyle = styled(PanelStyle)`
+const PanelStyleCustom = styled(PanelStyle)`
     width: 100%;
     height: 100%;
     position: absolute !important;
     padding: 0 !important;
     padding-top: 38px !important;
     background-color: ${(properties) => properties.theme.background}!important;
-    ${(properties) => (properties.isBottom ? bottomPanelStyle : "")};
+    ${(properties: any) => (properties.isBottom ? bottomPanelStyle : "")};
 `;
 
 const TabStyles = (isBottom: boolean): Record<string, any> => ({
     // eslint-disable-next-line react/display-name
     TabList: (properties) => (
-        <TabListStyle {...properties} isBottom={isBottom} />
+        <TabListStyleCustom {...properties} isBottom={isBottom} />
     ),
     // eslint-disable-next-line react/display-name
     ActionButton: (properties) => (
-        <ActionButtonStyle {...properties} isBottom={isBottom} />
+        <ActionButtonStyleCustom {...properties} isBottom={isBottom} />
     ),
     // eslint-disable-next-line react/display-name
-    Tab: (properties) => <TabStyle {...properties} isBottom={isBottom} />,
+    Tab: (properties) => <TabStyleCustom {...properties} isBottom={isBottom} />,
     // eslint-disable-next-line react/display-name
-    Panel: (properties) => <PanelStyle {...properties} isBottom={isBottom} />
+    Panel: (properties) => (
+        <PanelStyleCustom {...properties} isBottom={isBottom} />
+    )
 });
 
 export default TabStyles;

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import ReactTooltip from "react-tooltip";
+import { useDispatch, useSelector } from "@root/store";
 import Header from "@comp/header/header";
 import Search from "./search";
 import PopularProjects from "./popular-projects";
@@ -13,7 +12,6 @@ import {
 } from "./selectors";
 
 const Home = (): React.ReactElement => {
-    ReactTooltip.rebuild();
     const dispatch = useDispatch();
 
     const [popularProjectsFetchOffset, popularProjectsTotalRecords] =

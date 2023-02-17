@@ -1,21 +1,14 @@
 import React from "react";
-import * as SS from "./styles";
-import Tooltip from "@material-ui/core/Tooltip";
-import { useSelector, useDispatch } from "react-redux";
-import { IStore } from "@store/types";
+import { RootState, useDispatch, useSelector } from "@root/store";
+import Tooltip from "@mui/material/Tooltip";
 import { pathOr } from "ramda";
-import { stopCsound, stopRender } from "@comp/csound/actions";
-import { IconButton } from "@material-ui/core";
-import StopIcon from "@material-ui/icons/Stop";
+import { stopCsound } from "@comp/csound/actions";
+import { IconButton } from "@mui/material";
+import StopIcon from "@mui/icons-material/Stop";
+import * as SS from "./styles";
 
-const StopButton = ({
-    activeProjectUid,
-    isOwner
-}: {
-    activeProjectUid: string;
-    isOwner: boolean;
-}): React.ReactElement => {
-    const csoundPlayState: string = useSelector((store: IStore) => {
+const StopButton = (): React.ReactElement => {
+    const csoundPlayState: string = useSelector((store: RootState) => {
         return pathOr("stopped", ["csound", "status"], store);
     });
 
@@ -33,12 +26,9 @@ const StopButton = ({
                     onClick={() => {
                         switch (csoundPlayState) {
                             case "playing":
+                            case "rendering":
                             case "paused": {
                                 dispatch(stopCsound());
-                                break;
-                            }
-                            case "rendering": {
-                                dispatch(stopRender());
                                 break;
                             }
                         }

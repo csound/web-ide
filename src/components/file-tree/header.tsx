@@ -1,9 +1,9 @@
 import React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch } from "@root/store";
 import { IProject } from "../projects/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderPlus, faWindowClose } from "@fortawesome/free-solid-svg-icons";
-import Tooltip from "@material-ui/core/Tooltip";
+import Tooltip from "@mui/material/Tooltip";
 import { useTheme } from "@emotion/react";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import { setFileTreePanelOpen } from "@comp/project-editor/actions";

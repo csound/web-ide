@@ -52,12 +52,13 @@ const LoginReducer = (
                 assoc("failed", true)
             )(state);
         }
-        case CREATE_CLEAR_ERROR:
+        case CREATE_CLEAR_ERROR: {
             return pipe(
                 assoc("failed", false),
                 dissoc("errorCode"),
                 assoc("errorMessage", false)
             )(state);
+        }
         case CREATE_USER_SUCCESS:
         case SIGNIN_SUCCESS: {
             return pipe(

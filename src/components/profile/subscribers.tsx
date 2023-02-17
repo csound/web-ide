@@ -57,7 +57,11 @@ export const subscribeToProfile = (
     const unsubscribe: () => void = onSnapshot(
         doc(profiles, profileUid),
         (profile) => {
-            dispatch(storeUserProfile(profile.data() as IProfile, profileUid));
+            const profileData = profile.data() as any;
+            if (profileData.userJoinDate) {
+                profileData.userJoinDate = profileData.userJoinDate.toMillis();
+            }
+            dispatch(storeUserProfile(profileData as IProfile, profileUid));
         },
         (error: any) => console.error(error)
     );
@@ -89,9 +93,14 @@ export const subscribeToFollowing = (
                     const profPromise = await getDoc(
                         doc(profiles, followingProfileUid)
                     );
-                    return profPromise.exists()
+                    const profileData = profPromise.exists()
                         ? profPromise.data()
                         : { displayName: "Deleted user" };
+                    if (profileData.userJoinDate) {
+                        profileData.userJoinDate =
+                            profileData.userJoinDate.toMillis();
+                    }
+                    return profileData;
                 })
             );
             dispatch({
@@ -132,9 +141,15 @@ export const subscribeToFollowers = (
                         doc(profiles, followerProfileUid)
                     );
 
-                    return profPromise.exists()
+                    const profileData = profPromise.exists()
                         ? profPromise.data()
                         : { displayName: "Deleted user" };
+
+                    if (profileData.userJoinDate) {
+                        profileData.userJoinDate =
+                            profileData.userJoinDate.toMillis();
+                    }
+                    return profileData;
                 })
             );
             dispatch({

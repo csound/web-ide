@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Select from "react-select";
+import { useDispatch, useSelector } from "@store";
 import { useTheme } from "@emotion/react";
-import Tooltip from "@material-ui/core/Tooltip";
-import { useDispatch, useSelector } from "react-redux";
+import Tooltip from "@mui/material/Tooltip";
 import { setSelectedTarget, showTargetsConfigDialog } from "./actions";
 import { ITarget, ITargetMap } from "./types";
 import { IDocument, IDocumentsMap } from "@comp/projects/types";
@@ -23,7 +23,7 @@ interface IDropdownOption {
 
 const paranoidNotNullChecker = (item: any): boolean =>
     allPass([
-        (item_) => typeof item_ !== "undefined",
+        (item_) => item_ !== undefined,
         (item_) => `${item_}` !== "undefined",
         (item_) => !isNil(item_),
         (item_) => item_ !== null
@@ -167,22 +167,17 @@ const TargetDropdown = ({
                     options={options}
                     styles={
                         {
-                            control: (provided, state) => SS.control,
-                            container: (provided, state) =>
-                                SS.dropdownContainer(theme),
-                            valueContainer: (provided, state) =>
-                                SS.valueContainer(theme),
-                            groupHeading: (provided, state) =>
-                                SS.groupHeading(theme),
-                            placeholder: (provided, state) =>
-                                SS.placeholder(theme),
-                            menu: (provided, state) => SS.menu(theme),
-                            menuList: (provided, state) => SS.menuList(theme),
-                            option: (provided, state) => SS.menuOption(theme),
-                            indicatorsContainer: (provided, state) =>
+                            control: () => SS.control,
+                            container: () => SS.dropdownContainer(theme),
+                            valueContainer: () => SS.valueContainer,
+                            groupHeading: () => SS.groupHeading(theme),
+                            placeholder: () => SS.placeholder(theme),
+                            menu: () => SS.menu(theme),
+                            menuList: () => SS.menuList(theme),
+                            option: () => SS.menuOption(theme),
+                            indicatorsContainer: () =>
                                 SS.indicatorContainer(theme),
-                            indicatorSeparator: (provided, state) =>
-                                SS.indicatorSeparator
+                            indicatorSeparator: () => SS.indicatorSeparator
                         } as any
                     }
                 />

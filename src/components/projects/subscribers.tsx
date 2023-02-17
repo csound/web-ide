@@ -123,11 +123,11 @@ export const subscribeToProjectFilesChanges = (
                             append(document_.filename, newPathPrefix)
                         ).join("/");
                         // Handle file moved
-                        if (newAbsolutePath !== lastAbsolutePath) {
+                        if (newAbsolutePath === lastAbsolutePath) {
+                            csound && (await csound.fs.unlink(newAbsolutePath));
+                        } else {
                             csound &&
                                 (await csound.fs.unlink(lastAbsolutePath));
-                        } else {
-                            csound && (await csound.fs.unlink(newAbsolutePath));
                         }
                         csound &&
                             addDocumentToEMFS(

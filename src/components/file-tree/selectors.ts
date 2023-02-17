@@ -1,7 +1,6 @@
 import { pathOr } from "ramda";
-import { IStore } from "@store/types";
-import { NonCloudFile } from "./types";
+import { RootState } from "@root/store";
 
-export const selectNonCloudFiles = (store: IStore): NonCloudFile[] => {
-    return pathOr([] as any, ["FileTreeReducer", "nonCloudFiles"], store);
+export const selectNonCloudFiles = (store: RootState): string[] => {
+    return pathOr([] as string[], ["FileTreeReducer", "nonCloudFiles"], store);
 };
