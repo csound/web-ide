@@ -10,7 +10,8 @@ import Chip from "@mui/material/Chip";
 import blue from "@mui/material/colors/blue";
 import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
-import cx from "classnames";
+import { css } from "@emotion/react";
+// import cx from "classnames";
 
 const variantComponent = {
     standard: Input,
@@ -18,157 +19,140 @@ const variantComponent = {
     outlined: OutlinedInput
 };
 
-const styles = (theme) => {
-    const light = theme.palette.mode === "light";
-    const bottomLineColor = light
-        ? "rgba(0, 0, 0, 0.42)"
-        : "rgba(255, 255, 255, 0.7)";
+const inputRootStyle = css({
+    display: "inline-flex !important",
+    flexWrap: "wrap",
+    flex: 1,
+    marginTop: 0,
+    minWidth: 70,
+    "&$outlined,&$filled": {
+        boxSizing: "border-box"
+    },
+    "&$outlined": {
+        paddingTop: 14
+    },
+    "&$filled": {
+        paddingTop: 28
+    }
+});
 
-    return {
-        root: {},
-        inputRoot: {
-            display: "inline-flex",
-            flexWrap: "wrap",
-            flex: 1,
-            marginTop: 0,
-            minWidth: 70,
-            "&$outlined,&$filled": {
-                boxSizing: "border-box"
-            },
-            "&$outlined": {
-                paddingTop: 14
-            },
-            "&$filled": {
-                paddingTop: 28
-            }
-        },
-        input: {
-            display: "inline-block",
-            textOverflow: "ellipsis",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            appearance: "none", // Remove border in Safari, doesn't seem to break anything in other browsers
-            WebkitTapHighlightColor: "rgba(0,0,0,0)", // Remove mobile color flashing (deprecated style).
-            float: "left",
-            flex: 1
-        },
-        chipContainer: {
-            display: "flex",
-            flexFlow: "row wrap",
-            cursor: "text",
-            marginBottom: -2,
-            minHeight: 40,
-            "&$labeled&$standard": {
-                marginTop: 18
-            }
-        },
-        outlined: {
-            "& input": {
-                height: 16,
-                paddingTop: 4,
-                paddingBottom: 12,
-                marginTop: 4,
-                marginBottom: 4
-            }
-        },
-        standard: {},
-        filled: {
-            "& input": {
-                height: 22,
-                marginBottom: 4,
-                marginTop: 4,
-                paddingTop: 0
-            },
-            "$marginDense & input": {
-                height: 26
-            }
-        },
-        labeled: {},
-        label: {
-            top: 4,
-            "&$outlined&:not($labelShrink)": {
-                top: 2,
-                "$marginDense &": {
-                    top: 5
-                }
-            },
-            "&$filled&:not($labelShrink)": {
-                top: 15,
-                "$marginDense &": {
-                    top: 20
-                }
-            }
-        },
-        labelShrink: {
-            top: 0
-        },
-        helperText: {
-            marginBottom: -20
-        },
-        focused: {},
-        disabled: {},
-        underline: {
-            "&:after": {
-                borderBottom: `2px solid ${
-                    theme.palette.primary[light ? "dark" : "light"]
-                }`,
-                left: 0,
-                bottom: 0,
-                // Doing the other way around crash on IE 11 "''" https://github.com/cssinjs/jss/issues/242
-                content: '""',
-                position: "absolute",
-                right: 0,
-                transform: "scaleX(0)",
-                transition: theme.transitions.create("transform", {
-                    duration: theme.transitions.duration.shorter,
-                    easing: theme.transitions.easing.easeOut
-                }),
-                pointerEvents: "none" // Transparent to the hover style.
-            },
-            "&$focused:after": {
-                transform: "scaleX(1)"
-            },
-            "&$error:after": {
-                borderBottomColor: theme.palette.error.main,
-                transform: "scaleX(1)" // error is always underlined in red
-            },
-            "&:before": {
-                borderBottom: `1px solid ${bottomLineColor}`,
-                left: 0,
-                bottom: 0,
-                // Doing the other way around crash on IE 11 "''" https://github.com/cssinjs/jss/issues/242
-                content: '"\\00a0"',
-                position: "absolute",
-                right: 0,
-                transition: theme.transitions.create("border-bottom-color", {
-                    duration: theme.transitions.duration.shorter
-                }),
-                pointerEvents: "none" // Transparent to the hover style.
-            },
-            "&:hover:not($disabled):not($focused):not($error):before": {
-                borderBottom: `2px solid ${theme.palette.text.primary}`,
-                // Reset on touch devices, it doesn't add specificity
-                "@media (hover: none)": {
-                    borderBottom: `1px solid ${bottomLineColor}`
-                }
-            },
-            "&$disabled:before": {
-                borderBottomStyle: "dotted"
-            }
-        },
-        error: {
-            "&:after": {
-                backgroundColor: theme.palette.error.main,
-                transform: "scaleX(1)" // error is always underlined in red
-            }
-        },
-        chip: {
-            margin: "0 8px 8px 0",
-            float: "left"
-        },
-        marginDense: {}
-    };
-};
+const inputStyle = css({
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    appearance: "none",
+    WebkitTapHighlightColor: "rgba(0,0,0,0)",
+    float: "left",
+    flex: 1,
+    display: "inline-flex",
+    "& input": {
+        minHeight: 60
+    }
+});
+
+const outlinedStyle = css({
+    "& input": {
+        height: 16,
+        paddingTop: 4,
+        paddingBottom: 12,
+        marginTop: 4,
+        marginBottom: 4
+    }
+});
+
+const filledStyle = css({
+    "& input": {
+        height: 22,
+        marginBottom: 4,
+        marginTop: 4,
+        paddingTop: 0
+    },
+    "$marginDense & input": {
+        height: 26
+    }
+});
+
+const labelStyle = css({
+    top: 4,
+    "&$outlined&:not($labelShrink)": {
+        top: 2,
+        "$marginDense &": {
+            top: 5
+        }
+    },
+    "&$filled&:not($labelShrink)": {
+        top: 15,
+        "$marginDense &": {
+            top: 20
+        }
+    }
+});
+
+// const bottomLineColor = "rgba(0, 0, 0, 0.42)";
+const bottomLineColor = "rgba(255, 255, 255, 0.7)";
+
+const underlineStyle = css({
+    display: "flex",
+    "&:after": {
+        borderBottom: `2px solid white`,
+        left: 0,
+        bottom: 0,
+        content: '""',
+        position: "absolute",
+        right: 0,
+        transform: "scaleX(0)",
+        pointerEvents: "none" // Transparent to the hover style.
+    },
+    "&$focused:after": {
+        transform: "scaleX(1)"
+    },
+    "&$error:after": {
+        borderBottomColor: "red",
+        transform: "scaleX(1)" // error is always underlined in red
+    },
+    "&:before": {
+        borderBottom: `1px solid ${bottomLineColor}`,
+        left: 0,
+        bottom: 0,
+        // Doing the other way around crash on IE 11 "''" https://github.com/cssinjs/jss/issues/242
+        content: '"\\00a0"',
+        position: "absolute",
+        right: 0,
+        // transition: theme.transitions.create("border-bottom-color", {
+        //     duration: theme.transitions.duration.shorter
+        // }),
+        pointerEvents: "none" // Transparent to the hover style.
+    },
+    "&:hover:not($disabled):not($focused):not($error):before": {
+        borderBottom: `2px solid gray`,
+        // Reset on touch devices, it doesn't add specificity
+        "@media (hover: none)": {
+            borderBottom: `1px solid ${bottomLineColor}`
+        }
+    },
+    "&$disabled:before": {
+        borderBottomStyle: "dotted"
+    }
+});
+
+// const styles = (theme) => {
+//     const light = theme.palette.mode === "light";
+
+//     return {
+//         underline: {},
+//         error: {
+//             "&:after": {
+//                 backgroundColor: theme.palette.error.main,
+//                 transform: "scaleX(1)" // error is always underlined in red
+//             }
+//         },
+//         chip: {
+//             margin: "0 8px 8px 0",
+//             float: "left"
+//         },
+//         marginDense: {}
+//     };
+// };
 
 const keyCodes = {
     BACKSPACE: 8,
@@ -522,7 +506,7 @@ class ChipInput extends React.Component {
             blurBehavior,
             children,
             chipRenderer = defaultChipRenderer,
-            classes,
+            // classes,
             className,
             clearInputValueOnChange,
             dataSource,
@@ -590,8 +574,8 @@ class ChipInput extends React.Component {
                     isReadOnly: readOnly,
                     isFocused: this.state.focusedChip === i,
                     handleClick: () => this.setState({ focusedChip: i }),
-                    handleDelete: () => this.handleDeleteChip(chip, i),
-                    className: classes.chip
+                    handleDelete: () => this.handleDeleteChip(chip, i)
+                    // className: classes.chip
                 },
                 i
             );
@@ -614,13 +598,11 @@ class ChipInput extends React.Component {
 
         return (
             <FormControl
+                style={{ height: "60px" }}
                 ref={rootRef}
-                fullWidth={fullWidth}
-                className={cx(className, classes.root, {
-                    [classes.marginDense]: other.margin === "dense"
-                })}
+                fullWidth={true}
                 error={error}
-                required={chips.length > 0 ? undefined : required}
+                required={false}
                 onClick={this.focus}
                 disabled={disabled}
                 variant={variant}
@@ -629,10 +611,7 @@ class ChipInput extends React.Component {
                 {label && (
                     <InputLabel
                         htmlFor={id}
-                        classes={{
-                            root: cx(classes[variant], classes.label),
-                            shrink: classes.labelShrink
-                        }}
+                        css={labelStyle}
                         shrink={shrinkFloatingLabel}
                         focused={this.state.isFocused}
                         variant={variant}
@@ -644,22 +623,24 @@ class ChipInput extends React.Component {
                     </InputLabel>
                 )}
                 <div
-                    className={cx(classes[variant], classes.chipContainer, {
-                        [classes.focused]: this.state.isFocused,
-                        [classes.underline]:
-                            !disableUnderline && variant === "standard",
-                        [classes.disabled]: disabled,
-                        [classes.labeled]: label != null,
-                        [classes.error]: error
-                    })}
+                    css={underlineStyle}
+                    // className={cx(classes[variant], classes.chipContainer, {
+                    //     [classes.focused]: this.state.isFocused,
+                    //     [classes.underline]:
+                    //         !disableUnderline && variant === "standard",
+                    //     [classes.disabled]: disabled,
+                    //     [classes.labeled]: label != null,
+                    //     [classes.error]: error
+                    // })}
                 >
                     {variant === "standard" && chipComponents}
                     <InputComponent
                         ref={this.input}
-                        classes={{
-                            input: cx(classes.input, classes[variant]),
-                            root: cx(classes.inputRoot, classes[variant])
-                        }}
+                        css={[inputStyle]}
+                        // classes={{
+                        //     input: cx(classes.input, classes[variant]),
+                        //     root: cx(classes.inputRoot, classes[variant])
+                        // }}
                         id={id}
                         value={actualInputValue}
                         onChange={this.handleUpdateInput}
@@ -687,14 +668,14 @@ class ChipInput extends React.Component {
                 {helperText && (
                     <FormHelperText
                         {...FormHelperTextProps}
-                        className={
-                            FormHelperTextProps
-                                ? cx(
-                                      FormHelperTextProps.className,
-                                      classes.helperText
-                                  )
-                                : classes.helperText
-                        }
+                        // className={
+                        //     FormHelperTextProps
+                        //         ? cx(
+                        //               FormHelperTextProps.className,
+                        //               classes.helperText
+                        //           )
+                        //         : classes.helperText
+                        // }
                     >
                         {helperText}
                     </FormHelperText>
@@ -803,7 +784,10 @@ export const defaultChipRenderer = (
         className={className}
         style={{
             pointerEvents: isDisabled || isReadOnly ? "none" : undefined,
-            backgroundColor: isFocused ? blue[300] : undefined
+            backgroundColor: isFocused ? blue[300] : "rgba(20,20,50,0.2)",
+            alignSelf: "center",
+            fontSize: "14px",
+            color: "white"
         }}
         onClick={handleClick}
         onDelete={handleDelete}
