@@ -9,7 +9,7 @@
     "dependencies": {
         "cors": "^2.8.5",
         "date-fns": "^2.9.0",
-        "express": "^4.17.1",
+        "express": "^4.17.3",
         "fast-memoize": "^2.5.1",
         "firebase-admin": "^8.9.2",
         "fuse.js": "^3.4.6",
