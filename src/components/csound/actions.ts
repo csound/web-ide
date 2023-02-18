@@ -214,24 +214,17 @@ export const playORCFromString = ({
 };
 
 export const stopCsound = () => {
-    const cs = path(["csound", "csound"], store.getState());
-    cs && cs.stop();
+    csoundInstance && csoundInstance.stop();
     return setCsoundPlayState("stopped");
 };
 
 export const pauseCsound = () => {
-    const cs = path(["csound", "csound"], store.getState()) as
-        | CsoundObj
-        | undefined;
-    cs && cs.pause();
+    csoundInstance && csoundInstance.pause();
     return setCsoundPlayState("paused");
 };
 
 export const resumePausedCsound = () => {
-    const cs = path(["csound", "csound"], store.getState()) as
-        | CsoundObj
-        | undefined;
-    cs && cs.resume();
+    csoundInstance && csoundInstance.resume();
     return setCsoundPlayState("playing");
 };
 
@@ -277,6 +270,8 @@ export const renderToDisk = (
         const csound = await Csound({
             useWorker: true
         });
+
+        csoundInstance = csound as CsoundObj;
 
         if (!csound) {
             dispatch(
