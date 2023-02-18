@@ -115,8 +115,8 @@ export const updateBodyScroller = (
         }
     });
 
-export const isMobile = (): boolean => true;
-// /android|webos|iphone|ipad|ipod|opera mini/i.test(navigator.userAgent);
+export const isMobile = (): boolean =>
+    /android|webos|iphone|ipad|ipod|opera mini/i.test(navigator.userAgent);
 
 export const isIOS = (): boolean =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
