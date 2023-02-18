@@ -3,8 +3,7 @@ import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import CloseIcon from "@mui/icons-material/Close";
 import { closeButton as ProjectEditorCloseButtonStyle } from "@comp/project-editor/styles";
 
 export const TabStyle = styled.li`
@@ -73,18 +72,18 @@ export const Tab = React.forwardRef(
                     <IconButton
                         size="small"
                         css={ProjectEditorCloseButtonStyle}
+                        style={{ marginTop: "-4px", marginRight: "-5px" }}
                         onClick={() => {
                             closeCallback();
                         }}
                     >
-                        <FontAwesomeIcon
-                            icon={faTimes}
-                            size="sm"
-                            color={
-                                currentIndex === thisIndex
-                                    ? theme.textColor
-                                    : theme.unfocusedTextColor
-                            }
+                        <CloseIcon
+                            style={{
+                                fill:
+                                    currentIndex === thisIndex
+                                        ? theme.textColor
+                                        : theme.unfocusedTextColor
+                            }}
                         />
                     </IconButton>
                 </Tooltip>

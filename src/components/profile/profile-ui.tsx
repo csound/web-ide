@@ -5,12 +5,13 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
 export const ProfileContainer = styled.div`
-    display: grid;
-    ${!isMobile() &&
-    `grid-template-columns: 24px 250px 800px;
-    grid-template-rows: 50px 175px 1fr 70px;`}
+    ${isMobile()
+        ? `padding: 12.5vw;`
+        : `display: grid;
+    grid-template-columns: 24px 250px 800px;
+    grid-template-rows: 50px 175px 1fr 70px;
+    grid-auto-rows: minmax(90px, auto);`}
     width: 100%;
-    grid-auto-rows: minmax(90px, auto);
 `;
 export const IDContainer = styled(Card)`
     && {

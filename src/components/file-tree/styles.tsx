@@ -58,19 +58,17 @@ export const delEditContainer = css`
 
 export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     position: absolute;
-    right: 16px;
-
+    right: 18px;
+    margin-top: 2px;
     svg {
-        font-size: 16px;
+        font-size: 18px;
+        :hover {
+            fill: ${theme.textColor}!important;
+        }
     }
     height: 20px;
     & span {
         cursor: pointer;
-        &:hover {
-            svg {
-                color: ${theme.textColor}!important;
-            }
-        }
     }
 `;
 

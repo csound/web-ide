@@ -63,13 +63,21 @@ export const mobileManual = (): SerializedStyles => css`
     height: calc(100vh - 130px);
     & > div {
         padding: 0 !important;
+        height: 100vh !important;
     }
 `;
 
 export const mobileFileTree = (): SerializedStyles => css`
-    zoom: 140%;
+    position: absolute;
+    top: 28px;
+    width: 100%;
+    height: 100%;
+    zoom: 120%;
     & > div {
         padding: 0 !important;
+    }
+    #web-ide-file-tree-header {
+        display: none;
     }
 `;
 

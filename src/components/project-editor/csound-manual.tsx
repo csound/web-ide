@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { RootState } from "@store/types";
+import DisabledByDefaultRoundedIcon from "@mui/icons-material/DisabledByDefaultRounded";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWindowClose } from "@fortawesome/free-solid-svg-icons";
 import Tooltip from "@mui/material/Tooltip";
 import IframeComm from "react-iframe-comm";
 import { setManualPanelOpen } from "./actions";
@@ -61,10 +60,10 @@ const ManualWindow = ({
                                     dispatch(setManualPanelOpen(false))
                                 }
                             >
-                                <FontAwesomeIcon
-                                    icon={faWindowClose}
-                                    size="sm"
-                                    color={theme.highlightBackgroundAlt}
+                                <DisabledByDefaultRoundedIcon
+                                    style={{
+                                        fill: theme.highlightBackgroundAlt
+                                    }}
                                 />
                             </span>
                         </Tooltip>

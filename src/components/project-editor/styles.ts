@@ -28,16 +28,15 @@ export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     right: 16px;
 
     svg {
-        font-size: 16px;
+        font-size: 18px;
         color: ${theme.lineNumber}!important;
     }
     height: 36px;
-    // height: 20px;
     & span {
         cursor: pointer;
         &:hover {
             svg {
-                color: ${theme.textColor}!important;
+                fill: ${theme.textColor}!important;
             }
         }
     }

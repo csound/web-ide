@@ -89,7 +89,7 @@ const MySplit = ({
     );
 };
 
-function EditorForDocument({
+export function EditorForDocument({
     uid,
     projectUid,
     doc
@@ -363,7 +363,7 @@ const ProjectEditor = ({
         <MobileTabs
             activeProject={activeProject}
             projectUid={projectUid}
-            tabDock={tabDock}
+            currentDocument={openDocuments[tabIndex]}
         />
     ) : (
         <>

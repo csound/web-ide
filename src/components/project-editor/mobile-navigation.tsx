@@ -1,7 +1,8 @@
 import React from "react";
-import { AccountTree, FormatTextdirectionLToR } from "@mui/icons-material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStream, faBook } from "@fortawesome/free-solid-svg-icons";
+import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
+import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
+import AccountTree from "@mui/icons-material/AccountTree";
+import FormatTextdirectionLToR from "@mui/icons-material/FormatTextdirectionLToR";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import * as SS from "./styles";
@@ -38,32 +39,14 @@ const MobileNavigation = ({
                 onClick={() => setMobileTabIndex(2)}
                 css={SS.mobileNavigationButton}
                 label="Console"
-                icon={
-                    <FontAwesomeIcon
-                        style={{
-                            color: mobileTabIndex === 2 ? "#3f51b5" : "inherit"
-                        }}
-                        css={SS.mobileNavigationButtonAwesome}
-                        icon={faStream}
-                        size="lg"
-                    />
-                }
+                icon={<ListAltRoundedIcon fontSize="large" />}
             ></BottomNavigationAction>
             <BottomNavigationAction
                 value={3}
                 onClick={() => setMobileTabIndex(3)}
                 css={SS.mobileNavigationButton}
                 label="Manual"
-                icon={
-                    <FontAwesomeIcon
-                        style={{
-                            color: mobileTabIndex === 3 ? "#3f51b5" : "inherit"
-                        }}
-                        css={SS.mobileNavigationButtonAwesome}
-                        icon={faBook}
-                        size="lg"
-                    />
-                }
+                icon={<AutoStoriesRoundedIcon fontSize="large" />}
             ></BottomNavigationAction>
         </BottomNavigation>
     );

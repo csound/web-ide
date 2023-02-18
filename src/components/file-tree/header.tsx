@@ -1,8 +1,8 @@
 import React from "react";
 import { useDispatch } from "@root/store";
 import { IProject } from "../projects/types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolderPlus, faWindowClose } from "@fortawesome/free-solid-svg-icons";
+import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
+import DisabledByDefaultRoundedIcon from "@mui/icons-material/DisabledByDefaultRounded";
 import Tooltip from "@mui/material/Tooltip";
 import { useTheme } from "@emotion/react";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
@@ -20,45 +20,43 @@ const FileTreeHeader = ({
     const theme: any = useTheme();
     const dispatch = useDispatch();
     return (
-        <>
-            <div css={windowHeaderStyle} style={{ zIndex: 2 }}>
-                <p>
-                    {project ? project.name : ""}
-                    <span css={SS.headIconsContainer}>
-                        {isOwner && (
-                            <Tooltip title="create new directory">
-                                <span
-                                    css={SS.newFolderIcon}
-                                    onClick={() =>
-                                        dispatch(newFolder(project.projectUid))
-                                    }
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faFolderPlus}
-                                        size="sm"
-                                        color={theme.textColorAlt}
-                                    />
-                                </span>
-                            </Tooltip>
-                        )}
-
-                        <Tooltip title="close window">
+        <div
+            id="web-ide-file-tree-header"
+            css={windowHeaderStyle}
+            style={{ zIndex: 2 }}
+        >
+            <p>
+                {project ? project.name : ""}
+                <span css={SS.headIconsContainer}>
+                    {isOwner && (
+                        <Tooltip title="create new directory">
                             <span
+                                css={SS.newFolderIcon}
                                 onClick={() =>
-                                    dispatch(setFileTreePanelOpen(false))
+                                    dispatch(newFolder(project.projectUid))
                                 }
                             >
-                                <FontAwesomeIcon
-                                    icon={faWindowClose}
-                                    size="sm"
-                                    color={theme.textColorAlt}
+                                <CreateNewFolderIcon
+                                    style={{ fill: theme.textColorAlt }}
                                 />
                             </span>
                         </Tooltip>
-                    </span>
-                </p>
-            </div>
-        </>
+                    )}
+
+                    <Tooltip title="close window">
+                        <span
+                            onClick={() =>
+                                dispatch(setFileTreePanelOpen(false))
+                            }
+                        >
+                            <DisabledByDefaultRoundedIcon
+                                style={{ fill: theme.textColorAlt }}
+                            />
+                        </span>
+                    </Tooltip>
+                </span>
+            </p>
+        </div>
     );
 };
 
