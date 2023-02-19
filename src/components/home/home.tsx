@@ -72,6 +72,7 @@ const Home = (): React.ReactElement => {
         window.scrollTo(0, 0);
         const rootElement = document.querySelector("#root");
         rootElement && rootElement.scrollTo(0, 0);
+        document.title = "Csound Web-IDE";
     }, []);
 
     return (

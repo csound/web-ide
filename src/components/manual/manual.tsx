@@ -77,6 +77,7 @@ function CsoundManualIndex() {
     React.useEffect(() => {
         if (!isMounted) {
             setIsMounted(true);
+            document.title = "Csound Manual";
             fetch("/static-manual-index.json").then(async (response) => {
                 setAllDocuments((await response.json()) as StaticManualEntry[]);
             });

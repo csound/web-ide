@@ -176,9 +176,20 @@ const ProjectEditor = ({
 
     const projectUid: string = propOr("", "projectUid", activeProject);
     const projectOwnerUid: string = propOr("", "userUid", activeProject);
+    const projectName: string = propOr(
+        "Undefined Project",
+        "name",
+        activeProject
+    );
     const isOwner: boolean = useSelector(selectIsOwner(projectUid));
     // eslint-disable-next-line unicorn/no-useless-undefined
     const csound: CsoundObj | undefined = undefined;
+
+    useEffect(() => {
+        if (document.title !== projectName) {
+            document.title = projectName;
+        }
+    }, [projectName]);
 
     useEffect(() => {
         // start at top on init
