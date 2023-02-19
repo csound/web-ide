@@ -218,6 +218,12 @@ export const Profile = () => {
         backgroundIndex = 0
     } = profile || {};
 
+    useEffect(() => {
+        if (document.title !== displayName) {
+            document.title = displayName;
+        }
+    }, [displayName]);
+
     return (
         <Box>
             <Header />
@@ -277,7 +283,7 @@ export const Profile = () => {
                                     </UploadProfilePicture>
                                 )}
                             </ProfilePictureContainer>
-                            <DescriptionSection>
+                            <DescriptionSection gridRow="2">
                                 <Typography variant="h5" component="h4">
                                     Bio
                                 </Typography>
@@ -289,6 +295,8 @@ export const Profile = () => {
                                 >
                                     {profile && profile.bio}
                                 </Typography>
+                            </DescriptionSection>
+                            <DescriptionSection gridRow="3">
                                 <Typography variant="h5" component="h4">
                                     Links
                                 </Typography>

@@ -14,25 +14,25 @@ export const ProfileContainer = styled.div`
     width: 100%;
 `;
 export const IDContainer = styled(Card)`
-    && {
-        grid-row-start: 2;
-        grid-row-end: 3;
-        grid-column-start: 2;
-        grid-column-end: 3;
-        display: grid;
-        grid-template-rows: 250px 1fr 100px;
-        grid-template-columns: 1fr;
-        z-index: 2;
-        min-height: 580px;
-        box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-        & > div {
-            max-width: 250px;
-        }
+    grid-row-start: 2;
+    grid-row-end: 3;
+    grid-column-start: 2;
+    grid-column-end: 3;
+    display: grid;
+    grid-template-rows: 250px 1fr auto;
+    grid-template-columns: 1fr;
+    z-index: 2;
+    min-height: 420px;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    & > div {
+        max-width: 250px;
     }
+    overflow: initial;
+    height: fit-content;
 `;
 
 export const DescriptionSection = styled.div`
-    grid-row: 2;
+    grid-row: ${(properties: { gridRow: string }) => properties.gridRow};
     grid-column: 1;
     padding: 20px;
     div,
@@ -42,6 +42,14 @@ export const DescriptionSection = styled.div`
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    a > div {
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 32px;
+        white-space: nowrap;
+        text-decoration: underline;
+    }
+    height: fit-content;
 `;
 
 export const EditProfileButtonSection = styled.div`
@@ -127,7 +135,6 @@ export const ContentSection = styled.div<any>`
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     width: 100%;
-    overflow: hidden;
 `;
 export const ContentTabsContainer = styled.div`
     background-color: rgba(0, 0, 0, 0.2);
