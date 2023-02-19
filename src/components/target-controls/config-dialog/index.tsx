@@ -39,7 +39,7 @@ export const TargetControlsConfigDialog = () => {
             )}
             {(newTargets || []).map((props, index) => (
                 <TargetControlsConfigDialogSingleTarget
-                    key={props.targetName + index}
+                    key={index}
                     targetIndex={index}
                     allDocuments={allDocuments}
                     handleTargetDelete={handleTargetDelete}

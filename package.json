@@ -61,7 +61,6 @@
         "redux-first-history": "^5.1.1",
         "symbol-observable": "^4.0.0",
         "url": "^0.11.0",
-        "victory": "^36.6.8",
         "wait-on": "^7.0.1"
     },
     "devDependencies": {
@@ -177,7 +176,11 @@
         "node": ">=15"
     },
     "browserslist": {
-        "production": [">0.2%", "not dead", "not op_mini all"],
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
         "development": [
             "last 1 chrome version",
             "last 1 firefox version",

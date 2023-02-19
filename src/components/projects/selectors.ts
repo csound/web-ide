@@ -1,4 +1,4 @@
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import { IProject, IProjectsReducer } from "./types";
 import { path, prop } from "ramda";
 

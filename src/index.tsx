@@ -2,7 +2,7 @@ import React from "react";
 import { Provider as Provider_ } from "react-redux";
 import { createRoot } from "react-dom/client";
 import Main from "./components/main/main";
-import { store } from "@store";
+import { store } from "@root/store";
 
 import "./config/firestore"; // import for sideffects
 import "react-perfect-scrollbar/dist/css/styles.css";

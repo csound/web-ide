@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { RootState, useDispatch, useSelector } from "@store";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import TargetDropdown from "./dropdown";
 import PlayButton from "./play-button";
 import { selectProjectTargets, selectSelectedTarget } from "./selectors";

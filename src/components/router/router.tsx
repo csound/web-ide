@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useDispatch, history, store } from "@store";
+import { useDispatch, history, store } from "@root/store";
 import { Provider } from "react-redux";
 import Home from "../home/home";
 import CsoundManual from "@comp/manual/manual";

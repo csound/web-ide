@@ -1,5 +1,5 @@
 import { getAuth } from "firebase/auth";
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import { curry, equals, path, pathOr } from "ramda";
 import { IOpenDocument } from "./types";
 

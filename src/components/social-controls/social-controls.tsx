@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "@store";
+import { useDispatch, useSelector } from "@root/store";
 import * as SS from "./styles";
 import { subscribeToProjectStars } from "./subscribers";
 import Tooltip from "@mui/material/Tooltip";

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "@emotion/react";
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import DisabledByDefaultRoundedIcon from "@mui/icons-material/DisabledByDefaultRounded";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import Tooltip from "@mui/material/Tooltip";

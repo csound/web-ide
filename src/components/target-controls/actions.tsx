@@ -73,7 +73,7 @@ export const saveChangesToTarget = (
     return async (dispatch: any) => {
         const targetsReference = doc(targetsCollReference, projectUid);
         const batch = writeBatch(database);
-
+        console.log({ targets, defaultTarget });
         try {
             batch.set(
                 targetsReference,

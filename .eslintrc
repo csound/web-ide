@@ -12,7 +12,8 @@
     ],
     "globals": {
         "JSX": true,
-        "process": true
+        "process": true,
+        "module": true
     },
     "extends": [
         "plugin:@typescript-eslint/recommended",
@@ -39,7 +40,6 @@
                     ["@comp", "./src/components"],
                     ["@config", "./src/config"],
                     ["@elem", "./src/elements"],
-                    ["@store", "./src/store"],
                     ["@styles", "./src/styles"],
                     ["@db", "./src/db"]
                 ],

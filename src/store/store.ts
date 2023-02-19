@@ -1,11 +1,15 @@
-/* eslint-disable unicorn/prefer-spread */
+/* eslint-disable unicorn/prefer-spread,unicorn/prefer-module */
 import {
-    AnyAction,
+    Action,
     ThunkAction,
     ThunkDispatch,
     configureStore
 } from "@reduxjs/toolkit";
-import { useDispatch as useDispatchOriginal } from "react-redux";
+import {
+    TypedUseSelectorHook,
+    useDispatch as useDispatchOriginal,
+    useSelector as useSelectorOriginal
+} from "react-redux";
 import RootReducer from "./root-reducer";
 import { createReduxHistoryContext } from "redux-first-history";
 import { createBrowserHistory } from "history";
@@ -33,18 +37,18 @@ export const store = configureStore({
 export const history = createReduxHistory(store);
 
 export type AppDispatch = typeof store.dispatch;
-export { useSelector } from "react-redux";
 export { createAsyncThunk } from "@reduxjs/toolkit";
 
-export type RootState = ReturnType<typeof rootReducer>;
+export type RootState = ReturnType<typeof store.getState>;
 
 export type AppThunk<ReturnType = void> = ThunkAction<
     ReturnType,
     RootState,
     unknown,
-    AnyAction
+    Action<string>
 >;
 
-export type AppThunkDispatch = ThunkDispatch<RootState, any, AnyAction>;
+export type AppThunkDispatch = ThunkDispatch<RootState, any, Action<string>>;
 
 export const useDispatch: () => AppDispatch = useDispatchOriginal;
+export const useSelector: TypedUseSelectorHook<RootState> = useSelectorOriginal;

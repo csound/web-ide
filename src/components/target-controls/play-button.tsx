@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RootState, useDispatch, useSelector } from "@store";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import { useTheme } from "@emotion/react";
 import { TailSpin } from "react-loader-spinner";
 import * as SS from "./styles";

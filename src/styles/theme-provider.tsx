@@ -95,6 +95,9 @@ const globalStyles = (theme: Theme): SerializedStyles => css`
             background-color: ${theme.buttonBackgroundHover} !important;
         }
     }
+    .MuiFab-root.Mui-disabled {
+        background-color: rgba(0, 0, 0, 0.12) !important;
+    }
     .MuiMenu-list {
         color: ${theme.textColor} !important;
         ul {

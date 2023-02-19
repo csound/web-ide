@@ -168,25 +168,27 @@ a {text-decoration: none;}
   overflow: auto;
 }
 
+// scrollbar style from https://gist.github.com/spemer/a0e218bbb45433bd611e68446523a00b
 .cm-scroller::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  background-color: #fff;
+  width: 12px;
 }
 
-.cm-scroller::-webkit-scrollbar-thumb {
-  background-color: ${theme.scrollbar};
-  border-radius: 6px;
-  border: 3px solid transparent;
-}
-
+/* background of the scrollbar except button or resizer */
 .cm-scroller::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  background: transparent;
+    background-color: #fff;
 }
 
-.cm-scroller::-webkit-scrollbar-corner {
-  background: transparent;
+/* scrollbar itself */
+.cm-scroller::-webkit-scrollbar-thumb {
+    background-color: #babac0;
+    border-radius: 16px;
+    border: 4px solid #fff;
+}
+
+/* set button(top and bottom of the scrollbar) */
+.cm-scroller::-webkit-scrollbar-button {
+    display:none;
 }
 
 .cm-lineNumbers {
@@ -261,9 +263,6 @@ a {text-decoration: none;}
 }
 .cm-lineNumbers {
   margin-right: 2px;
-}
-.cm-scroller {
-  width: calc(100% + 32px);
 }
 
     `}</style>

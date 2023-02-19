@@ -1,4 +1,4 @@
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import { IProject, IProjectsReducer } from "../projects/types";
 import { curry, keys, pathOr, propOr } from "ramda";
 import { selectActiveProject } from "../projects/selectors";

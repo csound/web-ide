@@ -1,3 +1,4 @@
+import { RootState, store } from "@root/store";
 import { getDownloadURL } from "firebase/storage";
 import {
     collection,
@@ -54,14 +55,12 @@ import {
     convertProjectSnapToProject,
     fileDocumentDataToDocumentType
 } from "./utils";
-import { RootState } from "@store/types";
 import {
     database,
     getFirebaseTimestamp,
     projects,
     storageReference
 } from "@config/firestore";
-import { store } from "@root/store";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 

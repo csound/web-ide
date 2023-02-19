@@ -14,15 +14,16 @@ const TerserPlugin = require("terser-webpack-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
 const paths = require("./paths");
-const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
+// const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
 const getClientEnvironment = require("./env");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
 const ForkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWarningWebpackPlugin");
 const RobotstxtPlugin = require("robotstxt-webpack-plugin");
 const SitemapPlugin = require("sitemap-webpack-plugin").default;
 const ESLintPlugin = require("eslint-webpack-plugin");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 
-const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false";
+// const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== "false";
 const shouldInlineRuntimeChunk = false;
 
 const imageInlineSizeLimit = parseInt(
@@ -41,7 +42,7 @@ module.exports = function (webpackEnv, env_ = {}) {
 
     const isEnvProductionProfile =
         isEnvProduction && process.argv.includes("--profile");
-    console.log({ isEnvProduction, mode });
+    // console.log({ isEnvProduction, mode });
     const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1));
 
     return {
@@ -109,7 +110,6 @@ module.exports = function (webpackEnv, env_ = {}) {
                 "@comp": path.resolve(__dirname, "../src/components"),
                 "@elem": path.resolve(__dirname, "../src/elements"),
                 "@config": path.resolve(__dirname, "../src/config"),
-                "@store": path.resolve(__dirname, "../src/store"),
                 history: process.cwd() + "/node_modules/history",
                 "react-native": "react-native-web",
                 react: process.cwd() + "/node_modules/react",
@@ -168,7 +168,13 @@ module.exports = function (webpackEnv, env_ = {}) {
                     exclude: path.resolve(__dirname, "../node_modules/"),
 
                     use: [
-                        { loader: "babel-loader", options: { babelrc: true } }
+                        {
+                            loader: "babel-loader",
+                            options: {
+                                babelrc: true,
+                                plugins: ["react-refresh/babel"]
+                            }
+                        }
                     ]
                 },
                 {
@@ -215,6 +221,7 @@ module.exports = function (webpackEnv, env_ = {}) {
             ]
         },
         plugins: [
+            new ReactRefreshWebpackPlugin(),
             // Generates an `index.html` file with the <script> injected.
             new HtmlWebpackPlugin(
                 Object.assign(

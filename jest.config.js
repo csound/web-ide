@@ -25,7 +25,6 @@ module.exports = {
         "^@comp(.*)$": "<rootDir>/src/components$1",
         "^@elem(.*)$": "<rootDir>/src/elements$1",
         "^@config(.*)$": "<rootDir>/src/config$1",
-        "^@store(.*)$": "<rootDir>/src/store$1",
         "^.*\\.svg$": "<rootDir>/__mocks__/svgMock.js",
         "\\.(jpg|jpeg|png|gif|orc|sco|csd|udo)$":
             "<rootDir>/__mocks__/fileMock.js",

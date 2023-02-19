@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { useDispatch, useSelector } from "@store";
+import { useDispatch, useSelector } from "@root/store";
 import { useTheme } from "@emotion/react";
 import Tooltip from "@mui/material/Tooltip";
 import { setSelectedTarget, showTargetsConfigDialog } from "./actions";

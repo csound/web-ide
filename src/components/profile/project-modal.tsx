@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useDispatch } from "@store";
+import { useDispatch } from "@root/store";
 import Tooltip from "@mui/material/Tooltip";
 import SVGPaths from "@elem/svg-icons";
 import ProjectAvatar from "@elem/project-avatar";

@@ -1,5 +1,5 @@
 import { collection, doc, onSnapshot } from "firebase/firestore";
-import { store } from "@store/index";
+import { store } from "@root/store";
 import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
 import { IDocument, IDocumentsMap } from "./types";

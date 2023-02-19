@@ -15,9 +15,8 @@ import { Decoration, ViewPlugin, showPanel } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { createRoot } from "react-dom/client";
 import { debounce } from "throttle-debounce";
-import { renderFtgenPlotterElement, isFtgenPlottable } from "./ftgen-plotter";
 import { renderSynopsis } from "./render-synopsis";
-import { resolveExpressionFromNode } from "./parser-utils";
+// import { resolveExpressionFromNode } from "./parser-utils";
 import { parser } from "./syntax.grammar";
 
 window.editorCursorState = {};
@@ -326,11 +325,10 @@ const csoundInfoPanel = (view) => {
                 const treeRoot = syntaxTree(view.state).cursorAt(
                     view.state.selection.main.head
                 );
-                const {
-                    token: operatorName,
-                    statement,
-                    treeNode
-                } = findOperatorName(view, treeRoot);
+                const { token: operatorName } = findOperatorName(
+                    view,
+                    treeRoot
+                );
                 const synopsis =
                     operatorName &&
                     window.csoundSynopsis.find(
@@ -342,21 +340,7 @@ const csoundInfoPanel = (view) => {
                     Array.isArray(synopsis.synopsis) &&
                     synopsis.synopsis.length > 0;
 
-                const isPlottable =
-                    hasSynopsis && isFtgenPlottable(operatorName);
-
-                if (hasSynopsis && isPlottable) {
-                    const statementObject = resolveExpressionFromNode(
-                        view,
-                        treeNode
-                    );
-                    renderFtgenPlotterElement({
-                        root,
-                        statement,
-                        synopsis: synopsis.synopsis[0],
-                        statementObject
-                    });
-                } else if (hasSynopsis) {
+                if (hasSynopsis) {
                     renderSynopsis({ root, synopsis: synopsis.synopsis[0] });
                 } else {
                     renderSynopsis({ root, synopsis: "" });

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { closeModal } from "@comp/modal/actions";
 import { useTheme } from "@emotion/react";
-import { RootState, useDispatch, useSelector } from "@store";
+import { RootState, useDispatch, useSelector } from "@root/store";
 import { IDocument, IDocumentsMap } from "@comp/projects/types";
 import { ICsoundOptions } from "@comp/csound/types";
 import {

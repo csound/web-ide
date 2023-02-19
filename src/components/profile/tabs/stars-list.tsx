@@ -1,5 +1,5 @@
 import React from "react";
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import {
     StyledListItemTopRowText,
     StyledUserListItemContainer

@@ -18,7 +18,7 @@ export const firestoreNewTargets = (newTargets: ITargetFromInput[]) =>
                 targetType,
                 targetDocumentUid,
                 csoundOptions,
-                useCsound7
+                useCsound7: useCsound7 || false
             };
             return assoc(targetName, firebaseTarget, accumulator);
         },

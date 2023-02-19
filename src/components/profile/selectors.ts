@@ -1,4 +1,4 @@
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import { createSelector } from "reselect";
 import { IProfileReducer } from "./reducer";
 // import { IProfile } from "./types";

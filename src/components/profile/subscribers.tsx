@@ -1,4 +1,4 @@
-import { store } from "@store/index";
+import { store } from "@root/store";
 import {
     doc,
     getDoc,

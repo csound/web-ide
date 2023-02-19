@@ -73,7 +73,7 @@ const theme = {
     settingsIcon: monokaiViolet,
     profilePlayButton: henn1nk,
     profilePlayButtonActive: monokaiOrange,
-    scrollbar: monokaiLightGray,
+    scrollbar: monokaiGray,
     scrollbarHover: monokaiLightGray, // don't keep using this one
     console: monokaiLightGray,
     macro: monokaiOrange,

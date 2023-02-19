@@ -1,6 +1,4 @@
-import { RootState } from "@store/types";
-// import { ITarget, ITargetMap } from "./types";
-// import { IDocumentsMap } from "@comp/Projects/types";
+import { RootState } from "@root/store";
 import { curry, find, path, propEq } from "ramda";
 
 export const selectProjectTargets = curry(

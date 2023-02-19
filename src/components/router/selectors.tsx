@@ -1,4 +1,4 @@
-import { RootState } from "@store/types";
+import { RootState } from "@root/store";
 import { notEmpty } from "@root/utils";
 import { always, cond, equals, match, T } from "ramda";
 
