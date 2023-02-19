@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { configure, GlobalHotKeys, KeyMap } from "react-hotkeys";
-import { selectKeyCallbacks, selectKeyBindings } from "./selectors";
+import { selectUpdateCounter, selectKeyBindings } from "./selectors";
 import { useSelector } from "react-redux";
-import { assoc, isNil, keys, prop, reduce } from "ramda";
+import { assoc, reduce } from "ramda";
 import { IHotKeysCallbacks } from "./types";
+import { keyboardCallbacks } from "./index";
 
 configure({
     // logLevel: "verbose",
@@ -17,7 +18,7 @@ configure({
     ignoreTags: []
 });
 
-type HotKeyHandler = (keyEvent?: KeyboardEvent) => void;
+// type HotKeyHandler = (keyEvent?: KeyboardEvent) => void;
 
 type CommandKey = keyof IHotKeysCallbacks;
 
@@ -28,22 +29,20 @@ const HotKeys = ({
 }): React.ReactElement => {
     // prevent leak into the manual iframe
     const insideIframe = !!window.frameElement;
-    const callbacks = useSelector(selectKeyCallbacks);
     const bindings: KeyMap = useSelector(selectKeyBindings) as KeyMap;
+    const updateCounter: number = useSelector(selectUpdateCounter);
+
     // all callbacks that aren't bound must be noop callbacks
-    const safeCallbacks = reduce(
-        (accumulator, k: CommandKey) =>
-            assoc(
-                k,
-                isNil(callbacks && prop(k, callbacks))
-                    ? (((event: any) => {
-                          event && event.preventDefault();
-                      }) as HotKeyHandler)
-                    : callbacks && prop(k, callbacks),
-                accumulator
+    const safeCallbacks = useMemo(
+        () =>
+            reduce(
+                (accumulator, k: CommandKey) =>
+                    assoc(k, keyboardCallbacks.get(k), accumulator),
+                {},
+                [...keyboardCallbacks.keys()]
             ),
-        {},
-        keys(callbacks || {})
+        /* eslint-disable-next-line react-hooks/exhaustive-deps */
+        [updateCounter]
     );
     return (
         <>

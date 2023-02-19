@@ -7,15 +7,16 @@ import {
 const PREFIX = "HOTKEYS.";
 
 // export const SET_MENU_BAR_HOTKEYS = PREFIX + "SET_MENU_BAR_HOTKEYS";
-export const STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS =
-    PREFIX + "STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS";
+// export const STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS =
+//     PREFIX + "STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS";
 
-export const STORE_EDITOR_KEYBOARD_CALLBACKS =
-    PREFIX + "STORE_EDITOR_KEYBOARD_CALLBACKS";
+// export const STORE_EDITOR_KEYBOARD_CALLBACKS =
+//     PREFIX + "STORE_EDITOR_KEYBOARD_CALLBACKS";
+
+export const UPDATE_COUNTER = PREFIX + "UPDATE_COUNTER";
 
 interface StoreProjectEditorKeyboardCallbacks {
-    type: typeof STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS;
-    callbacks: IProjectEditorCallbacks;
+    type: typeof UPDATE_COUNTER;
 }
 
 export type HotKeysActionTypes = StoreProjectEditorKeyboardCallbacks;

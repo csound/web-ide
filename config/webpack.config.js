@@ -170,10 +170,12 @@ module.exports = function (webpackEnv, env_ = {}) {
                     use: [
                         {
                             loader: "babel-loader",
-                            options: {
-                                babelrc: true,
-                                plugins: ["react-refresh/babel"]
-                            }
+                            options: isEnvDevelopment
+                                ? {
+                                      babelrc: true,
+                                      plugins: ["react-refresh/babel"]
+                                  }
+                                : { babelrc: true }
                         }
                     ]
                 },
@@ -264,7 +266,7 @@ module.exports = function (webpackEnv, env_ = {}) {
                 "process.platform": `'${process.platform.toString()}'`
             }),
             // This is necessary to emit hot updates (currently CSS only):
-            isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
+            // isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
             isEnvDevelopment && new CaseSensitivePathsPlugin(),
 
             isProdDeployment &&
@@ -386,7 +388,7 @@ module.exports = function (webpackEnv, env_ = {}) {
                 eslintPath: require.resolve("eslint"),
                 context: paths.appSrc,
                 emitWarning: true,
-                emitError: true,
+                emitError: false,
                 cache: true,
                 cacheLocation: path.resolve(
                     paths.appNodeModules,

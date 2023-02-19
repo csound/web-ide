@@ -2,7 +2,6 @@ import "firebase/auth";
 import { RootState, store } from "@root/store";
 import { CsoundEditorView } from "@codemirror/view";
 import { Transaction } from "@codemirror/state";
-import { keyboardCallbacks } from "./index";
 import { path, pathOr } from "ramda";
 import {
     newDocument,
@@ -25,6 +24,8 @@ import { filenameToCsoundType } from "@comp/csound/utils";
 import { openEditors } from "@comp/editor";
 import { editorEvalCode } from "@comp/editor/utils";
 import * as EditorActions from "@comp/editor/actions";
+import { keyboardCallbacks } from "./index";
+import { UPDATE_COUNTER } from "./types";
 
 const withPreventDefault =
     (callback: any) =>
@@ -89,6 +90,8 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
         "stop_playback",
         withPreventDefault(() => store.dispatch(stopCsound()))
     );
+
+    store.dispatch({ type: UPDATE_COUNTER });
 };
 
 const selectCurrentEditor = (
@@ -214,6 +217,7 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
 };
 
 export const invokeHotKeyCallback = (hotKey: string) => {
+    console.log(hotKey);
     if (keyboardCallbacks.has(hotKey)) {
         const callback = keyboardCallbacks.get(hotKey) as any;
         callback();

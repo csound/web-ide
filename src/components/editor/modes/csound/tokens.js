@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { ContextTracker } from "@lezer/lr";
 import { BlockComment, LineComment, space, newline } from "./syntax.terms";
 

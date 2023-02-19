@@ -1,17 +1,14 @@
 import defaultBindings from "./default-bindings";
-// import { assoc, mergeAll } from "ramda";
-import {
-    HotKeysActionTypes,
-    BindingsMap
-    // STORE_EDITOR_KEYBOARD_CALLBACKS,
-    // STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS
-} from "./types";
+import { assoc } from "ramda";
+import { HotKeysActionTypes, BindingsMap, UPDATE_COUNTER } from "./types";
 
 export interface IHotKeys {
     bindings: BindingsMap;
+    updateCounter: number;
 }
 
 const INITIAL_STATE: IHotKeys = {
+    updateCounter: 0,
     bindings: defaultBindings
 };
 
@@ -20,20 +17,9 @@ const HotKeysReducer = (
     action: HotKeysActionTypes
 ): IHotKeys => {
     switch (action.type) {
-        // case STORE_PROJECT_EDITOR_KEYBOARD_CALLBACKS: {
-        //     return assoc(
-        //         "callbacks",
-        //         mergeAll([state.callbacks, action.callbacks]),
-        //         state
-        //     );
-        // }
-        // case STORE_EDITOR_KEYBOARD_CALLBACKS: {
-        //     return assoc(
-        //         "callbacks",
-        //         mergeAll([state.callbacks, action.callbacks]),
-        //         state
-        //     );
-        // }
+        case UPDATE_COUNTER: {
+            return assoc("updateCounter", state.updateCounter + 1, state);
+        }
         default: {
             return state || INITIAL_STATE;
         }

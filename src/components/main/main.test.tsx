@@ -2,7 +2,7 @@ import "jest";
 import React from "react";
 import Main from "./main";
 import { TestRenderer } from "react-redux-test-renderer";
-import { configureStore } from "@store/configure-store";
+import { configureStore } from "@root/store";
 import { Provider } from "react-redux";
 const { store } = configureStore();
 
@@ -44,12 +44,10 @@ jest.mock("firebase/app", () => {
     (firestoreMock as any).FieldValue = { serverTimestamp: {} as any };
     (firestoreMock as any).FieldPath = { documentId: jest.fn() };
 
-    const authMock = jest
-        .fn()
-        .mockReturnValue({
-            currentUser: false,
-            onAuthStateChanged: jest.fn().mockReturnValue(jest.fn())
-        });
+    const authMock = jest.fn().mockReturnValue({
+        currentUser: false,
+        onAuthStateChanged: jest.fn().mockReturnValue(jest.fn())
+    });
     (authMock as any).GoogleAuthProvider = { PROVIDER_ID: "" as any };
     (authMock as any).FacebookAuthProvider = { PROVIDER_ID: "" as any };
 
