@@ -325,6 +325,7 @@ export const renderToDisk = (
         });
 
         csound.once("renderEnded", async () => {
+            await csound.cleanup();
             const filesPost = await csound.fs.readdir("/");
             const newFiles = difference(filesPost, filesPre);
 
@@ -348,7 +349,6 @@ export const renderToDisk = (
             await syncFs(csound, project.projectUid, state);
 
             try {
-                await csound.cleanup();
                 await csound.terminateInstance();
             } catch {}
 

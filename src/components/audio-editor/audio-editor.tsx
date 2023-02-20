@@ -5,7 +5,6 @@ import { rootStyle } from "./styles";
 
 export const AudioEditor = ({ audioFileUrl }: { audioFileUrl: string }) => {
     const [data, setData] = useState("");
-    console.log({ audioFileUrl });
 
     useEffect(() => {
         if (
@@ -25,7 +24,7 @@ export const AudioEditor = ({ audioFileUrl }: { audioFileUrl: string }) => {
             setData(audioFileUrl);
         }
     }, [data, setData, audioFileUrl]);
-    console.log({ data });
+
     return data ? (
         <div css={rootStyle}>
             <audio controls>

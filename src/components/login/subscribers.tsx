@@ -9,9 +9,13 @@ export const subscribeToLoggedInUserProfile = (
     const unsubscribe: () => void = onSnapshot(
         doc(profiles, userUid),
         (profile) => {
+            const profileData: any = profile.data();
+            if (typeof profileData.userJoinDate === "object") {
+                profileData.userJoinDate = profileData.userJoinDate.toMillis();
+            }
             dispatch({
                 type: UPDATE_USER_PROFILE,
-                profile: profile.data(),
+                profile: profileData,
                 userUid
             });
         },

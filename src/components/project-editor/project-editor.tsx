@@ -269,7 +269,9 @@ const ProjectEditor = ({
             <DragTab
                 closable={true}
                 key={index}
-                closeCallback={() => closeTab(document.documentUid, isModified)}
+                closeCallback={() =>
+                    closeTab(document.documentUid || document.uid, isModified)
+                }
                 currentIndex={tabIndex}
                 thisIndex={index}
             >
