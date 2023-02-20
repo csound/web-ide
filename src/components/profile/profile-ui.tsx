@@ -19,7 +19,7 @@ export const IDContainer = styled(Card)`
     grid-column-start: 2;
     grid-column-end: 3;
     display: grid;
-    grid-template-rows: 250px 1fr auto;
+    grid-template-rows: 250px 1fr auto 60px;
     grid-template-columns: 1fr;
     z-index: 2;
     min-height: 420px;
@@ -53,7 +53,7 @@ export const DescriptionSection = styled.div`
 `;
 
 export const EditProfileButtonSection = styled.div`
-    grid-row: 3;
+    grid-row: 4;
     grid-column: 1;
     margin: auto;
 `;
