@@ -1,6 +1,6 @@
 import "firebase/auth";
 import { RootState, store } from "@root/store";
-import { CsoundEditorView } from "@codemirror/view";
+import { EditorView } from "@codemirror/view";
 import { Transaction } from "@codemirror/state";
 import { path, pathOr } from "ramda";
 import {
@@ -94,9 +94,7 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
     store.dispatch({ type: UPDATE_COUNTER });
 };
 
-const selectCurrentEditor = (
-    store: RootState
-): CsoundEditorView | undefined => {
+const selectCurrentEditor = (store: RootState): EditorView | undefined => {
     const currentTab = selectCurrentTab(store);
     const currentDocId = currentTab && currentTab.uid;
     if (currentDocId && openEditors.has(currentDocId)) {
@@ -149,15 +147,15 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
         })
     );
 
-    keyboardCallbacks.set(
-        "toggle_comment",
-        withPreventDefault(() => {
-            const editor = selectCurrentEditor(store.getState());
-            if (editor && typeof editor.toggleComment === "function") {
-                editor.toggleComment();
-            }
-        })
-    );
+    // keyboardCallbacks.set(
+    //     "toggle_comment",
+    //     withPreventDefault(() => {
+    //         const editor = selectCurrentEditor(store.getState());
+    //         if (editor && typeof editor.toggleComment === "function") {
+    //             editor.toggleComment();
+    //         }
+    //     })
+    // );
 
     keyboardCallbacks.set(
         "eval_block",

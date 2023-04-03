@@ -17,14 +17,12 @@
         "prepare": "husky install"
     },
     "dependencies": {
-        "@codemirror/text": "^0.19.6",
         "@csound/browser": "^6.18.7",
         "@emotion/core": "^11.0.0",
         "@emotion/css": "^11.10.5",
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
-        "@hlolli/react-codemirror": "^0.0.1",
-        "@lezer/generator": "^1.2.2",
+        "@hlolli/codemirror-lang-csound": "^1.0.0-alpha9",
         "@mui/icons-material": "^5.11.9",
         "@mui/material": "^5.11.9",
         "@reduxjs/toolkit": "^1.9.2",
@@ -59,7 +57,6 @@
         "react-sortable-hoc": "^2.0.0",
         "react-split-pane": "^0.1.92",
         "react-use-storage": "^0.5.1",
-        "recharts": "^2.4.1",
         "redux": "^4.2.1",
         "redux-first-history": "^5.1.1",
         "symbol-observable": "^4.0.0",
@@ -169,7 +166,8 @@
     "resolutions": {
         "react-iframe-comm/react": "*",
         "react-iframe-comm/react-dom": "*",
-        "@babel/plugin-syntax-class-static-block@^7.0": "7.14.5"
+        "@babel/plugin-syntax-class-static-block@^7.0": "7.14.5",
+        "@hlolli/react-codemirror/codemirror": "^6.0.1"
     },
     "engines": {
         "node": ">=15"

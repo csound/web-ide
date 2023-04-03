@@ -1,4 +1,4 @@
-import { CsoundEditorView } from "@codemirror/view";
+import { EditorView } from "@codemirror/view";
 import { RootState, store } from "@root/store";
 
 export const toggleEditorFullScreen = (): void => {
@@ -10,7 +10,7 @@ export const toggleEditorFullScreen = (): void => {
     editorInstance.display.wrapper.requestFullscreen();
 };
 
-export const manualEntryAtPoint = (editorReference: CsoundEditorView) => {
+export const manualEntryAtPoint = (editorReference: EditorView) => {
     return async (): Promise<void> => {
         console.log("FIXME", editorReference);
         // if (!editorReference || !window.csoundSynopsis) {

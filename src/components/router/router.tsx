@@ -13,7 +13,6 @@ import { Route, Routes } from "react-router-dom";
 import { stopCsound } from "../csound/actions";
 import { SiteDocuments } from "../site-documents/site-documents";
 import { ConsoleProvider } from "@comp/console/context";
-import { ParserDebugger } from "@comp/editor/modes/csound/debug-parser";
 
 const EditorLayout = (properties: any) => {
     const dispatch = useDispatch();
@@ -83,10 +82,6 @@ const RouterComponent = (): React.ReactElement => {
 
                     <Route path="documentation" element={<SiteDocuments />} />
                     <Route path="404" element={<Page404 />} />
-                    <Route
-                        path="parser-debugger"
-                        element={<ParserDebugger />}
-                    />
                     <Route path="*" element={<Page404 />} />
                 </Routes>
             </Router>

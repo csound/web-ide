@@ -45,6 +45,7 @@ declare module "@emotion/react" {
         tabHighlightActive: string;
         allowed: string;
         button: string;
+        caretColor: string;
 
         // Other
         starActive: string;

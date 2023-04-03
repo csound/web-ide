@@ -119,6 +119,7 @@ module.exports = function (webpackEnv, env_ = {}) {
                     process.cwd() + "/node_modules/react-router-dom",
                 "@emotion/react":
                     process.cwd() + "/node_modules/@emotion/react",
+                "@codemirror": process.cwd() + "/node_modules/@codemirror",
                 // Allows for better profiling with ReactDevTools
                 ...(isEnvProductionProfile && {
                     "react-dom$": "react-dom/profiling",
@@ -134,10 +135,10 @@ module.exports = function (webpackEnv, env_ = {}) {
         },
         module: {
             rules: [
-                {
-                    test: /\.(grammar|terms|terms\.js)$/,
-                    use: require.resolve("./lezer-loader.js")
-                },
+                // {
+                //     test: /\.(grammar|terms|terms\.js)$/,
+                //     use: require.resolve("./lezer-loader.js")
+                // },
                 {
                     enforce: "pre",
                     exclude: /@babel(?:\/|\\{1,2})runtime/,

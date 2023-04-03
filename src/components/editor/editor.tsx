@@ -1,12 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { useSelector, useDispatch } from "@root/store";
-import CodeMirror from "@hlolli/react-codemirror";
-import {
-    CsoundEditorView,
-    drawSelection,
-    keymap,
-    lineNumbers
-} from "@codemirror/view";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "@root/store";
+import { csoundMode } from "@hlolli/codemirror-lang-csound";
+import { EditorView, basicSetup } from "codemirror";
+import { keymap } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
 import {
     defaultKeymap,
@@ -15,24 +11,16 @@ import {
     historyKeymap
 } from "@codemirror/commands";
 import { bracketMatching } from "@codemirror/language";
-import { StateField } from "@codemirror/state";
-import { CsoundTheme } from "@comp/themes/types";
+import { EditorState, StateField } from "@codemirror/state";
+// import { CsoundTheme } from "@comp/themes/types";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
 import { reject, pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
-import { resolveTheme } from "@styles/code-mirror-painter";
-import { csoundMode } from "./modes/csound/csound";
+import { editorStyle } from "@styles/code-mirror-painter";
 
-declare global {
-    interface Window {
-        csoundSynopsis: any;
-        csoundBuiltinOpcodes: any;
-    }
-}
-
-export const openEditors: Map<string, CsoundEditorView> = new Map();
+export const openEditors: Map<string, EditorView> = new Map();
 
 const stateFields: Record<string, any> = {};
 const histories: Record<string, any> = {};
@@ -62,7 +50,7 @@ const getHistory = (documentUid: string): any => {
     }
 };
 
-let updateReduxDocumentValue;
+// let updateReduxDocumentValue;
 
 const CodeEditor = ({
     documentUid,
@@ -71,47 +59,21 @@ const CodeEditor = ({
     documentUid: string;
     projectUid: string;
 }): React.ReactElement => {
-    const currentThemeName: CsoundTheme = useSelector(
-        pathOr("monokai", ["ThemeReducer", "selectedThemeName"])
-    );
+    const editorReference = useRef(null);
+    // const currentThemeName: CsoundTheme = useSelector(
+    //     pathOr("monokai", ["ThemeReducer", "selectedThemeName"])
+    // );
 
-    const [editorTheme, highlightedTags] = resolveTheme(currentThemeName);
+    // const [editorTheme, highlightedTags] = resolveTheme(currentThemeName);
 
     const [isMounted, setIsMounted] = useState(false);
-    const [hasSynopsis, setHasSynopsis] = useState(false);
+    // const [hasSynopsis, setHasSynopsis] = useState(false);
 
     const dispatch = useDispatch();
 
-    const onUnmount = useCallback(() => {
-        openEditors.delete(documentUid);
-        updateReduxDocumentValue && updateReduxDocumentValue.cancel();
-    }, [documentUid]);
-
-    useEffect(() => {
-        if (window.csoundSynopsis) {
-            setHasSynopsis(true);
-        } else {
-            fetch("/static-manual-index.json")
-                .then(async (response) => {
-                    const csoundSynopsis: any = await response.json();
-                    window.csoundSynopsis = csoundSynopsis;
-                    window.csoundBuiltinOpcodes = csoundSynopsis.map(
-                        ({ opname }) => opname
-                    );
-                    setHasSynopsis(true);
-                })
-                .catch((error: any) =>
-                    console.error(
-                        "Error while getting static-manual-index.json",
-                        error
-                    )
-                );
-        }
-
-        return () => {
-            isMounted && onUnmount();
-        };
-    }, [isMounted, onUnmount, setHasSynopsis]);
+    // const onUnmount = useCallback(() => {
+    //     updateReduxDocumentValue && updateReduxDocumentValue.cancel();
+    // }, [documentUid]);
 
     const activeProjectUid = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
@@ -133,6 +95,8 @@ const CodeEditor = ({
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
 
+    console.log({ csoundFileType });
+
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState(
         undefined as
             | StateField<{ documentUid: string; documentType: string }>
@@ -141,11 +105,95 @@ const CodeEditor = ({
 
     const currentDocumentValue: string = propOr("", "currentValue", document);
 
+    const onChange = useCallback(
+        (event) => {
+            if (event?.state?.doc) {
+                dispatch(
+                    projectActions.updateDocumentValue(
+                        event.state.doc.toString(),
+                        projectUid,
+                        documentUid
+                    )
+                );
+            }
+        },
+        [dispatch, projectUid, documentUid]
+    );
+
     useEffect(() => {
         if (!isMounted) {
             setIsMounted(true);
         }
-    }, [isMounted, setIsMounted]);
+        return () => {
+            if (isMounted && openEditors.has(documentUid)) {
+                const editorStateInstance = openEditors.get(
+                    documentUid
+                ) as EditorView;
+                editorStateInstance.destroy();
+                openEditors.delete(documentUid);
+            }
+        };
+    }, [isMounted, setIsMounted, documentUid]);
+
+    useEffect(() => {
+        if (editorReference.current && !openEditors.has(documentUid)) {
+            const initialState = getInitialState(documentUid);
+            console.log({ initialState });
+            const config = {
+                extensions: [
+                    basicSetup,
+                    csoundMode({
+                        fileType: (["sco", "orc", "csd"].includes(
+                            csoundFileType || ""
+                        )
+                            ? csoundFileType
+                            : "orc") as "sco" | "orc" | "csd"
+                    }),
+                    keymap.of([
+                        ...reject(
+                            (keyb: any) => ["Mod-Enter"].includes(keyb.key),
+                            defaultKeymap
+                        ),
+                        ...historyKeymap
+                    ]),
+                    evalBlinkExtension,
+                    bracketMatching(),
+                    autocompletion(),
+                    getHistory(documentUid),
+                    EditorView.updateListener.of(onChange)
+                ]
+            };
+            const newEditor = initialState
+                ? new EditorView({
+                      state: EditorState.fromJSON(
+                          initialState?.json || {},
+                          config,
+                          initialState?.fields || {}
+                      ),
+
+                      parent: editorReference.current
+                  })
+                : new EditorView({
+                      extensions: config.extensions,
+                      parent: editorReference.current
+                  });
+
+            openEditors.set(documentUid, newEditor);
+            newEditor.dispatch({
+                changes: {
+                    from: 0,
+                    to: newEditor.state.doc.length,
+                    insert: currentDocumentValue
+                }
+            });
+        }
+    }, [
+        editorReference,
+        currentDocumentValue,
+        csoundFileType,
+        documentUid,
+        onChange
+    ]);
 
     useEffect(() => {
         if (isMounted && documentUid && !csoundDocumentStateField) {
@@ -170,53 +218,54 @@ const CodeEditor = ({
         setCsoundDocumentStateField
     ]);
 
-    return csoundDocumentStateField &&
-        typeof currentDocumentValue === "string" &&
-        hasSynopsis ? (
-        <CodeMirror
-            height="100%"
-            value={currentDocumentValue}
-            initialState={getInitialState(documentUid)}
-            extensions={[
-                drawSelection(),
-                csoundMode(),
-                getHistory(documentUid),
-                keymap.of([
-                    ...reject(
-                        (keyb: any) => ["Mod-Enter"].includes(keyb.key),
-                        defaultKeymap
-                    ),
-                    ...historyKeymap
-                ]),
-                lineNumbers(),
-                bracketMatching(),
-                editorTheme,
-                highlightedTags,
-                autocompletion(),
-                csoundDocumentStateField,
-                evalBlinkExtension
-            ]}
-            onChange={(value, viewUpdate) => {
-                const state = viewUpdate.state.toJSON(stateFields[documentUid]);
-                stateFields[documentUid + ":serialized"] =
-                    JSON.stringify(state);
-                dispatch(
-                    projectActions.updateDocumentValue(
-                        value,
-                        projectUid,
-                        documentUid
-                    )
-                );
-            }}
-            onCreateEditor={(editorView: CsoundEditorView) => {
-                openEditors.set(documentUid, editorView);
-            }}
-            basicSetup={false}
-            indentWithTab
-        />
-    ) : (
-        <></>
-    );
+    return <div ref={editorReference} css={editorStyle} />;
+    //  csoundDocumentStateField &&
+    //     typeof currentDocumentValue === "string" &&
+    //     hasSynopsis ? (
+    //     <CodeMirror
+    //         height="100%"
+    //         value={currentDocumentValue}
+    //         initialState={getInitialState(documentUid)}
+    //         extensions={[
+    //             // drawSelection(),
+    //             csoundMode({ fileType: "csd" })
+    //             // getHistory(documentUid),
+    //             // keymap.of([
+    //             //     ...reject(
+    //             //         (keyb: any) => ["Mod-Enter"].includes(keyb.key),
+    //             //         defaultKeymap
+    //             //     ),
+    //             //     ...historyKeymap
+    //             // ]),
+    //             // lineNumbers(),
+    //             // bracketMatching(),
+    //             // editorTheme,
+    //             // highlightedTags,
+    //             // autocompletion(),
+    //             // csoundDocumentStateField,
+    //             // evalBlinkExtension
+    //         ]}
+    //         onChange={(value, viewUpdate) => {
+    //             const state = viewUpdate.state.toJSON(stateFields[documentUid]);
+    //             stateFields[documentUid + ":serialized"] =
+    //                 JSON.stringify(state);
+    //             dispatch(
+    //                 projectActions.updateDocumentValue(
+    //                     value,
+    //                     projectUid,
+    //                     documentUid
+    //                 )
+    //             );
+    //         }}
+    //         onCreateEditor={(editorView: CsoundEditorView) => {
+    //             openEditors.set(documentUid, editorView);
+    //         }}
+    //         basicSetup={false}
+    //         indentWithTab
+    //     />
+    // ) : (
+    //     <></>
+    // );
 };
 
 export default CodeEditor;
