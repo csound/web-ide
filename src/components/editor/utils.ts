@@ -138,6 +138,13 @@ export const editorEvalCode = curry(
             }
         }
 
+        // fallback to current line if no selection
+        if (!selection) {
+            const line = view.state.doc.lineAt(view.state.selection.main.head);
+            context = { from: line.from, to: line.to };
+            selection = view.state.sliceDoc(line.from, line.to);
+        }
+
         if (selection) {
             evalSelection({ csound, documentType, evalString: selection }).then(
                 (result: number) => {

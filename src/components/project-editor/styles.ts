@@ -10,6 +10,10 @@ export const splitterRoot = css`
     padding-top: ${headerHeight}px;
     left: 0;
     box-sizing: border-box;
+    .Pane2 > div {
+        height: 100%;
+        width: 100%;
+    }
 `;
 
 export const closeButton = css`

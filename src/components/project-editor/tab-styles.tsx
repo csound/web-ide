@@ -160,7 +160,7 @@ const bottomPanelStyle = `
 const PanelStyleCustom = styled(PanelStyle)`
     width: 100%;
     height: 100%;
-    position: absolute !important;
+    //position: absolute !important;
     padding: 0 !important;
     padding-top: 38px !important;
     background-color: ${(properties) => properties.theme.background}!important;

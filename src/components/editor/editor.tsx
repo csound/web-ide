@@ -1,18 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { csoundMode } from "@hlolli/codemirror-lang-csound";
-import { EditorView, basicSetup } from "codemirror";
-import { keymap } from "@codemirror/view";
-import { autocompletion } from "@codemirror/autocomplete";
+import { EditorView } from "codemirror";
+import {
+    crosshairCursor,
+    keymap,
+    lineNumbers,
+    highlightActiveLineGutter,
+    highlightSpecialChars,
+    drawSelection,
+    dropCursor
+} from "@codemirror/view";
+import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
 import {
     defaultKeymap,
     history,
     historyField,
     historyKeymap
 } from "@codemirror/commands";
-import { bracketMatching } from "@codemirror/language";
+import {
+    bracketMatching,
+    foldGutter,
+    indentOnInput
+} from "@codemirror/language";
 import { EditorState, StateField } from "@codemirror/state";
-// import { CsoundTheme } from "@comp/themes/types";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
@@ -23,6 +34,7 @@ import { editorStyle } from "@styles/code-mirror-painter";
 export const openEditors: Map<string, EditorView> = new Map();
 
 const stateFields: Record<string, any> = {};
+const scrollPos: Record<string, number> = {};
 const histories: Record<string, any> = {};
 
 const getInitialState = (
@@ -40,6 +52,10 @@ const getInitialState = (
         : undefined;
 };
 
+const getInitialScrollPosition = (documentUid: string): number => {
+    return scrollPos[documentUid] || 0;
+};
+
 const getHistory = (documentUid: string): any => {
     const previousHistory = histories[documentUid];
     if (previousHistory) {
@@ -50,8 +66,6 @@ const getHistory = (documentUid: string): any => {
     }
 };
 
-// let updateReduxDocumentValue;
-
 const CodeEditor = ({
     documentUid,
     projectUid
@@ -60,31 +74,11 @@ const CodeEditor = ({
     projectUid: string;
 }): React.ReactElement => {
     const editorReference = useRef(null);
-    // const currentThemeName: CsoundTheme = useSelector(
-    //     pathOr("monokai", ["ThemeReducer", "selectedThemeName"])
-    // );
-
-    // const [editorTheme, highlightedTags] = resolveTheme(currentThemeName);
-
     const [isMounted, setIsMounted] = useState(false);
-    // const [hasSynopsis, setHasSynopsis] = useState(false);
-
     const dispatch = useDispatch();
 
-    // const onUnmount = useCallback(() => {
-    //     updateReduxDocumentValue && updateReduxDocumentValue.cancel();
-    // }, [documentUid]);
-
-    const activeProjectUid = useSelector(
-        pathOr("", ["ProjectsReducer", "activeProjectUid"])
-    );
-
     const project = useSelector(
-        pathOr({} as IProject, [
-            "ProjectsReducer",
-            "projects",
-            activeProjectUid
-        ])
+        pathOr({} as IProject, ["ProjectsReducer", "projects", projectUid])
     );
 
     const document = pathOr(
@@ -94,8 +88,6 @@ const CodeEditor = ({
     );
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
-
-    console.log({ csoundFileType });
 
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState(
         undefined as
@@ -120,6 +112,13 @@ const CodeEditor = ({
         [dispatch, projectUid, documentUid]
     );
 
+    const onScroll = useCallback(
+        (event: any) => {
+            scrollPos[documentUid] = event.target.scrollTop;
+        },
+        [documentUid]
+    );
+
     useEffect(() => {
         if (!isMounted) {
             setIsMounted(true);
@@ -129,19 +128,31 @@ const CodeEditor = ({
                 const editorStateInstance = openEditors.get(
                     documentUid
                 ) as EditorView;
+                editorStateInstance.scrollDOM.removeEventListener(
+                    "scroll",
+                    onScroll
+                );
+
                 editorStateInstance.destroy();
                 openEditors.delete(documentUid);
             }
         };
-    }, [isMounted, setIsMounted, documentUid]);
+    }, [isMounted, setIsMounted, documentUid, onScroll]);
 
     useEffect(() => {
         if (editorReference.current && !openEditors.has(documentUid)) {
             const initialState = getInitialState(documentUid);
-            console.log({ initialState });
+            // console.log({ initialState });
             const config = {
                 extensions: [
-                    basicSetup,
+                    lineNumbers(),
+                    highlightActiveLineGutter(),
+                    highlightSpecialChars(),
+                    foldGutter(),
+                    drawSelection(),
+                    dropCursor(),
+                    EditorState.allowMultipleSelections.of(true),
+                    indentOnInput(),
                     csoundMode({
                         fileType: (["sco", "orc", "csd"].includes(
                             csoundFileType || ""
@@ -151,16 +162,23 @@ const CodeEditor = ({
                     }),
                     keymap.of([
                         ...reject(
-                            (keyb: any) => ["Mod-Enter"].includes(keyb.key),
+                            (keyb: any) =>
+                                [
+                                    "Mod-Enter",
+                                    "Comd-Enter",
+                                    "Ctrl-Enter"
+                                ].includes(keyb.key),
                             defaultKeymap
                         ),
                         ...historyKeymap
                     ]),
                     evalBlinkExtension,
                     bracketMatching(),
+                    closeBrackets(),
                     autocompletion(),
                     getHistory(documentUid),
-                    EditorView.updateListener.of(onChange)
+                    EditorView.updateListener.of(onChange),
+                    crosshairCursor()
                 ]
             };
             const newEditor = initialState
@@ -177,7 +195,7 @@ const CodeEditor = ({
                       extensions: config.extensions,
                       parent: editorReference.current
                   });
-
+            newEditor.scrollDOM.addEventListener("scroll", onScroll);
             openEditors.set(documentUid, newEditor);
             newEditor.dispatch({
                 changes: {
@@ -186,13 +204,26 @@ const CodeEditor = ({
                     insert: currentDocumentValue
                 }
             });
+            const initialScrollPosition = getInitialScrollPosition(documentUid);
+            if (initialScrollPosition > 0) {
+                newEditor.scrollDOM.scrollTop = initialScrollPosition;
+                for (const timeout of [1, 10, 100]) {
+                    setTimeout(() => {
+                        try {
+                            newEditor.scrollDOM.scrollTop =
+                                initialScrollPosition;
+                        } catch {}
+                    }, timeout);
+                }
+            }
         }
     }, [
         editorReference,
         currentDocumentValue,
         csoundFileType,
         documentUid,
-        onChange
+        onChange,
+        onScroll
     ]);
 
     useEffect(() => {
@@ -219,53 +250,6 @@ const CodeEditor = ({
     ]);
 
     return <div ref={editorReference} css={editorStyle} />;
-    //  csoundDocumentStateField &&
-    //     typeof currentDocumentValue === "string" &&
-    //     hasSynopsis ? (
-    //     <CodeMirror
-    //         height="100%"
-    //         value={currentDocumentValue}
-    //         initialState={getInitialState(documentUid)}
-    //         extensions={[
-    //             // drawSelection(),
-    //             csoundMode({ fileType: "csd" })
-    //             // getHistory(documentUid),
-    //             // keymap.of([
-    //             //     ...reject(
-    //             //         (keyb: any) => ["Mod-Enter"].includes(keyb.key),
-    //             //         defaultKeymap
-    //             //     ),
-    //             //     ...historyKeymap
-    //             // ]),
-    //             // lineNumbers(),
-    //             // bracketMatching(),
-    //             // editorTheme,
-    //             // highlightedTags,
-    //             // autocompletion(),
-    //             // csoundDocumentStateField,
-    //             // evalBlinkExtension
-    //         ]}
-    //         onChange={(value, viewUpdate) => {
-    //             const state = viewUpdate.state.toJSON(stateFields[documentUid]);
-    //             stateFields[documentUid + ":serialized"] =
-    //                 JSON.stringify(state);
-    //             dispatch(
-    //                 projectActions.updateDocumentValue(
-    //                     value,
-    //                     projectUid,
-    //                     documentUid
-    //                 )
-    //             );
-    //         }}
-    //         onCreateEditor={(editorView: CsoundEditorView) => {
-    //             openEditors.set(documentUid, editorView);
-    //         }}
-    //         basicSetup={false}
-    //         indentWithTab
-    //     />
-    // ) : (
-    //     <></>
-    // );
 };
 
 export default CodeEditor;

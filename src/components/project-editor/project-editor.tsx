@@ -95,7 +95,12 @@ export function EditorForDocument({
     doc
 }: IEditorForDocumentProperties) {
     if ((doc as IDocument).type === "txt") {
-        return <Editor documentUid={(doc as IDocument).documentUid}></Editor>;
+        return (
+            <Editor
+                documentUid={(doc as IDocument).documentUid}
+                projectUid={projectUid}
+            ></Editor>
+        );
     } else if (
         (doc as IDocument).type === "bin" &&
         isAudioFile((doc as IDocument).filename)

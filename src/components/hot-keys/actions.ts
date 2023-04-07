@@ -2,7 +2,7 @@ import "firebase/auth";
 import { RootState, store } from "@root/store";
 import { EditorView } from "@codemirror/view";
 import { Transaction } from "@codemirror/state";
-import { path, pathOr } from "ramda";
+import { pathOr } from "ramda";
 import {
     newDocument,
     saveAllAndClose,
@@ -19,7 +19,7 @@ import {
     getPlayActionFromProject,
     getPlayActionFromTarget
 } from "@comp/target-controls/utils";
-import { pauseCsound, stopCsound } from "@comp/csound/actions";
+import { csoundInstance, pauseCsound, stopCsound } from "@comp/csound/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { openEditors } from "@comp/editor";
 import { editorEvalCode } from "@comp/editor/utils";
@@ -162,7 +162,7 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
         withPreventDefault(() => {
             const storeState = store.getState();
             const editor = selectCurrentEditor(storeState);
-            const csound = path(["csound", "csound"], storeState);
+            const csound = csoundInstance;
 
             const csoundStatus = pathOr(
                 "stopped",
@@ -190,7 +190,7 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
         withPreventDefault(() => {
             const storeState = store.getState();
             const editor = selectCurrentEditor(storeState);
-            const csound = path(["csound", "csound"], storeState);
+            const csound = csoundInstance;
 
             const csoundStatus = pathOr(
                 "stopped",
@@ -215,7 +215,6 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
 };
 
 export const invokeHotKeyCallback = (hotKey: string) => {
-    console.log(hotKey);
     if (keyboardCallbacks.has(hotKey)) {
         const callback = keyboardCallbacks.get(hotKey) as any;
         callback();
