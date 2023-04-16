@@ -480,7 +480,8 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
     return openSimpleModal("new-document-prompt", {
         isRenameAction: true,
         initFilename: currentFilename,
-        documentUid
+        projectUid,
+        renameDocumentUid: documentUid
     });
 };
 
