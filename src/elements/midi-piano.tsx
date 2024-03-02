@@ -1,21 +1,21 @@
 import React from "react";
 import { Piano, KeyboardShortcuts, MidiNumbers } from "react-piano";
 import { ICsoundStatus } from "@comp/csound/types";
-import { CsoundObj } from "@csound/browser";
 import { useSelector } from "react-redux";
-import { path, pathOr } from "ramda";
+import { pathOr } from "ramda";
+import { csoundInstance } from "@comp/csound/actions";
 import "react-piano/dist/styles.css";
 
 const MidiPiano = (): React.ReactElement => {
     const firstNote = MidiNumbers.fromNote("c3");
     const lastNote = MidiNumbers.fromNote("f5");
-    const csound: CsoundObj | undefined = useSelector(
-        path(["csound", "csound"])
-    );
+    const csound = csoundInstance;
 
     const csoundStatus: ICsoundStatus = useSelector(
         pathOr("stopped", ["csound", "status"])
     ) as ICsoundStatus;
+
+    console.log("csoundStatus", csoundStatus);
 
     const keyboardShortcuts = KeyboardShortcuts.create({
         firstNote: firstNote,
@@ -26,13 +26,13 @@ const MidiPiano = (): React.ReactElement => {
     return (
         <Piano
             noteRange={{ first: firstNote, last: lastNote }}
-            playNote={(midiNumber) => {
+            playNote={(midiNumber: number) => {
                 // TODO make velocity configureable
                 if (csound && csoundStatus === "playing") {
                     csound.midiMessage(144, midiNumber, 64);
                 }
             }}
-            stopNote={(midiNumber) => {
+            stopNote={(midiNumber: number) => {
                 if (csound && csoundStatus === "playing") {
                     csound.midiMessage(128, midiNumber, 64);
                 }
