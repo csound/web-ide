@@ -17,6 +17,7 @@ jobs:
                   cp build/index.html functions
                   cd functions
                   yarn install
+                  yarn build
             - name: Deploy to Firebase
               uses: w9jds/firebase-action@master
               with:
