@@ -1,15 +1,18 @@
-const admin = require("firebase-admin");
-const functions = require("firebase-functions");
-const log = require("./logger.js")("followers_counter");
+import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
+import { makeLogger } from "./logger.js";
 
-exports.followers_counter = functions.firestore
+const log = makeLogger("followersCounter");
+
+export const followersCounter = functions.firestore
     .document("followers/{userUid}")
     .onWrite(async (change, context) => {
         const userUid = context.params.userUid;
-        const followersCountRef = await admin
+        const followersCountRef = admin
             .firestore()
             .collection("followersCount")
             .doc(userUid);
+
         if (!change.before.exists) {
             // New followers doc created = 1 new follower
             await followersCountRef.set({ followersCount: 1 });
@@ -20,7 +23,7 @@ exports.followers_counter = functions.firestore
                 followersCount: Object.keys(dataAfter || {}).length
             });
         } else if (!change.after.exists) {
-            // No follwers left, do nothing
+            // No followers left, do nothing
         }
 
         return;

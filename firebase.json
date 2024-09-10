@@ -1,6 +1,6 @@
 {
     "functions": {
-        "runtime": "nodejs14",
+        "runtime": "nodejs20",
         "source": "./functions"
     },
     "hosting": {

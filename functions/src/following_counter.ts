@@ -1,15 +1,18 @@
-const admin = require("firebase-admin");
-const functions = require("firebase-functions");
-const log = require("./logger.js")("following_counter");
+import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
+import { makeLogger } from "./logger.js";
 
-exports.following_counter = functions.firestore
+const log = makeLogger("followersCounter");
+
+export const followingCounter = functions.firestore
     .document("following/{userUid}")
     .onWrite(async (change, context) => {
         const userUid = context.params.userUid;
-        const followingCountRef = await admin
+        const followingCountRef = admin
             .firestore()
             .collection("followingCount")
             .doc(userUid);
+
         if (!change.before.exists) {
             // First time following = 1 following
             await followingCountRef.set({ followingCount: 1 });

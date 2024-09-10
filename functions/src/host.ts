@@ -1,36 +1,38 @@
-const admin = require("firebase-admin");
-const functions = require("firebase-functions");
-const isBot = require("isbot");
-const fs = require("fs");
-const R = require("ramda");
+import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
+import { isbot } from "isbot";
+import fs from "node:fs";
+import R from "ramda";
 
-exports.host = functions.https.onRequest(async (req, res) => {
+export const host = functions.https.onRequest(async (req, res) => {
     try {
         let indexHTML = fs.readFileSync("./index.html").toString();
         const path = req.path ? req.path.split("/") : req.path;
         const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
+
         if (
-            isBot(req.headers["user-agent"]) &&
+            isbot(req.headers["user-agent"] || "") &&
             path &&
             path.length > 1 &&
             path[1] === "editor"
         ) {
             const projectUid = path[2];
 
-            const project = await admin
+            const projectSnapshot = await admin
                 .firestore()
                 .collection("projects")
                 .doc(projectUid)
                 .get();
 
-            if (R.isNil(project) || !project.exists) {
+            if (R.isNil(projectSnapshot) || !projectSnapshot.exists) {
                 res.status(404).send();
                 return;
             }
-            const projectData = await project.data();
+
+            const projectData = projectSnapshot.data();
             const userUid = R.pathOr(null, ["userUid"], projectData || {});
 
-            if (R.isNil(project) || R.isNil(userUid)) {
+            if (R.isNil(userUid)) {
                 res.status(404).send();
                 return;
             }
@@ -45,7 +47,8 @@ exports.host = functions.https.onRequest(async (req, res) => {
                 res.status(404).send();
                 return;
             }
-            const profile = await profileSnap.data();
+
+            const profile = profileSnap.data();
             const projectWithUid = R.assoc(
                 "projectUid",
                 projectUid,
@@ -71,7 +74,7 @@ const defaultDesc =
 const defaultTitle = "Csound WebIDE";
 const defaultLogo = "https://ide.csound.com/apple-touch-icon.png";
 
-const getProjectOg = (project, profile) => {
+const getProjectOg = (project: any, profile: any): string => {
     let og = `<meta property="fb:app_id" content="428548837960735" />`;
     og += `<meta property="og:type" content="website" />`;
     og += `<meta property="og:title" content="${R.propOr(
