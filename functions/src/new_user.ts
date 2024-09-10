@@ -1,10 +1,10 @@
 import { WriteResult } from "@google-cloud/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { makeLogger } from "./logger.js";
 
 const log = makeLogger("newUser");
-const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
 
 // For every new user, create a queryable Firestore profile document
 const createProfileDocument = async (
@@ -22,7 +22,7 @@ const createProfileDocument = async (
         link3: "",
         photoUrl: user.photoURL,
         userUid: user.uid,
-        userJoinDate: newTimestamp(),
+        userJoinDate: Timestamp.now(),
         username: ""
     };
 

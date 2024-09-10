@@ -2,11 +2,36 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { isbot } from "isbot";
 import fs from "node:fs";
-import R from "ramda";
+import path from "node:path";
+import * as R from "ramda";
+
+function printTree(dirPath, indent = "") {
+    // Read all files and directories inside the current directory
+    const files = fs.readdirSync(dirPath);
+
+    // Loop through each file/directory
+    files.forEach((file, index) => {
+        const isLast = index === files.length - 1;
+        const filePath = path.join(dirPath, file);
+        const stats = fs.statSync(filePath);
+
+        // Print the file or directory name
+        const prefix = isLast ? "└── " : "├── ";
+        console.log(indent + prefix + file);
+
+        // If it's a directory, recursively print its contents
+        if (stats.isDirectory() && file !== "node_modules") {
+            const newIndent = indent + (isLast ? "    " : "│   ");
+            printTree(filePath, newIndent);
+        }
+    });
+}
 
 export const host = functions.https.onRequest(async (req, res) => {
     try {
-        let indexHTML = fs.readFileSync("./index.html").toString();
+        console.log("Current Working Directory:", process.cwd());
+        printTree("./");
+        let indexHTML = fs.readFileSync("./dist/index.html").toString();
         const path = req.path ? req.path.split("/") : req.path;
         const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
 

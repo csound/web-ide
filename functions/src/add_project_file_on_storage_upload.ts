@@ -1,10 +1,10 @@
-import { firestore } from "firebase-admin";
+import admin from "firebase-admin";
 import { storage } from "firebase-functions";
 import { makeLogger } from "./logger.js";
 
 const log = makeLogger("addProjectFileOnStorageUpload");
 
-const newTimestamp = firestore.FieldValue.serverTimestamp;
+const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
 
 // Add a project file entry in Firestore when a binary file is uploaded
 export const addProjectFileOnStorageUploadCallback = storage
@@ -21,7 +21,8 @@ export const addProjectFileOnStorageUploadCallback = storage
                     `addProjectFileOnStorageUploadCallback: Adding project file entry in Firestore: ${collection} ${docUid} ${filename}`
                 );
 
-                await firestore()
+                await admin
+                    .firestore()
                     .collection("projects")
                     .doc(projectUid)
                     .collection("files")

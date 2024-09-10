@@ -1,9 +1,9 @@
 import * as admin from "firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
 import { makeLogger } from "./logger.js";
 
 const log = makeLogger("projectsCounter");
-const FieldValue = admin.firestore.FieldValue;
 
 export const projectsCounter = functions.firestore
     .document("projects/{projectUid}")

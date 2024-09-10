@@ -1,12 +1,8 @@
-import { initializeApp } from "firebase-admin";
-
-initializeApp();
-
-export { addProjectFileOnStorageUploadCallback } from "./add_project_file_on_storage_upload";
-export { deleteUserCallback } from "./delete_user";
-export { followersCounter } from "./followers_counter";
-export { followingCounter } from "./following_counter";
-export { host } from "./host";
-export { newUserCallback } from "./new_user";
-export { projectFileStorageDeleteCallback } from "./project_file_storage_delete";
-export { projectsCounter } from "./projects_counter";
+export { addProjectFileOnStorageUploadCallback as add_project_file_on_storage_upload_callback } from "./add_project_file_on_storage_upload.js";
+export { deleteUserCallback as delete_user_callback } from "./delete_user.js";
+export { followersCounter as followers_counter } from "./followers_counter.js";
+export { followingCounter as following_counter } from "./following_counter.js";
+export { host } from "./host.js";
+export { newUserCallback as new_user_callback } from "./new_user.js";
+export { projectFileStorageDeleteCallback as project_file_storage_delete_callback } from "./project_file_storage_delete.js";
+export { projectsCounter as projects_counter } from "./projects_counter.js";
