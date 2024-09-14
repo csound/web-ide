@@ -1,6 +1,6 @@
 import React from "react";
 import { SortableElement } from "react-sortable-hoc";
-import { Tab } from "./tab.js";
+import { Tab } from "./tab.jsx";
 
 const DragTabElementWithRef = React.forwardRef(
     ({ children, ...props }, ref) => {

@@ -31,13 +31,22 @@ export const searchProjects =
             return;
         }
 
-        const searchRequest = await fetch(
-            `${searchURL}/query/projects/${query_}/8/${offset}/name/desc`
-        );
-        const projects = await searchRequest.json();
-        projects.data = projects.data.slice(0, 8);
+        let projectsData: any[] = [];
+        let totalRecords = 0;
+        try {
+            const searchRequest = await fetch(
+                `${searchURL}/query/projects/${query_}/8/${offset}/name/desc`
+            );
 
-        const searchResult: IProject[] = projects.data.map(
+            const projects = await searchRequest.json();
+
+            projectsData = projects.data.slice(0, 8);
+            totalRecords = projects.totalRecords as number;
+        } catch (error) {
+            console.error(error);
+        }
+
+        const searchResult: IProject[] = projectsData.map(
             firestoreProjectToIProject
         );
 
@@ -67,7 +76,7 @@ export const searchProjects =
         dispatch({
             type: SEARCH_PROJECTS_SUCCESS,
             result: searchResult,
-            totalRecords: projects.totalRecords
+            totalRecords
         });
     };
 
@@ -82,18 +91,25 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
             type: SET_POPULAR_PROJECTS_OFFSET,
             newOffset: nextOffset
         });
-
         const state = getState().HomeReducer;
 
-        const starsRequest = await fetch(
-            `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
-        );
-        const starredProjects: IStarredProjectSearchResult =
-            await starsRequest.json();
+        let starsIDs: string[] = [];
+        let totalRecords = 0;
+        try {
+            const starsRequest = await fetch(
+                `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
+            );
+            const starredProjects: IStarredProjectSearchResult =
+                await starsRequest.json();
 
-        const starsIDs = starredProjects.data.map(
-            (item: IStarredProject) => item.id
-        );
+            starsIDs = starredProjects.data.map(
+                (item: IStarredProject) => item.id
+            );
+
+            totalRecords = starredProjects.totalRecords as number;
+        } catch (error) {
+            console.error(error);
+        }
 
         if (!isEmpty(starsIDs)) {
             const publicProjectsSnapshots = await getDocs(
@@ -137,7 +153,7 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
             dispatch({
                 type: ADD_POPULAR_PROJECTS,
                 payload: popularProjects,
-                totalRecords: starredProjects.totalRecords
+                totalRecords
             });
         }
     };
@@ -152,15 +168,21 @@ export const fetchRandomProjects = () => {
 
         const state = getState().HomeReducer;
 
-        const randomProjectsRequest = await fetch(
-            `${searchURL}/random/projects/8`
-        );
+        let randomProjectsIDs: string[] = [];
 
-        const randomProjects = await randomProjectsRequest.json();
+        try {
+            const randomProjectsRequest = await fetch(
+                `${searchURL}/random/projects/8`
+            );
 
-        const randomProjectsIDs = randomProjects.data.map(
-            (item: IStarredProject) => item.id
-        );
+            const randomProjects = await randomProjectsRequest.json();
+
+            randomProjectsIDs = randomProjects.data.map(
+                (item: IStarredProject) => item.id
+            );
+        } catch (error) {
+            console.error(error);
+        }
 
         if (!isEmpty(randomProjectsIDs)) {
             const randomProjectsSnapshots = await getDocs(

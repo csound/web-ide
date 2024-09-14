@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { range } from "ramda";
-import { LeftIcon, RightIcon, BulletIcon } from "./icon-svg.js";
+import { LeftIcon, RightIcon, BulletIcon } from "./icon-svg.jsx";
 import { isNumber } from "./utils/is-type.js";
-import TabModal from "./tab-modal.js";
+import TabModal from "./tab-modal.jsx";
 
 const buttonWidth = 35;
 

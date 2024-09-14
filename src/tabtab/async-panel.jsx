@@ -1,5 +1,5 @@
 import React from "react";
-import Panel from "./panel.js";
+import Panel from "./panel.jsx";
 
 export default class AsyncPanelComponent extends React.PureComponent {
     static defaultProps = {

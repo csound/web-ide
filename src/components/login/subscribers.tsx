@@ -15,6 +15,11 @@ export const subscribeToLoggedInUserProfile = (
                     userUid,
                     profile
                 });
+                dispatch({
+                    type: UPDATE_USER_PROFILE,
+                    profile: undefined,
+                    userUid
+                });
                 return;
             }
             if (typeof profileData.userJoinDate === "object") {

@@ -1,7 +1,7 @@
 import React from "react";
-import Moment from "react-moment";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { formatDistance } from "date-fns";
 import { selectActiveProject } from "@comp/projects/selectors";
 import { selectProjectLastModified } from "@comp/project-last-modified/selectors";
 import {
@@ -18,6 +18,8 @@ import * as SS from "./styles";
 import { isEmpty, prop, propOr } from "ramda";
 
 const ProjectProfileMeta = (): React.ReactElement => {
+    const now = new Date();
+
     const project: IProject | undefined = useSelector(selectActiveProject);
     const projectName = propOr("unnamed", "name", project || {});
     const projectDescription = propOr("", "description", project || {});
@@ -82,13 +84,11 @@ const ProjectProfileMeta = (): React.ReactElement => {
                                                 }
                                             >
                                                 Modified
-                                                <Moment
-                                                    style={{ marginLeft: 3 }}
-                                                    date={
-                                                        projectLastModifiedDate
-                                                    }
-                                                    fromNow
-                                                />
+                                                {formatDistance(
+                                                    projectLastModifiedDate,
+                                                    now,
+                                                    { addSuffix: true }
+                                                )}
                                             </em>
                                         )}
                                     </div>

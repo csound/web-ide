@@ -1,6 +1,6 @@
 import React from "react";
 import { IProject } from "@comp/projects/types";
-import { SVGComponents } from "./svg-icons";
+import SVGComponents from "./svg-icons";
 import { css, SerializedStyles } from "@emotion/react";
 
 export const avatarIconForeground = (

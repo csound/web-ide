@@ -32,7 +32,7 @@ import {
     propOr,
     values
 } from "ramda";
-import { getType as mimeLookup } from "mime";
+import { Mime } from "mime";
 import moment from "moment";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
@@ -56,9 +56,9 @@ import Tooltip from "@mui/material/Tooltip";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import { ReactComponent as DirectoryClose } from "@root/svgs/fad-close.svg";
-import { ReactComponent as DirectoryOpen } from "@root/svgs/fad-open.svg";
-import { ReactComponent as WaveFormIcon } from "@root/svgs/fad-waveform.svg";
+import DirectoryClose from "@root/svgs/fad-close.svg";
+import DirectoryOpen from "@root/svgs/fad-open.svg";
+import WaveFormIcon from "@root/svgs/fad-waveform.svg";
 import { IDocument, IDocumentsMap, IProject } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { textOrBinary } from "@comp/projects/utils";
@@ -77,6 +77,8 @@ import * as SS from "./styles";
 import FileTreeHeader from "./header";
 import { selectNonCloudFiles } from "./selectors";
 import { NonCloudFile } from "./types";
+
+const mime = new Mime();
 
 const reduceIndexed = addIndex(reduce);
 
@@ -97,8 +99,8 @@ const hopefulSorting = curry((documentIndex, documentA, documentB) => {
         return documentA.filename < documentB.filename
             ? -1
             : documentA.filename > documentB.filename
-            ? 1
-            : 0;
+              ? 1
+              : 0;
     }
 });
 
@@ -746,7 +748,7 @@ const FileTree = (): React.ReactElement => {
                         }
                         {nonCloudFileSources.length > 0 && <hr />}
                         {nonCloudFileSources.map((file, index) => {
-                            const mimeType = mimeLookup(file.name);
+                            const mimeType = mime.getType(file.name);
 
                             return (
                                 <div

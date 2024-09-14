@@ -1,7 +1,7 @@
 import React from "react";
 import { useSort } from "./sort-method.js";
 import { SortableContainer } from "react-sortable-hoc";
-import TabList from "./tab-list.js";
+import TabList from "./tab-list.jsx";
 
 const DragTabContainer = SortableContainer(({ children, ...props }) => {
     return <TabList {...props}>{children}</TabList>;

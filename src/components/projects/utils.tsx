@@ -1,6 +1,6 @@
 import { doc, getDoc, QueryDocumentSnapshot } from "firebase/firestore";
 import { getDownloadURL } from "firebase/storage";
-import { getType as mimeLookup } from "mime";
+import { Mime } from "mime";
 import { storageReference, projectLastModified } from "@config/firestore";
 import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
@@ -17,6 +17,8 @@ import {
     reject
 } from "ramda";
 
+const mime = new Mime();
+
 export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
     const lowerName = filename.toLowerCase();
@@ -29,7 +31,7 @@ export function textOrBinary(filename: string): IDocumentFileType {
 
 export function isAudioFile(fileName: string): boolean {
     // currently does not deal with FLAC, not sure if browser supports it
-    const mimeType = mimeLookup(fileName) || "";
+    const mimeType = mime.getType(fileName) || "";
     const endings = [".wav", ".ogg", ".mp3", "aiff", "flac"];
     const lower = fileName.toLowerCase();
     return (
@@ -118,7 +120,7 @@ export const fileDocumentDataToDocumentType = (
         type: documentData["type"],
         userUid: documentData["userUid"],
         path: reject(isNil, documentData["path"] || [])
-    } as IDocument);
+    }) as IDocument;
 
 export const convertDocumentSnapToDocumentsMap = (
     documentsToAdd: IFirestoreDocument[]

@@ -1,452 +1,158 @@
-import fadADR, { ReactComponent as fadADRComponent } from "../svgs/fad-ADR.svg";
-import fadADSR, {
-    ReactComponent as fadADSRComponent
-} from "../svgs/fad-ADSR.svg";
-import fadAHDSR, {
-    ReactComponent as fadAHDSRComponent
-} from "../svgs/fad-AHDSR.svg";
-import fadAR, { ReactComponent as fadARComponent } from "../svgs/fad-AR.svg";
-import fadarmrecording, {
-    ReactComponent as fadarmrecordingComponent
-} from "../svgs/fad-armrecording.svg";
-import fadarpchord, {
-    ReactComponent as fadarpchordComponent
-} from "../svgs/fad-arpchord.svg";
-import fadarpdown, {
-    ReactComponent as fadarpdownComponent
-} from "../svgs/fad-arpdown.svg";
-import fadarpdownandup, {
-    ReactComponent as fadarpdownandupComponent
-} from "../svgs/fad-arpdownandup.svg";
-import fadarpdownup, {
-    ReactComponent as fadarpdownupComponent
-} from "../svgs/fad-arpdownup.svg";
-import fadarpplayorder, {
-    ReactComponent as fadarpplayorderComponent
-} from "../svgs/fad-arpplayorder.svg";
-import fadarprandom, {
-    ReactComponent as fadarprandomComponent
-} from "../svgs/fad-arprandom.svg";
-import fadarpup, {
-    ReactComponent as fadarpupComponent
-} from "../svgs/fad-arpup.svg";
-import fadarpupandown, {
-    ReactComponent as fadarpupandownComponent
-} from "../svgs/fad-arpupandown.svg";
-import fadarpupdown, {
-    ReactComponent as fadarpupdownComponent
-} from "../svgs/fad-arpupdown.svg";
-import fadarrowshorz, {
-    ReactComponent as fadarrowshorzComponent
-} from "../svgs/fad-arrows-horz.svg";
-import fadarrowsvert, {
-    ReactComponent as fadarrowsvertComponent
-} from "../svgs/fad-arrows-vert.svg";
-import fadautomation2p, {
-    ReactComponent as fadautomation2pComponent
-} from "../svgs/fad-automation-2p.svg";
-import fadautomation3p, {
-    ReactComponent as fadautomation3pComponent
-} from "../svgs/fad-automation-3p.svg";
-import fadautomation4p, {
-    ReactComponent as fadautomation4pComponent
-} from "../svgs/fad-automation-4p.svg";
-import fadbackward, {
-    ReactComponent as fadbackwardComponent
-} from "../svgs/fad-backward.svg";
-import fadbluetooth, {
-    ReactComponent as fadbluetoothComponent
-} from "../svgs/fad-bluetooth.svg";
-import fadcaretdown, {
-    ReactComponent as fadcaretdownComponent
-} from "../svgs/fad-caret-down.svg";
-import fadcaretleft, {
-    ReactComponent as fadcaretleftComponent
-} from "../svgs/fad-caret-left.svg";
-import fadcaretright, {
-    ReactComponent as fadcaretrightComponent
-} from "../svgs/fad-caret-right.svg";
-import fadcaretup, {
-    ReactComponent as fadcaretupComponent
-} from "../svgs/fad-caret-up.svg";
-import fadclose, {
-    ReactComponent as fadcloseComponent
-} from "../svgs/fad-close.svg";
-import fadcopy, {
-    ReactComponent as fadcopyComponent
-} from "../svgs/fad-copy.svg";
-import fadcpu, { ReactComponent as fadcpuComponent } from "../svgs/fad-cpu.svg";
-import fadcutter, {
-    ReactComponent as fadcutterComponent
-} from "../svgs/fad-cutter.svg";
-import faddigitalcolon, {
-    ReactComponent as faddigitalcolonComponent
-} from "../svgs/fad-digital-colon.svg";
-import faddigitaldot, {
-    ReactComponent as faddigitaldotComponent
-} from "../svgs/fad-digital-dot.svg";
-import faddigital0, {
-    ReactComponent as faddigital0Component
-} from "../svgs/fad-digital0.svg";
-import faddigital1, {
-    ReactComponent as faddigital1Component
-} from "../svgs/fad-digital1.svg";
-import faddigital2, {
-    ReactComponent as faddigital2Component
-} from "../svgs/fad-digital2.svg";
-import faddigital3, {
-    ReactComponent as faddigital3Component
-} from "../svgs/fad-digital3.svg";
-import faddigital4, {
-    ReactComponent as faddigital4Component
-} from "../svgs/fad-digital4.svg";
-import faddigital5, {
-    ReactComponent as faddigital5Component
-} from "../svgs/fad-digital5.svg";
-import faddigital6, {
-    ReactComponent as faddigital6Component
-} from "../svgs/fad-digital6.svg";
-import faddigital7, {
-    ReactComponent as faddigital7Component
-} from "../svgs/fad-digital7.svg";
-import faddigital8, {
-    ReactComponent as faddigital8Component
-} from "../svgs/fad-digital8.svg";
-import faddigital9, {
-    ReactComponent as faddigital9Component
-} from "../svgs/fad-digital9.svg";
-import faddiskio, {
-    ReactComponent as faddiskioComponent
-} from "../svgs/fad-diskio.svg";
-import faddrumpad, {
-    ReactComponent as faddrumpadComponent
-} from "../svgs/fad-drumpad.svg";
-import fadduplicate, {
-    ReactComponent as fadduplicateComponent
-} from "../svgs/fad-duplicate.svg";
-import faderaser, {
-    ReactComponent as faderaserComponent
-} from "../svgs/fad-eraser.svg";
-import fadffwd, {
-    ReactComponent as fadffwdComponent
-} from "../svgs/fad-ffwd.svg";
-import fadfilterbandpass, {
-    ReactComponent as fadfilterbandpassComponent
-} from "../svgs/fad-filter-bandpass.svg";
-import fadfilterbell, {
-    ReactComponent as fadfilterbellComponent
-} from "../svgs/fad-filter-bell.svg";
-import fadfilterbypass, {
-    ReactComponent as fadfilterbypassComponent
-} from "../svgs/fad-filter-bypass.svg";
-import fadfilterhighpass, {
-    ReactComponent as fadfilterhighpassComponent
-} from "../svgs/fad-filter-highpass.svg";
-import fadfilterlowpass, {
-    ReactComponent as fadfilterlowpassComponent
-} from "../svgs/fad-filter-lowpass.svg";
-import fadfilternotch, {
-    ReactComponent as fadfilternotchComponent
-} from "../svgs/fad-filter-notch.svg";
-// imp ort fadfilterrezhighpass, { ReactComponent as  rtComponent} from "../svgs/fad-filter-ez-highpass.svg";
-import fadfilterrezlowpass, {
-    ReactComponent as fadfilterrezlowpassComponent
-} from "../svgs/fad-filter-rez-lowpass.svg";
-import fadfiltershelvinghi, {
-    ReactComponent as fadfiltershelvinghiComponent
-} from "../svgs/fad-filter-shelving-hi.svg";
-import fadfiltershelvinglo, {
-    ReactComponent as fadfiltershelvingloComponent
-} from "../svgs/fad-filter-shelving-lo.svg";
-import fadfoldback, {
-    ReactComponent as fadfoldbackComponent
-} from "../svgs/fad-foldback.svg";
-import fadforward, {
-    ReactComponent as fadforwardComponent
-} from "../svgs/fad-forward.svg";
-import fadhexpand, {
-    ReactComponent as fadhexpandComponent
-} from "../svgs/fad-h-expand.svg";
-import fadhardclip, {
-    ReactComponent as fadhardclipComponent
-} from "../svgs/fad-hardclip.svg";
-import fadhardclipcurve, {
-    ReactComponent as fadhardclipcurveComponent
-} from "../svgs/fad-hardclipcurve.svg";
-import fadheadphones, {
-    ReactComponent as fadheadphonesComponent
-} from "../svgs/fad-headphones.svg";
-import fadkeyboard, {
-    ReactComponent as fadkeyboardComponent
-} from "../svgs/fad-keyboard.svg";
-import fadlock, {
-    ReactComponent as fadlockComponent
-} from "../svgs/fad-lock.svg";
-import fadlogoaax, {
-    ReactComponent as fadlogoaaxComponent
-} from "../svgs/fad-logo-aax.svg";
-import fadlogoabletonlink, {
-    ReactComponent as fadlogoabletonlinkComponent
-} from "../svgs/fad-logo-abletonlink.svg";
-import fadlogoau, {
-    ReactComponent as fadlogoauComponent
-} from "../svgs/fad-logo-au.svg";
-import fadlogoaudacity, {
-    ReactComponent as fadlogoaudacityComponent
-} from "../svgs/fad-logo-audacity.svg";
-import fadlogoaudiobus, {
-    ReactComponent as fadlogoaudiobusComponent
-} from "../svgs/fad-logo-audiobus.svg";
-import fadlogocubase, {
-    ReactComponent as fadlogocubaseComponent
-} from "../svgs/fad-logo-cubase.svg";
-import fadlogofl, {
-    ReactComponent as fadlogoflComponent
-} from "../svgs/fad-logo-fl.svg";
-import fadlogojuce, {
-    ReactComponent as fadlogojuceComponent
-} from "../svgs/fad-logo-juce.svg";
-import fadlogoladspa, {
-    ReactComponent as fadlogoladspaComponent
-} from "../svgs/fad-logo-ladspa.svg";
-import fadlogolive, {
-    ReactComponent as fadlogoliveComponent
-} from "../svgs/fad-logo-live.svg";
-import fadlogolv2, {
-    ReactComponent as fadlogolv2Component
-} from "../svgs/fad-logo-lv2.svg";
-import fadlogoprotools, {
-    ReactComponent as fadlogoprotoolsComponent
-} from "../svgs/fad-logo-protools.svg";
-import fadlogorackext, {
-    ReactComponent as fadlogorackextComponent
-} from "../svgs/fad-logo-rackext.svg";
-import fadlogoreaper, {
-    ReactComponent as fadlogoreaperComponent
-} from "../svgs/fad-logo-reaper.svg";
-import fadlogoreason, {
-    ReactComponent as fadlogoreasonComponent
-} from "../svgs/fad-logo-reason.svg";
-import fadlogorewire, {
-    ReactComponent as fadlogorewireComponent
-} from "../svgs/fad-logo-rewire.svg";
-import fadlogostudioone, {
-    ReactComponent as fadlogostudiooneComponent
-} from "../svgs/fad-logo-studioone.svg";
-import fadlogotracktion, {
-    ReactComponent as fadlogotracktionComponent
-} from "../svgs/fad-logo-tracktion.svg";
-import fadlogovst, {
-    ReactComponent as fadlogovstComponent
-} from "../svgs/fad-logo-vst.svg";
-import fadlogowaveform, {
-    ReactComponent as fadlogowaveformComponent
-} from "../svgs/fad-logo-waveform.svg";
-import fadloop, {
-    ReactComponent as fadloopComponent
-} from "../svgs/fad-loop.svg";
-import fadmetronome, {
-    ReactComponent as fadmetronomeComponent
-} from "../svgs/fad-metronome.svg";
-import fadmicrophone, {
-    ReactComponent as fadmicrophoneComponent
-} from "../svgs/fad-microphone.svg";
-import fadmidiplug, {
-    ReactComponent as fadmidiplugComponent
-} from "../svgs/fad-midiplug.svg";
-import fadmodrandom, {
-    ReactComponent as fadmodrandomComponent
-} from "../svgs/fad-modrandom.svg";
-import fadmodsawdown, {
-    ReactComponent as fadmodsawdownComponent
-} from "../svgs/fad-modsawdown.svg";
-import fadmodsawup, {
-    ReactComponent as fadmodsawupComponent
-} from "../svgs/fad-modsawup.svg";
-import fadmodsh, {
-    ReactComponent as fadmodshComponent
-} from "../svgs/fad-modsh.svg";
-import fadmodsine, {
-    ReactComponent as fadmodsineComponent
-} from "../svgs/fad-modsine.svg";
-import fadmodsquare, {
-    ReactComponent as fadmodsquareComponent
-} from "../svgs/fad-modsquare.svg";
-import fadmodtri, {
-    ReactComponent as fadmodtriComponent
-} from "../svgs/fad-modtri.svg";
-import fadmodularplug, {
-    ReactComponent as fadmodularplugComponent
-} from "../svgs/fad-modularplug.svg";
-import fadmono, {
-    ReactComponent as fadmonoComponent
-} from "../svgs/fad-mono.svg";
-import fadmute, {
-    ReactComponent as fadmuteComponent
-} from "../svgs/fad-mute.svg";
-import fadnext, {
-    ReactComponent as fadnextComponent
-} from "../svgs/fad-next.svg";
-import fadopen, {
-    ReactComponent as fadopenComponent
-} from "../svgs/fad-open.svg";
-import fadpaste, {
-    ReactComponent as fadpasteComponent
-} from "../svgs/fad-paste.svg";
-import fadpause, {
-    ReactComponent as fadpauseComponent
-} from "../svgs/fad-pause.svg";
-import fadpen, { ReactComponent as fadpenComponent } from "../svgs/fad-pen.svg";
-import fadphase, {
-    ReactComponent as fadphaseComponent
-} from "../svgs/fad-phase.svg";
-import fadplay, {
-    ReactComponent as fadplayComponent
-} from "../svgs/fad-play.svg";
-import fadpointer, {
-    ReactComponent as fadpointerComponent
-} from "../svgs/fad-pointer.svg";
-import fadpowerswitch, {
-    ReactComponent as fadpowerswitchComponent
-} from "../svgs/fad-powerswitch.svg";
-import fadpreseta, {
-    ReactComponent as fadpresetaComponent
-} from "../svgs/fad-preset-a.svg";
-import fadpresetab, {
-    ReactComponent as fadpresetabComponent
-} from "../svgs/fad-preset-ab.svg";
-import fadpresetb, {
-    ReactComponent as fadpresetbComponent
-} from "../svgs/fad-preset-b.svg";
-import fadpresetba, {
-    ReactComponent as fadpresetbaComponent
-} from "../svgs/fad-preset-ba.svg";
-import fadprev, {
-    ReactComponent as fadprevComponent
-} from "../svgs/fad-prev.svg";
-import fadpunchin, {
-    ReactComponent as fadpunchinComponent
-} from "../svgs/fad-punch-in.svg";
-import fadpunchout, {
-    ReactComponent as fadpunchoutComponent
-} from "../svgs/fad-punch-out.svg";
-import fadram, { ReactComponent as fadramComponent } from "../svgs/fad-ram.svg";
-import fadrandom1dice, {
-    ReactComponent as fadrandom1diceComponent
-} from "../svgs/fad-random-1dice.svg";
-import fadrandom2dice, {
-    ReactComponent as fadrandom2diceComponent
-} from "../svgs/fad-random-2dice.svg";
-import fadrecord, {
-    ReactComponent as fadrecordComponent
-} from "../svgs/fad-record.svg";
-import fadredo, {
-    ReactComponent as fadredoComponent
-} from "../svgs/fad-redo.svg";
-import fadrepeatone, {
-    ReactComponent as fadrepeatoneComponent
-} from "../svgs/fad-repeat-one.svg";
-import fadrepeat, {
-    ReactComponent as fadrepeatComponent
-} from "../svgs/fad-repeat.svg";
-import fadrew, { ReactComponent as fadrewComponent } from "../svgs/fad-rew.svg";
-import fadroundswitchoff, {
-    ReactComponent as fadroundswitchoffComponent
-} from "../svgs/fad-roundswitch-off.svg";
-import fadroundswitchon, {
-    ReactComponent as fadroundswitchonComponent
-} from "../svgs/fad-roundswitch-on.svg";
-import fadsave, {
-    ReactComponent as fadsaveComponent
-} from "../svgs/fad-save.svg";
-import fadsaveas, {
-    ReactComponent as fadsaveasComponent
-} from "../svgs/fad-saveas.svg";
-import fadscissors, {
-    ReactComponent as fadscissorsComponent
-} from "../svgs/fad-scissors.svg";
-import fadshuffle, {
-    ReactComponent as fadshuffleComponent
-} from "../svgs/fad-shuffle.svg";
-import fadsliderround1, {
-    ReactComponent as fadsliderround1Component
-} from "../svgs/fad-slider-round-1.svg";
-import fadsliderround2, {
-    ReactComponent as fadsliderround2Component
-} from "../svgs/fad-slider-round-2.svg";
-import fadsliderround3, {
-    ReactComponent as fadsliderround3Component
-} from "../svgs/fad-slider-round-3.svg";
-import fadsliderhandle1, {
-    ReactComponent as fadsliderhandle1Component
-} from "../svgs/fad-sliderhandle-1.svg";
-import fadsliderhandle2, {
-    ReactComponent as fadsliderhandle2Component
-} from "../svgs/fad-sliderhandle-2.svg";
-import fadsoftclip, {
-    ReactComponent as fadsoftclipComponent
-} from "../svgs/fad-softclip.svg";
-import fadsoftclipcurve, {
-    ReactComponent as fadsoftclipcurveComponent
-} from "../svgs/fad-softclipcurve.svg";
-import fadsolo, {
-    ReactComponent as fadsoloComponent
-} from "../svgs/fad-solo.svg";
-import fadspeaker, {
-    ReactComponent as fadspeakerComponent
-} from "../svgs/fad-speaker.svg";
-import fadsquareswitchoff, {
-    ReactComponent as fadsquareswitchoffComponent
-} from "../svgs/fad-squareswitch-off.svg";
-import fadsquareswitchon, {
-    ReactComponent as fadsquareswitchonComponent
-} from "../svgs/fad-squareswitch-on.svg";
-import fadstereo, {
-    ReactComponent as fadstereoComponent
-} from "../svgs/fad-stereo.svg";
-import fadstop, {
-    ReactComponent as fadstopComponent
-} from "../svgs/fad-stop.svg";
-import fadthunderbolt, {
-    ReactComponent as fadthunderboltComponent
-} from "../svgs/fad-thunderbolt.svg";
-import fadtimeselect, {
-    ReactComponent as fadtimeselectComponent
-} from "../svgs/fad-timeselect.svg";
-import fadundo, {
-    ReactComponent as fadundoComponent
-} from "../svgs/fad-undo.svg";
-import fadunlock, {
-    ReactComponent as fadunlockComponent
-} from "../svgs/fad-unlock.svg";
-import fadusb, { ReactComponent as fadusbComponent } from "../svgs/fad-usb.svg";
-import fadvexpand, {
-    ReactComponent as fadvexpandComponent
-} from "../svgs/fad-v-expand.svg";
-import fadvroundswitchoff, {
-    ReactComponent as fadvroundswitchoffComponent
-} from "../svgs/fad-vroundswitch-off.svg";
-import fadvroundswitchon, {
-    ReactComponent as fadvroundswitchonComponent
-} from "../svgs/fad-vroundswitch-on.svg";
-import fadvsquareswitchoff, {
-    ReactComponent as fadvsquareswitchoffComponent
-} from "../svgs/fad-vsquareswitch-off.svg";
-import fadvsquareswitchon, {
-    ReactComponent as fadvsquareswitchonComponent
-} from "../svgs/fad-vsquareswitch-on.svg";
-import fadwaveform, {
-    ReactComponent as fadwaveformComponent
-} from "../svgs/fad-waveform.svg";
-import fadxlrplug, {
-    ReactComponent as fadxlrplugComponent
-} from "../svgs/fad-xlrplug.svg";
-import fadzoomin, {
-    ReactComponent as fadzoominComponent
-} from "../svgs/fad-zoomin.svg";
-import fadzoomout, {
-    ReactComponent as fadzoomoutComponent
-} from "../svgs/fad-zoomout.svg";
+import fadADR from "../svgs/fad-ADR.svg?react";
+import fadADSR from "../svgs/fad-ADSR.svg?react";
+import fadAHDSR from "../svgs/fad-AHDSR.svg?react";
+import fadAR from "../svgs/fad-AR.svg?react";
+import fadarmrecording from "../svgs/fad-armrecording.svg?react";
+import fadarpchord from "../svgs/fad-arpchord.svg?react";
+import fadarpdown from "../svgs/fad-arpdown.svg?react";
+import fadarpdownandup from "../svgs/fad-arpdownandup.svg?react";
+import fadarpdownup from "../svgs/fad-arpdownup.svg?react";
+import fadarpplayorder from "../svgs/fad-arpplayorder.svg?react";
+import fadarprandom from "../svgs/fad-arprandom.svg?react";
+import fadarpup from "../svgs/fad-arpup.svg?react";
+import fadarpupandown from "../svgs/fad-arpupandown.svg?react";
+import fadarpupdown from "../svgs/fad-arpupdown.svg?react";
+import fadarrowshorz from "../svgs/fad-arrows-horz.svg?react";
+import fadarrowsvert from "../svgs/fad-arrows-vert.svg?react";
+import fadautomation2p from "../svgs/fad-automation-2p.svg?react";
+import fadautomation3p from "../svgs/fad-automation-3p.svg?react";
+import fadautomation4p from "../svgs/fad-automation-4p.svg?react";
+import fadbackward from "../svgs/fad-backward.svg?react";
+import fadbluetooth from "../svgs/fad-bluetooth.svg?react";
+import fadcaretdown from "../svgs/fad-caret-down.svg?react";
+import fadcaretleft from "../svgs/fad-caret-left.svg?react";
+import fadcaretright from "../svgs/fad-caret-right.svg?react";
+import fadcaretup from "../svgs/fad-caret-up.svg?react";
+import fadclose from "../svgs/fad-close.svg?react";
+import fadcopy from "../svgs/fad-copy.svg?react";
+import fadcpu from "../svgs/fad-cpu.svg?react";
+import fadcutter from "../svgs/fad-cutter.svg?react";
+import faddigitalcolon from "../svgs/fad-digital-colon.svg?react";
+import faddigitaldot from "../svgs/fad-digital-dot.svg?react";
+import faddigital0 from "../svgs/fad-digital0.svg?react";
+import faddigital1 from "../svgs/fad-digital1.svg?react";
+import faddigital2 from "../svgs/fad-digital2.svg?react";
+import faddigital3 from "../svgs/fad-digital3.svg?react";
+import faddigital4 from "../svgs/fad-digital4.svg?react";
+import faddigital5 from "../svgs/fad-digital5.svg?react";
+import faddigital6 from "../svgs/fad-digital6.svg?react";
+import faddigital7 from "../svgs/fad-digital7.svg?react";
+import faddigital8 from "../svgs/fad-digital8.svg?react";
+import faddigital9 from "../svgs/fad-digital9.svg?react";
+import faddiskio from "../svgs/fad-diskio.svg?react";
+import faddrumpad from "../svgs/fad-drumpad.svg?react";
+import fadduplicate from "../svgs/fad-duplicate.svg?react";
+import faderaser from "../svgs/fad-eraser.svg?react";
+import fadffwd from "../svgs/fad-ffwd.svg?react";
+import fadfilterbandpass from "../svgs/fad-filter-bandpass.svg?react";
+import fadfilterbell from "../svgs/fad-filter-bell.svg?react";
+import fadfilterbypass from "../svgs/fad-filter-bypass.svg?react";
+import fadfilterhighpass from "../svgs/fad-filter-highpass.svg?react";
+import fadfilterlowpass from "../svgs/fad-filter-lowpass.svg?react";
+import fadfilternotch from "../svgs/fad-filter-notch.svg?react";
+// imp ort fadfilterrezhighpass from "../svgs/fad-filter-ez-highpass.svg?react";
+import fadfilterrezlowpass from "../svgs/fad-filter-rez-lowpass.svg?react";
+import fadfiltershelvinghi from "../svgs/fad-filter-shelving-hi.svg?react";
+import fadfiltershelvinglo from "../svgs/fad-filter-shelving-lo.svg?react";
+import fadfoldback from "../svgs/fad-foldback.svg?react";
+import fadforward from "../svgs/fad-forward.svg?react";
+import fadhexpand from "../svgs/fad-h-expand.svg?react";
+import fadhardclip from "../svgs/fad-hardclip.svg?react";
+import fadhardclipcurve from "../svgs/fad-hardclipcurve.svg?react";
+import fadheadphones from "../svgs/fad-headphones.svg?react";
+import fadkeyboard from "../svgs/fad-keyboard.svg?react";
+import fadlock from "../svgs/fad-lock.svg?react";
+import fadlogoaax from "../svgs/fad-logo-aax.svg?react";
+import fadlogoabletonlink from "../svgs/fad-logo-abletonlink.svg?react";
+import fadlogoau from "../svgs/fad-logo-au.svg?react";
+import fadlogoaudacity from "../svgs/fad-logo-audacity.svg?react";
+import fadlogoaudiobus from "../svgs/fad-logo-audiobus.svg?react";
+import fadlogocubase from "../svgs/fad-logo-cubase.svg?react";
+import fadlogofl from "../svgs/fad-logo-fl.svg?react";
+import fadlogojuce from "../svgs/fad-logo-juce.svg?react";
+import fadlogoladspa from "../svgs/fad-logo-ladspa.svg?react";
+import fadlogolive from "../svgs/fad-logo-live.svg?react";
+import fadlogolv2 from "../svgs/fad-logo-lv2.svg?react";
+import fadlogoprotools from "../svgs/fad-logo-protools.svg?react";
+import fadlogorackext from "../svgs/fad-logo-rackext.svg?react";
+import fadlogoreaper from "../svgs/fad-logo-reaper.svg?react";
+import fadlogoreason from "../svgs/fad-logo-reason.svg?react";
+import fadlogorewire from "../svgs/fad-logo-rewire.svg?react";
+import fadlogostudioone from "../svgs/fad-logo-studioone.svg?react";
+import fadlogotracktion from "../svgs/fad-logo-tracktion.svg?react";
+import fadlogovst from "../svgs/fad-logo-vst.svg?react";
+import fadlogowaveform from "../svgs/fad-logo-waveform.svg?react";
+import fadloop from "../svgs/fad-loop.svg?react";
+import fadmetronome from "../svgs/fad-metronome.svg?react";
+import fadmicrophone from "../svgs/fad-microphone.svg?react";
+import fadmidiplug from "../svgs/fad-midiplug.svg?react";
+import fadmodrandom from "../svgs/fad-modrandom.svg?react";
+import fadmodsawdown from "../svgs/fad-modsawdown.svg?react";
+import fadmodsawup from "../svgs/fad-modsawup.svg?react";
+import fadmodsh from "../svgs/fad-modsh.svg?react";
+import fadmodsine from "../svgs/fad-modsine.svg?react";
+import fadmodsquare from "../svgs/fad-modsquare.svg?react";
+import fadmodtri from "../svgs/fad-modtri.svg?react";
+import fadmodularplug from "../svgs/fad-modularplug.svg?react";
+import fadmono from "../svgs/fad-mono.svg?react";
+import fadmute from "../svgs/fad-mute.svg?react";
+import fadnext from "../svgs/fad-next.svg?react";
+import fadopen from "../svgs/fad-open.svg?react";
+import fadpaste from "../svgs/fad-paste.svg?react";
+import fadpause from "../svgs/fad-pause.svg?react";
+import fadpen from "../svgs/fad-pen.svg?react";
+import fadphase from "../svgs/fad-phase.svg?react";
+import fadplay from "../svgs/fad-play.svg?react";
+import fadpointer from "../svgs/fad-pointer.svg?react";
+import fadpowerswitch from "../svgs/fad-powerswitch.svg?react";
+import fadpreseta from "../svgs/fad-preset-a.svg?react";
+import fadpresetab from "../svgs/fad-preset-ab.svg?react";
+import fadpresetb from "../svgs/fad-preset-b.svg?react";
+import fadpresetba from "../svgs/fad-preset-ba.svg?react";
+import fadprev from "../svgs/fad-prev.svg?react";
+import fadpunchin from "../svgs/fad-punch-in.svg?react";
+import fadpunchout from "../svgs/fad-punch-out.svg?react";
+import fadram from "../svgs/fad-ram.svg?react";
+import fadrandom1dice from "../svgs/fad-random-1dice.svg?react";
+import fadrandom2dice from "../svgs/fad-random-2dice.svg?react";
+import fadrecord from "../svgs/fad-record.svg?react";
+import fadredo from "../svgs/fad-redo.svg?react";
+import fadrepeatone from "../svgs/fad-repeat-one.svg?react";
+import fadrepeat from "../svgs/fad-repeat.svg?react";
+import fadrew from "../svgs/fad-rew.svg?react";
+import fadroundswitchoff from "../svgs/fad-roundswitch-off.svg?react";
+import fadroundswitchon from "../svgs/fad-roundswitch-on.svg?react";
+import fadsave from "../svgs/fad-save.svg?react";
+import fadsaveas from "../svgs/fad-saveas.svg?react";
+import fadscissors from "../svgs/fad-scissors.svg?react";
+import fadshuffle from "../svgs/fad-shuffle.svg?react";
+import fadsliderround1 from "../svgs/fad-slider-round-1.svg?react";
+import fadsliderround2 from "../svgs/fad-slider-round-2.svg?react";
+import fadsliderround3 from "../svgs/fad-slider-round-3.svg?react";
+import fadsliderhandle1 from "../svgs/fad-sliderhandle-1.svg?react";
+import fadsliderhandle2 from "../svgs/fad-sliderhandle-2.svg?react";
+import fadsoftclip from "../svgs/fad-softclip.svg?react";
+import fadsoftclipcurve from "../svgs/fad-softclipcurve.svg?react";
+import fadsolo from "../svgs/fad-solo.svg?react";
+import fadspeaker from "../svgs/fad-speaker.svg?react";
+import fadsquareswitchoff from "../svgs/fad-squareswitch-off.svg?react";
+import fadsquareswitchon from "../svgs/fad-squareswitch-on.svg?react";
+import fadstereo from "../svgs/fad-stereo.svg?react";
+import fadstop from "../svgs/fad-stop.svg?react";
+import fadthunderbolt from "../svgs/fad-thunderbolt.svg?react";
+import fadtimeselect from "../svgs/fad-timeselect.svg?react";
+import fadundo from "../svgs/fad-undo.svg?react";
+import fadunlock from "../svgs/fad-unlock.svg?react";
+import fadusb from "../svgs/fad-usb.svg?react";
+import fadvexpand from "../svgs/fad-v-expand.svg?react";
+import fadvroundswitchoff from "../svgs/fad-vroundswitch-off.svg?react";
+import fadvroundswitchon from "../svgs/fad-vroundswitch-on.svg?react";
+import fadvsquareswitchoff from "../svgs/fad-vsquareswitch-off.svg?react";
+import fadvsquareswitchon from "../svgs/fad-vsquareswitch-on.svg?react";
+import fadwaveform from "../svgs/fad-waveform.svg?react";
+import fadxlrplug from "../svgs/fad-xlrplug.svg?react";
+import fadzoomin from "../svgs/fad-zoomin.svg?react";
+import fadzoomout from "../svgs/fad-zoomout.svg?react";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
@@ -605,162 +311,4 @@ export default {
     fadxlrplug,
     fadzoomin,
     fadzoomout
-};
-
-export const SVGComponents = {
-    fadADRComponent,
-    fadADSRComponent,
-    fadAHDSRComponent,
-    fadARComponent,
-    fadarmrecordingComponent,
-    fadarpchordComponent,
-    fadarpdownComponent,
-    fadarpdownandupComponent,
-    fadarpdownupComponent,
-    fadarpplayorderComponent,
-    fadarprandomComponent,
-    fadarpupComponent,
-    fadarpupandownComponent,
-    fadarpupdownComponent,
-    fadarrowshorzComponent,
-    fadarrowsvertComponent,
-    fadautomation2pComponent,
-    fadautomation3pComponent,
-    fadautomation4pComponent,
-    fadbackwardComponent,
-    fadbluetoothComponent,
-    fadcaretdownComponent,
-    fadcaretleftComponent,
-    fadcaretrightComponent,
-    fadcaretupComponent,
-    fadcloseComponent,
-    fadcopyComponent,
-    fadcpuComponent,
-    fadcutterComponent,
-    faddigitalcolonComponent,
-    faddigitaldotComponent,
-    faddigital0Component,
-    faddigital1Component,
-    faddigital2Component,
-    faddigital3Component,
-    faddigital4Component,
-    faddigital5Component,
-    faddigital6Component,
-    faddigital7Component,
-    faddigital8Component,
-    faddigital9Component,
-    faddiskioComponent,
-    faddrumpadComponent,
-    fadduplicateComponent,
-    faderaserComponent,
-    fadffwdComponent,
-    fadfilterbandpassComponent,
-    fadfilterbellComponent,
-    fadfilterbypassComponent,
-    fadfilterhighpassComponent,
-    fadfilterlowpassComponent,
-    fadfilternotchComponent,
-    // fadfilterrezhighpassComponent,
-    fadfilterrezlowpassComponent,
-    fadfiltershelvinghiComponent,
-    fadfiltershelvingloComponent,
-    fadfoldbackComponent,
-    fadforwardComponent,
-    fadhexpandComponent,
-    fadhardclipComponent,
-    fadhardclipcurveComponent,
-    fadheadphonesComponent,
-    fadkeyboardComponent,
-    fadlockComponent,
-    fadlogoaaxComponent,
-    fadlogoabletonlinkComponent,
-    fadlogoauComponent,
-    fadlogoaudacityComponent,
-    fadlogoaudiobusComponent,
-    fadlogocubaseComponent,
-    fadlogoflComponent,
-    fadlogojuceComponent,
-    fadlogoladspaComponent,
-    fadlogoliveComponent,
-    fadlogolv2Component,
-    fadlogoprotoolsComponent,
-    fadlogorackextComponent,
-    fadlogoreaperComponent,
-    fadlogoreasonComponent,
-    fadlogorewireComponent,
-    fadlogostudiooneComponent,
-    fadlogotracktionComponent,
-    fadlogovstComponent,
-    fadlogowaveformComponent,
-    fadloopComponent,
-    fadmetronomeComponent,
-    fadmicrophoneComponent,
-    fadmidiplugComponent,
-    fadmodrandomComponent,
-    fadmodsawdownComponent,
-    fadmodsawupComponent,
-    fadmodshComponent,
-    fadmodsineComponent,
-    fadmodsquareComponent,
-    fadmodtriComponent,
-    fadmodularplugComponent,
-    fadmonoComponent,
-    fadmuteComponent,
-    fadnextComponent,
-    fadopenComponent,
-    fadpasteComponent,
-    fadpauseComponent,
-    fadpenComponent,
-    fadphaseComponent,
-    fadplayComponent,
-    fadpointerComponent,
-    fadpowerswitchComponent,
-    fadpresetaComponent,
-    fadpresetabComponent,
-    fadpresetbComponent,
-    fadpresetbaComponent,
-    fadprevComponent,
-    fadpunchinComponent,
-    fadpunchoutComponent,
-    fadramComponent,
-    fadrandom1diceComponent,
-    fadrandom2diceComponent,
-    fadrecordComponent,
-    fadredoComponent,
-    fadrepeatoneComponent,
-    fadrepeatComponent,
-    fadrewComponent,
-    fadroundswitchoffComponent,
-    fadroundswitchonComponent,
-    fadsaveComponent,
-    fadsaveasComponent,
-    fadscissorsComponent,
-    fadshuffleComponent,
-    fadsliderround1Component,
-    fadsliderround2Component,
-    fadsliderround3Component,
-    fadsliderhandle1Component,
-    fadsliderhandle2Component,
-    fadsoftclipComponent,
-    fadsoftclipcurveComponent,
-    fadsoloComponent,
-    fadspeakerComponent,
-    fadsquareswitchoffComponent,
-    fadsquareswitchonComponent,
-    fadstereoComponent,
-    fadstopComponent,
-    fadthunderboltComponent,
-    fadtimeselectComponent,
-    fadundoComponent,
-    fadunlockComponent,
-    fadusbComponent,
-    fadvexpandComponent,
-    fadvroundswitchoffComponent,
-    fadvroundswitchonComponent,
-    fadvsquareswitchoffComponent,
-    fadvsquareswitchonComponent,
-    fadwaveformComponent,
-    fadxlrplugComponent,
-    fadzoominComponent,
-    fadzoomoutComponent
 };

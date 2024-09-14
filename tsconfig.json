@@ -4,8 +4,6 @@
         "lib": ["es6", "dom", "dom.iterable", "esnext", "webworker"],
         "jsxImportSource": "@emotion/react",
         "jsx": "react-jsx",
-        "types": ["@emotion/react/types/css-prop", "jest"],
-        "typeRoots": ["./node_modules/@types"],
         "allowJs": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
