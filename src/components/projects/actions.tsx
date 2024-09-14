@@ -67,6 +67,9 @@ import { saveAs } from "file-saver";
 export const downloadProjectOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
+    if (!projectUid) {
+        throw new Error("No projectUid provided");
+    }
     return async (dispatch: any) => {
         const projReference = doc(projects, projectUid);
         let projSnap;
@@ -76,9 +79,8 @@ export const downloadProjectOnce = (
             return;
         }
         if (projSnap && projSnap.exists) {
-            const project: IProject = await convertProjectSnapToProject(
-                projSnap
-            );
+            const project: IProject =
+                await convertProjectSnapToProject(projSnap);
             await dispatch(storeProjectLocally([project]));
         }
     };
