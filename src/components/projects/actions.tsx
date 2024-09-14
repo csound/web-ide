@@ -68,9 +68,13 @@ export const downloadProjectOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     if (!projectUid) {
-        throw new Error("No projectUid provided");
+        console.trace("No projectUid provided");
     }
     return async (dispatch: any) => {
+        if (!projectUid) {
+            console.trace("Missing projectUid", projectUid);
+            return;
+        }
         const projReference = doc(projects, projectUid);
         let projSnap;
         try {

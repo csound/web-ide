@@ -20,7 +20,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import Header from "../header/header";
-import ResizeObserver from "resize-observer-polyfill";
 import {
     subscribeToFollowing,
     subscribeToFollowers,

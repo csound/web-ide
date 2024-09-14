@@ -14,7 +14,6 @@ import {
     pipe,
     reduce
 } from "ramda";
-import { ResizeObserverCallback } from "resize-observer-polyfill/src/ResizeObserver";
 import { debounce } from "throttle-debounce";
 
 // {a: 1, b: 2} => [{key: "a", val: 1}, {key: "b", val: 2}]
@@ -102,9 +101,7 @@ export const deepMerge = (
     }
 };
 
-export const updateBodyScroller = (
-    debounceTime: number
-): ResizeObserverCallback =>
+export const updateBodyScroller = (debounceTime: number) =>
     debounce(debounceTime, () => {
         const maybeElement: any = (window as any).ps_body;
         if (

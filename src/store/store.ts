@@ -13,7 +13,6 @@ import {
 import RootReducer from "./root-reducer";
 import { createReduxHistoryContext } from "redux-first-history";
 import { createBrowserHistory } from "history";
-import "symbol-observable";
 
 // the manual as a dock is an iframe
 // just to make the dev little faster

@@ -18,7 +18,6 @@ import { always } from "ramda";
 import * as SS from "./styles";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
-import ResizeObserver from "resize-observer-polyfill";
 import { closeModal } from "./actions";
 
 function getModalStyle(width, height) {
@@ -100,8 +99,8 @@ export default function GlobalModal(): React.ReactElement {
                 ].includes(modalComponentName)
                     ? onClose
                     : modalProperties.disableOnClose
-                    ? always
-                    : modalProperties.onClose || onClose
+                      ? always
+                      : modalProperties.onClose || onClose
             }
             style={{ zIndex: 3 }}
         >
