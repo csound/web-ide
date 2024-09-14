@@ -73,6 +73,7 @@ export const downloadProjectOnce = (
         console.trace("No projectUid provided");
     }
     return async (dispatch: any) => {
+        console.log("Getting project", projectUid);
         if (!projectUid) {
             console.trace("Missing projectUid", projectUid);
             return;
