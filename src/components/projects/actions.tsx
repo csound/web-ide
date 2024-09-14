@@ -3,6 +3,8 @@ import { getDownloadURL } from "firebase/storage";
 import {
     collection,
     doc,
+    DocumentData,
+    DocumentReference,
     getDoc,
     getDocs,
     updateDoc,
@@ -75,8 +77,23 @@ export const downloadProjectOnce = (
             console.trace("Missing projectUid", projectUid);
             return;
         }
-        const projReference = doc(projects, projectUid);
-        let projSnap;
+        if (!projects) {
+            console.trace("Missing projects collection", projects);
+            return;
+        }
+        let projReference: DocumentReference<DocumentData>;
+        try {
+            projReference = doc(projects, projectUid);
+        } catch {
+            return;
+        }
+
+        if (!projReference) {
+            console.trace("Missing project reference", projReference);
+            return;
+        }
+
+        let projSnap: any;
         try {
             projSnap = await getDoc(projReference);
         } catch {
