@@ -9,7 +9,14 @@ export const subscribeToLoggedInUserProfile = (
     const unsubscribe: () => void = onSnapshot(
         doc(profiles, userUid),
         (profile) => {
-            const profileData: any = profile.data();
+            const profileData = profile.data();
+            if (!profileData) {
+                console.error("No profile data found for user", {
+                    userUid,
+                    profile
+                });
+                return;
+            }
             if (typeof profileData.userJoinDate === "object") {
                 profileData.userJoinDate = profileData.userJoinDate.toMillis();
             }
