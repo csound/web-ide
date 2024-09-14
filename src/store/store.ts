@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-spread,unicorn/prefer-module */
 import {
     Action,
     ThunkAction,

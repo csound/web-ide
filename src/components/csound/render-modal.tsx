@@ -55,7 +55,7 @@ function fixLeadingSlash(filename) {
 }
 
 function FileTypeIcon({ filename }) {
-    const basename = last(filename.split("/"));
+    const basename = last(filename.split("/")) || "";
     if (basename.endsWith(".csd")) {
         return (
             <span className="rendered-csd-icon">
@@ -266,7 +266,6 @@ function AudioPlayer({
                                 "timeupdate",
                                 onAudioProgress
                             );
-                            // eslint-disable-next-line unicorn/prefer-add-event-listener
                             audioReference.current.onended = () => {
                                 audioReference &&
                                     audioReference.current &&
@@ -425,8 +424,8 @@ function RenderModal({
                             {type === "new"
                                 ? "Generated files"
                                 : type === "mod"
-                                ? "Files changed after render"
-                                : "Unmodified files"}
+                                  ? "Files changed after render"
+                                  : "Unmodified files"}
                         </h1>
                         <List css={rootStyle}>
                             {Object.keys(data).map((filename) => {
@@ -537,9 +536,8 @@ function RenderModal({
                         onClick={async () => {
                             const bundle = new JSZip();
                             for (const filename of selectedFiles) {
-                                const arrayBuffer = await csound.fs.readFile(
-                                    filename
-                                );
+                                const arrayBuffer =
+                                    await csound.fs.readFile(filename);
                                 bundle.file(filename, arrayBuffer);
                             }
 

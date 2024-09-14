@@ -70,10 +70,10 @@ const MobileTabs = ({
                           />
                       )
                     : mobileTabIndex === 1
-                    ? MobileFileTree
-                    : mobileTabIndex === 3
-                    ? MobileManual
-                    : undefined}
+                      ? MobileFileTree
+                      : mobileTabIndex === 3
+                        ? MobileManual
+                        : undefined}
                 <MobileNavigation
                     mobileTabIndex={mobileTabIndex}
                     setMobileTabIndex={setMobileTabIndex}

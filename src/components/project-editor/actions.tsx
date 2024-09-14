@@ -1,7 +1,6 @@
 import { openSimpleModal } from "@comp/modal/actions";
 import { IDocument } from "@comp/projects/types";
 import { ITarget } from "@comp/target-controls/types";
-import { find, propEq } from "ramda";
 import { sortByStoredTabOrder } from "./utils";
 import {
     MANUAL_LOOKUP_STRING,
@@ -79,19 +78,16 @@ export const tabDockInit = (
             });
         });
     } else if (
-        /* eslint-disable-next-line unicorn/no-useless-length-check */
         allDocuments.length > 0 &&
-        /* eslint-disable-next-line unicorn/no-useless-length-check */
         allDocuments.some((d) => d.filename === "project.csd")
     ) {
-        const projectCsd = find(
-            propEq("filename", "project.csd"),
-            allDocuments
+        const projectCsd = allDocuments.find(
+            (d) => d.filename === "project.csd"
         );
+
         projectCsd &&
-            !find(
-                propEq("uid", projectCsd.documentUid),
-                initialOpenDocuments
+            !initialOpenDocuments.find(
+                (d) => d.uid === projectCsd.documentUid
             ) &&
             initialOpenDocuments.push({
                 uid: projectCsd.documentUid

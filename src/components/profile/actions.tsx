@@ -86,7 +86,6 @@ const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
         query(tags, where(projectUid, "==", loggedInUserUid))
     );
 
-    /* eslint-disable-next-line unicorn/prefer-object-from-entries */
     const currentProjTags = currentProjTagsReference.docs.reduce(
         (accumulator, document_) =>
             assoc(document_.id, document_.data(), accumulator),

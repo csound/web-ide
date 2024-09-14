@@ -32,7 +32,6 @@ const initialState: DnDState = { docIdx: {} };
 export const DnDStateContext = createContext(initialState);
 
 export const DnDDispatchContext = createContext(
-    // eslint-disable-next-line @typescript-eslint/no-empty-function,@typescript-eslint/no-unused-vars
     (dispatch: Record<string, any>): void => {}
 );
 
@@ -129,17 +128,17 @@ const reducer = (state: DnDState, action: Record<string, any>): DnDState => {
             );
 
             const newState = reduceIndexed(
-                (accumulator, item, newIndex) =>
+                (accumulator, item: any, newIndex) =>
                     assocPath(
                         ["docIdx", item.uid, "index"],
                         newIndex,
                         accumulator
                     ),
-                state,
+                state as DnDState,
                 reorderedFiles
             );
 
-            return newState;
+            return newState as DnDState;
         }
         case "setDocIdx": {
             return assoc("docIdx", action.docIdx, state);

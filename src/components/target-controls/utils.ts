@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/consistent-function-scoping */
 import { curry, find, path, pathOr, propEq, values } from "ramda";
 import { RootState } from "@root/store";
 import { ITarget } from "./types";

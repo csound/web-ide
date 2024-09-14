@@ -116,7 +116,6 @@ export function DeleteDocumentPrompt({
 
 // https://stackoverflow.com/questions/11100821/javascript-regex-for-validating-filenames
 const isValidFolderName = (name: string) =>
-    // eslint-disable-next-line no-useless-escape
     !/^(con|prn|aux|nul|com\d|lpt\d)$|(["*/:<>?\\|])|([\s.])$/i.test(name);
 
 export function NewFolderPrompt({ projectUid }: { projectUid: string }) {
@@ -303,7 +302,6 @@ export function NewDocumentPrompt({
 
 export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
     const dispatch = useDispatch();
-    /* eslint-disable-next-line unicorn/no-null */
     const [files, setFiles] = useState(null as FileList | null);
 
     const [nameCollides, setNameCollides] = useState(false);

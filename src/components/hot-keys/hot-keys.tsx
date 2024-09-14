@@ -41,7 +41,6 @@ const HotKeys = ({
                 {},
                 [...keyboardCallbacks.keys()]
             ),
-        /* eslint-disable-next-line react-hooks/exhaustive-deps */
         [updateCounter]
     );
     return (

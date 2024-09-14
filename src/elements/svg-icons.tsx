@@ -154,7 +154,6 @@ import fadxlrplug from "../svgs/fad-xlrplug.svg?react";
 import fadzoomin from "../svgs/fad-zoomin.svg?react";
 import fadzoomout from "../svgs/fad-zoomout.svg?react";
 
-// eslint-disable-next-line import/no-anonymous-default-export
 export default {
     fadADR,
     fadADSR,

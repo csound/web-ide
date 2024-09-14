@@ -80,11 +80,10 @@ function Completion(cm, options) {
         this.cm.getLine(this.startPos.line).length -
         this.cm.getSelection().length;
 
-    const self = this;
     cm.on(
         "cursorActivity",
-        (this.activityFunc = function () {
-            self.cursorActivity();
+        (this.activityFunc = () => {
+            this.cursorActivity();
         })
     );
 }
@@ -152,9 +151,8 @@ Completion.prototype = {
         ) {
             this.close();
         } else {
-            const self = this;
-            this.debounce = requestAnimationFrame(function () {
-                self.update();
+            this.debounce = requestAnimationFrame(() => {
+                this.update();
             });
             if (this.widget) {
                 this.widget.disable();
@@ -166,11 +164,11 @@ Completion.prototype = {
         if (!this.tick) {
             return;
         }
-        const self = this;
         const myTick = ++this.tick;
-        fetchHints(this.options.hint, this.cm, this.options, function (data) {
-            if (self.tick === myTick) {
-                self.finishUpdate(data, first);
+
+        fetchHints(this.options.hint, this.cm, this.options, (data) => {
+            if (this.tick === myTick) {
+                this.finishUpdate(data, first);
             }
         });
     },
@@ -321,8 +319,7 @@ function Widget(completion, data) {
     this.completion = completion;
     this.data = data;
     this.picked = false;
-    const widget = this,
-        cm = completion.cm;
+    const cm = completion.cm;
     const ownerDocument = cm.getInputField().ownerDocument;
     const parentWindow =
         ownerDocument.defaultView || ownerDocument.parentWindow;
@@ -440,21 +437,21 @@ function Widget(completion, data) {
 
     cm.addKeyMap(
         (this.keyMap = buildKeyMap(completion, {
-            moveFocus: function (n, avoidWrap) {
-                widget.changeActive(widget.selectedHint + n, avoidWrap);
+            moveFocus: (n, avoidWrap) => {
+                this.changeActive(this.selectedHint + n, avoidWrap);
             },
-            setFocus: function (n) {
-                widget.changeActive(n);
+            setFocus: (n) => {
+                this.changeActive(n);
             },
-            menuSize: function () {
-                return widget.screenAmount();
+            menuSize: () => {
+                return this.screenAmount();
             },
             length: completions.length,
             close: function () {
                 completion.close();
             },
-            pick: function () {
-                widget.pick();
+            pick: () => {
+                this.pick();
             },
             data: data
         }))
@@ -502,20 +499,20 @@ function Widget(completion, data) {
         })
     );
 
-    CodeMirror.on(hints, "dblclick", function (event) {
+    CodeMirror.on(hints, "dblclick", (event) => {
         const t = getHintElement(hints, event.target || event.srcElement);
         if (t && t.hintId) {
-            widget.changeActive(t.hintId);
-            widget.pick();
+            this.changeActive(t.hintId);
+            this.pick();
         }
     });
 
-    CodeMirror.on(hints, "click", function (event) {
+    CodeMirror.on(hints, "click", (event) => {
         const t = getHintElement(hints, event.target || event.srcElement);
         if (t && t.hintId) {
-            widget.changeActive(t.hintId);
+            this.changeActive(t.hintId);
             if (completion.options.completeOnSingleClick) {
-                widget.pick();
+                this.pick();
             }
         }
     });
@@ -555,10 +552,9 @@ Widget.prototype = {
 
     disable: function () {
         this.completion.cm.removeKeyMap(this.keyMap);
-        const widget = this;
         this.keyMap = {
-            Enter: function () {
-                widget.picked = true;
+            Enter: () => {
+                this.picked = true;
             }
         };
         this.completion.cm.addKeyMap(this.keyMap);

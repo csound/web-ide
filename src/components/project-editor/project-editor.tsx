@@ -60,6 +60,8 @@ type IEditorForDocumentProperties = {
     isOwner: boolean;
 };
 
+type AnyTab = IDocument | IOpenDocument | NonCloudFile;
+
 const MySplit = ({
     primary,
     split,
@@ -70,7 +72,6 @@ const MySplit = ({
     onDragFinished,
     children
 }) => {
-    /* eslint-disable-next-line  unicorn/prefer-native-coercion-functions */
     const filteredChildren = children.filter(Boolean);
     return filteredChildren.length === 1 ? (
         filteredChildren[0]
@@ -182,7 +183,6 @@ const ProjectEditor = ({
         activeProject
     );
     const isOwner: boolean = useSelector(selectIsOwner(projectUid));
-    // eslint-disable-next-line unicorn/no-useless-undefined
     const csound: CsoundObj | undefined = undefined;
 
     useEffect(() => {
@@ -236,11 +236,8 @@ const ProjectEditor = ({
         pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
 
-    const openDocuments: (IDocument | IOpenDocument)[] = reduce(
-        (
-            accumulator: (IDocument | IOpenDocument)[],
-            tabDocument: IOpenDocument
-        ) => {
+    const openDocuments: AnyTab[] = tabDockDocuments.reduce(
+        (accumulator: AnyTab[], tabDocument: IOpenDocument) => {
             const maybeDocument = pathOr(
                 {} as IDocument,
                 ["documents", propOr("", "uid", tabDocument)],
@@ -252,11 +249,10 @@ const ProjectEditor = ({
             return isNonCloudFile
                 ? append(tabDocument, accumulator)
                 : maybeDocument && Object.keys(maybeDocument).length > 0
-                ? append(maybeDocument, accumulator)
-                : accumulator;
+                  ? append(maybeDocument, accumulator)
+                  : accumulator;
         },
-        [] as (IDocument | NonCloudFile)[],
-        tabDockDocuments
+        [] as AnyTab[]
     );
 
     const closeTab = (documentUid, isModified) => {
@@ -376,7 +372,9 @@ const ProjectEditor = ({
         <MobileTabs
             activeProject={activeProject}
             projectUid={projectUid}
-            currentDocument={openDocuments[tabIndex]}
+            currentDocument={
+                openDocuments[tabIndex] as IDocument | IOpenDocument | undefined
+            }
         />
     ) : (
         <>

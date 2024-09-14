@@ -55,7 +55,6 @@ const Main = (): React.ReactElement => {
                 (window as any).ps_body &&
                 (window as any).ps_body.destroy();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

@@ -538,7 +538,6 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
 
             const folders = documents
                 .filter((d) => d.type === "folder")
-                /* eslint-disable unicorn/prefer-object-from-entries */
                 .reduce((m, f) => {
                     return { ...m, [f.documentUid]: f };
                 }, {});

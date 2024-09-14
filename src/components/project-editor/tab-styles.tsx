@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "@emotion/styled";
 import {
     TabListStyle,
@@ -32,8 +31,10 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
         z-index: 1;
         background-color: ${theme.background}!important;
         height: ${tabListHeight}px;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-            0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        box-shadow:
+            0 2px 2px 0 rgba(0, 0, 0, 0.14),
+            0 1px 5px 0 rgba(0, 0, 0, 0.12),
+            0 3px 1px -2px rgba(0, 0, 0, 0.2);
     }
     .tablist > div {
         height: 100%;
@@ -58,7 +59,9 @@ const TabListStyleCustom = styled(TabListStyle)`
     z-index: 1;
     background-color: ${(properties) => properties.theme.background}!important;
     bottom: 0;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
+    box-shadow:
+        0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
         0 3px 1px -2px rgba(0, 0, 0, 0.2);
 
     & li::after {
@@ -168,17 +171,13 @@ const PanelStyleCustom = styled(PanelStyle)`
 `;
 
 const TabStyles = (isBottom: boolean): Record<string, any> => ({
-    // eslint-disable-next-line react/display-name
     TabList: (properties) => (
         <TabListStyleCustom {...properties} isBottom={isBottom} />
     ),
-    // eslint-disable-next-line react/display-name
     ActionButton: (properties) => (
         <ActionButtonStyleCustom {...properties} isBottom={isBottom} />
     ),
-    // eslint-disable-next-line react/display-name
     Tab: (properties) => <TabStyleCustom {...properties} isBottom={isBottom} />,
-    // eslint-disable-next-line react/display-name
     Panel: (properties) => (
         <PanelStyleCustom {...properties} isBottom={isBottom} />
     )

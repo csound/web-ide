@@ -1,10 +1,10 @@
-import React, { forwardRef, useEffect } from "react";
-import { css } from "@emotion/react";
+import { forwardRef, useEffect } from "react";
+import { FunctionInterpolation, css } from "@emotion/react";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 import { perfectScrollbarStyleSheet } from "@styles/_perfect-scrollbar";
 
-const scrollbarContainer = (theme) => css`
+const scrollbarContainer: FunctionInterpolation = (theme) => css`
     ${perfectScrollbarStyleSheet(theme)}
     position: relative;
     height: auto;
@@ -45,7 +45,6 @@ const ScrollBar = forwardRef((properties: any, reference: any) => {
                 }, 100);
             };
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reference]);
 
     return (
