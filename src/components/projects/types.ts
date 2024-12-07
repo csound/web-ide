@@ -35,7 +35,7 @@ export interface IDocument {
 
 export type IDocumentsMap = { [documentUid: string]: IDocument };
 
-type IStar = { [userUid: string]: number };
+export type Star = { [userUid: string]: number };
 
 export interface IProject {
     description: string;
@@ -49,7 +49,7 @@ export interface IProject {
     iconForegroundColor?: string;
     iconName?: string;
     // only local path, NOT stored there on firestore
-    stars: IStar;
+    stars: Star;
     tags: string[];
 }
 

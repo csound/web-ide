@@ -39,50 +39,54 @@ const LoginReducer = (
 ): ILoginReducer => {
     switch (action.type) {
         case SIGNIN_REQUEST: {
-            return assoc("requesting", true, state);
+            return { ...state, requesting: true };
         }
         case SET_REQUESTING_STATUS: {
-            return assoc("requesting", action.status, state);
+            return { ...state, requesting: action.status };
         }
         case CREATE_USER_FAIL:
         case SIGNIN_FAIL: {
-            return pipe(
-                assoc("requesting", false),
-                assoc("authenticated", false),
-                assoc("failed", true)
-            )(state);
+            return {
+                ...state,
+                requesting: false,
+                authenticated: false,
+                failed: true
+            };
         }
         case CREATE_CLEAR_ERROR: {
-            return pipe(
-                assoc("failed", false),
-                dissoc("errorCode"),
-                assoc("errorMessage", false)
-            )(state);
+            const { ...restState } = state;
+            return {
+                ...restState,
+                failed: false,
+                errorMessage: ""
+            };
         }
         case CREATE_USER_SUCCESS:
         case SIGNIN_SUCCESS: {
-            return pipe(
-                assoc("loggedInUid", action.user.uid),
-                assoc("isLoginDialogOpen", false),
-                assoc("requesting", false),
-                assoc("authenticated", true)
-            )(state);
+            return {
+                ...state,
+                loggedInUid: action.user.uid,
+                isLoginDialogOpen: false,
+                requesting: false,
+                authenticated: true
+            };
         }
         case LOG_OUT: {
-            return pipe(
-                assoc("isLoginDialogOpen", false),
-                assoc("authenticated", false),
-                assoc("requesting", false),
-                assoc("failed", false),
-                dissoc("errorCode"),
-                assoc("errorMessage", false)
-            )(state);
+            const { ...restState } = state;
+            return {
+                ...restState,
+                isLoginDialogOpen: false,
+                authenticated: false,
+                requesting: false,
+                failed: false,
+                errorMessage: ""
+            };
         }
         case OPEN_DIALOG: {
-            return assoc("isLoginDialogOpen", true, state);
+            return { ...state, isLoginDialogOpen: true };
         }
         case CLOSE_DIALOG: {
-            return assoc("isLoginDialogOpen", false, state);
+            return { ...state, isLoginDialogOpen: false };
         }
         default: {
             return state;

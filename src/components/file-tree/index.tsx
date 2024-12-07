@@ -128,7 +128,7 @@ function UploadNonCloudFileIcon({
     file: NonCloudFile;
     projectUid: string;
     mimeType: string;
-}): JSX.Element {
+}) {
     const dispatch = useDispatch();
     const [uploadProgress, setUploadProgress] = useState(-1);
 
@@ -266,7 +266,7 @@ function DownloadNonCloudFileIcon({
 }: {
     file: NonCloudFile;
     mimeType: string;
-}): JSX.Element {
+}) {
     const onClick = useCallback(() => {
         const blob = new Blob([file.buffer], { type: mimeType });
         const tmpUrl = URL.createObjectURL(blob);
@@ -301,7 +301,7 @@ function FileExtIcon({
     isBinary: boolean;
     filename: string;
     nestingDepth?: number;
-}): JSX.Element {
+}) {
     if (isBinary) {
         return (
             <ListItemIcon
@@ -311,7 +311,9 @@ function FileExtIcon({
                     marginLeft: 24 * nestingDepth
                 }}
             >
-                <WaveFormIcon css={SS.mediaIcon} />
+                <span css={SS.mediaIcon}>
+                    <WaveFormIcon />
+                </span>
             </ListItemIcon>
         );
     }
@@ -355,40 +357,52 @@ function FileExtIcon({
 }
 
 const makeTree = (
-    activeProjectUid,
-    currentTabDocumentUid,
+    activeProjectUid: string,
+    currentTabDocumentUid: string,
     dispatch,
     collapseState,
     setCollapseState,
-    isOwner,
+    isOwner: boolean,
     theme,
     path,
     [documentIndex, elementArray],
     filelist
 ) => {
-    const allDirectories = filter(propEq("type", "folder"), filelist);
-    const allFiles = filter((f) => not(propEq("type", "folder", f)), filelist);
+    // Getting all directories (where type is "folder")
+    const allDirectories = filelist.filter((file) => file.type === "folder");
+
+    // Getting all files (where type is not "folder")
+    const allFiles = filelist.filter((file) => file.type !== "folder");
+
     const dragHoverCss = `{background-color: rgba(${rgba(
         theme.allowed,
         0.1
     )}) !important;}`;
 
     // this could be problematic, but then again, we need to test what behaviour we want
-    const sortedFiles = concat(
-        sort(hopefulSorting(documentIndex), allDirectories),
-        sort(hopefulSorting(documentIndex), allFiles)
+    // Sorting the files
+    const sortedFiles = [
+        ...allDirectories.sort(hopefulSorting(documentIndex)),
+        ...allFiles.sort(hopefulSorting(documentIndex))
+    ];
+
+    // Filtering current files based on path
+    const currentFiles = sortedFiles.filter(
+        (file) => file.path === (path || [])
     );
 
-    const currentFiles = filter(propEq("path", path || []), sortedFiles);
-    const newFileList = reject(
-        both(propEq("path", path || []), (p) =>
-            not(propEq("type", "folder", p))
-        ),
-        sortedFiles
+    // Creating a new file list by rejecting specific conditions
+    const newFileList = sortedFiles.filter(
+        (file) => !(file.path === (path || []) && file.type !== "folder")
     );
 
+    // Finding the folder document based on the last path
     const folderDocument =
-        !isEmpty(path) && find(propEq("documentUid", last(path)), sortedFiles);
+        path && path.length > 0
+            ? sortedFiles.find(
+                  (file) => file.documentUid === path[path.length - 1]
+              )
+            : undefined;
 
     const folderClassName = `folder-${
         folderDocument ? folderDocument.documentUid : "root"
@@ -431,17 +445,14 @@ const makeTree = (
             </Tooltip>
         );
 
-    return reduceIndexed(
+    return (currentFiles as IDocument[]).reduce(
         (
             [documentIndex_, elementArray_],
             document_: IDocument,
             index: number
         ) => {
-            if (propEq("type", "folder", document_)) {
-                const folderPath = append(
-                    document_.documentUid,
-                    document_.path
-                );
+            if (document_.type === "folder") {
+                const folderPath = [...document_.path, document_.documentUid];
                 const FolderIcon = (
                     <ListItemIcon
                         key={`${document_.documentUid}-folder`}
@@ -449,12 +460,17 @@ const makeTree = (
                         style={{ left: 1 + (24 * path.length - 1) }}
                     >
                         {collapseState[document_.documentUid] ? (
-                            <DirectoryOpen css={SS.directoryOpenIcon} />
+                            <span css={SS.directoryOpenIcon}>
+                                <DirectoryOpen />
+                            </span>
                         ) : (
-                            <DirectoryClose css={SS.directoryCloseIcon} />
+                            <span css={SS.directoryCloseIcon}>
+                                <DirectoryClose />
+                            </span>
                         )}
                     </ListItemIcon>
                 );
+
                 const [newDocumentIndex, newElementArray] = makeTree(
                     activeProjectUid,
                     currentTabDocumentUid,
@@ -467,128 +483,110 @@ const makeTree = (
                     [documentIndex_, []],
                     newFileList
                 );
+
                 return [
-                    assoc(
-                        document_.documentUid,
-                        {
+                    {
+                        ...newDocumentIndex,
+                        [document_.documentUid]: {
                             index,
                             parent: folderDocument
                                 ? folderDocument.documentUid
                                 : "root"
-                        },
-                        newDocumentIndex
-                    ),
-                    pipe(
-                        append(
-                            <Droppable
-                                key={`${document_.documentUid}`}
-                                droppableId={`${document_.documentUid}`}
-                                direction="vertical"
-                                mode="standard"
-                            >
-                                {(droppableProvided, droppableSnapshot) => (
-                                    <RootReference
-                                        ref={droppableProvided.innerRef}
+                        }
+                    },
+                    [
+                        ...elementArray_,
+                        <Droppable
+                            key={`${document_.documentUid}`}
+                            droppableId={`${document_.documentUid}`}
+                            direction="vertical"
+                            mode="standard"
+                        >
+                            {(droppableProvided, droppableSnapshot) => (
+                                <RootReference ref={droppableProvided.innerRef}>
+                                    <Draggable
+                                        isDragDisabled={!isOwner}
+                                        draggableId={`${document_.documentUid}`}
+                                        index={index}
                                     >
-                                        <Draggable
-                                            isDragDisabled={!isOwner}
-                                            draggableId={`${document_.documentUid}`}
-                                            index={index}
-                                        >
-                                            {(provided, snapshot) => (
-                                                <ListItem
-                                                    ref={provided.innerRef}
-                                                    css={
-                                                        droppableSnapshot.isDraggingOver
-                                                            ? SS.draggingOver
-                                                            : SS.listItem
-                                                    }
-                                                    onClick={() =>
-                                                        setCollapseState(
-                                                            assoc(
-                                                                document_.documentUid,
-                                                                not(
-                                                                    collapseState[
-                                                                        document_
-                                                                            .documentUid
-                                                                    ]
-                                                                ),
-                                                                collapseState
-                                                            )
-                                                        )
-                                                    }
-                                                    className={`folder-${document_.documentUid}`}
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    style={mergeAll([
-                                                        snapshot.isDragging
-                                                            ? provided
-                                                                  .draggableProps
-                                                                  .style
-                                                            : {},
-                                                        {
-                                                            paddingLeft: 40,
-                                                            height: 36
-                                                        }
-                                                    ])}
-                                                >
-                                                    {FolderIcon}
-                                                    <Box
-                                                        marginLeft="24px"
-                                                        padding="0"
-                                                    >
-                                                        {document_.filename}
-                                                    </Box>
-                                                    <div
-                                                        css={
-                                                            SS.delEditContainer
-                                                        }
-                                                    >
-                                                        {deleteIcon(document_)}
-                                                        {editIcon(document_)}
-                                                    </div>
-                                                </ListItem>
-                                            )}
-                                        </Draggable>
-
-                                        <Collapse
-                                            timeout={{
-                                                enter: 300,
-                                                exit: 200
-                                            }}
-                                            in={
-                                                collapseState[
-                                                    document_.documentUid
-                                                ]
-                                            }
-                                            key={`${document_.documentUid}-collapse`}
-                                        >
-                                            {newElementArray}
-                                            <span
+                                        {(provided, snapshot) => (
+                                            <ListItem
+                                                ref={provided.innerRef}
+                                                css={
+                                                    droppableSnapshot.isDraggingOver
+                                                        ? SS.draggingOver
+                                                        : SS.listItem
+                                                }
+                                                onClick={() =>
+                                                    setCollapseState({
+                                                        ...collapseState,
+                                                        [document_.documentUid]:
+                                                            !collapseState[
+                                                                document_
+                                                                    .documentUid
+                                                            ]
+                                                    })
+                                                }
                                                 className={`folder-${document_.documentUid}`}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                style={{
+                                                    ...provided.draggableProps
+                                                        .style,
+                                                    paddingLeft: 40,
+                                                    height: 36
+                                                }}
                                             >
-                                                {droppableProvided.placeholder}
-                                            </span>
-                                        </Collapse>
-                                    </RootReference>
-                                )}
-                            </Droppable>
-                        )
-                    )(elementArray_)
+                                                {FolderIcon}
+                                                <Box
+                                                    marginLeft="24px"
+                                                    padding="0"
+                                                >
+                                                    {document_.filename}
+                                                </Box>
+                                                <div css={SS.delEditContainer}>
+                                                    {deleteIcon(document_)}
+                                                    {editIcon(document_)}
+                                                </div>
+                                            </ListItem>
+                                        )}
+                                    </Draggable>
+
+                                    <Collapse
+                                        timeout={{
+                                            enter: 300,
+                                            exit: 200
+                                        }}
+                                        in={
+                                            collapseState[document_.documentUid]
+                                        }
+                                        key={`${document_.documentUid}-collapse`}
+                                    >
+                                        {newElementArray}
+                                        <span
+                                            className={`folder-${document_.documentUid}`}
+                                        >
+                                            {droppableProvided.placeholder}
+                                        </span>
+                                    </Collapse>
+                                </RootReference>
+                            )}
+                        </Droppable>
+                    ]
                 ];
             } else {
                 return [
-                    assoc(
-                        document_.documentUid,
-                        {
+                    {
+                        ...documentIndex_,
+                        [document_.documentUid]: {
                             index,
                             parent: folderDocument
                                 ? folderDocument.documentUid
                                 : "root"
-                        },
-                        documentIndex_
-                    ),
-                    append(
+                        }
+                    },
+                    [
+                        ...elementArray_,
                         <Droppable
                             droppableId={`${document_.documentUid}`}
                             key={`${document_.documentUid}-fragment`}
@@ -629,27 +627,17 @@ const makeTree = (
                                                             24 * path.length +
                                                             "px !important"
                                                     }}
-                                                    style={mergeAll([
-                                                        snapshot.isDragging
-                                                            ? mergeAll([
-                                                                  provided
-                                                                      .draggableProps
-                                                                      .style,
-                                                                  {
-                                                                      backgroundColor:
-                                                                          "rgba(0, 0, 0, 0.1)"
-                                                                  }
-                                                              ])
-                                                            : {},
-                                                        {
-                                                            height: 36,
-                                                            backgroundColor:
-                                                                currentTabDocumentUid ===
-                                                                document_.documentUid
-                                                                    ? "rgba(0,0,0,0.2)"
-                                                                    : "inherit"
-                                                        }
-                                                    ])}
+                                                    style={{
+                                                        ...provided
+                                                            .draggableProps
+                                                            .style,
+                                                        height: 36,
+                                                        backgroundColor:
+                                                            currentTabDocumentUid ===
+                                                            document_.documentUid
+                                                                ? "rgba(0,0,0,0.2)"
+                                                                : "inherit"
+                                                    }}
                                                 >
                                                     <FileExtIcon
                                                         nestingDepth={
@@ -682,14 +670,12 @@ const makeTree = (
                                     {droppableProvided.placeholder}
                                 </RootReference>
                             )}
-                        </Droppable>,
-                        elementArray_
-                    )
+                        </Droppable>
+                    ]
                 ];
             }
         },
-        [documentIndex, elementArray],
-        currentFiles
+        [documentIndex, elementArray as any[]]
     );
 };
 
@@ -729,7 +715,7 @@ const FileTree = (): React.ReactElement => {
 
     return (
         <React.Fragment>
-            {stateDnD && project && (
+            {stateDnD && project && currentTabDocumentUid && (
                 <div css={SS.container}>
                     <List css={SS.listContainer} dense>
                         {

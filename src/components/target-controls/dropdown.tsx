@@ -32,8 +32,9 @@ const paranoidNotNullChecker = (item: any): boolean =>
 const titleTooltip = ({ documents, selectedTarget }) => {
     const mainDocument: IDocument | undefined =
         typeof selectedTarget === "object" &&
-        has("targetDocumentUid", selectedTarget) &&
-        documents[(selectedTarget || ({} as any)).targetDocumentUid];
+        selectedTarget.targetDocumentUid &&
+        documents[selectedTarget.targetDocumentUid];
+
     return mainDocument && selectedTarget.targetType === "main"
         ? `main: ${mainDocument.filename}`
         : `No document found for selected target: ${selectedTarget.targetName}`;
@@ -46,9 +47,8 @@ const TargetDropdown = ({
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const theme = useTheme();
-    const targets: ITargetMap | undefined = useSelector(
-        selectProjectTargets(activeProjectUid)
-    );
+    const targets: ITargetMap =
+        useSelector(selectProjectTargets(activeProjectUid)) || {};
 
     const documents: IDocumentsMap | undefined = useSelector(
         selectProjectDocuments(activeProjectUid)
@@ -65,13 +65,13 @@ const TargetDropdown = ({
 
     const isOwner = useSelector(selectIsOwner(activeProjectUid));
 
-    const mainTargets: ITarget[] = targets
-        ? filter(has("targetDocumentUid"), values(targets))
-        : [];
+    const mainTargets: ITarget[] = Object.values(targets).filter(
+        (target) => target.targetDocumentUid
+    );
 
-    const playlistTargets: ITarget[] = targets
-        ? filter(has("playlistDocumentsUid"), values(targets))
-        : [];
+    const playlistTargets: ITarget[] = Object.values(targets).filter(
+        (target) => target.playlistDocumentsUid
+    );
 
     const mainDropdownOptions = isEmpty(mainTargets)
         ? []
@@ -113,7 +113,9 @@ const TargetDropdown = ({
                 options: mainDropdownOptions
             }
         ],
-        isOwner ? [{ label: "Configure", value: "___toggle-configure" }] : []
+        isOwner
+            ? [{ label: "Configure", value: "___toggle-configure" } as any]
+            : []
     );
 
     const [menuIsOpen, setMenuIsOpen] = useState(false);

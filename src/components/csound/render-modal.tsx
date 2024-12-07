@@ -209,7 +209,7 @@ function AudioPlayer({
     currentlyPlaying,
     setCurrentlyPlaying
 }) {
-    const audioReference: React.RefObject<HTMLAudioElement> | null =
+    const audioReference: React.RefObject<HTMLAudioElement | null> =
         useRef(null);
     const [isPaused, setIsPaused] = useState(false);
     const [isStarted, setIsStarted] = useState(false);
@@ -450,7 +450,6 @@ function RenderModal({
                                             }
                                             role={undefined}
                                             dense
-                                            button
                                         >
                                             <div className="rendered-left">
                                                 <ListItemIcon>

@@ -1,4 +1,4 @@
-import { RootState } from "@root/store";
+import { RootState } from "../../store/index";
 import { getDownloadURL, uploadBytes } from "firebase/storage";
 import {
     collection,
@@ -81,7 +81,11 @@ const addUserProjectAction = (): ProfileActionTypes => {
     };
 };
 
-const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
+const handleProjectTags = async (
+    projectUid: string,
+    loggedInUserUid: string,
+    currentTags: string[]
+) => {
     const currentProjTagsReference = await getDocs(
         query(tags, where(projectUid, "==", loggedInUserUid))
     );
@@ -91,10 +95,10 @@ const handleProjectTags = async (projectUid, loggedInUserUid, currentTags) => {
             assoc(document_.id, document_.data(), accumulator),
         {}
     );
-    const newTags = reject(
-        (t) => keys(currentProjTags).includes(t),
-        currentTags
+    const newTags = currentTags.filter(
+        (t) => !Object.keys(currentProjTags).includes(t)
     );
+
     const deletedTags = difference(
         keys(currentProjTags).sort(),
         currentTags.sort()
@@ -296,29 +300,24 @@ export const setTagsInput = (tags: Array<any>): ProfileActionTypes => {
     };
 };
 
-export const getAllTagsFromUser =
-    (loggedInUserUid: string | undefined, allUserProjectsUids: string[]) =>
-    async (dispatch, getStore) => {
-        const store = getStore();
+// export const getAllTagsFromUser =
+//     (loggedInUserUid: string, allUserProjectsUids: string[]) =>
+//     async (dispatch, getStore) => {
+//         const store: RootState = getStore();
 
-        const currentAllTags = pathOr(
-            {},
-            ["ProfiledReducer", "profiles", loggedInUserUid, "allTags"],
-            store
-        );
+//         const currentAllTags =
+//             store.ProfileReducer.profiles[loggedInUserUid].allTags;
 
-        if (allUserProjectsUids) {
-            const allTags = reduce(
-                (accumulator, item) => concat(item.tags || [], accumulator),
-                [],
-                allUserProjectsUids
-            );
+//         if (allUserProjectsUids) {
+//             const allTags = allUserProjectsUids.reduce((accumulator, item) =>
+//                 (item.tags || []).concat(accumulator)
+//             );
 
-            if (!equals(currentAllTags, allTags)) {
-                dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
-            }
-        }
-    };
+//             if (!equals(currentAllTags, allTags)) {
+//                 dispatch({ type: GET_ALL_TAGS, allTags, loggedInUserUid });
+//             }
+//         }
+//     };
 
 export const addProject = () => {
     return openSimpleModal("new-project-prompt", {
@@ -558,7 +557,7 @@ export const playListItem =
             getPlayActionFromProject(projectUid, state);
 
         if (playAction) {
-            playAction(dispatch);
+            (playAction as any)(dispatch);
             await dispatch({
                 type: SET_CURRENTLY_PLAYING_PROJECT,
                 projectUid

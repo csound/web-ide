@@ -31,18 +31,9 @@ const TargetControls = (): React.ReactElement => {
 
     const savedDefaultTarget: string | undefined = useSelector(
         (store: RootState) => {
-            return (
-                activeProjectUid &&
-                pathOr(
-                    [
-                        "ProjectsReducer",
-                        "projects",
-                        activeProjectUid,
-                        "defaultTarget"
-                    ],
-                    store
-                )
-            );
+            if (!activeProjectUid) return undefined;
+            return store.ProjectsReducer.projects[activeProjectUid]
+                .defaultTarget;
         }
     );
 

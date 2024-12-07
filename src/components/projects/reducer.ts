@@ -18,19 +18,7 @@ import {
 } from "./types";
 import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "@comp/project-last-modified/types";
 import { generateEmptyDocument } from "./utils";
-import {
-    assoc,
-    assocPath,
-    curry,
-    dissoc,
-    dissocPath,
-    mergeAll,
-    hasPath,
-    pathOr,
-    pipe,
-    reduce
-} from "ramda";
-import { isEmpty } from "lodash";
+import { RootState } from "@root/store";
 
 type IProjectMap = { [projectUid: string]: IProject };
 
@@ -38,44 +26,35 @@ const initialProjectsState: IProjectsReducer = {
     activeProjectUid: "",
     projects: {} as IProjectMap
 };
+const resetDocumentToSavedValue = (
+    state: RootState,
+    activeProjectUid: string,
+    documentUid: string
+) => {
+    const savedValue =
+        state?.projects?.[activeProjectUid]?.documents?.[documentUid]
+            ?.savedValue || "";
 
-const resetDocumentToSavedValue = curry(
-    (state: IProjectsReducer, activeProjectUid: string, documentUid: string) =>
-        pipe(
-            (st) =>
-                assocPath(
-                    [
-                        "projects",
-                        activeProjectUid,
-                        "documents",
-                        documentUid,
-                        "currentValue"
-                    ],
-                    pathOr(
-                        "",
-                        [
-                            "projects",
-                            activeProjectUid,
-                            "documents",
-                            documentUid,
-                            "savedValue"
+    return {
+        ...state,
+        projects: {
+            ...state.projects,
+            [activeProjectUid]: {
+                ...state.projects[activeProjectUid],
+                documents: {
+                    ...state.projects[activeProjectUid].documents,
+                    [documentUid]: {
+                        ...state.projects[activeProjectUid].documents[
+                            documentUid
                         ],
-                        st
-                    ),
-                    st
-                ),
-            assocPath(
-                [
-                    "projects",
-                    activeProjectUid,
-                    "documents",
-                    documentUid,
-                    "isModifiedLocally"
-                ],
-                false
-            )
-        )(state)
-);
+                        currentValue: savedValue,
+                        isModifiedLocally: false
+                    }
+                }
+            }
+        }
+    };
+};
 
 const ProjectsReducer = (
     state: IProjectsReducer | undefined,
@@ -84,85 +63,150 @@ const ProjectsReducer = (
     if (state) {
         switch (action.type) {
             case STORE_PROJECT_LOCALLY: {
-                if (isEmpty(action.projects)) {
+                if (!action.projects || action.projects.length === 0) {
                     return state;
                 }
 
-                const newState = reduce(
-                    (st, proj) => {
-                        const path = ["projects", proj.projectUid];
-                        return hasPath(path, st)
-                            ? assocPath(
-                                  path,
-                                  mergeAll([
-                                      pathOr({}, path, st),
-                                      pipe(
-                                          dissoc("tags"),
-                                          dissoc("stars"),
-                                          dissoc("documents")
-                                      )(proj)
-                                  ]),
-                                  st
-                              )
-                            : assocPath(path, proj, st);
-                    },
-                    state,
-                    action.projects
-                );
+                const newState = action.projects.reduce((st, proj) => {
+                    const existingProject =
+                        st.projects?.[proj.projectUid] || {};
+
+                    return st.projects?.[proj.projectUid]
+                        ? {
+                              ...st,
+                              projects: {
+                                  ...st.projects,
+                                  [proj.projectUid]: {
+                                      ...existingProject,
+                                      ...Object.entries(proj).reduce(
+                                          (acc, [key, value]) => {
+                                              if (
+                                                  ![
+                                                      "tags",
+                                                      "stars",
+                                                      "documents"
+                                                  ].includes(key)
+                                              ) {
+                                                  acc[key] = value;
+                                              }
+                                              return acc;
+                                          },
+                                          {}
+                                      )
+                                  }
+                              }
+                          }
+                        : {
+                              ...st,
+                              projects: {
+                                  ...st.projects,
+                                  [proj.projectUid]: proj
+                              }
+                          };
+                }, state);
+
                 return newState;
             }
+
             case UNSET_PROJECT: {
-                return dissocPath(["projects", action.projectUid], state);
+                const {
+                    [action.projectUid]: removedProject,
+                    ...remainingProjects
+                } = state.projects;
+                return {
+                    ...state,
+                    projects: remainingProjects
+                };
             }
+
             case ADD_PROJECT_DOCUMENTS: {
-                const path = ["projects", action.projectUid, "documents"];
-                return assocPath(
-                    path,
-                    mergeAll([pathOr({}, path, state), action.documents])
-                )(state) as IProjectsReducer;
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            documents: {
+                                ...state.projects[action.projectUid].documents,
+                                ...action.documents
+                            }
+                        }
+                    }
+                };
             }
+
             case SET_PROJECT_PUBLIC: {
-                return assocPath(
-                    ["projects", action.projectUid, "isPublic"],
-                    action.isPublic
-                )(state) as IProjectsReducer;
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            isPublic: action.isPublic
+                        }
+                    }
+                };
             }
+
             case ACTIVATE_PROJECT: {
-                return assoc("activeProjectUid", action.projectUid, state);
+                return { ...state, activeProjectUid: action.projectUid };
             }
+
             case CLOSE_PROJECT: {
-                return dissoc("activeProjectUid", state);
+                const { activeProjectUid, ...remainingState } = state;
+                return remainingState;
             }
+
             case STORE_PROJECT_STARS: {
-                return assocPath(
-                    ["projects", action.projectUid, "stars"],
-                    action.stars,
-                    state
-                );
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            stars: action.stars
+                        }
+                    }
+                };
             }
+
             case DOCUMENT_INITIALIZE: {
                 const newDocument = generateEmptyDocument(
                     action.documentUid,
                     action.filename
                 );
-                return assocPath(
-                    [
-                        "projects",
-                        action.projectUid,
-                        "documents",
-                        action.documentUid
-                    ],
-                    newDocument
-                )(state) as IProjectsReducer;
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            documents: {
+                                ...state.projects[action.projectUid].documents,
+                                [action.documentUid]: newDocument
+                            }
+                        }
+                    }
+                };
             }
+
             case DOCUMENT_REMOVE_LOCALLY: {
-                return dissocPath([
-                    "projects",
-                    action.projectUid,
-                    "documents",
-                    action.documentUid
-                ])(state);
+                const {
+                    [action.documentUid]: removedDocument,
+                    ...remainingDocuments
+                } = state.projects[action.projectUid].documents;
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            documents: remainingDocuments
+                        }
+                    }
+                };
             }
+
             case DOCUMENT_RESET: {
                 return state
                     ? resetDocumentToSavedValue(
@@ -172,91 +216,124 @@ const ProjectsReducer = (
                       )
                     : state;
             }
+
             case DOCUMENT_SAVE: {
-                const path = [
-                    "projects",
-                    action.projectUid,
-                    "documents",
-                    action.document.documentUid
-                ];
-                return assocPath(
-                    path,
-                    action.document
-                )(state) as IProjectsReducer;
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            documents: {
+                                ...state.projects[action.projectUid].documents,
+                                [action.document.documentUid]: action.document
+                            }
+                        }
+                    }
+                };
             }
+
             case DOCUMENT_UPDATE_VALUE: {
-                return !action.documentUid || !action.projectUid || !state
-                    ? state
-                    : (pipe(
-                          assocPath(
-                              [
-                                  "projects",
-                                  action.projectUid,
-                                  "documents",
-                                  action.documentUid,
-                                  "isModifiedLocally"
-                              ],
-                              action.val !==
-                                  state.projects[action.projectUid].documents[
-                                      action.documentUid
-                                  ].savedValue
-                          ),
-                          assocPath(
-                              [
-                                  "projects",
-                                  action.projectUid,
-                                  "documents",
-                                  action.documentUid,
-                                  "currentValue"
-                              ],
-                              action.val
-                          )
-                      )(state) as IProjectsReducer);
-            }
-            case DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
-                if (!action.documentUid || !state) {
+                if (!action.documentUid || !action.projectUid || !state)
                     return state;
-                }
-                return assocPath(
-                    [
-                        "projects",
-                        action.projectUid,
-                        "documents",
-                        action.documentUid,
-                        "isModifiedLocally"
-                    ],
-                    action.isModified
-                )(state) as IProjectsReducer;
+
+                const isModifiedLocally =
+                    action.val !==
+                    state.projects[action.projectUid].documents[
+                        action.documentUid
+                    ].savedValue;
+
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            documents: {
+                                ...state.projects[action.projectUid].documents,
+                                [action.documentUid]: {
+                                    ...state.projects[action.projectUid]
+                                        .documents[action.documentUid],
+                                    isModifiedLocally,
+                                    currentValue: action.val
+                                }
+                            }
+                        }
+                    }
+                };
             }
+
+            case DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
+                if (!action.documentUid || !state) return state;
+
+                return {
+                    ...state,
+                    projects: {
+                        ...state.projects,
+                        [action.projectUid]: {
+                            ...state.projects[action.projectUid],
+                            documents: {
+                                ...state.projects[action.projectUid].documents,
+                                [action.documentUid]: {
+                                    ...state.projects[action.projectUid]
+                                        .documents[action.documentUid],
+                                    isModifiedLocally: action.isModified
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
             case DOCUMENT_RENAME_LOCALLY: {
-                return assocPath(
-                    [
-                        "projects",
-                        state.activeProjectUid,
-                        "documents",
-                        action.documentUid,
-                        "filename"
-                    ],
-                    action.newFilename
-                )(state);
+                return typeof state.activeProjectUid !== "string"
+                    ? state
+                    : {
+                          ...state,
+                          projects: {
+                              ...state.projects,
+                              [state.activeProjectUid]: {
+                                  ...state.projects[state.activeProjectUid],
+                                  documents: {
+                                      ...state.projects[state.activeProjectUid]
+                                          .documents,
+                                      [action.documentUid]: {
+                                          ...state.projects[
+                                              state.activeProjectUid
+                                          ].documents[action.documentUid],
+                                          filename: action.newFilename
+                                      }
+                                  }
+                              }
+                          }
+                      };
             }
+
             case UPDATE_PROJECT_LAST_MODIFIED_LOCALLY: {
-                return state &&
+                if (
+                    state &&
                     action.projectUid !== null &&
                     action.projectUid === state.activeProjectUid
-                    ? (assocPath as any)(
-                          [
-                              "projects",
-                              state.activeProjectUid,
-                              "cachedProjectLastModified"
-                          ],
-                          action.timestamp,
-                          state as IProjectsReducer
-                      )
-                    : state;
+                ) {
+                    return typeof state.activeProjectUid !== "string"
+                        ? state
+                        : {
+                              ...state,
+                              projects: {
+                                  ...state.projects,
+                                  [state.activeProjectUid]: {
+                                      ...state.projects[state.activeProjectUid],
+                                      cachedProjectLastModified:
+                                          action.timestamp
+                                  }
+                              }
+                          };
+                }
+                return state;
             }
+
             default: {
-                return (state as IProjectsReducer) || initialProjectsState;
+                return state || initialProjectsState;
             }
         }
     } else {

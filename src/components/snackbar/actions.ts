@@ -2,7 +2,6 @@
 import {
     OPEN_SNACKBAR,
     CLOSE_SNACKBAR,
-    SnackbarActionTypes,
     SnackbarType,
     ISnackbar
 } from "./types";
@@ -11,7 +10,7 @@ export const openSnackbar = (
     text: string,
     type: SnackbarType,
     timeout = 6000
-): SnackbarActionTypes => {
+) => {
     const payload: ISnackbar = {
         text,
         type,
@@ -23,7 +22,7 @@ export const openSnackbar = (
     };
 };
 
-export const closeSnackbar = (): SnackbarActionTypes => {
+export const closeSnackbar = () => {
     return {
         type: CLOSE_SNACKBAR
     };

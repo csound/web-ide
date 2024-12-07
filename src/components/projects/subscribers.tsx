@@ -28,6 +28,7 @@ import {
     propEq,
     values
 } from "ramda";
+import { IFirestoreDocument } from "@root/db/types";
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
@@ -37,15 +38,16 @@ export const subscribeToProjectFilesChanges = (
     const unsubscribe: () => void = onSnapshot(
         collection(doc(projects, projectUid), "files"),
         async (files) => {
-            const changedFiles = files.docChanges();
-            const filesToAdd = filter(propEq("type", "added"), changedFiles);
-            const filesToRemove = filter(
-                propEq("type", "removed"),
-                changedFiles
+            const changedFiles =
+                files.docChanges() as unknown as IFirestoreDocument[];
+            const filesToAdd = changedFiles.filter(
+                (file) => file.type === "added"
             );
-            const filesToModify = filter(
-                propEq("type", "modified"),
-                changedFiles
+            const filesToRemove = changedFiles.filter(
+                (file) => file.type === "removed"
+            );
+            const filesToModify = changedFiles.filter(
+                (file) => file.type === "modified"
             );
 
             if (!isEmpty(filesToAdd)) {
@@ -75,18 +77,18 @@ export const subscribeToProjectFilesChanges = (
             }
 
             if (!isEmpty(filesToModify)) {
-                const currentReduxDocuments = path(
-                    ["ProjectsReducer", "projects", projectUid, "documents"],
-                    store.getState()
-                );
-                const documentSnaps = map(prop("doc"), filesToModify);
-                const documentData = map(
-                    (d) =>
-                        fileDocumentDataToDocumentType(
-                            assoc("documentUid", d.id, d.data())
-                        ),
-                    documentSnaps
-                ) as IDocument[];
+                const currentReduxDocuments =
+                    store.getState()?.ProjectsReducer?.projects?.[projectUid]
+                        ?.documents || {};
+
+                const documentSnaps = filesToModify.map((file) => file.doc);
+
+                const documentData = documentSnaps.map((d) => {
+                    return fileDocumentDataToDocumentType({
+                        ...d.data(),
+                        documentUid: d.id
+                    });
+                }) as IDocument[];
 
                 // when using serverData, we get 2 responses,
                 // since we always modify the lastModified timestamp,
@@ -100,28 +102,32 @@ export const subscribeToProjectFilesChanges = (
                             currentReduxDocuments[document_.documentUid];
                         const lastPathPrefix = (oldFile.path || [])
                             .filter((p) => typeof p === "string")
-                            .map((documentUid) =>
-                                path(
-                                    [documentUid, "filename"],
-                                    currentReduxDocuments
-                                )
+                            .map(
+                                (documentUid) =>
+                                    currentReduxDocuments?.[documentUid]
+                                        ?.filename
                             );
-                        const lastAbsolutePath = concat(
-                            [`/${projectUid}`],
-                            append(oldFile.filename, lastPathPrefix)
-                        ).join("/");
+
+                        const lastAbsolutePath = [
+                            `/${projectUid}`,
+                            ...lastPathPrefix,
+                            oldFile.filename
+                        ].join("/");
+
                         const newPathPrefix = (document_.path || [])
                             .filter((p) => typeof p === "string")
-                            .map((documentUid) =>
-                                path(
-                                    [documentUid, "filename"],
-                                    currentReduxDocuments
-                                )
+                            .map(
+                                (documentUid) =>
+                                    currentReduxDocuments?.[documentUid]
+                                        ?.filename
                             );
-                        const newAbsolutePath = concat(
-                            [`/${projectUid}`],
-                            append(document_.filename, newPathPrefix)
-                        ).join("/");
+
+                        const newAbsolutePath = [
+                            `/${projectUid}`,
+                            ...newPathPrefix,
+                            document_.filename
+                        ].join("/");
+
                         // Handle file moved
                         if (newAbsolutePath === lastAbsolutePath) {
                             csound && (await csound.fs.unlink(newAbsolutePath));
@@ -141,19 +147,21 @@ export const subscribeToProjectFilesChanges = (
                 });
             }
             if (!isEmpty(filesToRemove)) {
-                const currentReduxDocuments = path(
-                    ["ProjectsReducer", "projects", projectUid, "documents"],
-                    store.getState()
-                );
-                const documentSnaps = map(prop("doc"), filesToRemove);
-                const documentData = map(
-                    (d) =>
-                        fileDocumentDataToDocumentType(
-                            assoc("documentUid", d.id, d.data())
-                        ),
-                    documentSnaps
+                const currentReduxDocuments =
+                    store.getState()?.ProjectsReducer?.projects?.[projectUid]
+                        ?.documents || {};
+
+                const documentSnaps = filesToRemove.map((file) => file.doc);
+
+                const documentData = documentSnaps.map((d) =>
+                    fileDocumentDataToDocumentType({
+                        ...d.data(),
+                        documentUid: d.id
+                    })
                 ) as IDocument[];
-                const uids = map(prop("documentUid"), documentData);
+
+                const uids = documentData.map((d) => d.documentUid);
+
                 uids.forEach((uid) => {
                     dispatch(tabClose(projectUid, uid, false));
                     dispatch(removeDocumentLocally(projectUid, uid));

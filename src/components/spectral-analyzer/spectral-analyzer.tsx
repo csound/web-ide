@@ -114,9 +114,10 @@ const SpectralAnalyzer = (): React.ReactElement => {
         scopeNodeDisconnector: undefined
     });
 
-    const canvasReference = useRef() as CanvasReference;
+    const canvasReference = useRef(null) as CanvasReference;
 
-    const csoundStatus: ICsoundStatus = useSelector(path(["csound", "status"]));
+    const csoundStatus: ICsoundStatus =
+        useSelector(path(["csound", "status"])) || "initialized";
 
     useEffect(() => {
         if (

@@ -4,7 +4,7 @@ import * as SS from "./styles";
 
 const Console = (): React.ReactElement => {
     const logs = useConsole();
-    const consoleReference: any = useRef();
+    const consoleReference = useRef<HTMLDivElement | null>(null);
 
     const onMessage = useCallback(() => {
         if (consoleReference && consoleReference.current) {

@@ -8,6 +8,7 @@ import {
     where
 } from "firebase/firestore";
 import {
+    database,
     following,
     followers,
     profiles,
@@ -86,10 +87,10 @@ export const subscribeToFollowing = (
             const missingProfileUids = difference(
                 userProfileUids,
                 cachedProfileUids
-            );
+            ) as string[];
 
             const missingProfiles = await Promise.all(
-                missingProfileUids.map(async (followingProfileUid) => {
+                missingProfileUids.map(async (followingProfileUid: string) => {
                     const profPromise = await getDoc(
                         doc(profiles, followingProfileUid)
                     );
@@ -133,10 +134,10 @@ export const subscribeToFollowers = (
             const missingProfileUids = difference(
                 userProfileUids,
                 cachedProfileUids
-            );
+            ) as string[];
 
             const missingProfiles = await Promise.all(
-                missingProfileUids.map(async (followerProfileUid) => {
+                missingProfileUids.map(async (followerProfileUid: string) => {
                     const profPromise = await getDoc(
                         doc(profiles, followerProfileUid)
                     );
@@ -200,8 +201,8 @@ export const subscribeToProfileStars = (
                 return;
             }
             const state = store.getState();
-            const starredProjects = keys(starsData);
-            const cachedProjects = keys(state.ProjectsReducer.projects);
+            const starredProjects = Object.keys(starsData);
+            const cachedProjects = Object.keys(state.ProjectsReducer.projects);
             const missingProjects = difference(starredProjects, cachedProjects);
             missingProjects.forEach((projectUid) =>
                 dispatch(downloadProjectOnce(projectUid))
@@ -235,7 +236,7 @@ export const subscribeToProfileProjects = (
             )(store.getState());
             const projectsDeleted = difference(
                 keys(currentProfileProjects).sort(),
-                map(prop("id"), projectSnaps.docs).sort()
+                (projectSnaps.docs as any[]).map((snapDoc) => snapDoc.id).sort()
             );
             if (!projectSnaps.empty) {
                 Promise.all(
@@ -243,9 +244,8 @@ export const subscribeToProfileProjects = (
                         const projTags = await getDocs(
                             query(tags, where(projSnap.id, "==", profileUid))
                         ).then((d) => d.docs.map(prop("id")));
-                        const proj = await convertProjectSnapToProject(
-                            projSnap
-                        );
+                        const proj =
+                            await convertProjectSnapToProject(projSnap);
                         return assoc("tags", projTags, proj) as IProject;
                     })
                 ).then((localProjects) => {

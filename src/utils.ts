@@ -1,32 +1,28 @@
 import {
     addIndex,
-    append,
-    assoc,
     concat,
     compose,
     isEmpty,
     isNil,
-    keys,
     mergeWith,
     not,
     uniq,
-    map,
-    pipe,
-    reduce
+    map
 } from "ramda";
 import { debounce } from "throttle-debounce";
 
 // {a: 1, b: 2} => [{key: "a", val: 1}, {key: "b", val: 2}]
-export const listifyObject: (object: Record<string, any>) => any[] = (object) =>
-    reduce(
-        (accumulator, k) =>
-            append(
-                pipe(assoc("key", k), assoc("val", object[k]))({}),
-                accumulator
-            ),
-        [],
-        keys(object)
+export const listifyObject = (
+    object: Record<string, any>
+): { key: string; val: any }[] => {
+    return Object.keys(object).reduce<{ key: string; val: any }[]>(
+        (accumulator, key) => {
+            accumulator.push({ key, val: object[key] });
+            return accumulator;
+        },
+        []
     );
+};
 
 // https://stackoverflow.com/a/16016476/3714556
 export function validateEmail(emailAddress: string): boolean {

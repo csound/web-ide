@@ -3,19 +3,9 @@ import { getDownloadURL } from "firebase/storage";
 import { Mime } from "mime";
 import { storageReference, projectLastModified } from "@config/firestore";
 import { IFirestoreDocument, IFirestoreProject } from "@db/types";
-import { IDocument, IDocumentsMap, IDocumentFileType, IProject } from "./types";
+import { IDocument, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@csound/browser";
-import {
-    assoc,
-    dropLast,
-    isNil,
-    map,
-    pipe,
-    prop,
-    propOr,
-    reduce,
-    reject
-} from "ramda";
+import { dropLast, isNil, prop, propOr, reject } from "ramda";
 
 const mime = new Mime();
 
@@ -124,16 +114,15 @@ export const fileDocumentDataToDocumentType = (
 
 export const convertDocumentSnapToDocumentsMap = (
     documentsToAdd: IFirestoreDocument[]
-): Record<string, IDocument> =>
-    (pipe as any)(
-        map(prop("doc")),
-        map((d: any) => assoc("documentUid", d.id, d.data())),
-        reduce((accumulator: IDocumentsMap, documentData: any) => {
-            accumulator[documentData["documentUid"]] =
+): Record<string, IDocument> => {
+    return documentsToAdd
+        .map((doc) => ({ ...doc.data(), documentUid: doc.id }))
+        .reduce((accumulator: Record<string, IDocument>, documentData: any) => {
+            accumulator[documentData.documentUid] =
                 fileDocumentDataToDocumentType(documentData);
             return accumulator;
-        }, {})
-    )(documentsToAdd);
+        }, {});
+};
 
 export const firestoreProjectToIProject = (
     project: IFirestoreProject

@@ -2,7 +2,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "@root/store";
 import { Path } from "history";
 import ProfileLists from "./profile-lists";
-import React, { useEffect, useState, RefObject } from "react";
+import { useEffect, createRef, useState, RefObject } from "react";
 import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
@@ -68,6 +68,7 @@ import {
     EditProfileButtonSection,
     fabButton
 } from "./profile-ui";
+import { UnknownAction } from "redux";
 
 const UserLink = ({ link }) => {
     return typeof link === "string" ? (
@@ -106,7 +107,7 @@ export const Profile = () => {
         : false;
     const isRequestingLogin = useSelector(selectLoginRequesting);
     const isProfileOwner = loggedInUserUid === profileUid;
-    const uploadReference: RefObject<HTMLInputElement> = React.createRef();
+    const uploadReference: RefObject<HTMLInputElement | null> = createRef();
 
     useEffect(() => {
         // start at top on init
@@ -138,7 +139,7 @@ export const Profile = () => {
     useEffect(() => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
-                dispatch(push("/"));
+                dispatch(push("/") as unknown as UnknownAction);
             } else if (username) {
                 getDoc(doc(usernames, username)).then((userSnap) => {
                     if (userSnap.exists()) {
@@ -148,13 +149,13 @@ export const Profile = () => {
                             : dispatch(
                                   push({ pathname: "/404" } as Path, {
                                       message: "User not found"
-                                  })
+                                  }) as unknown as UnknownAction
                               );
                     } else {
                         dispatch(
                             push({ pathname: "/404" } as Path, {
                                 message: "User not found"
-                            })
+                            }) as unknown as UnknownAction
                         );
                     }
                 });
@@ -218,7 +219,7 @@ export const Profile = () => {
     } = profile || {};
 
     useEffect(() => {
-        if (document.title !== displayName) {
+        if (displayName !== undefined && document.title !== displayName) {
             document.title = displayName;
         }
     }, [displayName]);
@@ -315,14 +316,15 @@ export const Profile = () => {
                                         aria-label="Add"
                                         size="medium"
                                         onClick={() =>
+                                            profile &&
                                             dispatch(
                                                 editProfile(
                                                     profile.username,
-                                                    displayName,
-                                                    bio,
-                                                    link1,
-                                                    link2,
-                                                    link3,
+                                                    displayName || "",
+                                                    bio || "",
+                                                    link1 || "",
+                                                    link2 || "",
+                                                    link3 || "",
                                                     backgroundIndex
                                                 )
                                             )
@@ -386,7 +388,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}`
-                                                } as Path)
+                                                } as Path) as unknown as UnknownAction
                                             );
                                             break;
                                         }
@@ -394,7 +396,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/following`
-                                                } as Path)
+                                                } as Path) as unknown as UnknownAction
                                             );
                                             break;
                                         }
@@ -402,7 +404,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/followers`
-                                                } as Path)
+                                                } as Path) as unknown as UnknownAction
                                             );
                                             break;
                                         }
@@ -410,7 +412,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/stars`
-                                                } as Path)
+                                                } as Path) as unknown as UnknownAction
                                             );
                                             break;
                                         }

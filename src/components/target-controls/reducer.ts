@@ -16,26 +16,27 @@ export interface ITargetControl {
 
 export type ITargetControlsReducer = { [projectUid: string]: ITargetControl };
 
-const INITIAL_STATE: ITargetControlsReducer = {};
-
 const TargetControlsReducer = (
-    state: ITargetControlsReducer | undefined,
+    state: ITargetControlsReducer = {},
     action: {
         type: string;
         projectUid: string;
         target?: string;
         targetName?: string;
         targets?: ITargetMap;
+        selectedTarget?: ITargetControl;
         defaultTarget?: string;
     }
 ): ITargetControlsReducer => {
     switch (action.type) {
         case SET_SELECTED_TARGET: {
-            return assocPath(
-                [action.projectUid, "selectedTarget"],
-                prop("selectedTarget", action),
-                state
-            );
+            if (
+                action.selectedTarget &&
+                typeof action.projectUid === "string"
+            ) {
+                state[action.projectUid] = action.selectedTarget;
+            }
+            return state;
         }
         case UPDATE_ALL_TARGETS_LOCALLY: {
             return pipe(
@@ -56,11 +57,14 @@ const TargetControlsReducer = (
             )(state);
         }
         case UPDATE_TARGET_LOCALLY: {
-            return assocPath(
-                [action.projectUid, "targets", action.targetName],
-                action.target,
-                state
-            );
+            if (
+                action.targetName &&
+                action.target &&
+                state[action.projectUid]
+            ) {
+                state[action.projectUid][action.targetName] = action.target;
+            }
+            return state;
         }
         case UPDATE_DEFAULT_TARGET_LOCALLY: {
             return assocPath(
@@ -70,7 +74,7 @@ const TargetControlsReducer = (
             );
         }
         default: {
-            return state || INITIAL_STATE;
+            return state;
         }
     }
 };

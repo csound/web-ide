@@ -57,7 +57,7 @@ export const stars = collection(database, "stars");
 export const profileStars = collection(database, "profileStars");
 export const projectFiles = collection(database, "projectFiles");
 export const storageReference = async (path: string) =>
-    await ref(getStorage(firebaseApp), path);
+    ref(getStorage(firebaseApp), path);
 
 // OTHER
 export const getCurrentUserPromise = (): Promise<User | null> =>

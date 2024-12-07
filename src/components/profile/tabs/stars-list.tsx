@@ -7,17 +7,14 @@ import {
 import ProjectAvatar from "@elem/project-avatar";
 import { IProject } from "@comp/projects/types";
 import { selectProfileStars } from "../selectors";
-import { ListItem, ListItemText } from "@mui/material";
+import { ListItemButton, ListItemText } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { push } from "connected-react-router";
 import { isEmpty, prop } from "ramda";
 import * as SS from "./styles";
+import { UnknownAction } from "redux";
 
-const StarsList = ({
-    profileUid
-}: {
-    profileUid: string;
-}): React.ReactElement => {
+const StarsList = ({ profileUid }: { profileUid: string }) => {
     const dispatch = useDispatch();
     const profileStars = useSelector(selectProfileStars(profileUid));
     const cachedProjects = useSelector(
@@ -27,15 +24,19 @@ const StarsList = ({
         <></>
     ) : (
         profileStars.map((projectUid, index) => {
-            const project: IProject = prop(projectUid, cachedProjects);
+            const project: IProject = cachedProjects[profileUid]!;
+
             return (
-                <ListItem
-                    button
+                <ListItemButton
                     alignItems="flex-start"
                     css={SS.starItemContainer}
                     key={index}
                     onClick={() => {
-                        dispatch(push(`/editor/${projectUid}`));
+                        dispatch(
+                            push(
+                                `/editor/${projectUid}`
+                            ) as unknown as UnknownAction
+                        );
                     }}
                 >
                     <StyledUserListItemContainer>
@@ -49,7 +50,7 @@ const StarsList = ({
                             />
                         </StyledListItemTopRowText>
                     </StyledUserListItemContainer>
-                </ListItem>
+                </ListItemButton>
             );
         })
     );

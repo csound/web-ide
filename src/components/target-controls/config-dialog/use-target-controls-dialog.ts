@@ -47,39 +47,36 @@ export const useTargetControlsDialog = () => {
         selectProjectDocuments(activeProjectUid)
     );
 
-    const allDocuments: IDocument[] | undefined =
-        documentsMap && values(documentsMap);
+    const allDocuments: IDocument[] = documentsMap ? values(documentsMap) : [];
 
     const targets: ITargetMap | undefined = useSelector(
         selectProjectTargets(activeProjectUid)
     );
 
-    const targetsToLocalState = useCallback(
-        () =>
-            targets
-                ? sort(
-                      ascend(prop("targetName")),
-                      reduce(
-                          (accumulator: ITargetFromInput[], k: string) =>
-                              (pipe as any)(
-                                  assoc("isNameValid", true),
-                                  assoc("isTypeValid", true),
-                                  assoc("isOtherwiseValid", true),
-                                  assoc(
-                                      "isDefaultTarget",
-                                      defaultTargetName ===
-                                          targets[k].targetName
-                                  ),
-                                  assoc("oldTargetName", targets[k].targetName),
-                                  (x) => append(x, accumulator)
-                              )(targets[k]),
-                          [],
-                          keys(targets) as string[]
-                      )
-                  )
-                : ([] as ITargetFromInput[]),
-        [defaultTargetName, targets]
-    );
+    const targetsToLocalState = useCallback(() => {
+        if (!targets) {
+            return [] as ITargetFromInput[];
+        }
+
+        const processedTargets = Object.keys(targets).reduce<
+            ITargetFromInput[]
+        >((accumulator, key) => {
+            const target = {
+                ...targets[key],
+                isNameValid: true,
+                isTypeValid: true,
+                isOtherwiseValid: true,
+                isDefaultTarget: defaultTargetName === targets[key].targetName,
+                oldTargetName: targets[key].targetName
+            };
+            accumulator.push(target);
+            return accumulator;
+        }, []);
+
+        return processedTargets.sort((a, b) =>
+            a.targetName.localeCompare(b.targetName)
+        );
+    }, [defaultTargetName, targets]);
 
     const [storedTargets, setStoredTargets] = useState(targetsToLocalState());
     const [newTargets, setNewTargets] = useState(storedTargets);
@@ -92,9 +89,10 @@ export const useTargetControlsDialog = () => {
     }, [targetsToLocalState]);
 
     const someErrorPresent: boolean =
-        newTargets.some(propEq("isNameValid", false)) ||
-        newTargets.some(propEq("isTypeValid", false)) ||
-        newTargets.some(propEq("isOtherwiseValid", false));
+        newTargets.some((target) => target.isNameValid === false) ||
+        newTargets.some((target) => target.isTypeValid === false) ||
+        newTargets.some((target) => target.isOtherwiseValid === false);
+
     const someChangesMade = !equals(storedTargets, newTargets);
     const shouldDisallowSave = someErrorPresent || !someChangesMade;
 
@@ -123,19 +121,23 @@ export const useTargetControlsDialog = () => {
 
     const handleSave = useCallback(() => {
         const maybeDefaultTarget = find(prop("isDefaultTarget"), newTargets);
-        dispatch(
-            saveChangesToTarget(
-                activeProjectUid,
-                firestoreNewTargets(newTargets),
-                maybeDefaultTarget && maybeDefaultTarget.targetName,
-                () => setStoredTargets(newTargets)
-            )
-        );
+        if (maybeDefaultTarget) {
+            dispatch(
+                saveChangesToTarget(
+                    activeProjectUid,
+                    firestoreNewTargets(newTargets),
+                    maybeDefaultTarget && maybeDefaultTarget.targetName,
+                    () => setStoredTargets(newTargets)
+                )
+            );
+        }
     }, [activeProjectUid, dispatch, newTargets, setStoredTargets]);
 
     const handleTargetDelete = useCallback(
         (targetName: string) => {
-            setNewTargets(reject(propEq("targetName", targetName), newTargets));
+            setNewTargets(
+                newTargets.filter((target) => target.targetName !== targetName)
+            );
         },
         [setNewTargets, newTargets]
     );

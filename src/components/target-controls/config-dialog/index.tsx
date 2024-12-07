@@ -37,20 +37,31 @@ export const TargetControlsConfigDialog = () => {
                     {'No targets found, press "ADD TARGET" to get started. '}
                 </p>
             )}
-            {(newTargets || []).map((props, index) => (
-                <TargetControlsConfigDialogSingleTarget
-                    key={index}
-                    targetIndex={index}
-                    allDocuments={allDocuments}
-                    handleTargetDelete={handleTargetDelete}
-                    handleTargetNameChange={handleTargetNameChange}
-                    handleSelectTargetDocument={handleSelectTargetDocument}
-                    handleMarkAsDefaultTarget={handleMarkAsDefaultTarget}
-                    handleEnableCsound7={handleEnableCsound7}
-                    newTargets={newTargets}
-                    {...props}
-                />
-            ))}
+            {(newTargets || []).map(
+                (props, index) =>
+                    props.targetDocumentUid && (
+                        <TargetControlsConfigDialogSingleTarget
+                            key={index}
+                            targetIndex={index}
+                            allDocuments={allDocuments}
+                            handleTargetDelete={handleTargetDelete}
+                            handleTargetNameChange={handleTargetNameChange}
+                            handleSelectTargetDocument={
+                                handleSelectTargetDocument
+                            }
+                            handleMarkAsDefaultTarget={
+                                handleMarkAsDefaultTarget
+                            }
+                            handleEnableCsound7={handleEnableCsound7}
+                            newTargets={newTargets}
+                            targetDocumentUid={props.targetDocumentUid}
+                            targetName={props.targetName}
+                            isDefaultTarget={props.isDefaultTarget}
+                            oldTargetName={props.oldTargetName}
+                            useCsound7={props.useCsound7}
+                        />
+                    )
+            )}
             <hr css={hrCss} />
             <TargetControlsConfigDialogFooter
                 handleCloseModal={handleCloseModal}

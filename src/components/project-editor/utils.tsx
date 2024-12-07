@@ -1,4 +1,3 @@
-import { append, find, propEq, reduce } from "ramda";
 import { IDocument } from "@comp/projects/types";
 import { IOpenDocument } from "./types";
 
@@ -6,23 +5,21 @@ export const sortByStoredTabOrder = (
     tabOrder: string[],
     allDocuments: IDocument[]
 ): IOpenDocument[] => {
-    return reduce(
+    return tabOrder.reduce(
         (accumulator: IOpenDocument[], documentUid: string) => {
-            const maybeDocument: IDocument | undefined = find(
-                propEq("documentUid", documentUid),
-                allDocuments
+            const maybeDocument: IDocument | undefined = allDocuments.find(
+                (doc) => doc.documentUid === documentUid
             );
             return maybeDocument
-                ? append(
+                ? [
+                      ...accumulator,
                       {
                           editorInstance: undefined,
                           uid: maybeDocument.documentUid
-                      } as IOpenDocument,
-                      accumulator
-                  )
+                      } as IOpenDocument
+                  ]
                 : accumulator;
         },
-        [],
-        tabOrder
+        []
     );
 };

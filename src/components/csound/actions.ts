@@ -52,10 +52,7 @@ export const syncFs = async (
     projectUid: string,
     storeState: RootState
 ): Promise<void> => {
-    const documents = pipe(
-        pathOr({}, ["ProjectsReducer", "projects", projectUid, "documents"]),
-        values
-    )(storeState);
+    const documents = storeState.ProjectsReducer.projects[projectUid].documents;
 
     for (const document of documents) {
         // reminder: paths are store by document ref and not
@@ -249,9 +246,8 @@ export const renderToDisk = (
         }
 
         const targetDocumentUid = getSelectedTargetDocumentUid(
-            project.projectUid,
-            state
-        );
+            project.projectUid
+        )(state);
 
         if (!targetDocumentUid) {
             dispatch(

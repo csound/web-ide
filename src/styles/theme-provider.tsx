@@ -126,7 +126,7 @@ const CsoundWebIdeThemeProvider = ({ children }) => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <WebIdeCssBaseline theme={theme} />
+            <WebIdeCssBaseline theme={theme as unknown as Theme} />
             <Global styles={globalStyles} />
             {children}
         </ThemeProvider>

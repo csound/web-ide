@@ -1,19 +1,30 @@
-const fs = require("fs");
-const { getFirebaseData } = require("./firebase");
-const databaseName = { dev: "dev-database.json", prod: "prod-database.json" };
-const databaseFolder = "./";
-const { isSameHour } = require("date-fns");
+import fs from "node:fs";
+import { getFirebaseData } from "./firebase";
+import { isSameHour } from "date-fns";
 
-const checkDatabaseFileWrittenSameHour = () => {
+const databaseName: { dev: string; prod: string } = {
+    dev: "dev-database.json",
+    prod: "prod-database.json"
+};
+
+const databaseFolder = "./";
+
+interface DatabaseFile {
+    timestamp: string;
+}
+
+const checkDatabaseFileWrittenSameHour = (
+    databaseID: "dev" | "prod"
+): boolean => {
     try {
         const { timestamp } = openDatabaseFile(databaseID);
         return isSameHour(new Date(timestamp), new Date());
-    } catch (e) {
+    } catch {
         return false;
     }
 };
 
-const openDatabaseFile = databaseID => {
+const openDatabaseFile = (databaseID: "dev" | "prod"): DatabaseFile => {
     const file = fs.readFileSync(
         `${databaseFolder}/${databaseName[databaseID]}`,
         "utf8"
@@ -21,12 +32,14 @@ const openDatabaseFile = databaseID => {
     return JSON.parse(file);
 };
 
-const writeDatabaseFile = (object, path) => {
+const writeDatabaseFile = (object: unknown, path: string): void => {
     const fileJSON = JSON.stringify(object);
     fs.writeFileSync(path, fileJSON);
 };
 
-const writeFirebaseDataToDatabaseFile = async databaseID => {
+const writeFirebaseDataToDatabaseFile = async (
+    databaseID: "dev" | "prod"
+): Promise<void> => {
     const fireBaseData = await getFirebaseData(databaseID);
     writeDatabaseFile(
         fireBaseData,
@@ -34,15 +47,13 @@ const writeFirebaseDataToDatabaseFile = async databaseID => {
     );
 };
 
-const getDatabase = async databaseID => {
+export const getDatabase = async (
+    databaseID: "dev" | "prod"
+): Promise<DatabaseFile> => {
     const sameHour = checkDatabaseFileWrittenSameHour(databaseID);
 
-    if (sameHour === false) {
+    if (!sameHour) {
         await writeFirebaseDataToDatabaseFile(databaseID);
     }
     return openDatabaseFile(databaseID);
-};
-
-module.exports = {
-    getDatabase
 };

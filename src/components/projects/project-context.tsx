@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Path } from "history";
 import { Audio as AudioSpinner } from "react-loader-spinner";
 import { useParams } from "react-router-dom";
-import { push } from "connected-react-router/esm/index.js";
+import { push } from "connected-react-router";
 import { useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
@@ -13,6 +13,8 @@ import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import * as SS from "./styles";
 import { isEmpty, path, pathOr } from "ramda";
+import { UnknownAction } from "redux";
+import { RootState } from "@root/store";
 
 interface IProjectContextProperties {
     match: any;
@@ -22,9 +24,7 @@ const ForceBackgroundColor = ({ theme }): React.ReactElement => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-const ProjectContext = (
-    properties: IProjectContextProperties
-): React.ReactElement => {
+const ProjectContext = (properties: IProjectContextProperties) => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const routeParams: { id?: string } = useParams();
@@ -37,19 +37,21 @@ const ProjectContext = (
     // this is true when /editor path is missing projectUid
     invalidUrl &&
         dispatch(
-            push({ pathname: "/404" } as Path, { message: "Project not found" })
+            push({ pathname: "/404" } as Path, {
+                message: "Project not found"
+            }) as unknown as UnknownAction
         );
 
     const activeProjectUid: string | undefined = useSelector(
-        (store) =>
-            !invalidUrl && path(["ProjectsReducer", "activeProjectUid"], store)
+        (store: RootState) =>
+            !invalidUrl && store?.ProjectsReducer?.activeProjectUid
     );
 
     const project: IProject | undefined = useSelector(
-        (store) =>
+        (store: RootState) =>
             activeProjectUid &&
             !invalidUrl &&
-            path(["ProjectsReducer", "projects", activeProjectUid], store)
+            store?.ProjectsReducer?.projects?.[activeProjectUid]
     );
 
     const tabIndex: number = useSelector(
@@ -70,11 +72,15 @@ const ProjectContext = (
                             dispatch(
                                 push({ pathname: "/404" } as Path, {
                                     message: "Project not found"
-                                })
+                                }) as unknown as UnknownAction
                             );
                     }
                 }
-                dispatch(cleanupNonCloudFiles({ projectUid }));
+                dispatch(
+                    cleanupNonCloudFiles({
+                        projectUid
+                    }) as unknown as UnknownAction
+                );
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };

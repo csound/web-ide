@@ -16,7 +16,7 @@ import {
     Menu,
     Drawer,
     List,
-    ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
     Divider
@@ -66,7 +66,7 @@ const Header = (): React.ReactElement => {
         (store: RootState) => store.LoginReducer.isLoginDialogOpen
     );
 
-    const anchorElement = useRef() as RefObject<HTMLButtonElement>;
+    const anchorElement: RefObject<HTMLButtonElement | null> = useRef(null);
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -195,8 +195,7 @@ const Header = (): React.ReactElement => {
                     </div>
                     <Divider />
                     <List>
-                        <ListItem
-                            button
+                        <ListItemButton
                             onClick={() =>
                                 window.open("/documentation", "_blank")
                             }
@@ -205,9 +204,8 @@ const Header = (): React.ReactElement => {
                                 <HelpIcon css={SS.drawerIcon} />
                             </ListItemIcon>
                             <ListItemText primary="Site Documentation" />
-                        </ListItem>
-                        <ListItem
-                            button
+                        </ListItemButton>
+                        <ListItemButton
                             onClick={() =>
                                 window.open(
                                     "https://github.com/csound/web-ide/issues",
@@ -219,12 +217,11 @@ const Header = (): React.ReactElement => {
                                 <ReportProblemIcon css={SS.drawerIcon} />
                             </ListItemIcon>
                             <ListItemText primary="Report an Issue" />
-                        </ListItem>
+                        </ListItemButton>
                     </List>
                     <Divider />
                     <List>
-                        <ListItem
-                            button
+                        <ListItemButton
                             onClick={() =>
                                 window.open(
                                     "https://github.com/csound/web-ide",
@@ -236,7 +233,7 @@ const Header = (): React.ReactElement => {
                                 <GitHubIcon css={SS.drawerIcon} />
                             </ListItemIcon>
                             <ListItemText primary="Github Project" />
-                        </ListItem>
+                        </ListItemButton>
                     </List>
                     {/* <Divider/>
                         <List >

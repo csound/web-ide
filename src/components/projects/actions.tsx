@@ -65,6 +65,7 @@ import {
 } from "@config/firestore";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { IFirestoreDocument } from "@root/db/types";
 
 export const downloadProjectOnce = (
     projectUid: string
@@ -117,10 +118,11 @@ export const downloadAllProjectDocumentsOnce = (
         );
         const allDocuments = await Promise.all(
             filesReference.docs.map(async (d) => {
-                const data = await d.data();
-                return fileDocumentDataToDocumentType(
-                    assoc("documentUid", d.id, data)
-                );
+                const data = d.data() as IFirestoreDocument;
+                return fileDocumentDataToDocumentType({
+                    ...data,
+                    documentUid: d.id
+                });
             })
         );
         const allDocumentsMap = reduce(
@@ -201,7 +203,7 @@ export const addProjectDocuments = (
         });
         if (tabIndex < 0) {
             const maybeDefaultTargetName: string | undefined =
-                selectDefaultTargetName(projectUid, store);
+                selectDefaultTargetName(projectUid)(store);
             const maybeDefaultTarget: ITarget | undefined = selectTarget(
                 projectUid,
                 maybeDefaultTargetName,

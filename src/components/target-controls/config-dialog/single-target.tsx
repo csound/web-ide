@@ -140,34 +140,34 @@ export const TargetControlsConfigDialogSingleTarget = ({
                     </p>
                     <Select
                         value={targetDocumentUid || ""}
-                        onChange={({ value }: any) =>
-                            typeof value === "string" &&
-                            handleSelectTargetDocument({
-                                targetIndex,
-                                nextTargetDocumentUid: value
+                        onChange={(selectedOption) => {
+                            if (typeof selectedOption === "string") {
+                                handleSelectTargetDocument({
+                                    targetIndex,
+                                    nextTargetDocumentUid: selectedOption
+                                });
+                            } else {
+                                console.error(
+                                    "Unexpected type",
+                                    selectedOption
+                                );
+                            }
+                        }}
+                        options={allDocuments
+                            .filter((document) => {
+                                const type = filenameToCsoundType(
+                                    document.filename
+                                );
+                                return type === "csd" || type === "orc";
                             })
-                        }
-                        options={pipe(
-                            filter<any, any>(
-                                either(
-                                    ({ filename }) =>
-                                        equals(
-                                            "csd",
-                                            filenameToCsoundType(filename)
-                                        ),
-                                    ({ filename }) =>
-                                        equals(
-                                            "orc",
-                                            filenameToCsoundType(filename)
-                                        )
-                                )
-                            ),
-                            sort(ascend(prop("filename"))),
-                            map((document_: any) => ({
-                                label: document_.filename,
-                                value: document_.documentUid
-                            }))
-                        )(allDocuments as IDocument[])}
+                            .sort((a, b) =>
+                                a.filename.localeCompare(b.filename)
+                            )
+                            .map((document) => ({
+                                label: document.filename,
+                                value: document.documentUid,
+                                options: []
+                            }))}
                         isSearchable={false}
                         closeMenuOnSelect={true}
                         placeholder={

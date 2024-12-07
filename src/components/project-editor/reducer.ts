@@ -82,23 +82,30 @@ const ProjectEditorReducer = (
             return initialLayoutState();
         }
         case TAB_DOCK_INIT: {
-            return pipe(
-                assocPath(["tabDock", "tabIndex"], action.initialIndex),
-                assocPath(
-                    ["tabDock", "openDocuments"],
-                    action.initialOpenDocuments
-                )
-            )(state);
+            return {
+                ...state,
+                tabDock: {
+                    ...state.tabDock,
+                    tabIndex: action.initialIndex,
+                    openDocuments: action.initialOpenDocuments
+                }
+            };
         }
+
         case TAB_DOCK_SWITCH_TAB: {
             return assocPath(["tabDock", "tabIndex"], action.tabIndex, state);
         }
         case TAB_DOCK_REARRANGE_TABS: {
-            return pipe(
-                assocPath(["tabDock", "tabIndex"], action.newActiveIndex),
-                assocPath(["tabDock", "openDocuments"], action.modifiedDock)
-            )(state);
+            return {
+                ...state,
+                tabDock: {
+                    ...state.tabDock,
+                    tabIndex: action.newActiveIndex,
+                    openDocuments: action.modifiedDock
+                }
+            };
         }
+
         case TAB_DOCK_OPEN_NON_CLOUD_FILE: {
             if (action.init) {
                 return state;

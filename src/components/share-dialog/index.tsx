@@ -48,10 +48,7 @@ const ShareDialog = (): React.ReactElement => {
         <div>
             <h3>Share</h3>
             <div>
-                <FacebookShareButton
-                    url={window.location.href}
-                    quote={projectInfo}
-                >
+                <FacebookShareButton url={window.location.href}>
                     <FacebookIcon />
                 </FacebookShareButton>
                 <TwitterShareButton

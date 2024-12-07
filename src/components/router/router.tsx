@@ -65,10 +65,12 @@ const EditorLayout = (properties: any) => {
 //     );
 // };
 
+const RouterAny = Router as any;
+
 const RouterComponent = (): React.ReactElement => {
     return (
         <>
-            <Router history={history}>
+            <RouterAny history={history}>
                 <Routes>
                     <Route index element={<Home />} />
                     <Route path="profile/:username" element={<Profile />} />
@@ -84,7 +86,7 @@ const RouterComponent = (): React.ReactElement => {
                     <Route path="404" element={<Page404 />} />
                     <Route path="*" element={<Page404 />} />
                 </Routes>
-            </Router>
+            </RouterAny>
         </>
     );
 };

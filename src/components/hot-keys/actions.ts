@@ -70,7 +70,7 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
                 if (isOwner) {
                     store.dispatch(saveAllFiles());
                 }
-                store.dispatch(playAction);
+                store.dispatch(playAction as any);
             }
         })
     );

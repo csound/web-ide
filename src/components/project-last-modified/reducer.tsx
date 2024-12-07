@@ -15,11 +15,13 @@ const ProjectLastModifiedReducer = (
 ): IProjectLastModifiedReducer => {
     switch (action.type) {
         case UPDATE_PROJECT_LAST_MODIFIED_LOCALLY: {
-            return assocPath(
-                [action.projectUid, "timestamp"],
-                action.timestamp,
-                state
-            );
+            return {
+                ...state,
+                [action.projectUid]: {
+                    ...(state?.[action.projectUid] || {}),
+                    timestamp: action.timestamp
+                }
+            };
         }
         default: {
             return state || {};

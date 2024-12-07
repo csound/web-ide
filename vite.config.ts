@@ -3,11 +3,17 @@ import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import EnvironmentPlugin from "vite-plugin-environment";
+import checker from "vite-plugin-checker";
+import viteRawPlugin from "vite-raw-plugin";
 
 export default defineConfig({
     // depending on your application, base can also be "/"
     base: "",
     plugins: [
+        checker({
+            // e.g. use TypeScript check
+            typescript: true
+        }),
         react({
             jsxImportSource: "@emotion/react",
             babel: {
@@ -16,7 +22,10 @@ export default defineConfig({
         }),
         viteTsconfigPaths(),
         svgr(),
-        EnvironmentPlugin(["REACT_APP_DATABASE"])
+        EnvironmentPlugin(["REACT_APP_DATABASE"]),
+        viteRawPlugin({
+            fileRegex: /\.csd|\.orc\.sco\.udo$/
+        })
     ],
     server: {
         // this ensures that the browser opens upon server start

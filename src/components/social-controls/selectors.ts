@@ -1,5 +1,5 @@
 import { RootState } from "@root/store";
-import { IProject, IProjectsReducer } from "../projects/types";
+import { IProject, IProjectsReducer, Star } from "../projects/types";
 import { curry, keys, pathOr, propOr } from "ramda";
 import { selectActiveProject } from "../projects/selectors";
 
@@ -17,16 +17,18 @@ export const selectProjects = (
     return state.projects;
 };
 
-export const selectUserStarredProject = curry(
-    (loggedInUserUid: string, projectUid: string, store: RootState) => {
-        const projectStars: string[] = pathOr(
-            [],
-            ["ProjectsReducer", "projects", projectUid, "stars"],
-            store
-        );
+export const selectUserStarredProject =
+    (loggedInUserUid: string, projectUid: string) => (store: RootState) => {
+        const projectStars: Star =
+            store.ProjectsReducer.projects[projectUid].stars;
+
+        // pathOr(
+        //     [],
+        //     ["ProjectsReducer", "projects", projectUid, "stars"],
+        //     store
+        // );
         return keys(projectStars).includes(loggedInUserUid);
-    }
-);
+    };
 
 export const selectProjectPublic = (store: RootState): boolean => {
     const activeProject = selectActiveProject(store);

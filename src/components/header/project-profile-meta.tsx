@@ -15,32 +15,32 @@ import Avatar from "@mui/material/Avatar";
 import { IProject } from "@comp/projects/types";
 import Tooltip from "@mui/material/Tooltip";
 import * as SS from "./styles";
-import { isEmpty, prop, propOr } from "ramda";
+import { isEmpty } from "ramda";
 
 const ProjectProfileMeta = (): React.ReactElement => {
     const now = new Date();
 
     const project: IProject | undefined = useSelector(selectActiveProject);
-    const projectName = propOr("unnamed", "name", project || {});
-    const projectDescription = propOr("", "description", project || {});
+    const projectName = project?.name ?? "unknown project name";
+    const projectDescription = project?.description ?? "";
 
-    const projectLastModified = useSelector(
-        selectProjectLastModified(prop("projectUid", project || {}))
-    );
+    const projectLastModified = project?.projectUid
+        ? useSelector(selectProjectLastModified(project?.projectUid))
+        : undefined;
 
     const projectLastModifiedDate =
-        typeof projectLastModified?.timestamp === "number"
+        projectLastModified && typeof projectLastModified.timestamp === "number"
             ? new Date(projectLastModified?.timestamp)
             : undefined;
 
-    const projectOwnerUid = propOr("", "userUid", project || {});
+    const projectOwnerUid = project?.userUid ?? undefined;
     const profile = useSelector(selectUserProfile(projectOwnerUid));
-    const profileUserName = propOr("", "username", profile || {});
-    const profileDisplayName = propOr("", "displayName", profile || {});
+    const profileUserName = profile?.username ?? "";
+    const profileDisplayName = profile?.displayName ?? "unknown user";
     const profileImage = useSelector(selectUserImageURL(projectOwnerUid));
-    const profileProjectsCount = useSelector(
-        selectProfileProjectsCount(projectOwnerUid)
-    );
+    const profileProjectsCount = projectOwnerUid
+        ? useSelector(selectProfileProjectsCount(projectOwnerUid))
+        : 0;
 
     const authorTooltip = (
         <div css={SS.projectProfileTooltipContainer}>

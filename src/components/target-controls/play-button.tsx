@@ -15,6 +15,8 @@ import { useSetConsole } from "@comp/console/context";
 import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { saveAllFiles } from "@comp/projects/actions";
 
+const TailSpinAny = TailSpin as any;
+
 const PlayButton = ({
     activeProjectUid,
     isOwner
@@ -53,10 +55,10 @@ const PlayButton = ({
         !selectedTargetName && !fallbackTargetDocument
             ? ""
             : csoundPlayState === "playing"
-            ? "pause playback"
-            : csoundPlayState === "paused"
-            ? "resume playback"
-            : `run ${selectedTargetName || fallbackTargetDocument.filename}`;
+              ? "pause playback"
+              : csoundPlayState === "paused"
+                ? "resume playback"
+                : `run ${selectedTargetName || fallbackTargetDocument.filename}`;
 
     const playAction = playActionDefault || playActionFallback;
 
@@ -101,7 +103,7 @@ const PlayButton = ({
                 }}
             >
                 {isLoading ? (
-                    <TailSpin
+                    <TailSpinAny
                         css={SS.playButtonLoadingSpinner}
                         color={theme.buttonIcon}
                         height={25}

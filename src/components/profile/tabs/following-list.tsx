@@ -4,9 +4,10 @@ import {
     StyledListItemTopRowText,
     StyledUserListItemContainer
 } from "../profile-ui";
-import { ListItem, Avatar, ListItemText } from "@mui/material";
+import { ListItemButton, Avatar, ListItemText } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { push } from "connected-react-router";
+import { UnknownAction } from "redux";
 
 const FollowingList = ({
     filteredFollowing
@@ -18,12 +19,15 @@ const FollowingList = ({
         <>
             {filteredFollowing.map((p: any, index) => {
                 return (
-                    <ListItem
-                        button
+                    <ListItemButton
                         alignItems="flex-start"
                         key={index}
                         onClick={() => {
-                            dispatch(push(`/profile/${p.username}`));
+                            dispatch(
+                                push(
+                                    `/profile/${p.username}`
+                                ) as unknown as UnknownAction
+                            );
                         }}
                     >
                         <StyledUserListItemContainer>
@@ -38,7 +42,7 @@ const FollowingList = ({
                                 />
                             </StyledListItemTopRowText>
                         </StyledUserListItemContainer>
-                    </ListItem>
+                    </ListItemButton>
                 );
             })}
         </>

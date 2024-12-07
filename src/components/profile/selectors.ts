@@ -5,6 +5,7 @@ import { IProfileReducer } from "./reducer";
 import { IFirestoreProfile } from "@db/types";
 import { path, pathOr, pickBy, propEq, values } from "ramda";
 import Fuse from "fuse.js";
+import { IProject } from "../projects/types";
 
 export const selectUserFollowing =
     (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
@@ -45,11 +46,10 @@ export const selectFollowingFilterString = (
 };
 
 export const selectUserProfile =
-    (profileUid: string | undefined): ((store: any) => IFirestoreProfile) =>
-    (store: any) => {
+    (profileUid: string | undefined) => (store: RootState) => {
         if (profileUid) {
             const state: IProfileReducer = store.ProfileReducer;
-            return path(["profiles", profileUid], state);
+            return state.profiles.profileUid;
         } else {
             return;
         }
@@ -184,8 +184,7 @@ export const selectTags =
     };
 
 export const selectProfileStars =
-    (profileUid: string): ((store: RootState) => any) =>
-    (store) => {
+    (profileUid: string) => (store: RootState) => {
         return pathOr(
             [],
             ["ProfileReducer", "profiles", profileUid, "stars"],
@@ -194,12 +193,15 @@ export const selectProfileStars =
     };
 
 export const selectAllUserProjectUids =
-    (profileUid: string | undefined): ((store: RootState) => any) =>
-    (store) => {
+    (profileUid: string | undefined) => (store: RootState) => {
         if (profileUid) {
-            const allUserProjects = values(
-                pathOr({}, ["ProjectsReducer", "projects"], store)
-            ).filter((p) => p.userUid === profileUid);
+            const allUserProjects: IProject[] = (
+                Object.values(
+                    store?.ProjectsReducer?.projects ||
+                        ({} as Record<string, IProject>)
+                ) as IProject[]
+            ).filter((p: IProject) => p.userUid === profileUid);
+
             return allUserProjects.map((p) => p.projectUid);
         } else {
             return [];

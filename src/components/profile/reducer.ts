@@ -65,101 +65,131 @@ const ProfileReducer = (
 ): IProfileReducer => {
     switch (action.type) {
         case SET_FOLLOWING_FILTER_STRING: {
-            return assoc("followingFilterString", action.payload, state);
+            return { ...state, followingFilterString: action.payload };
         }
         case SET_PROJECT_FILTER_STRING: {
-            return assoc("projectFilterString", action.payload, state);
+            return { ...state, projectFilterString: action.payload };
         }
         case UPDATE_USER_PROFILE: {
-            return assocPath(
-                ["profiles", (action as any).userUid],
-                mergeAll([
-                    state.profiles[(action as any).userUid] || {},
-                    pick(profileKeys, action.profile || {})
-                ]),
-                state
-            );
+            return {
+                ...state,
+                profiles: {
+                    ...state.profiles,
+                    [(action as any).userUid]: {
+                        ...(state.profiles[(action as any).userUid] || {}),
+                        ...Object.fromEntries(
+                            Object.entries(action.profile || {}).filter(
+                                ([key]) => profileKeys.includes(key)
+                            )
+                        )
+                    }
+                }
+            };
         }
         case STORE_USER_PROFILE: {
-            return hasPath(["profiles", (action as any).profileUid], state)
+            const userUid = (action as any).profileUid;
+            return state.profiles[userUid]
                 ? state
-                : assocPath(
-                      ["profiles", (action as any).profileUid],
-                      action.profile,
-                      state
-                  );
+                : {
+                      ...state,
+                      profiles: {
+                          ...state.profiles,
+                          [userUid]: action.profile
+                      }
+                  };
         }
         case GET_ALL_TAGS: {
-            return assocPath(
-                ["profiles", action.loggedInUserUid, "allTags"],
-                action.allTags,
-                state
-            );
+            return {
+                ...state,
+                profiles: {
+                    ...state.profiles,
+                    [action.loggedInUserUid]: {
+                        ...state.profiles[action.loggedInUserUid],
+                        allTags: action.allTags
+                    }
+                }
+            };
         }
         case STORE_PROFILE_PROJECTS_COUNT: {
-            return assocPath(
-                ["profiles", action.profileUid, "projectsCount"],
-                action.projectsCount,
-                state
-            );
+            return {
+                ...state,
+                profiles: {
+                    ...state.profiles,
+                    [action.profileUid]: {
+                        ...state.profiles[action.profileUid],
+                        projectsCount: action.projectsCount
+                    }
+                }
+            };
         }
         case STORE_PROFILE_STARS: {
-            const sortedStars = sort(
-                (x) => x.timestamp,
-                keys(action.stars).map((p) => ({
+            const sortedStars = Object.keys(action.stars)
+                .map((p) => ({
                     timestamp: action.stars[p].toDate,
                     projectUid: p
                 }))
-            );
-            return assocPath(
-                ["profiles", action.profileUid, "stars"],
-                sortedStars.map((x) => x.projectUid),
-                state
-            );
+                .sort((x, y) => x.timestamp - y.timestamp);
+
+            return {
+                ...state,
+                profiles: {
+                    ...state.profiles,
+                    [action.profileUid]: {
+                        ...state.profiles[action.profileUid],
+                        stars: sortedStars.map((x) => x.projectUid)
+                    }
+                }
+            };
         }
         case UPDATE_PROFILE_FOLLOWING: {
-            return pipe(
-                assoc(
-                    "profiles",
-                    reduce(
-                        (accumulator, item) =>
-                            assoc(item.userUid, item, accumulator),
-                        state.profiles,
-                        action.userProfiles
-                    )
-                ),
-                assocPath(
-                    ["profiles", action.profileUid, "following"],
-                    (action as any).userProfileUids
-                )
-            )(state);
+            const updatedProfiles = action.userProfiles.reduce(
+                (accumulator: any, item: any) => ({
+                    ...accumulator,
+                    [item.userUid]: item
+                }),
+                state.profiles
+            );
+
+            return {
+                ...state,
+                profiles: {
+                    ...updatedProfiles,
+                    [action.profileUid]: {
+                        ...updatedProfiles[action.profileUid],
+                        following: (action as any).userProfileUids
+                    }
+                }
+            };
         }
         case UPDATE_PROFILE_FOLLOWERS: {
-            return pipe(
-                assoc(
-                    "profiles",
-                    reduce(
-                        (accumulator, item) =>
-                            assoc(item.userUid, item, accumulator),
-                        state.profiles,
-                        action.userProfiles
-                    )
-                ),
-                assocPath(
-                    ["profiles", action.profileUid, "followers"],
-                    (action as any).userProfileUids
-                )
-            )(state);
+            const updatedProfiles = action.userProfiles.reduce(
+                (accumulator: any, item: any) => ({
+                    ...accumulator,
+                    [item.userUid]: item
+                }),
+                state.profiles
+            );
+
+            return {
+                ...state,
+                profiles: {
+                    ...updatedProfiles,
+                    [action.profileUid]: {
+                        ...updatedProfiles[action.profileUid],
+                        followers: (action as any).userProfileUids
+                    }
+                }
+            };
         }
         case SET_CURRENTLY_PLAYING_PROJECT: {
-            return assoc("currentlyPlayingProject", action.projectUid, state);
+            return { ...state, currentlyPlayingProject: action.projectUid };
         }
         case CLOSE_CURRENTLY_PLAYING_PROJECT: {
-            return dissoc("currentlyPlayingProject", state);
+            return { ...state, currentlyPlayingProject: undefined };
         }
         case SET_CSOUND_PLAY_STATE: {
             if (state.currentlyPlayingProject && action.status === "stopped") {
-                return dissoc("currentlyPlayingProject", state);
+                return { ...state, currentlyPlayingProject: undefined };
             }
             return state;
         }

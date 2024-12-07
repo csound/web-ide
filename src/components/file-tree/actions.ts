@@ -23,7 +23,7 @@ export const addNonCloudFile = (
         }
     };
 };
-export const deleteNonCloudFiles = (filename: string): DeleteNonCloudFile => {
+export const deleteNonCloudFiles = (filename: string) => {
     return {
         type: DELETE_NON_CLOUD_FILE,
         filename

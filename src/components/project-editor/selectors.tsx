@@ -1,24 +1,17 @@
 import { getAuth } from "firebase/auth";
 import { RootState } from "@root/store";
-import { curry, equals, path, pathOr } from "ramda";
+import { equals, path, pathOr } from "ramda";
 import { IOpenDocument } from "./types";
 
-export const selectIsOwner: (
-    projectUid: string
-) => (store: RootState) => boolean = curry(
-    (projectUid: string, store: RootState): boolean => {
-        const currentUser = getAuth().currentUser;
-        if (typeof currentUser !== "object") {
-            return false;
-        }
-        const owner = pathOr(
-            "",
-            ["ProjectsReducer", "projects", projectUid, "userUid"],
-            store
-        );
-        return equals(owner, (currentUser && currentUser.uid) || -1);
+export const selectIsOwner = (projectUid: string) => (store: RootState) => {
+    const currentUser = getAuth().currentUser;
+    if (typeof currentUser !== "object") {
+        return false;
     }
-);
+    const owner = store.ProjectsReducer.projects[projectUid]?.userUid;
+
+    return equals(owner, (currentUser && currentUser.uid) || -1);
+};
 
 export const selectTabDockIndex = (store: RootState): number =>
     pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"], store);

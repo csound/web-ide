@@ -34,7 +34,7 @@ function getModalStyle(width, height) {
 }
 
 export default function GlobalModal(): React.ReactElement {
-    const modalReference = useRef() as RefObject<HTMLDivElement>;
+    const modalReference: RefObject<HTMLDivElement | null> = useRef(null);
     const [[width, height], setDimensions] = useState([0, 0]);
     const dispatch = useDispatch();
     const isOpen: boolean = useSelector(

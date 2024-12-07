@@ -7,7 +7,11 @@ import { mergeAll } from "ramda";
 import { IUserProfile } from "./types";
 
 const IdReducer = (
-    state = {},
+    state: IUserProfile = {
+        name: "",
+        email: "",
+        photoUrl: ""
+    },
     action: { type: string; user?: any; profile?: string }
 ): IUserProfile => {
     switch (action.type) {
@@ -19,7 +23,9 @@ const IdReducer = (
             };
         }
         case UPDATE_USER_PROFILE: {
-            return action.profile ? mergeAll([state, action.profile]) : state;
+            return action.profile
+                ? (mergeAll([state, action.profile]) as IUserProfile)
+                : state;
         }
         case LOG_OUT: {
             return {} as IUserProfile;
