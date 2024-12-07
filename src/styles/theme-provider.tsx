@@ -133,4 +133,4 @@ const CsoundWebIdeThemeProvider = ({ children }) => {
     );
 };
 
-export default React.memo(CsoundWebIdeThemeProvider);
+export default CsoundWebIdeThemeProvider;

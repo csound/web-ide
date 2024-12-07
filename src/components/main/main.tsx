@@ -59,14 +59,13 @@ const Main = (): React.ReactElement => {
 
     return (
         <ThemeProvider>
-            <HotKeys>
+            <Router>
                 <>
                     <Modal />
                     <IosWarning />
                     <Snackbar />
-                    <Router />
                 </>
-            </HotKeys>
+            </Router>
         </ThemeProvider>
     );
 };

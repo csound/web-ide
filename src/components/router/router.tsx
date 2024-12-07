@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useDispatch, history, store } from "@root/store";
+import { useEffect } from "react";
+import { useDispatch, store } from "@root/store";
 import { Provider } from "react-redux";
 import Home from "../home/home";
 import CsoundManual from "@comp/manual/manual";
@@ -8,8 +8,8 @@ import { Page404 } from "../page-404/page-404";
 import ProjectContext from "../projects/project-context";
 import { closeTabDock } from "@comp/project-editor/actions";
 import { closeProject } from "@comp/projects/actions";
-import { HistoryRouter as Router } from "redux-first-history/rr6";
-import { Route, Routes } from "react-router-dom";
+// import { HistoryRouter as Router } from "redux-first-history/rr6";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { stopCsound } from "../csound/actions";
 import { SiteDocuments } from "../site-documents/site-documents";
 import { ConsoleProvider } from "@comp/console/context";
@@ -65,12 +65,12 @@ const EditorLayout = (properties: any) => {
 //     );
 // };
 
-const RouterAny = Router as any;
+// const RouterAny = Router as any;
 
-const RouterComponent = (): React.ReactElement => {
+const RouterComponent = ({ children }) => {
     return (
         <>
-            <RouterAny history={history}>
+            <BrowserRouter>
                 <Routes>
                     <Route index element={<Home />} />
                     <Route path="profile/:username" element={<Profile />} />
@@ -86,7 +86,8 @@ const RouterComponent = (): React.ReactElement => {
                     <Route path="404" element={<Page404 />} />
                     <Route path="*" element={<Page404 />} />
                 </Routes>
-            </RouterAny>
+            </BrowserRouter>
+            {children}
         </>
     );
 };

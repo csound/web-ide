@@ -1,6 +1,6 @@
-import * as defaultCsdTxt from "./default.csd";
-import * as defaultOrcTxt from "./default.orc";
-import * as defaultScoTxt from "./default.sco";
+import * as defaultCsdTxt from "./default.csd?raw";
+import * as defaultOrcTxt from "./default.orc?raw";
+import * as defaultScoTxt from "./default.sco?raw";
 
 export const defaultCsd = {
     name: "project.csd",
