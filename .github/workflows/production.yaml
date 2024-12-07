@@ -7,6 +7,8 @@ jobs:
     deploy-prod:
         name: deploy-production
         runs-on: ubuntu-latest
+        env:
+            REACT_APP_DATABASE: DEV
         steps:
             - name: Checkout Repo
               uses: actions/checkout@master

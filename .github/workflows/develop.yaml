@@ -7,6 +7,8 @@ jobs:
     deploy-dev:
         name: deploy-develop
         runs-on: ubuntu-latest
+        env:
+            REACT_APP_DATABASE: DEV
         steps:
             - name: Checkout Repo
               uses: actions/checkout@master
@@ -28,4 +30,3 @@ jobs:
                   args: deploy -P develop
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
-                  REACT_APP_DATABASE: DEV

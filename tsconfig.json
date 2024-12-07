@@ -31,7 +31,7 @@
         },
         "noFallthroughCasesInSwitch": true
     },
-    "include": ["./src/**/*", "./templates/**/*"],
+    "include": ["./src/**/*"],
     "exclude": [
         "node_modules",
         "./functions",
