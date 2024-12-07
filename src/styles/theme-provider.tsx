@@ -1,4 +1,3 @@
-import React from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import WebIdeCssBaseline from "./web-ide-css-baseline";
 import { useSelector } from "react-redux";
