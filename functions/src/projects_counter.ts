@@ -1,22 +1,26 @@
 import * as admin from "firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
-import * as functions from "firebase-functions";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { makeLogger } from "./logger.js";
 
+admin.initializeApp();
 const log = makeLogger("projectsCounter");
 
-export const projectsCounter = functions.firestore
-    .document("projects/{projectUid}")
-    .onWrite(async (change, context) => {
-        if (!change.before.exists) {
-            // New project created: add one to count
+export const projectsCounter = onDocumentWritten(
+    "projects/{projectUid}",
+    async (event) => {
+        const before = event.data.before;
+        const after = event.data.after;
+
+        // Document created
+        if (!before.exists && after.exists) {
             log("projects_counter: new project created");
-            const newProjectData = change.after.data();
+            const newProjectData = after.data();
             const isPublic = newProjectData?.public ?? undefined;
             const ownerUid = newProjectData?.userUid ?? undefined;
 
             if (!newProjectData || !ownerUid || ownerUid.length === 0) {
-                log("INVALID PROJECT DETECTED: " + newProjectData!.id);
+                log("INVALID PROJECT DETECTED");
                 return;
             }
 
@@ -33,14 +37,16 @@ export const projectsCounter = functions.firestore
             } else {
                 await countRef.update({ all: FieldValue.increment(1) });
             }
-        } else if (change.before.exists && change.after.exists) {
-            // Project modified
+
+            // Document updated
+        } else if (before.exists && after.exists) {
             log("project modified");
-            const dataBefore = change.before.data();
-            const dataAfter = change.after.data();
+            const dataBefore = before.data();
+            const dataAfter = after.data();
             const isPublicBefore = dataBefore?.public ?? undefined;
             const isPublicAfter = dataAfter?.public ?? undefined;
 
+            // If public status changed, adjust counts
             if (dataAfter && isPublicBefore !== isPublicAfter) {
                 const ownerUid = dataAfter.userUid;
                 const countRef = admin
@@ -48,21 +54,24 @@ export const projectsCounter = functions.firestore
                     .collection("projectsCount")
                     .doc(ownerUid);
 
-                if (!isPublicBefore) {
+                if (!isPublicBefore && isPublicAfter) {
+                    // Was private, now public
                     await countRef.update({ public: FieldValue.increment(1) });
-                } else {
+                } else if (isPublicBefore && !isPublicAfter) {
+                    // Was public, now private
                     await countRef.update({ public: FieldValue.increment(-1) });
                 }
             }
-        } else if (!change.after.exists) {
-            // Deleting project: subtract one from count
-            log("projects_counter: project");
-            const oldProjectData = change.before.data();
+
+            // Document deleted
+        } else if (before.exists && !after.exists) {
+            log("projects_counter: project deleted");
+            const oldProjectData = before.data();
             const isPublic = oldProjectData?.public ?? undefined;
             const ownerUid = oldProjectData?.userUid ?? undefined;
 
             if (!oldProjectData || !ownerUid || ownerUid.length === 0) {
-                log("INVALID PROJECT DETECTED: " + (oldProjectData || {}).id);
+                log("INVALID PROJECT DETECTED");
                 return;
             }
 
@@ -82,4 +91,5 @@ export const projectsCounter = functions.firestore
         }
 
         return;
-    });
+    }
+);

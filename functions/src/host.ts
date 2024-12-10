@@ -1,47 +1,47 @@
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import { onRequest } from "firebase-functions/v2/https";
 import { isbot } from "isbot";
 import fs from "node:fs";
 import path from "node:path";
 import * as R from "ramda";
 
-function printTree(dirPath, indent = "") {
-    // Read all files and directories inside the current directory
+admin.initializeApp();
+
+function printTree(dirPath: string, indent = "") {
     const files = fs.readdirSync(dirPath);
 
-    // Loop through each file/directory
-    files.forEach((file, index) => {
-        const isLast = index === files.length - 1;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const isLast = i === files.length - 1;
         const filePath = path.join(dirPath, file);
         const stats = fs.statSync(filePath);
 
-        // Print the file or directory name
         const prefix = isLast ? "└── " : "├── ";
         console.log(indent + prefix + file);
 
-        // If it's a directory, recursively print its contents
         if (stats.isDirectory() && file !== "node_modules") {
             const newIndent = indent + (isLast ? "    " : "│   ");
             printTree(filePath, newIndent);
         }
-    });
+    }
 }
 
-export const host = functions.https.onRequest(async (req, res) => {
+export const host = onRequest(async (req, res) => {
     try {
         console.log("Current Working Directory:", process.cwd());
         printTree("./");
+
         let indexHTML = fs.readFileSync("./dist/index.html").toString();
-        const path = req.path ? req.path.split("/") : req.path;
+        const reqPath = req.path ? req.path.split("/") : req.path;
         const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
 
         if (
             isbot(req.headers["user-agent"] || "") &&
-            path &&
-            path.length > 1 &&
-            path[1] === "editor"
+            reqPath &&
+            reqPath.length > 1 &&
+            reqPath[1] === "editor"
         ) {
-            const projectUid = path[2];
+            const projectUid = reqPath[2];
 
             const projectSnapshot = await admin
                 .firestore()
@@ -79,6 +79,7 @@ export const host = functions.https.onRequest(async (req, res) => {
                 projectUid,
                 projectData
             );
+
             indexHTML = indexHTML.replace(
                 ogPlaceholder,
                 getProjectOg(projectWithUid, profile)

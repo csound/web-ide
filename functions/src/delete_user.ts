@@ -1,8 +1,10 @@
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import functions from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
 const log = makeLogger("deleteUser");
+
+admin.initializeApp();
 
 const deleteUserDocument = async (
     user: admin.auth.UserRecord
@@ -33,18 +35,16 @@ const deleteProfileDocument = async (
 const deleteUsernameDocument = async (
     user: admin.auth.UserRecord
 ): Promise<void> => {
-    log(
-        `deleteUsernameDocument: Deleting the username of: ${user.displayName}`
-    );
+    log(`deleteUsernameDocument: Deleting username of: ${user.displayName}`);
     try {
         const querySnapshot = await admin
             .firestore()
             .collection("usernames")
             .where("userUid", "==", user.uid)
             .get();
-        querySnapshot.forEach(async (doc) => {
+        for (const doc of querySnapshot.docs) {
             await admin.firestore().doc(doc.ref.path).delete();
-        });
+        }
     } catch (error) {
         log(
             "error: " + JSON.stringify(error, Object.getOwnPropertyNames(error))
@@ -57,7 +57,6 @@ const deleteUserProjects = async (
 ): Promise<void> => {
     log(`deleteProjects: Deleting projects created by: ${user.displayName}`);
     const batch = admin.firestore().batch();
-
     try {
         const allProjectsRef = await admin
             .firestore()
@@ -70,14 +69,12 @@ const deleteUserProjects = async (
                 const projectRef = admin.firestore().doc(doc.ref.path);
                 const projectSubcolls = await projectRef.listCollections();
 
-                await Promise.all(
-                    projectSubcolls.map(async (subcoll) => {
-                        const subcollDocs = await subcoll.get();
-                        subcollDocs.forEach((subcollDoc) => {
-                            batch.delete(subcollDoc.ref);
-                        });
-                    })
-                );
+                for (const subcoll of projectSubcolls) {
+                    const subcollDocs = await subcoll.get();
+                    subcollDocs.forEach((subcollDoc) => {
+                        batch.delete(subcollDoc.ref);
+                    });
+                }
 
                 const projectLastModifiedRef = admin
                     .firestore()
@@ -119,12 +116,13 @@ export const deleteUserCallback = functions.auth
     .user()
     .onDelete(async (user) => {
         log(
-            `deleteUserCallback: Removing user: ${user.displayName}, with uid ${user.uid}`
+            `deleteUserCallback: Removing user: ${user.displayName}, uid: ${user.uid}`
         );
         await deleteUserProjects(user);
         await deleteProfileDocument(user);
         await deleteUserDocument(user);
         await deleteUsernameDocument(user);
         await deleteProjectsCount(user);
+
         return true;
     });

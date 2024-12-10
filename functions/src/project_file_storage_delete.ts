@@ -1,28 +1,28 @@
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import { onDocumentDeleted } from "firebase-functions/v2/firestore";
+import { config } from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
+admin.initializeApp();
 const log = makeLogger("projectFileStorageDelete");
 
-// Delete an associated binary file when a project file entry is deleted
-const projectFileStorageDelete = async (binaryUrl: string): Promise<void> => {
+async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
     log(
         `project_file_storage_delete: Deleting associated binary file from storage: ${binaryUrl}`
     );
 
     await admin
         .storage()
-        .bucket(functions.config().storagebucket.url)
+        .bucket(config().storagebucket.url)
         .file(binaryUrl)
         .delete();
-};
+}
 
-export const projectFileStorageDeleteCallback = functions.firestore
-    .document("projects/{projectId}/files/{fileId}")
-    .onDelete(async (snapshot, context) => {
-        const { projectId, fileId } = context.params;
-        const uid = snapshot.data().userUid;
-        const filetype = snapshot.data().type;
+export const projectFileStorageDeleteCallback = onDocumentDeleted(
+    "projects/{projectId}/files/{fileId}",
+    async ({ params: { projectId, fileId }, data }) => {
+        const uid = data.get("userUid");
+        const filetype = data.get("type");
         const binaryUrl = `${uid}/${projectId}/${fileId}`;
 
         log(`project_file_storage_delete_callback: ${filetype} ${binaryUrl}`);
@@ -35,4 +35,5 @@ export const projectFileStorageDeleteCallback = functions.firestore
         }
 
         return true;
-    });
+    }
+);

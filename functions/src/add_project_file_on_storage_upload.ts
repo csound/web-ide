@@ -1,19 +1,17 @@
 import admin from "firebase-admin";
-import { storage } from "firebase-functions";
+import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { makeLogger } from "./logger.js";
 
+admin.initializeApp(); // ensure this is done somewhere in your setup
 const log = makeLogger("addProjectFileOnStorageUpload");
+const newTimestamp = admin.firestore.FieldValue.serverTimestamp();
 
-const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
+export const addProjectFileOnStorageUploadCallback = onObjectFinalized(
+    async (event) => {
+        const obj = event.data;
 
-// Add a project file entry in Firestore when a binary file is uploaded
-export const addProjectFileOnStorageUploadCallback = storage
-    .object()
-    .onFinalize(async (obj) => {
-        const metadata = obj.metadata;
-
-        if (metadata) {
-            const { userUid, projectUid, docUid, filename } = metadata;
+        if (obj.metadata) {
+            const { userUid, projectUid, docUid, filename } = obj.metadata;
 
             if (userUid && projectUid && docUid && filename) {
                 const collection = `/projects/${userUid}/${projectUid}/files`;
@@ -32,11 +30,12 @@ export const addProjectFileOnStorageUploadCallback = storage
                         type: "bin",
                         userUid,
                         value: "",
-                        created: newTimestamp(),
-                        lastModified: newTimestamp()
+                        created: newTimestamp,
+                        lastModified: newTimestamp
                     });
             }
         }
 
         return true;
-    });
+    }
+);

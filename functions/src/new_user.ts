@@ -1,17 +1,17 @@
 import { WriteResult } from "@google-cloud/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import functions from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
+admin.initializeApp();
 const log = makeLogger("newUser");
 
-// For every new user, create a queryable Firestore profile document
-const createProfileDocument = async (
+async function createProfileDocument(
     user: admin.auth.UserRecord
-): Promise<WriteResult> => {
+): Promise<WriteResult> {
     log(
-        `createProfileDocument: Adding: ${user.displayName}, with uid ${user.uid} to profiles`
+        `createProfileDocument: Adding: ${user.displayName}, uid: ${user.uid} to profiles`
     );
 
     const profileDoc = {
@@ -39,18 +39,17 @@ const createProfileDocument = async (
         .collection("profiles")
         .doc(user.uid)
         .set(profileDoc);
-};
+}
 
 export const newUserCallback = functions.auth.user().onCreate(async (user) => {
-    log(
-        `newUserCallback: Creating new user: ${user.displayName}, with uid ${user.uid}`
+    console.log(
+        `newUserCallback: Creating new user: ${user.displayName}, uid: ${user.uid}`
     );
+
     try {
         await createProfileDocument(user);
     } catch (error) {
-        log(
-            "error: " + JSON.stringify(error, Object.getOwnPropertyNames(error))
-        );
+        console.error("Error creating profile document:", error);
     }
 
     return true;

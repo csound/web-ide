@@ -1,30 +1,40 @@
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { makeLogger } from "./logger.js";
 
+admin.initializeApp();
 const log = makeLogger("followersCounter");
 
-export const followersCounter = functions.firestore
-    .document("followers/{userUid}")
-    .onWrite(async (change, context) => {
-        const userUid = context.params.userUid;
+export const followersCounter = onDocumentWritten(
+    "followers/{userUid}",
+    async (event) => {
+        const before = event.data.before;
+        const after = event.data.after;
+        const userUid = event.params.userUid;
+
         const followersCountRef = admin
             .firestore()
             .collection("followersCount")
             .doc(userUid);
 
-        if (!change.before.exists) {
+        // Document created
+        if (!before.exists && after.exists) {
             // New followers doc created = 1 new follower
             await followersCountRef.set({ followersCount: 1 });
-        } else if (change.before.exists && change.after.exists) {
-            // Follower count changed
-            const dataAfter = change.after.data();
+        }
+        // Document updated
+        else if (before.exists && after.exists) {
+            const dataAfter = after.data();
             await followersCountRef.set({
                 followersCount: Object.keys(dataAfter || {}).length
             });
-        } else if (!change.after.exists) {
-            // No followers left, do nothing
+        }
+        // Document deleted
+        else if (!after.exists) {
+            // No followers left, do nothing (or you could remove the doc)
+            // await followersCountRef.delete();
         }
 
         return;
-    });
+    }
+);
