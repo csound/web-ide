@@ -13,7 +13,7 @@ upload({
     .then(data => console.log("----- SUCCESS ----\n", data))
     .catch(error => console.log("---- ERROR ----\n", error));
 function getFiles() {
-    const BUILD_DIR = "build";
+    const BUILD_DIR = "dist";
     const assetsFile = path.resolve(BUILD_DIR, "asset-manifest.json");
     const filePaths = require(assetsFile);
     const jsFilesRegex = /(\.js(.map)?)$/;
