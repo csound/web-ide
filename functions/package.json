@@ -7,7 +7,7 @@
         "lint": "eslint .",
         "serve": "firebase serve --only functions",
         "shell": "firebase functions:shell",
-        "build": "npx tsc -p ./tsconfig.json && cp ../build/index.html dist",
+        "build": "npx tsc -p ./tsconfig.json && cp ../dist/index.html dist",
         "start": "npm run shell",
         "deploy": "firebase deploy --only functions",
         "deploy:dev": "firebase deploy -P develop --only functions",
