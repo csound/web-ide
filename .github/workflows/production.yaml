@@ -16,7 +16,7 @@ jobs:
               run: |
                   yarn install
                   PUBLIC_URL="https://ide.csound.com" PRODUCTION=1 yarn build
-                  cp build/index.html functions
+                  cp dist/index.html functions
                   cd functions
                   yarn install
                   yarn build

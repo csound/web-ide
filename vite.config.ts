@@ -2,11 +2,15 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
-import EnvironmentPlugin from "vite-plugin-environment";
 import checker from "vite-plugin-checker";
 import viteRawPlugin from "vite-raw-plugin";
 
 export default defineConfig({
+    define: {
+        "process.env.REACT_APP_DATABASE": JSON.stringify(
+            process.env.REACT_APP_DATABASE
+        )
+    },
     // depending on your application, base can also be "/"
     base: "",
     plugins: [
@@ -22,7 +26,6 @@ export default defineConfig({
         }),
         viteTsconfigPaths(),
         svgr(),
-        EnvironmentPlugin(["REACT_APP_DATABASE"]),
         viteRawPlugin({
             fileRegex: /\.csd|\.orc\.sco\.udo$/
         })
