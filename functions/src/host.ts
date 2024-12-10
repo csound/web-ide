@@ -1,11 +1,12 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
 import { onRequest } from "firebase-functions/v2/https";
 import { isbot } from "isbot";
 import fs from "node:fs";
 import path from "node:path";
 import * as R from "ramda";
 
-admin.initializeApp();
+initializeApp();
 
 function printTree(dirPath: string, indent = "") {
     const files = fs.readdirSync(dirPath);

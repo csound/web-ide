@@ -1,8 +1,9 @@
 import admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
 import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { makeLogger } from "./logger.js";
 
-admin.initializeApp(); // ensure this is done somewhere in your setup
+initializeApp(); // ensure this is done somewhere in your setup
 const log = makeLogger("addProjectFileOnStorageUpload");
 const newTimestamp = admin.firestore.FieldValue.serverTimestamp();
 

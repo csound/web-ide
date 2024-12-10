@@ -1,9 +1,10 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { config } from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
-admin.initializeApp();
+initializeApp();
 const log = makeLogger("projectFileStorageDelete");
 
 async function projectFileStorageDelete(binaryUrl: string): Promise<void> {

@@ -1,10 +1,11 @@
 import { WriteResult } from "@google-cloud/firestore";
 import { Timestamp } from "firebase-admin/firestore";
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
 import functions from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
-admin.initializeApp();
+initializeApp();
 const log = makeLogger("newUser");
 
 async function createProfileDocument(
