@@ -4,8 +4,9 @@ import { FieldValue } from "firebase-admin/firestore";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { makeLogger } from "./logger.js";
 
-initializeApp();
-const log = makeLogger("projectsCounter");
+const functionName = "projectsCounter";
+initializeApp(undefined, functionName);
+const log = makeLogger(functionName);
 
 export const projectsCounter = onDocumentWritten(
     "projects/{projectUid}",

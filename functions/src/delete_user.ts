@@ -3,9 +3,9 @@ import { initializeApp } from "firebase-admin/app";
 import functions from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
-const log = makeLogger("deleteUser");
-
-initializeApp();
+const functionName = "deleteUser";
+initializeApp(undefined, functionName);
+const log = makeLogger(functionName);
 
 const deleteUserDocument = async (
     user: admin.auth.UserRecord

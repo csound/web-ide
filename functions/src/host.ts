@@ -6,7 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import * as R from "ramda";
 
-initializeApp();
+const functionName = "host";
+initializeApp(undefined, functionName);
 
 function printTree(dirPath: string, indent = "") {
     const files = fs.readdirSync(dirPath);

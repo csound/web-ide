@@ -4,8 +4,9 @@ import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { config } from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
-initializeApp();
-const log = makeLogger("projectFileStorageDelete");
+const functionName = "projectFileStorageDelete";
+initializeApp(undefined, functionName);
+const log = makeLogger(functionName);
 
 async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
     log(

@@ -5,8 +5,9 @@ import { initializeApp } from "firebase-admin/app";
 import functions from "firebase-functions/v1";
 import { makeLogger } from "./logger.js";
 
-initializeApp();
-const log = makeLogger("newUser");
+const functionName = "newUser";
+initializeApp(undefined, functionName);
+const log = makeLogger(functionName);
 
 async function createProfileDocument(
     user: admin.auth.UserRecord
