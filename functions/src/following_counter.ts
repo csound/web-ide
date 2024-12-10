@@ -3,7 +3,7 @@ import { initializeApp } from "firebase-admin/app";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { makeLogger } from "./logger.js";
 
-const functionName = "followersCounter";
+const functionName = "followingCounter";
 initializeApp(undefined, functionName);
 const log = makeLogger(functionName);
 
