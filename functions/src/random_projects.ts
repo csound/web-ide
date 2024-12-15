@@ -13,13 +13,16 @@ export const randomProjects = onCall<{ count: number }>(async ({ data }) => {
         const projectsCollection = await db
             .collection("projects")
             .where("public", "==", true)
-            .orderBy("createdAt", "desc")
+            .orderBy("created", "desc")
             .limit(100)
             .get();
-        projects = projectsCollection.docs.map((doc) => ({
+        const nextProjects = projectsCollection.docs.map((doc) => ({
             ...doc.data(),
             projectUid: doc.id
         }));
+        if (nextProjects.length > 0) {
+            projects = nextProjects;
+        }
         log("projectsLength: " + projects.length);
     }
 
