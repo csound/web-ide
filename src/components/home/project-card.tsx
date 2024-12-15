@@ -2,7 +2,7 @@ import React from "react";
 import { Bars as BarsSpinner } from "react-loader-spinner";
 import { Theme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
-import ListPlayButton from "@comp/profile/list-play-button";
+import { ListPlayButton } from "@comp/profile/list-play-button";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
 import {
@@ -19,13 +19,10 @@ import {
     Photo,
     ProjectCardContentBottomID
 } from "./home-ui";
+import { RandomProjectResponse } from "./types";
 import * as SS from "./styles";
 
-export const ProjectCardSkeleton = ({
-    theme
-}: {
-    theme: Theme;
-}): React.ReactElement => (
+export const ProjectCardSkeleton = ({ theme }: { theme: Theme }) => (
     <div css={SS.cardLoderSkeleton}>
         <span className="skeleton-photo" />
         <span className="skeleton-name" />
@@ -34,19 +31,23 @@ export const ProjectCardSkeleton = ({
     </div>
 );
 
-const ProjectCard = ({
+export const ProjectCard = ({
     projectIndex,
     profile,
     project
 }: {
     projectIndex: number;
     profile: IProfile;
-    project: IProject;
-}): React.ReactElement => {
+    project: IProject | RandomProjectResponse;
+}) => {
     return (
         <ProjectCardContainer duration={200} projectIndex={projectIndex}>
             <div css={SS.cardBackground}>
-                <ProjectAvatar project={project} />
+                <ProjectAvatar
+                    iconName={project.iconName}
+                    iconBackgroundColor={project.iconBackgroundColor}
+                    iconForegroundColor={project.iconForegroundColor}
+                />
             </div>
             <ProjectCardContentContainer duration={200}>
                 <ProjectCardContentTop to={`editor/${project.projectUid}`}>
@@ -58,7 +59,12 @@ const ProjectCard = ({
                     </ProjectCardContentTopDescription>
                 </ProjectCardContentTop>
                 <ProjectCardContentMiddle>
-                    <ListPlayButton project={project} />
+                    <ListPlayButton
+                        projectUid={project.projectUid}
+                        iconName={project.iconName}
+                        iconBackgroundColor={project.iconBackgroundColor}
+                        iconForegroundColor={project.iconForegroundColor}
+                    />
                 </ProjectCardContentMiddle>
                 <ProjectCardContentBottom to={`profile/${profile.username}`}>
                     <ProjectCardContentBottomPhoto>
@@ -77,5 +83,3 @@ const ProjectCard = ({
         </ProjectCardContainer>
     );
 };
-
-export default ProjectCard;

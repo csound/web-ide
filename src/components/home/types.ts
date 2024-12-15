@@ -1,4 +1,5 @@
 import { IProject } from "@comp/projects/types";
+import { Timestamp } from "firebase/firestore";
 
 export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
 export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
@@ -8,6 +9,18 @@ export const ADD_RANDOM_PROJECTS = "HOME.ADD_RANDOM_PROJECTS";
 export const ADD_POPULAR_PROJECTS = "HOME.ADD_POPULAR_PROJECTS";
 export const SET_POPULAR_PROJECTS_OFFSET = "HOME.SET_POPULAR_PROJECTS_OFFSET";
 export const SET_RANDOM_PROJECTS_LOADING = "HOME.SET_RANDOM_PROJECTS_LOADING";
+
+export interface RandomProjectResponse {
+    created: Timestamp;
+    description: string;
+    iconBackgroundColor: string | undefined;
+    iconForegroundColor: string | undefined;
+    iconName: string | undefined;
+    name: string;
+    projectUid: string;
+    public: boolean;
+    userUid: string;
+}
 
 interface SearchProjectsRequest {
     type: typeof SEARCH_PROJECTS_REQUEST;
@@ -39,7 +52,7 @@ interface SetPopularProjectsOffsetAction {
 
 interface AddRandomProjectsAction {
     type: typeof ADD_RANDOM_PROJECTS;
-    payload: IProject[];
+    payload: RandomProjectResponse[];
 }
 
 interface SetRandomProjectsLoading {

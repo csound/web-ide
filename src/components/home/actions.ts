@@ -1,4 +1,5 @@
 import { difference, keys, isEmpty, pluck } from "ramda";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { documentId, getDocs, query, where } from "firebase/firestore";
 import { profiles, projects } from "@config/firestore";
 import { RootState } from "@root/store";
@@ -10,7 +11,8 @@ import {
     SEARCH_PROJECTS_SUCCESS,
     SET_POPULAR_PROJECTS_OFFSET,
     SET_RANDOM_PROJECTS_LOADING,
-    HomeActionTypes
+    HomeActionTypes,
+    RandomProjectResponse
 } from "./types";
 import { IProject } from "@comp/projects/types";
 import {
@@ -21,6 +23,12 @@ import { IStarredProjectSearchResult, IStarredProject } from "@db/search";
 
 const databaseID = process.env.REACT_APP_DATABASE === "DEV" ? "dev" : "prod";
 const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
+const functions = getFunctions();
+const getRandomProjects = httpsCallable<
+    { count: number },
+    RandomProjectResponse[]
+>(functions, "random_projects");
+
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
 export const searchProjects =
@@ -96,17 +104,19 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
         let starsIDs: string[] = [];
         let totalRecords = 0;
         try {
-            const starsRequest = await fetch(
-                `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
-            );
-            const starredProjects: IStarredProjectSearchResult =
-                await starsRequest.json();
+            // const starsRequest = await fetch(
+            //     `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
+            // );
+            // const starredProjects: IStarredProjectSearchResult =
+            //     await starsRequest.json();
+
+            const starredProjects = { data: [] };
 
             starsIDs = starredProjects.data.map(
                 (item: IStarredProject) => item.id
             );
 
-            totalRecords = starredProjects.totalRecords as number;
+            totalRecords = 0; //starredProjects.totalRecords as number;
         } catch (error) {
             console.error(error);
         }
@@ -168,68 +178,46 @@ export const fetchRandomProjects = () => {
 
         const state = getState().HomeReducer;
 
-        let randomProjectsIDs: string[] = [];
+        let randomProjects: RandomProjectResponse[] = [];
 
         try {
-            const randomProjectsRequest = await fetch(
-                `${searchURL}/random/projects/8`
-            );
-
-            const randomProjects = await randomProjectsRequest.json();
-
-            randomProjectsIDs = randomProjects.data.map(
-                (item: IStarredProject) => item.id
-            );
+            const randomProjectsResponse = await getRandomProjects({
+                count: 8
+            });
+            randomProjects = randomProjectsResponse.data;
         } catch (error) {
             console.error(error);
         }
 
-        if (!isEmpty(randomProjectsIDs)) {
-            const randomProjectsSnapshots = await getDocs(
-                query(
-                    query(projects, where("public", "==", true)),
-                    where(documentId(), "in", randomProjectsIDs)
-                )
+        const userIDs = randomProjects.map((project) => project.userUid);
+        const missingProfiles = difference(userIDs, keys(state.profiles));
+
+        if (!isEmpty(missingProfiles)) {
+            const projectProfiles = {};
+
+            const profilesQuery = await getDocs(
+                query(profiles, where(documentId(), "in", missingProfiles))
             );
 
-            const randomProjects: IProject[] = await Promise.all(
-                randomProjectsSnapshots.docs.map(
-                    async (snap) => await convertProjectSnapToProject(snap)
-                )
-            );
-
-            const userIDs = pluck("userUid", randomProjects);
-
-            const missingProfiles = difference(userIDs, keys(state.profiles));
-
-            if (!isEmpty(missingProfiles)) {
-                const projectProfiles = {};
-
-                const profilesQuery = await getDocs(
-                    query(profiles, where(documentId(), "in", missingProfiles))
-                );
-
-                profilesQuery.forEach((snapshot) => {
-                    projectProfiles[snapshot.id] = snapshot.data();
-                    if (projectProfiles[snapshot.id]?.userJoinDate) {
-                        projectProfiles[snapshot.id].userJoinDate =
-                            projectProfiles[
-                                snapshot.id
-                            ].userJoinDate.toMillis();
-                    }
-                });
-
-                dispatch({
-                    type: ADD_USER_PROFILES,
-                    payload: projectProfiles
-                });
-            }
+            profilesQuery.forEach((snapshot) => {
+                projectProfiles[snapshot.id] = snapshot.data();
+                if (projectProfiles[snapshot.id]?.userJoinDate) {
+                    projectProfiles[snapshot.id].userJoinDate =
+                        projectProfiles[snapshot.id].userJoinDate.toMillis();
+                }
+            });
 
             dispatch({
-                type: ADD_RANDOM_PROJECTS,
-                payload: randomProjects
+                type: ADD_USER_PROFILES,
+                payload: projectProfiles
             });
         }
+
+        dispatch({
+            type: ADD_RANDOM_PROJECTS,
+            payload: randomProjects
+        });
+
         dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: false });
     };
 };

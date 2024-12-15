@@ -208,13 +208,9 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
                             onClick={handleProfileDropDown}
                         >
                             <ProjectAvatar
-                                project={
-                                    {
-                                        iconName,
-                                        iconBackgroundColor,
-                                        iconForegroundColor
-                                    } as IProject
-                                }
+                                iconName={iconName}
+                                iconBackgroundColor={iconBackgroundColor}
+                                iconForegroundColor={iconForegroundColor}
                             />
                         </span>
                     </Tooltip>

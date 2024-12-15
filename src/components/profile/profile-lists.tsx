@@ -5,7 +5,7 @@ import { List, ListItem, ListItemText } from "@mui/material";
 import FollowingList from "./tabs/following-list";
 import FollowersList from "./tabs/followers-list";
 import StarsList from "./tabs/stars-list";
-import ListPlayButton from "./list-play-button";
+import { ListPlayButton } from "./list-play-button";
 import SettingsIcon from "@mui/icons-material/Settings";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -71,7 +71,12 @@ const ProjectListItem = ({
                 {isProfileOwner && <StyledListButtonsContainer />}
             </Link>
             <StyledListPlayButtonContainer>
-                <ListPlayButton project={project} />
+                <ListPlayButton
+                    projectUid={projectUid}
+                    iconName={project.iconName}
+                    iconBackgroundColor={project.iconBackgroundColor}
+                    iconForegroundColor={project.iconForegroundColor}
+                />
             </StyledListPlayButtonContainer>
             {isProfileOwner && (
                 <>

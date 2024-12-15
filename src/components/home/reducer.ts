@@ -1,4 +1,3 @@
-import { assoc, concat, isEmpty, mergeAll, pipe, when } from "ramda";
 import {
     HomeActionTypes,
     ADD_USER_PROFILES,
@@ -11,6 +10,7 @@ import {
 } from "./types";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
+import { RandomProjectResponse } from "./types";
 
 export interface IHomeReducer {
     popularProjects: IProject[];
@@ -22,7 +22,7 @@ export interface IHomeReducer {
     searchResultTotalRecords: number;
     searchPaginationOffset: number;
     searchQuery: string;
-    randomProjects: IProject[];
+    randomProjects: RandomProjectResponse[];
     randomProjectsLoading: boolean;
 }
 
@@ -46,54 +46,58 @@ const HomeReducer = (
 ): IHomeReducer => {
     switch (action.type) {
         case SEARCH_PROJECTS_REQUEST: {
-            return pipe(
-                assoc("searchProjectsRequest", !isEmpty(action.query)),
-                assoc("searchQuery", action.query),
-                assoc(
-                    "searchPaginationOffset",
-                    isEmpty(action.query) ? -1 : action.offset
-                ),
-                when(
-                    () => isEmpty(action.query),
-                    assoc("searchResultTotalRecords", -1)
-                )
-            )(state);
+            const newState = { ...state };
+            newState.searchProjectsRequest = action.query.length > 0;
+            newState.searchQuery = action.query;
+            newState.searchPaginationOffset =
+                action.query.length === 0 ? -1 : action.offset;
+            if (action.query.length === 0) {
+                newState.searchResultTotalRecords = -1;
+            }
+            return newState;
         }
         case SEARCH_PROJECTS_SUCCESS: {
-            return pipe(
-                assoc("searchResult", action.result || []),
-                assoc("searchProjectsRequest", false),
-                assoc("searchResultTotalRecords", action.totalRecords)
-            )(state);
+            return {
+                ...state,
+                searchResult: action.result || [],
+                searchProjectsRequest: false,
+                searchResultTotalRecords: action.totalRecords
+            };
         }
         case ADD_USER_PROFILES: {
-            return assoc(
-                "profiles",
-                mergeAll([action.payload, state.profiles]),
-                state
-            );
+            return {
+                ...state,
+                profiles: {
+                    ...state.profiles,
+                    ...action.payload
+                }
+            };
         }
         case ADD_POPULAR_PROJECTS: {
-            return pipe(
-                assoc(
-                    "popularProjects",
-                    concat(state.popularProjects, action.payload)
-                ),
-                assoc("popularProjectsTotalRecords", action.totalRecords)
-            )(state);
+            return {
+                ...state,
+                popularProjects: [...state.popularProjects, ...action.payload],
+                popularProjectsTotalRecords: action.totalRecords
+            };
         }
         case SET_POPULAR_PROJECTS_OFFSET: {
-            return assoc("popularProjectsOffset", action.newOffset, state);
+            return {
+                ...state,
+                popularProjectsOffset: action.newOffset
+            };
         }
-
         case ADD_RANDOM_PROJECTS: {
-            return assoc("randomProjects", action.payload || [])(state);
+            return {
+                ...state,
+                randomProjects: action.payload || []
+            };
         }
-
         case SET_RANDOM_PROJECTS_LOADING: {
-            return assoc("randomProjectsLoading", action.isLoading)(state);
+            return {
+                ...state,
+                randomProjectsLoading: action.isLoading
+            };
         }
-
         default: {
             return state;
         }

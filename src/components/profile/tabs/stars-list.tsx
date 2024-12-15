@@ -41,7 +41,17 @@ const StarsList = ({ profileUid }: { profileUid: string }) => {
                 >
                     <StyledUserListItemContainer>
                         <div css={SS.starItemIcon}>
-                            {project && <ProjectAvatar project={project} />}
+                            {project && (
+                                <ProjectAvatar
+                                    iconName={project.iconName}
+                                    iconBackgroundColor={
+                                        project.iconBackgroundColor
+                                    }
+                                    iconForegroundColor={
+                                        project.iconForegroundColor
+                                    }
+                                />
+                            )}
                         </div>
                         <StyledListItemTopRowText>
                             <ListItemText

@@ -67,7 +67,15 @@ const ProjectProfileMeta = (): React.ReactElement => {
                         <div>
                             <div css={SS.projectProfileTooltipTitleContainer}>
                                 <div css={SS.projectIcon}>
-                                    <ProjectAvatar project={project} />
+                                    <ProjectAvatar
+                                        iconName={project.iconName}
+                                        iconBackgroundColor={
+                                            project.iconBackgroundColor
+                                        }
+                                        iconForegroundColor={
+                                            project.iconForegroundColor
+                                        }
+                                    />
                                 </div>
                                 <div style={{ marginLeft: 24 }}>
                                     <h1 css={SS.projectProfileMetaH1}>

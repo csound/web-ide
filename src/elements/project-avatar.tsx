@@ -1,7 +1,7 @@
-import React from "react";
 import { IProject } from "@comp/projects/types";
 import SVGComponents from "./svg-icons";
 import { css, SerializedStyles } from "@emotion/react";
+import { RandomProjectResponse } from "@root/components/home/types";
 
 export const avatarIconForeground = (
     foregroundColor: string
@@ -33,28 +33,26 @@ const avatarIconContainer = css`
 `;
 
 const ProjectAvatar = ({
-    project
+    iconName = "fadwaveform",
+    iconBackgroundColor = "#000",
+    iconForegroundColor = "#fff"
 }: {
-    project: IProject;
-}): React.ReactElement => {
-    const iconName =
-        project.iconName === "" ||
-        !project.iconName ||
-        project.iconName === undefined ||
-        project.iconName === "default"
-            ? "fadwaveform"
-            : project.iconName;
+    iconName: string | undefined;
+    iconBackgroundColor: string | undefined;
+    iconForegroundColor: string | undefined;
+}) => {
+    const SVGIcon =
+        SVGComponents[`${iconName}`] || SVGComponents["fadwaveform"];
 
-    const SVGIcon = SVGComponents[`${iconName}Component`];
     return (
         <div
             className="project-avatar"
             css={avatarIconContainer}
             style={{
-                backgroundColor: project.iconBackgroundColor || "#000"
+                backgroundColor: iconBackgroundColor
             }}
         >
-            <SVGIcon css={avatarIcon(project.iconForegroundColor || "#fff")} />
+            {SVGIcon && <SVGIcon css={avatarIcon(iconForegroundColor)} />}
         </div>
     );
 };

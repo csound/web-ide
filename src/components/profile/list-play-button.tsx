@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { playListItem } from "./actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
@@ -6,7 +6,6 @@ import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { selectCurrentlyPlayingProject } from "./selectors";
 import AlertIcon from "@mui/icons-material/ErrorOutline";
 import { Theme, useTheme } from "@emotion/react";
-import { IProject } from "@comp/projects/types";
 import ProjectAvatar from "@elem/project-avatar";
 import * as SS from "./styles";
 
@@ -39,15 +38,20 @@ const SvgPlayIcon = ({
     );
 };
 
-const ListPlayButton = ({
-    project
+export const ListPlayButton = ({
+    projectUid,
+    iconName,
+    iconBackgroundColor,
+    iconForegroundColor
 }: {
-    project: IProject;
-}): React.ReactElement => {
+    projectUid: string;
+    iconName?: string;
+    iconBackgroundColor?: string;
+    iconForegroundColor?: string;
+}) => {
     const theme: any = useTheme();
     const currentlyPlayingProject = useSelector(selectCurrentlyPlayingProject);
     const csoundStatus = useSelector(selectCsoundStatus);
-    const { projectUid, iconBackgroundColor = "#000" } = project;
 
     const isPlaying = currentlyPlayingProject === projectUid;
     const hasError = isPlaying && csoundStatus === "error";
@@ -75,11 +79,17 @@ const ListPlayButton = ({
         isPaused
             ? dispatch(resumePausedCsound())
             : isPlaying && !hasError
-            ? dispatch(pauseCsound())
-            : dispatch(playListItem({ projectUid }));
+              ? dispatch(pauseCsound())
+              : dispatch(playListItem({ projectUid }));
     }, [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]);
 
-    const IconComponent = <ProjectAvatar project={project} />;
+    const IconComponent = (
+        <ProjectAvatar
+            iconName={iconName}
+            iconBackgroundColor={iconBackgroundColor}
+            iconForegroundColor={iconForegroundColor}
+        />
+    );
 
     return (
         <SS.StyledAvatar
@@ -134,5 +144,3 @@ const ListPlayButton = ({
         </SS.StyledAvatar>
     );
 };
-
-export default React.memo(ListPlayButton);

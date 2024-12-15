@@ -6,7 +6,7 @@ import LeftIcon from "@mui/icons-material/ArrowBack";
 import RightIcon from "@mui/icons-material/ArrowForward";
 import IconButton from "@mui/material/IconButton";
 import { Theme, useTheme } from "@emotion/react";
-import ProjectCard, { ProjectCardSkeleton } from "./project-card";
+import { ProjectCard, ProjectCardSkeleton } from "./project-card";
 import * as SS from "./styles";
 
 const PopularProjects = ({

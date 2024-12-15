@@ -11,14 +11,14 @@ import { debounce } from "throttle-debounce";
 import LeftIcon from "@mui/icons-material/ArrowBack";
 import RightIcon from "@mui/icons-material/ArrowForward";
 import IconButton from "@mui/material/IconButton";
-import ProjectCard from "./project-card";
+import { ProjectCard } from "./project-card";
 import * as SS from "./styles";
 
 const doSearch = debounce(100, (query, offset, dispatch) => {
     dispatch(searchProjects(query, offset));
 });
 
-const Search = (): React.ReactElement => {
+const Search = () => {
     const dispatch = useDispatch();
     const theme = useTheme();
 
@@ -43,14 +43,14 @@ const Search = (): React.ReactElement => {
         return path(["HomeReducer", "searchResultTotalRecords"], store);
     });
 
-    const onChange = React.useCallback(
-        (event) => {
-            doSearch(event.target.value, 0, dispatch);
-        },
-        [dispatch]
-    );
+    // const onChange = React.useCallback(
+    //     (event) => {
+    //         doSearch(event.target.value, 0, dispatch);
+    //     },
+    //     [dispatch]
+    // );
 
-    React.useEffect(() => doSearch.cancel, []);
+    // React.useEffect(() => doSearch.cancel, []);
 
     return (
         <>
@@ -107,7 +107,7 @@ const Search = (): React.ReactElement => {
                 <hr css={SS.homePageHeadingBreak} />
             </div>
             <TextField
-                onChange={onChange}
+                // onChange={onChange}
                 css={SS.searchField}
                 name="search-field"
                 label="Search field"
