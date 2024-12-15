@@ -1,7 +1,7 @@
 import { IHomeReducer } from "./reducer";
 import { IProject } from "@comp/projects/types";
 import { RootState } from "@root/store";
-import { slice } from "ramda";
+import { PopularProjectResponse } from "./types";
 
 // export const selectDisplayedStarredProjects = (
 //     store: IStore
@@ -106,19 +106,17 @@ import { slice } from "ramda";
 //     }
 // );
 
-export const selectPopularProjectsFetchOffset = (
-    store: RootState
-): number[] => {
+export const selectPopularProjectsFetchOffset = (store: RootState): number => {
     const state: IHomeReducer = store.HomeReducer;
-    return [state.popularProjectsOffset, state.popularProjectsTotalRecords];
+    return state.popularProjectsOffset;
 };
 
 export const selectPopularProjectsSlice =
     (from: number, to: number) =>
-    (store: RootState): IProject[] => {
+    (store: RootState): PopularProjectResponse[] => {
         const state: IHomeReducer = store.HomeReducer;
         const popularProjects = state.popularProjects;
-        return slice(from, to, popularProjects);
+        return popularProjects.slice(from, to);
     };
 
 export const selectSearchResult = (store: RootState): IProject[] => {

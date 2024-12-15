@@ -10,3 +10,4 @@ export { newUserCallback as new_user_callback } from "./new_user.js";
 export { projectFileStorageDeleteCallback as project_file_storage_delete_callback } from "./project_file_storage_delete.js";
 export { projectsCounter as projects_counter } from "./projects_counter.js";
 export { randomProjects as random_projects } from "./random_projects.js";
+export { popularProjects as popular_projects } from "./popular_projects.js";

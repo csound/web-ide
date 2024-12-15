@@ -1,11 +1,5 @@
 import admin from "firebase-admin";
-import { initializeApp } from "firebase-admin/app";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
-import { makeLogger } from "./logger.js";
-
-const functionName = "followersCounter";
-initializeApp(undefined, functionName);
-const log = makeLogger("followersCounter");
 
 export const followersCounter = onDocumentWritten(
     "followers/{userUid}",

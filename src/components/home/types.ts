@@ -22,6 +22,18 @@ export interface RandomProjectResponse {
     userUid: string;
 }
 
+export interface PopularProjectResponse {
+    created: Timestamp;
+    description: string;
+    iconBackgroundColor: string | undefined;
+    iconForegroundColor: string | undefined;
+    iconName: string | undefined;
+    name: string;
+    projectUid: string;
+    public: boolean;
+    userUid: string;
+}
+
 interface SearchProjectsRequest {
     type: typeof SEARCH_PROJECTS_REQUEST;
     query: string;
@@ -41,8 +53,7 @@ interface AddUserProfiles {
 
 interface AddPopularProjectsAction {
     type: typeof ADD_POPULAR_PROJECTS;
-    payload: IProject[];
-    totalRecords: number;
+    payload: PopularProjectResponse[];
 }
 
 interface SetPopularProjectsOffsetAction {

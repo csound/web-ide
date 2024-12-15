@@ -14,8 +14,9 @@ import {
 const Home = (): React.ReactElement => {
     const dispatch = useDispatch();
 
-    const [popularProjectsFetchOffset, popularProjectsTotalRecords] =
-        useSelector(selectPopularProjectsFetchOffset);
+    const popularProjectsFetchOffset = useSelector(
+        selectPopularProjectsFetchOffset
+    );
 
     const [currentPopularProjectsOffset, setCurrentPopularProjectsOffset] =
         useState(0);
@@ -30,36 +31,23 @@ const Home = (): React.ReactElement => {
     );
 
     const handlePopularProjectsNextPage = useCallback(() => {
-        if (
-            popularProjectsTotalRecords > 0 &&
-            currentPopularProjectsOffset < popularProjectsTotalRecords
-        ) {
-            let popularProjects;
-            try {
-                popularProjects = fetchPopularProjects(
-                    currentPopularProjectsOffset
-                );
-            } catch (error) {
-                console.error(error);
-            }
-            if (popularProjects) {
-                dispatch(popularProjects);
-                setCurrentPopularProjectsOffset(
-                    currentPopularProjectsOffset + 8
-                );
-            }
+        try {
+            dispatch(fetchPopularProjects(currentPopularProjectsOffset));
+        } catch (error) {
+            console.error(error);
         }
-    }, [dispatch, popularProjectsTotalRecords, currentPopularProjectsOffset]);
+        // if (popularProjects) {
+        //     dispatch(popularProjects);
+        //     setCurrentPopularProjectsOffset(
+        //         currentPopularProjectsOffset + 8
+        //     );
+        // }
+    }, [dispatch, currentPopularProjectsOffset]);
 
     const handlePopularProjectsPreviousPage = useCallback(() => {
-        if (
-            popularProjectsTotalRecords > 0 &&
-            currentPopularProjectsOffset > 0
-        ) {
-            dispatch(fetchPopularProjects(currentPopularProjectsOffset));
-            setCurrentPopularProjectsOffset(currentPopularProjectsOffset - 8);
-        }
-    }, [dispatch, popularProjectsTotalRecords, currentPopularProjectsOffset]);
+        dispatch(fetchPopularProjects(currentPopularProjectsOffset));
+        setCurrentPopularProjectsOffset(currentPopularProjectsOffset - 8);
+    }, [dispatch, currentPopularProjectsOffset]);
 
     useEffect(() => {
         if (popularProjectsFetchOffset < 0) {
@@ -80,8 +68,8 @@ const Home = (): React.ReactElement => {
             <Header />
             <div css={homeBackground}>
                 {/* <Search /> */}
-                <p>Search is being fixed...</p>
-                <PopularProjects
+                {/* <p>Search is being fixed...</p> */}
+                {/* <PopularProjects
                     projects={currentPopularProjectsPagination || []}
                     handlePopularProjectsNextPage={
                         handlePopularProjectsNextPage
@@ -89,13 +77,8 @@ const Home = (): React.ReactElement => {
                     handlePopularProjectsPreviousPage={
                         handlePopularProjectsPreviousPage
                     }
-                    hasNext={
-                        popularProjectsTotalRecords > 0 &&
-                        currentPopularProjectsOffset <
-                            popularProjectsTotalRecords
-                    }
                     hasPrevious={currentPopularProjectsOffset > 0}
-                />
+                /> */}
                 <RandomProjects />
             </div>
         </>

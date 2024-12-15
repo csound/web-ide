@@ -19,7 +19,7 @@ import {
     Photo,
     ProjectCardContentBottomID
 } from "./home-ui";
-import { RandomProjectResponse } from "./types";
+import { RandomProjectResponse, PopularProjectResponse } from "./types";
 import * as SS from "./styles";
 
 export const ProjectCardSkeleton = ({ theme }: { theme: Theme }) => (
@@ -38,7 +38,7 @@ export const ProjectCard = ({
 }: {
     projectIndex: number;
     profile: IProfile;
-    project: IProject | RandomProjectResponse;
+    project: IProject | RandomProjectResponse | PopularProjectResponse;
 }) => {
     return (
         <ProjectCardContainer duration={200} projectIndex={projectIndex}>

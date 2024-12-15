@@ -10,12 +10,11 @@ import {
 } from "./types";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
-import { RandomProjectResponse } from "./types";
+import { RandomProjectResponse, PopularProjectResponse } from "./types";
 
 export interface IHomeReducer {
-    popularProjects: IProject[];
+    popularProjects: PopularProjectResponse[];
     popularProjectsOffset: number;
-    popularProjectsTotalRecords: number;
     profiles: { [uid: string]: IProfile };
     searchProjectsRequest: boolean;
     searchResult: IProject[];
@@ -29,7 +28,6 @@ export interface IHomeReducer {
 const INITIAL_STATE: IHomeReducer = {
     popularProjects: [],
     popularProjectsOffset: -1,
-    popularProjectsTotalRecords: -1,
     profiles: {},
     searchProjectsRequest: false,
     searchResult: [],
@@ -76,8 +74,7 @@ const HomeReducer = (
         case ADD_POPULAR_PROJECTS: {
             return {
                 ...state,
-                popularProjects: [...state.popularProjects, ...action.payload],
-                popularProjectsTotalRecords: action.totalRecords
+                popularProjects: [...state.popularProjects, ...action.payload]
             };
         }
         case SET_POPULAR_PROJECTS_OFFSET: {

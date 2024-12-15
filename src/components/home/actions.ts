@@ -1,7 +1,7 @@
 import { difference, keys, isEmpty, pluck } from "ramda";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { documentId, getDocs, query, where } from "firebase/firestore";
-import { profiles, projects } from "@config/firestore";
+import { profiles } from "@config/firestore";
 import { RootState } from "@root/store";
 import {
     ADD_USER_PROFILES,
@@ -12,14 +12,11 @@ import {
     SET_POPULAR_PROJECTS_OFFSET,
     SET_RANDOM_PROJECTS_LOADING,
     HomeActionTypes,
-    RandomProjectResponse
+    RandomProjectResponse,
+    PopularProjectResponse
 } from "./types";
 import { IProject } from "@comp/projects/types";
-import {
-    convertProjectSnapToProject,
-    firestoreProjectToIProject
-} from "@comp/projects/utils";
-import { IStarredProjectSearchResult, IStarredProject } from "@db/search";
+import { firestoreProjectToIProject } from "@comp/projects/utils";
 
 const databaseID = process.env.REACT_APP_DATABASE === "DEV" ? "dev" : "prod";
 const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
@@ -28,6 +25,10 @@ const getRandomProjects = httpsCallable<
     { count: number },
     RandomProjectResponse[]
 >(functions, "random_projects");
+const getPopularProjects = httpsCallable<
+    { count: number },
+    PopularProjectResponse[]
+>(functions, "popular_projects");
 
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
@@ -64,7 +65,7 @@ export const searchProjects =
             const projectProfiles = {};
 
             const profilesQuery = await getDocs(
-                (query as any)(profiles, where(documentId(), "in", userIDs))
+                query(profiles, where(documentId(), "in", userIDs))
             );
 
             profilesQuery.forEach((snapshot) => {
@@ -101,8 +102,7 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
         });
         const state = getState().HomeReducer;
 
-        let starsIDs: string[] = [];
-        let totalRecords = 0;
+        let popularProjects: PopularProjectResponse[] = [];
         try {
             // const starsRequest = await fetch(
             //     `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
@@ -110,62 +110,43 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
             // const starredProjects: IStarredProjectSearchResult =
             //     await starsRequest.json();
 
-            const starredProjects = { data: [] };
+            const popularProjectsResponse = await getPopularProjects({
+                count: pageSize
+            });
 
-            starsIDs = starredProjects.data.map(
-                (item: IStarredProject) => item.id
-            );
-
-            totalRecords = 0; //starredProjects.totalRecords as number;
+            popularProjects = []; // popularProjectsResponse.data;
         } catch (error) {
             console.error(error);
         }
 
-        if (!isEmpty(starsIDs)) {
-            const publicProjectsSnapshots = await getDocs(
-                query(
-                    query(projects, where("public", "==", true)),
-                    where(documentId(), "in", starsIDs)
-                )
-            );
-            const popularProjects: IProject[] = await Promise.all(
-                publicProjectsSnapshots.docs.map(
-                    async (snap) => await convertProjectSnapToProject(snap)
-                )
+        const userIDs = popularProjects.map((project) => project.userUid);
+
+        const missingProfiles = difference(userIDs, keys(state.profiles));
+        if (!isEmpty(missingProfiles)) {
+            const projectProfiles = {};
+
+            const profilesQuery = await getDocs(
+                query(profiles, where(documentId(), "in", missingProfiles))
             );
 
-            const userIDs = pluck("userUid", popularProjects);
-
-            const missingProfiles = difference(userIDs, keys(state.profiles));
-            if (!isEmpty(missingProfiles)) {
-                const projectProfiles = {};
-
-                const profilesQuery = await getDocs(
-                    query(profiles, where(documentId(), "in", missingProfiles))
-                );
-
-                profilesQuery.forEach((snapshot) => {
-                    projectProfiles[snapshot.id] = snapshot.data();
-                    if (projectProfiles[snapshot.id]?.userJoinDate) {
-                        projectProfiles[snapshot.id].userJoinDate =
-                            projectProfiles[
-                                snapshot.id
-                            ].userJoinDate.toMillis();
-                    }
-                });
-
-                dispatch({
-                    type: ADD_USER_PROFILES,
-                    payload: projectProfiles
-                });
-            }
+            profilesQuery.forEach((snapshot) => {
+                projectProfiles[snapshot.id] = snapshot.data();
+                if (projectProfiles[snapshot.id]?.userJoinDate) {
+                    projectProfiles[snapshot.id].userJoinDate =
+                        projectProfiles[snapshot.id].userJoinDate.toMillis();
+                }
+            });
 
             dispatch({
-                type: ADD_POPULAR_PROJECTS,
-                payload: popularProjects,
-                totalRecords
+                type: ADD_USER_PROFILES,
+                payload: projectProfiles
             });
         }
+
+        dispatch({
+            type: ADD_POPULAR_PROJECTS,
+            payload: popularProjects
+        });
     };
 };
 

@@ -7,19 +7,18 @@ import RightIcon from "@mui/icons-material/ArrowForward";
 import IconButton from "@mui/material/IconButton";
 import { Theme, useTheme } from "@emotion/react";
 import { ProjectCard, ProjectCardSkeleton } from "./project-card";
+import { PopularProjectResponse } from "./types";
 import * as SS from "./styles";
 
 const PopularProjects = ({
     projects,
     handlePopularProjectsNextPage,
     handlePopularProjectsPreviousPage,
-    hasNext,
     hasPrevious
 }: {
-    projects: IProject[];
+    projects: PopularProjectResponse[];
     handlePopularProjectsNextPage: () => void;
     handlePopularProjectsPreviousPage: () => void;
-    hasNext: boolean;
     hasPrevious: boolean;
 }): React.ReactElement => {
     const theme: Theme = useTheme();
@@ -52,9 +51,9 @@ const PopularProjects = ({
                 <IconButton
                     aria-label="right"
                     data-tip="Next projects"
-                    css={SS.paginationButton(!isLoading && hasNext)}
+                    css={SS.paginationButton(!isLoading)}
                     onClick={handlePopularProjectsNextPage}
-                    disabled={isLoading || !hasNext}
+                    disabled={isLoading}
                 >
                     <RightIcon />
                 </IconButton>
