@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import { onCall } from "firebase-functions/v2/https";
 import { log } from "firebase-functions/logger";
-import { shuffle } from "lodash";
+import { shuffle } from "lodash-es";
 
 let lastUpdate = Date.now();
 let projects: any[] = [];
