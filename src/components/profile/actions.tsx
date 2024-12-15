@@ -1,4 +1,4 @@
-import { RootState } from "../../store/index";
+import { AppThunkDispatch, RootState } from "@root/store";
 import { getDownloadURL, uploadBytes } from "firebase/storage";
 import {
     collection,
@@ -62,18 +62,7 @@ import {
 } from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
-import {
-    assoc,
-    concat,
-    difference,
-    equals,
-    keys,
-    reject,
-    path,
-    pathOr,
-    hasPath,
-    reduce
-} from "ramda";
+import { assoc, difference, keys, path, hasPath } from "ramda";
 
 const addUserProjectAction = (): ProfileActionTypes => {
     return {
@@ -144,7 +133,7 @@ export const addUserProject =
         iconForegroundColor: string,
         iconBackgroundColor: string
     ) =>
-    async (dispatch, getState) => {
+    async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
@@ -219,7 +208,7 @@ export const editUserProject =
         iconForegroundColor: string,
         iconBackgroundColor: string
     ) =>
-    async (dispatch, getState) => {
+    async (dispatch: any, getState: () => RootState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
@@ -261,7 +250,8 @@ const deleteUserProjectAction = (): ProfileActionTypes => {
 };
 
 export const deleteUserProject =
-    (projectUid: string) => async (dispatch, getState) => {
+    (projectUid: string) =>
+    async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
@@ -386,7 +376,7 @@ export const updateUserProfile =
         link3: string,
         backgroundIndex: number
     ) =>
-    async (dispatch, getState) => {
+    async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
@@ -419,7 +409,10 @@ export const editProfile = (
     link2: string,
     link3: string,
     backgroundIndex: number
-): ((dispatch: (any) => void, getState: () => RootState) => Promise<void>) => {
+): ((
+    dispatch: AppThunkDispatch,
+    getState: () => RootState
+) => Promise<void>) => {
     return async (dispatch, getState) => {
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
@@ -469,7 +462,8 @@ export const deleteProject = (project: IProject) => {
 };
 
 export const uploadProfileImage =
-    (loggedInUserUid: string, file: File) => async (dispatch) => {
+    (loggedInUserUid: string, file: File) =>
+    async (dispatch: AppThunkDispatch) => {
         try {
             const uploadStorage = await storageReference(
                 `images/${loggedInUserUid}/profile.jpeg`
@@ -495,7 +489,10 @@ export const uploadProfileImage =
 
 export const playListItem =
     ({ projectUid }: { projectUid: string | false }) =>
-    async (dispatch, getState) => {
+    async (
+        dispatch: AppThunkDispatch,
+        getState: () => RootState
+    ): Promise<void> => {
         const state = getState();
 
         const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
@@ -506,7 +503,7 @@ export const playListItem =
         }
 
         if (projectUid !== currentlyPlayingProject) {
-            await dispatch({
+            dispatch({
                 type: SET_CURRENTLY_PLAYING_PROJECT,
                 projectUid: undefined
             });
@@ -523,20 +520,19 @@ export const playListItem =
         let timestampMismatch = false;
 
         if (projectIsCached && projectHasLastModule) {
-            const cachedTimestamp: Timestamp | undefined = path(
-                [
-                    "ProjectsReducer",
-                    "projects",
-                    projectUid,
-                    "cachedProjectLastModified"
-                ],
-                state
-            );
-            const currentTimestamp: Timestamp | undefined = path(
-                ["ProjectLastModifiedReducer", projectUid, "timestamp"],
-                state
-            );
-            if (cachedTimestamp && currentTimestamp) {
+            const cachedTimestamp: Timestamp | number | undefined =
+                state.ProjectsReducer.projects[projectUid]
+                    .cachedProjectLastModified;
+
+            const currentTimestamp: Timestamp | number | undefined =
+                state.ProjectLastModifiedReducer[projectUid].timestamp;
+
+            if (
+                cachedTimestamp &&
+                currentTimestamp &&
+                typeof cachedTimestamp === "object" &&
+                typeof currentTimestamp === "object"
+            ) {
                 timestampMismatch =
                     (cachedTimestamp as Timestamp).toMillis() !==
                     (currentTimestamp as Timestamp).toMillis();
@@ -558,7 +554,7 @@ export const playListItem =
 
         if (playAction) {
             (playAction as any)(dispatch);
-            await dispatch({
+            dispatch({
                 type: SET_CURRENTLY_PLAYING_PROJECT,
                 projectUid
             });
@@ -570,7 +566,7 @@ export const playListItem =
 export const storeProfileProjectsCount = (
     projectsCount: ProjectsCount,
     profileUid: string
-): Record<string, any> => {
+) => {
     return {
         type: STORE_PROFILE_PROJECTS_COUNT,
         projectsCount,
@@ -578,10 +574,7 @@ export const storeProfileProjectsCount = (
     };
 };
 
-export const storeUserProfile = (
-    profile: IProfile,
-    profileUid: string
-): Record<string, any> => {
+export const storeUserProfile = (profile: IProfile, profileUid: string) => {
     return {
         type: STORE_USER_PROFILE,
         profile,
@@ -592,7 +585,7 @@ export const storeUserProfile = (
 export const storeProfileStars = (
     stars: Record<string, Timestamp>,
     profileUid: string
-): Record<string, any> => {
+) => {
     return {
         type: STORE_PROFILE_STARS,
         profileUid,

@@ -4,10 +4,6 @@ import Tooltip from "@mui/material/Tooltip";
 import SVGPaths from "@elem/svg-icons";
 import ProjectAvatar from "@elem/project-avatar";
 import { IProject } from "@comp/projects/types";
-import { addUserProject, editUserProject } from "./actions";
-import { openSnackbar } from "../snackbar/actions";
-import { SnackbarType } from "../snackbar/types";
-import { closeModal } from "../modal/actions";
 import { SliderPicker } from "react-color";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
@@ -18,6 +14,10 @@ import styled from "@emotion/styled";
 import IconButton from "@mui/material/IconButton";
 import ReactAutosuggestExample from "./tag-auto-suggest";
 import { isEmpty } from "ramda";
+import { addUserProject, editUserProject } from "./actions";
+import { openSnackbar } from "../snackbar/actions";
+import { SnackbarType } from "../snackbar/types";
+import { closeModal } from "../modal/actions";
 
 const avatarContainer = css`
     margin-left: -16px;
@@ -85,7 +85,7 @@ interface IProjectModal {
     newProject: boolean;
 }
 
-export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
+export const ProjectModal = (properties: IProjectModal) => {
     const [name, setName] = useState(properties.name);
     const [description, setDescription] = useState(properties.description);
     const [iconName, setIconName] = useState(properties.iconName);
@@ -98,7 +98,9 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
     );
 
     const [popupState, setPopupState] = useState(false);
-    const [anchorElement, setAnchorElement] = useState();
+    const [anchorElement, setAnchorElement] = useState(
+        null as HTMLSpanElement | null
+    );
     const dispatch = useDispatch();
     // const currentTags = useSelector(selectTags(properties.projectID));
     const [modifiedTags, setModifiedTags] = useState([]);
@@ -146,10 +148,12 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
     };
     const textFieldStyle = { marginBottom: 12, marginRight: 5 };
 
-    const handleProfileDropDown = (event) => {
+    const handleProfileDropDown = (
+        event: React.MouseEvent<HTMLSpanElement>
+    ) => {
         event.preventDefault();
         setPopupState(!popupState);
-        setAnchorElement(event.currentTarget);
+        setAnchorElement(event.currentTarget as HTMLSpanElement);
     };
 
     const handlePopoverClose = () => {
@@ -266,7 +270,7 @@ export const ProjectModal = (properties: IProjectModal): React.ReactElement => {
                                 ? iconForegroundColor
                                 : iconBackgroundColor
                         }
-                        onChangeComplete={(event) => {
+                        onChangeComplete={(event: { hex: string }) => {
                             if (foregroundColor) {
                                 setIconForegroundColor(event.hex);
                             } else {

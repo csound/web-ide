@@ -14,12 +14,12 @@ import {
 import { getAuth } from "firebase/auth";
 import HotKeys from "@comp/hot-keys/hot-keys";
 
-const Main = (): React.ReactElement => {
+const Main = () => {
     const dispatch = useDispatch();
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 
     useEffect(() => {
-        let unsubscribeLoggedInUserProfile;
+        let unsubscribeLoggedInUserProfile: () => void;
         // the observer doesn't know if the login state
         // change is a result of manual login or autologin
         // we determine this from a timeout

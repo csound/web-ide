@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { configure, GlobalHotKeys, KeyMap } from "react-hotkeys";
-import { selectUpdateCounter, selectKeyBindings } from "./selectors";
 import { useSelector } from "react-redux";
 import { assoc, reduce } from "ramda";
 import { IHotKeysCallbacks } from "./types";
 import { keyboardCallbacks } from "./index";
+import { RootState } from "@root/store";
 
 configure({
     // logLevel: "verbose",
@@ -29,8 +29,12 @@ const HotKeys = ({
 }): React.ReactElement => {
     // prevent leak into the manual iframe
     const insideIframe = !!window.frameElement;
-    const bindings: KeyMap = useSelector(selectKeyBindings) as KeyMap;
-    const updateCounter: number = useSelector(selectUpdateCounter);
+    const bindings: KeyMap = useSelector(
+        (store: RootState) => store.HotKeysReducer.bindings
+    ) as KeyMap;
+    const updateCounter: number = useSelector(
+        (store: RootState) => store.HotKeysReducer.updateCounter
+    );
 
     // all callbacks that aren't bound must be noop callbacks
     const safeCallbacks = useMemo(

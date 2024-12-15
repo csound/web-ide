@@ -63,66 +63,6 @@ export interface IProperties {
     variant: SnackbarType;
 }
 
-const SnackbarContentWrapper = (properties: IProperties) => {
-    const theme = useTheme();
-    const { className, message, onClose, variant, ...rest } = properties;
-
-    let Icon;
-    let cssClass;
-
-    // switch (variant) {
-    //     case SnackbarType.Info: {
-    //         Icon = variantIcon["info"];
-    //         cssClass = classes["info"];
-    //         break;
-    //     }
-    //     case SnackbarType.Warning: {
-    //         Icon = variantIcon["warning"];
-    //         cssClass = classes["warning"];
-    //         break;
-    //     }
-    //     case SnackbarType.Success: {
-    //         Icon = variantIcon["success"];
-    //         cssClass = classes["success"];
-    //         break;
-    //     }
-    //     case SnackbarType.Error: {
-    //         Icon = variantIcon["error"];
-    //         cssClass = classes["error"];
-    //         break;
-    //     }
-    //     default: {
-    //         Icon = variantIcon["error"];
-    //         cssClass = classes["error"];
-
-    //         break;
-    //     }
-    // }
-
-    return (
-        <SnackbarContent
-            aria-describedby="client-snackbar"
-            message={
-                <span id="client-snackbar">
-                    <Icon />
-                    {message}
-                </span>
-            }
-            action={[
-                <IconButton
-                    key="close"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={onClose}
-                >
-                    <CloseIcon />
-                </IconButton>
-            ]}
-            {...rest}
-        />
-    );
-};
-
 const CustomSnackbar = (): React.ReactElement => {
     const type = useSelector(selectSnackbarType);
     const text = useSelector(selectSnackbarText);

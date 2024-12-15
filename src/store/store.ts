@@ -9,7 +9,7 @@ import {
     useDispatch as useDispatchOriginal,
     useSelector as useSelectorOriginal
 } from "react-redux";
-import RootReducer from "./root-reducer";
+import { reducer } from "./root-reducer";
 import { createReduxHistoryContext } from "redux-first-history";
 import { createBrowserHistory } from "history";
 
@@ -23,7 +23,7 @@ const { createReduxHistory, routerMiddleware, routerReducer } =
         history: createBrowserHistory()
     });
 
-const rootReducer = RootReducer({ routerReducer });
+const rootReducer = { ...reducer, router: routerReducer };
 
 export const store = configureStore({
     reducer: rootReducer,

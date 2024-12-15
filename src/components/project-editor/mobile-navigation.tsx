@@ -12,7 +12,7 @@ const MobileNavigation = ({
     setMobileTabIndex
 }: {
     mobileTabIndex: number;
-    setMobileTabIndex: (number) => void;
+    setMobileTabIndex: (index: number) => void;
 }): React.ReactElement => {
     return (
         <BottomNavigation

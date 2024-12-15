@@ -68,9 +68,12 @@ const storeTabDockState = (
 };
 
 const ProjectEditorReducer = (
-    state: IProjectEditorReducer,
+    state: IProjectEditorReducer | undefined,
     action: Record<string, any>
 ): IProjectEditorReducer => {
+    if (!state) {
+        return initialLayoutState();
+    }
     switch (action.type) {
         case MANUAL_LOOKUP_STRING: {
             return pipe(
@@ -256,7 +259,7 @@ const ProjectEditorReducer = (
             return assoc("fileTreeVisible", action.open, state);
         }
         default: {
-            return state || initialLayoutState();
+            return state;
         }
     }
 };

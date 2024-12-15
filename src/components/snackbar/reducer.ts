@@ -1,6 +1,7 @@
 import {
     OPEN_SNACKBAR,
     CLOSE_SNACKBAR,
+    OpenSnackbar,
     SnackbarType,
     SnackbarActionTypes
 } from "./types";
@@ -20,11 +21,16 @@ const INITIAL_STATE: ISnackbarReducer = {
 };
 
 const SnackbarReducer = (
-    state = INITIAL_STATE,
-    action: SnackbarActionTypes
+    state: ISnackbarReducer | undefined,
+    unknownAction: SnackbarActionTypes
 ): ISnackbarReducer => {
-    switch (action.type) {
+    if (!state) {
+        return INITIAL_STATE;
+    }
+
+    switch (unknownAction.type) {
         case OPEN_SNACKBAR: {
+            const action = unknownAction as OpenSnackbar;
             return {
                 ...state,
                 ...action.payload,

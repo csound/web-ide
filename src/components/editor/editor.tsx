@@ -98,7 +98,7 @@ const CodeEditor = ({
     const currentDocumentValue: string = propOr("", "currentValue", document);
 
     const onChange = useCallback(
-        (event) => {
+        (event: any) => {
             if (event?.state?.doc) {
                 dispatch(
                     projectActions.updateDocumentValue(

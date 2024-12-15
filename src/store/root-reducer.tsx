@@ -1,4 +1,4 @@
-import { combineReducers, Reducer } from "redux";
+import { Reducer } from "redux";
 import BottomTabsReducer from "@comp/bottom-tabs/reducer";
 import ConsoleReducer from "@comp/console/reducer";
 import CsoundReducer from "@comp/csound/reducer";
@@ -16,25 +16,44 @@ import SnackbarReducer from "@comp/snackbar/reducer";
 import TargetControlsReducer from "@comp/target-controls/reducer";
 import ThemeReducer from "@comp/themes/reducer";
 
-const RootReducer = ({ routerReducer }: { routerReducer: any }): Reducer =>
-    combineReducers({
-        router: routerReducer,
-        ProjectsReducer,
-        LoginReducer,
-        ProjectEditorReducer,
-        userProfile: IDReducer,
-        csound: CsoundReducer,
-        FileTreeReducer,
-        ThemeReducer,
-        ModalReducer,
-        ConsoleReducer,
-        ProfileReducer,
-        SnackbarReducer,
-        HotKeysReducer,
-        TargetControlsReducer,
-        ProjectLastModifiedReducer,
-        BottomTabsReducer,
-        HomeReducer
-    });
+// const RootReducer = ({ routerReducer }: { routerReducer: any }): Reducer =>
+//     combineReducers({
+//         router: routerReducer,
+//         ProjectsReducer,
+//         LoginReducer,
+//         ProjectEditorReducer,
+//         userProfile: IDReducer,
+//         csound: CsoundReducer,
+//         FileTreeReducer,
+//         ThemeReducer,
+//         ModalReducer,
+//         ConsoleReducer,
+//         ProfileReducer,
+//         SnackbarReducer,
+//         HotKeysReducer,
+//         TargetControlsReducer,
+//         ProjectLastModifiedReducer,
+//         BottomTabsReducer,
+//         HomeReducer
+//     });
 
-export default RootReducer;
+// export default RootReducer;
+
+export const reducer = {
+    ProjectsReducer,
+    LoginReducer,
+    ProjectEditorReducer,
+    userProfile: IDReducer,
+    csound: CsoundReducer,
+    FileTreeReducer,
+    ThemeReducer,
+    ModalReducer,
+    ConsoleReducer,
+    ProfileReducer,
+    SnackbarReducer,
+    HotKeysReducer,
+    TargetControlsReducer,
+    ProjectLastModifiedReducer,
+    BottomTabsReducer,
+    HomeReducer
+};

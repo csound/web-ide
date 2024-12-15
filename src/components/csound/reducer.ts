@@ -6,15 +6,18 @@ export interface ICsoundReducer {
 }
 
 const CsoundReducer = (
-    state: ICsoundReducer,
+    state: ICsoundReducer | undefined,
     action: Record<string, any>
 ): ICsoundReducer => {
+    if (!state) {
+        return { status: "initialized" };
+    }
     switch (action.type) {
         case SET_CSOUND_PLAY_STATE: {
             return assoc("status", action.status, state);
         }
         default: {
-            return state || { status: "initialized" };
+            return state;
         }
     }
 };

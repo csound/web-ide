@@ -20,7 +20,7 @@ import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import { closeModal } from "./actions";
 
-function getModalStyle(width, height) {
+function getModalStyle(width: number, height: number) {
     if (!width || !height) {
         return {};
     }
@@ -33,7 +33,7 @@ function getModalStyle(width, height) {
     };
 }
 
-export default function GlobalModal(): React.ReactElement {
+export default function GlobalModal() {
     const modalReference: RefObject<HTMLDivElement | null> = useRef(null);
     const [[width, height], setDimensions] = useState([0, 0]);
     const dispatch = useDispatch();
@@ -71,7 +71,7 @@ export default function GlobalModal(): React.ReactElement {
             }
         }
         const resizeObserver = new ResizeObserver(handleResize);
-        let copiedReference;
+        let copiedReference: HTMLDivElement | null = null;
         setTimeout(() => {
             if (modalReference.current) {
                 resizeObserver.observe(
@@ -96,7 +96,7 @@ export default function GlobalModal(): React.ReactElement {
                     "profile-edit-dialog",
                     "add-document-prompt",
                     "new-folder-prompt"
-                ].includes(modalComponentName)
+                ].includes(modalComponentName || "")
                     ? onClose
                     : modalProperties.disableOnClose
                       ? always
@@ -121,31 +121,31 @@ export default function GlobalModal(): React.ReactElement {
                         <KeyboardShortcuts {...modalProperties} />
                     )}
                     {modalComponentName === "new-document-prompt" && (
-                        <NewDocumentPrompt {...modalProperties} />
+                        <NewDocumentPrompt {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "delete-document-prompt" && (
-                        <DeleteDocumentPrompt {...modalProperties} />
+                        <DeleteDocumentPrompt {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "add-document-prompt" && (
-                        <AddDocumentPrompt {...modalProperties} />
+                        <AddDocumentPrompt {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "new-folder-prompt" && (
-                        <NewFolderPrompt {...modalProperties} />
+                        <NewFolderPrompt {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "close-unsaved-prompt" && (
-                        <CloseUnsavedFilePrompt {...modalProperties} />
+                        <CloseUnsavedFilePrompt {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "new-project-prompt" && (
-                        <ProjectModal {...modalProperties} />
+                        <ProjectModal {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "profile-edit-dialog" && (
-                        <ProfileModal {...modalProperties} />
+                        <ProfileModal {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "delete-project-prompt" && (
-                        <DeleteProjectModal {...modalProperties} />
+                        <DeleteProjectModal {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "project-finalize" && (
-                        <ProfileFinalize {...modalProperties} />
+                        <ProfileFinalize {...(modalProperties as any)} />
                     )}
                 </div>
             </Fade>

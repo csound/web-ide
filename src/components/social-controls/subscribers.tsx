@@ -1,18 +1,18 @@
 import { STORE_PROJECT_STARS } from "@comp/projects/types";
 import { stars } from "@config/firestore";
-import { doc, onSnapshot } from "firebase/firestore";
+import { Timestamp, doc, onSnapshot } from "firebase/firestore";
 
 export const subscribeToProjectStars = (
     projectUid: string,
-    dispatch: (any) => void
+    dispatch: (store: any) => void
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(stars, projectUid),
         (stars) => {
             const starsData = stars.data();
-            const starsDataSerializeable = {};
+            const starsDataSerializeable: Record<string, number> = {};
             for (const sdk in starsData) {
-                const sdkd = starsData[sdk];
+                const sdkd: Timestamp = starsData[sdk];
                 if (typeof sdkd === "object") {
                     starsDataSerializeable[sdk] = sdkd.toMillis();
                 }

@@ -27,13 +27,7 @@ const PopularProjects = ({
         return path(["HomeReducer", "profiles"], store);
     });
 
-    const isLoading = useSelector((store: RootState) => {
-        const totalRecords = path(
-            ["HomeReducer", "popularProjectsTotalRecords"],
-            store
-        );
-        return totalRecords < 0 || (isEmpty(projects) && totalRecords > 0);
-    });
+    const isLoading = false;
 
     return (
         <>

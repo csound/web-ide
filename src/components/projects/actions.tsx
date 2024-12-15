@@ -1,4 +1,4 @@
-import { RootState, store } from "@root/store";
+import { AppThunkDispatch, RootState, store } from "@root/store";
 import { getDownloadURL } from "firebase/storage";
 import {
     collection,
@@ -10,7 +10,7 @@ import {
     updateDoc,
     writeBatch
 } from "firebase/firestore";
-import { push } from "connected-react-router/esm/index.js";
+import { push } from "connected-react-router";
 import { CsoundObj } from "@csound/browser";
 import { tabDockInit } from "@comp/project-editor/actions";
 import {
@@ -49,7 +49,8 @@ import {
     UNSET_PROJECT,
     IProject,
     IDocument,
-    IDocumentsMap
+    IDocumentsMap,
+    CsoundFile
 } from "./types";
 import { ITarget } from "@comp/target-controls/types";
 import {
@@ -162,10 +163,8 @@ export const closeProject = () => {
     };
 };
 
-export const activateProject = (
-    projectUid: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const activateProject = (projectUid: string) => {
+    return async (dispatch: AppThunkDispatch) => {
         dispatch({
             type: ACTIVATE_PROJECT,
             projectUid
@@ -173,16 +172,18 @@ export const activateProject = (
     };
 };
 
-export const storeProjectLocally = (
-    projects: Array<IProject>
-): Record<string, any> => {
+export const storeProjectLocally = (projects: Array<IProject>) => {
+    const projectsWithoutTimestamps = projects.map((project) => ({
+        created: project.created?.toMillis() || undefined,
+        lastModified: undefined
+    }));
     return {
         type: STORE_PROJECT_LOCALLY,
-        projects
+        projects: projectsWithoutTimestamps
     };
 };
 
-export const unsetProject = (projectUid: string): Record<string, any> => {
+export const unsetProject = (projectUid: string) => {
     return {
         type: UNSET_PROJECT,
         projectUid
@@ -449,7 +450,7 @@ export const newFolder = (projectUid: string) => {
     return openSimpleModal("new-folder-prompt", { projectUid });
 };
 
-export const newDocument = (projectUid: string, initFilename) => {
+export const newDocument = (projectUid: string, initFilename: string) => {
     return openSimpleModal("new-document-prompt", {
         isRenameAction: false,
         initFilename,
@@ -487,7 +488,10 @@ export const removeDocumentLocally = (
     };
 };
 
-export const renameDocument = (projectUid: string, documentUid: string) => {
+export const renameDocument = (
+    projectUid: string,
+    documentUid: string
+): any => {
     const state = store.getState() as RootState;
     const project: IProject = pathOr(
         {} as IProject,
@@ -511,7 +515,10 @@ export const renameDocument = (projectUid: string, documentUid: string) => {
     });
 };
 
-const createExportPath = (folders, document_): string => {
+const createExportPath = (
+    folders: Record<string, IDocument>,
+    document_: CsoundFile
+): string => {
     if (!folders || pathOr([], ["path"], document_).length === 0) {
         return document_.filename;
     }
@@ -538,11 +545,14 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
             const folder = zip.folder("project") as any;
             const documents = Object.values(project.documents);
 
-            const folders = documents
+            const folders: Record<string, IDocument> = documents
                 .filter((d) => d.type === "folder")
-                .reduce((m, f) => {
-                    return { ...m, [f.documentUid]: f };
-                }, {});
+                .reduce(
+                    (m, f) => {
+                        return { ...m, [f.documentUid]: f };
+                    },
+                    {} as Record<string, IDocument>
+                );
 
             if (!folders) {
                 console.error(`No folders found.`);
@@ -577,7 +587,7 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
 };
 
 export const markProjectPublic = (projectUid: string, isPublic: boolean) => {
-    return async (dispatch, getState) => {
+    return async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const state = getState();
         const loggedInUserUid = selectLoggedInUid(state);
         if (!loggedInUserUid || !projectUid) {

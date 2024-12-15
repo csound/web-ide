@@ -161,7 +161,7 @@ export const DnDProvider = ({
 
     return (
         <DragDropContext
-            onDragEnd={(result) =>
+            onDragEnd={(result: any) =>
                 dispatch({ type: "handleDrop", payload: result, project })
             }
         >

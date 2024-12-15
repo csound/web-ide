@@ -71,6 +71,15 @@ const MySplit = ({
     onDragStarted,
     onDragFinished,
     children
+}: {
+    primary: string;
+    split: string;
+    minSize: string;
+    maxSize: string;
+    defaultSize: string;
+    onDragStarted: () => void;
+    onDragFinished: () => void;
+    children: React.ReactNode[];
 }) => {
     const filteredChildren = children.filter(Boolean);
     return filteredChildren.length === 1 ? (
@@ -255,7 +264,7 @@ const ProjectEditor = ({
         [] as AnyTab[]
     );
 
-    const closeTab = (documentUid, isModified) => {
+    const closeTab = (documentUid: string, isModified: boolean) => {
         dispatch(tabClose(projectUid, documentUid, isModified));
     };
 
@@ -325,7 +334,13 @@ const ProjectEditor = ({
                 customStyle={TabStyles}
                 showModalButton={false}
                 showArrowButton={"auto"}
-                onTabSequenceChange={({ oldIndex, newIndex }) => {
+                onTabSequenceChange={({
+                    oldIndex,
+                    newIndex
+                }: {
+                    oldIndex: number;
+                    newIndex: number;
+                }) => {
                     dispatch(
                         rearrangeTabs(
                             projectUid,

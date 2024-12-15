@@ -1,6 +1,6 @@
-import { css } from "@emotion/react";
+import { css, Theme } from "@emotion/react";
 
-export const hr = (theme) => css`
+export const hr = (theme: Theme) => css`
     padding: 0;
     background-color: ${theme.line};
     height: 2px;
@@ -15,7 +15,8 @@ export const _shadow = `
 `;
 
 export const shadow = css`
-    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+    box-shadow:
+        0px 2px 4px -1px rgba(0, 0, 0, 0.2),
         0px 4px 5px 0px rgba(0, 0, 0, 0.14),
         0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 `;
@@ -100,7 +101,7 @@ export const bottomInnerShadow = css`
     }
 `;
 
-export const windowHeader = (theme) => css`
+export const windowHeader = (theme: Theme) => css`
     background-color: ${theme.highlightBackgroundAlt};
     top: 0;
     position: absolute;
@@ -121,7 +122,7 @@ export const windowHeader = (theme) => css`
     }
 `;
 
-export const _scrollbars = (theme) => css`
+export const _scrollbars = (theme: Theme) => css`
     scrollbar-width: thin;
     scrollbar-color: ${theme.scrollbar} transparent;
     &::-webkit-scrollbar {

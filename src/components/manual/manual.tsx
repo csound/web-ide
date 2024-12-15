@@ -36,7 +36,9 @@ const formControls = css`
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    transition:
+        border-color ease-in-out 0.15s,
+        box-shadow ease-in-out 0.15s;
 `;
 
 function CsoundManualIndex() {
@@ -51,9 +53,9 @@ function CsoundManualIndex() {
     );
 
     const handleSearch = React.useCallback(
-        (event) => {
-            setFilterString(event.target.value);
-            if (event.target.value) {
+        (event: React.KeyboardEvent<HTMLInputElement>) => {
+            setFilterString(event.currentTarget.value);
+            if (event.currentTarget.value) {
                 const fuse = new Fuse(allDocuments, {
                     shouldSort: true,
                     findAllMatches: true,
@@ -65,7 +67,7 @@ function CsoundManualIndex() {
                 });
 
                 setFilteredDocuments(
-                    fuse.search(event.target.value).map((i) => i.item)
+                    fuse.search(event.currentTarget.value).map((i) => i.item)
                 );
             } else {
                 setFilteredDocuments();
@@ -121,7 +123,7 @@ function CsoundManualIndex() {
                     minLength={1}
                     debounceTimeout={300}
                     value={filterString}
-                    onChange={handleSearch}
+                    onChange={handleSearch as any}
                     type="text"
                     className="manual-main-form-control"
                     placeholder="Search by name or description"

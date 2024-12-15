@@ -1,3 +1,5 @@
+import { UnknownAction } from "redux";
+
 export const OPEN_SNACKBAR = "SNACKBAR.OPEN_SNACKBAR";
 export const CLOSE_SNACKBAR = "SNACKBAR.CLOSE_SNACKBAR";
 
@@ -6,12 +8,12 @@ export interface ISnackbar {
     text: string;
     timeout: number | typeof Number.POSITIVE_INFINITY;
 }
-interface OpenSnackbar {
+export interface OpenSnackbar {
     type: typeof OPEN_SNACKBAR;
     payload: ISnackbar;
 }
 
-interface CloseSnackbar {
+export interface CloseSnackbar {
     type: typeof CLOSE_SNACKBAR;
 }
 
@@ -22,4 +24,4 @@ export enum SnackbarType {
     Success
 }
 
-export type SnackbarActionTypes = OpenSnackbar | CloseSnackbar;
+export type SnackbarActionTypes = OpenSnackbar | CloseSnackbar | UnknownAction;

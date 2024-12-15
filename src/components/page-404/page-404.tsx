@@ -46,7 +46,7 @@ const MessageText = styled.div<ILogoContainer>`
     line-height: 0;
 `;
 
-export const Page404 = (properties) => {
+export const Page404 = (properties: any) => {
     const message =
         get(properties, "location.state.message") || "Page Not Found";
 

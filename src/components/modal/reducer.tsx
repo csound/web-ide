@@ -13,9 +13,12 @@ const initialModalState: IModalReducer = {
 };
 
 const ModalReducer = (
-    state: IModalReducer,
+    state: IModalReducer | undefined,
     action: Record<string, any>
 ): IModalReducer => {
+    if (!state) {
+        return initialModalState;
+    }
     switch (action.type) {
         case "MODAL_CLOSE": {
             return {

@@ -102,7 +102,10 @@ const selectCurrentEditor = (store: RootState): EditorView | undefined => {
     }
 };
 
-const selectDocumentName = (store, projectUid): any | undefined => {
+const selectDocumentName = (
+    store: RootState,
+    projectUid: string
+): string | undefined => {
     const currentTab = selectCurrentTab(store);
     if (currentTab) {
         const documentUid = currentTab.uid;

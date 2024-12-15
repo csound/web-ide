@@ -67,7 +67,7 @@ const EditorLayout = (properties: any) => {
 
 // const RouterAny = Router as any;
 
-const RouterComponent = ({ children }) => {
+const RouterComponent = ({ children }: { children: React.ReactNode }) => {
     return (
         <>
             <BrowserRouter>

@@ -281,7 +281,11 @@ function MenuBar(): JSX.Element {
         [] as number[]
     );
 
-    const reduceRow = (items, openPath: number[], rowNesting: number[]) =>
+    const reduceRow = (
+        items: MenuItemDef[],
+        openPath: number[],
+        rowNesting: number[]
+    ) =>
         reduce(
             (accumulator: React.ReactNode[], item: MenuItemDef) => {
                 const index = accumulator.length;
@@ -340,7 +344,7 @@ function MenuBar(): JSX.Element {
                                         }}
                                     >
                                         {reduceRow(
-                                            item.submenu,
+                                            item.submenu || [],
                                             openPath,
                                             thisRowNesting
                                         )}
@@ -360,7 +364,9 @@ function MenuBar(): JSX.Element {
                                 <p css={SS.paraLabel}>{item.label}</p>
                                 {item.hotKey &&
                                     keyBindings &&
-                                    keyBindings[item.hotKey] && (
+                                    ((keyBindings as any)[
+                                        item.hotKey
+                                    ] as any) && (
                                         <i css={SS.paraLabel}>
                                             {humanizeKeySequence(
                                                 propOr(
@@ -384,7 +390,7 @@ function MenuBar(): JSX.Element {
             items
         );
 
-    const columns = (openPath) =>
+    const columns = (openPath: number[]) =>
         reduce(
             (accumulator: React.ReactNode[], item: MenuItemDef) => {
                 const index = accumulator.length;
@@ -399,7 +405,7 @@ function MenuBar(): JSX.Element {
                     >
                         {!isEmpty(openPath) &&
                             !isEmpty(item.submenu) &&
-                            reduceRow(item.submenu, openPath, [index])}
+                            reduceRow(item.submenu || [], openPath, [index])}
                     </ul>
                 );
                 accumulator.push(

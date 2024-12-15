@@ -1,4 +1,4 @@
-import { store } from "@root/store";
+import { AppThunkDispatch, RootState, store } from "@root/store";
 import {
     doc,
     getDoc,
@@ -53,7 +53,7 @@ import { IProject } from "../projects/types";
 
 export const subscribeToProfile = (
     profileUid: string,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(profiles, profileUid),
@@ -71,7 +71,7 @@ export const subscribeToProfile = (
 
 export const subscribeToFollowing = (
     profileUid: string,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(following, profileUid),
@@ -118,7 +118,7 @@ export const subscribeToFollowing = (
 
 export const subscribeToFollowers = (
     profileUid: string,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(followers, profileUid),
@@ -167,7 +167,7 @@ export const subscribeToFollowers = (
 
 export const subscribeToProjectsCount = (
     profileUid: string,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(projectsCount, profileUid),
@@ -191,7 +191,7 @@ export const subscribeToProjectsCount = (
 
 export const subscribeToProfileStars = (
     profileUid: string,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(profileStars),
@@ -217,7 +217,7 @@ export const subscribeToProfileStars = (
 export const subscribeToProfileProjects = (
     profileUid: string,
     isProfileOwner: boolean,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe = onSnapshot(
         isProfileOwner

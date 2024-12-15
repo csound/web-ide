@@ -1,20 +1,26 @@
 import { curry, find, path, pathOr, propEq, values } from "ramda";
 import { RootState } from "@root/store";
-import { ITarget } from "./types";
+import { ITarget, ITargetMap } from "./types";
 import { IDocument } from "@comp/projects/types";
 import { CsoundObj } from "@csound/browser";
 import { playORCFromString, playCsdFromFs } from "@comp/csound/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
 
-const getDefaultTargetName = (store, projectUid): string | undefined =>
-    path(["TargetControlsReducer", projectUid, "defaultTarget"], store);
+const getDefaultTargetName = (
+    store: RootState,
+    projectUid: string
+): string | undefined => {
+    return store.TargetControlsReducer[projectUid]?.defaultTarget ?? undefined;
+};
 
 export const getDefaultTargetDocument =
     (projectUid: string) =>
     (store: RootState): IDocument | undefined => {
         const targetName = getDefaultTargetName(store, projectUid);
         const maybeDefaultTarget: ITarget | undefined =
-            targetName && store.TargetControlsReducer.targets[targetName];
+            store.TargetControlsReducer.targets && targetName
+                ? store.TargetControlsReducer[projectUid].targets[targetName]
+                : undefined;
 
         const projectCsdFallback = find(
             propEq("filename", "project.csd"),
@@ -41,7 +47,7 @@ export const getDefaultTargetDocument =
                 ? store.ProjectsReducer.projects[projectUid].documents[
                       documentId
                   ]
-                : projectCsdFallback;
+                : (projectCsdFallback as unknown as IDocument);
 
         return targetDocument;
     };
@@ -108,10 +114,9 @@ export const getPlayActionFromTarget =
             store
         );
 
-        const target: ITarget | undefined = path(
-            ["TargetControlsReducer", projectUid, "targets", selectedTarget],
-            store
-        );
+        const target: ITarget | undefined = selectedTarget
+            ? store.TargetControlsReducer[projectUid].targets[selectedTarget]
+            : undefined;
 
         if (!target) {
             return;
@@ -129,9 +134,11 @@ export const getPlayActionFromTarget =
                       target as ITarget
                   );
         const targetDocument: IDocument | undefined =
-            target &&
-            documentId &&
-            store.ProjectsReducer.projects[projectUid].documents[documentId];
+            target && documentId
+                ? store.ProjectsReducer.projects[projectUid].documents[
+                      documentId
+                  ]
+                : undefined;
 
         if (targetDocument && (targetDocument as IDocument).filename) {
             const csoundDocumentType = filenameToCsoundType(

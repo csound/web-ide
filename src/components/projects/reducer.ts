@@ -1,33 +1,16 @@
-import {
-    IProjectsReducer,
-    IProject,
-    ACTIVATE_PROJECT,
-    ADD_PROJECT_DOCUMENTS,
-    DOCUMENT_INITIALIZE,
-    DOCUMENT_RESET,
-    DOCUMENT_RENAME_LOCALLY,
-    DOCUMENT_REMOVE_LOCALLY,
-    DOCUMENT_SAVE,
-    DOCUMENT_UPDATE_VALUE,
-    DOCUMENT_UPDATE_MODIFIED_LOCALLY,
-    CLOSE_PROJECT,
-    SET_PROJECT_PUBLIC,
-    STORE_PROJECT_LOCALLY,
-    STORE_PROJECT_STARS,
-    UNSET_PROJECT
-} from "./types";
-import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "@comp/project-last-modified/types";
-import { generateEmptyDocument } from "./utils";
 import { RootState } from "@root/store";
+import * as ProjectsTypes from "./types";
+import { generateEmptyDocument } from "./utils";
 
-type IProjectMap = { [projectUid: string]: IProject };
+type IProjectMap = { [projectUid: string]: ProjectsTypes.IProject };
 
-const initialProjectsState: IProjectsReducer = {
+const initialProjectsState: ProjectsTypes.IProjectsReducer = {
     activeProjectUid: "",
     projects: {} as IProjectMap
 };
+
 const resetDocumentToSavedValue = (
-    state: RootState,
+    state: ProjectsTypes.IProjectsReducer,
     activeProjectUid: string,
     documentUid: string
 ) => {
@@ -57,235 +40,292 @@ const resetDocumentToSavedValue = (
 };
 
 const ProjectsReducer = (
-    state: IProjectsReducer | undefined,
-    action: Record<string, any>
-): IProjectsReducer => {
-    if (state) {
-        switch (action.type) {
-            case STORE_PROJECT_LOCALLY: {
-                if (!action.projects || action.projects.length === 0) {
-                    return state;
+    state: ProjectsTypes.IProjectsReducer = initialProjectsState,
+    unknownAction: ProjectsTypes.ProjectsActionTypes
+): ProjectsTypes.IProjectsReducer => {
+    switch (unknownAction.type) {
+        case ProjectsTypes.STORE_PROJECT_LOCALLY: {
+            const action =
+                unknownAction as ProjectsTypes.StoreProjectLocallyAction;
+            if (!action.projects || action.projects.length === 0) {
+                return state;
+            }
+
+            const newState = action.projects.reduce((st, proj) => {
+                const existingProject = st.projects?.[proj.projectUid] || {};
+
+                return st.projects?.[proj.projectUid]
+                    ? {
+                          ...st,
+                          projects: {
+                              ...st.projects,
+                              [proj.projectUid]: {
+                                  ...existingProject,
+                                  ...Object.entries(proj).reduce(
+                                      (acc: any, [key, value]) => {
+                                          if (
+                                              ![
+                                                  "tags",
+                                                  "stars",
+                                                  "documents"
+                                              ].includes(key)
+                                          ) {
+                                              acc[key] = value;
+                                          }
+                                          return acc;
+                                      },
+                                      {}
+                                  )
+                              }
+                          }
+                      }
+                    : {
+                          ...st,
+                          projects: {
+                              ...st.projects,
+                              [proj.projectUid]: proj
+                          }
+                      };
+            }, state);
+
+            return newState;
+        }
+
+        case ProjectsTypes.UNSET_PROJECT: {
+            const action = unknownAction as ProjectsTypes.UnsetProjectAction;
+            const {
+                [action.projectUid]: removedProject,
+                ...remainingProjects
+            } = state.projects;
+            return {
+                ...state,
+                projects: remainingProjects
+            };
+        }
+
+        case ProjectsTypes.ADD_PROJECT_DOCUMENTS: {
+            const action =
+                unknownAction as ProjectsTypes.AddProjectDocumentsAction;
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        documents: {
+                            ...state.projects[action.projectUid].documents,
+                            ...action.documents
+                        }
+                    }
                 }
+            };
+        }
 
-                const newState = action.projects.reduce((st, proj) => {
-                    const existingProject =
-                        st.projects?.[proj.projectUid] || {};
+        case ProjectsTypes.SET_PROJECT_PUBLIC: {
+            const action =
+                unknownAction as ProjectsTypes.SetProjectPublicAction;
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        isPublic: action.isPublic
+                    }
+                }
+            };
+        }
 
-                    return st.projects?.[proj.projectUid]
-                        ? {
-                              ...st,
-                              projects: {
-                                  ...st.projects,
-                                  [proj.projectUid]: {
-                                      ...existingProject,
-                                      ...Object.entries(proj).reduce(
-                                          (acc, [key, value]) => {
-                                              if (
-                                                  ![
-                                                      "tags",
-                                                      "stars",
-                                                      "documents"
-                                                  ].includes(key)
-                                              ) {
-                                                  acc[key] = value;
-                                              }
-                                              return acc;
-                                          },
-                                          {}
-                                      )
+        case ProjectsTypes.ACTIVATE_PROJECT: {
+            const action = unknownAction as ProjectsTypes.ActivateProjectAction;
+            return { ...state, activeProjectUid: action.projectUid };
+        }
+
+        case ProjectsTypes.CLOSE_PROJECT: {
+            const action = unknownAction as ProjectsTypes.CloseProjectAction;
+            const { activeProjectUid, ...remainingState } = state;
+            return remainingState;
+        }
+
+        case ProjectsTypes.STORE_PROJECT_STARS: {
+            const action =
+                unknownAction as ProjectsTypes.StoreProjectStarsAction;
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        stars: action.stars
+                    }
+                }
+            };
+        }
+
+        case ProjectsTypes.DOCUMENT_INITIALIZE: {
+            const action =
+                unknownAction as ProjectsTypes.DocumentInitializeAction;
+            const newDocument = generateEmptyDocument(
+                action.documentUid,
+                action.filename
+            );
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        documents: {
+                            ...state.projects[action.projectUid].documents,
+                            [action.documentUid]: newDocument
+                        }
+                    }
+                }
+            };
+        }
+
+        case ProjectsTypes.DOCUMENT_REMOVE_LOCALLY: {
+            const action =
+                unknownAction as ProjectsTypes.DocumentRemoveLocallyAction;
+            const {
+                [action.documentUid]: removedDocument,
+                ...remainingDocuments
+            } = state.projects[action.projectUid].documents;
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        documents: remainingDocuments
+                    }
+                }
+            };
+        }
+
+        case ProjectsTypes.DOCUMENT_RESET: {
+            const action = unknownAction as ProjectsTypes.DocumentResetAction;
+            return state
+                ? resetDocumentToSavedValue(
+                      state,
+                      action.projectUid,
+                      action.documentUid
+                  )
+                : state;
+        }
+
+        case ProjectsTypes.DOCUMENT_SAVE: {
+            const action = unknownAction as ProjectsTypes.DocumentSaveAction;
+
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        documents: {
+                            ...state.projects[action.projectUid].documents,
+                            [action.document.documentUid]: action.document
+                        }
+                    }
+                }
+            };
+        }
+
+        case ProjectsTypes.DOCUMENT_UPDATE_VALUE: {
+            const action =
+                unknownAction as ProjectsTypes.DocumentUpdateValueAction;
+
+            if (!action.documentUid || !action.projectUid || !state)
+                return state;
+
+            const isModifiedLocally =
+                action.val !==
+                state.projects[action.projectUid].documents[action.documentUid]
+                    .savedValue;
+
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        documents: {
+                            ...state.projects[action.projectUid].documents,
+                            [action.documentUid]: {
+                                ...state.projects[action.projectUid].documents[
+                                    action.documentUid
+                                ],
+                                isModifiedLocally,
+                                currentValue: action.val
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        case ProjectsTypes.DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
+            const action =
+                unknownAction as ProjectsTypes.DocumentUpdateModifiedLocallyAction;
+
+            if (!action.documentUid || !state) return state;
+
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: {
+                        ...state.projects[action.projectUid],
+                        documents: {
+                            ...state.projects[action.projectUid].documents,
+                            [action.documentUid]: {
+                                ...state.projects[action.projectUid].documents[
+                                    action.documentUid
+                                ],
+                                isModifiedLocally: action.isModified
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        case ProjectsTypes.DOCUMENT_RENAME_LOCALLY: {
+            const action =
+                unknownAction as ProjectsTypes.DocumentRenameLocallyAction;
+
+            return typeof state.activeProjectUid !== "string"
+                ? state
+                : {
+                      ...state,
+                      projects: {
+                          ...state.projects,
+                          [state.activeProjectUid]: {
+                              ...state.projects[state.activeProjectUid],
+                              documents: {
+                                  ...state.projects[state.activeProjectUid]
+                                      .documents,
+                                  [action.documentUid]: {
+                                      ...state.projects[state.activeProjectUid]
+                                          .documents[action.documentUid],
+                                      filename: action.newFilename
                                   }
                               }
                           }
-                        : {
-                              ...st,
-                              projects: {
-                                  ...st.projects,
-                                  [proj.projectUid]: proj
-                              }
-                          };
-                }, state);
+                      }
+                  };
+        }
 
-                return newState;
-            }
+        case ProjectsTypes.UPDATE_PROJECT_LAST_MODIFIED_LOCALLY: {
+            const action =
+                unknownAction as ProjectsTypes.UpdateProjectLastModifiedLocallyAction;
 
-            case UNSET_PROJECT: {
-                const {
-                    [action.projectUid]: removedProject,
-                    ...remainingProjects
-                } = state.projects;
-                return {
-                    ...state,
-                    projects: remainingProjects
-                };
-            }
-
-            case ADD_PROJECT_DOCUMENTS: {
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            documents: {
-                                ...state.projects[action.projectUid].documents,
-                                ...action.documents
-                            }
-                        }
-                    }
-                };
-            }
-
-            case SET_PROJECT_PUBLIC: {
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            isPublic: action.isPublic
-                        }
-                    }
-                };
-            }
-
-            case ACTIVATE_PROJECT: {
-                return { ...state, activeProjectUid: action.projectUid };
-            }
-
-            case CLOSE_PROJECT: {
-                const { activeProjectUid, ...remainingState } = state;
-                return remainingState;
-            }
-
-            case STORE_PROJECT_STARS: {
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            stars: action.stars
-                        }
-                    }
-                };
-            }
-
-            case DOCUMENT_INITIALIZE: {
-                const newDocument = generateEmptyDocument(
-                    action.documentUid,
-                    action.filename
-                );
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            documents: {
-                                ...state.projects[action.projectUid].documents,
-                                [action.documentUid]: newDocument
-                            }
-                        }
-                    }
-                };
-            }
-
-            case DOCUMENT_REMOVE_LOCALLY: {
-                const {
-                    [action.documentUid]: removedDocument,
-                    ...remainingDocuments
-                } = state.projects[action.projectUid].documents;
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            documents: remainingDocuments
-                        }
-                    }
-                };
-            }
-
-            case DOCUMENT_RESET: {
-                return state
-                    ? resetDocumentToSavedValue(
-                          state,
-                          action.projectUid,
-                          action.documentUid
-                      )
-                    : state;
-            }
-
-            case DOCUMENT_SAVE: {
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            documents: {
-                                ...state.projects[action.projectUid].documents,
-                                [action.document.documentUid]: action.document
-                            }
-                        }
-                    }
-                };
-            }
-
-            case DOCUMENT_UPDATE_VALUE: {
-                if (!action.documentUid || !action.projectUid || !state)
-                    return state;
-
-                const isModifiedLocally =
-                    action.val !==
-                    state.projects[action.projectUid].documents[
-                        action.documentUid
-                    ].savedValue;
-
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            documents: {
-                                ...state.projects[action.projectUid].documents,
-                                [action.documentUid]: {
-                                    ...state.projects[action.projectUid]
-                                        .documents[action.documentUid],
-                                    isModifiedLocally,
-                                    currentValue: action.val
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-
-            case DOCUMENT_UPDATE_MODIFIED_LOCALLY: {
-                if (!action.documentUid || !state) return state;
-
-                return {
-                    ...state,
-                    projects: {
-                        ...state.projects,
-                        [action.projectUid]: {
-                            ...state.projects[action.projectUid],
-                            documents: {
-                                ...state.projects[action.projectUid].documents,
-                                [action.documentUid]: {
-                                    ...state.projects[action.projectUid]
-                                        .documents[action.documentUid],
-                                    isModifiedLocally: action.isModified
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-
-            case DOCUMENT_RENAME_LOCALLY: {
+            if (
+                state &&
+                action.projectUid !== null &&
+                action.projectUid === state.activeProjectUid
+            ) {
                 return typeof state.activeProjectUid !== "string"
                     ? state
                     : {
@@ -294,50 +334,17 @@ const ProjectsReducer = (
                               ...state.projects,
                               [state.activeProjectUid]: {
                                   ...state.projects[state.activeProjectUid],
-                                  documents: {
-                                      ...state.projects[state.activeProjectUid]
-                                          .documents,
-                                      [action.documentUid]: {
-                                          ...state.projects[
-                                              state.activeProjectUid
-                                          ].documents[action.documentUid],
-                                          filename: action.newFilename
-                                      }
-                                  }
+                                  cachedProjectLastModified: action.timestamp
                               }
                           }
                       };
             }
-
-            case UPDATE_PROJECT_LAST_MODIFIED_LOCALLY: {
-                if (
-                    state &&
-                    action.projectUid !== null &&
-                    action.projectUid === state.activeProjectUid
-                ) {
-                    return typeof state.activeProjectUid !== "string"
-                        ? state
-                        : {
-                              ...state,
-                              projects: {
-                                  ...state.projects,
-                                  [state.activeProjectUid]: {
-                                      ...state.projects[state.activeProjectUid],
-                                      cachedProjectLastModified:
-                                          action.timestamp
-                                  }
-                              }
-                          };
-                }
-                return state;
-            }
-
-            default: {
-                return state || initialProjectsState;
-            }
+            return state;
         }
-    } else {
-        return initialProjectsState;
+
+        default: {
+            return state;
+        }
     }
 };
 

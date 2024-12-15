@@ -45,9 +45,13 @@ function getInitialTheme(): IThemeReducer {
 const initialState = getInitialTheme();
 
 const ThemeReducer = (
-    state: IThemeReducer,
+    state: IThemeReducer | undefined,
     action: { newTheme?: string; type: string }
 ): IThemeReducer => {
+    if (!state) {
+        return initialState;
+    }
+
     switch (action.type) {
         case THEMES_CHANGE_THEME: {
             localStorage.setItem("theme", action.newTheme || "");
@@ -74,7 +78,7 @@ const ThemeReducer = (
         }
 
         default: {
-            return state || initialState;
+            return state;
         }
     }
 };

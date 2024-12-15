@@ -7,7 +7,7 @@ import { csoundInstance } from "../csound";
 import { scaleLinear } from "d3-scale";
 
 // resize code used from https://webglfundamentals.org/webgl/lessons/webgl-resizing-the-canvas.html
-function resize(canvas) {
+function resize(canvas: HTMLCanvasElement) {
     // Lookup the size the browser is displaying the canvas.
     const displayWidth = canvas.clientWidth;
     const displayHeight = canvas.clientHeight;

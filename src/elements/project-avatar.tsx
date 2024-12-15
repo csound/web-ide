@@ -42,7 +42,8 @@ const ProjectAvatar = ({
     iconForegroundColor: string | undefined;
 }) => {
     const SVGIcon =
-        SVGComponents[`${iconName}`] || SVGComponents["fadwaveform"];
+        (SVGComponents as any)[`${iconName}`] ||
+        (SVGComponents as any)["fadwaveform"];
 
     return (
         <div

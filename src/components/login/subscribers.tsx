@@ -1,10 +1,11 @@
 import { doc, onSnapshot } from "firebase/firestore";
 import { UPDATE_USER_PROFILE } from "./types";
 import { profiles } from "@config/firestore";
+import { AppThunkDispatch } from "@root/store";
 
 export const subscribeToLoggedInUserProfile = (
     userUid: string,
-    dispatch: (any) => void
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(profiles, userUid),

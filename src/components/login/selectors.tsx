@@ -13,7 +13,7 @@ export const selectErrorCode = ({
 export const selectErrorMessage = ({
     LoginReducer
 }: RootState): string | undefined => {
-    return LoginReducer.errorMessaage;
+    return LoginReducer.errorMessage;
 };
 
 export const selectLoginFail = ({ LoginReducer }: RootState): boolean => {

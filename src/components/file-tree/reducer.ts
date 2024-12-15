@@ -3,6 +3,8 @@ import {
     ADD_NON_CLOUD_FILE,
     CLEANUP_NON_CLOUD_FILES,
     DELETE_NON_CLOUD_FILE,
+    AddNonCloudFileAction,
+    DeleteNonCloudFileAction,
     FileTreeActionTypes
 } from "./types";
 
@@ -14,31 +16,31 @@ const INIT_STATE: IFileTreeReducer = { nonCloudFiles: [] };
 
 const FileTreeReducer = (
     state: IFileTreeReducer | undefined,
-    action: FileTreeActionTypes
+    unknownAction: FileTreeActionTypes
 ): IFileTreeReducer => {
     if (state) {
-        switch (action.type) {
+        switch (unknownAction.type) {
             case ADD_NON_CLOUD_FILE: {
-                return pipe(
-                    assoc(
-                        "nonCloudFiles",
-                        append(action.file.name, state.nonCloudFiles)
-                    )
-                )(state);
+                const action = unknownAction as AddNonCloudFileAction;
+                return {
+                    ...state,
+                    nonCloudFiles: [...state.nonCloudFiles, action.file.name]
+                };
             }
             case DELETE_NON_CLOUD_FILE: {
-                return pipe(
-                    assoc(
-                        "nonCloudFiles",
-                        reject(
-                            (filename: string) => action.filename === filename,
-                            state.nonCloudFiles
-                        )
+                const action = unknownAction as DeleteNonCloudFileAction;
+                return {
+                    ...state,
+                    nonCloudFiles: state.nonCloudFiles.filter(
+                        (filename) => filename !== action.filename
                     )
-                )(state);
+                };
             }
             case CLEANUP_NON_CLOUD_FILES: {
-                return pipe(assoc("nonCloudFiles", []))(state);
+                return {
+                    ...state,
+                    nonCloudFiles: []
+                };
             }
             default: {
                 return state || INIT_STATE;

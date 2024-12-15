@@ -171,14 +171,16 @@ const PanelStyleCustom = styled(PanelStyle)`
 `;
 
 const TabStyles = (isBottom: boolean): Record<string, any> => ({
-    TabList: (properties) => (
+    TabList: (properties: any) => (
         <TabListStyleCustom {...properties} isBottom={isBottom} />
     ),
-    ActionButton: (properties) => (
+    ActionButton: (properties: any) => (
         <ActionButtonStyleCustom {...properties} isBottom={isBottom} />
     ),
-    Tab: (properties) => <TabStyleCustom {...properties} isBottom={isBottom} />,
-    Panel: (properties) => (
+    Tab: (properties: any) => (
+        <TabStyleCustom {...properties} isBottom={isBottom} />
+    ),
+    Panel: (properties: any) => (
         <PanelStyleCustom {...properties} isBottom={isBottom} />
     )
 });

@@ -32,7 +32,7 @@ export const showTargetsConfigDialog = (): ((
 };
 
 export const updateAllTargetsLocally = (
-    dispatch: (any) => void,
+    dispatch: (store: any) => void,
     defaultTarget: string,
     projectUid: string,
     targets: ITargetMap

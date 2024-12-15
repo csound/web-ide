@@ -36,6 +36,8 @@ if (!firebaseApp) {
         target = DEV;
     } else if (process.env.REACT_APP_DATABASE === "PROD") {
         target = PROD;
+    } else {
+        throw new Error("REACT_APP_DATABASE not set");
     }
     // firebase.settings();
     firebaseApp = initializeApp(target);

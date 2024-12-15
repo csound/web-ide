@@ -1,5 +1,5 @@
 import { collection, doc, onSnapshot } from "firebase/firestore";
-import { store } from "@root/store";
+import { store, RootState } from "@root/store";
 import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
 import { IDocument, IDocumentsMap } from "./types";
@@ -32,7 +32,7 @@ import { IFirestoreDocument } from "@root/db/types";
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
-    dispatch: (any) => void,
+    dispatch: (store: RootState) => void,
     csound: CsoundObj | undefined
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
@@ -73,7 +73,7 @@ export const subscribeToProjectFilesChanges = (
                             );
                         }
                     }, values(documents));
-                dispatch(addProjectDocuments(projectUid, documents));
+                dispatch(addProjectDocuments(projectUid, documents) as any);
             }
 
             if (!isEmpty(filesToModify)) {
@@ -101,9 +101,9 @@ export const subscribeToProjectFilesChanges = (
                         const oldFile =
                             currentReduxDocuments[document_.documentUid];
                         const lastPathPrefix = (oldFile.path || [])
-                            .filter((p) => typeof p === "string")
+                            .filter((p: unknown) => typeof p === "string")
                             .map(
-                                (documentUid) =>
+                                (documentUid: string) =>
                                     currentReduxDocuments?.[documentUid]
                                         ?.filename
                             );
@@ -142,7 +142,9 @@ export const subscribeToProjectFilesChanges = (
                                 document_,
                                 newAbsolutePath
                             );
-                        dispatch(saveUpdatedDocument(projectUid, document_));
+                        dispatch(
+                            saveUpdatedDocument(projectUid, document_) as any
+                        );
                     }
                 });
             }
@@ -163,8 +165,8 @@ export const subscribeToProjectFilesChanges = (
                 const uids = documentData.map((d) => d.documentUid);
 
                 uids.forEach((uid) => {
-                    dispatch(tabClose(projectUid, uid, false));
-                    dispatch(removeDocumentLocally(projectUid, uid));
+                    dispatch(tabClose(projectUid, uid, false) as any);
+                    dispatch(removeDocumentLocally(projectUid, uid) as any);
                 });
 
                 await documentData.forEach(async (document_) => {
@@ -192,7 +194,7 @@ export const subscribeToProjectFilesChanges = (
 
 export const subscribeToProjectTargetsChanges = (
     projectUid: string,
-    dispatch: (any) => void
+    dispatch: (store: RootState) => void
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         doc(targets, projectUid),
@@ -215,7 +217,7 @@ export const subscribeToProjectTargetsChanges = (
 
 export const subscribeToProjectChanges = (
     projectUid: string,
-    dispatch: (any) => void,
+    dispatch: (store: RootState) => void,
     csound: CsoundObj | undefined
 ): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(

@@ -5,8 +5,7 @@ import {
     DELETE_NON_CLOUD_FILE,
     NonCloudFile,
     NonCloudFileTreeEntry,
-    DeleteNonCloudFile,
-    CleanupNonCloudFile
+    CleanupNonCloudFileAction
 } from "./types";
 import { TAB_CLOSE } from "@comp/project-editor/types";
 
@@ -34,7 +33,7 @@ export const cleanupNonCloudFiles = ({
     projectUid
 }: {
     projectUid: string;
-}): CleanupNonCloudFile => {
+}): CleanupNonCloudFileAction => {
     for (const openNcf of nonCloudFiles.keys()) {
         store.dispatch({
             type: TAB_CLOSE,

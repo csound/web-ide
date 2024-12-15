@@ -13,8 +13,9 @@ const FollowingList = ({
     filteredFollowing
 }: {
     filteredFollowing: Array<any>;
-}): React.ReactElement => {
+}) => {
     const dispatch = useDispatch();
+    console.log("filteredFollowing", filteredFollowing);
     return (
         <>
             {filteredFollowing.map((p: any, index) => {

@@ -116,7 +116,7 @@ export const editorEvalCode = curry(
             view.state.selection.main.from !== view.state.selection.main.to;
 
         let selection;
-        let context;
+        let context: { from: number; to: number };
 
         if (userHasSelection && !blockEval) {
             selection = view.state.sliceDoc(

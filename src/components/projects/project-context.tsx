@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Path } from "history";
+import { useEffect, useState } from "react";
 import { Audio as AudioSpinner } from "react-loader-spinner";
 import { useParams } from "react-router-dom";
 import { push } from "connected-react-router";
-import { useTheme } from "@emotion/react";
+import { Theme, useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/project-editor/project-editor";
@@ -11,16 +10,16 @@ import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import Header from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
-import * as SS from "./styles";
-import { isEmpty, path, pathOr } from "ramda";
+import { isEmpty, pathOr } from "ramda";
 import { UnknownAction } from "redux";
 import { RootState } from "@root/store";
+import * as SS from "./styles";
 
 interface IProjectContextProperties {
     match: any;
 }
 
-const ForceBackgroundColor = ({ theme }): React.ReactElement => (
+const ForceBackgroundColor = ({ theme }: { theme: Theme }) => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
@@ -37,21 +36,20 @@ const ProjectContext = (properties: IProjectContextProperties) => {
     // this is true when /editor path is missing projectUid
     invalidUrl &&
         dispatch(
-            push({ pathname: "/404" } as Path, {
+            push("/404", {
                 message: "Project not found"
             }) as unknown as UnknownAction
         );
 
     const activeProjectUid: string | undefined = useSelector(
         (store: RootState) =>
-            !invalidUrl && store?.ProjectsReducer?.activeProjectUid
+            !invalidUrl ? store?.ProjectsReducer?.activeProjectUid : undefined
     );
 
-    const project: IProject | undefined = useSelector(
-        (store: RootState) =>
-            activeProjectUid &&
-            !invalidUrl &&
-            store?.ProjectsReducer?.projects?.[activeProjectUid]
+    const project: IProject | undefined = useSelector((store: RootState) =>
+        activeProjectUid && !invalidUrl
+            ? store?.ProjectsReducer?.projects?.[activeProjectUid]
+            : undefined
     );
 
     const tabIndex: number = useSelector(
@@ -70,7 +68,7 @@ const ProjectContext = (properties: IProjectContextProperties) => {
                     ) {
                         error.code === "permission-denied" &&
                             dispatch(
-                                push({ pathname: "/404" } as Path, {
+                                push("/404", {
                                     message: "Project not found"
                                 }) as unknown as UnknownAction
                             );

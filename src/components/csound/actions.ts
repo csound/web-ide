@@ -47,36 +47,39 @@ export const setCsound = (csound: CsoundObj): void => {
     );
 };
 
-export const syncFs = async (
-    csound: CsoundObj,
-    projectUid: string,
-    storeState: RootState
-): Promise<void> => {
-    const documents = storeState.ProjectsReducer.projects[projectUid].documents;
+// // can be deleted?
+// export const syncFs = async (
+//     csound: CsoundObj,
+//     projectUid: string,
+//     storeState: RootState
+// ): Promise<void> => {
+//     const documents = Object.keys(
+//         storeState.ProjectsReducer.projects[projectUid].documents
+//     );
 
-    for (const document of documents) {
-        // reminder: paths are store by document ref and not
-        // the actual filesystem name
-        const realPath = document.path.map((documentId) =>
-            path(
-                [
-                    "ProjectsReducer",
-                    "projects",
-                    projectUid,
-                    "documents",
-                    documentId,
-                    "name"
-                ],
-                storeState
-            )
-        );
-        const filepath = isEmpty(realPath)
-            ? document.filename
-            : realPath.join("/") + "/" + document.filename;
+//     for (const document of documents) {
+//         // reminder: paths are store by document ref and not
+//         // the actual filesystem name
+//         const realPath = document.path.map((documentId: string) =>
+//             path(
+//                 [
+//                     "ProjectsReducer",
+//                     "projects",
+//                     projectUid,
+//                     "documents",
+//                     documentId,
+//                     "name"
+//                 ],
+//                 storeState
+//             )
+//         );
+//         const filepath = isEmpty(realPath)
+//             ? document.filename
+//             : realPath.join("/") + "/" + document.filename;
 
-        await addDocumentToEMFS(projectUid, csound, document, filepath);
-    }
-};
+//         await addDocumentToEMFS(projectUid, csound, document, filepath);
+//     }
+// };
 
 export const playCsdFromFs = ({
     projectUid,
@@ -112,7 +115,6 @@ export const playCsdFromFs = ({
             await csoundObj.setOption("-odac");
 
             const storeState = store.getState();
-            await syncFs(csoundObj, projectUid, storeState);
             const result = await csoundObj.compileCsd(csdPath);
 
             if (result === 0) {
@@ -137,8 +139,6 @@ export const playCsdFromFs = ({
                             );
                         }
                     }
-
-                    await syncFs(csoundObj, projectUid, storeState);
                 });
                 await csoundObj.start();
                 dispatch(setCsoundPlayState("playing"));
@@ -190,7 +190,6 @@ export const playORCFromString = ({
             await csoundObj.setOption("-odac");
 
             const storeState = store.getState();
-            await syncFs(csoundObj, projectUid, storeState);
 
             const result = await csoundObj.compileOrc(orc);
 
@@ -227,7 +226,7 @@ export const resumePausedCsound = () => {
 
 export const renderToDisk = (
     setConsole: any
-): ((dispatch: (any) => void) => void) => {
+): ((dispatch: (store: RootState) => void) => void) => {
     return async (dispatch: any) => {
         const state: RootState = store.getState();
         const project: IProject | undefined = selectActiveProject(state);
@@ -284,8 +283,6 @@ export const renderToDisk = (
             setConsole(append(message + "\n"))
         );
 
-        await syncFs(csound, project.projectUid, state);
-
         const filesPre = await csound.fs.readdir("/");
 
         const targetDocumentName =
@@ -341,8 +338,6 @@ export const renderToDisk = (
                     );
                 }
             }
-
-            await syncFs(csound, project.projectUid, state);
 
             try {
                 await csound.terminateInstance();

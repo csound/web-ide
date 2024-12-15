@@ -1,4 +1,3 @@
-import React from "react";
 import { RootState } from "@root/store";
 import {
     StyledListItemTopRowText,
@@ -10,7 +9,7 @@ import { selectProfileStars } from "../selectors";
 import { ListItemButton, ListItemText } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { push } from "connected-react-router";
-import { isEmpty, prop } from "ramda";
+import { isEmpty } from "ramda";
 import * as SS from "./styles";
 import { UnknownAction } from "redux";
 

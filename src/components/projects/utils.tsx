@@ -1,4 +1,9 @@
-import { doc, getDoc, QueryDocumentSnapshot } from "firebase/firestore";
+import {
+    doc,
+    getDoc,
+    QueryDocumentSnapshot,
+    Timestamp
+} from "firebase/firestore";
 import { getDownloadURL } from "firebase/storage";
 import { Mime } from "mime";
 import { storageReference, projectLastModified } from "@config/firestore";
@@ -154,7 +159,9 @@ export const convertProjectSnapToProject = async (
             lastModifiedData.target.toMillis();
     }
     if (projData.created) {
-        project["created"] = projData.created.toMillis();
+        project.created = Timestamp.fromMillis(
+            (projData.created as Timestamp).toMillis()
+        );
     }
     return project;
 };

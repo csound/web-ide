@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "es6",
-        "lib": ["es6", "dom", "dom.iterable", "esnext", "webworker"],
+        "lib": ["dom", "esnext"],
         "jsxImportSource": "@emotion/react",
         "jsx": "react-jsx",
         "allowJs": true,
@@ -10,15 +10,13 @@
         "allowSyntheticDefaultImports": true,
         "strict": true,
         "strictNullChecks": true,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "noUnusedParameters": false,
         "forceConsistentCasingInFileNames": true,
         "module": "esnext",
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "isolatedModules": true,
         "noEmit": true,
-        "downlevelIteration": true,
         "baseUrl": "src",
         "paths": {
             "@root/*": ["./*"],

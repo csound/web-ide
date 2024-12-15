@@ -1,5 +1,10 @@
 import React, { useState, useCallback } from "react";
-import { useDispatch, useSelector } from "@root/store";
+import {
+    AppThunkDispatch,
+    RootState,
+    useDispatch,
+    useSelector
+} from "@root/store";
 import { getAuth } from "firebase/auth";
 import { uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, doc } from "firebase/firestore";
@@ -37,7 +42,7 @@ import moment from "moment";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { rgba } from "@styles/utils";
-import { useTheme } from "@emotion/react";
+import { Theme, useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
@@ -359,15 +364,15 @@ function FileExtIcon({
 const makeTree = (
     activeProjectUid: string,
     currentTabDocumentUid: string,
-    dispatch,
-    collapseState,
-    setCollapseState,
+    dispatch: AppThunkDispatch,
+    collapseState: Record<string, any>,
+    setCollapseState: (state: Record<string, any>) => void,
     isOwner: boolean,
-    theme,
-    path,
-    [documentIndex, elementArray],
-    filelist
-) => {
+    theme: Theme,
+    path: string[],
+    [documentIndex]: [Record<string, any>, any],
+    filelist: IDocument[]
+): any[] => {
     // Getting all directories (where type is "folder")
     const allDirectories = filelist.filter((file) => file.type === "folder");
 
@@ -407,7 +412,7 @@ const makeTree = (
     const folderClassName = `folder-${
         folderDocument ? folderDocument.documentUid : "root"
     }`;
-    const deleteIcon = (document_) =>
+    const deleteIcon = (document_: IDocument) =>
         isOwner && (
             <Tooltip
                 placement="right"
@@ -425,7 +430,7 @@ const makeTree = (
             </Tooltip>
         );
 
-    const editIcon = (document_) =>
+    const editIcon = (document_: IDocument) =>
         isOwner && (
             <Tooltip
                 placement="right"
@@ -445,19 +450,23 @@ const makeTree = (
             </Tooltip>
         );
 
-    return (currentFiles as IDocument[]).reduce(
-        (
-            [documentIndex_, elementArray_],
-            document_: IDocument,
-            index: number
-        ) => {
+    return currentFiles.reduce(
+        (acc: any[], document_: IDocument, index: number) => {
+            const [documentIndex_, elementArray_] = acc;
+
+            const commonDocumentData = {
+                index,
+                parent: folderDocument ? folderDocument.documentUid : "root"
+            };
+
             if (document_.type === "folder") {
                 const folderPath = [...document_.path, document_.documentUid];
+
                 const FolderIcon = (
                     <ListItemIcon
                         key={`${document_.documentUid}-folder`}
                         css={SS.listItemIcon}
-                        style={{ left: 1 + (24 * path.length - 1) }}
+                        style={{ left: 1 + 24 * (path.length - 1) }}
                     >
                         {collapseState[document_.documentUid] ? (
                             <span css={SS.directoryOpenIcon}>
@@ -480,202 +489,162 @@ const makeTree = (
                     isOwner,
                     theme,
                     folderPath,
-                    [documentIndex_, []],
+                    [documentIndex_, [] as any],
                     newFileList
+                );
+
+                const folderElement = (
+                    <Droppable
+                        key={`${document_.documentUid}`}
+                        droppableId={`${document_.documentUid}`}
+                        direction="vertical"
+                        mode="standard"
+                    >
+                        {(droppableProvided: any, droppableSnapshot: any) => (
+                            <RootReference ref={droppableProvided.innerRef}>
+                                <Draggable
+                                    isDragDisabled={!isOwner}
+                                    draggableId={`${document_.documentUid}`}
+                                    index={index}
+                                >
+                                    {(provided: any) => (
+                                        <ListItem
+                                            ref={provided.innerRef}
+                                            css={
+                                                droppableSnapshot.isDraggingOver
+                                                    ? SS.draggingOver
+                                                    : SS.listItem
+                                            }
+                                            onClick={() =>
+                                                setCollapseState({
+                                                    ...collapseState,
+                                                    [document_.documentUid]:
+                                                        !collapseState[
+                                                            document_
+                                                                .documentUid
+                                                        ]
+                                                })
+                                            }
+                                            className={`folder-${document_.documentUid}`}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            style={{
+                                                ...provided.draggableProps
+                                                    .style,
+                                                paddingLeft: 40,
+                                                height: 36
+                                            }}
+                                        >
+                                            {FolderIcon}
+                                            <Box marginLeft="24px" padding="0">
+                                                {document_.filename}
+                                            </Box>
+                                            <div css={SS.delEditContainer}>
+                                                {deleteIcon(document_)}
+                                                {editIcon(document_)}
+                                            </div>
+                                        </ListItem>
+                                    )}
+                                </Draggable>
+                                <Collapse
+                                    timeout={{ enter: 300, exit: 200 }}
+                                    in={collapseState[document_.documentUid]}
+                                    key={`${document_.documentUid}-collapse`}
+                                >
+                                    {newElementArray}
+                                    <span
+                                        className={`folder-${document_.documentUid}`}
+                                    >
+                                        {droppableProvided.placeholder}
+                                    </span>
+                                </Collapse>
+                            </RootReference>
+                        )}
+                    </Droppable>
                 );
 
                 return [
                     {
                         ...newDocumentIndex,
-                        [document_.documentUid]: {
-                            index,
-                            parent: folderDocument
-                                ? folderDocument.documentUid
-                                : "root"
-                        }
+                        [document_.documentUid]: commonDocumentData
                     },
-                    [
-                        ...elementArray_,
-                        <Droppable
-                            key={`${document_.documentUid}`}
-                            droppableId={`${document_.documentUid}`}
-                            direction="vertical"
-                            mode="standard"
-                        >
-                            {(droppableProvided, droppableSnapshot) => (
-                                <RootReference ref={droppableProvided.innerRef}>
-                                    <Draggable
-                                        isDragDisabled={!isOwner}
-                                        draggableId={`${document_.documentUid}`}
-                                        index={index}
-                                    >
-                                        {(provided, snapshot) => (
-                                            <ListItem
-                                                ref={provided.innerRef}
-                                                css={
-                                                    droppableSnapshot.isDraggingOver
-                                                        ? SS.draggingOver
-                                                        : SS.listItem
-                                                }
-                                                onClick={() =>
-                                                    setCollapseState({
-                                                        ...collapseState,
-                                                        [document_.documentUid]:
-                                                            !collapseState[
-                                                                document_
-                                                                    .documentUid
-                                                            ]
-                                                    })
-                                                }
-                                                className={`folder-${document_.documentUid}`}
-                                                {...provided.draggableProps}
-                                                {...provided.dragHandleProps}
-                                                style={{
-                                                    ...provided.draggableProps
-                                                        .style,
-                                                    paddingLeft: 40,
-                                                    height: 36
-                                                }}
-                                            >
-                                                {FolderIcon}
-                                                <Box
-                                                    marginLeft="24px"
-                                                    padding="0"
-                                                >
-                                                    {document_.filename}
-                                                </Box>
-                                                <div css={SS.delEditContainer}>
-                                                    {deleteIcon(document_)}
-                                                    {editIcon(document_)}
-                                                </div>
-                                            </ListItem>
-                                        )}
-                                    </Draggable>
-
-                                    <Collapse
-                                        timeout={{
-                                            enter: 300,
-                                            exit: 200
-                                        }}
-                                        in={
-                                            collapseState[document_.documentUid]
-                                        }
-                                        key={`${document_.documentUid}-collapse`}
-                                    >
-                                        {newElementArray}
-                                        <span
-                                            className={`folder-${document_.documentUid}`}
-                                        >
-                                            {droppableProvided.placeholder}
-                                        </span>
-                                    </Collapse>
-                                </RootReference>
-                            )}
-                        </Droppable>
-                    ]
+                    [...elementArray_, folderElement]
                 ];
             } else {
+                const fileElement = (
+                    <Droppable
+                        droppableId={`${document_.documentUid}`}
+                        key={`${document_.documentUid}-fragment`}
+                    >
+                        {(droppableProvided: any) => (
+                            <RootReference ref={droppableProvided.innerRef}>
+                                <Draggable
+                                    isDragDisabled={!isOwner}
+                                    draggableId={`${document_.documentUid}`}
+                                    index={index}
+                                >
+                                    {(provided: any) => (
+                                        <ListItem
+                                            ref={provided.innerRef}
+                                            css={SS.listItem}
+                                            className={folderClassName}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            onClick={() =>
+                                                dispatch(
+                                                    tabOpenByDocumentUid(
+                                                        document_.documentUid,
+                                                        activeProjectUid
+                                                    )
+                                                )
+                                            }
+                                            sx={{
+                                                paddingLeft: `${40 + 24 * path.length}px !important`
+                                            }}
+                                            style={{
+                                                ...provided.draggableProps
+                                                    .style,
+                                                height: 36,
+                                                backgroundColor:
+                                                    currentTabDocumentUid ===
+                                                    document_.documentUid
+                                                        ? "rgba(0,0,0,0.2)"
+                                                        : "inherit"
+                                            }}
+                                        >
+                                            <FileExtIcon
+                                                nestingDepth={path.length}
+                                                isBinary={
+                                                    document_.type === "bin"
+                                                }
+                                                filename={document_.filename}
+                                            />
+                                            <p css={SS.filenameStyle}>
+                                                {document_.filename}
+                                            </p>
+                                            <Box css={SS.delEditContainer}>
+                                                {deleteIcon(document_)}
+                                                {editIcon(document_)}
+                                            </Box>
+                                        </ListItem>
+                                    )}
+                                </Draggable>
+                                {droppableProvided.placeholder}
+                            </RootReference>
+                        )}
+                    </Droppable>
+                );
+
                 return [
                     {
                         ...documentIndex_,
-                        [document_.documentUid]: {
-                            index,
-                            parent: folderDocument
-                                ? folderDocument.documentUid
-                                : "root"
-                        }
+                        [document_.documentUid]: commonDocumentData
                     },
-                    [
-                        ...elementArray_,
-                        <Droppable
-                            droppableId={`${document_.documentUid}`}
-                            key={`${document_.documentUid}-fragment`}
-                        >
-                            {(droppableProvided, droppableSnapshot) => (
-                                <RootReference ref={droppableProvided.innerRef}>
-                                    {droppableSnapshot.isDraggingOver && (
-                                        <style>
-                                            {`.${folderClassName} > span.MuiTouchRipple-root` +
-                                                dragHoverCss}
-                                        </style>
-                                    )}
-                                    <React.Fragment>
-                                        <Draggable
-                                            isDragDisabled={!isOwner}
-                                            draggableId={`${document_.documentUid}`}
-                                            index={index}
-                                        >
-                                            {(provided, snapshot) => (
-                                                <ListItem
-                                                    key={document_.documentUid}
-                                                    ref={provided.innerRef}
-                                                    css={SS.listItem}
-                                                    className={folderClassName}
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    onClick={() =>
-                                                        dispatch(
-                                                            tabOpenByDocumentUid(
-                                                                document_.documentUid,
-                                                                activeProjectUid
-                                                            )
-                                                        )
-                                                    }
-                                                    sx={{
-                                                        paddingLeft:
-                                                            40 +
-                                                            24 * path.length +
-                                                            "px !important"
-                                                    }}
-                                                    style={{
-                                                        ...provided
-                                                            .draggableProps
-                                                            .style,
-                                                        height: 36,
-                                                        backgroundColor:
-                                                            currentTabDocumentUid ===
-                                                            document_.documentUid
-                                                                ? "rgba(0,0,0,0.2)"
-                                                                : "inherit"
-                                                    }}
-                                                >
-                                                    <FileExtIcon
-                                                        nestingDepth={
-                                                            path.length
-                                                        }
-                                                        isBinary={
-                                                            document_.type ===
-                                                            "bin"
-                                                        }
-                                                        filename={
-                                                            document_.filename
-                                                        }
-                                                    />
-
-                                                    <p css={SS.filenameStyle}>
-                                                        {document_.filename}
-                                                    </p>
-                                                    <Box
-                                                        css={
-                                                            SS.delEditContainer
-                                                        }
-                                                    >
-                                                        {deleteIcon(document_)}
-                                                        {editIcon(document_)}
-                                                    </Box>
-                                                </ListItem>
-                                            )}
-                                        </Draggable>
-                                    </React.Fragment>
-                                    {droppableProvided.placeholder}
-                                </RootReference>
-                            )}
-                        </Droppable>
-                    ]
+                    [...elementArray_, fileElement as any]
                 ];
             }
         },
-        [documentIndex, elementArray as any[]]
+        [{}, []]
     );
 };
 

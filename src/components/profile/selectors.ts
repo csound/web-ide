@@ -6,6 +6,7 @@ import { IFirestoreProfile } from "@db/types";
 import { path, pathOr, pickBy, propEq, values } from "ramda";
 import Fuse from "fuse.js";
 import { IProject } from "../projects/types";
+import { IProfile } from "./types";
 
 export const selectUserFollowing =
     (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
@@ -18,18 +19,23 @@ export const selectUserFollowing =
         }
     };
 
-export const selectUserProjects =
-    (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
-    (store: RootState) => {
-        if (profileUid) {
-            const state = store.ProjectsReducer.projects;
-            return values(
-                (pickBy as any)(propEq("userUid", profileUid), state)
-            );
-        } else {
-            return [];
-        }
-    };
+export const selectUserProjects = (store: RootState) => {
+    const profileUid: string | undefined =
+        store.router.location.pathname.split("/")[2];
+
+    if (profileUid) {
+        const state = store.ProjectsReducer.projects;
+
+        // Filter projects by matching `userUid` with `profileUid`
+        const filteredProjects = Object.values(state).filter(
+            (project: any) => project.userUid === profileUid
+        );
+
+        return filteredProjects;
+    } else {
+        return [];
+    }
+};
 
 export const selectProjectFilterString = (
     store: RootState
@@ -78,31 +84,25 @@ export const selectLoggedInUserStars = (store: RootState): Array<any> => {
     }
 };
 
-export const selectFilteredUserProjects = (
-    profileUid: string | undefined
-): ((any) => any) =>
-    createSelector(
-        [selectUserProjects(profileUid), selectProjectFilterString],
-        (userProjects, projectFilterString) => {
-            let result: any = [];
-            if (
-                projectFilterString === undefined ||
-                projectFilterString === ""
-            ) {
-                result = userProjects;
-            } else {
-                const options = {
-                    shouldSort: true,
-                    keys: ["description", "name", "tags"]
-                };
+export const selectFilteredUserProjects = createSelector(
+    [selectUserProjects, selectProjectFilterString],
+    (userProjects, projectFilterString) => {
+        let result: any = [];
+        if (projectFilterString === undefined || projectFilterString === "") {
+            result = userProjects;
+        } else {
+            const options = {
+                shouldSort: true,
+                keys: ["description", "name", "tags"]
+            };
 
-                const fuse = new Fuse(userProjects, options);
-                result = fuse.search(projectFilterString).map((x) => x.item);
-            }
-
-            return result;
+            const fuse = new Fuse(userProjects, options);
+            result = fuse.search(projectFilterString).map((x) => x.item);
         }
-    );
+
+        return result;
+    }
+);
 
 export const selectFilteredUserFollowing =
     (profileUid: string): ((store: RootState) => any) =>

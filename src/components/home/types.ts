@@ -1,5 +1,6 @@
 import { IProject } from "@comp/projects/types";
 import { Timestamp } from "firebase/firestore";
+import { UnknownAction } from "redux";
 
 export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
 export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
@@ -34,44 +35,45 @@ export interface PopularProjectResponse {
     userUid: string;
 }
 
-interface SearchProjectsRequest {
+export interface SearchProjectsRequest {
     type: typeof SEARCH_PROJECTS_REQUEST;
     query: string;
     offset: number;
 }
 
-interface SearchProjectsSuccess {
+export interface SearchProjectsSuccess {
     type: typeof SEARCH_PROJECTS_SUCCESS;
     result: IProject[];
     totalRecords: number;
 }
 
-interface AddUserProfiles {
+export interface AddUserProfiles {
     type: typeof ADD_USER_PROFILES;
     payload: any;
 }
 
-interface AddPopularProjectsAction {
+export interface AddPopularProjectsAction {
     type: typeof ADD_POPULAR_PROJECTS;
     payload: PopularProjectResponse[];
 }
 
-interface SetPopularProjectsOffsetAction {
+export interface SetPopularProjectsOffsetAction {
     type: typeof SET_POPULAR_PROJECTS_OFFSET;
     newOffset: number;
 }
 
-interface AddRandomProjectsAction {
+export interface AddRandomProjectsAction {
     type: typeof ADD_RANDOM_PROJECTS;
     payload: RandomProjectResponse[];
 }
 
-interface SetRandomProjectsLoading {
+export interface SetRandomProjectsLoading {
     type: typeof SET_RANDOM_PROJECTS_LOADING;
     isLoading: boolean;
 }
 
 export type HomeActionTypes =
+    | UnknownAction
     | SearchProjectsRequest
     | SearchProjectsSuccess
     | AddUserProfiles

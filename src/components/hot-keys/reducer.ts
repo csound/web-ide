@@ -13,15 +13,19 @@ const INITIAL_STATE: IHotKeys = {
 };
 
 const HotKeysReducer = (
-    state: IHotKeys,
+    state: IHotKeys | undefined,
     action: HotKeysActionTypes
 ): IHotKeys => {
+    if (!state) {
+        return INITIAL_STATE;
+    }
+
     switch (action.type) {
         case UPDATE_COUNTER: {
             return assoc("updateCounter", state.updateCounter + 1, state);
         }
         default: {
-            return state || INITIAL_STATE;
+            return state;
         }
     }
 };

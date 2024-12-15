@@ -27,6 +27,7 @@ import { isEmpty } from "lodash";
 import { push } from "connected-react-router";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
+import { IProfile } from "../profile/types";
 
 export const login = (
     email: string,
@@ -249,7 +250,7 @@ export const thirdPartyAuthSuccess = (
         if (
             profile !== undefined &&
             (!profile.exists ||
-                (profile.data() && isEmpty(profile.data().username)))
+                (profile.data() && isEmpty(profile.data()!.username)))
         ) {
             dispatch(
                 openSimpleModal("project-finalize", {

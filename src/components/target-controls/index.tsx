@@ -32,8 +32,10 @@ const TargetControls = (): React.ReactElement => {
     const savedDefaultTarget: string | undefined = useSelector(
         (store: RootState) => {
             if (!activeProjectUid) return undefined;
-            return store.ProjectsReducer.projects[activeProjectUid]
-                .defaultTarget;
+            return (
+                store.TargetControlsReducer[activeProjectUid].defaultTarget ||
+                undefined
+            );
         }
     );
 

@@ -1,10 +1,10 @@
 import { forwardRef, useEffect } from "react";
-import { FunctionInterpolation, css } from "@emotion/react";
+import { css, Theme } from "@emotion/react";
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 import { perfectScrollbarStyleSheet } from "@styles/_perfect-scrollbar";
 
-const scrollbarContainer: FunctionInterpolation = (theme) => css`
+const scrollbarContainer = (theme: Theme) => css`
     ${perfectScrollbarStyleSheet(theme)}
     position: relative;
     height: auto;

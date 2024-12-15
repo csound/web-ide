@@ -29,11 +29,17 @@ const paranoidNotNullChecker = (item: any): boolean =>
         (item_) => item_ !== null
     ])(item);
 
-const titleTooltip = ({ documents, selectedTarget }) => {
+const titleTooltip = ({
+    documents,
+    selectedTarget
+}: {
+    documents: IDocumentsMap;
+    selectedTarget: ITarget;
+}) => {
     const mainDocument: IDocument | undefined =
-        typeof selectedTarget === "object" &&
-        selectedTarget.targetDocumentUid &&
-        documents[selectedTarget.targetDocumentUid];
+        typeof selectedTarget === "object" && selectedTarget.targetDocumentUid
+            ? documents[selectedTarget.targetDocumentUid]
+            : undefined;
 
     return mainDocument && selectedTarget.targetType === "main"
         ? `main: ${mainDocument.filename}`
@@ -125,9 +131,10 @@ const TargetDropdown = ({
         return <></>;
     }
 
-    const tooltipText = paranoidNotNullChecker(selectedTarget)
-        ? titleTooltip({ documents, selectedTarget })
-        : "No target selected";
+    const tooltipText =
+        documents && selectedTarget && paranoidNotNullChecker(selectedTarget)
+            ? titleTooltip({ documents, selectedTarget })
+            : "No target selected";
 
     return (
         <Tooltip

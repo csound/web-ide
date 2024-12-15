@@ -1,8 +1,15 @@
 import { difference, keys, isEmpty, pluck } from "ramda";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { documentId, getDocs, query, where } from "firebase/firestore";
+import {
+    DocumentData,
+    documentId,
+    getDocs,
+    query,
+    Timestamp,
+    where
+} from "firebase/firestore";
 import { profiles } from "@config/firestore";
-import { RootState } from "@root/store";
+import { AppThunkDispatch, RootState } from "@root/store";
 import {
     ADD_USER_PROFILES,
     ADD_RANDOM_PROJECTS,
@@ -17,6 +24,7 @@ import {
 } from "./types";
 import { IProject } from "@comp/projects/types";
 import { firestoreProjectToIProject } from "@comp/projects/utils";
+import { IProfile } from "../profile/types";
 
 const databaseID = process.env.REACT_APP_DATABASE === "DEV" ? "dev" : "prod";
 const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
@@ -33,7 +41,7 @@ const getPopularProjects = httpsCallable<
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
 export const searchProjects =
-    (query_: string, offset: number) => async (dispatch) => {
+    (query_: string, offset: number) => async (dispatch: AppThunkDispatch) => {
         dispatch({ type: SEARCH_PROJECTS_REQUEST, query: query_, offset });
 
         if (isEmpty(query_)) {
@@ -62,17 +70,19 @@ export const searchProjects =
         const userIDs = pluck("userUid", searchResult);
 
         if (!isEmpty(userIDs)) {
-            const projectProfiles = {};
+            const projectProfiles: Record<string, IProfile> = {};
 
             const profilesQuery = await getDocs(
                 query(profiles, where(documentId(), "in", userIDs))
             );
 
-            profilesQuery.forEach((snapshot) => {
+            profilesQuery.forEach((snapshot: DocumentData) => {
                 projectProfiles[snapshot.id] = snapshot.data();
                 if (projectProfiles[snapshot.id]?.userJoinDate) {
-                    projectProfiles[snapshot.id].userJoinDate =
-                        projectProfiles[snapshot.id].userJoinDate.toMillis();
+                    projectProfiles[snapshot.id].userJoinDate = (
+                        projectProfiles[snapshot.id]
+                            .userJoinDate as unknown as Timestamp
+                    ).toMillis();
                 }
             });
 
@@ -91,7 +101,7 @@ export const searchProjects =
 
 export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
     return async (
-        dispatch: (action: HomeActionTypes) => Promise<void>,
+        dispatch: AppThunkDispatch,
         getState: () => RootState
     ): Promise<void> => {
         const nextOffset = Math.max(0, offset) + pageSize;
@@ -123,17 +133,19 @@ export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
 
         const missingProfiles = difference(userIDs, keys(state.profiles));
         if (!isEmpty(missingProfiles)) {
-            const projectProfiles = {};
+            const projectProfiles: Record<string, IProfile> = {};
 
             const profilesQuery = await getDocs(
                 query(profiles, where(documentId(), "in", missingProfiles))
             );
 
-            profilesQuery.forEach((snapshot) => {
+            profilesQuery.forEach((snapshot: DocumentData) => {
                 projectProfiles[snapshot.id] = snapshot.data();
                 if (projectProfiles[snapshot.id]?.userJoinDate) {
-                    projectProfiles[snapshot.id].userJoinDate =
-                        projectProfiles[snapshot.id].userJoinDate.toMillis();
+                    projectProfiles[snapshot.id].userJoinDate = (
+                        projectProfiles[snapshot.id]
+                            .userJoinDate as unknown as Timestamp
+                    ).toMillis();
                 }
             });
 
@@ -174,17 +186,19 @@ export const fetchRandomProjects = () => {
         const missingProfiles = difference(userIDs, keys(state.profiles));
 
         if (!isEmpty(missingProfiles)) {
-            const projectProfiles = {};
+            const projectProfiles: Record<string, IProfile> = {};
 
             const profilesQuery = await getDocs(
                 query(profiles, where(documentId(), "in", missingProfiles))
             );
 
-            profilesQuery.forEach((snapshot) => {
+            profilesQuery.forEach((snapshot: DocumentData) => {
                 projectProfiles[snapshot.id] = snapshot.data();
                 if (projectProfiles[snapshot.id]?.userJoinDate) {
-                    projectProfiles[snapshot.id].userJoinDate =
-                        projectProfiles[snapshot.id].userJoinDate.toMillis();
+                    projectProfiles[snapshot.id].userJoinDate = (
+                        projectProfiles[snapshot.id]
+                            .userJoinDate as unknown as Timestamp
+                    ).toMillis();
                 }
             });
 

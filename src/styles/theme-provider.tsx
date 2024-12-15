@@ -109,7 +109,11 @@ const globalStyles = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-const CsoundWebIdeThemeProvider = ({ children }) => {
+const CsoundWebIdeThemeProvider = ({
+    children
+}: {
+    children: React.ReactNode;
+}) => {
     const monospaceFont = `'Fira Mono', monospace`;
     const regularFont = ` 'Poppins', sans-serif`;
     // const themeName = useSelector(path(["ThemeReducer", "selectedThemeName"]));

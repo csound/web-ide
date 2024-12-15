@@ -14,16 +14,6 @@ export const selectCurrentRoute = ({ router }: RootState): string => {
 export const selectCurrentProfileRoute = ({
     router
 }: RootState): Array<string | undefined> => {
-    if (notEmpty(match(/^\/profile\//g, router.location.pathname))) {
-        const woPrefix = router.location.pathname.replace(/^\/profile\//g, "");
-        const woPostfix = woPrefix.replace(/\/.*/g, "");
-        if (notEmpty(match(/^\/profile\/.*\/.*/g, router.location.pathname))) {
-            const nestedPath = woPrefix.split("/");
-            return [woPostfix, nestedPath[1]];
-        } else {
-            return [woPostfix, undefined];
-        }
-    } else {
-        return [undefined, undefined];
-    }
+    // console.log("router", router);
+    return router.location;
 };

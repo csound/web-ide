@@ -1,6 +1,5 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "@root/store";
-import { Path } from "history";
 import ProfileLists from "./profile-lists";
 import { useEffect, createRef, useState, RefObject } from "react";
 import { useTheme } from "@emotion/react";
@@ -70,7 +69,7 @@ import {
 } from "./profile-ui";
 import { UnknownAction } from "redux";
 
-const UserLink = ({ link }) => {
+const UserLink = ({ link }: { link: string | undefined }) => {
     return typeof link === "string" ? (
         <a href={link.includes("://") ? link : `https://${link}`}>
             <Typography variant="body1" component="div">
@@ -81,19 +80,41 @@ const UserLink = ({ link }) => {
         <></>
     );
 };
+const routerLocationToProfileUriPath = (
+    location: Location | undefined
+): [string | undefined, string | undefined] => {
+    if (!location) {
+        return [undefined, undefined];
+    }
+    const { pathname } = location;
+
+    if (pathname.startsWith("/profile/")) {
+        const woPrefix = pathname.slice(9); // Remove "/profile/"
+        const [woPostfix, nested] = woPrefix.split("/", 2);
+
+        if (nested) {
+            return [woPostfix, nested];
+        } else {
+            return [woPostfix, undefined];
+        }
+    }
+
+    return [undefined, undefined];
+};
 
 export const Profile = () => {
     const [profileUid, setProfileUid]: [string | undefined, any] = useState();
     const theme = useTheme();
     const dispatch = useDispatch();
-    const [username, profileUriPath] = useSelector(selectCurrentProfileRoute);
+    const location: Location | undefined = useSelector(
+        selectCurrentProfileRoute
+    ) as any;
+    const [username, profileUriPath] = routerLocationToProfileUriPath(location);
+
     const profile = useSelector(selectUserProfile(profileUid));
     const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
-
-    const filteredProjects = useSelector(
-        selectFilteredUserProjects(profileUid)
-    );
+    const filteredProjects = useSelector(selectFilteredUserProjects);
     // const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
@@ -147,13 +168,13 @@ export const Profile = () => {
                         data && data.userUid
                             ? setProfileUid(data.userUid)
                             : dispatch(
-                                  push({ pathname: "/404" } as Path, {
+                                  push("/404", {
                                       message: "User not found"
                                   }) as unknown as UnknownAction
                               );
                     } else {
                         dispatch(
-                            push({ pathname: "/404" } as Path, {
+                            push("/404", {
                                 message: "User not found"
                             }) as unknown as UnknownAction
                         );
@@ -388,7 +409,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}`
-                                                } as Path) as unknown as UnknownAction
+                                                }) as unknown as UnknownAction
                                             );
                                             break;
                                         }
@@ -396,7 +417,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/following`
-                                                } as Path) as unknown as UnknownAction
+                                                }) as unknown as UnknownAction
                                             );
                                             break;
                                         }
@@ -404,7 +425,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/followers`
-                                                } as Path) as unknown as UnknownAction
+                                                }) as unknown as UnknownAction
                                             );
                                             break;
                                         }
@@ -412,7 +433,7 @@ export const Profile = () => {
                                             dispatch(
                                                 push({
                                                     pathname: `/profile/${username}/stars`
-                                                } as Path) as unknown as UnknownAction
+                                                }) as unknown as UnknownAction
                                             );
                                             break;
                                         }
