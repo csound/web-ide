@@ -11,7 +11,7 @@ export const ConsoleProvider = ({
     children
 }: {
     children: React.ReactElement;
-}): React.ReactElement => {
+}) => {
     const [logs, setLogs]: [string[], any] = useState([""]);
 
     useEffect(() => {

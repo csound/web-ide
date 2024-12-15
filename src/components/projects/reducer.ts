@@ -39,7 +39,7 @@ const resetDocumentToSavedValue = (
     };
 };
 
-const ProjectsReducer = (
+export const ProjectsReducer = (
     state: ProjectsTypes.IProjectsReducer = initialProjectsState,
     unknownAction: ProjectsTypes.ProjectsActionTypes
 ): ProjectsTypes.IProjectsReducer => {

@@ -59,6 +59,7 @@ export interface IProfile {
     bio?: string;
     userUid: string;
     userFollowing?: [];
+    followers?: [];
     projectsCount?: ProjectsCount;
     userImageURL?: string;
     backgroundIndex: number;

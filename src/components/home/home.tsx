@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
-import Header from "@comp/header/header";
+import { Header } from "@comp/header/header";
 // import Search from "./search";
 import PopularProjects from "./popular-projects";
 import RandomProjects from "./random-projects";

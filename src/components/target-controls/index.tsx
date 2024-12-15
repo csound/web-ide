@@ -33,7 +33,7 @@ const TargetControls = (): React.ReactElement => {
         (store: RootState) => {
             if (!activeProjectUid) return undefined;
             return (
-                store.TargetControlsReducer[activeProjectUid].defaultTarget ||
+                store.TargetControlsReducer[activeProjectUid]?.defaultTarget ??
                 undefined
             );
         }

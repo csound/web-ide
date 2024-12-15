@@ -1,5 +1,5 @@
 import { collection, doc, onSnapshot } from "firebase/firestore";
-import { store, RootState } from "@root/store";
+import { store, RootState, AppThunkDispatch } from "@root/store";
 import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
 import { IDocument, IDocumentsMap } from "./types";
@@ -32,14 +32,13 @@ import { IFirestoreDocument } from "@root/db/types";
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
-    dispatch: (store: RootState) => void,
+    dispatch: AppThunkDispatch,
     csound: CsoundObj | undefined
 ): (() => void) => {
     const unsubscribe: () => void = onSnapshot(
         collection(doc(projects, projectUid), "files"),
         async (files) => {
-            const changedFiles =
-                files.docChanges() as unknown as IFirestoreDocument[];
+            const changedFiles = files.docChanges();
             const filesToAdd = changedFiles.filter(
                 (file) => file.type === "added"
             );
@@ -84,10 +83,8 @@ export const subscribeToProjectFilesChanges = (
                 const documentSnaps = filesToModify.map((file) => file.doc);
 
                 const documentData = documentSnaps.map((d) => {
-                    return fileDocumentDataToDocumentType({
-                        ...d.data(),
-                        documentUid: d.id
-                    });
+                    const firestoreData = d.data() as IFirestoreDocument;
+                    return fileDocumentDataToDocumentType(firestoreData);
                 }) as IDocument[];
 
                 // when using serverData, we get 2 responses,
@@ -155,12 +152,10 @@ export const subscribeToProjectFilesChanges = (
 
                 const documentSnaps = filesToRemove.map((file) => file.doc);
 
-                const documentData = documentSnaps.map((d) =>
-                    fileDocumentDataToDocumentType({
-                        ...d.data(),
-                        documentUid: d.id
-                    })
-                ) as IDocument[];
+                const documentData = documentSnaps.map((d) => {
+                    const firestoreData = d.data() as IFirestoreDocument;
+                    return fileDocumentDataToDocumentType(firestoreData);
+                }) as IDocument[];
 
                 const uids = documentData.map((d) => d.documentUid);
 
@@ -217,7 +212,7 @@ export const subscribeToProjectTargetsChanges = (
 
 export const subscribeToProjectChanges = (
     projectUid: string,
-    dispatch: (store: RootState) => void,
+    dispatch: AppThunkDispatch,
     csound: CsoundObj | undefined
 ): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(

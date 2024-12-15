@@ -1,5 +1,4 @@
-import React from "react";
-import Header from "@comp/header/header";
+import { Header } from "@comp/header/header";
 import styled from "@emotion/styled";
 import { rootStyle } from "./styles";
 import CSLogo from "../cs-logo/cs-logo";

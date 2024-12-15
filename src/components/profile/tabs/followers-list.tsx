@@ -4,12 +4,12 @@ import {
     StyledListItemTopRowText,
     StyledUserListItemContainer
 } from "../profile-ui";
-import { ListItem, Avatar, ListItemText, ListItemButton } from "@mui/material";
+import { Avatar, ListItemText, ListItemButton } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { push } from "connected-react-router";
 import { UnknownAction } from "redux";
 
-const FollowersList = ({
+export const FollowersList = ({
     filteredFollowers
 }: {
     filteredFollowers: Array<any>;

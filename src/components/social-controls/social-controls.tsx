@@ -70,10 +70,9 @@ const StyledPublicOffIcon = styled(VisibilityOffIcon)`
 const SocialControls = (): React.ReactElement => {
     const projectUid = useSelector(selectActiveProjectUid);
     const loggedInUserUid = useSelector(selectLoggedInUid);
-    const starred =
-        loggedInUserUid && projectUid
-            ? useSelector(selectUserStarredProject(loggedInUserUid, projectUid))
-            : [];
+    const starred = useSelector(
+        selectUserStarredProject(loggedInUserUid, projectUid)
+    );
     const isRequestingLogin = useSelector(selectLoginRequesting);
     const isOwner = useSelector(selectIsOwner(projectUid as any));
     const isPublic = useSelector(selectProjectPublic);

@@ -1,12 +1,9 @@
 import { RootState } from "@root/store";
 import { createSelector } from "reselect";
 import { IProfileReducer } from "./reducer";
-// import { IProfile } from "./types";
-import { IFirestoreProfile } from "@db/types";
-import { path, pathOr, pickBy, propEq, values } from "ramda";
-import Fuse from "fuse.js";
+import { path, pathOr } from "ramda";
+// import Fuse from "fuse.js";
 import { IProject } from "../projects/types";
-import { IProfile } from "./types";
 
 export const selectUserFollowing =
     (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
@@ -19,23 +16,21 @@ export const selectUserFollowing =
         }
     };
 
-export const selectUserProjects = (store: RootState) => {
-    const profileUid: string | undefined =
-        store.router.location.pathname.split("/")[2];
+export const selectUserProjects =
+    (profileUid: string | undefined) => (store: RootState) => {
+        if (profileUid) {
+            const state = store.ProjectsReducer.projects;
 
-    if (profileUid) {
-        const state = store.ProjectsReducer.projects;
+            // Filter projects by matching `userUid` with `profileUid`
+            const filteredProjects = Object.values(state).filter(
+                (project) => project.userUid === profileUid
+            );
 
-        // Filter projects by matching `userUid` with `profileUid`
-        const filteredProjects = Object.values(state).filter(
-            (project: any) => project.userUid === profileUid
-        );
-
-        return filteredProjects;
-    } else {
-        return [];
-    }
-};
+            return filteredProjects;
+        } else {
+            return [];
+        }
+    };
 
 export const selectProjectFilterString = (
     store: RootState
@@ -84,57 +79,57 @@ export const selectLoggedInUserStars = (store: RootState): Array<any> => {
     }
 };
 
-export const selectFilteredUserProjects = createSelector(
-    [selectUserProjects, selectProjectFilterString],
-    (userProjects, projectFilterString) => {
-        let result: any = [];
-        if (projectFilterString === undefined || projectFilterString === "") {
-            result = userProjects;
-        } else {
-            const options = {
-                shouldSort: true,
-                keys: ["description", "name", "tags"]
-            };
+// export const selectFilteredUserProjects = createSelector(
+//     [selectUserProjects, selectProjectFilterString],
+//     (userProjects, projectFilterString) => {
+//         let result: any = [];
+//         if (projectFilterString === undefined || projectFilterString === "") {
+//             result = userProjects;
+//         } else {
+//             const options = {
+//                 shouldSort: true,
+//                 keys: ["description", "name", "tags"]
+//             };
 
-            const fuse = new Fuse(userProjects, options);
-            result = fuse.search(projectFilterString).map((x) => x.item);
-        }
+//             const fuse = new Fuse(userProjects, options);
+//             result = fuse.search(projectFilterString).map((x) => x.item);
+//         }
 
-        return result;
-    }
-);
+//         return result;
+//     }
+// );
 
-export const selectFilteredUserFollowing =
-    (profileUid: string): ((store: RootState) => any) =>
-    (store) =>
-        createSelector(
-            [selectUserFollowing(profileUid), selectFollowingFilterString],
-            (userFollowing, followingFilterString) => {
-                const followingProfiles = userFollowing.map(
-                    (profileUid) => selectUserProfile(profileUid)(store) || {}
-                );
+// export const selectFilteredUserFollowing =
+//     (profileUid: string): ((store: RootState) => any) =>
+//     (store) =>
+//         createSelector(
+//             [selectUserFollowing(profileUid), selectFollowingFilterString],
+//             (userFollowing, followingFilterString) => {
+//                 const followingProfiles = userFollowing.map(
+//                     (profileUid) => selectUserProfile(profileUid)(store) || {}
+//                 );
 
-                if (
-                    followingFilterString === undefined ||
-                    followingFilterString === ""
-                ) {
-                    return followingProfiles;
-                }
+//                 if (
+//                     followingFilterString === undefined ||
+//                     followingFilterString === ""
+//                 ) {
+//                     return followingProfiles;
+//                 }
 
-                const options = {
-                    shouldSort: true,
-                    threshold: 0.4,
-                    location: 0,
-                    distance: 100,
-                    maxPatternLength: 32,
-                    minMatchCharLength: 1,
-                    keys: ["username", "bio", "displayName"]
-                };
-                const fuse = new Fuse(followingProfiles, options);
-                const result = fuse.search(followingFilterString);
-                return result;
-            }
-        )(store);
+//                 const options = {
+//                     shouldSort: true,
+//                     threshold: 0.4,
+//                     location: 0,
+//                     distance: 100,
+//                     maxPatternLength: 32,
+//                     minMatchCharLength: 1,
+//                     keys: ["username", "bio", "displayName"]
+//                 };
+//                 const fuse = new Fuse(followingProfiles, options);
+//                 const result = fuse.search(followingFilterString);
+//                 return result;
+//             }
+//         )(store);
 
 export const selectFilteredUserFollowers =
     (profileUid: string): ((store: RootState) => any) =>

@@ -272,6 +272,7 @@ const ProjectEditor = ({
         const isModified: boolean = document.isModifiedLocally;
         return (
             <DragTab
+                id={"drag-tab-open-" + index}
                 closable={true}
                 key={index}
                 closeCallback={() =>
@@ -350,7 +351,9 @@ const ProjectEditor = ({
                     );
                 }}
             >
-                <DragTabList id="drag-tab-list">{openTabList}</DragTabList>
+                <DragTabList id="drag-tab-list" items={[]}>
+                    {openTabList}
+                </DragTabList>
                 <PanelList>{openTabPanels}</PanelList>
             </Tabs>
         </div>

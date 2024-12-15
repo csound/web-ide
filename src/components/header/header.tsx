@@ -31,12 +31,12 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import * as SS from "./styles";
 // import { tooltipClasses } from "@comp/styles";
 import { isEmpty } from "ramda";
-import MenuBar from "@comp/menu-bar/menu-bar";
+import { MenuBar } from "@comp/menu-bar/menu-bar";
 import ProjectProfileMeta from "./project-profile-meta";
 import TargetControls from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
 
-const Header = (): React.ReactElement => {
+export const Header = () => {
     const dispatch = useDispatch();
 
     const authenticated = useSelector(
@@ -246,5 +246,3 @@ const Header = (): React.ReactElement => {
         </>
     );
 };
-
-export default Header;

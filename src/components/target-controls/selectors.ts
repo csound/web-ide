@@ -5,7 +5,10 @@ import { IDocument } from "../projects/types";
 export const selectProjectTargets =
     (activeProjectUid: string | undefined) => (store: RootState) => {
         if (activeProjectUid) {
-            return store.TargetControlsReducer[activeProjectUid].targets;
+            return (
+                store.TargetControlsReducer[activeProjectUid]?.targets ??
+                undefined
+            );
         }
     };
 
@@ -15,7 +18,7 @@ export const selectSelectedTarget = (curry as any)(
         store: RootState
     ): string | undefined => {
         return activeProjectUid
-            ? store.TargetControlsReducer[activeProjectUid].selectedTarget ||
+            ? store.TargetControlsReducer[activeProjectUid]?.selectedTarget ??
                   undefined
             : undefined;
     }
@@ -66,28 +69,17 @@ export const selectProjectDocuments = (curry as any)(
 export const selectDefaultTargetName =
     (activeProjectUid: string | undefined) => (store: RootState) => {
         return activeProjectUid
-            ? store.TargetControlsReducer[activeProjectUid].defaultTarget ||
+            ? store.TargetControlsReducer[activeProjectUid]?.defaultTarget ??
                   undefined
             : undefined;
     };
 
-export const selectTarget = (curry as any)(
-    (
-        activeProjectUid: string | undefined,
-        targetName: string,
-        store: RootState
-    ) => {
-        return (
-            activeProjectUid &&
-            path(
-                [
-                    "TargetControlsReducer",
-                    activeProjectUid,
-                    "targets",
-                    targetName
-                ],
-                store
-            )
-        );
-    }
-);
+export const selectTarget =
+    (activeProjectUid: string | undefined, targetName: string | undefined) =>
+    (store: RootState) => {
+        return activeProjectUid && targetName
+            ? store.TargetControlsReducer[activeProjectUid]?.targets[
+                  targetName
+              ] ?? undefined
+            : undefined;
+    };

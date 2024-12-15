@@ -18,15 +18,12 @@ export const selectProjects = (
 };
 
 export const selectUserStarredProject =
-    (loggedInUserUid: string, projectUid: string) => (store: RootState) => {
+    (loggedInUserUid: string | undefined, projectUid: string | undefined) =>
+    (store: RootState) => {
+        if (!projectUid) return [];
+        if (!loggedInUserUid) return [];
         const projectStars: Star =
             store.ProjectsReducer.projects[projectUid].stars;
-
-        // pathOr(
-        //     [],
-        //     ["ProjectsReducer", "projects", projectUid, "stars"],
-        //     store
-        // );
         return keys(projectStars).includes(loggedInUserUid);
     };
 

@@ -1,35 +1,27 @@
-import React from "react";
-import { SortableElement } from "react-sortable-hoc";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Tab } from "./tab.jsx";
 
-const DragTabElementWithRef = React.forwardRef(
-    ({ children, ...props }, ref) => {
-        return (
-            <Tab index={props.tabIndex} {...props} ref={ref}>
-                {children}
-            </Tab>
-        );
-    }
-);
-DragTabElementWithRef.displayName = "DragTabElementWithRef";
+export function DragTab({ children, closeCallback, id, ...props }) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({ id });
 
-const DragTabElement = SortableElement(DragTabElementWithRef, {
-    withRef: true
-});
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        ...props.style // Allow custom styles to be passed
+    };
 
-DragTabElement.displayName = "DragTabElement";
-
-export function DragTab({ children, closeCallback, ...props }) {
-    const dragTabRef = React.useRef();
     return (
-        <DragTabElement
-            ref={dragTabRef}
+        <Tab
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
             closeCallback={closeCallback}
             {...props}
         >
             {children}
-        </DragTabElement>
+        </Tab>
     );
 }
-
-DragTab.displayName = "DragTab";

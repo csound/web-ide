@@ -9,13 +9,12 @@ import { useDispatch } from "react-redux";
 import { push } from "connected-react-router";
 import { UnknownAction } from "redux";
 
-const FollowingList = ({
+export const FollowingList = ({
     filteredFollowing
 }: {
     filteredFollowing: Array<any>;
 }) => {
     const dispatch = useDispatch();
-    console.log("filteredFollowing", filteredFollowing);
     return (
         <>
             {filteredFollowing.map((p: any, index) => {
@@ -49,5 +48,3 @@ const FollowingList = ({
         </>
     );
 };
-
-export default FollowingList;

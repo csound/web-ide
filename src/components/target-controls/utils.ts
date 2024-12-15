@@ -34,6 +34,7 @@ export const getDefaultTargetDocument =
         );
 
         const documentId =
+            maybeDefaultTarget &&
             (maybeDefaultTarget as ITarget).targetType === "main"
                 ? maybeDefaultTarget && maybeDefaultTarget.targetDocumentUid
                 : maybeDefaultTarget &&

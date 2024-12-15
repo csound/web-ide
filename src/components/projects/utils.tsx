@@ -1,5 +1,6 @@
 import {
     doc,
+    DocumentChange,
     getDoc,
     QueryDocumentSnapshot,
     Timestamp
@@ -118,10 +119,10 @@ export const fileDocumentDataToDocumentType = (
     }) as IDocument;
 
 export const convertDocumentSnapToDocumentsMap = (
-    documentsToAdd: IFirestoreDocument[]
+    documentsToAdd: DocumentChange[]
 ): Record<string, IDocument> => {
     return documentsToAdd
-        .map((doc) => ({ ...doc.data(), documentUid: doc.id }))
+        .map((doc) => doc.doc.data())
         .reduce((accumulator: Record<string, IDocument>, documentData: any) => {
             accumulator[documentData.documentUid] =
                 fileDocumentDataToDocumentType(documentData);

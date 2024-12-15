@@ -1,6 +1,5 @@
-import React from "react";
 import { mainStyle, rootStyle } from "./styles";
-import Header from "../header/header";
+import { Header } from "../header/header";
 import { main } from "../projects/styles";
 
 export const SiteDocuments = () => {

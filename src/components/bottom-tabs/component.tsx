@@ -74,9 +74,14 @@ const BottomTabs = (): React.ReactElement => {
                     showArrowButton={"auto"}
                     onTabSequenceChange={handleTabSequenceChange}
                 >
-                    <DragTabList id="drag-tab-list">
+                    <DragTabList
+                        id="drag-tab-list"
+                        items={openTabs}
+                        setItems={() => {}}
+                    >
                         {(openTabs || []).map((k, index) => (
                             <DragTab
+                                id={"drag-tab-" + index}
                                 key={index}
                                 closable={true}
                                 closeCallback={() =>

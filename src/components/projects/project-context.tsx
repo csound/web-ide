@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
-import Header from "@comp/header/header";
+import { Header } from "@comp/header/header";
 import { activateProject, downloadProjectOnce } from "./actions";
 import { isEmpty, pathOr } from "ramda";
 import { UnknownAction } from "redux";
@@ -23,7 +23,7 @@ const ForceBackgroundColor = ({ theme }: { theme: Theme }) => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-const ProjectContext = (properties: IProjectContextProperties) => {
+export const ProjectContext = (properties: IProjectContextProperties) => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const routeParams: { id?: string } = useParams();
@@ -36,9 +36,12 @@ const ProjectContext = (properties: IProjectContextProperties) => {
     // this is true when /editor path is missing projectUid
     invalidUrl &&
         dispatch(
-            push("/404", {
-                message: "Project not found"
-            }) as unknown as UnknownAction
+            push(
+                { path: "/404" },
+                {
+                    message: "Project not found"
+                }
+            ) as unknown as UnknownAction
         );
 
     const activeProjectUid: string | undefined = useSelector(
@@ -100,25 +103,20 @@ const ProjectContext = (properties: IProjectContextProperties) => {
         tabIndex
     ]);
 
-    return !needsLoading && !invalidUrl && project ? (
+    return (
         <>
             <ForceBackgroundColor theme={theme} />
-            <ProjectEditor {...properties} activeProject={project} />
+            {project && <ProjectEditor activeProject={project} />}
             <Header />
-        </>
-    ) : (
-        <>
-            <ForceBackgroundColor theme={theme} />
-            <Header />
-            <main css={SS.loadMain}>
-                <AudioSpinner
-                    color={theme.highlightBackground}
-                    height={80}
-                    width={80}
-                />
-            </main>
+            {needsLoading && (
+                <main css={SS.loadMain}>
+                    <AudioSpinner
+                        color={theme.highlightBackground}
+                        height={80}
+                        width={80}
+                    />
+                </main>
+            )}
         </>
     );
 };
-
-export default ProjectContext;

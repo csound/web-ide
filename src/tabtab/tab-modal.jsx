@@ -1,47 +1,98 @@
 import React from "react";
 import Poppop from "react-poppop";
-import { SortableContainer } from "react-sortable-hoc";
-import { useSort } from "./sort-method.js";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+    SortableContext,
+    useSortable,
+    arrayMove,
+    verticalListSortingStrategy
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-const DragTabContainer = SortableContainer(({ children }) => {
-    return <div style={{ marginTop: "50px" }}>{children}</div>;
-});
+const DragTab = ({ id, children }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({ id });
 
-const ModalTabListWrapper = (props) => {
-    const { onSortEnd } = useSort({
-        activeIndex: props.activeIndex,
-        handleTabChange: props.handleTabChange,
-        handleTabSequence: props.handleTabSequence
-    });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        marginBottom: "8px"
+    };
 
     return (
-        <DragTabContainer
-            onSortEnd={onSortEnd}
-            axis="y"
-            lockAxis="y"
-            // if no pressDelay, close button cannot be triggered,
-            // because it would always treat click as dnd action
-            pressDelay="100"
-        >
-            {props.children}
-        </DragTabContainer>
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+            {children}
+        </div>
     );
 };
 
-export default function TabModal(props) {
+const ModalTabListWrapper = ({
+    items,
+    setItems,
+    handleTabChange,
+    handleTabSequence,
+    children
+}) => {
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id) {
+            const oldIndex = items.findIndex((item) => item.id === active.id);
+            const newIndex = items.findIndex((item) => item.id === over.id);
+
+            const newItems = arrayMove(items, oldIndex, newIndex);
+            setItems(newItems);
+
+            if (handleTabSequence) {
+                handleTabSequence(newItems);
+            }
+        }
+
+        if (handleTabChange && over) {
+            handleTabChange(over.id);
+        }
+    };
+
+    return (
+        <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+        >
+            <SortableContext
+                items={items}
+                strategy={verticalListSortingStrategy}
+            >
+                <div style={{ marginTop: "50px" }}>{children}</div>
+            </SortableContext>
+        </DndContext>
+    );
+};
+
+export default function TabModal({
+    closeModal,
+    items,
+    setItems,
+    handleTabSequence,
+    handleTabChange
+}) {
     return (
         <Poppop
             open={true}
-            onClose={props.closeModal}
+            onClose={closeModal}
             closeOnEsc={true}
             closeBtn={true}
         >
             <ModalTabListWrapper
-                handleTabSequence={props.handleTabSequence}
-                handleTabChange={props.handleTabChange}
-                activeIndex={props.activeIndex}
+                items={items}
+                setItems={setItems}
+                handleTabSequence={handleTabSequence}
+                handleTabChange={handleTabChange}
             >
-                {this.props.children}
+                {items.map((item) => (
+                    <DragTab key={item.id} id={item.id}>
+                        {item.content}
+                    </DragTab>
+                ))}
             </ModalTabListWrapper>
         </Poppop>
     );

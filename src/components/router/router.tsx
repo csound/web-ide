@@ -5,7 +5,7 @@ import Home from "../home/home";
 import CsoundManual from "@comp/manual/manual";
 import { Profile } from "../profile/profile";
 import { Page404 } from "../page-404/page-404";
-import ProjectContext from "../projects/project-context";
+import { ProjectContext } from "../projects/project-context";
 import { closeTabDock } from "@comp/project-editor/actions";
 import { closeProject } from "@comp/projects/actions";
 // import { HistoryRouter as Router } from "redux-first-history/rr6";

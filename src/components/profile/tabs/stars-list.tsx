@@ -13,7 +13,7 @@ import { isEmpty } from "ramda";
 import * as SS from "./styles";
 import { UnknownAction } from "redux";
 
-const StarsList = ({ profileUid }: { profileUid: string }) => {
+export const StarsList = ({ profileUid }: { profileUid: string }) => {
     const dispatch = useDispatch();
     const profileStars = useSelector(selectProfileStars(profileUid));
     const cachedProjects = useSelector(
@@ -64,5 +64,3 @@ const StarsList = ({ profileUid }: { profileUid: string }) => {
         })
     );
 };
-
-export default StarsList;

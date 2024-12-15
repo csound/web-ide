@@ -16,29 +16,6 @@ import SnackbarReducer from "@comp/snackbar/reducer";
 import TargetControlsReducer from "@comp/target-controls/reducer";
 import ThemeReducer from "@comp/themes/reducer";
 
-// const RootReducer = ({ routerReducer }: { routerReducer: any }): Reducer =>
-//     combineReducers({
-//         router: routerReducer,
-//         ProjectsReducer,
-//         LoginReducer,
-//         ProjectEditorReducer,
-//         userProfile: IDReducer,
-//         csound: CsoundReducer,
-//         FileTreeReducer,
-//         ThemeReducer,
-//         ModalReducer,
-//         ConsoleReducer,
-//         ProfileReducer,
-//         SnackbarReducer,
-//         HotKeysReducer,
-//         TargetControlsReducer,
-//         ProjectLastModifiedReducer,
-//         BottomTabsReducer,
-//         HomeReducer
-//     });
-
-// export default RootReducer;
-
 export const reducer = {
     ProjectsReducer,
     LoginReducer,

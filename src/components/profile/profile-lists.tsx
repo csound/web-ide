@@ -2,9 +2,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "@root/store";
 import { List, ListItem, ListItemText } from "@mui/material";
-import FollowingList from "./tabs/following-list";
-import FollowersList from "./tabs/followers-list";
-import StarsList from "./tabs/stars-list";
+import { FollowingList } from "./tabs/following-list";
+import { FollowersList } from "./tabs/followers-list";
+import { StarsList } from "./tabs/stars-list";
 import { ListPlayButton } from "./list-play-button";
 import SettingsIcon from "@mui/icons-material/Settings";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
@@ -19,10 +19,6 @@ import {
     StyledListPlayButtonContainer,
     StyledListButtonsContainer
 } from "./profile-ui";
-import {
-    selectFilteredUserFollowing,
-    selectFilteredUserFollowers
-} from "./selectors";
 import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
@@ -143,7 +139,7 @@ const ProjectListItem = ({
     );
 };
 
-const ProfileLists = ({
+export const ProfileLists = ({
     profileUid,
     selectedSection,
     isProfileOwner,
@@ -153,12 +149,16 @@ const ProfileLists = ({
     selectedSection: number;
     isProfileOwner: boolean;
     filteredProjects: Array<any>;
-}): React.ReactElement => {
-    const filteredFollowing = useSelector(
-        selectFilteredUserFollowing(profileUid)
+}) => {
+    const userFollowing = useSelector(
+        (state) =>
+            state.ProfileReducer.profiles[profileUid]?.userFollowing ?? []
     );
-    const filteredFollowers = useSelector(
-        selectFilteredUserFollowers(profileUid)
+
+    const userFollowers = useSelector((state) =>
+        (state.ProfileReducer.profiles[profileUid]?.followers ?? []).map(
+            (followerUid) => state.ProfileReducer.profiles[followerUid]
+        )
     );
 
     return (
@@ -177,15 +177,13 @@ const ProfileLists = ({
                         />
                     );
                 })}
-            {selectedSection === 1 && Array.isArray(filteredFollowing) && (
-                <FollowingList filteredFollowing={filteredFollowing} />
+            {selectedSection === 1 && (
+                <FollowingList filteredFollowing={userFollowing} />
             )}
-            {selectedSection === 2 && Array.isArray(filteredFollowers) && (
-                <FollowersList filteredFollowers={filteredFollowers} />
+            {selectedSection === 2 && (
+                <FollowersList filteredFollowers={userFollowers} />
             )}
             {selectedSection === 3 && <StarsList profileUid={profileUid} />}
         </List>
     );
 };
-
-export default ProfileLists;

@@ -174,8 +174,8 @@ export const activateProject = (projectUid: string) => {
 
 export const storeProjectLocally = (projects: Array<IProject>) => {
     const projectsWithoutTimestamps = projects.map((project) => ({
-        created: project.created?.toMillis() || undefined,
-        lastModified: undefined
+        ...project,
+        created: project.created?.toMillis() || undefined
     }));
     return {
         type: STORE_PROJECT_LOCALLY,
@@ -205,11 +205,11 @@ export const addProjectDocuments = (
         if (tabIndex < 0) {
             const maybeDefaultTargetName: string | undefined =
                 selectDefaultTargetName(projectUid)(store);
+
             const maybeDefaultTarget: ITarget | undefined = selectTarget(
                 projectUid,
-                maybeDefaultTargetName,
-                store
-            );
+                maybeDefaultTargetName
+            )(store);
 
             dispatch(
                 tabDockInit(projectUid, values(documents), maybeDefaultTarget)

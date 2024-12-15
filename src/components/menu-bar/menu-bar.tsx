@@ -34,7 +34,7 @@ import {
 import { showKeyboardShortcuts } from "@comp/site-documents/actions";
 import { openBottomTab } from "@comp/bottom-tabs/actions";
 
-function MenuBar(): JSX.Element {
+export function MenuBar() {
     const setConsole = useSetConsole();
 
     const activeProjectUid: string = useSelector(
@@ -441,10 +441,3 @@ function MenuBar(): JSX.Element {
         </>
     );
 }
-
-const clickOutsideConfig = {
-    excludeScrollbar: true,
-    handleClickOutside: () => (MenuBar as any).handleClickOutside
-};
-
-export default onClickOutside(MenuBar, clickOutsideConfig) as any as React.FC;

@@ -1,6 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "@root/store";
-import ProfileLists from "./profile-lists";
+import { ProfileLists } from "./profile-lists";
 import { useEffect, createRef, useState, RefObject } from "react";
 import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
@@ -18,7 +18,7 @@ import Box from "@mui/material/Box";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
-import Header from "../header/header";
+import { Header } from "../header/header";
 import {
     subscribeToFollowing,
     subscribeToFollowers,
@@ -43,7 +43,7 @@ import {
     selectUserFollowing,
     selectUserProfile,
     selectUserImageURL,
-    selectFilteredUserProjects,
+    selectUserProjects,
     selectProjectFilterString
 } from "./selectors";
 import { get } from "lodash";
@@ -114,7 +114,8 @@ export const Profile = () => {
     const profile = useSelector(selectUserProfile(profileUid));
     const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
-    const filteredProjects = useSelector(selectFilteredUserProjects);
+    const filteredProjects = useSelector(selectUserProjects(profileUid));
+    console.log(filteredProjects);
     // const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
@@ -168,15 +169,21 @@ export const Profile = () => {
                         data && data.userUid
                             ? setProfileUid(data.userUid)
                             : dispatch(
-                                  push("/404", {
-                                      message: "User not found"
-                                  }) as unknown as UnknownAction
+                                  push(
+                                      { path: "/404" },
+                                      {
+                                          message: "User not found"
+                                      }
+                                  ) as unknown as UnknownAction
                               );
                     } else {
                         dispatch(
-                            push("/404", {
-                                message: "User not found"
-                            }) as unknown as UnknownAction
+                            push(
+                                { path: "/404" },
+                                {
+                                    message: "User not found"
+                                }
+                            ) as unknown as UnknownAction
                         );
                     }
                 });

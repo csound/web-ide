@@ -14,18 +14,6 @@ import {
     UPDATE_PROFILE_FOLLOWING,
     UPDATE_PROFILE_FOLLOWERS
 } from "./types";
-import {
-    assoc,
-    assocPath,
-    dissoc,
-    hasPath,
-    keys,
-    mergeAll,
-    pick,
-    pipe,
-    reduce,
-    sort
-} from "ramda";
 
 type ProfileMap = { [profileUid: string]: IProfile };
 
