@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import FileTree from "@comp/file-tree";
+import { FileTree } from "@comp/file-tree";
 import Console from "@comp/console/console";
 import MobileNavigation from "@comp/project-editor/mobile-navigation";
 import CsoundManualWindow from "@comp/project-editor/csound-manual";
@@ -22,7 +22,7 @@ const MobileTabs = ({
 
     const MobileFileTree = (
         <div css={SS.mobileFileTree}>
-            <FileTree />
+            <FileTree activeProjectUid={projectUid} />
         </div>
     );
 

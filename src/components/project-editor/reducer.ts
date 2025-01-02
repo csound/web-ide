@@ -15,19 +15,6 @@ import {
     ITabDock,
     IOpenDocument
 } from "./types";
-import {
-    assoc,
-    assocPath,
-    append,
-    curry,
-    filter,
-    lensPath,
-    map,
-    over,
-    pathOr,
-    pipe,
-    prop
-} from "ramda";
 import { nonCloudFiles } from "../file-tree/actions";
 
 export interface IProjectEditorReducer {
@@ -47,9 +34,18 @@ const initialLayoutState = (): IProjectEditorReducer => ({
     manualLookupString: ""
 });
 
-const addTabToOpenDocuments = curry((tab, state) =>
-    over(lensPath(["tabDock", "openDocuments"]), append(tab), state)
-);
+const addTabToOpenDocuments = (
+    tab: IOpenDocument,
+    state: IProjectEditorReducer
+) => {
+    return {
+        ...state,
+        tabDock: {
+            ...state.tabDock,
+            openDocuments: [...state.tabDock.openDocuments, tab]
+        }
+    };
+};
 
 const storeTabDockState = (
     projectUid: string,
@@ -57,11 +53,12 @@ const storeTabDockState = (
     tabIndex: number | undefined
 ): void => {
     try {
-        const tabOrder: string[] = map(prop("uid"), openDocuments);
+        const tabOrder: string[] = openDocuments.map((doc) => doc.uid);
         const tabOrderString: string = JSON.stringify(tabOrder);
         localStorage.setItem(`${projectUid}:tabOrder`, tabOrderString);
-        tabIndex &&
+        if (tabIndex !== undefined) {
             localStorage.setItem(`${projectUid}:tabIndex`, `${tabIndex}`);
+        }
     } catch (error) {
         console.error(error);
     }
@@ -74,12 +71,14 @@ const ProjectEditorReducer = (
     if (!state) {
         return initialLayoutState();
     }
+
     switch (action.type) {
         case MANUAL_LOOKUP_STRING: {
-            return pipe(
-                assoc("manualLookupString", action.manualLookupString),
-                assoc("manualVisible", true)
-            )(state);
+            return {
+                ...state,
+                manualLookupString: action.manualLookupString,
+                manualVisible: true
+            };
         }
         case TAB_DOCK_CLOSE: {
             return initialLayoutState();
@@ -94,9 +93,14 @@ const ProjectEditorReducer = (
                 }
             };
         }
-
         case TAB_DOCK_SWITCH_TAB: {
-            return assocPath(["tabDock", "tabIndex"], action.tabIndex, state);
+            return {
+                ...state,
+                tabDock: {
+                    ...state.tabDock,
+                    tabIndex: action.tabIndex
+                }
+            };
         }
         case TAB_DOCK_REARRANGE_TABS: {
             return {
@@ -108,26 +112,23 @@ const ProjectEditorReducer = (
                 }
             };
         }
-
         case TAB_DOCK_OPEN_NON_CLOUD_FILE: {
             if (action.init) {
                 return state;
             }
-            const currentOpenDocuments: IOpenDocument[] = pathOr(
-                [] as IOpenDocument[],
-                ["tabDock", "openDocuments"],
-                state
-            );
+            const currentOpenDocuments = state.tabDock.openDocuments;
             const documentAlreadyOpenIndex = findIndex(
                 currentOpenDocuments,
-                (od: IOpenDocument) =>
-                    od.isNonCloudDocument ? od.uid === action?.filename : false
+                (od) =>
+                    Boolean(
+                        od.isNonCloudDocument && od.uid === action?.filename
+                    )
             );
             const file = nonCloudFiles.get(action?.filename);
 
             if (file && documentAlreadyOpenIndex < 0) {
-                let nonCloudFileAudioUrl: string | undefined = undefined;
-                let nonCloudFileData: string | undefined = undefined;
+                let nonCloudFileAudioUrl;
+                let nonCloudFileData;
 
                 if (action.mimeType.startsWith("audio")) {
                     const blob = new Blob([file.buffer], {
@@ -139,7 +140,7 @@ const ProjectEditorReducer = (
                     nonCloudFileData = utf8decoder.decode(file.buffer);
                 }
 
-                const newAppendedState = addTabToOpenDocuments(
+                const newState = addTabToOpenDocuments(
                     {
                         uid: file.name,
                         isNonCloudDocument: true,
@@ -150,12 +151,9 @@ const ProjectEditorReducer = (
                     state
                 );
 
-                // Focus on open action (can be made configureable)
-                const newState = assocPath(
-                    ["tabDock", "tabIndex"],
-                    newAppendedState.tabDock.openDocuments.length - 1,
-                    newAppendedState
-                );
+                newState.tabDock.tabIndex =
+                    newState.tabDock.openDocuments.length - 1;
+
                 storeTabDockState(
                     action.projectUid,
                     newState.tabDock.openDocuments,
@@ -164,25 +162,24 @@ const ProjectEditorReducer = (
 
                 return newState;
             } else {
-                return assocPath(
-                    ["tabDock", "tabIndex"],
-                    documentAlreadyOpenIndex,
-                    state
-                );
+                return {
+                    ...state,
+                    tabDock: {
+                        ...state.tabDock,
+                        tabIndex: documentAlreadyOpenIndex
+                    }
+                };
             }
         }
         case TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID: {
-            const currentOpenDocuments: IOpenDocument[] = pathOr(
-                [] as IOpenDocument[],
-                ["tabDock", "openDocuments"],
-                state
-            );
+            const currentOpenDocuments = state.tabDock.openDocuments;
             const documentAlreadyOpenIndex = findIndex(
                 currentOpenDocuments,
-                (od: IOpenDocument) => od.uid === action.documentUid
+                (od) => od.uid === action.documentUid
             );
+
             if (documentAlreadyOpenIndex < 0 || action.init) {
-                const newAppendedState = addTabToOpenDocuments(
+                const newState = addTabToOpenDocuments(
                     {
                         uid: action.documentUid,
                         editorInstance: undefined
@@ -190,20 +187,18 @@ const ProjectEditorReducer = (
                     state
                 );
 
-                // Focus on open action (can be made configureable)
-                const newState = assocPath(
-                    ["tabDock", "tabIndex"],
-                    newAppendedState.tabDock.openDocuments.length - 1,
-                    newAppendedState
-                );
+                newState.tabDock.tabIndex =
+                    newState.tabDock.openDocuments.length - 1;
 
                 return newState;
             } else {
-                return assocPath(
-                    ["tabDock", "tabIndex"],
-                    documentAlreadyOpenIndex,
-                    state
-                );
+                return {
+                    ...state,
+                    tabDock: {
+                        ...state.tabDock,
+                        tabIndex: documentAlreadyOpenIndex
+                    }
+                };
             }
         }
         case TAB_CLOSE: {
@@ -212,51 +207,55 @@ const ProjectEditorReducer = (
                     (od) => od.uid === action.documentUid
                 )
             ) {
-                // dont attempt to close a tab that isn't open
                 return state;
             }
+
             const currentTabIndex = state.tabDock.tabIndex;
-            const newState: IProjectEditorReducer = (pipe as any)(
-                assocPath(
-                    ["tabDock", "tabIndex"],
-                    Math.min(
-                        currentTabIndex,
-                        pathOr(
-                            0,
-                            ["tabDock", "openDocuments", "length"],
-                            state
-                        ) - 2
-                    )
-                ),
-                assocPath(
-                    ["tabDock", "openDocuments"],
-                    filter(
-                        (od: IOpenDocument) => od.uid !== action.documentUid,
-                        pathOr([], ["tabDock", "openDocuments"], state)
-                    )
-                )
-            )(state);
+            const newOpenDocuments = state.tabDock.openDocuments.filter(
+                (od) => od.uid !== action.documentUid
+            );
+
+            const newTabIndex = Math.min(
+                currentTabIndex,
+                newOpenDocuments.length - 1
+            );
+
+            const newState = {
+                ...state,
+                tabDock: {
+                    ...state.tabDock,
+                    tabIndex: newTabIndex,
+                    openDocuments: newOpenDocuments
+                }
+            };
+
             storeTabDockState(
                 action.projectUid,
                 newState.tabDock.openDocuments,
                 newState.tabDock.tabIndex
             );
+
             return newState;
         }
         case TOGGLE_MANUAL_PANEL: {
-            return pipe(
-                assoc("manualLookupString", ""),
-                assoc("manualVisible", !state.manualVisible)
-            )(state);
+            return {
+                ...state,
+                manualLookupString: "",
+                manualVisible: !state.manualVisible
+            };
         }
         case SET_MANUAL_PANEL_OPEN: {
-            return pipe(
-                assoc("manualLookupString", ""),
-                assoc("manualVisible", action.open)
-            )(state);
+            return {
+                ...state,
+                manualLookupString: "",
+                manualVisible: action.open
+            };
         }
         case SET_FILE_TREE_PANEL_OPEN: {
-            return assoc("fileTreeVisible", action.open, state);
+            return {
+                ...state,
+                fileTreeVisible: action.open
+            };
         }
         default: {
             return state;

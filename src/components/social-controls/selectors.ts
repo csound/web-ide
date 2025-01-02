@@ -1,6 +1,7 @@
 import { RootState } from "@root/store";
+import { createSelector } from "@reduxjs/toolkit";
 import { IProject, IProjectsReducer, Star } from "../projects/types";
-import { curry, keys, pathOr, propOr } from "ramda";
+import { keys, propOr } from "ramda";
 import { selectActiveProject } from "../projects/selectors";
 
 export const selectActiveProjectUid = (
@@ -17,15 +18,26 @@ export const selectProjects = (
     return state.projects;
 };
 
-export const selectUserStarredProject =
-    (loggedInUserUid: string | undefined, projectUid: string | undefined) =>
-    (store: RootState) => {
-        if (!projectUid) return [];
-        if (!loggedInUserUid) return [];
-        const projectStars: Star =
-            store.ProjectsReducer.projects[projectUid].stars;
-        return keys(projectStars).includes(loggedInUserUid);
-    };
+export const selectProjectStars = (projectUid: string) =>
+    createSelector(
+        [
+            (state: RootState) =>
+                state.ProjectsReducer.projects[projectUid]?.stars
+        ],
+        (projectStars: Star | undefined) => projectStars || {}
+    );
+
+export const selectUserStarredProject = (
+    loggedInUserUid: string | undefined,
+    projectUid: string | undefined
+) =>
+    createSelector(
+        [selectProjectStars(projectUid || "")],
+        (projectStars: Star) => {
+            if (!projectUid || !loggedInUserUid) return false;
+            return Object.keys(projectStars).includes(loggedInUserUid);
+        }
+    );
 
 export const selectProjectPublic = (store: RootState): boolean => {
     const activeProject = selectActiveProject(store);

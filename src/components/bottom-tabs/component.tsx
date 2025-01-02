@@ -74,12 +74,8 @@ const BottomTabs = (): React.ReactElement => {
                     showArrowButton={"auto"}
                     onTabSequenceChange={handleTabSequenceChange}
                 >
-                    <DragTabList
-                        id="drag-tab-list"
-                        items={openTabs}
-                        setItems={() => {}}
-                    >
-                        {(openTabs || []).map((k, index) => (
+                    <DragTabList items={openTabs} />
+                    {/* {(openTabs || []).map((k, index) => (
                             <DragTab
                                 id={"drag-tab-" + index}
                                 key={index}
@@ -101,7 +97,7 @@ const BottomTabs = (): React.ReactElement => {
                                 </p>
                             </DragTab>
                         ))}
-                    </DragTabList>
+                    </DragTabList> */}
 
                     <PanelList style={{ height: "100%", width: "100%" }}>
                         {(openTabs || []).map((k, index) => {

@@ -2,7 +2,10 @@ import React, { RefObject, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectCurrentRoute } from "@comp/router/selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
-import { selectUserImageURL, selectUserName } from "@comp/profile/selectors";
+import {
+    selectUserImageURL,
+    selectLoggedInUserName
+} from "@comp/profile/selectors";
 import { selectLoggedInUid } from "@comp/login/selectors";
 import AppBar from "@mui/material/AppBar";
 import Login from "@comp/login/login";
@@ -33,7 +36,7 @@ import * as SS from "./styles";
 import { isEmpty } from "ramda";
 import { MenuBar } from "@comp/menu-bar/menu-bar";
 import ProjectProfileMeta from "./project-profile-meta";
-import TargetControls from "@comp/target-controls";
+import { TargetControls } from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
 
 export const Header = () => {
@@ -54,11 +57,11 @@ export const Header = () => {
 
     const routeIsProfile = currentRoute === "profile";
 
-    const isOwner = useSelector(selectIsOwner(activeProjectUid || ""));
+    const isOwner = useSelector(selectIsOwner);
 
     const loggedInUid = useSelector(selectLoggedInUid);
 
-    const loggedInUserName = useSelector(selectUserName(loggedInUid));
+    const loggedInUserName = useSelector(selectLoggedInUserName);
 
     const avatarUrl = useSelector(selectUserImageURL(loggedInUid || ""));
 
@@ -181,8 +184,16 @@ export const Header = () => {
                     {routeIsEditor && !isOwner && <ProjectProfileMeta />}
                     <div style={{ flexGrow: 1 }} />
                     <div css={SS.headerRightSideGroup}>
-                        {routeIsEditor && <TargetControls />}
-                        {routeIsEditor && <SocialControls />}
+                        {routeIsEditor && activeProjectUid && (
+                            <TargetControls
+                                activeProjectUid={activeProjectUid}
+                            />
+                        )}
+                        {routeIsEditor && activeProjectUid && (
+                            <SocialControls
+                                activeProjectUid={activeProjectUid}
+                            />
+                        )}
                     </div>
                     {authenticated ? userMenu() : loginButton()}
                 </Toolbar>

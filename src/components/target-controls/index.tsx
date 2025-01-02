@@ -6,22 +6,20 @@ import { selectProjectTargets, selectSelectedTarget } from "./selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
-import { path, pathOr, values } from "ramda";
+import { values } from "ramda";
 import StopButton from "./stop-button";
 
-const TargetControls = (): React.ReactElement => {
+export const TargetControls = ({
+    activeProjectUid
+}: {
+    activeProjectUid: string;
+}) => {
     const dispatch = useDispatch();
 
     const selectedTarget: string | undefined =
         useSelector(selectSelectedTarget);
 
-    const activeProjectUid: string | undefined = useSelector(
-        (store: RootState) => {
-            return path(["ProjectsReducer", "activeProjectUid"], store);
-        }
-    );
-
-    const isOwner = useSelector(selectIsOwner(activeProjectUid || ""));
+    const isOwner = useSelector(selectIsOwner);
 
     const targets: ITargetMap | undefined = useSelector(
         selectProjectTargets(activeProjectUid)
@@ -82,5 +80,3 @@ const TargetControls = (): React.ReactElement => {
         <></>
     );
 };
-
-export default TargetControls;

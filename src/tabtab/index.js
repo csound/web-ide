@@ -1,6 +1,6 @@
 export { default as Tabs } from "./tabs.jsx";
 export {
-    default as TabList,
+    TabListComponent,
     ActionButtonStyle,
     TabListStyle
 } from "./tab-list.jsx";

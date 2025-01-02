@@ -115,7 +115,6 @@ export const Profile = () => {
     const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
     const filteredProjects = useSelector(selectUserProjects(profileUid));
-    console.log(filteredProjects);
     // const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);

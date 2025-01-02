@@ -1,17 +1,48 @@
-import { getAuth } from "firebase/auth";
+import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@root/store";
-import { equals, path, pathOr } from "ramda";
+import { path, pathOr } from "ramda";
 import { IOpenDocument } from "./types";
 
-export const selectIsOwner = (projectUid: string) => (store: RootState) => {
-    const currentUser = getAuth().currentUser;
-    if (typeof currentUser !== "object") {
-        return false;
-    }
-    const owner = store.ProjectsReducer.projects[projectUid]?.userUid;
+export const selectLoggedInUid = createSelector(
+    [
+        (state: RootState) => {
+            if (!state.LoginReducer) return undefined;
+            return state.LoginReducer.loggedInUid;
+        }
+    ],
+    (loggedInUid) => loggedInUid
+);
 
-    return equals(owner, (currentUser && currentUser.uid) || -1);
-};
+export const selectActiveProjectUid = createSelector(
+    [
+        (state: RootState) => {
+            if (!state.ProjectsReducer) return undefined;
+            return state.ProjectsReducer.activeProjectUid;
+        }
+    ],
+    (activeProjectUid) => activeProjectUid
+);
+
+export const selectProjectOwner = createSelector(
+    [
+        selectActiveProjectUid,
+        (state: RootState) => {
+            return state.ProjectsReducer.projects;
+        }
+    ],
+    (projectUid: string | undefined, projects) => {
+        if (!projectUid || !projects) return undefined;
+        const project = projects[projectUid];
+        return project?.userUid ?? undefined;
+    }
+);
+
+export const selectIsOwner = createSelector(
+    [selectProjectOwner, selectLoggedInUid],
+    (ownerUid, loggedInUid) => {
+        return ownerUid === loggedInUid;
+    }
+);
 
 export const selectTabDockIndex = (store: RootState): number =>
     pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"], store);

@@ -67,23 +67,25 @@ const StyledPublicOffIcon = styled(VisibilityOffIcon)`
     }
 `;
 
-const SocialControls = (): React.ReactElement => {
-    const projectUid = useSelector(selectActiveProjectUid);
+const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
     const loggedInUserUid = useSelector(selectLoggedInUid);
     const starred = useSelector(
-        selectUserStarredProject(loggedInUserUid, projectUid)
+        selectUserStarredProject(loggedInUserUid, activeProjectUid)
     );
     const isRequestingLogin = useSelector(selectLoginRequesting);
-    const isOwner = useSelector(selectIsOwner(projectUid as any));
+    const isOwner = useSelector(selectIsOwner);
     const isPublic = useSelector(selectProjectPublic);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (projectUid && !isRequestingLogin && loggedInUserUid) {
-            const unsubscribe = subscribeToProjectStars(projectUid, dispatch);
+        if (activeProjectUid && !isRequestingLogin && loggedInUserUid) {
+            const unsubscribe = subscribeToProjectStars(
+                activeProjectUid,
+                dispatch
+            );
             return unsubscribe;
         }
-    }, [projectUid, isRequestingLogin, loggedInUserUid, dispatch]);
+    }, [activeProjectUid, isRequestingLogin, loggedInUserUid, dispatch]);
 
     return (
         <>
@@ -123,10 +125,10 @@ const SocialControls = (): React.ReactElement => {
                     <StyledIconButton
                         size="medium"
                         onClick={() => {
-                            if (projectUid && loggedInUserUid) {
+                            if (activeProjectUid && loggedInUserUid) {
                                 dispatch(
                                     starOrUnstarProject(
-                                        projectUid,
+                                        activeProjectUid,
                                         loggedInUserUid
                                     )
                                 );
@@ -147,9 +149,12 @@ const SocialControls = (): React.ReactElement => {
                         <StyledIconButton
                             size="medium"
                             onClick={() => {
-                                if (typeof projectUid === "string") {
+                                if (typeof activeProjectUid === "string") {
                                     dispatch(
-                                        markProjectPublic(projectUid, !isPublic)
+                                        markProjectPublic(
+                                            activeProjectUid,
+                                            !isPublic
+                                        )
                                     );
                                 }
                             }}

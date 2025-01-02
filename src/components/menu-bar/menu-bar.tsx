@@ -42,7 +42,7 @@ export function MenuBar() {
     );
 
     const dispatch = useDispatch();
-    const isOwner = useSelector(selectIsOwner(activeProjectUid));
+    const isOwner = useSelector(selectIsOwner);
     const csoundStatus = useSelector(selectCsoundStatus);
     const keyBindings: BindingsMap | undefined = useSelector(
         path(["HotKeysReducer", "bindings"])

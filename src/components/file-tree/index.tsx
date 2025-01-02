@@ -450,7 +450,7 @@ const makeTree = (
             </Tooltip>
         );
 
-    return currentFiles.reduce(
+    const nextFiles = currentFiles.reduce(
         (acc: any[], document_: IDocument, index: number) => {
             const [documentIndex_, elementArray_] = acc;
 
@@ -646,17 +646,19 @@ const makeTree = (
         },
         [{}, []]
     );
+    return nextFiles;
 };
 
-const FileTree = (): React.ReactElement => {
+export const FileTree = ({
+    activeProjectUid
+}: {
+    activeProjectUid: string;
+}) => {
     const [collapseState, setCollapseState] = useState({});
     // const [isLoaded, setIsLoaded] = useState(false);
     const [stateDnD] = useDnD();
     const dispatch = useDispatch();
     const theme = useTheme();
-    const activeProjectUid: string = useSelector(
-        pathOr("", ["ProjectsReducer", "activeProjectUid"])
-    );
 
     const nonCloudFileTreeEntries: string[] = useSelector(selectNonCloudFiles);
     const nonCloudFileSources: NonCloudFile[] = [];
@@ -669,7 +671,7 @@ const FileTree = (): React.ReactElement => {
         }
     }
     // console.log({ nonCloudFileSources, nonCloudFileTreeEntries });
-    const isOwner: boolean = useSelector(selectIsOwner(activeProjectUid));
+    const isOwner: boolean = useSelector(selectIsOwner);
     const project: IProject | undefined = useSelector(
         path(["ProjectsReducer", "projects", activeProjectUid])
     );
@@ -681,7 +683,7 @@ const FileTree = (): React.ReactElement => {
     const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
 
     const filelist = values(documents || {});
-
+    console.log(stateDnD, project, currentTabDocumentUid);
     return (
         <React.Fragment>
             {stateDnD && project && currentTabDocumentUid && (
@@ -769,5 +771,3 @@ const FileTree = (): React.ReactElement => {
         </React.Fragment>
     );
 };
-
-export default FileTree;

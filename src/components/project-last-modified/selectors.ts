@@ -1,11 +1,14 @@
 import { RootState } from "@root/store";
-import { IProjectLastModified } from "./reducer";
-import { path } from "ramda";
+import { createSelector } from "@reduxjs/toolkit";
 
-export const selectProjectLastModified =
-    (
-        projectUid: string
-    ): ((store: RootState) => IProjectLastModified | undefined) =>
-    (store: RootState) => {
-        return path(["ProjectLastModifiedReducer", projectUid], store);
-    };
+export const selectProjectLastModified = (projectUid: string | undefined) =>
+    createSelector(
+        [
+            () => projectUid,
+            (state: RootState) => state.ProjectLastModifiedReducer
+        ],
+        (projectUid, projectLastModifiedReducer) => {
+            if (!projectUid) return undefined;
+            return projectLastModifiedReducer[projectUid];
+        }
+    );

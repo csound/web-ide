@@ -24,9 +24,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
     const projectName = project?.name ?? "unknown project name";
     const projectDescription = project?.description ?? "";
 
-    const projectLastModified = project?.projectUid
-        ? useSelector(selectProjectLastModified(project?.projectUid))
-        : undefined;
+    const projectLastModified = useSelector(
+        selectProjectLastModified(project?.projectUid)
+    );
 
     const projectLastModifiedDate =
         projectLastModified && typeof projectLastModified.timestamp === "number"
@@ -35,12 +35,11 @@ const ProjectProfileMeta = (): React.ReactElement => {
 
     const projectOwnerUid = project?.userUid ?? undefined;
     const profile = useSelector(selectUserProfile(projectOwnerUid));
+
     const profileUserName = profile?.username ?? "";
     const profileDisplayName = profile?.displayName ?? "unknown user";
     const profileImage = useSelector(selectUserImageURL(projectOwnerUid));
-    const profileProjectsCount = projectOwnerUid
-        ? useSelector(selectProfileProjectsCount(projectOwnerUid))
-        : 0;
+    const profileProjectsCount = useSelector(selectProfileProjectsCount);
 
     const authorTooltip = (
         <div css={SS.projectProfileTooltipContainer}>

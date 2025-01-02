@@ -50,24 +50,27 @@ export const selectUserProfile =
     (profileUid: string | undefined) => (store: RootState) => {
         if (profileUid) {
             const state: IProfileReducer = store.ProfileReducer;
-            return state.profiles.profileUid;
-        } else {
-            return;
+            return state.profiles[profileUid];
         }
     };
 
-export const selectUserName =
-    (
-        profileUid: string | undefined
-    ): ((store: RootState) => string | undefined) =>
-    (store) => {
-        if (profileUid) {
-            const state: IProfileReducer = store.ProfileReducer;
-            return path(["profiles", profileUid, "username"], state);
-        } else {
-            return;
+const selectLogInReducer = (state: RootState) => state.LoginReducer;
+const selectProfiles = (state: RootState) => state.ProfileReducer.profiles;
+
+// Selector to get the username for a specific profileUid
+export const selectLoggedInUserName = createSelector(
+    [selectLogInReducer, selectProfiles],
+    (loggedInUser, profiles) => {
+        if (!loggedInUser || !loggedInUser.loggedInUid) {
+            return undefined;
         }
-    };
+
+        const matchingProfile = profiles[loggedInUser.loggedInUid];
+        if (matchingProfile) {
+            return matchingProfile.username;
+        }
+    }
+);
 
 export const selectLoggedInUserStars = (store: RootState): Array<any> => {
     const loggedInUid: string | undefined = store.LoginReducer.loggedInUid;
@@ -146,11 +149,10 @@ export const selectFilteredUserFollowers =
     };
 
 export const selectUserImageURL =
-    (profileUid: string | undefined): ((store: RootState) => any) =>
-    (store) => {
+    (profileUid: string | undefined) => (store: RootState) => {
         if (profileUid) {
             const state: IProfileReducer = store.ProfileReducer;
-            return pathOr("", ["profiles", profileUid, "photoUrl"], state);
+            return state.profiles[profileUid]?.photoUrl ?? undefined;
         } else {
             return;
         }
@@ -213,15 +215,30 @@ export const selectAllTagsFromUser =
         );
     };
 
-export const selectProfileProjectsCount =
-    (profileUid: string): ((store: RootState) => any) =>
-    (store) => {
-        return pathOr(
-            { all: 0, default: 0 },
-            ["ProfileReducer", "profiles", profileUid, "projectsCount"],
-            store
+// Selector to get profileUid (customize this as per your state structure)
+export const selectProfileUid = createSelector(
+    [(state: RootState) => state.LoginReducer.loggedInUid], // Replace with the correct state slice
+    (loggedInUid) => loggedInUid
+);
+
+// Selector to get the projectsCount for a specific profileUid
+export const selectProfileProjectsCount = createSelector(
+    [selectProfiles, selectProfileUid],
+    (profiles, profileUid) => {
+        if (!profileUid || !profiles[profileUid]) {
+            return {
+                all: 0,
+                public: 0
+            };
+        }
+        return (
+            profiles[profileUid].projectsCount ?? {
+                all: 0,
+                public: 0
+            }
         );
-    };
+    }
+);
 
 // export const selectProjectIconStyle = (
 //     projectUid: string

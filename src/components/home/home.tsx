@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { Header } from "@comp/header/header";
 // import Search from "./search";
@@ -11,7 +11,7 @@ import {
     selectPopularProjectsSlice
 } from "./selectors";
 
-const Home = (): React.ReactElement => {
+const Home = () => {
     const dispatch = useDispatch();
 
     const popularProjectsFetchOffset = useSelector(

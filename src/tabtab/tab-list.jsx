@@ -100,7 +100,7 @@ const ActionButton = ActionButtonStyle;
 const ScrollButton = makeScrollButton(ActionButton);
 const FoldButton = makeFoldButton(ActionButton);
 
-export default function TabListComponent({
+export function TabListComponent({
     children,
     customStyle,
     activeIndex,

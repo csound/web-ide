@@ -69,7 +69,7 @@ const TargetDropdown = ({
         selectedTarget = targets[selectedTargetName];
     }
 
-    const isOwner = useSelector(selectIsOwner(activeProjectUid));
+    const isOwner = useSelector(selectIsOwner);
 
     const mainTargets: ITarget[] = Object.values(targets).filter(
         (target) => target.targetDocumentUid

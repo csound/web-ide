@@ -7,6 +7,7 @@ export const sortByStoredTabOrder = (
 ): IOpenDocument[] => {
     return tabOrder.reduce(
         (accumulator: IOpenDocument[], documentUid: string) => {
+            console.log("Document uid", allDocuments, documentUid);
             const maybeDocument: IDocument | undefined = allDocuments.find(
                 (doc) => doc.documentUid === documentUid
             );

@@ -27,12 +27,12 @@ import Editor from "../editor/editor";
 import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 import CsoundManualWindow from "./csound-manual";
-import FileTree from "../file-tree";
+import { FileTree } from "../file-tree";
 import {
     storeEditorKeyboardCallbacks,
     storeProjectEditorKeyboardCallbacks
 } from "@comp/hot-keys/actions";
-import { append, reduce, pathOr, propOr } from "ramda";
+import { pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
 import {
     rearrangeTabs,
@@ -191,7 +191,7 @@ const ProjectEditor = ({
         "name",
         activeProject
     );
-    const isOwner: boolean = useSelector(selectIsOwner(projectUid));
+    const isOwner: boolean = useSelector(selectIsOwner);
     const csound: CsoundObj | undefined = undefined;
 
     useEffect(() => {
@@ -247,18 +247,13 @@ const ProjectEditor = ({
 
     const openDocuments: AnyTab[] = tabDockDocuments.reduce(
         (accumulator: AnyTab[], tabDocument: IOpenDocument) => {
-            const maybeDocument = pathOr(
-                {} as IDocument,
-                ["documents", propOr("", "uid", tabDocument)],
-                activeProject
-            );
-
+            const maybeDocument = activeProject.documents[tabDocument.uid];
             const isNonCloudFile = tabDocument.isNonCloudDocument || false;
 
             return isNonCloudFile
-                ? append(tabDocument, accumulator)
+                ? [tabDocument, ...accumulator]
                 : maybeDocument && Object.keys(maybeDocument).length > 0
-                  ? append(maybeDocument, accumulator)
+                  ? [maybeDocument, ...accumulator]
                   : accumulator;
         },
         [] as AnyTab[]
@@ -351,9 +346,7 @@ const ProjectEditor = ({
                     );
                 }}
             >
-                <DragTabList id="drag-tab-list" items={[]}>
-                    {openTabList}
-                </DragTabList>
+                <DragTabList items={openTabList} />
                 <PanelList>{openTabPanels}</PanelList>
             </Tabs>
         </div>
@@ -408,7 +401,9 @@ const ProjectEditor = ({
                         onDragStarted={() => setIsDragging(true)}
                         onDragFinished={() => setIsDragging(false)}
                     >
-                        {isFileTreeVisible && <FileTree />}
+                        {isFileTreeVisible && (
+                            <FileTree activeProjectUid={projectUid} />
+                        )}
                         <MySplit
                             primary="first"
                             split="vertical"

@@ -21,7 +21,7 @@ export const tabDockInit = (
     projectUid: string,
     allDocuments: IDocument[],
     defaultTarget: ITarget | undefined
-): ((dispatch: any) => Promise<void>) => {
+) => {
     const storedIndex = localStorage.getItem(projectUid + ":tabIndex");
     const storedTabOrder: string | null = localStorage.getItem(
         projectUid + ":tabOrder"
@@ -57,6 +57,7 @@ export const tabDockInit = (
             console.error(error);
         }
     }
+    console.log("Initial open documents", defaultTarget);
     if (
         defaultTarget &&
         defaultTarget.targetDocumentUid &&

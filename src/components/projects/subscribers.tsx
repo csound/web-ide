@@ -15,19 +15,7 @@ import {
 } from "./actions";
 import { tabClose } from "@comp/project-editor/actions";
 import { updateAllTargetsLocally } from "@comp/target-controls/actions";
-import {
-    append,
-    assoc,
-    concat,
-    filter,
-    forEach,
-    map,
-    isEmpty,
-    path,
-    prop,
-    propEq,
-    values
-} from "ramda";
+import { append, concat, forEach, isEmpty, path, values } from "ramda";
 import { IFirestoreDocument } from "@root/db/types";
 
 export const subscribeToProjectFilesChanges = (
@@ -72,7 +60,9 @@ export const subscribeToProjectFilesChanges = (
                             );
                         }
                     }, values(documents));
-                dispatch(addProjectDocuments(projectUid, documents) as any);
+                await dispatch(
+                    addProjectDocuments(projectUid, documents) as any
+                );
             }
 
             if (!isEmpty(filesToModify)) {
@@ -139,7 +129,7 @@ export const subscribeToProjectFilesChanges = (
                                 document_,
                                 newAbsolutePath
                             );
-                        dispatch(
+                        await dispatch(
                             saveUpdatedDocument(projectUid, document_) as any
                         );
                     }
@@ -159,12 +149,14 @@ export const subscribeToProjectFilesChanges = (
 
                 const uids = documentData.map((d) => d.documentUid);
 
-                uids.forEach((uid) => {
-                    dispatch(tabClose(projectUid, uid, false) as any);
-                    dispatch(removeDocumentLocally(projectUid, uid) as any);
-                });
+                for (const uid of uids) {
+                    await dispatch(tabClose(projectUid, uid, false) as any);
+                    await dispatch(
+                        removeDocumentLocally(projectUid, uid) as any
+                    );
+                }
 
-                await documentData.forEach(async (document_) => {
+                for (const document_ of documentData) {
                     if (document_.type !== "folder") {
                         const pathPrefix = (document_.path || [])
                             .filter((p) => typeof p === "string")
@@ -180,7 +172,7 @@ export const subscribeToProjectFilesChanges = (
                         ).join("/");
                         csound && (await csound.fs.unlink(absolutePath));
                     }
-                });
+                }
             }
         }
     );
@@ -197,7 +189,7 @@ export const subscribeToProjectTargetsChanges = (
             if (!target.exists()) {
                 return;
             }
-            const { defaultTarget, targets } = await target.data();
+            const { defaultTarget, targets } = target.data();
             updateAllTargetsLocally(
                 dispatch,
                 defaultTarget,

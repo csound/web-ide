@@ -21,6 +21,7 @@ export interface IOpenDocument {
     isNonCloudDocument?: boolean;
     nonCloudFileAudioUrl?: string | undefined;
     nonCloudFileData?: string | undefined;
+    editorInstance?: any;
 }
 
 export interface ITabDock {
