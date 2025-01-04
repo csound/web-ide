@@ -4,6 +4,7 @@ import {
     ThunkDispatch,
     configureStore
 } from "@reduxjs/toolkit";
+// import { combineReducers } from "redux";
 import {
     TypedUseSelectorHook,
     useDispatch as useDispatchOriginal,
@@ -18,21 +19,18 @@ import { createBrowserHistory } from "history";
 // we don't include the devtools
 const insideIframe = !!window.frameElement;
 
-const { createReduxHistory, routerMiddleware, routerReducer } =
-    createReduxHistoryContext({
-        history: createBrowserHistory()
-    });
+// const { createReduxHistory, routerMiddleware, routerReducer } =
+//     createReduxHistoryContext({
+//         history: createBrowserHistory()
+//     });
 
-const rootReducer = { ...reducer, router: routerReducer };
+// const rootReducer = { ...reducer, router: routerReducer };
 
 export const store = configureStore({
-    reducer: rootReducer,
+    reducer,
     devTools: !insideIframe,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(routerMiddleware)
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware()
 });
-
-export const history = createReduxHistory(store);
 
 export type AppDispatch = typeof store.dispatch;
 export { createAsyncThunk } from "@reduxjs/toolkit";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Audio as AudioSpinner } from "react-loader-spinner";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { push } from "connected-react-router";
 import { Theme, useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
@@ -15,15 +15,11 @@ import { UnknownAction } from "redux";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
 
-interface IProjectContextProperties {
-    match: any;
-}
-
 const ForceBackgroundColor = ({ theme }: { theme: Theme }) => (
     <style>{`body {background-color: ${theme.background}}`}</style>
 );
 
-export const ProjectContext = (properties: IProjectContextProperties) => {
+export const ProjectContext = () => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const routeParams: { id?: string } = useParams();

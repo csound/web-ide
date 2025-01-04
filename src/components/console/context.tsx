@@ -10,7 +10,7 @@ export const ConsoleWriteContext = createContext(undefined);
 export const ConsoleProvider = ({
     children
 }: {
-    children: React.ReactElement;
+    children: React.ReactElement | React.ReactNode;
 }) => {
     const [logs, setLogs]: [string[], any] = useState([""]);
 
@@ -46,5 +46,3 @@ export const useSetConsole = (): string[] | undefined => {
     }
     return context;
 };
-
-export default useConsole;

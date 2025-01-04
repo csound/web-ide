@@ -1,6 +1,5 @@
 import React, { RefObject, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
-import { selectCurrentRoute } from "@comp/router/selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import {
     selectUserImageURL,
@@ -11,7 +10,7 @@ import AppBar from "@mui/material/AppBar";
 import Login from "@comp/login/login";
 import * as loginActions from "@comp/login/actions";
 import CSLogo from "@comp/cs-logo/cs-logo";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import {
     Toolbar,
     IconButton,
@@ -49,13 +48,13 @@ export const Header = () => {
         (store: RootState) => store.ProjectsReducer.activeProjectUid
     );
 
-    const currentRoute = useSelector(selectCurrentRoute);
+    const currentRoute = useLocation();
 
-    const routeIsHome = currentRoute === "home";
+    const routeIsHome = currentRoute.pathname === "/";
 
-    const routeIsEditor = currentRoute === "editor";
+    const routeIsEditor = currentRoute.pathname.startsWith("/editor");
 
-    const routeIsProfile = currentRoute === "profile";
+    const routeIsProfile = currentRoute.pathname.startsWith("/profile");
 
     const isOwner = useSelector(selectIsOwner);
 

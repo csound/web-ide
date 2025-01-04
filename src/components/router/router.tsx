@@ -1,95 +1,28 @@
-import { useEffect } from "react";
-import { useDispatch, store } from "@root/store";
-import { Provider } from "react-redux";
 import Home from "../home/home";
 import CsoundManual from "@comp/manual/manual";
 import { Profile } from "../profile/profile";
 import { Page404 } from "../page-404/page-404";
 import { ProjectContext } from "../projects/project-context";
-import { closeTabDock } from "@comp/project-editor/actions";
-import { closeProject } from "@comp/projects/actions";
-// import { HistoryRouter as Router } from "redux-first-history/rr6";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { stopCsound } from "../csound/actions";
+import { BrowserRouter, Route, Routes } from "react-router";
 import { SiteDocuments } from "../site-documents/site-documents";
-import { ConsoleProvider } from "@comp/console/context";
 
-const EditorLayout = (properties: any) => {
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        return () => {
-            dispatch(stopCsound());
-            dispatch(closeProject());
-            dispatch(closeTabDock());
-        };
-    }, [dispatch]);
-
+export const WebIdeRouter = () => {
     return (
-        <Provider store={store}>
-            <ConsoleProvider>
-                <ProjectContext {...properties}></ProjectContext>
-            </ConsoleProvider>
-        </Provider>
+        <BrowserRouter>
+            <Routes>
+                <Route index element={<Home />} />
+                <Route path="profile/:username/:tab?" element={<Profile />} />
+                <Route path="editor" element={<ProjectContext />}>
+                    <Route path=":id" element={<ProjectContext />} />
+                </Route>
+                <Route path="manual" element={<CsoundManual />}>
+                    <Route path=":id" element={<CsoundManual />} />
+                </Route>
+
+                <Route path="documentation" element={<SiteDocuments />} />
+                <Route path="404" element={<Page404 />} />
+                <Route path="*" element={<Page404 />} />
+            </Routes>
+        </BrowserRouter>
     );
 };
-
-// const CsoundManualWithStyleOverrides = ({
-//     theme,
-//     ...routerProperties
-// }: any) => {
-//     const [isMounted, setIsMounted] = useState(false);
-//     const [{ fetched, Csound }, setFetchState]: [
-//         { fetched: boolean; Csound: any },
-//         any
-//     ] = useState({ fetched: false, Csound: undefined });
-
-//     useEffect(() => {
-//         if (!isMounted) {
-//             setIsMounted(true);
-//             import("@csound/browser").then(({ Csound }) => {
-//                 setFetchState({ fetched: true, Csound });
-//             });
-//         }
-//     }, [isMounted, setIsMounted, fetched, Csound, setFetchState]);
-
-//     return !fetched ? (
-//         <></>
-//     ) : (
-//         <CsoundManual
-//             {...routerProperties}
-//             theme={theme}
-//             codeMirrorPainter={CodeMirrorPainter}
-//             Csound={Csound}
-//         />
-//     );
-// };
-
-// const RouterAny = Router as any;
-
-const RouterComponent = ({ children }: { children: React.ReactNode }) => {
-    return (
-        <>
-            <BrowserRouter>
-                <Routes>
-                    <Route index element={<Home />} />
-                    <Route path="profile/:username" element={<Profile />} />
-                    <Route path="profile/:username/*" element={<Profile />} />
-                    <Route path="editor" element={<EditorLayout />}>
-                        <Route path=":id" element={<EditorLayout />} />
-                    </Route>
-                    <Route path="manual" element={<CsoundManual />}>
-                        <Route path=":id" element={<CsoundManual />} />
-                    </Route>
-
-                    <Route path="documentation" element={<SiteDocuments />} />
-                    <Route path="404" element={<Page404 />} />
-                    <Route path="*" element={<Page404 />} />
-                </Routes>
-            </BrowserRouter>
-            {children}
-        </>
-    );
-};
-
-export default RouterComponent;

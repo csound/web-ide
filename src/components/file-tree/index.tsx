@@ -683,7 +683,7 @@ export const FileTree = ({
     const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
 
     const filelist = values(documents || {});
-    console.log(stateDnD, project, currentTabDocumentUid);
+
     return (
         <React.Fragment>
             {stateDnD && project && currentTabDocumentUid && (

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useDispatch, useSelector } from "@root/store";
 import { List, ListItem, ListItemText } from "@mui/material";
 import { FollowingList } from "./tabs/following-list";

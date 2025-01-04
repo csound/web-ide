@@ -7,6 +7,7 @@ import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
 import { push } from "connected-react-router";
+import { useLocation, useParams } from "react-router";
 import { createButtonAddIcon } from "./styles";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -30,7 +31,6 @@ import {
     selectLoginRequesting,
     selectLoggedInUid
 } from "@comp/login/selectors";
-import { selectCurrentProfileRoute } from "@comp/router/selectors";
 import {
     uploadProfileImage,
     addProject,
@@ -80,37 +80,13 @@ const UserLink = ({ link }: { link: string | undefined }) => {
         <></>
     );
 };
-const routerLocationToProfileUriPath = (
-    location: Location | undefined
-): [string | undefined, string | undefined] => {
-    if (!location) {
-        return [undefined, undefined];
-    }
-    const { pathname } = location;
-
-    if (pathname.startsWith("/profile/")) {
-        const woPrefix = pathname.slice(9); // Remove "/profile/"
-        const [woPostfix, nested] = woPrefix.split("/", 2);
-
-        if (nested) {
-            return [woPostfix, nested];
-        } else {
-            return [woPostfix, undefined];
-        }
-    }
-
-    return [undefined, undefined];
-};
 
 export const Profile = () => {
     const [profileUid, setProfileUid]: [string | undefined, any] = useState();
     const theme = useTheme();
     const dispatch = useDispatch();
-    const location: Location | undefined = useSelector(
-        selectCurrentProfileRoute
-    ) as any;
-    const [username, profileUriPath] = routerLocationToProfileUriPath(location);
 
+    const { username, tab } = useParams();
     const profile = useSelector(selectUserProfile(profileUid));
     const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
@@ -139,23 +115,17 @@ export const Profile = () => {
 
     useEffect(() => {
         if (username) {
-            if (!profileUriPath && selectedSection !== 0) {
+            if (!tab && selectedSection !== 0) {
                 setSelectedSection(0);
-            } else if (
-                profileUriPath === "following" &&
-                selectedSection !== 1
-            ) {
+            } else if (tab === "following" && selectedSection !== 1) {
                 setSelectedSection(1);
-            } else if (
-                profileUriPath === "followers" &&
-                selectedSection !== 2
-            ) {
+            } else if (tab === "followers" && selectedSection !== 2) {
                 setSelectedSection(2);
-            } else if (profileUriPath === "stars" && selectedSection !== 3) {
+            } else if (tab === "stars" && selectedSection !== 3) {
                 setSelectedSection(3);
             }
         }
-    }, [profileUriPath, selectedSection, username]);
+    }, [tab, selectedSection, username]);
 
     useEffect(() => {
         if (!isRequestingLogin) {

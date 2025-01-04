@@ -1,15 +1,6 @@
-// import { TextField, IconButton, Grid } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import styled from "@emotion/styled";
-// import styled, { createGlobalStyle } from "styled-components";
-// import { Gradient } from "./gradient";
 import { headerHeight } from "@styles/constants";
-
-// export const GlobalStyle = createGlobalStyle`
-//   body {
-//     ${Gradient}
-//   }
-// `;
 
 export const StyledGrid = styled.div`
     && {
@@ -36,27 +27,6 @@ export const StyledTextField = styled.div`
         border-radius: 5px;
     }
 `;
-
-// interface IAnimatedGridContainer {
-//     duration: number;
-// }
-
-// export const AnimatedGridContainer = styled(Grid)<IAnimatedGridContainer>`
-//     position: relative;
-//     transition: all ${(properties) => properties.duration}ms;
-
-//     &.entering {
-//         opacity: 0;
-//         transform: translate(30px);
-//     }
-//     &.entered {
-//         opacity: 1;
-//     }
-//     &.exiting {
-//         opacity: 0;
-//         transform: translate(30px);
-//     }
-// `;
 
 interface IProjectCard {
     duration: number;

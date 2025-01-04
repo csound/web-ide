@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "@root/store";
 import { isMobile } from "@root/utils";
-import Router from "@comp/router/router";
+import { WebIdeRouter } from "@comp/router/router";
 import ThemeProvider from "@styles/theme-provider";
 import Modal from "@comp/modal";
 import IosWarning from "./ios-warning";
@@ -12,6 +12,7 @@ import {
     thirdPartyAuthSuccess
 } from "@comp/login/actions";
 import { getAuth } from "firebase/auth";
+import { ConsoleProvider } from "@comp/console/context";
 import HotKeys from "@comp/hot-keys/hot-keys";
 
 const Main = () => {
@@ -59,13 +60,14 @@ const Main = () => {
 
     return (
         <ThemeProvider>
-            <Router>
-                <>
+            <ConsoleProvider>
+                <HotKeys>
                     <Modal />
                     <IosWarning />
                     <Snackbar />
-                </>
-            </Router>
+                    <WebIdeRouter />
+                </HotKeys>
+            </ConsoleProvider>
         </ThemeProvider>
     );
 };

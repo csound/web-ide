@@ -25,7 +25,7 @@ type CommandKey = keyof IHotKeysCallbacks;
 const HotKeys = ({
     children
 }: {
-    children: React.ReactElement;
+    children: React.ReactElement | React.ReactElement[];
 }): React.ReactElement => {
     // prevent leak into the manual iframe
     const insideIframe = !!window.frameElement;
