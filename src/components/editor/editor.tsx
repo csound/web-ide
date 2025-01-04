@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { csoundMode } from "@hlolli/codemirror-lang-csound";
 import { EditorView } from "codemirror";
@@ -27,7 +27,6 @@ import { EditorState, StateField } from "@codemirror/state";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
-import { reject, pathOr, propOr } from "ramda";
 import * as projectActions from "../projects/actions";
 import { editorStyle } from "@styles/code-mirror-painter";
 
@@ -40,30 +39,26 @@ const histories: Record<string, any> = {};
 const getInitialState = (
     documentUid: string
 ): { json: any; fields: any } | undefined => {
-    const hasHistory = Boolean(stateFields[documentUid + ":serialized"]);
+    const hasHistory = !!stateFields[`${documentUid}:serialized`];
     stateFields[documentUid] = stateFields[documentUid] || {};
     stateFields[documentUid].history =
         stateFields[documentUid].history || historyField;
     return hasHistory
         ? {
-              json: JSON.parse(stateFields[documentUid + ":serialized"]),
+              json: JSON.parse(stateFields[`${documentUid}:serialized`]),
               fields: stateFields[documentUid]
           }
         : undefined;
 };
 
-const getInitialScrollPosition = (documentUid: string): number => {
-    return scrollPos[documentUid] || 0;
-};
+const getInitialScrollPosition = (documentUid: string): number =>
+    scrollPos[documentUid] || 0;
 
 const getHistory = (documentUid: string): any => {
-    const previousHistory = histories[documentUid];
-    if (previousHistory) {
-        return previousHistory;
-    } else {
+    if (!histories[documentUid]) {
         histories[documentUid] = history();
-        return histories[documentUid];
     }
+    return histories[documentUid];
 };
 
 const CodeEditor = ({
@@ -72,30 +67,25 @@ const CodeEditor = ({
 }: {
     documentUid: string;
     projectUid: string;
-}): React.ReactElement => {
-    const editorReference = useRef(null);
+}) => {
+    const editorReference = useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = useState(false);
     const dispatch = useDispatch();
 
     const project = useSelector(
-        pathOr({} as IProject, ["ProjectsReducer", "projects", projectUid])
+        (state: any) =>
+            state?.ProjectsReducer?.projects?.[projectUid] ?? ({} as IProject)
     );
 
-    const document = pathOr(
-        {} as IDocument,
-        ["documents", documentUid],
-        project
-    );
+    const document = project?.documents?.[documentUid] ?? ({} as IDocument);
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
 
-    const [csoundDocumentStateField, setCsoundDocumentStateField] = useState(
-        undefined as
-            | StateField<{ documentUid: string; documentType: string }>
-            | undefined
-    );
+    const [csoundDocumentStateField, setCsoundDocumentStateField] = useState<
+        StateField<{ documentUid: string; documentType: string }> | undefined
+    >(undefined);
 
-    const currentDocumentValue: string = propOr("", "currentValue", document);
+    const currentDocumentValue: string = document.currentValue || "";
 
     const onChange = useCallback(
         (event: any) => {
@@ -132,17 +122,16 @@ const CodeEditor = ({
                     "scroll",
                     onScroll
                 );
-
                 editorStateInstance.destroy();
                 openEditors.delete(documentUid);
             }
         };
-    }, [isMounted, setIsMounted, documentUid, onScroll]);
+    }, [isMounted, documentUid, onScroll]);
 
     useEffect(() => {
         if (editorReference.current && !openEditors.has(documentUid)) {
             const initialState = getInitialState(documentUid);
-            // console.log({ initialState });
+
             const config = {
                 extensions: [
                     lineNumbers(),
@@ -154,21 +143,21 @@ const CodeEditor = ({
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
                     csoundMode({
-                        fileType: (["sco", "orc", "csd"].includes(
-                            csoundFileType || ""
-                        )
-                            ? csoundFileType
-                            : "orc") as "sco" | "orc" | "csd"
+                        fileType:
+                            csoundFileType &&
+                            ((["sco", "orc", "csd"].includes(csoundFileType)
+                                ? csoundFileType
+                                : "orc") as "sco" | "orc" | "csd")
                     }),
                     keymap.of([
-                        ...reject(
-                            (keyb: any) =>
-                                [
+                        ...defaultKeymap.filter(
+                            (keyb) =>
+                                keyb &&
+                                ![
                                     "Mod-Enter",
                                     "Comd-Enter",
                                     "Ctrl-Enter"
-                                ].includes(keyb.key),
-                            defaultKeymap
+                                ].includes(keyb.key || "")
                         ),
                         ...historyKeymap
                     ]),
@@ -181,22 +170,24 @@ const CodeEditor = ({
                     crosshairCursor()
                 ]
             };
+
             const newEditor = initialState
                 ? new EditorView({
                       state: EditorState.fromJSON(
-                          initialState?.json || {},
+                          initialState.json,
                           config,
-                          initialState?.fields || {}
+                          initialState.fields
                       ),
-
                       parent: editorReference.current
                   })
                 : new EditorView({
                       extensions: config.extensions,
                       parent: editorReference.current
                   });
+
             newEditor.scrollDOM.addEventListener("scroll", onScroll);
             openEditors.set(documentUid, newEditor);
+
             newEditor.dispatch({
                 changes: {
                     from: 0,
@@ -204,17 +195,18 @@ const CodeEditor = ({
                     insert: currentDocumentValue
                 }
             });
+
             const initialScrollPosition = getInitialScrollPosition(documentUid);
             if (initialScrollPosition > 0) {
                 newEditor.scrollDOM.scrollTop = initialScrollPosition;
-                for (const timeout of [1, 10, 100]) {
+                [1, 10, 100].forEach((timeout) =>
                     setTimeout(() => {
                         try {
                             newEditor.scrollDOM.scrollTop =
                                 initialScrollPosition;
                         } catch {}
-                    }, timeout);
-                }
+                    }, timeout)
+                );
             }
         }
     }, [
@@ -241,13 +233,7 @@ const CodeEditor = ({
                 })
             );
         }
-    }, [
-        isMounted,
-        documentUid,
-        csoundFileType,
-        csoundDocumentStateField,
-        setCsoundDocumentStateField
-    ]);
+    }, [isMounted, documentUid, csoundFileType, csoundDocumentStateField]);
 
     return <div ref={editorReference} css={editorStyle} />;
 };

@@ -1,10 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-    AppThunkDispatch,
-    RootState,
-    useDispatch,
-    useSelector
-} from "@root/store";
+import { AppThunkDispatch, useDispatch, useSelector } from "@root/store";
 import { getAuth } from "firebase/auth";
 import { uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, doc } from "firebase/firestore";
@@ -14,29 +9,7 @@ import {
     projects,
     storageReference
 } from "@config/firestore";
-import {
-    addIndex,
-    append,
-    assoc,
-    both,
-    concat,
-    curry,
-    find,
-    filter,
-    isEmpty,
-    last,
-    mergeAll,
-    not,
-    reduce,
-    reject,
-    sort,
-    path,
-    pathOr,
-    pipe,
-    propEq,
-    propOr,
-    values
-} from "ramda";
+import { curry, path, propOr, values } from "ramda";
 import { Mime } from "mime";
 import moment from "moment";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -84,8 +57,6 @@ import { selectNonCloudFiles } from "./selectors";
 import { NonCloudFile } from "./types";
 
 const mime = new Mime();
-
-const reduceIndexed = addIndex(reduce);
 
 const RootReference = React.forwardRef((properties: any, reference: any) => (
     <div ref={reference} {...properties}>
@@ -654,35 +625,27 @@ export const FileTree = ({
 }: {
     activeProjectUid: string;
 }) => {
-    const [collapseState, setCollapseState] = useState({});
-    // const [isLoaded, setIsLoaded] = useState(false);
+    const [collapseState, setCollapseState] = useState<Record<string, boolean>>(
+        {}
+    );
     const [stateDnD] = useDnD();
     const dispatch = useDispatch();
     const theme = useTheme();
 
-    const nonCloudFileTreeEntries: string[] = useSelector(selectNonCloudFiles);
-    const nonCloudFileSources: NonCloudFile[] = [];
-
-    for (const ncfEntry of nonCloudFileTreeEntries) {
-        if (nonCloudFiles.has(ncfEntry)) {
-            nonCloudFileSources.push(
-                nonCloudFiles.get(ncfEntry) as NonCloudFile
-            );
-        }
-    }
-    // console.log({ nonCloudFileSources, nonCloudFileTreeEntries });
-    const isOwner: boolean = useSelector(selectIsOwner);
-    const project: IProject | undefined = useSelector(
-        path(["ProjectsReducer", "projects", activeProjectUid])
-    );
-
-    const documents: IDocumentsMap | undefined = useSelector(
-        path(["ProjectsReducer", "projects", activeProjectUid, "documents"])
-    );
-
+    // Selectors
+    const nonCloudFileTreeEntries = useSelector(selectNonCloudFiles) || [];
+    const isOwner = useSelector(selectIsOwner);
     const currentTabDocumentUid = useSelector(selectCurrentTabDocumentUid);
+    const project = useSelector(
+        (state) => state.ProjectsReducer.projects?.[activeProjectUid]
+    );
+    const documents = project?.documents || {};
 
-    const filelist = values(documents || {});
+    // Extract file list and map non-cloud files
+    const filelist = Object.values(documents);
+    const nonCloudFileSources = nonCloudFileTreeEntries
+        .map((entry) => nonCloudFiles.get(entry))
+        .filter((file): file is NonCloudFile => !!file);
 
     return (
         <React.Fragment>
@@ -705,7 +668,9 @@ export const FileTree = ({
                         }
                         {nonCloudFileSources.length > 0 && <hr />}
                         {nonCloudFileSources.map((file, index) => {
-                            const mimeType = mime.getType(file.name);
+                            const mimeType =
+                                mime.getType(file.name) ||
+                                "application/octet-stream";
 
                             return (
                                 <div

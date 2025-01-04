@@ -102,13 +102,14 @@ export const addDocumentToEMFS = async (
 };
 
 export const fileDocumentDataToDocumentType = (
-    documentData: IFirestoreDocument
+    documentData: IFirestoreDocument,
+    documentUid: string
 ): IDocument =>
     ({
         created: documentData?.created?.toMillis() ?? undefined,
         currentValue: documentData["value"],
         description: documentData["description"],
-        documentUid: documentData["documentUid"],
+        documentUid,
         filename: documentData["name"],
         isModifiedLocally: false,
         lastModified: documentData?.lastModified?.toMillis() ?? undefined,
@@ -122,12 +123,29 @@ export const convertDocumentSnapToDocumentsMap = (
     documentsToAdd: DocumentChange[]
 ): Record<string, IDocument> => {
     return documentsToAdd
-        .map((doc) => doc.doc.data())
-        .reduce((accumulator: Record<string, IDocument>, documentData: any) => {
-            accumulator[documentData.documentUid] =
-                fileDocumentDataToDocumentType(documentData);
-            return accumulator;
-        }, {});
+        .map((doc) => [doc.doc, doc.doc.data()])
+        .reduce(
+            (
+                accumulator: Record<string, IDocument>,
+                [doc, documentData]: any[]
+            ) => {
+                const documentUid = doc.id;
+                accumulator[doc.id] = fileDocumentDataToDocumentType(
+                    documentData,
+                    documentUid
+                );
+                // console.log(
+                //     "Document data",
+                //     documentUid,
+                //     doc,
+                //     documentData,
+                //     accumulator[doc.id]
+                // );
+
+                return accumulator;
+            },
+            {}
+        );
 };
 
 export const firestoreProjectToIProject = (

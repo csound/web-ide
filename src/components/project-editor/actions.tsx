@@ -57,7 +57,7 @@ export const tabDockInit = (
             console.error(error);
         }
     }
-    console.log("Initial open documents", defaultTarget);
+
     if (
         defaultTarget &&
         defaultTarget.targetDocumentUid &&

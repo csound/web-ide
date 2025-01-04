@@ -64,15 +64,8 @@ export const selectCurrentTabDocumentUid = (
 ): string | undefined => {
     const tabIndex = selectTabDockIndex(store);
     if (tabIndex > -1) {
-        return path(
-            [
-                "ProjectEditorReducer",
-                "tabDock",
-                "openDocuments",
-                tabIndex,
-                "uid"
-            ],
-            store
-        );
+        return store?.ProjectEditorReducer?.tabDock?.openDocuments?.[tabIndex]
+            ?.uid;
     }
+    return undefined;
 };

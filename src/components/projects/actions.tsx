@@ -120,10 +120,12 @@ export const downloadAllProjectDocumentsOnce = (
         const allDocuments = await Promise.all(
             filesReference.docs.map(async (d) => {
                 const data = d.data() as IFirestoreDocument;
-                return fileDocumentDataToDocumentType({
-                    ...data,
-                    documentUid: d.id
-                });
+                return fileDocumentDataToDocumentType(
+                    {
+                        ...data
+                    },
+                    d.id
+                );
             })
         );
         const allDocumentsMap = reduce(
@@ -193,11 +195,11 @@ export const unsetProject = (projectUid: string) => {
 export const addProjectDocuments = (
     projectUid: string,
     documents: IDocumentsMap
-): ((dispatch: any, getState: () => RootState) => Promise<void>) => {
-    return async (dispatch: any, getState) => {
+) => {
+    return async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const store: RootState = getState();
         const tabIndex: number = selectTabDockIndex(store);
-        await dispatch({
+        dispatch({
             type: ADD_PROJECT_DOCUMENTS,
             projectUid,
             documents

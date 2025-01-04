@@ -36,33 +36,11 @@ export const subscribeToProjectFilesChanges = (
             const filesToModify = changedFiles.filter(
                 (file) => file.type === "modified"
             );
-
             if (!isEmpty(filesToAdd)) {
                 const documents: IDocumentsMap =
                     convertDocumentSnapToDocumentsMap(filesToAdd);
-                csound &&
-                    forEach((d) => {
-                        if (d.type !== "folder") {
-                            const pathPrefix = (d.path || [])
-                                .filter((p) => typeof p === "string")
-                                .map((documentUid) =>
-                                    path([documentUid, "filename"], documents)
-                                );
-                            const absolutePath = concat(
-                                [`/${projectUid}`],
-                                append(d.filename, pathPrefix)
-                            ).join("/");
-                            addDocumentToEMFS(
-                                projectUid,
-                                csound,
-                                d,
-                                absolutePath
-                            );
-                        }
-                    }, values(documents));
-                await dispatch(
-                    addProjectDocuments(projectUid, documents) as any
-                );
+
+                await dispatch(addProjectDocuments(projectUid, documents));
             }
 
             if (!isEmpty(filesToModify)) {
@@ -74,7 +52,7 @@ export const subscribeToProjectFilesChanges = (
 
                 const documentData = documentSnaps.map((d) => {
                     const firestoreData = d.data() as IFirestoreDocument;
-                    return fileDocumentDataToDocumentType(firestoreData);
+                    return fileDocumentDataToDocumentType(firestoreData, d.id);
                 }) as IDocument[];
 
                 // when using serverData, we get 2 responses,
@@ -83,7 +61,7 @@ export const subscribeToProjectFilesChanges = (
                 const documentDataReady = documentData.filter(
                     (d) => !!d.lastModified
                 );
-                await documentDataReady.forEach(async (document_) => {
+                documentDataReady.forEach(async (document_) => {
                     if (document_.type !== "folder") {
                         const oldFile =
                             currentReduxDocuments[document_.documentUid];
@@ -122,13 +100,6 @@ export const subscribeToProjectFilesChanges = (
                             csound &&
                                 (await csound.fs.unlink(lastAbsolutePath));
                         }
-                        csound &&
-                            addDocumentToEMFS(
-                                projectUid,
-                                csound,
-                                document_,
-                                newAbsolutePath
-                            );
                         await dispatch(
                             saveUpdatedDocument(projectUid, document_) as any
                         );
@@ -144,7 +115,7 @@ export const subscribeToProjectFilesChanges = (
 
                 const documentData = documentSnaps.map((d) => {
                     const firestoreData = d.data() as IFirestoreDocument;
-                    return fileDocumentDataToDocumentType(firestoreData);
+                    return fileDocumentDataToDocumentType(firestoreData, d.id);
                 }) as IDocument[];
 
                 const uids = documentData.map((d) => d.documentUid);

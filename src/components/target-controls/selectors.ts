@@ -68,7 +68,6 @@ export const selectProjectDocuments = (curry as any)(
 
 export const selectDefaultTargetName =
     (activeProjectUid: string | undefined) => (store: RootState) => {
-        console.log("LOOK", activeProjectUid, store);
         return activeProjectUid
             ? store.TargetControlsReducer[activeProjectUid]?.defaultTarget ??
                   undefined
