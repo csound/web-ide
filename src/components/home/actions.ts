@@ -20,7 +20,7 @@ import {
 import { IStarredProjectSearchResult, IStarredProject } from "@db/search";
 
 const databaseID = process.env.REACT_APP_DATABASE === "DEV" ? "dev" : "prod";
-const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
+const searchURL = `http://49.12.221.214:4000/search/${databaseID}`;
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
 export const searchProjects =
