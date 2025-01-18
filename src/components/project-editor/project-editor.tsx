@@ -3,7 +3,6 @@ import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
 import { NonCloudFile } from "@comp/file-tree/types";
-import { CsoundObj } from "@csound/browser";
 import { IDocument, IProject } from "@comp/projects/types";
 import {
     Tabs,
@@ -192,7 +191,6 @@ const ProjectEditor = ({
         activeProject
     );
     const isOwner: boolean = useSelector(selectIsOwner);
-    const csound: CsoundObj | undefined = undefined;
 
     useEffect(() => {
         if (document.title !== projectName) {
@@ -212,8 +210,7 @@ const ProjectEditor = ({
     useEffect(() => {
         const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
-            dispatch,
-            csound
+            dispatch
         );
         const unsubscribeToProjectLastModified =
             subscribeToProjectLastModified(projectUid);
@@ -231,7 +228,7 @@ const ProjectEditor = ({
             unsubscribeToProfile && unsubscribeToProfile();
             unsubscribeToProjectsCount && unsubscribeToProjectsCount();
         };
-    }, [dispatch, isOwner, projectOwnerUid, projectUid, csound]);
+    }, [dispatch, isOwner, projectOwnerUid, projectUid]);
 
     const tabDockDocuments: IOpenDocument[] = useSelector(
         pathOr([] as IOpenDocument[], [

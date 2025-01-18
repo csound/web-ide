@@ -2,9 +2,9 @@ import { collection, doc, onSnapshot } from "firebase/firestore";
 import { store, RootState, AppThunkDispatch } from "@root/store";
 import { CsoundObj } from "@csound/browser";
 import { projects, targets } from "@config/firestore";
-import { IDocument, IDocumentsMap } from "./types";
+import { IDocument } from "./types";
 import {
-    addDocumentToEMFS,
+    addDocumentToCsoundFS,
     convertDocumentSnapToDocumentsMap,
     fileDocumentDataToDocumentType
 } from "./utils";
@@ -20,9 +20,8 @@ import { IFirestoreDocument } from "@root/db/types";
 
 export const subscribeToProjectFilesChanges = (
     projectUid: string,
-    dispatch: AppThunkDispatch,
-    csound: CsoundObj | undefined
-): (() => void) => {
+    dispatch: AppThunkDispatch
+) => {
     const unsubscribe: () => void = onSnapshot(
         collection(doc(projects, projectUid), "files"),
         async (files) => {
@@ -36,10 +35,10 @@ export const subscribeToProjectFilesChanges = (
             const filesToModify = changedFiles.filter(
                 (file) => file.type === "modified"
             );
-            if (!isEmpty(filesToAdd)) {
-                const documents: IDocumentsMap =
-                    convertDocumentSnapToDocumentsMap(filesToAdd);
 
+            if (!isEmpty(filesToAdd)) {
+                const documents: Record<string, IDocument> =
+                    convertDocumentSnapToDocumentsMap(filesToAdd);
                 await dispatch(addProjectDocuments(projectUid, documents));
             }
 
@@ -63,43 +62,6 @@ export const subscribeToProjectFilesChanges = (
                 );
                 documentDataReady.forEach(async (document_) => {
                     if (document_.type !== "folder") {
-                        const oldFile =
-                            currentReduxDocuments[document_.documentUid];
-                        const lastPathPrefix = (oldFile.path || [])
-                            .filter((p: unknown) => typeof p === "string")
-                            .map(
-                                (documentUid: string) =>
-                                    currentReduxDocuments?.[documentUid]
-                                        ?.filename
-                            );
-
-                        const lastAbsolutePath = [
-                            `/${projectUid}`,
-                            ...lastPathPrefix,
-                            oldFile.filename
-                        ].join("/");
-
-                        const newPathPrefix = (document_.path || [])
-                            .filter((p) => typeof p === "string")
-                            .map(
-                                (documentUid) =>
-                                    currentReduxDocuments?.[documentUid]
-                                        ?.filename
-                            );
-
-                        const newAbsolutePath = [
-                            `/${projectUid}`,
-                            ...newPathPrefix,
-                            document_.filename
-                        ].join("/");
-
-                        // Handle file moved
-                        if (newAbsolutePath === lastAbsolutePath) {
-                            csound && (await csound.fs.unlink(newAbsolutePath));
-                        } else {
-                            csound &&
-                                (await csound.fs.unlink(lastAbsolutePath));
-                        }
                         await dispatch(
                             saveUpdatedDocument(projectUid, document_) as any
                         );
@@ -125,24 +87,6 @@ export const subscribeToProjectFilesChanges = (
                     await dispatch(
                         removeDocumentLocally(projectUid, uid) as any
                     );
-                }
-
-                for (const document_ of documentData) {
-                    if (document_.type !== "folder") {
-                        const pathPrefix = (document_.path || [])
-                            .filter((p) => typeof p === "string")
-                            .map((documentUid) =>
-                                path(
-                                    [documentUid, "filename"],
-                                    currentReduxDocuments
-                                )
-                            );
-                        const absolutePath = concat(
-                            [`/${projectUid}`],
-                            append(document_.filename, pathPrefix)
-                        ).join("/");
-                        csound && (await csound.fs.unlink(absolutePath));
-                    }
                 }
             }
         }
@@ -175,13 +119,11 @@ export const subscribeToProjectTargetsChanges = (
 
 export const subscribeToProjectChanges = (
     projectUid: string,
-    dispatch: AppThunkDispatch,
-    csound: CsoundObj | undefined
+    dispatch: AppThunkDispatch
 ): (() => void) => {
     const unsubscribeFileChanges = subscribeToProjectFilesChanges(
         projectUid,
-        dispatch,
-        csound
+        dispatch
     );
     const unsubscribeTargetChanges = subscribeToProjectTargetsChanges(
         projectUid,

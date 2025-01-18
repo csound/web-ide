@@ -9,7 +9,7 @@ import {
     projects,
     storageReference
 } from "@config/firestore";
-import { curry, path, propOr, values } from "ramda";
+import { curry, equals, path, propOr } from "ramda";
 import { Mime } from "mime";
 import moment from "moment";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -37,7 +37,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import DirectoryClose from "@root/svgs/fad-close.svg";
 import DirectoryOpen from "@root/svgs/fad-open.svg";
 import WaveFormIcon from "@root/svgs/fad-waveform.svg";
-import { IDocument, IDocumentsMap, IProject } from "../projects/types";
+import { IDocument } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { textOrBinary } from "@comp/projects/utils";
 import {
@@ -350,10 +350,10 @@ const makeTree = (
     // Getting all files (where type is not "folder")
     const allFiles = filelist.filter((file) => file.type !== "folder");
 
-    const dragHoverCss = `{background-color: rgba(${rgba(
-        theme.allowed,
-        0.1
-    )}) !important;}`;
+    // const dragHoverCss = `{background-color: rgba(${rgba(
+    //     theme.allowed,
+    //     0.1
+    // )}) !important;}`;
 
     // this could be problematic, but then again, we need to test what behaviour we want
     // Sorting the files
@@ -363,8 +363,8 @@ const makeTree = (
     ];
 
     // Filtering current files based on path
-    const currentFiles = sortedFiles.filter(
-        (file) => file.path === (path || [])
+    const currentFiles = sortedFiles.filter((file) =>
+        equals(file.path, path || [])
     );
 
     // Creating a new file list by rejecting specific conditions
@@ -605,7 +605,6 @@ const makeTree = (
                         )}
                     </Droppable>
                 );
-
                 return [
                     {
                         ...documentIndex_,
@@ -647,25 +646,31 @@ export const FileTree = ({
         .map((entry) => nonCloudFiles.get(entry))
         .filter((file): file is NonCloudFile => !!file);
 
+    const shouldDisplayTree = Boolean(
+        stateDnD && project && currentTabDocumentUid
+    );
+
+    const [_, treeElements] = shouldDisplayTree
+        ? makeTree(
+              activeProjectUid,
+              currentTabDocumentUid!,
+              dispatch,
+              collapseState,
+              setCollapseState,
+              isOwner,
+              theme,
+              [],
+              [stateDnD!.docIdx, []],
+              filelist
+          )
+        : [{}, []];
+
     return (
         <React.Fragment>
-            {stateDnD && project && currentTabDocumentUid && (
+            {shouldDisplayTree && (
                 <div css={SS.container}>
                     <List css={SS.listContainer} dense>
-                        {
-                            makeTree(
-                                activeProjectUid,
-                                currentTabDocumentUid,
-                                dispatch,
-                                collapseState,
-                                setCollapseState,
-                                isOwner,
-                                theme,
-                                [],
-                                [stateDnD.docIdx, []],
-                                filelist
-                            )[1]
-                        }
+                        {treeElements}
                         {nonCloudFileSources.length > 0 && <hr />}
                         {nonCloudFileSources.map((file, index) => {
                             const mimeType =

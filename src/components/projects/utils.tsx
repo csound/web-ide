@@ -56,7 +56,7 @@ export const generateEmptyDocument = (
     path: []
 });
 
-export const addDocumentToEMFS = async (
+export const addDocumentToCsoundFS = async (
     projectUid: string,
     csound: CsoundObj,
     document: IDocument,

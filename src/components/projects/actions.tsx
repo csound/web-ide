@@ -49,12 +49,11 @@ import {
     UNSET_PROJECT,
     IProject,
     IDocument,
-    IDocumentsMap,
     CsoundFile
 } from "./types";
 import { ITarget } from "@comp/target-controls/types";
 import {
-    addDocumentToEMFS,
+    addDocumentToCsoundFS,
     convertProjectSnapToProject,
     fileDocumentDataToDocumentType
 } from "./utils";
@@ -194,7 +193,7 @@ export const unsetProject = (projectUid: string) => {
 
 export const addProjectDocuments = (
     projectUid: string,
-    documents: IDocumentsMap
+    documents: Record<string, IDocument>
 ) => {
     return async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const store: RootState = getState();
@@ -321,7 +320,7 @@ export const saveFileOffline = (
         [`/${activeProjectUid}`],
         append(document.filename, pathPrefix)
     ).join("/");
-    addDocumentToEMFS(
+    addDocumentToCsoundFS(
         activeProjectUid,
         csound,
         assoc("savedValue", newValue, document),
@@ -349,7 +348,7 @@ export const saveAllOffline = (csound: CsoundObj): void => {
                 [`/${activeProjectUid}`],
                 append(document.filename, pathPrefix)
             ).join("/");
-            addDocumentToEMFS(
+            addDocumentToCsoundFS(
                 activeProjectUid,
                 csound,
                 assoc("savedValue", document.currentValue, document),

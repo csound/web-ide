@@ -5,7 +5,7 @@ import { useTheme } from "@emotion/react";
 import Tooltip from "@mui/material/Tooltip";
 import { setSelectedTarget, showTargetsConfigDialog } from "./actions";
 import { ITarget, ITargetMap } from "./types";
-import { IDocument, IDocumentsMap } from "@comp/projects/types";
+import { IDocument } from "@comp/projects/types";
 import {
     selectProjectDocuments,
     selectProjectTargets,
@@ -33,7 +33,7 @@ const titleTooltip = ({
     documents,
     selectedTarget
 }: {
-    documents: IDocumentsMap;
+    documents: Record<string, IDocument>;
     selectedTarget: ITarget;
 }) => {
     const mainDocument: IDocument | undefined =
@@ -56,7 +56,7 @@ const TargetDropdown = ({
     const targets: ITargetMap =
         useSelector(selectProjectTargets(activeProjectUid)) || {};
 
-    const documents: IDocumentsMap | undefined = useSelector(
+    const documents: Record<string, IDocument> | undefined = useSelector(
         selectProjectDocuments(activeProjectUid)
     );
 

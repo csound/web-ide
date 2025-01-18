@@ -1,5 +1,5 @@
-import { RootState, store } from "@root/store";
-import { IProject } from "../projects/types";
+import { AppThunkDispatch, RootState, store } from "@root/store";
+import { IDocument, IProject } from "../projects/types";
 import { Csound as Csound6 } from "@csound/browser";
 import { Csound as Csound7 } from "csound7";
 import {
@@ -11,9 +11,9 @@ import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { CsoundObj, ICsoundStatus, SET_CSOUND_PLAY_STATE } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
-import { addDocumentToEMFS } from "@comp/projects/utils";
+import { addDocumentToCsoundFS } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
-import { append, difference, isEmpty, path, pathOr, pipe, values } from "ramda";
+import { append, isEmpty, difference } from "ramda";
 
 export let csoundInstance: CsoundObj;
 
@@ -47,39 +47,32 @@ export const setCsound = (csound: CsoundObj): void => {
     );
 };
 
-// // can be deleted?
-// export const syncFs = async (
-//     csound: CsoundObj,
-//     projectUid: string,
-//     storeState: RootState
-// ): Promise<void> => {
-//     const documents = Object.keys(
-//         storeState.ProjectsReducer.projects[projectUid].documents
-//     );
+export const syncFs = async (
+    csound: CsoundObj,
+    projectUid: string,
+    storeState: RootState
+): Promise<void> => {
+    const documents: IDocument[] = Object.values(
+        storeState.ProjectsReducer.projects[projectUid].documents
+    );
 
-//     for (const document of documents) {
-//         // reminder: paths are store by document ref and not
-//         // the actual filesystem name
-//         const realPath = document.path.map((documentId: string) =>
-//             path(
-//                 [
-//                     "ProjectsReducer",
-//                     "projects",
-//                     projectUid,
-//                     "documents",
-//                     documentId,
-//                     "name"
-//                 ],
-//                 storeState
-//             )
-//         );
-//         const filepath = isEmpty(realPath)
-//             ? document.filename
-//             : realPath.join("/") + "/" + document.filename;
+    for (const document of documents) {
+        // reminder: paths are store by document ref and not
+        // the actual filesystem name
+        const realPath = document.path.map(
+            (documentId: string) =>
+                storeState.ProjectsReducer.projects[projectUid].documents[
+                    documentId
+                ].filename
+        );
+        const filepath = isEmpty(realPath)
+            ? document.filename
+            : realPath.join("/") + "/" + document.filename;
+        console.log("SYNCING", projectUid, csound, document, filepath);
 
-//         await addDocumentToEMFS(projectUid, csound, document, filepath);
-//     }
-// };
+        await addDocumentToCsoundFS(projectUid, csound, document, filepath);
+    }
+};
 
 export const playCsdFromFs = ({
     projectUid,
@@ -89,8 +82,8 @@ export const playCsdFromFs = ({
     projectUid: string;
     csdPath: string;
     useCsound7: boolean;
-}): ((dispatch: any, setConsole: any) => Promise<void>) => {
-    return async (dispatch: any, setConsole: any) => {
+}) => {
+    return async (dispatch: AppThunkDispatch, setConsole: any) => {
         const Csound = useCsound7 ? Csound7 : Csound6;
 
         const csoundObj = await Csound({
@@ -103,6 +96,7 @@ export const playCsdFromFs = ({
         csoundInstance = csoundObj;
 
         setCsound(csoundInstance);
+        syncFs(csoundObj, projectUid, store.getState());
 
         if (csoundObj && setConsole) {
             setConsole([""]);
@@ -113,8 +107,6 @@ export const playCsdFromFs = ({
 
         if (csoundObj) {
             await csoundObj.setOption("-odac");
-
-            const storeState = store.getState();
             const result = await csoundObj.compileCsd(csdPath);
 
             if (result === 0) {

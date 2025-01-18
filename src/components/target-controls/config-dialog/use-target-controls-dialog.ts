@@ -2,24 +2,18 @@ import { useCallback, useEffect, useState } from "react";
 import { closeModal } from "@comp/modal/actions";
 import { useTheme } from "@emotion/react";
 import { RootState, useDispatch, useSelector } from "@root/store";
-import { IDocument, IDocumentsMap } from "@comp/projects/types";
+import { IDocument } from "@comp/projects/types";
 import { ICsoundOptions } from "@comp/csound/types";
 import {
     append,
-    ascend,
     assoc,
     assocPath,
     equals,
     find,
-    keys,
     map,
     pathOr,
     pipe,
     prop,
-    propEq,
-    reduce,
-    reject,
-    sort,
     values
 } from "ramda";
 import { saveChangesToTarget } from "../actions";
@@ -43,7 +37,7 @@ export const useTargetControlsDialog = () => {
         selectDefaultTargetName(activeProjectUid)
     );
 
-    const documentsMap: IDocumentsMap | undefined = useSelector(
+    const documentsMap: Record<string, IDocument> | undefined = useSelector(
         selectProjectDocuments(activeProjectUid)
     );
 

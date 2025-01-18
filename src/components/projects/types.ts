@@ -24,7 +24,7 @@ export const DOCUMENT_UPDATE_MODIFIED_LOCALLY =
 export interface AddProjectDocumentsAction {
     type: typeof ADD_PROJECT_DOCUMENTS;
     projectUid: string;
-    documents: IDocumentsMap;
+    documents: Record<string, IDocument>;
 }
 
 export interface ActivateProjectAction {
@@ -142,7 +142,7 @@ export interface IDocument {
     path: string[];
 }
 
-export type IDocumentsMap = { [documentUid: string]: IDocument };
+// export type IDocumentsMap = { [documentUid: string]: IDocument };
 
 export type Star = { [userUid: string]: number };
 
@@ -153,7 +153,7 @@ export interface IProject {
     projectUid: string;
     name: string;
     isPublic: boolean;
-    documents: IDocumentsMap;
+    documents: Record<string, IDocument>;
     cachedProjectLastModified?: number;
     iconBackgroundColor?: string;
     iconForegroundColor?: string;
