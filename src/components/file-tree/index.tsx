@@ -466,6 +466,7 @@ const makeTree = (
 
                 const folderElement = (
                     <Droppable
+                        isDropDisabled={!isOwner}
                         key={`${document_.documentUid}`}
                         droppableId={`${document_.documentUid}`}
                         direction="vertical"
@@ -474,9 +475,11 @@ const makeTree = (
                         {(droppableProvided: any, droppableSnapshot: any) => (
                             <RootReference ref={droppableProvided.innerRef}>
                                 <Draggable
-                                    isDragDisabled={!isOwner}
+                                    isDragDisabled={Boolean(!isOwner)}
                                     draggableId={`${document_.documentUid}`}
+                                    isCombineEnabled={false}
                                     index={index}
+                                    ignoreContainerClipping
                                 >
                                     {(provided: any) => (
                                         <ListItem
@@ -546,6 +549,10 @@ const makeTree = (
                     <Droppable
                         droppableId={`${document_.documentUid}`}
                         key={`${document_.documentUid}-fragment`}
+                        isDropDisabled={!isOwner}
+                        isCombineEnabled={false}
+                        ignoreContainerClipping
+                        vertical
                     >
                         {(droppableProvided: any) => (
                             <RootReference ref={droppableProvided.innerRef}>
