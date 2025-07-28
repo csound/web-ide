@@ -2,69 +2,72 @@ import React from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
     SortableContext,
-    useSortable,
-    arrayMove,
-    horizontalListSortingStrategy
+    horizontalListSortingStrategy,
+    arrayMove
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-// import { TabListComponent } from "./tab-list.jsx";
 
-const DragTab = ({ id, children }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id });
+const DragTabList = ({
+    children,
+    handleTabSequence,
+    handleTabChange,
+    activeIndex = 0, // Extract to prevent passing to DOM
+    showModalButton = false, // Extract to prevent passing to DOM
+    showArrowButton = false, // Extract to prevent passing to DOM
+    customStyle = {}, // Extract to prevent passing to DOM
+    ...props
+}) => {
+    const childrenArray = React.Children.toArray(children);
+    const initialItems = childrenArray.map((child, index) => ({
+        id: child.props.id || `tab-${index}`,
+        child
+    }));
 
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition
-    };
+    const [items, setItems] = React.useState(initialItems);
 
-    return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            {children}
-        </div>
-    );
-};
+    // Update items when children change
+    React.useEffect(() => {
+        const newItems = childrenArray.map((child, index) => ({
+            id: child.props.id || `tab-${index}`,
+            child
+        }));
+        setItems(newItems);
+    }, [children]);
 
-const DragTabList = ({ items }) => {
-    // const [orderedItems, setOrderedItems] = React.useState(items);
     const handleDragEnd = (event) => {
         const { active, over } = event;
 
         if (active.id !== over.id) {
             const oldIndex = items.findIndex((item) => item.id === active.id);
             const newIndex = items.findIndex((item) => item.id === over.id);
-            const nextOrderedItems = arrayMove(items, oldIndex, newIndex);
-            console.log("nextOrderedItems", nextOrderedItems);
-            onTabChange(nextOrderedItems);
-            // dispatch({ type: "reorder", items: nextOrderedItems });
-            // updateItems(arrayMove(items, oldIndex, newIndex));
 
-            if (props.handleTabSequence) {
-                props.handleTabSequence(arrayMove(items, oldIndex, newIndex));
+            // Update local state for immediate visual feedback
+            setItems((items) => arrayMove(items, oldIndex, newIndex));
+
+            if (handleTabSequence) {
+                handleTabSequence({ oldIndex, newIndex });
             }
         }
 
-        if (props.handleTabChange) {
-            props.handleTabChange(over.id);
+        if (handleTabChange && over) {
+            const newIndex = items.findIndex((item) => item.id === over.id);
+            handleTabChange(newIndex);
         }
     };
 
     return (
-        <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-        >
-            <SortableContext
-                items={items}
-                strategy={horizontalListSortingStrategy}
+        <div role="tablist" {...props}>
+            <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
             >
-                {items.map((item, index) => (
-                    <DragTab key={index} id={item.id}>
-                        {item.content}
-                    </DragTab>
-                ))}
-            </SortableContext>
-        </DndContext>
+                <SortableContext
+                    items={items.map((item) => item.id)}
+                    strategy={horizontalListSortingStrategy}
+                >
+                    {children}
+                </SortableContext>
+            </DndContext>
+        </div>
     );
 };
 

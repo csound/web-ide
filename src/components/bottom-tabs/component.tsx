@@ -51,13 +51,18 @@ const BottomTabs = (): React.ReactElement => {
     );
 
     const handleTabSequenceChange = useCallback(
-        (oldIndex: number, newIndex: number) => {
+        ({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) => {
             if (openTabs) {
                 const newOrder = simpleSwitch(openTabs, oldIndex, newIndex);
                 dispatch(reorderBottomTabs(newOrder, newIndex));
             }
         },
         [dispatch, openTabs]
+    );
+
+    const switchTab = useCallback(
+        (newIndex: number) => dispatch(setBottomTabIndex(newIndex)),
+        [dispatch]
     );
 
     return (
@@ -74,8 +79,11 @@ const BottomTabs = (): React.ReactElement => {
                     showArrowButton={"auto"}
                     onTabSequenceChange={handleTabSequenceChange}
                 >
-                    <DragTabList items={openTabs} />
-                    {/* {(openTabs || []).map((k, index) => (
+                    <DragTabList
+                        handleTabSequence={handleTabSequenceChange}
+                        handleTabChange={switchTab}
+                    >
+                        {(openTabs || []).map((k, index) => (
                             <DragTab
                                 id={"drag-tab-" + index}
                                 key={index}
@@ -85,6 +93,10 @@ const BottomTabs = (): React.ReactElement => {
                                 }
                                 currentIndex={bottomTabIndex}
                                 thisIndex={index}
+                                CustomTabStyle={TabStyles.Tab}
+                                handleTabChange={switchTab}
+                                index={index}
+                                active={index === bottomTabIndex}
                             >
                                 <p
                                     style={{
@@ -97,7 +109,7 @@ const BottomTabs = (): React.ReactElement => {
                                 </p>
                             </DragTab>
                         ))}
-                    </DragTabList> */}
+                    </DragTabList>
 
                     <PanelList style={{ height: "100%", width: "100%" }}>
                         {(openTabs || []).map((k, index) => {

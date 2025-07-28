@@ -5,9 +5,11 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { closeButton as ProjectEditorCloseButtonStyle } from "@comp/project-editor/styles";
+import { tabListHeight } from "@styles/constants";
 
 export const TabStyle = styled.li`
-    display: ${(props) => (props.vertical ? "block" : "inline-block")};
+    display: ${(props) => (props.vertical ? "flex" : "inline-flex")};
+    align-items: center;
     ${(props) =>
         props.vertical
             ? `
@@ -22,6 +24,7 @@ export const TabStyle = styled.li`
                       : "padding: 10px 15px;"}
 
     user-select: none;
+    height: ${tabListHeight - 3}px;
     &:hover {
         cursor: pointer;
         color: black;
@@ -30,6 +33,7 @@ export const TabStyle = styled.li`
 
 const TabText = styled.span`
     vertical-align: middle;
+    margin-left: 6px;
 `;
 
 export const Tab = React.forwardRef(

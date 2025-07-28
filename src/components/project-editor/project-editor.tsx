@@ -9,7 +9,8 @@ import {
     DragTabList,
     DragTab,
     PanelList,
-    Panel
+    Panel,
+    TabListComponent
 } from "@root/tabtab/index.js";
 import { arrayMoveImmutable as simpleSwitch } from "array-move";
 import { subscribeToProjectLastModified } from "@comp/project-last-modified/subscribers";
@@ -31,7 +32,6 @@ import {
     storeEditorKeyboardCallbacks,
     storeProjectEditorKeyboardCallbacks
 } from "@comp/hot-keys/actions";
-import { pathOr, propOr } from "ramda";
 import { find, isEmpty } from "lodash";
 import {
     rearrangeTabs,
@@ -39,7 +39,7 @@ import {
     tabSwitch,
     setManualPanelOpen
 } from "./actions";
-import { mapIndexed, isMobile } from "@root/utils";
+import { isMobile } from "@root/utils";
 import * as SS from "./styles";
 import BottomTabs from "@comp/bottom-tabs/component";
 import MobileTabs from "@comp/bottom-tabs/mobile-tabs";
@@ -79,10 +79,10 @@ const MySplit = ({
     onDragStarted: () => void;
     onDragFinished: () => void;
     children: React.ReactNode[];
-}) => {
+}): React.ReactElement => {
     const filteredChildren = children.filter(Boolean);
     return filteredChildren.length === 1 ? (
-        filteredChildren[0]
+        (filteredChildren[0] as React.ReactElement)
     ) : (
         <SplitPane
             primary={primary}
@@ -183,13 +183,9 @@ const ProjectEditor = ({
     // resizing the manual panel.
     const [isDragging, setIsDragging] = useState(false);
 
-    const projectUid: string = propOr("", "projectUid", activeProject);
-    const projectOwnerUid: string = propOr("", "userUid", activeProject);
-    const projectName: string = propOr(
-        "Undefined Project",
-        "name",
-        activeProject
-    );
+    const projectUid: string = activeProject?.projectUid ?? "";
+    const projectOwnerUid: string = activeProject?.userUid ?? "";
+    const projectName: string = activeProject?.name ?? "Undefined Project";
     const isOwner: boolean = useSelector(selectIsOwner);
 
     useEffect(() => {
@@ -231,15 +227,14 @@ const ProjectEditor = ({
     }, [dispatch, isOwner, projectOwnerUid, projectUid]);
 
     const tabDockDocuments: IOpenDocument[] = useSelector(
-        pathOr([] as IOpenDocument[], [
-            "ProjectEditorReducer",
-            "tabDock",
-            "openDocuments"
-        ])
+        (store: RootState) =>
+            store.ProjectEditorReducer?.tabDock?.openDocuments ??
+            ([] as IOpenDocument[])
     );
 
     const tabIndex: number = useSelector(
-        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
+        (store: RootState) =>
+            store.ProjectEditorReducer?.tabDock?.tabIndex ?? -1
     );
 
     const openDocuments: AnyTab[] = tabDockDocuments.reduce(
@@ -248,9 +243,9 @@ const ProjectEditor = ({
             const isNonCloudFile = tabDocument.isNonCloudDocument || false;
 
             return isNonCloudFile
-                ? [tabDocument, ...accumulator]
+                ? [...accumulator, tabDocument]
                 : maybeDocument && Object.keys(maybeDocument).length > 0
-                  ? [maybeDocument, ...accumulator]
+                  ? [...accumulator, maybeDocument]
                   : accumulator;
         },
         [] as AnyTab[]
@@ -260,7 +255,12 @@ const ProjectEditor = ({
         dispatch(tabClose(projectUid, documentUid, isModified));
     };
 
-    const openTabList = mapIndexed((document: any, index) => {
+    const switchTab = (index: number) => {
+        localStorage.setItem(projectUid + ":tabIndex", `${index}`);
+        dispatch(tabSwitch(index));
+    };
+
+    const openTabList = openDocuments.map((document: any, index) => {
         const isModified: boolean = document.isModifiedLocally;
         return (
             <DragTab
@@ -272,6 +272,10 @@ const ProjectEditor = ({
                 }
                 currentIndex={tabIndex}
                 thisIndex={index}
+                CustomTabStyle={TabStyles.Tab}
+                handleTabChange={switchTab}
+                index={index}
+                active={index === tabIndex}
             >
                 <p style={{ margin: 0 }}>
                     {document
@@ -283,23 +287,16 @@ const ProjectEditor = ({
         );
     }, openDocuments as IDocument[]);
 
-    const openTabPanels = mapIndexed(
-        (document_: any, index: number) => (
-            <Panel key={index}>
-                <EditorForDocument
-                    uid={activeProject.userUid}
-                    projectUid={projectUid}
-                    isOwner={isOwner}
-                    doc={document_}
-                />
-            </Panel>
-        ),
-        openDocuments
-    );
-    const switchTab = (index: number) => {
-        localStorage.setItem(projectUid + ":tabIndex", `${index}`);
-        dispatch(tabSwitch(index));
-    };
+    const openTabPanels = openDocuments.map((document_: any, index: number) => (
+        <Panel key={index}>
+            <EditorForDocument
+                uid={activeProject.userUid}
+                projectUid={projectUid}
+                isOwner={isOwner}
+                doc={document_}
+            />
+        </Panel>
+    ));
 
     const someUnsavedData: boolean = isOwner
         ? !!find(
@@ -319,7 +316,7 @@ const ProjectEditor = ({
     const tabDock: React.ReactElement = isEmpty(openDocuments) ? (
         <div key="0" style={{ position: "relative" }} />
     ) : (
-        <div key="1" css={tabListStyle}>
+        <div key="1" css={tabListStyle as any}>
             <Tabs
                 defaultIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
                 activeIndex={Math.min(tabIndex, tabDockDocuments.length - 1)}
@@ -343,7 +340,31 @@ const ProjectEditor = ({
                     );
                 }}
             >
-                <DragTabList items={openTabList} />
+                <DragTabList
+                    id="drag-tab-list"
+                    handleTabSequence={({
+                        oldIndex,
+                        newIndex
+                    }: {
+                        oldIndex: number;
+                        newIndex: number;
+                    }) => {
+                        dispatch(
+                            rearrangeTabs(
+                                projectUid,
+                                simpleSwitch(
+                                    tabDockDocuments,
+                                    oldIndex,
+                                    newIndex
+                                ),
+                                newIndex
+                            )
+                        );
+                    }}
+                    handleTabChange={switchTab}
+                >
+                    {openTabList}
+                </DragTabList>
                 <PanelList>{openTabPanels}</PanelList>
             </Tabs>
         </div>
