@@ -26,9 +26,6 @@ function printTree(dirPath: string, indent = "") {
 
 export const host = onRequest(async (req, res) => {
     try {
-        console.log("Current Working Directory:", process.cwd());
-        printTree("./");
-
         let indexHTML = fs.readFileSync("./dist/index.html").toString();
         const reqPath = req.path ? req.path.split("/") : req.path;
         const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';

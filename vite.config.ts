@@ -12,7 +12,7 @@ export default defineConfig({
         )
     },
     // depending on your application, base can also be "/"
-    base: "",
+    base: "/",
     plugins: [
         checker({
             // e.g. use TypeScript check
