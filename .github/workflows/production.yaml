@@ -8,13 +8,14 @@ jobs:
         name: deploy-production
         runs-on: ubuntu-latest
         env:
-            REACT_APP_DATABASE: DEV
+            REACT_APP_DATABASE: PROD
         steps:
             - name: Checkout Repo
               uses: actions/checkout@master
             - name: Build
               run: |
                   yarn install
+                  echo "STORAGE_BUCKET_URL=gs://csound-ide.appspot.com" >> functions/.env
                   PUBLIC_URL="https://ide.csound.com" PRODUCTION=1 yarn build
                   cp dist/index.html functions
                   cd functions
