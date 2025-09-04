@@ -5114,7 +5114,7 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.1, cross-spawn@^7.0.3, cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-"csound7@npm:@csound/browser@^7.0.0-alpha2":
+"csound7@npm:@csound/browser@7.0.0-alpha2":
   version "7.0.0-alpha2"
   resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-alpha2.tgz#6c91de77582c620834383160868dcda375f2a5fe"
   integrity sha512-YGtdThHDudHMJ5Ms0MHmq9hodryfru1W1/quAfC1wr1ZYv8iUuz7chEg+OVmGhQdk+612qwa00doqHk9fFo0Cg==

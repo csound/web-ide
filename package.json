@@ -31,7 +31,7 @@
         "@reduxjs/toolkit": "^2.5.0",
         "@vitejs/plugin-react": "^4.3.4",
         "connected-react-router": "^6.9.3",
-        "csound7": "npm:@csound/browser@^7.0.0-alpha2",
+        "csound7": "npm:@csound/browser@7.0.0-alpha2",
         "date-fns": "^4.1.0",
         "firebase-functions": "^6.1.2",
         "history": "5.3.0",
