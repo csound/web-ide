@@ -19,6 +19,7 @@ jobs:
             - name: Build
               run: |
                   yarn install
+                  echo "STORAGE_BUCKET_URL=gs://csound-ide-dev.appspot.com" >> functions/.env.dev
                   PUBLIC_URL="https://csound-ide-dev.web.app" yarn build:dev
                   cp dist/index.html functions
                   cd functions

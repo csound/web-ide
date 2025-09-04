@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
-import { config } from "firebase-functions/v1";
 import { log } from "firebase-functions/logger";
+import "dotenv/config";
 
 async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
     log(
@@ -10,7 +10,7 @@ async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
 
     await admin
         .storage()
-        .bucket(config().storagebucket.url)
+        .bucket(process.env.STORAGE_BUCKET_URL!)
         .file(binaryUrl)
         .delete();
 }

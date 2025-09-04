@@ -16,6 +16,7 @@
     "dependencies": {
         "@google-cloud/logging": "^11.2.1",
         "@types/ramda": "^0.31.0",
+        "dotenv": "^16.4.5",
         "firebase": "^12.2.1",
         "firebase-admin": "^13.5.0",
         "firebase-functions": "^6.4.0",
