@@ -33,7 +33,7 @@
         "connected-react-router": "^6.9.3",
         "csound7": "npm:@csound/browser@7.0.0-alpha2",
         "date-fns": "^4.1.0",
-        "firebase-functions": "^6.1.2",
+        "firebase-functions": "^6.4.0",
         "history": "5.3.0",
         "mime": "^4.0.4",
         "ramda": "^0.30.1",

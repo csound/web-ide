@@ -22,99 +22,138 @@ export const subscribeToProjectFilesChanges = (
     projectUid: string,
     dispatch: AppThunkDispatch
 ) => {
-    const unsubscribe: () => void = onSnapshot(
-        collection(doc(projects, projectUid), "files"),
-        async (files) => {
-            const changedFiles = files.docChanges();
-            const filesToAdd = changedFiles.filter(
-                (file) => file.type === "added"
-            );
-            const filesToRemove = changedFiles.filter(
-                (file) => file.type === "removed"
-            );
-            const filesToModify = changedFiles.filter(
-                (file) => file.type === "modified"
-            );
+    if (!projectUid) {
+        console.warn(
+            "No projectUid provided to subscribeToProjectFilesChanges"
+        );
+        return () => {}; // Return empty unsubscribe function
+    }
 
-            if (!isEmpty(filesToAdd)) {
-                const documents: Record<string, IDocument> =
-                    convertDocumentSnapToDocumentsMap(filesToAdd);
-                await dispatch(addProjectDocuments(projectUid, documents));
-            }
-
-            if (!isEmpty(filesToModify)) {
-                const currentReduxDocuments =
-                    store.getState()?.ProjectsReducer?.projects?.[projectUid]
-                        ?.documents || {};
-
-                const documentSnaps = filesToModify.map((file) => file.doc);
-
-                const documentData = documentSnaps.map((d) => {
-                    const firestoreData = d.data() as IFirestoreDocument;
-                    return fileDocumentDataToDocumentType(firestoreData, d.id);
-                }) as IDocument[];
-
-                // when using serverData, we get 2 responses,
-                // since we always modify the lastModified timestamp,
-                // it will be null the first time and immedietly not-null
-                const documentDataReady = documentData.filter(
-                    (d) => !!d.lastModified
+    try {
+        const unsubscribe: () => void = onSnapshot(
+            collection(doc(projects, projectUid), "files"),
+            async (files) => {
+                const changedFiles = files.docChanges();
+                const filesToAdd = changedFiles.filter(
+                    (file) => file.type === "added"
                 );
-                documentDataReady.forEach(async (document_) => {
-                    if (document_.type !== "folder") {
+                const filesToRemove = changedFiles.filter(
+                    (file) => file.type === "removed"
+                );
+                const filesToModify = changedFiles.filter(
+                    (file) => file.type === "modified"
+                );
+
+                if (!isEmpty(filesToAdd)) {
+                    const documents: Record<string, IDocument> =
+                        convertDocumentSnapToDocumentsMap(filesToAdd);
+                    await dispatch(addProjectDocuments(projectUid, documents));
+                }
+
+                if (!isEmpty(filesToModify)) {
+                    const currentReduxDocuments =
+                        store.getState()?.ProjectsReducer?.projects?.[
+                            projectUid
+                        ]?.documents || {};
+
+                    const documentSnaps = filesToModify.map((file) => file.doc);
+
+                    const documentData = documentSnaps.map((d) => {
+                        const firestoreData = d.data() as IFirestoreDocument;
+                        return fileDocumentDataToDocumentType(
+                            firestoreData,
+                            d.id
+                        );
+                    }) as IDocument[];
+
+                    // when using serverData, we get 2 responses,
+                    // since we always modify the lastModified timestamp,
+                    // it will be null the first time and immedietly not-null
+                    const documentDataReady = documentData.filter(
+                        (d) => !!d.lastModified
+                    );
+                    documentDataReady.forEach(async (document_) => {
+                        if (document_.type !== "folder") {
+                            await dispatch(
+                                saveUpdatedDocument(
+                                    projectUid,
+                                    document_
+                                ) as any
+                            );
+                        }
+                    });
+                }
+                if (!isEmpty(filesToRemove)) {
+                    const currentReduxDocuments =
+                        store.getState()?.ProjectsReducer?.projects?.[
+                            projectUid
+                        ]?.documents || {};
+
+                    const documentSnaps = filesToRemove.map((file) => file.doc);
+
+                    const documentData = documentSnaps.map((d) => {
+                        const firestoreData = d.data() as IFirestoreDocument;
+                        return fileDocumentDataToDocumentType(
+                            firestoreData,
+                            d.id
+                        );
+                    }) as IDocument[];
+
+                    const uids = documentData.map((d) => d.documentUid);
+
+                    for (const uid of uids) {
+                        await dispatch(tabClose(projectUid, uid, false) as any);
                         await dispatch(
-                            saveUpdatedDocument(projectUid, document_) as any
+                            removeDocumentLocally(projectUid, uid) as any
                         );
                     }
-                });
-            }
-            if (!isEmpty(filesToRemove)) {
-                const currentReduxDocuments =
-                    store.getState()?.ProjectsReducer?.projects?.[projectUid]
-                        ?.documents || {};
-
-                const documentSnaps = filesToRemove.map((file) => file.doc);
-
-                const documentData = documentSnaps.map((d) => {
-                    const firestoreData = d.data() as IFirestoreDocument;
-                    return fileDocumentDataToDocumentType(firestoreData, d.id);
-                }) as IDocument[];
-
-                const uids = documentData.map((d) => d.documentUid);
-
-                for (const uid of uids) {
-                    await dispatch(tabClose(projectUid, uid, false) as any);
-                    await dispatch(
-                        removeDocumentLocally(projectUid, uid) as any
-                    );
                 }
+            },
+            (error: any) => {
+                console.error("Error in project files subscription:", error);
             }
-        }
-    );
-    return unsubscribe;
+        );
+        return unsubscribe;
+    } catch (error) {
+        console.error("Error setting up project files subscription:", error);
+        return () => {}; // Return empty unsubscribe function
+    }
 };
 
 export const subscribeToProjectTargetsChanges = (
     projectUid: string,
     dispatch: (store: RootState) => void
 ): (() => void) => {
-    const unsubscribe: () => void = onSnapshot(
-        doc(targets, projectUid),
-        async (target) => {
-            if (!target.exists()) {
-                return;
-            }
-            const { defaultTarget, targets } = target.data();
-            updateAllTargetsLocally(
-                dispatch,
-                defaultTarget,
-                projectUid,
-                targets
-            );
-        },
-        (error: any) => console.error(error)
-    );
-    return unsubscribe;
+    if (!projectUid) {
+        console.warn(
+            "No projectUid provided to subscribeToProjectTargetsChanges"
+        );
+        return () => {}; // Return empty unsubscribe function
+    }
+
+    try {
+        const unsubscribe: () => void = onSnapshot(
+            doc(targets, projectUid),
+            async (target) => {
+                if (!target.exists()) {
+                    return;
+                }
+                const { defaultTarget, targets } = target.data();
+                updateAllTargetsLocally(
+                    dispatch,
+                    defaultTarget,
+                    projectUid,
+                    targets
+                );
+            },
+            (error: any) =>
+                console.error("Error in project targets subscription:", error)
+        );
+        return unsubscribe;
+    } catch (error) {
+        console.error("Error setting up project targets subscription:", error);
+        return () => {}; // Return empty unsubscribe function
+    }
 };
 
 export const subscribeToProjectChanges = (

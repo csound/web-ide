@@ -69,7 +69,7 @@ import { IFirestoreDocument } from "@root/db/types";
 
 export const downloadProjectOnce = (
     projectUid: string
-): ((dispatch: any) => Promise<void>) => {
+): ((dispatch: any) => Promise<{ exists: boolean }>) => {
     if (!projectUid) {
         console.trace("No projectUid provided");
     }
@@ -77,34 +77,37 @@ export const downloadProjectOnce = (
         console.log("Getting project", projectUid);
         if (!projectUid) {
             console.trace("Missing projectUid", projectUid);
-            return;
+            return { exists: false };
         }
         if (!projects) {
             console.trace("Missing projects collection", projects);
-            return;
+            return { exists: false };
         }
         let projReference: DocumentReference<DocumentData>;
         try {
             projReference = doc(projects, projectUid);
         } catch {
-            return;
+            return { exists: false };
         }
 
         if (!projReference) {
             console.trace("Missing project reference", projReference);
-            return;
+            return { exists: false };
         }
 
         let projSnap: any;
         try {
             projSnap = await getDoc(projReference);
         } catch {
-            return;
+            return { exists: false };
         }
-        if (projSnap && projSnap.exists) {
+        if (projSnap && projSnap.exists()) {
             const project: IProject =
                 await convertProjectSnapToProject(projSnap);
             await dispatch(storeProjectLocally([project]));
+            return { exists: true };
+        } else {
+            return { exists: false };
         }
     };
 };
@@ -113,32 +116,44 @@ export const downloadAllProjectDocumentsOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
-        const filesReference = await getDocs(
-            collection(doc(projects, projectUid), "files")
-        );
-        const allDocuments = await Promise.all(
-            filesReference.docs.map(async (d) => {
-                const data = d.data() as IFirestoreDocument;
-                return fileDocumentDataToDocumentType(
-                    {
-                        ...data
-                    },
-                    d.id
-                );
-            })
-        );
-        const allDocumentsMap = reduce(
-            (accumulator, document_) =>
-                assoc(document_.documentUid, document_, accumulator),
-            {},
-            allDocuments
-        );
+        if (!projectUid) {
+            console.trace(
+                "No projectUid provided to downloadAllProjectDocumentsOnce"
+            );
+            return;
+        }
 
-        await dispatch({
-            type: ADD_PROJECT_DOCUMENTS,
-            projectUid,
-            documents: allDocumentsMap
-        });
+        try {
+            const filesReference = await getDocs(
+                collection(doc(projects, projectUid), "files")
+            );
+            const allDocuments = await Promise.all(
+                filesReference.docs.map(async (d) => {
+                    const data = d.data() as IFirestoreDocument;
+                    return fileDocumentDataToDocumentType(
+                        {
+                            ...data
+                        },
+                        d.id
+                    );
+                })
+            );
+            const allDocumentsMap = reduce(
+                (accumulator, document_) =>
+                    assoc(document_.documentUid, document_, accumulator),
+                {},
+                allDocuments
+            );
+
+            await dispatch({
+                type: ADD_PROJECT_DOCUMENTS,
+                projectUid,
+                documents: allDocumentsMap
+            });
+        } catch (error) {
+            console.error("Error downloading project documents:", error);
+            // Silently fail for non-existent projects
+        }
     };
 };
 

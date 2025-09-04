@@ -204,9 +204,17 @@ export const subscribeToProfileStars = (
             const starredProjects = Object.keys(starsData);
             const cachedProjects = Object.keys(state.ProjectsReducer.projects);
             const missingProjects = difference(starredProjects, cachedProjects);
-            missingProjects.forEach((projectUid) =>
-                dispatch(downloadProjectOnce(projectUid))
-            );
+            missingProjects.forEach(async (projectUid) => {
+                try {
+                    await dispatch(downloadProjectOnce(projectUid));
+                } catch (error) {
+                    console.error(
+                        "Error downloading project:",
+                        projectUid,
+                        error
+                    );
+                }
+            });
             dispatch(storeProfileStars(starsData, profileUid));
         },
         (error: any) => console.error(error)

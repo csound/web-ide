@@ -59,8 +59,19 @@ export const ProjectContext = () => {
         if (!projectFetchStarted) {
             const initProject = async () => {
                 try {
-                    await downloadProjectOnce(projectUid)(dispatch);
+                    const result =
+                        await downloadProjectOnce(projectUid)(dispatch);
+                    if (!result.exists) {
+                        setProjectIsReady(true); // Stop loading spinner
+                        dispatch(
+                            push("/404", {
+                                message: "Project not found"
+                            }) as unknown as UnknownAction
+                        );
+                        return;
+                    }
                 } catch (error: any) {
+                    setProjectIsReady(true); // Stop loading spinner
                     if (
                         typeof error === "object" &&
                         typeof error.code === "string"
@@ -72,6 +83,7 @@ export const ProjectContext = () => {
                                 }) as unknown as UnknownAction
                             );
                     }
+                    return;
                 }
                 dispatch(
                     cleanupNonCloudFiles({

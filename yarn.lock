@@ -6582,10 +6582,10 @@ find-up@^6.3.0:
     locate-path "^7.1.0"
     path-exists "^5.0.0"
 
-firebase-functions@^6.1.2:
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/firebase-functions/-/firebase-functions-6.1.2.tgz#2612e6cb3184d43eadcd5b8d8b2176204ac24b64"
-  integrity sha512-1ZKLLOs4YhpzfWOZo0wsqNBusy9113GUfRs89BF6yOlmkxlcJxdJzZEs/ygWeXVJKquZhW2K1Gm10Gir4RJxGQ==
+firebase-functions@^6.4.0:
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/firebase-functions/-/firebase-functions-6.4.0.tgz#202d1aff5ecae440bece3cbec1cd77fd0de8bab6"
+  integrity sha512-Q/LGhJrmJEhT0dbV60J4hCkVSeOM6/r7xJS/ccmkXzTWMjo+UPAYX9zlQmGlEjotstZ0U9GtQSJSgbB2Z+TJDg==
   dependencies:
     "@types/cors" "^2.8.5"
     "@types/express" "^4.17.21"

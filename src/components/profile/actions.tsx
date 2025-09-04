@@ -540,7 +540,11 @@ export const playListItem =
         }
 
         if (!projectIsCached || timestampMismatch || !projectHasLastModule) {
-            await downloadProjectOnce(projectUid)(dispatch);
+            const result = await downloadProjectOnce(projectUid)(dispatch);
+            if (!result.exists) {
+                console.error("Project not found:", projectUid);
+                return;
+            }
             await downloadAllProjectDocumentsOnce(projectUid)(dispatch);
             await downloadTargetsOnce(projectUid)(dispatch);
             await getProjectLastModifiedOnce(projectUid)(dispatch);

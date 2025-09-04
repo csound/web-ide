@@ -68,7 +68,6 @@ export const syncFs = async (
         const filepath = isEmpty(realPath)
             ? document.filename
             : realPath.join("/") + "/" + document.filename;
-        console.log("SYNCING", projectUid, csound, document, filepath);
 
         await addDocumentToCsoundFS(projectUid, csound, document, filepath);
     }
