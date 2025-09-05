@@ -24,8 +24,8 @@ import {
     Divider
 } from "@mui/material";
 import { AccountBox } from "@mui/icons-material";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
+import CachedAvatar from "@comp/profile/cached-avatar";
 import MenuIcon from "@mui/icons-material/Menu";
 import HelpIcon from "@mui/icons-material/Help";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -88,7 +88,7 @@ export const Header = () => {
     const avatar = isEmpty(avatarUrl) ? (
         <AccountBox />
     ) : (
-        <Avatar src={avatarUrl || ""} css={SS.avatar} />
+        <CachedAvatar src={avatarUrl || ""} css={SS.avatar} />
     );
 
     const userMenu = () => (

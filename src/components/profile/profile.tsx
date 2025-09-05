@@ -20,6 +20,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import { Header } from "../header/header";
+import CachedProfileImage from "./cached-profile-image";
 import {
     subscribeToFollowing,
     subscribeToFollowers,
@@ -53,7 +54,6 @@ import {
     IDContainer,
     ProfilePictureContainer,
     ProfilePictureDiv,
-    ProfilePicture,
     UploadProfilePicture,
     UploadProfilePictureText,
     UploadProfilePictureIcon,
@@ -234,7 +234,7 @@ export const Profile = () => {
                             >
                                 <ProfilePictureDiv>
                                     {imageUrl && (
-                                        <ProfilePicture
+                                        <CachedProfileImage
                                             src={imageUrl}
                                             width={"100%"}
                                             height={"100%"}

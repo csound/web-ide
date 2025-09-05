@@ -163,5 +163,5 @@ export const filenameStyle = (theme: Theme): SerializedStyles => css`
     overflow: hidden;
     flex: 1;
     min-width: 0;
-    max-width: calc(100% - 80px);
+    max-width: calc(100% - 20px);
 `;
