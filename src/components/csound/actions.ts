@@ -52,9 +52,20 @@ export const syncFs = async (
     projectUid: string,
     storeState: RootState
 ): Promise<void> => {
-    const documents: IDocument[] = Object.values(
-        storeState.ProjectsReducer.projects[projectUid].documents
-    );
+    const projectDocuments =
+        storeState.ProjectsReducer.projects[projectUid]?.documents;
+
+    console.log(`syncFs called for project ${projectUid}`);
+
+    if (!projectDocuments || Object.keys(projectDocuments).length === 0) {
+        console.warn(
+            `No documents found for project ${projectUid}. Documents may not be loaded yet.`
+        );
+        return;
+    }
+
+    const documents: IDocument[] = Object.values(projectDocuments);
+    console.log(`Syncing ${documents.length} documents to Csound FS`);
 
     for (const document of documents) {
         // reminder: paths are store by document ref and not
@@ -69,8 +80,11 @@ export const syncFs = async (
             ? document.filename
             : realPath.join("/") + "/" + document.filename;
 
+        console.log(`Writing file to Csound FS: ${filepath}`);
         await addDocumentToCsoundFS(projectUid, csound, document, filepath);
     }
+
+    console.log(`syncFs completed for project ${projectUid}`);
 };
 
 export const playCsdFromFs = ({
@@ -95,7 +109,7 @@ export const playCsdFromFs = ({
         csoundInstance = csoundObj;
 
         setCsound(csoundInstance);
-        syncFs(csoundObj, projectUid, store.getState());
+        await syncFs(csoundObj, projectUid, store.getState());
 
         if (csoundObj && setConsole) {
             setConsole([""]);
