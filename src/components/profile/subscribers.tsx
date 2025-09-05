@@ -232,10 +232,8 @@ export const subscribeToProfileProjects = (
             ? query(projects, where("userUid", "==", profileUid))
             : query(
                   projects,
+                  where("userUid", "==", profileUid),
                   where("public", "==", true)
-                  // query(
-                  //     query(projects, where("userUid", "==", profileUid)),
-                  // )
               ),
         async (projectSnaps) => {
             const currentProfileProjects = pipe(
