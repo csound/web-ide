@@ -24,7 +24,7 @@
         "@emotion/core": "^11.0.0",
         "@emotion/css": "^11.13.5",
         "@emotion/react": "^11.14.0",
-        "@emotion/styled": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
         "@hlolli/codemirror-lang-csound": "^1.0.0-alpha10",
         "@mui/icons-material": "^6.2.0",
         "@mui/material": "^6.2.0",

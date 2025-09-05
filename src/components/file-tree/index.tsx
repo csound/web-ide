@@ -244,7 +244,7 @@ function DownloadNonCloudFileIcon({
     mimeType: string;
 }) {
     const onClick = useCallback(() => {
-        const blob = new Blob([file.buffer], { type: mimeType });
+        const blob = new Blob([file.buffer as BlobPart], { type: mimeType });
         const tmpUrl = URL.createObjectURL(blob);
         (window as any).open(tmpUrl);
     }, [file, mimeType]);
@@ -413,7 +413,8 @@ const makeTree = (
                         dispatch(
                             renameDocument(
                                 activeProjectUid,
-                                document_.documentUid
+                                document_.documentUid,
+                                propOr("", "filename", document_)
                             )
                         )
                     }
@@ -649,18 +650,17 @@ export const FileTree = ({
 
     // Extract file list and map non-cloud files
     const filelist = Object.values(documents);
+
     const nonCloudFileSources = nonCloudFileTreeEntries
         .map((entry) => nonCloudFiles.get(entry))
         .filter((file): file is NonCloudFile => !!file);
 
-    const shouldDisplayTree = Boolean(
-        stateDnD && project && currentTabDocumentUid
-    );
+    const shouldDisplayTree = Boolean(stateDnD && project);
 
     const [_, treeElements] = shouldDisplayTree
         ? makeTree(
               activeProjectUid,
-              currentTabDocumentUid!,
+              currentTabDocumentUid || "",
               dispatch,
               collapseState,
               setCollapseState,

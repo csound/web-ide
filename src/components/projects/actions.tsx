@@ -67,48 +67,100 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { IFirestoreDocument } from "@root/db/types";
 
+// Track ongoing downloads to prevent duplicates
+const ongoingDownloads = new Map<string, Promise<{ exists: boolean }>>();
+
 export const downloadProjectOnce = (
     projectUid: string
 ): ((dispatch: any) => Promise<{ exists: boolean }>) => {
     if (!projectUid) {
-        console.trace("No projectUid provided");
+        console.trace("[downloadProjectOnce] No projectUid provided");
     }
     return async (dispatch: any) => {
-        console.log("Getting project", projectUid);
         if (!projectUid) {
-            console.trace("Missing projectUid", projectUid);
+            console.trace(
+                "[downloadProjectOnce] Missing projectUid",
+                projectUid
+            );
             return { exists: false };
         }
         if (!projects) {
-            console.trace("Missing projects collection", projects);
-            return { exists: false };
-        }
-        let projReference: DocumentReference<DocumentData>;
-        try {
-            projReference = doc(projects, projectUid);
-        } catch {
+            console.trace(
+                "[downloadProjectOnce] Missing projects collection",
+                projects
+            );
             return { exists: false };
         }
 
-        if (!projReference) {
-            console.trace("Missing project reference", projReference);
-            return { exists: false };
+        // Check if download is already in progress
+        if (ongoingDownloads.has(projectUid)) {
+            return ongoingDownloads.get(projectUid)!;
         }
 
-        let projSnap: any;
-        try {
-            projSnap = await getDoc(projReference);
-        } catch {
-            return { exists: false };
-        }
-        if (projSnap && projSnap.exists()) {
-            const project: IProject =
-                await convertProjectSnapToProject(projSnap);
-            await dispatch(storeProjectLocally([project]));
-            return { exists: true };
-        } else {
-            return { exists: false };
-        }
+        // Create and store the download promise
+        const downloadPromise = (async () => {
+            try {
+                let projReference: DocumentReference<DocumentData>;
+                try {
+                    projReference = doc(projects, projectUid);
+                } catch (error) {
+                    console.error(
+                        `[downloadProjectOnce] Error creating document reference:`,
+                        error
+                    );
+                    return { exists: false };
+                }
+
+                if (!projReference) {
+                    console.trace(
+                        "[downloadProjectOnce] Missing project reference",
+                        projReference
+                    );
+                    return { exists: false };
+                }
+
+                let projSnap: any;
+                try {
+                    projSnap = await getDoc(projReference);
+                } catch (error) {
+                    console.error(
+                        `[downloadProjectOnce] Error fetching document from Firestore:`,
+                        error
+                    );
+                    return { exists: false };
+                }
+
+                if (projSnap && projSnap.exists()) {
+                    const project: IProject =
+                        await convertProjectSnapToProject(projSnap);
+                    await dispatch(storeProjectLocally([project]));
+
+                    // Download project documents (files) as part of downloadProjectOnce
+                    try {
+                        await downloadAllProjectDocumentsOnce(projectUid)(
+                            dispatch
+                        );
+                    } catch (error) {
+                        console.error(
+                            `[downloadProjectOnce] Error downloading project documents:`,
+                            error
+                        );
+                    }
+
+                    return { exists: true };
+                } else {
+                    return { exists: false };
+                }
+            } finally {
+                // Clean up the ongoing download tracking
+                ongoingDownloads.delete(projectUid);
+            }
+        })();
+
+        // Store the promise to prevent duplicates
+        ongoingDownloads.set(projectUid, downloadPromise);
+
+        return downloadPromise;
     };
 };
 
@@ -117,7 +169,7 @@ export const downloadAllProjectDocumentsOnce = (
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         if (!projectUid) {
-            console.trace(
+            console.error(
                 "No projectUid provided to downloadAllProjectDocumentsOnce"
             );
             return;
@@ -127,15 +179,17 @@ export const downloadAllProjectDocumentsOnce = (
             const filesReference = await getDocs(
                 collection(doc(projects, projectUid), "files")
             );
+
             const allDocuments = await Promise.all(
                 filesReference.docs.map(async (d) => {
                     const data = d.data() as IFirestoreDocument;
-                    return fileDocumentDataToDocumentType(
+                    const document = fileDocumentDataToDocumentType(
                         {
                             ...data
                         },
                         d.id
                     );
+                    return document;
                 })
             );
             const allDocumentsMap = reduce(
@@ -506,40 +560,19 @@ export const removeDocumentLocally = (
 
 export const renameDocument = (
     projectUid: string,
-    documentUid: string
-): any => {
-    const state = store.getState() as RootState;
-    const project: IProject = pathOr(
-        {} as IProject,
-        ["ProjectsReducer", "projects", projectUid],
-        state
-    );
-    if (!project) {
-        console.error("Project", projectUid, "was not found!");
-        return;
-    }
-    const currentFilename = pathOr(
-        "",
-        ["documents", documentUid, "filename"],
-        project
-    );
-    return openSimpleModal("new-document-prompt", {
-        isRenameAction: true,
-        initFilename: currentFilename,
-        projectUid,
-        renameDocumentUid: documentUid
-    });
+    documentUid: string,
+    newFilename: string
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch: any) => {
+        dispatch(renameDocumentLocally(documentUid, newFilename));
+    };
 };
 
-const createExportPath = (
-    folders: Record<string, IDocument>,
-    document_: CsoundFile
-): string => {
-    if (!folders || pathOr([], ["path"], document_).length === 0) {
-        return document_.filename;
-    }
-    const paths = document_.path.map((d) => folders[d].filename);
-    return `${paths.join("/")}/${document_.filename}`;
+const createExportPath = (document: IDocument, projectUid: string): string => {
+    const pathPrefix = document.path || [];
+    return concat([projectUid], append(document.filename, pathPrefix)).join(
+        "/"
+    );
 };
 
 export const exportProject = (): ((dispatch: any) => Promise<void>) => {
@@ -555,49 +588,34 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
             ["ProjectsReducer", "projects", activeProjectUid],
             state
         );
-
-        if (!isEmpty(project)) {
+        if (project) {
             const zip = new JSZip();
-            const folder = zip.folder("project") as any;
-            const documents = Object.values(project.documents);
-
-            const folders: Record<string, IDocument> = documents
-                .filter((d) => d.type === "folder")
-                .reduce(
-                    (m, f) => {
-                        return { ...m, [f.documentUid]: f };
-                    },
-                    {} as Record<string, IDocument>
-                );
-
-            if (!folders) {
-                console.error(`No folders found.`);
-                return;
-            }
-            for (const document_ of documents) {
-                if (document_.type === "bin") {
-                    const path = `${project.userUid}/${project.projectUid}/${document_.documentUid}`;
-                    const url = await getDownloadURL(
-                        await storageReference(path)
+            const documents: IDocument[] = Object.values(project.documents);
+            for (const document of documents) {
+                if (document.type === "txt") {
+                    zip.file(
+                        createExportPath(document, project.projectUid),
+                        document.currentValue
                     );
-
-                    const response = await fetch(url);
-                    const blob = await response.arrayBuffer();
-                    const exportPath = createExportPath(folders, document_);
-                    if (exportPath && folder && folder.file) {
-                        folder.file(exportPath, blob, { binary: true });
-                    } else {
-                        console.error(`whoops, no export path was created`);
+                } else if (document.type === "bin") {
+                    const path = `${document.userUid}/${project.projectUid}/${document.documentUid}`;
+                    try {
+                        const downloadUrl = await getDownloadURL(
+                            await storageReference(path)
+                        );
+                        const response = await fetch(downloadUrl);
+                        const arrayBuffer = await response.arrayBuffer();
+                        zip.file(
+                            createExportPath(document, project.projectUid),
+                            arrayBuffer
+                        );
+                    } catch (error) {
+                        console.error(error);
                     }
-                } else if (document_.type === "txt") {
-                    const exportPath = createExportPath(folders, document_);
-                    folder.file(exportPath, document_.savedValue);
                 }
             }
-
-            zip.generateAsync({ type: "blob" }).then((content) => {
-                saveAs(content, "project.zip");
-            });
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, `${project.name}.zip`);
         }
     };
 };
@@ -605,16 +623,20 @@ export const exportProject = (): ((dispatch: any) => Promise<void>) => {
 export const markProjectPublic = (projectUid: string, isPublic: boolean) => {
     return async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const state = getState();
-        const loggedInUserUid = selectLoggedInUid(state);
-        if (!loggedInUserUid || !projectUid) {
-            return;
+        const loggedInUid = selectLoggedInUid(state);
+        if (loggedInUid) {
+            try {
+                await updateDoc(doc(projects, projectUid), {
+                    public: isPublic
+                });
+                dispatch({
+                    type: SET_PROJECT_PUBLIC,
+                    projectUid,
+                    isPublic
+                });
+            } catch (error) {
+                console.error("Error updating project public status:", error);
+            }
         }
-        await updateDoc(doc(projects, projectUid), { public: isPublic });
-        dispatch({
-            type: SET_PROJECT_PUBLIC,
-            projectUid,
-            isPublic
-        });
-        updateProjectLastModified(projectUid);
     };
 };

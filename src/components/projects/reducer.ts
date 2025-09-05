@@ -106,6 +106,15 @@ export const ProjectsReducer = (
         case ProjectsTypes.ADD_PROJECT_DOCUMENTS: {
             const action =
                 unknownAction as ProjectsTypes.AddProjectDocumentsAction;
+
+            // Ensure the project exists before trying to add documents
+            if (!state.projects[action.projectUid]) {
+                console.error(
+                    `[ProjectsReducer] Cannot add documents to non-existent project: ${action.projectUid}`
+                );
+                return state;
+            }
+
             return {
                 ...state,
                 projects: {
@@ -113,7 +122,8 @@ export const ProjectsReducer = (
                     [action.projectUid]: {
                         ...state.projects[action.projectUid],
                         documents: {
-                            ...state.projects[action.projectUid].documents,
+                            ...(state.projects[action.projectUid].documents ||
+                                {}),
                             ...action.documents
                         }
                     }

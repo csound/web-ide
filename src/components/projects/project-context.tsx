@@ -9,7 +9,11 @@ import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
-import { activateProject, downloadProjectOnce } from "./actions";
+import {
+    activateProject,
+    downloadProjectOnce,
+    downloadAllProjectDocumentsOnce
+} from "./actions";
 import { isEmpty, pathOr } from "ramda";
 import { UnknownAction } from "redux";
 import { RootState } from "@root/store";
@@ -55,14 +59,24 @@ export const ProjectContext = () => {
         pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
 
+    // Effect 1: Reset states when projectUid changes
     useEffect(() => {
-        if (!projectFetchStarted) {
-            const initProject = async () => {
+        setProjectFetchStarted(false);
+        setProjectIsReady(false);
+        setNeedsLoading(true);
+    }, [projectUid]);
+
+    // Effect 2: Handle project download initiation
+    useEffect(() => {
+        if (!projectFetchStarted && projectUid) {
+            setProjectFetchStarted(true);
+
+            const downloadProject = async () => {
                 try {
                     const result =
                         await downloadProjectOnce(projectUid)(dispatch);
                     if (!result.exists) {
-                        setProjectIsReady(true); // Stop loading spinner
+                        setProjectIsReady(true);
                         dispatch(
                             push("/404", {
                                 message: "Project not found"
@@ -71,7 +85,11 @@ export const ProjectContext = () => {
                         return;
                     }
                 } catch (error: any) {
-                    setProjectIsReady(true); // Stop loading spinner
+                    console.error(
+                        `[ProjectContext] Error during project download:`,
+                        error
+                    );
+                    setProjectIsReady(true);
                     if (
                         typeof error === "object" &&
                         typeof error.code === "string"
@@ -85,6 +103,8 @@ export const ProjectContext = () => {
                     }
                     return;
                 }
+
+                // Cleanup and activate project
                 dispatch(
                     cleanupNonCloudFiles({
                         projectUid
@@ -93,23 +113,17 @@ export const ProjectContext = () => {
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);
             };
-            setProjectFetchStarted(true);
-            initProject();
-        }
 
+            downloadProject();
+        }
+    }, [projectUid]); // Only depend on projectUid, not on projectFetchStarted or dispatch
+
+    // Effect 3: Handle loading state management
+    useEffect(() => {
         if (needsLoading && projectFetchStarted && projectIsReady) {
             setNeedsLoading(false);
         }
-    }, [
-        dispatch,
-        project,
-        projectUid,
-        activeProjectUid,
-        needsLoading,
-        projectIsReady,
-        projectFetchStarted,
-        tabIndex
-    ]);
+    }, [needsLoading, projectFetchStarted, projectIsReady]);
 
     return (
         <>

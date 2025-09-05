@@ -170,6 +170,7 @@ export const convertProjectSnapToProject = async (
     const projData = projSnap.data();
     const lastModified = await getDoc(doc(projectLastModified, projSnap.id));
     const lastModifiedData = lastModified.exists() && lastModified.data();
+
     const project = firestoreProjectToIProject(projData as IFirestoreProject);
     project["projectUid"] = projSnap.id;
 
@@ -182,5 +183,6 @@ export const convertProjectSnapToProject = async (
             (projData.created as Timestamp).toMillis()
         );
     }
+
     return project;
 };

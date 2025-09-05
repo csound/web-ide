@@ -80,6 +80,7 @@ export const listItem = css`
     padding-left: 32px;
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
 `;
 
 export const draggingOver = (theme: Theme): SerializedStyles => css`
@@ -157,4 +158,10 @@ export const filenameStyle = (theme: Theme): SerializedStyles => css`
     padding: 0;
     margin: 0;
     margin-left: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    max-width: calc(100% - 80px);
 `;
