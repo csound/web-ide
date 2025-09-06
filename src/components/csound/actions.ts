@@ -9,7 +9,12 @@ import {
 } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
-import { CsoundObj, ICsoundStatus, SET_CSOUND_PLAY_STATE } from "./types";
+import {
+    CsoundObj,
+    ICsoundStatus,
+    SET_CSOUND_PLAY_STATE,
+    compileCSD
+} from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
 import { addDocumentToCsoundFS } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
@@ -120,7 +125,7 @@ export const playCsdFromFs = ({
 
         if (csoundObj) {
             await csoundObj.setOption("-odac");
-            const result = await csoundObj.compileCsd(csdPath);
+            const result = await compileCSD(csoundObj, csdPath);
 
             if (result === 0) {
                 const filesPre = await csoundObj.fs.readdir("/");
@@ -294,7 +299,7 @@ export const renderToDisk = (
             project.documents[targetDocumentUid].filename;
 
         targetDocumentName.endsWith("csd")
-            ? await csound.compileCsd(targetDocumentName)
+            ? await compileCSD(csound, targetDocumentName)
             : await csound.compileOrc(
                   project.documents[targetDocumentUid].currentValue
               );

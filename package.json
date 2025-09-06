@@ -5,7 +5,7 @@
     "private": true,
     "main": "public/electron.js",
     "scripts": {
-        "start": "cross-env REACT_APP_DATABASE=DEV vite",
+        "start": "cross-env REACT_APP_DATABASE=PROD vite",
         "build": "cross-env NODE_ENV=production REACT_APP_DATABASE=PROD tsc && vite build",
         "build:dev": "cross-env NODE_ENV=production REACT_APP_DATABASE=DEV tsc && vite build",
         "test": "cross-env REACT_APP_DATABASE=DEV jest",
@@ -31,7 +31,7 @@
         "@reduxjs/toolkit": "^2.5.0",
         "@vitejs/plugin-react": "^4.3.4",
         "connected-react-router": "^6.9.3",
-        "csound7": "npm:@csound/browser@7.0.0-alpha2",
+        "csound7": "npm:@csound/browser@^7.0.0-beta5",
         "date-fns": "^4.1.0",
         "firebase-functions": "^6.4.0",
         "history": "5.3.0",

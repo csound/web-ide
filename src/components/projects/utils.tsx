@@ -10,7 +10,7 @@ import { Mime } from "mime";
 import { storageReference, projectLastModified } from "@config/firestore";
 import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentFileType, IProject } from "./types";
-import { CsoundObj } from "@csound/browser";
+import { CsoundObj } from "@comp/csound/types";
 import { dropLast, isNil, prop, propOr, reject } from "ramda";
 
 const mime = new Mime();

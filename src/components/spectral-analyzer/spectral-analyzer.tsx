@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { assoc, path } from "ramda";
-import { CsoundObj } from "@csound/browser";
+import { CsoundObj } from "@comp/csound/types";
 import { ICsoundStatus } from "@comp/csound/types";
 import { csoundInstance } from "../csound";
 import { scaleLinear } from "d3-scale";

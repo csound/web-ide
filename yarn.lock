@@ -5114,14 +5114,15 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.1, cross-spawn@^7.0.3, cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-"csound7@npm:@csound/browser@7.0.0-alpha2":
-  version "7.0.0-alpha2"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-alpha2.tgz#6c91de77582c620834383160868dcda375f2a5fe"
-  integrity sha512-YGtdThHDudHMJ5Ms0MHmq9hodryfru1W1/quAfC1wr1ZYv8iUuz7chEg+OVmGhQdk+612qwa00doqHk9fFo0Cg==
+"csound7@npm:@csound/browser@^7.0.0-beta5":
+  version "7.0.0-beta5"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-beta5.tgz#26342367ffdc959ab77df6345d15752a99f2f9ce"
+  integrity sha512-fpE2CRINucbvt02eA6I9+fQUOTUpHzVvX4ZlVJi3Tuf0kWYxALy0OQSH6j9Qsv25kfKiBNrGyj6gnfw9GoyeZw==
   dependencies:
     eventemitter3 "^4.0.7"
     google-closure-compiler "^20221102.0.1"
     google-closure-library "^20221102.0.0"
+    pako "^2.1.0"
     ramda "^0.28.0"
     rimraf "^3.0.2"
     standardized-audio-context "^25.3.35"
@@ -9663,6 +9664,11 @@ package-json-from-dist@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz#4f1471a010827a86f94cfd9b0727e36d267de505"
   integrity sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==
+
+pako@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-2.1.0.tgz#266cc37f98c7d883545d11335c00fbd4062c9a86"
+  integrity sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==
 
 pako@~1.0.2:
   version "1.0.11"
