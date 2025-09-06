@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Audio as AudioSpinner } from "react-loader-spinner";
-import { useParams } from "react-router";
-import { push } from "connected-react-router";
+import { useParams, useNavigate } from "react-router";
 import { Theme, useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
@@ -9,13 +8,8 @@ import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
-import {
-    activateProject,
-    downloadProjectOnce,
-    downloadAllProjectDocumentsOnce
-} from "./actions";
+import { activateProject, downloadProjectOnce } from "./actions";
 import { isEmpty, pathOr } from "ramda";
-import { UnknownAction } from "redux";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
 
@@ -25,6 +19,7 @@ const ForceBackgroundColor = ({ theme }: { theme: Theme }) => (
 
 export const ProjectContext = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const theme = useTheme();
     const routeParams: { id?: string } = useParams();
 
@@ -34,15 +29,11 @@ export const ProjectContext = () => {
     const projectUid = routeParams.id ?? "";
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
-    invalidUrl &&
-        dispatch(
-            push(
-                { path: "/404" },
-                {
-                    message: "Project not found"
-                }
-            ) as unknown as UnknownAction
-        );
+    if (invalidUrl) {
+        navigate("/404", {
+            state: { message: "Project not found" }
+        });
+    }
 
     const activeProjectUid: string | undefined = useSelector(
         (store: RootState) =>
@@ -77,11 +68,9 @@ export const ProjectContext = () => {
                         await downloadProjectOnce(projectUid)(dispatch);
                     if (!result.exists) {
                         setProjectIsReady(true);
-                        dispatch(
-                            push("/404", {
-                                message: "Project not found"
-                            }) as unknown as UnknownAction
-                        );
+                        navigate("/404", {
+                            state: { message: "Project not found" }
+                        });
                         return;
                     }
                 } catch (error: any) {
@@ -95,11 +84,9 @@ export const ProjectContext = () => {
                         typeof error.code === "string"
                     ) {
                         error.code === "permission-denied" &&
-                            dispatch(
-                                push("/404", {
-                                    message: "Project not found"
-                                }) as unknown as UnknownAction
-                            );
+                            navigate("/404", {
+                                state: { message: "Project not found" }
+                            });
                     }
                     return;
                 }
@@ -108,7 +95,7 @@ export const ProjectContext = () => {
                 dispatch(
                     cleanupNonCloudFiles({
                         projectUid
-                    }) as unknown as UnknownAction
+                    }) as any
                 );
                 await activateProject(projectUid)(dispatch);
                 setProjectIsReady(true);

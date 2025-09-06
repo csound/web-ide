@@ -2,6 +2,11 @@ import React from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "@root/store";
 import { List, ListItem, ListItemText } from "@mui/material";
+import {
+    selectFollowingLoading,
+    selectFollowersLoading,
+    selectStarsLoading
+} from "./selectors";
 import { FollowingList } from "./tabs/following-list";
 import { FollowersList } from "./tabs/followers-list";
 import { StarsList } from "./tabs/stars-list";
@@ -161,6 +166,11 @@ export const ProfileLists = ({
         )
     );
 
+    // Loading states
+    const followingLoading = useSelector(selectFollowingLoading(profileUid));
+    const followersLoading = useSelector(selectFollowersLoading(profileUid));
+    const starsLoading = useSelector(selectStarsLoading(profileUid));
+
     return (
         <List>
             {selectedSection === 0 &&
@@ -178,12 +188,20 @@ export const ProfileLists = ({
                     );
                 })}
             {selectedSection === 1 && (
-                <FollowingList filteredFollowing={userFollowing} />
+                <FollowingList
+                    filteredFollowing={userFollowing}
+                    isLoading={followingLoading}
+                />
             )}
             {selectedSection === 2 && (
-                <FollowersList filteredFollowers={userFollowers} />
+                <FollowersList
+                    filteredFollowers={userFollowers}
+                    isLoading={followersLoading}
+                />
             )}
-            {selectedSection === 3 && <StarsList profileUid={profileUid} />}
+            {selectedSection === 3 && (
+                <StarsList profileUid={profileUid} isLoading={starsLoading} />
+            )}
         </List>
     );
 };

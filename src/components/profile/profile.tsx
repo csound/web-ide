@@ -6,8 +6,7 @@ import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
-import { push } from "connected-react-router";
-import { useLocation, useParams } from "react-router";
+import { useLocation, useParams, useNavigate } from "react-router";
 import { createButtonAddIcon } from "./styles";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -67,7 +66,6 @@ import {
     EditProfileButtonSection,
     fabButton
 } from "./profile-ui";
-import { UnknownAction } from "redux";
 
 const UserLink = ({ link }: { link: string | undefined }) => {
     return typeof link === "string" ? (
@@ -85,6 +83,7 @@ export const Profile = () => {
     const [profileUid, setProfileUid]: [string | undefined, any] = useState();
     const theme = useTheme();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { username, tab } = useParams();
     const profile = useSelector(selectUserProfile(profileUid));
@@ -130,35 +129,25 @@ export const Profile = () => {
     useEffect(() => {
         if (!isRequestingLogin) {
             if (!username && !loggedInUserUid) {
-                dispatch(push("/") as unknown as UnknownAction);
+                navigate("/");
             } else if (username) {
                 getDoc(doc(usernames, username)).then((userSnap) => {
                     if (userSnap.exists()) {
                         const data = userSnap.data();
                         data && data.userUid
                             ? setProfileUid(data.userUid)
-                            : dispatch(
-                                  push(
-                                      { path: "/404" },
-                                      {
-                                          message: "User not found"
-                                      }
-                                  ) as unknown as UnknownAction
-                              );
+                            : navigate("/404", {
+                                  state: { message: "User not found" }
+                              });
                     } else {
-                        dispatch(
-                            push(
-                                { path: "/404" },
-                                {
-                                    message: "User not found"
-                                }
-                            ) as unknown as UnknownAction
-                        );
+                        navigate("/404", {
+                            state: { message: "User not found" }
+                        });
                     }
                 });
             }
         }
-    }, [dispatch, username, loggedInUserUid, isRequestingLogin, setProfileUid]);
+    }, [navigate, username, loggedInUserUid, isRequestingLogin, setProfileUid]);
 
     useEffect(() => {
         if (!isRequestingLogin && profileUid) {
@@ -382,34 +371,24 @@ export const Profile = () => {
                                 onChange={(_, index) => {
                                     switch (index) {
                                         case 0: {
-                                            dispatch(
-                                                push({
-                                                    pathname: `/profile/${username}`
-                                                }) as unknown as UnknownAction
-                                            );
+                                            navigate(`/profile/${username}`);
                                             break;
                                         }
                                         case 1: {
-                                            dispatch(
-                                                push({
-                                                    pathname: `/profile/${username}/following`
-                                                }) as unknown as UnknownAction
+                                            navigate(
+                                                `/profile/${username}/following`
                                             );
                                             break;
                                         }
                                         case 2: {
-                                            dispatch(
-                                                push({
-                                                    pathname: `/profile/${username}/followers`
-                                                }) as unknown as UnknownAction
+                                            navigate(
+                                                `/profile/${username}/followers`
                                             );
                                             break;
                                         }
                                         case 3: {
-                                            dispatch(
-                                                push({
-                                                    pathname: `/profile/${username}/stars`
-                                                }) as unknown as UnknownAction
+                                            navigate(
+                                                `/profile/${username}/stars`
                                             );
                                             break;
                                         }

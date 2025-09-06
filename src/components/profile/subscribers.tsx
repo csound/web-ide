@@ -26,7 +26,10 @@ import { convertProjectSnapToProject } from "@comp/projects/utils";
 import {
     storeUserProfile,
     storeProfileProjectsCount,
-    storeProfileStars
+    storeProfileStars,
+    setFollowingLoading,
+    setFollowersLoading,
+    setStarsLoading
 } from "./actions";
 import {
     IProfile,
@@ -73,6 +76,9 @@ export const subscribeToFollowing = (
     profileUid: string,
     dispatch: AppThunkDispatch
 ): (() => void) => {
+    // Set loading state
+    dispatch(setFollowingLoading(profileUid, true));
+
     const unsubscribe: () => void = onSnapshot(
         doc(following, profileUid),
         async (followingReference) => {
@@ -110,8 +116,14 @@ export const subscribeToFollowing = (
                 userProfiles: missingProfiles,
                 userProfileUids
             });
+            // Clear loading state
+            dispatch(setFollowingLoading(profileUid, false));
         },
-        (error: any) => console.error(error)
+        (error: any) => {
+            console.error(error);
+            // Clear loading state on error
+            dispatch(setFollowingLoading(profileUid, false));
+        }
     );
     return unsubscribe;
 };
@@ -120,6 +132,9 @@ export const subscribeToFollowers = (
     profileUid: string,
     dispatch: AppThunkDispatch
 ): (() => void) => {
+    // Set loading state
+    dispatch(setFollowersLoading(profileUid, true));
+
     const unsubscribe: () => void = onSnapshot(
         doc(followers, profileUid),
         async (followersReference) => {
@@ -159,8 +174,14 @@ export const subscribeToFollowers = (
                 userProfiles: missingProfiles,
                 userProfileUids
             });
+            // Clear loading state
+            dispatch(setFollowersLoading(profileUid, false));
         },
-        (error: any) => console.error(error)
+        (error: any) => {
+            console.error(error);
+            // Clear loading state on error
+            dispatch(setFollowersLoading(profileUid, false));
+        }
     );
     return unsubscribe;
 };
@@ -193,6 +214,9 @@ export const subscribeToProfileStars = (
     profileUid: string,
     dispatch: AppThunkDispatch
 ): (() => void) => {
+    // Set loading state
+    dispatch(setStarsLoading(profileUid, true));
+
     const unsubscribe: () => void = onSnapshot(
         doc(profileStars),
         (starsReference) => {
@@ -216,8 +240,14 @@ export const subscribeToProfileStars = (
                 }
             });
             dispatch(storeProfileStars(starsData, profileUid));
+            // Clear loading state
+            dispatch(setStarsLoading(profileUid, false));
         },
-        (error: any) => console.error(error)
+        (error: any) => {
+            console.error(error);
+            // Clear loading state on error
+            dispatch(setStarsLoading(profileUid, false));
+        }
     );
     return unsubscribe;
 };

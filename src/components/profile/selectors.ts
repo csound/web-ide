@@ -250,3 +250,31 @@ export const selectProfileProjectsCount = createSelector(
 //         iconName: prop("iconName", proj)
 //     };
 // };
+
+// Loading state selectors
+export const selectFollowingLoading =
+    (profileUid: string) => (store: RootState) => {
+        return pathOr(
+            false,
+            ["ProfileReducer", "followingLoading", profileUid],
+            store
+        );
+    };
+
+export const selectFollowersLoading =
+    (profileUid: string) => (store: RootState) => {
+        return pathOr(
+            false,
+            ["ProfileReducer", "followersLoading", profileUid],
+            store
+        );
+    };
+
+export const selectStarsLoading =
+    (profileUid: string) => (store: RootState) => {
+        return pathOr(
+            false,
+            ["ProfileReducer", "starsLoading", profileUid],
+            store
+        );
+    };

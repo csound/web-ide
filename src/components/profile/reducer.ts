@@ -12,7 +12,10 @@ import {
     STORE_PROFILE_STARS,
     GET_ALL_TAGS,
     UPDATE_PROFILE_FOLLOWING,
-    UPDATE_PROFILE_FOLLOWERS
+    UPDATE_PROFILE_FOLLOWERS,
+    SET_FOLLOWING_LOADING,
+    SET_FOLLOWERS_LOADING,
+    SET_STARS_LOADING
 } from "./types";
 
 type ProfileMap = { [profileUid: string]: IProfile };
@@ -24,6 +27,9 @@ export interface IProfileReducer {
     readonly currentlyPlayingProject: string | undefined;
     readonly projectFilterString: string;
     readonly followingFilterString: string;
+    readonly followingLoading: { [profileUid: string]: boolean };
+    readonly followersLoading: { [profileUid: string]: boolean };
+    readonly starsLoading: { [profileUid: string]: boolean };
 }
 
 const INITIAL_STATE: IProfileReducer = {
@@ -32,7 +38,10 @@ const INITIAL_STATE: IProfileReducer = {
     tagsInput: [],
     currentlyPlayingProject: undefined,
     projectFilterString: "",
-    followingFilterString: ""
+    followingFilterString: "",
+    followingLoading: {},
+    followersLoading: {},
+    starsLoading: {}
 };
 
 const profileKeys = [
@@ -180,6 +189,33 @@ const ProfileReducer = (
                 return { ...state, currentlyPlayingProject: undefined };
             }
             return state;
+        }
+        case SET_FOLLOWING_LOADING: {
+            return {
+                ...state,
+                followingLoading: {
+                    ...state.followingLoading,
+                    [action.profileUid]: action.isLoading
+                }
+            };
+        }
+        case SET_FOLLOWERS_LOADING: {
+            return {
+                ...state,
+                followersLoading: {
+                    ...state.followersLoading,
+                    [action.profileUid]: action.isLoading
+                }
+            };
+        }
+        case SET_STARS_LOADING: {
+            return {
+                ...state,
+                starsLoading: {
+                    ...state.starsLoading,
+                    [action.profileUid]: action.isLoading
+                }
+            };
         }
         default: {
             return state;

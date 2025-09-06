@@ -43,7 +43,10 @@ import {
     SET_CURRENTLY_PLAYING_PROJECT,
     REFRESH_USER_PROFILE,
     SET_FOLLOWING_FILTER_STRING,
-    SET_PROJECT_FILTER_STRING
+    SET_PROJECT_FILTER_STRING,
+    SET_FOLLOWING_LOADING,
+    SET_FOLLOWERS_LOADING,
+    SET_STARS_LOADING
 } from "./types";
 import { defaultCsd, defaultOrc, defaultSco } from "@root/csound-templates";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -654,3 +657,28 @@ export const starOrUnstarProject = (
         await batch.commit();
     };
 };
+
+// Loading state actions
+export const setFollowingLoading = (
+    profileUid: string,
+    isLoading: boolean
+) => ({
+    type: SET_FOLLOWING_LOADING,
+    profileUid,
+    isLoading
+});
+
+export const setFollowersLoading = (
+    profileUid: string,
+    isLoading: boolean
+) => ({
+    type: SET_FOLLOWERS_LOADING,
+    profileUid,
+    isLoading
+});
+
+export const setStarsLoading = (profileUid: string, isLoading: boolean) => ({
+    type: SET_STARS_LOADING,
+    profileUid,
+    isLoading
+});
