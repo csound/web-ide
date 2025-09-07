@@ -221,7 +221,7 @@ export const selectProfileUid = createSelector(
     (loggedInUid) => loggedInUid
 );
 
-// Selector to get the projectsCount for a specific profileUid
+// Selector to get the projectsCount for the logged-in user
 export const selectProfileProjectsCount = createSelector(
     [selectProfiles, selectProfileUid],
     (profiles, profileUid) => {
@@ -239,6 +239,30 @@ export const selectProfileProjectsCount = createSelector(
         );
     }
 );
+
+// Selector to get the projectsCount for a specific profileUid
+export const selectUserProjectsCount =
+    (profileUid: string | undefined) => (store: RootState) => {
+        if (!profileUid) {
+            return {
+                all: 0,
+                public: 0
+            };
+        }
+        const profiles = selectProfiles(store);
+        if (!profiles[profileUid]) {
+            return {
+                all: 0,
+                public: 0
+            };
+        }
+        return (
+            profiles[profileUid].projectsCount ?? {
+                all: 0,
+                public: 0
+            }
+        );
+    };
 
 // export const selectProjectIconStyle = (
 //     projectUid: string

@@ -25,7 +25,8 @@ import {
     subscribeToFollowers,
     subscribeToProfile,
     subscribeToProfileStars,
-    subscribeToProfileProjects
+    subscribeToProfileProjects,
+    subscribeToProjectsCount
 } from "./subscribers";
 import {
     selectLoginRequesting,
@@ -160,7 +161,8 @@ export const Profile = () => {
                     isProfileOwner,
                     dispatch
                 ),
-                subscribeToProfileStars(profileUid, dispatch)
+                subscribeToProfileStars(profileUid, dispatch),
+                subscribeToProjectsCount(profileUid, dispatch)
             ] as any[];
             // make sure the logged in user's following is listed
             // when viewing another profile, for un/follow state

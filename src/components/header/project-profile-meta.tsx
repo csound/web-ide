@@ -7,7 +7,7 @@ import { selectProjectLastModified } from "@comp/project-last-modified/selectors
 import {
     selectUserProfile,
     selectUserImageURL,
-    selectProfileProjectsCount
+    selectUserProjectsCount
 } from "@comp/profile/selectors";
 import ProjectAvatar from "@elem/project-avatar";
 import { AccountBox } from "@mui/icons-material";
@@ -39,7 +39,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
     const profileUserName = profile?.username ?? "";
     const profileDisplayName = profile?.displayName ?? "unknown user";
     const profileImage = useSelector(selectUserImageURL(projectOwnerUid));
-    const profileProjectsCount = useSelector(selectProfileProjectsCount);
+    const profileProjectsCount = useSelector(
+        selectUserProjectsCount(projectOwnerUid)
+    );
 
     const authorTooltip = (
         <div css={SS.projectProfileTooltipContainer}>
