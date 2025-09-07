@@ -9,10 +9,10 @@ export default function Tabs({
     ...extraProps
 }) {
     const getActiveIndex = React.useCallback(() => {
-        if (nextActiveIndex) {
+        if (nextActiveIndex != null) {
             return nextActiveIndex;
         }
-        if (defaultIndex) {
+        if (defaultIndex != null) {
             return defaultIndex;
         }
         return 0;
@@ -22,14 +22,12 @@ export default function Tabs({
 
     const handleTabChange = React.useCallback(
         (index) => {
-            if (activeIndex !== 0 && !activeIndex) {
-                setActiveIndex(index);
-            }
+            setActiveIndex(index);
             if (onTabChange) {
                 onTabChange(index);
             }
         },
-        [activeIndex, onTabChange, setActiveIndex]
+        [onTabChange, setActiveIndex]
     );
 
     const handleTabSequence = React.useCallback(

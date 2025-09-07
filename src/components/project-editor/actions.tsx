@@ -95,6 +95,34 @@ export const tabDockInit = (
             });
     }
 
+    // Additional fallback logic for when no tabs are open yet
+    if (initialOpenDocuments.length === 0 && allDocuments.length > 0) {
+        // First, try to find any .csd file
+        const csdFiles = allDocuments.filter((d) =>
+            d.filename.endsWith(".csd")
+        );
+        if (csdFiles.length > 0) {
+            initialOpenDocuments.push({
+                uid: csdFiles[0].documentUid
+            });
+        } else {
+            // If no .csd files, try to find any .orc file
+            const orcFiles = allDocuments.filter((d) =>
+                d.filename.endsWith(".orc")
+            );
+            if (orcFiles.length > 0) {
+                initialOpenDocuments.push({
+                    uid: orcFiles[0].documentUid
+                });
+            } else if (allDocuments.length === 1) {
+                // If there's only 1 file/document, open it
+                initialOpenDocuments.push({
+                    uid: allDocuments[0].documentUid
+                });
+            }
+        }
+    }
+
     if (initialOpenDocuments.length > 0 && initialIndex < 0) {
         initialIndex = 0;
     }

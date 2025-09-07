@@ -8,7 +8,7 @@ import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
-import { activateProject, downloadProjectOnce } from "./actions";
+import { activateProject, downloadProjectOnce, closeProject } from "./actions";
 import { isEmpty, pathOr } from "ramda";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
@@ -111,6 +111,14 @@ export const ProjectContext = () => {
             setNeedsLoading(false);
         }
     }, [needsLoading, projectFetchStarted, projectIsReady]);
+
+    // Effect 4: Cleanup when component unmounts (user navigates away from project editor)
+    useEffect(() => {
+        return () => {
+            // Clean up tab dock when leaving project editor entirely
+            dispatch(closeProject() as any);
+        };
+    }, [dispatch]);
 
     return (
         <>

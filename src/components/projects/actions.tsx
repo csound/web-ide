@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { push } from "connected-react-router";
 import { CsoundObj } from "@csound/browser";
-import { tabDockInit } from "@comp/project-editor/actions";
+import { tabDockInit, closeTabDock } from "@comp/project-editor/actions";
 import {
     selectDefaultTargetName,
     selectTarget
@@ -228,13 +228,19 @@ export const newEmptyDocumentAction = (
 });
 
 export const closeProject = () => {
-    return {
-        type: CLOSE_PROJECT
+    return async (dispatch: AppThunkDispatch) => {
+        // Close tab dock when closing project
+        dispatch(closeTabDock());
+        dispatch({
+            type: CLOSE_PROJECT
+        });
     };
 };
 
 export const activateProject = (projectUid: string) => {
     return async (dispatch: AppThunkDispatch) => {
+        // Close any existing tab dock before activating new project
+        dispatch(closeTabDock());
         dispatch({
             type: ACTIVATE_PROJECT,
             projectUid
