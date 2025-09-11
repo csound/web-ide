@@ -5114,10 +5114,10 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.1, cross-spawn@^7.0.3, cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-"csound7@npm:@csound/browser@^7.0.0-beta5":
-  version "7.0.0-beta5"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-beta5.tgz#26342367ffdc959ab77df6345d15752a99f2f9ce"
-  integrity sha512-fpE2CRINucbvt02eA6I9+fQUOTUpHzVvX4ZlVJi3Tuf0kWYxALy0OQSH6j9Qsv25kfKiBNrGyj6gnfw9GoyeZw==
+"csound7@npm:@csound/browser@^7.0.0-beta6":
+  version "7.0.0-beta6"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-beta6.tgz#c759400a5dcb8a4662f9aead6ae802a79975f40e"
+  integrity sha512-pz2j9C3c5G6/dS3uXb314nEJvffbKzQm9+jBsKs4siuAbIygz1xc1crVe2zl2KqitqVROqwQ3XxZNXsEFgqTPA==
   dependencies:
     eventemitter3 "^4.0.7"
     google-closure-compiler "^20221102.0.1"
