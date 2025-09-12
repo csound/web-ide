@@ -199,7 +199,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                 <ReactAutosuggestExample
                     projectUid={properties.projectID}
                     modifiedTags={modifiedTags}
-                    setModifiedTags={setModifiedTags}
+                    setModifiedTags={setModifiedTags as any}
                     fullWidth
                     label={"Tags"}
                 />
@@ -234,6 +234,9 @@ export const ProjectModal = (properties: IProjectModal) => {
                                 {Array.isArray(Object.entries(SVGPaths)) &&
                                     Object.entries(SVGPaths).map(
                                         (entry, index) => {
+                                            const SvgElem: any =
+                                                entry[1] as any;
+
                                             return (
                                                 <Grid
                                                     item
@@ -250,9 +253,8 @@ export const ProjectModal = (properties: IProjectModal) => {
                                                             handlePopoverClose();
                                                         }}
                                                     >
-                                                        <img
-                                                            alt={"svg icon"}
-                                                            src={`${entry[1]}`}
+                                                        <SvgElem
+                                                            alt={entry[0]}
                                                             width={40}
                                                             height={40}
                                                         />

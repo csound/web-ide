@@ -33,7 +33,6 @@ import {
     IProfile,
     ProfileActionTypes,
     ADD_USER_PROJECT,
-    DELETE_USER_PROJECT,
     STORE_USER_PROFILE,
     STORE_PROFILE_PROJECTS_COUNT,
     STORE_PROFILE_STARS,
@@ -65,6 +64,7 @@ import {
 } from "@comp/target-controls/utils";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
+import { unsetProject } from "@comp/projects/actions";
 import { assoc, difference, keys, path, hasPath } from "ramda";
 
 const addUserProjectAction = (): ProfileActionTypes => {
@@ -246,12 +246,6 @@ export const editUserProject =
         }
     };
 
-const deleteUserProjectAction = (): ProfileActionTypes => {
-    return {
-        type: DELETE_USER_PROJECT
-    };
-};
-
 export const deleteUserProject =
     (projectUid: string) =>
     async (dispatch: AppThunkDispatch, getState: () => RootState) => {
@@ -268,8 +262,8 @@ export const deleteUserProject =
 
             try {
                 await batch.commit();
-                setTimeout(() => dispatch(deleteUserProjectAction()), 1);
-
+                // Remove the project from local state immediately
+                dispatch(unsetProject(projectUid));
                 dispatch(openSnackbar("Project Deleted", SnackbarType.Success));
             } catch {
                 dispatch(

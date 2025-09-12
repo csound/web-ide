@@ -25,10 +25,10 @@ export default defineConfig({
             }
         }),
         viteTsconfigPaths(),
-        svgr(),
-        viteRawPlugin({
-            fileRegex: /\.csd|\.orc\.sco\.udo$/
-        })
+        svgr()
+        // viteRawPlugin({
+        //     fileRegex: /\.csd|\.orc\.sco\.udo$/
+        // })
     ],
     server: {
         // this ensures that the browser opens upon server start
