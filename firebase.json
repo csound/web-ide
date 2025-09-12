@@ -20,10 +20,6 @@
                 "function": "host",
                 "headers": [
                     {
-                        "key": "Cache-Control",
-                        "value": "max-age=0,public,must-revalidate"
-                    },
-                    {
                         "key": "Cross-Origin-Embedder-Policy",
                         "value": "require-corp"
                     },
@@ -52,7 +48,7 @@
                 "headers": [
                     {
                         "key": "Cache-Control",
-                        "value": "max-age=31536000,public,immutable"
+                        "value": "max-age=2592000,public,immutable"
                     }
                 ]
             }
