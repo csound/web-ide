@@ -43,14 +43,14 @@ const Search = () => {
         return path(["HomeReducer", "searchResultTotalRecords"], store);
     });
 
-    // const onChange = React.useCallback(
-    //     (event) => {
-    //         doSearch(event.target.value, 0, dispatch);
-    //     },
-    //     [dispatch]
-    // );
+    const onChange = React.useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            doSearch(event.target.value, 0, dispatch);
+        },
+        [dispatch]
+    );
 
-    // React.useEffect(() => doSearch.cancel, []);
+    React.useEffect(() => doSearch.cancel, []);
 
     return (
         <>
@@ -72,7 +72,8 @@ const Search = () => {
                             disabled={
                                 searchPaginationOffset < 1 ||
                                 searchResultTotalRecords < 1 ||
-                                isEmpty(searchQuery)
+                                isEmpty(searchQuery) ||
+                                searchResultTotalRecords <= 8
                             }
                         >
                             <LeftIcon />
@@ -92,6 +93,7 @@ const Search = () => {
                                 searchPaginationOffset < 0 ||
                                 searchResultTotalRecords < 0 ||
                                 isEmpty(searchQuery) ||
+                                searchResultTotalRecords <= 8 ||
                                 !(
                                     searchPaginationOffset <
                                     searchResultTotalRecords
@@ -107,12 +109,40 @@ const Search = () => {
                 <hr css={SS.homePageHeadingBreak} />
             </div>
             <TextField
-                // onChange={onChange}
+                onChange={onChange}
                 css={SS.searchField}
                 name="search-field"
                 label="Search field"
                 type="search"
                 variant="outlined"
+                sx={{
+                    "& .MuiInputBase-root": {
+                        '& input[type="search"]::-webkit-search-cancel-button':
+                            {
+                                WebkitAppearance: "none",
+                                appearance: "none",
+                                height: "20px",
+                                width: "20px",
+                                borderRadius: "50%",
+                                background: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") no-repeat center`,
+                                backgroundSize: "16px 16px",
+                                cursor: "pointer",
+                                opacity: 0.6,
+                                transition: "opacity 0.2s ease",
+                                "&:hover": {
+                                    opacity: 1,
+                                    background: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") no-repeat center`,
+                                    backgroundSize: "16px 16px"
+                                }
+                            },
+                        '& input[type="search"]:not(:placeholder-shown)::-webkit-search-cancel-button':
+                            {
+                                background: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") no-repeat center`,
+                                backgroundSize: "16px 16px",
+                                opacity: 0.8
+                            }
+                    }
+                }}
             />
             <div css={SS.searchLoaderSpinner}>
                 <ThreeDots

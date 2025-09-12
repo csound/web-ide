@@ -5,7 +5,7 @@
     "private": true,
     "main": "public/electron.js",
     "scripts": {
-        "start": "cross-env REACT_APP_DATABASE=PROD vite",
+        "start": "cross-env REACT_APP_DATABASE=DEV vite",
         "build": "cross-env NODE_ENV=production REACT_APP_DATABASE=PROD tsc && vite build",
         "build:dev": "cross-env NODE_ENV=production REACT_APP_DATABASE=DEV tsc && vite build",
         "test": "cross-env REACT_APP_DATABASE=DEV jest",

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { Header } from "@comp/header/header";
-// import Search from "./search";
+import Search from "./search";
 import PopularProjects from "./popular-projects";
 import RandomProjects from "./random-projects";
 import { homeBackground } from "./background-style";
@@ -67,7 +67,7 @@ const Home = () => {
         <>
             <Header />
             <div css={homeBackground}>
-                {/* <Search /> */}
+                <Search />
                 {/* <p>Search is being fixed...</p> */}
                 {/* <PopularProjects
                     projects={currentPopularProjectsPagination || []}

@@ -26,8 +26,6 @@ import { IProject } from "@comp/projects/types";
 import { firestoreProjectToIProject } from "@comp/projects/utils";
 import { IProfile } from "../profile/types";
 
-const databaseID = process.env.REACT_APP_DATABASE === "DEV" ? "dev" : "prod";
-const searchURL = `https://web-ide-search-api.csound.com/search/${databaseID}`;
 const functions = getFunctions();
 const getRandomProjects = httpsCallable<
     { count: number },
@@ -37,6 +35,22 @@ const getPopularProjects = httpsCallable<
     { count: number },
     PopularProjectResponse[]
 >(functions, "popular_projects");
+const searchProjectsFunction = httpsCallable<
+    {
+        query: string;
+        offset?: number;
+        limit?: number;
+        sortBy?: "name" | "created" | "stars";
+        sortOrder?: "asc" | "desc";
+    },
+    {
+        data: any[];
+        totalRecords: number;
+        offset: number;
+        limit: number;
+        query: string;
+    }
+>(functions, "search_projects");
 
 // const searchURL = `http://localhost:4000/search/${databaseID}`;
 
@@ -51,14 +65,16 @@ export const searchProjects =
         let projectsData: any[] = [];
         let totalRecords = 0;
         try {
-            const searchRequest = await fetch(
-                `${searchURL}/query/projects/${query_}/8/${offset}/name/desc`
-            );
+            const searchResponse = await searchProjectsFunction({
+                query: query_,
+                offset,
+                limit: 8,
+                sortBy: "name",
+                sortOrder: "desc"
+            });
 
-            const projects = await searchRequest.json();
-
-            projectsData = projects.data.slice(0, 8);
-            totalRecords = projects.totalRecords as number;
+            projectsData = searchResponse.data.data;
+            totalRecords = searchResponse.data.totalRecords;
         } catch (error) {
             console.error(error);
         }
