@@ -218,12 +218,30 @@ export const subscribeToProfileStars = (
     dispatch(setStarsLoading(profileUid, true));
 
     const unsubscribe: () => void = onSnapshot(
-        doc(profileStars),
+        doc(profileStars, profileUid),
         (starsReference) => {
             const starsData = starsReference.data();
             if (!starsData) {
+                // Clear loading state when no data is found
+                dispatch(setStarsLoading(profileUid, false));
                 return;
             }
+
+            // Convert Firestore Timestamps to serializable values
+            const serializedStarsData: Record<string, any> = {};
+            for (const projectUid in starsData) {
+                const timestamp = starsData[projectUid];
+                if (timestamp && typeof timestamp.toDate === "function") {
+                    // Convert Firestore Timestamp to milliseconds
+                    serializedStarsData[projectUid] = {
+                        toDate: timestamp.toDate().getTime()
+                    };
+                } else {
+                    // Handle case where it's already serialized or different format
+                    serializedStarsData[projectUid] = timestamp;
+                }
+            }
+
             const state = store.getState();
             const starredProjects = Object.keys(starsData);
             const cachedProjects = Object.keys(state.ProjectsReducer.projects);
@@ -239,7 +257,7 @@ export const subscribeToProfileStars = (
                     );
                 }
             });
-            dispatch(storeProfileStars(starsData, profileUid));
+            dispatch(storeProfileStars(serializedStarsData, profileUid));
             // Clear loading state
             dispatch(setStarsLoading(profileUid, false));
         },

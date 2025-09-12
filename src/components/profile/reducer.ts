@@ -122,7 +122,10 @@ const ProfileReducer = (
         case STORE_PROFILE_STARS: {
             const sortedStars = Object.keys(action.stars)
                 .map((p) => ({
-                    timestamp: action.stars[p].toDate,
+                    timestamp:
+                        typeof action.stars[p].toDate === "function"
+                            ? action.stars[p].toDate()
+                            : action.stars[p].toDate,
                     projectUid: p
                 }))
                 .sort((x, y) => x.timestamp - y.timestamp);

@@ -54,7 +54,7 @@ export const FollowingList = ({
                         marginBottom: 2
                     }}
                 />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
                     No Following Yet
                 </Typography>
                 <Typography

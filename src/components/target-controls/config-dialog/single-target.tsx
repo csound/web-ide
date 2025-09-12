@@ -194,7 +194,7 @@ export const TargetControlsConfigDialogSingleTarget = ({
                             }
                         />
                     }
-                    label="Run with csound7-alpha"
+                    label="Run with csound7"
                 />
             </FormGroup>
         </div>
