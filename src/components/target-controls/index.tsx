@@ -8,6 +8,7 @@ import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
 import { values } from "ramda";
 import StopButton from "./stop-button";
+import { findFallbackTargetName } from "./utils";
 
 export const TargetControls = ({
     activeProjectUid
@@ -45,20 +46,14 @@ export const TargetControls = ({
                         setSelectedTarget(activeProjectUid, savedDefaultTarget)
                     );
             } else if (targetsValues && targetsValues.length > 0) {
-                if (targetsValues.some((t) => t.targetName === "project.csd")) {
-                    activeProjectUid &&
-                        dispatch(
-                            setSelectedTarget(activeProjectUid, "project.csd")
-                        );
-                } else {
-                    activeProjectUid
-                        ? dispatch(
-                              setSelectedTarget(
-                                  activeProjectUid,
-                                  targetsValues[0].targetName
-                              )
-                          )
-                        : console.error("Error: missing activeProjectUid");
+                const fallbackTargetName =
+                    findFallbackTargetName(targetsValues);
+                if (fallbackTargetName && activeProjectUid) {
+                    dispatch(
+                        setSelectedTarget(activeProjectUid, fallbackTargetName)
+                    );
+                } else if (!activeProjectUid) {
+                    console.error("Error: missing activeProjectUid");
                 }
             }
         }
