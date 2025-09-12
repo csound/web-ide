@@ -11,3 +11,4 @@ export { projectFileStorageDeleteCallback as project_file_storage_delete_callbac
 export { projectsCounter as projects_counter } from "./projects_counter.js";
 export { randomProjects as random_projects } from "./random_projects.js";
 export { popularProjects as popular_projects } from "./popular_projects.js";
+export { searchProjects as search_projects } from "./search_projects.js";
