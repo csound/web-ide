@@ -18,8 +18,6 @@
         "prepare": "husky"
     },
     "dependencies": {
-        "@csound/browser": "^6.18.7",
-        "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@emotion/core": "^11.0.0",
         "@emotion/css": "^11.13.5",
@@ -31,7 +29,7 @@
         "@reduxjs/toolkit": "^2.5.0",
         "@vitejs/plugin-react": "^4.3.4",
         "connected-react-router": "^6.9.3",
-        "csound7": "npm:@csound/browser@^7.0.0-beta6",
+        "csound7": "npm:@csound/browser@^7.0.0-beta7",
         "date-fns": "^4.1.0",
         "firebase-functions": "^6.4.0",
         "history": "5.3.0",
