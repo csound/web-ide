@@ -63,7 +63,7 @@
         "redux": "^5.0.1",
         "redux-first-history": "^5.2.0",
         "url": "^0.11.4",
-        "vite": "^6.0.3",
+        "vite": "^6.0.15",
         "vite-raw-plugin": "^1.0.2",
         "vite-tsconfig-paths": "^5.1.4",
         "wait-on": "^8.0.1"
