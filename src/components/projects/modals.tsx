@@ -355,6 +355,7 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
                 const documentId = uuidv4();
 
                 const metadata = {
+                    cacheControl: "public,max-age=31536000,immutable",
                     customMetadata: {
                         filename,
                         projectUid,

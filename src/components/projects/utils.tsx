@@ -14,6 +14,8 @@ import { CsoundObj } from "@comp/csound/types";
 import { dropLast, isNil, prop, propOr, reject } from "ramda";
 
 const mime = new Mime();
+const BINARY_FILE_CACHE_NAME = "csound-project-binary-files-v1";
+const BINARY_FILE_CACHE_NAMESPACE = "/__csound_project_binary_cache__";
 
 export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
@@ -83,10 +85,12 @@ export const addDocumentToCsoundFS = async (
             const downloadUrl = await getDownloadURL(
                 await storageReference(path)
             );
-            const response = await fetch(downloadUrl);
-            const arrayBuffer = await response.arrayBuffer();
-            const blob = new Uint8Array(arrayBuffer);
-            await csound.fs.writeFile(absolutePath, blob);
+            const binary = await fetchBinaryDocument(
+                downloadUrl,
+                projectUid,
+                document
+            );
+            await csound.fs.writeFile(absolutePath, binary);
         } catch (error) {
             console.error(error);
         }
@@ -99,6 +103,76 @@ export const addDocumentToCsoundFS = async (
                 encoder.encode(document.currentValue)
             ));
     }
+};
+
+const createBinaryCacheRequest = (
+    projectUid: string,
+    document: IDocument
+): Request => {
+    const cacheVersion = document.lastModified ?? "0";
+    const cacheKey = [
+        document.userUid,
+        projectUid,
+        document.documentUid,
+        cacheVersion
+    ].join("/");
+
+    return new Request(
+        `${BINARY_FILE_CACHE_NAMESPACE}/${encodeURIComponent(cacheKey)}`
+    );
+};
+
+const fetchBinaryDocument = async (
+    downloadUrl: string,
+    projectUid: string,
+    document: IDocument
+): Promise<Uint8Array> => {
+    const hasCacheStorage =
+        typeof window !== "undefined" &&
+        typeof window.caches !== "undefined" &&
+        typeof document?.documentUid === "string";
+
+    if (!hasCacheStorage) {
+        const response = await fetch(downloadUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        return new Uint8Array(arrayBuffer);
+    }
+
+    const cacheRequest = createBinaryCacheRequest(projectUid, document);
+    let cache: Cache | undefined;
+    try {
+        cache = await caches.open(BINARY_FILE_CACHE_NAME);
+        const cachedResponse = await cache.match(cacheRequest);
+
+        if (cachedResponse) {
+            const cachedBuffer = await cachedResponse.arrayBuffer();
+            return new Uint8Array(cachedBuffer);
+        }
+    } catch (error) {
+        console.warn("Binary cache read failed, falling back to network", error);
+    }
+
+    const networkResponse = await fetch(downloadUrl);
+    if (!networkResponse.ok) {
+        throw new Error(
+            `Failed to download binary document: ${networkResponse.status}`
+        );
+    }
+
+    if (cache) {
+        try {
+            await cache.put(cacheRequest, networkResponse.clone());
+        } catch (error) {
+            console.warn(
+                "Binary cache write failed, continuing without cache",
+                error
+            );
+        }
+    }
+
+    const networkBuffer = await networkResponse.arrayBuffer();
+
+    return new Uint8Array(networkBuffer);
 };
 
 export const fileDocumentDataToDocumentType = (
