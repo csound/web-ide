@@ -139,6 +139,7 @@ function UploadNonCloudFileIcon({
                     mimeType ??
                     mimeType ??
                     (txtOrBin ? "application/octet-stream" : "text/plain"),
+                cacheControl: "public,max-age=31536000,immutable",
                 customMetadata: {
                     filename: file.name,
                     projectUid,
