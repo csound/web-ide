@@ -22,6 +22,45 @@ import { append, isEmpty, difference } from "ramda";
 
 export let csoundInstance: CsoundObj;
 
+const parseOutputNameFromCsOptions = (
+    csdContents: string | undefined
+): string | undefined => {
+    if (typeof csdContents !== "string" || csdContents.length === 0) {
+        return undefined;
+    }
+
+    const csOptionsMatch = csdContents.match(
+        /<CsOptions>([\s\S]*?)<\/CsOptions>/i
+    );
+    if (!csOptionsMatch || !csOptionsMatch[1]) {
+        return undefined;
+    }
+
+    const options = csOptionsMatch[1]
+        // remove semicolon comments commonly used in Csound options blocks
+        .replace(/;.*$/gm, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    if (options.length === 0) {
+        return undefined;
+    }
+
+    const outputMatch = options.match(
+        /(?:^|\s)(?:-o(?:"([^"]+)"|'([^']+)'|([^\s]+))|--output(?:=|\s+)(?:"([^"]+)"|'([^']+)'|([^\s]+)))/
+    );
+
+    const outputName = outputMatch
+        ? outputMatch.slice(1).find((value) => typeof value === "string")
+        : undefined;
+
+    if (!outputName || outputName === "dac") {
+        return undefined;
+    }
+
+    return outputName;
+};
+
 export const setCsoundPlayState = (
     playState: ICsoundStatus
 ): { type: typeof SET_CSOUND_PLAY_STATE; status: ICsoundStatus } => {
@@ -60,8 +99,6 @@ export const syncFs = async (
     const projectDocuments =
         storeState.ProjectsReducer.projects[projectUid]?.documents;
 
-    console.log(`syncFs called for project ${projectUid}`);
-
     if (!projectDocuments || Object.keys(projectDocuments).length === 0) {
         console.warn(
             `No documents found for project ${projectUid}. Documents may not be loaded yet.`
@@ -70,7 +107,6 @@ export const syncFs = async (
     }
 
     const documents: IDocument[] = Object.values(projectDocuments);
-    console.log(`Syncing ${documents.length} documents to Csound FS`);
 
     for (const document of documents) {
         // reminder: paths are store by document ref and not
@@ -85,11 +121,8 @@ export const syncFs = async (
             ? document.filename
             : realPath.join("/") + "/" + document.filename;
 
-        console.log(`Writing file to Csound FS: ${filepath}`);
         await addDocumentToCsoundFS(projectUid, csound, document, filepath);
     }
-
-    console.log(`syncFs completed for project ${projectUid}`);
 };
 
 export const playCsdFromFs = ({
@@ -124,34 +157,120 @@ export const playCsdFromFs = ({
         }
 
         if (csoundObj) {
-            await csoundObj.setOption("-odac");
+            const projectDocuments =
+                store.getState().ProjectsReducer.projects?.[projectUid]
+                    ?.documents ?? {};
+            const targetDoc = Object.values(projectDocuments).find(
+                (doc) => doc.filename === csdPath
+            );
+            const outputFromCsOptions = parseOutputNameFromCsOptions(
+                targetDoc?.currentValue
+            );
+
+            if (!outputFromCsOptions) {
+                await csoundObj.setOption("-odac");
+            } else {
+                await csoundObj.setOption(`-o${outputFromCsOptions}`);
+            }
             const result = await compileCSD(csoundObj, csdPath);
 
             if (result === 0) {
                 const filesPre = await csoundObj.fs.readdir("/");
-                csoundObj.once("realtimePerformanceEnded", async () => {
+                const outputName = await csoundObj.getOutputName();
+                const isDiskRender =
+                    typeof outputName === "string" &&
+                    outputName.length > 0 &&
+                    !outputName.includes("dac");
+
+                const collectPlayableOutputs = async () => {
                     const filesPost = await csoundObj.fs.readdir("/");
                     const newFiles = difference(filesPost, filesPre);
+                    const normalizedOutputName = outputName.replace(/^\/+/, "");
+                    const absoluteOutputName = `/${normalizedOutputName}`;
+                    const filesToRead = [
+                        ...new Set([
+                            ...newFiles,
+                            ...(filesPost.includes(normalizedOutputName)
+                                ? [normalizedOutputName]
+                                : []),
+                            ...(filesPost.includes(absoluteOutputName)
+                                ? [absoluteOutputName]
+                                : [])
+                        ])
+                    ];
+                    return filesToRead;
+                };
 
-                    for (const newFile of newFiles) {
-                        const buffer = await csoundObj.fs.readFile(newFile);
+                const addOutputsToTree = async () => {
+                    const filesToRead = new Set<string>(
+                        await collectPlayableOutputs()
+                    );
+                    for (const filename of await collectPlayableOutputs()) {
+                        filesToRead.add(filename);
+                    }
+
+                    for (const newFile of filesToRead) {
+                        const normalizedName = newFile.replace(/^\/+/, "");
+                        const candidatePaths = [
+                            newFile,
+                            normalizedName,
+                            `/${normalizedName}`
+                        ];
+                        let buffer: Uint8Array | undefined;
+
+                        for (const candidatePath of candidatePaths) {
+                            try {
+                                buffer = await csoundObj.fs.readFile(
+                                    candidatePath
+                                );
+                                if (buffer) {
+                                    break;
+                                }
+                            } catch {}
+                        }
+
                         if (buffer) {
-                            nonCloudFiles.set(newFile, {
+                            nonCloudFiles.set(normalizedName, {
                                 buffer,
                                 createdAt: new Date(),
-                                name: newFile
+                                name: normalizedName
                             });
                             dispatch(
                                 addNonCloudFile({
                                     createdAt: Date.now(),
-                                    name: newFile
+                                    name: normalizedName
                                 })
                             );
                         }
                     }
-                });
-                await csoundObj.start();
-                dispatch(setCsoundPlayState("playing"));
+                };
+
+                if (isDiskRender) {
+                    dispatch(setCsoundPlayState("rendering"));
+                    const startResult = await csoundObj.start();
+                    if (startResult !== 0) {
+                        dispatch(setCsoundPlayState("error"));
+                        return;
+                    }
+
+                    let performResult = 0;
+                    while (performResult === 0) {
+                        performResult = await csoundObj.performKsmps();
+                    }
+
+                    try {
+                        await csoundObj.cleanup();
+                    } catch {}
+
+                    await addOutputsToTree();
+                    dispatch(setCsoundPlayState("stopped"));
+                } else {
+                    csoundObj.once("realtimePerformanceEnded", async () => {
+                        await addOutputsToTree();
+                    });
+                    await csoundObj.start();
+                    dispatch(setCsoundPlayState("playing"));
+                }
             } else {
                 try {
                     await csoundObj.cleanup();
@@ -271,9 +390,9 @@ export const renderToDisk = (
         const Csound = Csound6;
         // const Csound = useCsound7 ? Csound7 : Csound6;
 
-        // vanilla mode should work everywhere
+        // Non-worker mode has more reliable render lifecycle events for offline -o rendering.
         const csound = await Csound({
-            useWorker: true
+            useWorker: false
         });
 
         csoundInstance = csound as CsoundObj;
@@ -289,61 +408,96 @@ export const renderToDisk = (
         }
 
         setConsole([""]);
-        csound.on("message", (message: string) =>
-            setConsole(append(message + "\n"))
-        );
 
         const filesPre = await csound.fs.readdir("/");
 
-        const targetDocumentName =
-            project.documents[targetDocumentUid].filename;
+        const targetDocument = project.documents[targetDocumentUid];
+        const targetDocumentName = targetDocument.filename;
+        const defaultOutputName = `${targetDocumentName.split(".")[0]}.wav`;
+        const outputFromCsOptions = targetDocumentName.endsWith("csd")
+            ? parseOutputNameFromCsOptions(targetDocument.currentValue)
+            : undefined;
+
+        // Set output before compilation to ensure Csound picks it up.
+        const requestedOutputName = outputFromCsOptions ?? defaultOutputName;
+        await csound.setOption(`-o${requestedOutputName}`);
 
         targetDocumentName.endsWith("csd")
             ? await compileCSD(csound, targetDocumentName)
-            : await csound.compileOrc(
-                  project.documents[targetDocumentUid].currentValue
-              );
+            : await csound.compileOrc(targetDocument.currentValue);
 
-        // logic: if the user specified output name, we use it
-        // otherwise we'll default to the filename dot wav
-        let outputName = await csound.getOutputName();
+        // If API does not report output name reliably, fall back to the
+        // output option we explicitly requested above.
+        const outputNameFromApi = await csound.getOutputName();
+        const outputName =
+            typeof outputNameFromApi === "string" &&
+            outputNameFromApi.length > 0 &&
+            outputNameFromApi !== "dac"
+                ? outputNameFromApi
+                : requestedOutputName;
 
-        if (
-            typeof outputName !== "string" ||
-            outputName.length === 0 ||
-            outputName === "dac"
-        ) {
-            outputName = `${targetDocumentName.split(".")[0]}.wav`;
-            await csound.setOption(`-o${outputName}`);
-        }
-
-        csound.once("renderStarted", () => {
-            dispatch(setCsoundPlayState("rendering"));
-            dispatch(
-                openSnackbar(
-                    `Render of ${targetDocumentName} started`,
-                    SnackbarType.Info
-                )
-            );
-        });
-
-        csound.once("renderEnded", async () => {
-            await csound.cleanup();
+        const collectRenderableFiles = async (): Promise<string[]> => {
             const filesPost = await csound.fs.readdir("/");
             const newFiles = difference(filesPost, filesPre);
+            const normalizedOutputName = outputName.replace(/^\/+/, "");
+            const absoluteOutputName = `/${normalizedOutputName}`;
+            const filesToRead = [
+                ...new Set([
+                    ...newFiles,
+                    ...(filesPost.includes(normalizedOutputName)
+                        ? [normalizedOutputName]
+                        : []),
+                    ...(filesPost.includes(absoluteOutputName)
+                        ? [absoluteOutputName]
+                        : [])
+                ])
+            ];
+            return filesToRead;
+        };
 
-            for (const newFile of newFiles) {
-                const buffer = await csound.fs.readFile(newFile);
+        let didFinalizeRender = false;
+        const finalizeRender = async () => {
+            if (didFinalizeRender) {
+                return;
+            }
+            didFinalizeRender = true;
+
+            const filesToRead = new Set<string>(await collectRenderableFiles());
+
+            try {
+                await csound.cleanup();
+            } catch {}
+
+            for (const filename of await collectRenderableFiles()) {
+                filesToRead.add(filename);
+            }
+
+            for (const newFile of filesToRead) {
+                const normalizedName = newFile.replace(/^\/+/, "");
+                const candidatePaths = [
+                    newFile,
+                    normalizedName,
+                    `/${normalizedName}`
+                ];
+                let buffer: Uint8Array | undefined;
+                for (const candidatePath of candidatePaths) {
+                    try {
+                        buffer = await csound.fs.readFile(candidatePath);
+                        if (buffer) {
+                            break;
+                        }
+                    } catch {}
+                }
                 if (buffer) {
-                    nonCloudFiles.set(newFile, {
+                    nonCloudFiles.set(normalizedName, {
                         buffer,
                         createdAt: new Date(),
-                        name: newFile
+                        name: normalizedName
                     });
                     dispatch(
                         addNonCloudFile({
                             createdAt: Date.now(),
-                            name: newFile
+                            name: normalizedName
                         })
                     );
                 }
@@ -360,20 +514,47 @@ export const renderToDisk = (
                     SnackbarType.Success
                 )
             );
-        });
+        };
 
+        csound.on("message", (message: string) =>
+            setConsole(append(message + "\n"))
+        );
+
+        dispatch(setCsoundPlayState("rendering"));
+        dispatch(
+            openSnackbar(
+                `Render of ${targetDocumentName} started`,
+                SnackbarType.Info
+            )
+        );
         const result = await csound.start();
 
         if (result !== 0) {
+            void finalizeRender();
             dispatch(
                 openSnackbar(
                     "Render error: the project encountered an error while rendering",
                     SnackbarType.Error
                 )
             );
+            return;
         }
 
-        dispatch(setCsoundPlayState("stopped"));
-        await csound.stop();
+        // Deterministic render path: drive the performance loop ourselves until
+        // Csound reports end-of-score (non-zero return).
+        let performResult = 0;
+        while (performResult === 0 && !didFinalizeRender) {
+            performResult = await csound.performKsmps();
+        }
+        void finalizeRender();
+
+        if (performResult < 0) {
+            dispatch(
+                openSnackbar(
+                    "Render error: performance did not complete successfully",
+                    SnackbarType.Error
+                )
+            );
+        }
     };
 };
