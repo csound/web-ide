@@ -10,7 +10,7 @@ import {
     storageReference
 } from "@config/firestore";
 import { curry, equals, path, propOr } from "ramda";
-import { Mime } from "mime";
+import mime from "mime";
 import moment from "moment";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
@@ -55,8 +55,6 @@ import * as SS from "./styles";
 import FileTreeHeader from "./header";
 import { selectNonCloudFiles } from "./selectors";
 import { NonCloudFile } from "./types";
-
-const mime = new Mime();
 
 const RootReference = React.forwardRef((properties: any, reference: any) => (
     <div ref={reference} {...properties}>
