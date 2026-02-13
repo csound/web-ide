@@ -1,0 +1,77 @@
+const theme = {
+    // Backgrounds
+    background: "#ffffff",
+    headerBackground: "#f6f8fa",
+    fileTreeBackground: "#ffffff",
+    tooltipBackground: "#f6f8fa",
+    dropdownBackground: "#ffffff",
+    buttonBackground: "#f6f8fa",
+    altButtonBackground: "#d0d7de",
+    disabledButtonBackground: "#eaeef2",
+    highlightBackground: "#f6f8fa",
+    highlightBackgroundAlt: "#eaeef2",
+    textFieldBackground: "#ffffff",
+    gutterBackground: "#f6f8fa",
+
+    // Text colors
+    headerTextColor: "#24292f",
+    textColor: "#24292f",
+    selectedTextColor: "#ddf4ff",
+    errorText: "#cf222e",
+    buttonTextColor: "#24292f",
+    altTextColor: "#57606a",
+    unfocusedTextColor: "rgba(87, 96, 106, 0.75)",
+    disabledTextColor: "#8c959f",
+
+    // hr/dragger/underline
+    line: "#d0d7de",
+    lineHover: "#afb8c1",
+
+    // Hover colors
+    buttonBackgroundHover: "#eaeef2",
+    buttonTextColorHover: "#1f2328",
+    dropdownBackgroundHover: "#f3f4f6",
+    textColorHover: "#1f2328",
+    tabHighlight: "#54aeff",
+    tabHighlightActive: "#0969da",
+    allowed: "#1a7f37",
+    button: "#0969da",
+
+    // Other
+    starActive: "#bf8700",
+    buttonIcon: "#57606a",
+    settingsIcon: "#0969da",
+    profilePlayButton: "#1a7f37",
+    profilePlayButtonActive: "#2da44e",
+    scrollbar: "#8c959f",
+    scrollbarHover: "#6e7781",
+    console: "#24292f",
+    macro: "#953800",
+    cursor: "#24292f",
+    opcode: "#8250df",
+    operator: "#0550ae",
+    controlFlow: "#cf222e",
+    attribute: "#0550ae",
+    keyword: "#cf222e",
+    string: "#0a3069",
+    number: "#0550ae",
+    bracket: "#24292f",
+    aRateVar: "#8250df",
+    iRateVar: "#0550ae",
+    kRateVar: "#1a7f37",
+    fRateVar: "#953800",
+    pField: "#9a6700",
+    flash: "#ddf4ff",
+    flashFade: "#eaf2ff",
+    gutterMarker: "#0969da",
+    gutterMarkerSubtle: "#8c959f",
+    lineNumber: "#8c959f",
+    comment: "#6e7781",
+    commentAttribute: "#6e7781",
+    commentDef: "#6e7781",
+    commentTag: "#6e7781",
+    commentType: "#6e7781",
+    caretColor: "#0969da"
+};
+
+export default theme;
