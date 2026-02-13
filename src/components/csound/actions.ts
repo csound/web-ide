@@ -78,17 +78,26 @@ export const setCsound = (csound: CsoundObj): void => {
 
         store.dispatch(setCsoundPlayState("stopped"));
     });
-    csound.on("realtimePerformancePaused", () =>
-        store.dispatch(setCsoundPlayState("paused"))
-    );
+    csound.on("realtimePerformancePaused", () => {
+        store.dispatch(setCsoundPlayState("paused"));
+    });
 
-    csound.on("realtimePerformanceResumed", () =>
-        store.dispatch(setCsoundPlayState("playing"))
-    );
+    csound.on("realtimePerformanceResumed", () => {
+        store.dispatch(setCsoundPlayState("playing"));
+    });
 
-    csound.on("realtimePerformanceStarted", () =>
-        store.dispatch(setCsoundPlayState("playing"))
-    );
+    csound.on("realtimePerformanceStarted", () => {
+        store.dispatch(setCsoundPlayState("playing"));
+    });
+    csound.on("renderStarted", () => {
+        store.dispatch(setCsoundPlayState("rendering"));
+    });
+    csound.on("renderEnded", async () => {
+        store.dispatch(setCsoundPlayState("stopped"));
+        try {
+            await csound.cleanup();
+        } catch {}
+    });
 };
 
 export const syncFs = async (
@@ -220,9 +229,8 @@ export const playCsdFromFs = ({
 
                         for (const candidatePath of candidatePaths) {
                             try {
-                                buffer = await csoundObj.fs.readFile(
-                                    candidatePath
-                                );
+                                buffer =
+                                    await csoundObj.fs.readFile(candidatePath);
                                 if (buffer) {
                                     break;
                                 }
@@ -248,22 +256,20 @@ export const playCsdFromFs = ({
                 if (isDiskRender) {
                     dispatch(setCsoundPlayState("rendering"));
                     const startResult = await csoundObj.start();
+                    let performResult = 0;
+                    csoundObj.once("renderEnded", async () => {
+                        await addOutputsToTree();
+                        dispatch(setCsoundPlayState("stopped"));
+                        performResult = 1;
+                    });
                     if (startResult !== 0) {
                         dispatch(setCsoundPlayState("error"));
                         return;
                     }
 
-                    let performResult = 0;
                     while (performResult === 0) {
                         performResult = await csoundObj.performKsmps();
                     }
-
-                    try {
-                        await csoundObj.cleanup();
-                    } catch {}
-
-                    await addOutputsToTree();
-                    dispatch(setCsoundPlayState("stopped"));
                 } else {
                     csoundObj.once("realtimePerformanceEnded", async () => {
                         await addOutputsToTree();

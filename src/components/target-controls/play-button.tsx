@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { useTheme } from "@emotion/react";
 import { TailSpin } from "react-loader-spinner";
@@ -21,7 +21,7 @@ const PlayButton = ({
 }: {
     activeProjectUid: string;
     isOwner: boolean;
-}): React.ReactElement => {
+}) => {
     const setConsole = useSetConsole();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -36,8 +36,14 @@ const PlayButton = ({
     );
 
     const csoundPlayState: string = useSelector((store: RootState) => {
-        return pathOr("stopped", ["csound", "status"], store);
+        return store.csound.status;
     });
+
+    useEffect(() => {
+        if (csoundPlayState === "stopped" && isLoading) {
+            setIsLoading(false);
+        }
+    }, [csoundPlayState]);
 
     const selectedTargetName: string | null = useSelector(
         selectSelectedTarget(activeProjectUid)
