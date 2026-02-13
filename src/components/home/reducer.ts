@@ -3,13 +3,17 @@ import {
     ADD_USER_PROFILES,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
+    ADD_POPULAR_ARTISTS,
     ADD_POPULAR_PROJECTS,
     ADD_RANDOM_PROJECTS,
     SET_POPULAR_PROJECTS_OFFSET,
     SET_RANDOM_PROJECTS_LOADING,
+    SET_POPULAR_ARTISTS_LOADING,
+    AddPopularArtistsAction,
     AddPopularProjectsAction,
     AddUserProfiles,
     AddRandomProjectsAction,
+    SetPopularArtistsLoading,
     SetPopularProjectsOffsetAction,
     SetRandomProjectsLoading,
     SearchProjectsRequest,
@@ -17,9 +21,15 @@ import {
 } from "./types";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
-import { RandomProjectResponse, PopularProjectResponse } from "./types";
+import {
+    RandomProjectResponse,
+    PopularArtistResponse,
+    PopularProjectResponse
+} from "./types";
 
 export interface IHomeReducer {
+    popularArtists: PopularArtistResponse[];
+    popularArtistsLoading: boolean;
     popularProjects: PopularProjectResponse[];
     popularProjectsOffset: number;
     profiles: { [uid: string]: IProfile };
@@ -33,6 +43,8 @@ export interface IHomeReducer {
 }
 
 const INITIAL_STATE: IHomeReducer = {
+    popularArtists: [],
+    popularArtistsLoading: true,
     popularProjects: [],
     popularProjectsOffset: -1,
     profiles: {},
@@ -85,6 +97,13 @@ const HomeReducer = (
                 }
             };
         }
+        case ADD_POPULAR_ARTISTS: {
+            const action = unknownAction as AddPopularArtistsAction;
+            return {
+                ...state,
+                popularArtists: action.payload || []
+            };
+        }
         case ADD_POPULAR_PROJECTS: {
             const action = unknownAction as AddPopularProjectsAction;
             return {
@@ -111,6 +130,13 @@ const HomeReducer = (
             return {
                 ...state,
                 randomProjectsLoading: action.isLoading
+            };
+        }
+        case SET_POPULAR_ARTISTS_LOADING: {
+            const action = unknownAction as SetPopularArtistsLoading;
+            return {
+                ...state,
+                popularArtistsLoading: action.isLoading
             };
         }
         default: {

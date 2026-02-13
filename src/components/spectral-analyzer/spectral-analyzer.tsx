@@ -156,10 +156,24 @@ const SpectralAnalyzer = (): React.ReactElement => {
     }, [canvasReference, scopeNodeState]);
 
     return (
-        <canvas
-            ref={canvasReference}
-            style={{ width: "100%", height: "100%", display: "block" }}
-        ></canvas>
+        <div
+            style={{
+                width: "100%",
+                height: "100%",
+                minHeight: 0,
+                overflow: "hidden"
+            }}
+        >
+            <canvas
+                ref={canvasReference}
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    maxHeight: "100%",
+                    display: "block"
+                }}
+            ></canvas>
+        </div>
     );
 };
 

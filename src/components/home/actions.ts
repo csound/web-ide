@@ -12,13 +12,16 @@ import { profiles } from "@config/firestore";
 import { AppThunkDispatch, RootState } from "@root/store";
 import {
     ADD_USER_PROFILES,
+    ADD_POPULAR_ARTISTS,
     ADD_RANDOM_PROJECTS,
     ADD_POPULAR_PROJECTS,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
     SET_POPULAR_PROJECTS_OFFSET,
+    SET_POPULAR_ARTISTS_LOADING,
     SET_RANDOM_PROJECTS_LOADING,
     HomeActionTypes,
+    PopularArtistResponse,
     RandomProjectResponse,
     PopularProjectResponse
 } from "./types";
@@ -35,6 +38,10 @@ const getPopularProjects = httpsCallable<
     { count: number },
     PopularProjectResponse[]
 >(functions, "popular_projects");
+const getPopularArtists = httpsCallable<
+    { count: number },
+    PopularArtistResponse[]
+>(functions, "popular_artists");
 const searchProjectsFunction = httpsCallable<
     {
         query: string;
@@ -230,5 +237,61 @@ export const fetchRandomProjects = () => {
         });
 
         dispatch({ type: SET_RANDOM_PROJECTS_LOADING, isLoading: false });
+    };
+};
+
+export const fetchPopularArtists = (count = 8) => {
+    return async (
+        dispatch: (action: HomeActionTypes) => Promise<void>,
+        getState: () => RootState
+    ): Promise<void> => {
+        dispatch({ type: SET_POPULAR_ARTISTS_LOADING, isLoading: true });
+
+        try {
+            const state = getState().HomeReducer;
+
+            let popularArtists: PopularArtistResponse[] = [];
+            try {
+                const popularArtistsResponse = await getPopularArtists({
+                    count
+                });
+                popularArtists = popularArtistsResponse.data || [];
+            } catch (error) {
+                console.error(error);
+            }
+
+            const userIDs = popularArtists.map((artist) => artist.userUid);
+            const missingProfiles = difference(userIDs, keys(state.profiles));
+
+            if (!isEmpty(missingProfiles)) {
+                const artistProfiles: Record<string, IProfile> = {};
+
+                const profilesQuery = await getDocs(
+                    query(profiles, where(documentId(), "in", missingProfiles))
+                );
+
+                profilesQuery.forEach((snapshot: DocumentData) => {
+                    artistProfiles[snapshot.id] = snapshot.data();
+                    if (artistProfiles[snapshot.id]?.userJoinDate) {
+                        artistProfiles[snapshot.id].userJoinDate = (
+                            artistProfiles[snapshot.id]
+                                .userJoinDate as unknown as Timestamp
+                        ).toMillis();
+                    }
+                });
+
+                dispatch({
+                    type: ADD_USER_PROFILES,
+                    payload: artistProfiles
+                });
+            }
+
+            dispatch({
+                type: ADD_POPULAR_ARTISTS,
+                payload: popularArtists
+            });
+        } finally {
+            dispatch({ type: SET_POPULAR_ARTISTS_LOADING, isLoading: false });
+        }
     };
 };

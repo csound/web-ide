@@ -110,7 +110,7 @@ export const listItem = (theme: Theme): SerializedStyles => css`
         ${shadow};
     }
     & > p,
-    span {
+    & span {
         display: block;
     }
 `;
@@ -123,8 +123,8 @@ export const listItemDisabled = (theme: Theme): SerializedStyles => css`
         box-shadow: unset;
     }
     & > p,
-    span,
-    i {
+    & span,
+    & i {
         color: ${theme.disabledTextColor};
     }
 `;

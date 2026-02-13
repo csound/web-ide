@@ -83,10 +83,13 @@ export const mobileFileTree = (): SerializedStyles => css`
 
 export const heightFix = css`
     height: 100%;
+    min-height: 0;
     & > div {
         height: 100%;
+        min-height: 0;
     }
     & > div > div:nth-of-type(2) {
-        height: 100%;
+        height: auto;
+        min-height: 0;
     }
 `;

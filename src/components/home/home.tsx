@@ -4,6 +4,7 @@ import { Header } from "@comp/header/header";
 import Search from "./search";
 import PopularProjects from "./popular-projects";
 import RandomProjects from "./random-projects";
+import PopularArtists from "./popular-artists";
 import { homeBackground } from "./background-style";
 import { fetchPopularProjects } from "./actions";
 import {
@@ -79,6 +80,7 @@ const Home = () => {
                     }
                     hasPrevious={currentPopularProjectsOffset > 0}
                 /> */}
+                <PopularArtists />
                 <RandomProjects />
             </div>
         </>

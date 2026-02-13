@@ -3,6 +3,7 @@ import { IHomeReducer } from "./reducer";
 import { IProject } from "@comp/projects/types";
 import { RootState } from "@root/store";
 import { PopularProjectResponse } from "./types";
+import { PopularArtistResponse } from "./types";
 
 // export const selectDisplayedStarredProjects = (
 //     store: IStore
@@ -115,6 +116,10 @@ export const selectPopularProjectsFetchOffset = (store: RootState): number => {
 export const selectPopularProjects = (
     state: RootState
 ): PopularProjectResponse[] => state.HomeReducer.popularProjects;
+
+export const selectPopularArtists = (
+    state: RootState
+): PopularArtistResponse[] => state.HomeReducer.popularArtists;
 
 export const selectPopularProjectsSlice = (from: number, to: number) =>
     createSelector(

@@ -141,3 +141,174 @@ export const shuffleButton = (theme: Theme): SerializedStyles => css`
         fill: ${theme.textColor} !important;
     }
 `;
+
+export const artistBoardSubheading = (theme: Theme): SerializedStyles => css`
+    margin-top: 12px;
+    margin-bottom: 8px;
+    color: ${theme.altTextColor};
+    font-size: 13px;
+    letter-spacing: 0.02em;
+`;
+
+export const artistBoard = (theme: Theme): SerializedStyles => css`
+    margin-bottom: 18px;
+    border: 1px solid ${theme.line};
+    background: linear-gradient(
+        180deg,
+        ${theme.highlightBackgroundAlt},
+        ${theme.highlightBackground}
+    );
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+`;
+
+export const artistBoardRow = (theme: Theme): SerializedStyles => css`
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid ${theme.line};
+    background: rgb(0 0 0 / 4%);
+    &:last-of-type {
+        border-bottom: none;
+    }
+`;
+
+export const artistBoardRowSkeleton = (theme: Theme): SerializedStyles => css`
+    height: 54px;
+    border-bottom: 1px solid ${theme.line};
+    background: linear-gradient(
+        90deg,
+        ${theme.highlightBackgroundAlt},
+        ${theme.highlightBackground},
+        ${theme.highlightBackgroundAlt}
+    );
+    &:last-of-type {
+        border-bottom: none;
+    }
+`;
+
+export const artistBoardEmptyState = (theme: Theme): SerializedStyles => css`
+    padding: 14px 12px;
+    color: ${theme.altTextColor};
+    font-size: 13px;
+`;
+
+export const artistRankChip =
+    (accentColor?: string) =>
+    (theme: Theme): SerializedStyles => css`
+        width: 54px;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: ${theme.textColor};
+        border: 1px solid ${accentColor || theme.line};
+        background: ${theme.highlightBackground};
+    `;
+
+export const artistIdentity = (theme: Theme): SerializedStyles => css`
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    text-decoration: none;
+    color: ${theme.textColor};
+    &:hover {
+        color: ${theme.textColor};
+    }
+`;
+
+export const artistIdentityStatic = (theme: Theme): SerializedStyles => css`
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: ${theme.textColor};
+`;
+
+export const artistAvatarShell = (theme: Theme): SerializedStyles => css`
+    position: relative;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    border: 1px solid ${theme.line};
+    background: linear-gradient(
+        135deg,
+        ${theme.highlightBackgroundAlt},
+        ${theme.highlightBackground}
+    );
+    overflow: hidden;
+`;
+
+export const artistAvatarFallback = (theme: Theme): SerializedStyles => css`
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${theme.altTextColor};
+    font-size: 12px;
+    font-weight: 700;
+`;
+
+export const artistAvatarImage = css`
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+`;
+
+export const artistNameGroup = css`
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+`;
+
+export const artistDisplayName = (theme: Theme): SerializedStyles => css`
+    color: ${theme.textColor};
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+`;
+
+export const artistUsername = (theme: Theme): SerializedStyles => css`
+    color: ${theme.altTextColor};
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+`;
+
+export const artistStats = css`
+    display: flex;
+    align-items: center;
+    gap: 12px;
+`;
+
+export const artistStat = (theme: Theme): SerializedStyles => css`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: ${theme.textColor};
+    font-weight: 600;
+    font-size: 13px;
+    svg {
+        font-size: 16px;
+    }
+`;
+
+export const artistStatMuted = (theme: Theme): SerializedStyles => css`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: ${theme.altTextColor};
+    font-size: 12px;
+    svg {
+        font-size: 15px;
+    }
+`;

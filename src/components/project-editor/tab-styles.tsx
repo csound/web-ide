@@ -166,6 +166,8 @@ const bottomPanelStyle = `
 const PanelStyleCustom = styled(PanelStyle)`
     width: 100%;
     height: 100%;
+    min-height: 0;
+    overflow: hidden;
     padding: 0 !important;
     background-color: ${(properties) => properties.theme.background}!important;
     ${(properties: any) => (properties.isBottom ? bottomPanelStyle : "")};

@@ -8,8 +8,10 @@ export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
 export const ADD_USER_PROFILES = "HOME.ADD_USER_PROFILES";
 export const ADD_RANDOM_PROJECTS = "HOME.ADD_RANDOM_PROJECTS";
 export const ADD_POPULAR_PROJECTS = "HOME.ADD_POPULAR_PROJECTS";
+export const ADD_POPULAR_ARTISTS = "HOME.ADD_POPULAR_ARTISTS";
 export const SET_POPULAR_PROJECTS_OFFSET = "HOME.SET_POPULAR_PROJECTS_OFFSET";
 export const SET_RANDOM_PROJECTS_LOADING = "HOME.SET_RANDOM_PROJECTS_LOADING";
+export const SET_POPULAR_ARTISTS_LOADING = "HOME.SET_POPULAR_ARTISTS_LOADING";
 
 export interface RandomProjectResponse {
     created: Timestamp;
@@ -33,6 +35,12 @@ export interface PopularProjectResponse {
     projectUid: string;
     public: boolean;
     userUid: string;
+}
+
+export interface PopularArtistResponse {
+    userUid: string;
+    totalStars: number;
+    projectCount: number;
 }
 
 export interface SearchProjectsRequest {
@@ -72,12 +80,24 @@ export interface SetRandomProjectsLoading {
     isLoading: boolean;
 }
 
+export interface AddPopularArtistsAction {
+    type: typeof ADD_POPULAR_ARTISTS;
+    payload: PopularArtistResponse[];
+}
+
+export interface SetPopularArtistsLoading {
+    type: typeof SET_POPULAR_ARTISTS_LOADING;
+    isLoading: boolean;
+}
+
 export type HomeActionTypes =
     | UnknownAction
     | SearchProjectsRequest
     | SearchProjectsSuccess
     | AddUserProfiles
+    | AddPopularArtistsAction
     | AddPopularProjectsAction
     | AddRandomProjectsAction
     | SetPopularProjectsOffsetAction
-    | SetRandomProjectsLoading;
+    | SetRandomProjectsLoading
+    | SetPopularArtistsLoading;
