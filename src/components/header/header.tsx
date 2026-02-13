@@ -37,6 +37,7 @@ import { MenuBar } from "@comp/menu-bar/menu-bar";
 import ProjectProfileMeta from "./project-profile-meta";
 import { TargetControls } from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
+import { isMobile } from "@root/utils";
 
 export const Header = () => {
     const dispatch = useDispatch();
@@ -177,10 +178,9 @@ export const Header = () => {
 
                     <CSLogo size={38} interactive={true} />
 
-                    {routeIsEditor && activeProjectUid && isOwner && (
-                        <MenuBar />
-                    )}
-                    {routeIsEditor && !isOwner && <ProjectProfileMeta />}
+                    {routeIsEditor &&
+                        activeProjectUid &&
+                        (isOwner || !isMobile()) && <MenuBar />}
                     <div style={{ flexGrow: 1 }} />
                     <div css={SS.headerRightSideGroup}>
                         {routeIsEditor && activeProjectUid && (
@@ -253,6 +253,7 @@ export const Header = () => {
                         </List> */}
                 </div>
             </Drawer>
+            {routeIsEditor && !isOwner && !isMobile() && <ProjectProfileMeta />}
         </>
     );
 };

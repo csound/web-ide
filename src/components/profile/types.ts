@@ -71,6 +71,7 @@ export interface IProfile {
     link1: string;
     link2: string;
     link3: string;
+    themeName?: string;
     username: string;
     photoUrl?: string;
     userJoinDate?: number;

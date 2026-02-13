@@ -107,26 +107,39 @@ export const clearfixHeader = css`
 `;
 
 export const projectProfileMetaContainer = css`
-    display: flex;
-    flex-direction: row;
-    margin-left: 12px;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 4;
+    width: min(360px, calc(100vw - 32px));
+    border-radius: 14px;
+    padding: 10px 12px;
+    backdrop-filter: blur(8px);
 `;
 
 export const projectProfileMetaTextContainer = (
     theme: Theme
 ): SerializedStyles => css`
-    align-self: center;
+    align-self: flex-start;
     font-family: ${theme.font.regular};
     display: flex;
     flex-direction: column;
+    border: 1px solid ${theme.line};
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 12px;
+    padding: 8px;
 `;
 
 export const projectProfileMetaH1 = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-weight: 500;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0;
     margin: 0;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 `;
 
 export const projectProfileDescription = (
@@ -134,9 +147,10 @@ export const projectProfileDescription = (
 ): SerializedStyles => css`
     color: ${theme.altTextColor};
     font-weight: 300;
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.35;
     padding: 0;
-    margin: 0;
+    margin: 4px 0 0 0;
 `;
 
 export const projectProfileBySpan = (theme: Theme): SerializedStyles => css`
@@ -151,30 +165,30 @@ export const projectProfileLink = (theme: Theme): SerializedStyles => css`
 export const projectProfileMetaP = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
     font-weight: 400;
-    font-size: 13px;
+    font-size: 12px;
     padding: 0;
-    margin: 0;
+    margin: 1px 0 0 0;
 `;
 
 export const projectIcon = css`
     position: relative;
-    width: 36px;
-    height: 36px;
-    bottom: 2px;
-    right: 6px;
+    width: 30px;
+    height: 30px;
+    bottom: 0;
+    right: 0;
     & > div {
         box-sizing: content-box;
         height: 100%;
         width: 100%;
-        padding: 5px;
-        margin: 0 9px;
+        padding: 2px;
+        margin: 0;
         cursor: default;
         border-radius: 100%;
         & svg {
-            height: 20px !important;
-            width: 20px !important;
-            margin-top: 1px;
-            margin-left: 1px;
+            height: 16px !important;
+            width: 16px !important;
+            margin-top: 0;
+            margin-left: 0;
         }
     }
 `;
@@ -187,6 +201,17 @@ export const projectProfileTooltipContainer = css`
 export const projectProfileImgContainer = css`
     height: 100%;
     align-self: center;
+    width: 36px;
+    min-width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    & > div,
+    svg {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+    }
 `;
 
 export const projectProfileTooltip = css`
@@ -202,6 +227,60 @@ export const projectProfileTooltip = css`
         margin: 0;
     }
 `;
+
+export const projectProfileTopRow = css`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+`;
+
+export const projectProfileTextBlock = css`
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+`;
+
+export const projectProfileCollapseButton = (theme: Theme): SerializedStyles =>
+    css`
+        margin-left: auto !important;
+        color: ${theme.altTextColor} !important;
+        padding: 2px !important;
+    `;
+
+export const projectProfileDetails = css`
+    margin-top: 8px;
+`;
+
+export const projectProfileAuthorRow = css`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+`;
+
+export const projectProfileLinks = css`
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+`;
+
+export const projectProfileExternalLink = (theme: Theme): SerializedStyles =>
+    css`
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        text-decoration: none;
+        color: ${theme.headerTextColor};
+        border: 1px solid ${theme.line};
+        padding: 3px 6px;
+        border-radius: 999px;
+        background: ${theme.buttonBackground};
+
+        svg {
+            font-size: 11px;
+        }
+    `;
 
 export const drawerIcon = css`
     fill: #fff;

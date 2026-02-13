@@ -50,6 +50,7 @@ const profileKeys = [
     "link1",
     "link2",
     "link3",
+    "themeName",
     "backgroundIndex",
     "photoUrl",
     "userUid",

@@ -128,20 +128,31 @@ export function MenuBar() {
                     label: "Theme",
                     submenu: [
                         {
-                            label: "Monokai",
-                            callback: () => dispatch(changeTheme("monokai")),
-                            checked: selectedThemeName === "monokai"
+                            label: "Default",
+                            callback: () => dispatch(changeTheme("default")),
+                            checked: selectedThemeName === "default"
                         },
                         {
-                            label: "Github",
+                            label: "GitHub Modern",
                             callback: () => dispatch(changeTheme("github")),
                             checked: selectedThemeName === "github"
+                        },
+                        {
+                            label: "Dracula",
+                            callback: () => dispatch(changeTheme("dracula")),
+                            checked: selectedThemeName === "dracula"
+                        },
+                        {
+                            label: "Nord",
+                            callback: () => dispatch(changeTheme("nord")),
+                            checked: selectedThemeName === "nord"
+                        },
+                        {
+                            label: "Solarized Dark",
+                            callback: () =>
+                                dispatch(changeTheme("solarized-dark")),
+                            checked: selectedThemeName === "solarized-dark"
                         }
-                        // {
-                        //     label: "BluePunk",
-                        //     callback: () => dispatch(changeTheme("bluepunk")),
-                        //     checked: selectedThemeName === "bluepunk"
-                        // }
                     ]
                 }
             ]
@@ -299,11 +310,14 @@ export function MenuBar() {
                         <div
                             key={index}
                             onClick={(event) => {
+                                if (item.disabled) {
+                                    event.preventDefault();
+                                    return;
+                                }
                                 if (item.hotKey) {
                                     invokeHotKeyCallback(item.hotKey);
                                 } else {
                                     item.callback &&
-                                        !item.disabled &&
                                         item.callback();
                                     event.preventDefault();
                                 }

@@ -1,104 +1,77 @@
-import themeMonokai from "./_theme-monokai";
-import { deepMerge } from "@root/utils";
-import { rgba } from "./utils";
-
-const border = "#d0d0d0";
-const comment = "#6a737d";
-const constant = "#005cc5";
-// const diffAdded = "#e6ffed";
-const diffAddedHighlight = "#acf2bd";
-// const diffChanged = "#ffe1b9";
-const diffChangedHighlight = "#ffc86f";
-// const diffRemoved = "#ffeef0";
-const diffRemovedHighlight = "#fdb8c0";
-const fn = "#6f42c1";
-const headerBg2 = "#d73a49";
-// const headerFg2 = "#ffffff";
-const highlight = "#fffbdd";
-const headerBg1 = "#24292e";
-const headerFg1 = "#bcbdc0";
-const htmlTag = "#22863a";
-// const keyword = "#d73a49";
-const selection = "#6199ff2f";
-const string = "#032f62";
-const text = "#24292e";
-const white = "#ffffff";
-
 const theme = {
     // Backgrounds
-    background: white,
-    headerBackground: headerBg1,
-    fileTreeBackground: white,
-    tooltipBackground: highlight,
-    dropdownBackground: highlight,
-    buttonBackground: border,
-    altButtonBackground: diffRemovedHighlight,
-    disabledButtonBackground: headerFg1,
-    highlightBackground: headerFg1,
-    highlightBackgroundAlt: headerFg1,
-    textFieldBackground: selection,
+    background: "#0d1117",
+    headerBackground: "#161b22",
+    fileTreeBackground: "#0d1117",
+    tooltipBackground: "#161b22",
+    dropdownBackground: "#161b22",
+    buttonBackground: "#21262d",
+    altButtonBackground: "#30363d",
+    disabledButtonBackground: "#30363d",
+    highlightBackground: "#21262d",
+    highlightBackgroundAlt: "#161b22",
+    textFieldBackground: "#0d1117",
+    gutterBackground: "#0d1117",
+
     // Text colors
-    headerTextColor: white,
-    textColor: text,
-    selectedTextColor: selection,
-    errorText: headerBg2,
-    buttonTextColor: text,
-    altTextColor: headerBg1,
-    disabledTextColor: headerFg1,
-    unfocusedTextColor: `rgba(${rgba(text, 0.4)})`,
+    headerTextColor: "#c9d1d9",
+    textColor: "#c9d1d9",
+    selectedTextColor: "#264f78",
+    errorText: "#f85149",
+    buttonTextColor: "#c9d1d9",
+    altTextColor: "#8b949e",
+    unfocusedTextColor: "rgba(139, 148, 158, 0.7)",
+    disabledTextColor: "#6e7681",
+
     // hr/dragger/underline
-    line: comment,
-    lineHover: headerFg1,
+    line: "#30363d",
+    lineHover: "#484f58",
+
     // Hover colors
-    // - background Hover
-    buttonBackgroundHover: `rgba(${rgba(border, 0.1)})`,
-    buttonTextColorHover: `rgba(${rgba(text, 0.1)})`,
-    dropdownBackgroundHover: `rgba(${rgba(highlight, 0.1)})`,
-    // - text Hover
-    textColorHover: `rgba(${rgba(text, 0.1)})`,
-    tabHighlight: string,
-    tabHighlightActive: selection,
-    allowed: htmlTag,
-    button: border,
+    buttonBackgroundHover: "#30363d",
+    buttonTextColorHover: "rgba(201, 209, 217, 0.9)",
+    dropdownBackgroundHover: "#21262d",
+    textColorHover: "rgba(201, 209, 217, 0.9)",
+    tabHighlight: "#58a6ff",
+    tabHighlightActive: "#1f6feb",
+    allowed: "#3fb950",
+    button: "#58a6ff",
+
     // Other
-    starActive: diffChangedHighlight,
-    starInactive: border,
-    socialIcon: border,
-    publicIcon: border,
-    playIcon: border,
-    settingsIcon: diffChangedHighlight,
-    profilePlayButton: diffAddedHighlight,
-    profilePlayButtonActive: diffChangedHighlight,
-    scrollbar: highlight,
-    scrollbarHover: `rgba(${rgba(border, 0.1)})`,
-    console: text,
-    cursor: text,
-    opcode: fn,
-    operator: constant,
-    attribute: fn,
-    keyword: fn,
-    string: string,
-    number: text,
-    bracket: htmlTag,
-    aRateVar: constant,
-    iRateVar: constant,
-    kRateVar: constant,
-    fRateVar: constant,
-    pField: diffChangedHighlight,
-    flash: highlight,
-    flashFade: headerFg1,
-    gutterBackground: white,
-    gutterMarker: headerBg2,
-    gutterMarkerSubtle: headerBg2,
-    lineNumber: text,
-    caretColor: text
-    /*
-    comment: monokaiComments,
-    commentAttribute: henn1nk,
-    commentDef: monokaiOrange,
-    commentTag: diffRemovedHighlight,
-    commentType: monokaiCyan
-*/
+    starActive: "#d29922",
+    buttonIcon: "#8b949e",
+    settingsIcon: "#58a6ff",
+    profilePlayButton: "#3fb950",
+    profilePlayButtonActive: "#56d364",
+    scrollbar: "#484f58",
+    scrollbarHover: "#6e7681",
+    console: "#c9d1d9",
+    macro: "#ffa657",
+    cursor: "#c9d1d9",
+    opcode: "#d2a8ff",
+    operator: "#79c0ff",
+    controlFlow: "#ff7b72",
+    attribute: "#79c0ff",
+    keyword: "#ff7b72",
+    string: "#a5d6ff",
+    number: "#79c0ff",
+    bracket: "#c9d1d9",
+    aRateVar: "#d2a8ff",
+    iRateVar: "#79c0ff",
+    kRateVar: "#56d364",
+    fRateVar: "#ffa657",
+    pField: "#e3b341",
+    flash: "#264f78",
+    flashFade: "#1f2937",
+    gutterMarker: "#58a6ff",
+    gutterMarkerSubtle: "#484f58",
+    lineNumber: "#6e7681",
+    comment: "#8b949e",
+    commentAttribute: "#6e7681",
+    commentDef: "#8b949e",
+    commentTag: "#8b949e",
+    commentType: "#8b949e",
+    caretColor: "#58a6ff"
 };
 
-export default deepMerge(themeMonokai, theme) as any;
+export default theme;

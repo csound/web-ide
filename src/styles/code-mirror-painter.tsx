@@ -10,6 +10,14 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-content ::selection {
         background-color: ${theme.selectedTextColor};
     }
+
+    .cm-selectionLayer .cm-selectionBackground {
+        opacity: 0.4;
+    }
+
+    .cm-focused .cm-selectionBackground {
+        opacity: 0.5;
+    }
     .cm-content {
         font-size: 16px;
         font-family: ${theme.font.monospace};
@@ -85,5 +93,32 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-activeLine,
     .cm-foldPlaceholder {
         background-color: rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .cm-tooltip {
+        border: 1px solid ${theme.line};
+        background-color: ${theme.tooltipBackground};
+        color: ${theme.textColor};
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .cm-tooltip-autocomplete > ul > li {
+        color: ${theme.textColor};
+    }
+
+    .cm-tooltip-autocomplete > ul > li[aria-selected],
+    .cm-tooltip-autocomplete > ul > li:hover {
+        background-color: ${theme.buttonBackgroundHover};
+        color: ${theme.textColor};
+    }
+
+    .cm-tooltip-autocomplete .cm-completionDetail {
+        color: ${theme.altTextColor};
+        opacity: 1;
+    }
+
+    .cm-tooltip-autocomplete .cm-completionMatchedText {
+        color: ${theme.keyword};
+        font-weight: 600;
     }
 `;

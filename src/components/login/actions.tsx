@@ -104,7 +104,11 @@ export function ProfileFinalize({
                     bio,
                     link1,
                     link2,
-                    link3
+                    link3,
+                    themeName:
+                        localStorage.getItem("theme") === "monokai"
+                            ? "default"
+                            : localStorage.getItem("theme") || "default"
                 },
                 { merge: true }
             );
