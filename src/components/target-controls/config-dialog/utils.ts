@@ -8,16 +8,14 @@ export const firestoreNewTargets = (
             targetName,
             targetType,
             targetDocumentUid,
-            csoundOptions,
-            useCsound7
+            csoundOptions
         } = target;
 
         const firebaseTarget = {
             targetName,
             targetType,
             targetDocumentUid,
-            csoundOptions: csoundOptions || {},
-            useCsound7: useCsound7 || false
+            csoundOptions: csoundOptions || {}
         };
 
         accumulator[targetName] = firebaseTarget;

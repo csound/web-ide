@@ -99,7 +99,6 @@ export const useTargetControlsDialog = () => {
                     isTypeValid: false,
                     isOtherwiseValid: false,
                     isDefaultTarget: false,
-                    useCsound7: false,
                     targetDocumentUid: "",
                     targetName: "",
                     targetType: ""
@@ -200,25 +199,6 @@ export const useTargetControlsDialog = () => {
         [setNewTargets, newTargets]
     );
 
-    const handleEnableCsound7 = useCallback(
-        ({
-            enableCsound7,
-            targetIndex
-        }: {
-            enableCsound7: boolean;
-            targetIndex: number;
-        }) => {
-            setNewTargets(
-                assocPath(
-                    [targetIndex, "useCsound7"],
-                    enableCsound7,
-                    newTargets
-                )
-            );
-        },
-        [setNewTargets, newTargets]
-    );
-
     return {
         allDocuments,
         newTargets,
@@ -232,7 +212,6 @@ export const useTargetControlsDialog = () => {
         handleTargetNameChange,
         handleSelectTargetDocument,
         handleTargetDelete,
-        handleEnableCsound7,
         handleSave,
         shouldDisallowSave
     };

@@ -170,13 +170,6 @@ export const getPlayActionFromProject = curry(
             return;
         }
 
-        const target: ITarget | undefined =
-            store?.TargetControlsReducer?.[projectUid]?.targets?.[
-                targetDocument.documentUid
-            ];
-
-        const useCsound7 = target?.useCsound7 ?? false;
-
         const csoundDocumentType = filenameToCsoundType(
             (targetDocument as IDocument).filename
         );
@@ -184,15 +177,13 @@ export const getPlayActionFromProject = curry(
             case "csd": {
                 return playCsdFromFs({
                     projectUid,
-                    csdPath: (targetDocument as IDocument).filename,
-                    useCsound7
+                    csdPath: (targetDocument as IDocument).filename
                 });
             }
             case "orc": {
                 return playORCFromString({
                     projectUid,
-                    orc: (targetDocument as IDocument).savedValue,
-                    useCsound7
+                    orc: (targetDocument as IDocument).savedValue
                 });
             }
         }
@@ -219,8 +210,6 @@ export const getPlayActionFromTarget =
             return;
         }
 
-        const useCsound7 = target.useCsound7 || false;
-
         const documentId =
             target && (target as ITarget).targetType === "main"
                 ? target && (target as ITarget).targetDocumentUid
@@ -242,15 +231,13 @@ export const getPlayActionFromTarget =
                 case "csd": {
                     return playCsdFromFs({
                         projectUid,
-                        csdPath: (targetDocument as IDocument).filename,
-                        useCsound7
+                        csdPath: (targetDocument as IDocument).filename
                     });
                 }
                 case "orc": {
                     return playORCFromString({
                         projectUid,
-                        orc: (targetDocument as IDocument).savedValue,
-                        useCsound7
+                        orc: (targetDocument as IDocument).savedValue
                     });
                 }
             }

@@ -4,7 +4,6 @@ import { ascend, either, filter, equals, map, pipe, prop, sort } from "ramda";
 import { useTheme } from "@emotion/react";
 import DeleteIcon from "@mui/icons-material/DeleteTwoTone";
 import Radio from "@mui/material/Radio";
-import Checkbox from "@mui/material/Checkbox";
 import Fab from "@mui/material/Fab";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
@@ -24,7 +23,6 @@ interface TargetControlsConfigDialogSingleTargetProperties {
     oldTargetName: string;
     targetDocumentUid: string;
     isDefaultTarget: boolean;
-    useCsound7: boolean;
     handleTargetDelete: (targetName: string) => void;
     handleTargetNameChange: (props: {
         nextValue: string;
@@ -36,10 +34,6 @@ interface TargetControlsConfigDialogSingleTargetProperties {
         targetIndex: number;
     }) => void;
     handleMarkAsDefaultTarget: (nextTarget: string) => void;
-    handleEnableCsound7: (props: {
-        enableCsound7: boolean;
-        targetIndex: number;
-    }) => void;
     newTargets: ITargetFromInput[];
 }
 
@@ -49,12 +43,10 @@ export const TargetControlsConfigDialogSingleTarget = ({
     oldTargetName,
     targetDocumentUid,
     isDefaultTarget,
-    useCsound7,
     handleSelectTargetDocument,
     handleTargetNameChange,
     handleTargetDelete,
     handleMarkAsDefaultTarget,
-    handleEnableCsound7,
     newTargets,
     allDocuments
 }: TargetControlsConfigDialogSingleTargetProperties) => {
@@ -178,24 +170,6 @@ export const TargetControlsConfigDialogSingleTarget = ({
                         styles={reactSelectDropdownStyle(theme) as any}
                     />
                 </div>
-            </FormGroup>
-
-            <FormGroup row>
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            color="primary"
-                            checked={useCsound7 || false}
-                            onChange={(event) =>
-                                handleEnableCsound7({
-                                    targetIndex,
-                                    enableCsound7: event.target.checked
-                                })
-                            }
-                        />
-                    }
-                    label="Run with csound7"
-                />
             </FormGroup>
         </div>
     );

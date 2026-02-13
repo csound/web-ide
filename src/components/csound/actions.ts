@@ -1,7 +1,6 @@
 import { AppThunkDispatch, RootState, store } from "@root/store";
 import { IDocument, IProject } from "../projects/types";
-import { Csound as Csound6 } from "@csound/browser";
-import { Csound as Csound7 } from "csound7";
+import { Csound } from "@csound/browser";
 import {
     cleanupNonCloudFiles,
     nonCloudFiles,
@@ -136,16 +135,12 @@ export const syncFs = async (
 
 export const playCsdFromFs = ({
     projectUid,
-    csdPath,
-    useCsound7
+    csdPath
 }: {
     projectUid: string;
     csdPath: string;
-    useCsound7: boolean;
 }) => {
     return async (dispatch: AppThunkDispatch, setConsole: any) => {
-        const Csound = useCsound7 ? Csound7 : Csound6;
-
         const csoundObj = await Csound({
             useWorker: localStorage.getItem("sab") === "true"
         });
@@ -279,7 +274,12 @@ export const playCsdFromFs = ({
                 }
             } else {
                 try {
-                    await csoundObj.cleanup();
+                    if (
+                        typeof csoundObj === "object" &&
+                        typeof csoundObj.cleanup === "function"
+                    ) {
+                        await csoundObj.cleanup();
+                    }
                 } catch (error: any) {
                     console.error(error);
                 }
@@ -292,16 +292,12 @@ export const playCsdFromFs = ({
 
 export const playORCFromString = ({
     projectUid,
-    orc,
-    useCsound7
+    orc
 }: {
     projectUid: string;
     orc: string;
-    useCsound7: boolean;
 }): ((dispatch: any, setConsole: any) => Promise<void>) => {
     return async (dispatch, setConsole: any) => {
-        const Csound = useCsound7 ? Csound7 : Csound6;
-
         const csoundObj = await Csound({
             useWorker: localStorage.getItem("sab") === "true"
         });
@@ -323,8 +319,6 @@ export const playORCFromString = ({
 
         if (csoundObj) {
             await csoundObj.setOption("-odac");
-
-            const storeState = store.getState();
 
             const result = await csoundObj.compileOrc(orc);
 
@@ -392,9 +386,6 @@ export const renderToDisk = (
             );
             return;
         }
-
-        const Csound = Csound6;
-        // const Csound = useCsound7 ? Csound7 : Csound6;
 
         // Non-worker mode has more reliable render lifecycle events for offline -o rendering.
         const csound = await Csound({

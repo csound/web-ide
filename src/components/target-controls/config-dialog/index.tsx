@@ -16,7 +16,6 @@ export const TargetControlsConfigDialog = () => {
         handleTargetNameChange,
         handleSelectTargetDocument,
         handleMarkAsDefaultTarget,
-        handleEnableCsound7,
         handleSave,
         hasModifiedTargets,
         newTargets,
@@ -52,13 +51,11 @@ export const TargetControlsConfigDialog = () => {
                             handleMarkAsDefaultTarget={
                                 handleMarkAsDefaultTarget
                             }
-                            handleEnableCsound7={handleEnableCsound7}
                             newTargets={newTargets}
                             targetDocumentUid={props.targetDocumentUid}
                             targetName={props.targetName}
                             isDefaultTarget={props.isDefaultTarget}
                             oldTargetName={props.oldTargetName}
-                            useCsound7={props.useCsound7}
                         />
                     )
             )}
