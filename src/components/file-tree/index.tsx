@@ -40,6 +40,7 @@ import WaveFormIcon from "@root/svgs/fad-waveform.svg?react";
 import { IDocument } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { textOrBinary } from "@comp/projects/utils";
+import { getUniqueFilename } from "@comp/projects/utils";
 import {
     tabClose,
     tabOpenByDocumentUid,
@@ -94,6 +95,21 @@ const humanizeBytes = (size: number) => {
     }
 };
 
+const nonCloudTooltipSlotProps = {
+    tooltip: {
+        sx: (theme: any) => ({
+            backgroundColor: theme.headerBackground,
+            color: theme.textColor,
+            border: `1px solid ${theme.line}`,
+            fontFamily: theme.font.regular,
+            fontSize: "12px",
+            opacity: "1 !important",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+            maxWidth: 360
+        })
+    }
+};
+
 function UploadNonCloudFileIcon({
     file,
     projectUid,
@@ -105,8 +121,23 @@ function UploadNonCloudFileIcon({
 }) {
     const dispatch = useDispatch();
     const [uploadProgress, setUploadProgress] = useState(-1);
+    const existingRootFilenames = useSelector((state: any) => {
+        const documents = Object.values(
+            state?.ProjectsReducer?.projects?.[projectUid]?.documents || {}
+        ) as IDocument[];
+        return documents
+            .filter(
+                (document) =>
+                    Array.isArray(document.path) && document.path.length === 0
+            )
+            .map((document) => document.filename);
+    });
 
-    const handleUpload = React.useCallback(() => {
+    const handleUpload = React.useCallback((event?: React.MouseEvent) => {
+        if (event) {
+            event.stopPropagation();
+        }
+        const uniqueFilename = getUniqueFilename(file.name, existingRootFilenames);
         const txtOrBin = textOrBinary(file.name);
         const currentUser = getAuth().currentUser;
         const uid = currentUser ? currentUser.uid : "";
@@ -117,7 +148,7 @@ function UploadNonCloudFileIcon({
             const txt = utf8decoder.decode(file.buffer);
             const document_ = {
                 type: txtOrBin,
-                name: file.name,
+                name: uniqueFilename,
                 value: txt,
                 userUid: uid,
                 lastModified: getFirebaseTimestamp(),
@@ -139,7 +170,7 @@ function UploadNonCloudFileIcon({
                     (txtOrBin ? "application/octet-stream" : "text/plain"),
                 cacheControl: "public,max-age=31536000,immutable",
                 customMetadata: {
-                    filename: file.name,
+                    filename: uniqueFilename,
                     projectUid,
                     userUid: uid,
                     docUid: documentId
@@ -185,7 +216,14 @@ function UploadNonCloudFileIcon({
                 }
             );
         }
-    }, [dispatch, file, projectUid, setUploadProgress, mimeType]);
+    }, [
+        dispatch,
+        existingRootFilenames,
+        file,
+        projectUid,
+        setUploadProgress,
+        mimeType
+    ]);
 
     return uploadProgress > -1 ? (
         <div
@@ -213,7 +251,9 @@ function UploadNonCloudFileIcon({
         </div>
     ) : (
         <Tooltip
-            placement="right"
+            placement="top"
+            followCursor
+            slotProps={nonCloudTooltipSlotProps}
             title={
                 <>
                     {`Upload ${propOr("", "name", file)} (${humanizeBytes(
@@ -227,9 +267,8 @@ function UploadNonCloudFileIcon({
             }
         >
             <UploadIcon
-                css={SS.editIcon}
-                onClick={handleUpload}
-                style={{ marginRight: "6px" }}
+                css={SS.nonCloudActionIcon}
+                onClick={(event) => handleUpload(event)}
             />
         </Tooltip>
     );
@@ -242,7 +281,8 @@ function DownloadNonCloudFileIcon({
     file: NonCloudFile;
     mimeType: string;
 }) {
-    const onClick = useCallback(() => {
+    const onClick = useCallback((event: React.MouseEvent) => {
+        event.stopPropagation();
         const blob = new Blob([file.buffer as BlobPart], { type: mimeType });
         const tmpUrl = URL.createObjectURL(blob);
         (window as any).open(tmpUrl);
@@ -250,7 +290,9 @@ function DownloadNonCloudFileIcon({
 
     return (
         <Tooltip
-            placement="right"
+            placement="top"
+            followCursor
+            slotProps={nonCloudTooltipSlotProps}
             title={
                 <>
                     {`Download ${propOr("", "name", file)} (${humanizeBytes(
@@ -263,7 +305,37 @@ function DownloadNonCloudFileIcon({
                 </>
             }
         >
-            <DownloadIcon css={SS.editIcon} onClick={onClick} />
+            <DownloadIcon css={SS.nonCloudActionIcon} onClick={onClick} />
+        </Tooltip>
+    );
+}
+
+function DeleteNonCloudFileIcon({
+    file,
+    projectUid
+}: {
+    file: NonCloudFile;
+    projectUid: string;
+}) {
+    const dispatch = useDispatch();
+    const onClick = useCallback(
+        (event: React.MouseEvent) => {
+            event.stopPropagation();
+            dispatch(tabClose(projectUid, file.name, false));
+            dispatch(deleteNonCloudFiles(file.name));
+            nonCloudFiles.delete(file.name);
+        },
+        [dispatch, file.name, projectUid]
+    );
+
+    return (
+        <Tooltip
+            placement="top"
+            followCursor
+            slotProps={nonCloudTooltipSlotProps}
+            title={`Delete transient file ${propOr("", "name", file)}`}
+        >
+            <DeleteIcon css={SS.nonCloudActionIcon} onClick={onClick} />
         </Tooltip>
     );
 }
@@ -283,7 +355,9 @@ function FileExtIcon({
                 css={SS.listItemIcon}
                 style={{
                     left: 6,
-                    marginLeft: 24 * nestingDepth
+                    marginLeft: 24 * nestingDepth,
+                    top: "50%",
+                    transform: "translateY(-50%)"
                 }}
             >
                 <span css={SS.mediaIcon}>
@@ -713,27 +787,49 @@ export const FileTree = ({
                                             )}
                                             nestingDepth={0}
                                         />
-                                        <p
-                                            css={SS.filenameStyle}
-                                            style={{
-                                                marginLeft: "16px",
-                                                marginRight: "8px"
-                                            }}
+                                        <Tooltip
+                                            placement="top"
+                                            followCursor
+                                            slotProps={nonCloudTooltipSlotProps}
+                                            title={
+                                                <>
+                                                    <strong>{file.name}</strong>
+                                                    <br />
+                                                    <small>{`Generated: ${moment(
+                                                        file.createdAt
+                                                    ).format(
+                                                        "YYYY-MM-DD HH:mm:ss"
+                                                    )}`}</small>
+                                                </>
+                                            }
                                         >
-                                            {file.name}
-                                        </p>
+                                            <p
+                                                css={SS.filenameStyle}
+                                                style={{
+                                                    marginLeft: "16px",
+                                                    marginRight: "8px"
+                                                }}
+                                            >
+                                                {file.name}
+                                            </p>
+                                        </Tooltip>
                                         <Box
-                                            display="flex"
-                                            justifyContent="space-between"
+                                            css={SS.nonCloudActionsContainer}
                                         >
-                                            <UploadNonCloudFileIcon
-                                                file={file}
-                                                mimeType={mimeType}
-                                                projectUid={activeProjectUid}
-                                            />
+                                            {isOwner && (
+                                                <UploadNonCloudFileIcon
+                                                    file={file}
+                                                    mimeType={mimeType}
+                                                    projectUid={activeProjectUid}
+                                                />
+                                            )}
                                             <DownloadNonCloudFileIcon
                                                 file={file}
                                                 mimeType={mimeType}
+                                            />
+                                            <DeleteNonCloudFileIcon
+                                                file={file}
+                                                projectUid={activeProjectUid}
                                             />
                                         </Box>
                                     </ListItem>

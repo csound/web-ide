@@ -110,11 +110,10 @@ export const projectProfileMetaContainer = css`
     position: fixed;
     right: 16px;
     bottom: 16px;
-    z-index: 4;
+    z-index: 30000;
     width: min(360px, calc(100vw - 32px));
     border-radius: 14px;
     padding: 10px 12px;
-    backdrop-filter: blur(8px);
 `;
 
 export const projectProfileMetaTextContainer = (
@@ -125,9 +124,10 @@ export const projectProfileMetaTextContainer = (
     display: flex;
     flex-direction: column;
     border: 1px solid ${theme.line};
-    background: rgba(0, 0, 0, 0.35);
+    background-color: ${theme.headerBackground};
     border-radius: 12px;
     padding: 8px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 `;
 
 export const projectProfileMetaH1 = (theme: Theme): SerializedStyles => css`

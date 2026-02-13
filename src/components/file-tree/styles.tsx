@@ -56,6 +56,34 @@ export const delEditContainer = css`
     margin-top: 1px;
 `;
 
+export const nonCloudActionsContainer = css`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+`;
+
+export const nonCloudActionIcon = (theme: Theme): SerializedStyles => css`
+    cursor: pointer;
+    color: ${theme.textColor};
+    width: 22px;
+    height: 22px;
+    z-index: 3;
+    padding: 3px;
+    border-radius: 6px;
+    border: 1px solid ${theme.line};
+    background-color: ${theme.buttonBackground};
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+
+    &:hover {
+        background-color: ${theme.highlightBackground};
+        color: ${theme.textColor};
+        border-color: ${theme.lineHover};
+    }
+`;
+
 export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     position: absolute;
     right: 18px;
@@ -121,14 +149,22 @@ export const newFolderIcon = css`
 
 const musicIconBase = css`
     position: relative;
-    width: 32px;
+    width: 24px;
     height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 `;
 
 export const mediaIcon = (theme: Theme): SerializedStyles => css`
     ${musicIconBase}
-    margin-top: 1px;
-    fill: ${theme.aRateVar};
+    fill: ${theme.altTextColor};
+    opacity: 0.95;
+    svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+    }
 `;
 
 export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`

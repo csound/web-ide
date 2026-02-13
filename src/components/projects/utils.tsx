@@ -26,6 +26,68 @@ export function textOrBinary(filename: string): IDocumentFileType {
     return "bin";
 }
 
+const splitDirectoryAndFilename = (
+    pathLikeFilename: string
+): { directory: string; filename: string } => {
+    const lastSlashIndex = pathLikeFilename.lastIndexOf("/");
+    if (lastSlashIndex < 0) {
+        return {
+            directory: "",
+            filename: pathLikeFilename
+        };
+    }
+    return {
+        directory: pathLikeFilename.slice(0, lastSlashIndex + 1),
+        filename: pathLikeFilename.slice(lastSlashIndex + 1)
+    };
+};
+
+const splitFilenameAndExtension = (
+    filename: string
+): { basename: string; extension: string } => {
+    const lastDotIndex = filename.lastIndexOf(".");
+    if (lastDotIndex > 0) {
+        return {
+            basename: filename.slice(0, lastDotIndex),
+            extension: filename.slice(lastDotIndex)
+        };
+    }
+    return {
+        basename: filename,
+        extension: ""
+    };
+};
+
+export const getUniqueFilename = (
+    incomingFilename: string,
+    existingFilenames: string[]
+): string => {
+    const { directory, filename } =
+        splitDirectoryAndFilename(incomingFilename);
+
+    if (!filename) {
+        return incomingFilename;
+    }
+
+    const siblingNames = new Set(
+        existingFilenames
+            .map(splitDirectoryAndFilename)
+            .filter((entry) => entry.directory === directory)
+            .map((entry) => entry.filename)
+    );
+
+    const { basename, extension } = splitFilenameAndExtension(filename);
+    let candidate = filename;
+    let suffixIndex = 1;
+
+    while (siblingNames.has(candidate)) {
+        candidate = `${basename}(${suffixIndex})${extension}`;
+        suffixIndex += 1;
+    }
+
+    return `${directory}${candidate}`;
+};
+
 export function isAudioFile(fileName: string): boolean {
     // currently does not deal with FLAC, not sure if browser supports it
     const mimeType = mime.getType(fileName) || "";

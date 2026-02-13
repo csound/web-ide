@@ -15,7 +15,7 @@ import {
     compileCSD
 } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
-import { addDocumentToCsoundFS } from "@comp/projects/utils";
+import { addDocumentToCsoundFS, getUniqueFilename } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { append, isEmpty, difference } from "ramda";
 
@@ -187,6 +187,7 @@ export const playCsdFromFs = ({
                     !outputName.includes("dac");
 
                 const collectPlayableOutputs = async () => {
+                    console.log("COLLECT!");
                     const filesPost = await csoundObj.fs.readdir("/");
                     const newFiles = difference(filesPost, filesPre);
                     const normalizedOutputName = outputName.replace(/^\/+/, "");
@@ -208,6 +209,9 @@ export const playCsdFromFs = ({
                 const addOutputsToTree = async () => {
                     const filesToRead = new Set<string>(
                         await collectPlayableOutputs()
+                    );
+                    const existingNames = new Set<string>(
+                        Array.from(nonCloudFiles.keys())
                     );
                     for (const filename of await collectPlayableOutputs()) {
                         filesToRead.add(filename);
@@ -233,15 +237,20 @@ export const playCsdFromFs = ({
                         }
 
                         if (buffer) {
-                            nonCloudFiles.set(normalizedName, {
+                            const uniqueName = getUniqueFilename(
+                                normalizedName,
+                                Array.from(existingNames)
+                            );
+                            existingNames.add(uniqueName);
+                            nonCloudFiles.set(uniqueName, {
                                 buffer,
                                 createdAt: new Date(),
-                                name: normalizedName
+                                name: uniqueName
                             });
                             dispatch(
                                 addNonCloudFile({
                                     createdAt: Date.now(),
-                                    name: normalizedName
+                                    name: uniqueName
                                 })
                             );
                         }
@@ -250,13 +259,14 @@ export const playCsdFromFs = ({
 
                 if (isDiskRender) {
                     dispatch(setCsoundPlayState("rendering"));
-                    const startResult = await csoundObj.start();
-                    let performResult = 0;
                     csoundObj.once("renderEnded", async () => {
                         await addOutputsToTree();
                         dispatch(setCsoundPlayState("stopped"));
                         performResult = 1;
                     });
+                    const startResult = await csoundObj.start();
+                    let performResult = 0;
+
                     if (startResult !== 0) {
                         dispatch(setCsoundPlayState("error"));
                         return;
@@ -460,6 +470,9 @@ export const renderToDisk = (
             didFinalizeRender = true;
 
             const filesToRead = new Set<string>(await collectRenderableFiles());
+            const existingNames = new Set<string>(
+                Array.from(nonCloudFiles.keys())
+            );
 
             try {
                 await csound.cleanup();
@@ -486,15 +499,20 @@ export const renderToDisk = (
                     } catch {}
                 }
                 if (buffer) {
-                    nonCloudFiles.set(normalizedName, {
+                    const uniqueName = getUniqueFilename(
+                        normalizedName,
+                        Array.from(existingNames)
+                    );
+                    existingNames.add(uniqueName);
+                    nonCloudFiles.set(uniqueName, {
                         buffer,
                         createdAt: new Date(),
-                        name: normalizedName
+                        name: uniqueName
                     });
                     dispatch(
                         addNonCloudFile({
                             createdAt: Date.now(),
-                            name: normalizedName
+                            name: uniqueName
                         })
                     );
                 }
