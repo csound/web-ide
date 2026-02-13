@@ -18,35 +18,34 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
 
     & > div {
         height: 100%;
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
     & > div > div {
-        height: 100%;
-        position: absolute;
         width: 100%;
+    }
+    & > div > div:nth-of-type(2) {
+        flex: 1 1 auto;
+        min-height: 0;
+        position: relative;
     }
     .tablist {
         width: 100%;
-        height: 100%;
+        flex: 0 0 ${tabListHeight}px;
         z-index: 1;
-        background-color: ${theme.background}!important;
+        position: relative;
+        background-color: ${theme.highlightBackgroundAlt}!important;
         height: ${tabListHeight}px;
-        box-shadow:
-            0 2px 2px 0 rgba(0, 0, 0, 0.14),
-            0 1px 5px 0 rgba(0, 0, 0, 0.12),
-            0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    }
-    .tablist > div {
-        height: 100%;
+        box-shadow: 0 10px 12px -12px rgba(0, 0, 0, 0.65);
+        white-space: nowrap;
+        overflow: hidden;
     }
 
-    .tablist > div > ul {
+    .tablist > li {
         height: 100%;
     }
-    .tablist > div > ul > li {
-        height: 100%;
-    }
-    .tablist > div > ul > li > span {
+    .tablist > li > span {
         margin: auto 0;
         height: 100%;
         display: flex;
@@ -57,12 +56,11 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
 
 const TabListStyleCustom = styled(TabListStyle)`
     z-index: 1;
-    background-color: ${(properties) => properties.theme.background}!important;
+    background-color: ${(properties) =>
+        properties.theme.highlightBackgroundAlt}!important;
     bottom: 0;
-    box-shadow:
-        0 2px 2px 0 rgba(0, 0, 0, 0.14),
-        0 1px 5px 0 rgba(0, 0, 0, 0.12),
-        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 12px -12px rgba(0, 0, 0, 0.65);
+    position: relative;
 
     & li::after {
         z-index: 0;
@@ -72,6 +70,8 @@ const TabListStyleCustom = styled(TabListStyle)`
     .tablist {
         width: 100%;
         height: ${tabListHeight}px;
+        background-color: ${(properties) =>
+            properties.theme.highlightBackgroundAlt}!important;
     }
     & > div {
         height: 100%;
@@ -129,6 +129,9 @@ const TabStyleCustom = styled(TabStyle)`
             properties.active
                 ? properties.theme.tabHighlightActive
                 : properties.theme.tabHighlight};
+        box-shadow:
+            0 -4px 8px -7px rgba(0, 0, 0, 0.6),
+            0 5px 9px -6px rgba(0, 0, 0, 0.85);
     }
 
     p {
@@ -163,9 +166,7 @@ const bottomPanelStyle = `
 const PanelStyleCustom = styled(PanelStyle)`
     width: 100%;
     height: 100%;
-    //position: absolute !important;
     padding: 0 !important;
-    padding-top: 38px !important;
     background-color: ${(properties) => properties.theme.background}!important;
     ${(properties: any) => (properties.isBottom ? bottomPanelStyle : "")};
 `;

@@ -10,6 +10,7 @@ const DragTabList = ({
     children,
     handleTabSequence,
     handleTabChange,
+    className = "",
     activeIndex = 0, // Extract to prevent passing to DOM
     showModalButton = false, // Extract to prevent passing to DOM
     showArrowButton = false, // Extract to prevent passing to DOM
@@ -55,7 +56,7 @@ const DragTabList = ({
     };
 
     return (
-        <div role="tablist" {...props}>
+        <div role="tablist" className={`tablist ${className}`.trim()} {...props}>
             <DndContext
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}

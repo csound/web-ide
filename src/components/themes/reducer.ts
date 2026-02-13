@@ -1,6 +1,7 @@
 import { Theme } from "@emotion/react";
 import MonokaiTheme from "@styles/_theme-monokai";
 import GitHubTheme from "@styles/_theme-github";
+import GitHubLightTheme from "@styles/_theme-github-light";
 import DraculaTheme from "@styles/_theme-dracula";
 import NordTheme from "@styles/_theme-nord";
 import SolarizedDarkTheme from "@styles/_theme-solarized-dark";
@@ -15,6 +16,7 @@ export interface IThemeReducer {
 const LEGACY_THEME_MAP: Record<string, CsoundTheme> = {
     monokai: "default",
     github: "github",
+    "github-light": "github-light",
     default: "default",
     dracula: "dracula",
     nord: "nord",
@@ -34,6 +36,9 @@ const getThemeFromName = (themeName: CsoundTheme): Theme => {
     switch (themeName) {
         case "github": {
             return GitHubTheme as unknown as Theme;
+        }
+        case "github-light": {
+            return GitHubLightTheme as unknown as Theme;
         }
         case "dracula": {
             return DraculaTheme as unknown as Theme;

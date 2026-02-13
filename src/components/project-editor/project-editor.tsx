@@ -48,6 +48,7 @@ import {
     selectOpenBottomTabs
 } from "../bottom-tabs/selectors";
 import { BottomTab } from "../bottom-tabs/types";
+import { useSetConsole } from "@comp/console/context";
 
 const TabStyles = tabStyles(false);
 const SplitPane = SplitPane_ as any;
@@ -177,6 +178,9 @@ const ProjectEditor = ({
     activeProject: IProject;
 }): React.ReactElement => {
     const dispatch = useDispatch();
+    const setConsole = useSetConsole() as
+        | ((value: string[] | ((logs: string[]) => string[])) => void)
+        | undefined;
 
     // The manual is an iframe, which doesn't detect
     // mouse positions, so we add an invidible layer then
@@ -193,6 +197,12 @@ const ProjectEditor = ({
             document.title = projectName;
         }
     }, [projectName]);
+
+    useEffect(() => {
+        if (setConsole) {
+            setConsole([""]);
+        }
+    }, [projectUid, setConsole]);
 
     useEffect(() => {
         // start at top on init

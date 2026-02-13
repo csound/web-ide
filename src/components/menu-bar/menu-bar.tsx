@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
-import onClickOutside from "react-onclickoutside";
 import { useLocalStorage } from "react-use-storage";
 import SelectedIcon from "@mui/icons-material/DoneSharp";
 import NestedMenuIcon from "@mui/icons-material/ArrowRightSharp";
@@ -36,6 +35,7 @@ import { openBottomTab } from "@comp/bottom-tabs/actions";
 
 export function MenuBar() {
     const setConsole = useSetConsole();
+    const menuRootRef = useRef<HTMLUListElement | null>(null);
 
     const activeProjectUid: string = useSelector(
         pathOr("", ["ProjectsReducer", "activeProjectUid"])
@@ -136,6 +136,12 @@ export function MenuBar() {
                             label: "GitHub Modern",
                             callback: () => dispatch(changeTheme("github")),
                             checked: selectedThemeName === "github"
+                        },
+                        {
+                            label: "GitHub Light",
+                            callback: () =>
+                                dispatch(changeTheme("github-light")),
+                            checked: selectedThemeName === "github-light"
                         },
                         {
                             label: "Dracula",
@@ -284,13 +290,37 @@ export function MenuBar() {
         }
     ];
 
-    (MenuBar as any).handleClickOutside = () => {
-        setOpenPath([]);
-    };
-
     const [openPath, setOpenPath]: [number[], (p: number[]) => any] = useState(
         [] as number[]
     );
+
+    useEffect(() => {
+        const closeOnOutsideClick = (event: MouseEvent | TouchEvent) => {
+            const targetNode = event.target as Node | null;
+            if (!targetNode) {
+                return;
+            }
+            if (menuRootRef.current && !menuRootRef.current.contains(targetNode)) {
+                setOpenPath([]);
+            }
+        };
+
+        document.addEventListener("mousedown", closeOnOutsideClick, true);
+        document.addEventListener("touchstart", closeOnOutsideClick, true);
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                closeOnOutsideClick,
+                true
+            );
+            document.removeEventListener(
+                "touchstart",
+                closeOnOutsideClick,
+                true
+            );
+        };
+    }, []);
 
     const reduceRow = (
         items: MenuItemDef[],
@@ -451,7 +481,9 @@ export function MenuBar() {
 
     return (
         <>
-            <ul css={SS.root}>{columns(openPath)}</ul>
+            <ul css={SS.root} ref={menuRootRef}>
+                {columns(openPath)}
+            </ul>
         </>
     );
 }
