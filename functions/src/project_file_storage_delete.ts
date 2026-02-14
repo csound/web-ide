@@ -1,18 +1,24 @@
 import admin from "firebase-admin";
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { log } from "firebase-functions/logger";
-import "dotenv/config";
 
 async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
     log(
         `project_file_storage_delete: Deleting associated binary file from storage: ${binaryUrl}`
     );
 
-    await admin
-        .storage()
-        .bucket(process.env.STORAGE_BUCKET_URL!)
-        .file(binaryUrl)
-        .delete();
+    const configuredBucket = process.env.STORAGE_BUCKET_URL?.trim();
+    const bucket = configuredBucket
+        ? admin.storage().bucket(configuredBucket)
+        : admin.storage().bucket();
+
+    if (!configuredBucket) {
+        log(
+            "project_file_storage_delete: STORAGE_BUCKET_URL not set, using default bucket from Firebase app config"
+        );
+    }
+
+    await bucket.file(binaryUrl).delete();
 }
 
 export const projectFileStorageDeleteCallback = onDocumentDeleted(
