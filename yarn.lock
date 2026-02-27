@@ -1182,10 +1182,10 @@
     style-mod "^4.1.0"
     w3c-keyname "^2.2.4"
 
-"@csound/browser@^7.0.0-beta.22":
-  version "7.0.0-beta22"
-  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-beta22.tgz#cfe16204291cef691016fb510d2e20f8e2a5eeb1"
-  integrity sha512-WgaaAvnlM5E/cGP/ctmO1RxAaL5sDibWxlbRPwQ6nBewXBjl1IauTvtSG1xmpxgD0ToAWmfT5SwbvwU6updtFg==
+"@csound/browser@^7.0.0-beta.28":
+  version "7.0.0-beta28"
+  resolved "https://registry.yarnpkg.com/@csound/browser/-/browser-7.0.0-beta28.tgz#5ddcd47fd928b239f721f4d849d1cd4b8ad6f40c"
+  integrity sha512-1O/4xpSeAecZnA/PCxVVQzexjV4wJugDGHb4BHzmd/EKjBEFzWTSsoeQeVcv2snxCn+WI2MoNmZ54GgJyI64Kg==
   dependencies:
     eventemitter3 "^4.0.7"
     google-closure-compiler "20260211.0.0"
