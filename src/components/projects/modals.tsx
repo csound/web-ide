@@ -303,6 +303,8 @@ export function NewDocumentPrompt({
 export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
     const dispatch = useDispatch();
     const [files, setFiles] = useState(null as FileList | null);
+    const [filesToUpload, setFilesToUpload] = useState([] as File[]);
+    const [uploadingIndex, setUploadingIndex] = useState(-1);
 
     const [nameCollides, setNameCollides] = useState(false);
 
@@ -310,44 +312,53 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
         pathOr({} as IProject, ["ProjectsReducer", "projects", projectUid])
     );
 
-    const addDocumentSuccessCallback = useCallback(async () => {
-        if (!isEmpty(project) && files !== null && files.length > 0) {
-            const file = files[0];
-            const filename = file.name;
-            const fileType = textOrBinary(file.name);
-            const reader = new FileReader();
-            const currentUser = getAuth().currentUser;
-            const uid = currentUser ? currentUser.uid : "";
-
-            console.log("File type found:", fileType);
-
+    const uploadFilePromise = (
+        file: File,
+        uid: string,
+        filename: string,
+        fileType: string,
+        project: IProject
+    ): Promise<void> => {
+        return new Promise((resolve, reject) => {
             if (fileType === "txt") {
+                const reader = new FileReader();
                 reader.addEventListener("load", async () => {
-                    const txt = reader.result;
-                    const document_ = {
-                        type: fileType,
-                        name: filename,
-                        value: txt,
-                        userUid: uid,
-                        lastModified: getFirebaseTimestamp(),
-                        created: getFirebaseTimestamp()
-                    };
+                    try {
+                        const txt = reader.result;
+                        const document_ = {
+                            type: fileType,
+                            name: filename,
+                            value: txt,
+                            userUid: uid,
+                            lastModified: getFirebaseTimestamp(),
+                            created: getFirebaseTimestamp()
+                        };
 
-                    const result = await addDoc(
-                        collection(doc(projects, project.projectUid), "files"),
-                        document_
-                    );
+                        const result = await addDoc(
+                            collection(
+                                doc(projects, project.projectUid),
+                                "files"
+                            ),
+                            document_
+                        );
 
-                    const documentUid = result.id;
-                    dispatch(tabOpenByDocumentUid(documentUid, projectUid));
-                    dispatch(
-                        newEmptyDocumentAction(
-                            projectUid,
-                            documentUid,
-                            filename
-                        )
-                    );
-                    updateProjectLastModified(project.projectUid);
+                        const documentUid = result.id;
+                        dispatch(tabOpenByDocumentUid(documentUid, projectUid));
+                        dispatch(
+                            newEmptyDocumentAction(
+                                projectUid,
+                                documentUid,
+                                filename
+                            )
+                        );
+                        updateProjectLastModified(project.projectUid);
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+                reader.addEventListener("error", () => {
+                    reject(new Error(`Failed to read file: ${filename}`));
                 });
                 reader.readAsText(file);
             } else if (fileType === "bin") {
@@ -364,102 +375,250 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
                     }
                 };
 
-                const uploadTask = uploadBytesResumable(
-                    await storageReference(
-                        `${uid}/${project.projectUid}/${documentId}`
-                    ),
-                    file,
-                    metadata
-                );
-
-                // Listen for state changes, errors, and completion of the upload.
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const progress =
-                            (snapshot.bytesTransferred / snapshot.totalBytes) *
-                            100;
-                        console.log("Upload is " + progress + "% done");
-                        switch (snapshot.state) {
-                            case "paused": {
-                                console.log("Upload is paused");
-                                break;
-                            }
-                            case "running": {
-                                console.log("Upload is running");
-                                break;
-                            }
-                        }
-                    },
-                    function (error: any) {
-                        dispatch(
-                            openSnackbar(error.message, SnackbarType.Error)
+                storageReference(`${uid}/${project.projectUid}/${documentId}`)
+                    .then((ref) => {
+                        const uploadTask = uploadBytesResumable(
+                            ref,
+                            file,
+                            metadata
                         );
-                        // A full list of error codes is available at
-                        // https://firebase.google.com/docs/storage/web/handle-errors
-                        switch (error.name) {
-                            case "storage/unauthorized": {
-                                // User doesn't have permission to access the object
-                                break;
-                            }
 
-                            case "storage/canceled": {
-                                // User canceled the upload
-                                break;
+                        uploadTask.on(
+                            "state_changed",
+                            (snapshot) => {
+                                const progress =
+                                    (snapshot.bytesTransferred /
+                                        snapshot.totalBytes) *
+                                    100;
+                                console.log(
+                                    `Upload ${filename} is ${progress}% done`
+                                );
+                                switch (snapshot.state) {
+                                    case "paused": {
+                                        console.log(
+                                            `Upload ${filename} is paused`
+                                        );
+                                        break;
+                                    }
+                                    case "running": {
+                                        console.log(
+                                            `Upload ${filename} is running`
+                                        );
+                                        break;
+                                    }
+                                }
+                            },
+                            function (error: any) {
+                                dispatch(
+                                    openSnackbar(
+                                        `Error uploading ${filename}: ${error.message}`,
+                                        SnackbarType.Error
+                                    )
+                                );
+                                reject(error);
+                            },
+                            function () {
+                                // Upload completed successfully
+                                console.log(
+                                    `${filename} uploaded successfully`
+                                );
+                                resolve();
                             }
+                        );
+                    })
+                    .catch(reject);
+            }
+        });
+    };
 
-                            case "storage/unknown": {
-                                // Unknown error occurred, inspect error.serverResponse
-                                break;
-                            }
-                        }
-                    },
-                    function () {
-                        // Upload completed successfully, now we can get the download URL
-                        // uploadTask.snapshot.ref.getDownloadURL()
-                        // cloud function updates firestore for file entry
-                    }
+    const addDocumentSuccessCallback = useCallback(async () => {
+        if (!isEmpty(project) && filesToUpload.length > 0) {
+            const currentUser = getAuth().currentUser;
+            const uid = currentUser ? currentUser.uid : "";
+
+            try {
+                // Upload files sequentially
+                for (let i = 0; i < filesToUpload.length; i++) {
+                    setUploadingIndex(i);
+                    const file = filesToUpload[i];
+                    const filename = file.name;
+                    const fileType = textOrBinary(file.name);
+
+                    console.log(
+                        `Uploading file ${i + 1}/${filesToUpload.length}: ${filename} (type: ${fileType})`
+                    );
+
+                    await uploadFilePromise(
+                        file,
+                        uid,
+                        filename,
+                        fileType,
+                        project
+                    );
+                }
+
+                dispatch(
+                    openSnackbar(
+                        `Successfully uploaded ${filesToUpload.length} file(s)`,
+                        SnackbarType.Info
+                    )
+                );
+                updateProjectLastModified(project.projectUid);
+            } catch (error: any) {
+                dispatch(
+                    openSnackbar(
+                        `Upload failed: ${error.message || "Unknown error"}`,
+                        SnackbarType.Error
+                    )
                 );
             }
         }
         dispatch(closeModal());
-    }, [dispatch, files, projectUid, project]);
+    }, [dispatch, filesToUpload, projectUid, project]);
 
     const reservedFilenames = (values(project.documents) as IDocument[]).map(
         (document_) => document_.filename
     );
 
+    const checkFileNameCollisions = (selectedFiles: File[]): boolean => {
+        for (let i = 0; i < selectedFiles.length; i++) {
+            const fileName = selectedFiles[i].name;
+            if (reservedFilenames.includes(fileName)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const removeFileFromQueue = (index: number) => {
+        const updated = filesToUpload.filter((_, i) => i !== index);
+        setFilesToUpload(updated);
+        setNameCollides(checkFileNameCollisions(updated));
+    };
+
     const megabyte_limit = Math.pow(10, 6) * 2;
     const shouldDisable =
-        !files || isEmpty(files) || files[0].size > megabyte_limit;
-    const filesize = files ? formatFileSize(files[0].size) : "Select file";
+        filesToUpload.length === 0 ||
+        filesToUpload.some((file) => file.size > megabyte_limit) ||
+        nameCollides;
+
+    const filesInfo =
+        filesToUpload.length > 0
+            ? filesToUpload.length === 1
+                ? `${filesToUpload[0].name} (${formatFileSize(filesToUpload[0].size)})`
+                : `${filesToUpload.length} files selected`
+            : "Choose files...";
+
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
             <Button variant="contained" color="primary" component="label">
-                {files ? `${files[0].name}` : "Choose file..."}
+                {filesInfo}
                 <input
                     id="fileSelector"
                     type="file"
+                    multiple
                     style={{ display: "none" }}
                     onChange={(event) => {
-                        const files: FileList | null = event.target.files;
-                        const fileName = files ? files[0].name : "";
-                        files && setFiles(files);
-                        setNameCollides(
-                            some(
-                                reservedFilenames,
-                                (function_) => function_ === fileName
-                            )
-                        );
+                        const selectedFiles: FileList | null =
+                            event.target.files;
+                        if (selectedFiles) {
+                            const filesArray = Array.from(selectedFiles);
+                            setFilesToUpload(filesArray);
+                            setFiles(selectedFiles);
+                            setNameCollides(
+                                checkFileNameCollisions(filesArray)
+                            );
+                        }
                     }}
                 ></input>
             </Button>
-            <p>{`File Size: ${filesize} (Max file size is 2MB)`}</p>
+            <p>
+                {filesToUpload.length > 0
+                    ? `${filesToUpload.length} file(s) selected (Max per file is 2MB)`
+                    : "Select file(s) (Max per file is 2MB)"}
+            </p>
+
+            {filesToUpload.length > 0 && (
+                <div
+                    style={{
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "4px",
+                        padding: "8px",
+                        marginBottom: "12px",
+                        maxHeight: "200px",
+                        overflowY: "auto"
+                    }}
+                >
+                    <div style={{ marginBottom: "8px", fontWeight: "bold" }}>
+                        Pending uploads:
+                    </div>
+                    {filesToUpload.map((file, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                padding: "8px",
+                                backgroundColor:
+                                    uploadingIndex === index
+                                        ? "#6a6a6a"
+                                        : "transparent",
+                                borderRadius: "3px",
+                                marginBottom: "4px",
+                                fontSize: "0.9rem"
+                            }}
+                        >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                {uploadingIndex === index && (
+                                    <span
+                                        style={{
+                                            color: "#1976d2",
+                                            marginRight: "8px",
+                                            fontWeight: "bold"
+                                        }}
+                                    >
+                                        ↑
+                                    </span>
+                                )}
+                                <span style={{ wordBreak: "break-word" }}>
+                                    {file.name} ({formatFileSize(file.size)})
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => removeFileFromQueue(index)}
+                                disabled={uploadingIndex !== -1}
+                                style={{
+                                    marginLeft: "8px",
+                                    padding: "4px 8px",
+                                    backgroundColor: "#ffebee",
+                                    border: "1px solid #ef5350",
+                                    borderRadius: "3px",
+                                    cursor:
+                                        uploadingIndex !== -1
+                                            ? "not-allowed"
+                                            : "pointer",
+                                    color: "#c62828",
+                                    fontWeight: "bold",
+                                    opacity: uploadingIndex !== -1 ? 0.5 : 1,
+                                    transition: "all 0.2s ease"
+                                }}
+                                title="Remove from queue"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             <Button
                 variant="outlined"
                 color="primary"
-                disabled={shouldDisable || nameCollides}
-                onClick={() => files && addDocumentSuccessCallback()}
+                disabled={shouldDisable}
+                onClick={() =>
+                    filesToUpload.length > 0 && addDocumentSuccessCallback()
+                }
                 style={{ marginTop: 11 }}
             >
                 Upload

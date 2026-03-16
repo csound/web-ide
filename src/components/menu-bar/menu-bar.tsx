@@ -84,7 +84,7 @@ export function MenuBar() {
                     disabled: !isOwner
                 },
                 {
-                    label: "Add File…",
+                    label: "Add File(s)…",
                     hotKey: "add_file",
                     disabled: !isOwner
                 },
@@ -300,7 +300,10 @@ export function MenuBar() {
             if (!targetNode) {
                 return;
             }
-            if (menuRootRef.current && !menuRootRef.current.contains(targetNode)) {
+            if (
+                menuRootRef.current &&
+                !menuRootRef.current.contains(targetNode)
+            ) {
                 setOpenPath([]);
             }
         };
@@ -347,8 +350,7 @@ export function MenuBar() {
                                 if (item.hotKey) {
                                     invokeHotKeyCallback(item.hotKey);
                                 } else {
-                                    item.callback &&
-                                        item.callback();
+                                    item.callback && item.callback();
                                     event.preventDefault();
                                 }
                             }}
