@@ -23,5 +23,10 @@ jobs:
                   cache: npm
             - name: Install Dependencies
               run: npm install
+            - name: Install Rollup Linux Native Binary
+              if: runner.os == 'Linux'
+              run: |
+                  ROLLUP_VERSION=$(node -e "const fs=require('fs'); const path=require('path'); const main=require.resolve('rollup'); const pkg=JSON.parse(fs.readFileSync(path.join(path.dirname(main), '..', 'package.json'),'utf8')); process.stdout.write(pkg.version)")
+                  npm install --no-save @rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION
             - name: Run Tests
               run: npm run test:ci

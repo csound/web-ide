@@ -1,6 +1,6 @@
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { store, RootState, AppThunkDispatch } from "@root/store";
-import { CsoundObj } from "@csound/browser";
+import type { CsoundObj } from "@comp/csound/types";
 import { projects, targets } from "@config/firestore";
 import { IDocument } from "./types";
 import {

@@ -3,7 +3,7 @@ import { syntaxTree } from "@codemirror/language";
 import { StateEffect, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { TreeCursor } from "@lezer/common";
-import { CsoundObj } from "@csound/browser";
+import type { CsoundObj } from "@comp/csound/types";
 
 const addBlinkSuccessMarks = StateEffect.define();
 const removeBlinkSuccessMarks = StateEffect.define();

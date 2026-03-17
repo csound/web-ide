@@ -10,7 +10,7 @@ import {
     updateDoc,
     writeBatch
 } from "firebase/firestore";
-import { CsoundObj } from "@csound/browser";
+import type { CsoundObj } from "@comp/csound/types";
 import { tabDockInit, closeTabDock } from "@comp/project-editor/actions";
 import {
     selectDefaultTargetName,
