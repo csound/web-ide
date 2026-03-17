@@ -1,7 +1,7 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "@root/store";
 import { ProfileLists } from "./profile-lists";
-import { useEffect, createRef, useState, RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import { isMobile, updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
@@ -104,7 +104,7 @@ export const Profile = () => {
         : false;
     const isRequestingLogin = useSelector(selectLoginRequesting);
     const isProfileOwner = loggedInUserUid === profileUid;
-    const uploadReference: RefObject<HTMLInputElement | null> = createRef();
+    const uploadReference = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         // start at top on init

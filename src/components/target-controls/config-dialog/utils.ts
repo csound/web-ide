@@ -4,12 +4,8 @@ export const firestoreNewTargets = (
     newTargets: ITargetFromInput[]
 ): ITargetMap => {
     return newTargets.reduce((accumulator: ITargetMap, target) => {
-        const {
-            targetName,
-            targetType,
-            targetDocumentUid,
-            csoundOptions
-        } = target;
+        const { targetName, targetType, targetDocumentUid, csoundOptions } =
+            target;
 
         const firebaseTarget = {
             targetName,

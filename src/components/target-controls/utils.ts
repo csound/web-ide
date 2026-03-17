@@ -2,7 +2,7 @@ import { curry, find, path, pathOr, propEq, values } from "ramda";
 import { RootState } from "@root/store";
 import { ITarget, ITargetMap } from "./types";
 import { IDocument } from "@comp/projects/types";
-import { CsoundObj } from "@csound/browser";
+import type { CsoundObj } from "@comp/csound/types";
 import { playORCFromString, playCsdFromFs } from "@comp/csound/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
 

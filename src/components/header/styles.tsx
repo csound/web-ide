@@ -240,12 +240,13 @@ export const projectProfileTextBlock = css`
     min-width: 0;
 `;
 
-export const projectProfileCollapseButton = (theme: Theme): SerializedStyles =>
-    css`
-        margin-left: auto !important;
-        color: ${theme.altTextColor} !important;
-        padding: 2px !important;
-    `;
+export const projectProfileCollapseButton = (
+    theme: Theme
+): SerializedStyles => css`
+    margin-left: auto !important;
+    color: ${theme.altTextColor} !important;
+    padding: 2px !important;
+`;
 
 export const projectProfileDetails = css`
     margin-top: 8px;
@@ -264,23 +265,24 @@ export const projectProfileLinks = css`
     gap: 6px;
 `;
 
-export const projectProfileExternalLink = (theme: Theme): SerializedStyles =>
-    css`
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        text-decoration: none;
-        color: ${theme.headerTextColor};
-        border: 1px solid ${theme.line};
-        padding: 3px 6px;
-        border-radius: 999px;
-        background: ${theme.buttonBackground};
+export const projectProfileExternalLink = (
+    theme: Theme
+): SerializedStyles => css`
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    text-decoration: none;
+    color: ${theme.headerTextColor};
+    border: 1px solid ${theme.line};
+    padding: 3px 6px;
+    border-radius: 999px;
+    background: ${theme.buttonBackground};
 
-        svg {
-            font-size: 11px;
-        }
-    `;
+    svg {
+        font-size: 11px;
+    }
+`;
 
 export const drawerIcon = css`
     fill: #fff;

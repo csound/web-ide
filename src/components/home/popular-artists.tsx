@@ -58,7 +58,9 @@ const PopularArtists = () => {
     const popularArtistsLoading = useSelector(
         (store: RootState) => store.HomeReducer.popularArtistsLoading
     );
-    const profiles = useSelector((store: RootState) => store.HomeReducer.profiles);
+    const profiles = useSelector(
+        (store: RootState) => store.HomeReducer.profiles
+    );
 
     useEffect(() => {
         dispatch(fetchPopularArtists(8));
@@ -74,85 +76,79 @@ const PopularArtists = () => {
                 Ranked by total stars across public projects
             </div>
             <div css={SS.artistBoard}>
-                {popularArtistsLoading
-                    ? range(0, 8).map((index) => (
-                          <div key={index} css={SS.artistBoardRowSkeleton} />
-                      ))
-                    : popularArtists.length === 0
-                      ? (
-                            <div css={SS.artistBoardEmptyState}>
-                                No ranked artists yet. Start starring projects to
-                                build the board.
-                            </div>
-                        )
-                    : popularArtists.map((artist, index) => {
-                          const profile = profiles[artist.userUid];
-                          const displayName =
-                              profile?.displayName ||
-                              profile?.username ||
-                              `Artist ${artist.userUid.slice(0, 6)}`;
-                          const username =
-                              profile?.username || artist.userUid.slice(0, 8);
+                {popularArtistsLoading ? (
+                    range(0, 8).map((index) => (
+                        <div key={index} css={SS.artistBoardRowSkeleton} />
+                    ))
+                ) : popularArtists.length === 0 ? (
+                    <div css={SS.artistBoardEmptyState}>
+                        No ranked artists yet. Start starring projects to build
+                        the board.
+                    </div>
+                ) : (
+                    popularArtists.map((artist, index) => {
+                        const profile = profiles[artist.userUid];
+                        const displayName =
+                            profile?.displayName ||
+                            profile?.username ||
+                            `Artist ${artist.userUid.slice(0, 6)}`;
+                        const username =
+                            profile?.username || artist.userUid.slice(0, 8);
 
-                          return (
-                              <div key={artist.userUid} css={SS.artistBoardRow}>
-                                  <div
-                                      css={SS.artistRankChip(
-                                          medalColors[index] || undefined
-                                      )}
-                                  >
-                                      #{index + 1}
-                                  </div>
-                                  {profile?.username
-                                      ? (
-                                            <Link
-                                                to={`profile/${profile.username}`}
-                                                css={SS.artistIdentity}
-                                            >
-                                                <ArtistAvatar
-                                                    photoUrl={profile.photoUrl}
-                                                    name={displayName}
-                                                />
-                                                <span css={SS.artistNameGroup}>
-                                                    <span
-                                                        css={SS.artistDisplayName}
-                                                    >
-                                                        {displayName}
-                                                    </span>
-                                                    <span css={SS.artistUsername}>
-                                                        @{username}
-                                                    </span>
-                                                </span>
-                                            </Link>
-                                        )
-                                      : (
-                                            <div css={SS.artistIdentityStatic}>
-                                                <ArtistAvatar name={displayName} />
-                                                <span css={SS.artistNameGroup}>
-                                                    <span
-                                                        css={SS.artistDisplayName}
-                                                    >
-                                                        {displayName}
-                                                    </span>
-                                                    <span css={SS.artistUsername}>
-                                                        @{username}
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        )}
-                                  <div css={SS.artistStats}>
-                                      <span css={SS.artistStat}>
-                                          <StarIcon />
-                                          {artist.totalStars}
-                                      </span>
-                                      <span css={SS.artistStatMuted}>
-                                          <LibraryMusicIcon />
-                                          {artist.projectCount} projects
-                                      </span>
-                                  </div>
-                              </div>
-                          );
-                      })}
+                        return (
+                            <div key={artist.userUid} css={SS.artistBoardRow}>
+                                <div
+                                    css={SS.artistRankChip(
+                                        medalColors[index] || undefined
+                                    )}
+                                >
+                                    #{index + 1}
+                                </div>
+                                {profile?.username ? (
+                                    <Link
+                                        to={`profile/${profile.username}`}
+                                        css={SS.artistIdentity}
+                                    >
+                                        <ArtistAvatar
+                                            photoUrl={profile.photoUrl}
+                                            name={displayName}
+                                        />
+                                        <span css={SS.artistNameGroup}>
+                                            <span css={SS.artistDisplayName}>
+                                                {displayName}
+                                            </span>
+                                            <span css={SS.artistUsername}>
+                                                @{username}
+                                            </span>
+                                        </span>
+                                    </Link>
+                                ) : (
+                                    <div css={SS.artistIdentityStatic}>
+                                        <ArtistAvatar name={displayName} />
+                                        <span css={SS.artistNameGroup}>
+                                            <span css={SS.artistDisplayName}>
+                                                {displayName}
+                                            </span>
+                                            <span css={SS.artistUsername}>
+                                                @{username}
+                                            </span>
+                                        </span>
+                                    </div>
+                                )}
+                                <div css={SS.artistStats}>
+                                    <span css={SS.artistStat}>
+                                        <StarIcon />
+                                        {artist.totalStars}
+                                    </span>
+                                    <span css={SS.artistStatMuted}>
+                                        <LibraryMusicIcon />
+                                        {artist.projectCount} projects
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
         </>
     );

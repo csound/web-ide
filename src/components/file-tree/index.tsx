@@ -16,7 +16,7 @@ import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { rgba } from "@styles/utils";
 import { Theme, useTheme } from "@emotion/react";
-import { Droppable, Draggable } from "react-beautiful-dnd";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
@@ -133,97 +133,108 @@ function UploadNonCloudFileIcon({
             .map((document) => document.filename);
     });
 
-    const handleUpload = React.useCallback((event?: React.MouseEvent) => {
-        if (event) {
-            event.stopPropagation();
-        }
-        const uniqueFilename = getUniqueFilename(file.name, existingRootFilenames);
-        const txtOrBin = textOrBinary(file.name);
-        const currentUser = getAuth().currentUser;
-        const uid = currentUser ? currentUser.uid : "";
-        const documentId = uuidv4();
-
-        if (txtOrBin === "txt") {
-            const utf8decoder = new TextDecoder();
-            const txt = utf8decoder.decode(file.buffer);
-            const document_ = {
-                type: txtOrBin,
-                name: uniqueFilename,
-                value: txt,
-                userUid: uid,
-                lastModified: getFirebaseTimestamp(),
-                created: getFirebaseTimestamp()
-            };
-
-            addDoc(
-                collection(doc(projects, projectUid), "files"),
-                document_
-            ).then((result) => {
-                const documentUid = result.id;
-                dispatch(tabOpenByDocumentUid(documentUid, projectUid));
-            });
-        } else {
-            const metadata = {
-                contentType:
-                    mimeType ??
-                    mimeType ??
-                    (txtOrBin ? "application/octet-stream" : "text/plain"),
-                cacheControl: "public,max-age=31536000,immutable",
-                customMetadata: {
-                    filename: uniqueFilename,
-                    projectUid,
-                    userUid: uid,
-                    docUid: documentId
-                }
-            };
-
-            storageReference(`${uid}/${projectUid}/${documentId}`).then(
-                (ref) => {
-                    const uploadTask = uploadBytesResumable(
-                        ref,
-                        file.buffer,
-                        metadata
-                    );
-                    uploadTask.on(
-                        "state_changed",
-                        (snapshot) => {
-                            const progress =
-                                (snapshot.bytesTransferred /
-                                    snapshot.totalBytes) *
-                                100;
-                            setUploadProgress(progress);
-                            // console.log("Upload is " + progress + "% done");
-                        },
-                        (error) => {
-                            console.error(error);
-                            dispatch(
-                                openSnackbar(error.message, SnackbarType.Error)
-                            );
-                        },
-                        () => {
-                            dispatch(tabClose(projectUid, file.name, false));
-                            dispatch(deleteNonCloudFiles(file.name));
-                            nonCloudFiles.delete(file.name);
-                            setUploadProgress(-1);
-                            dispatch(
-                                openSnackbar(
-                                    "Upload done, the file should appear in a second...",
-                                    SnackbarType.Info
-                                )
-                            );
-                        }
-                    );
-                }
+    const handleUpload = React.useCallback(
+        (event?: React.MouseEvent) => {
+            if (event) {
+                event.stopPropagation();
+            }
+            const uniqueFilename = getUniqueFilename(
+                file.name,
+                existingRootFilenames
             );
-        }
-    }, [
-        dispatch,
-        existingRootFilenames,
-        file,
-        projectUid,
-        setUploadProgress,
-        mimeType
-    ]);
+            const txtOrBin = textOrBinary(file.name);
+            const currentUser = getAuth().currentUser;
+            const uid = currentUser ? currentUser.uid : "";
+            const documentId = uuidv4();
+
+            if (txtOrBin === "txt") {
+                const utf8decoder = new TextDecoder();
+                const txt = utf8decoder.decode(file.buffer);
+                const document_ = {
+                    type: txtOrBin,
+                    name: uniqueFilename,
+                    value: txt,
+                    userUid: uid,
+                    lastModified: getFirebaseTimestamp(),
+                    created: getFirebaseTimestamp()
+                };
+
+                addDoc(
+                    collection(doc(projects, projectUid), "files"),
+                    document_
+                ).then((result) => {
+                    const documentUid = result.id;
+                    dispatch(tabOpenByDocumentUid(documentUid, projectUid));
+                });
+            } else {
+                const metadata = {
+                    contentType:
+                        mimeType ??
+                        mimeType ??
+                        (txtOrBin ? "application/octet-stream" : "text/plain"),
+                    cacheControl: "public,max-age=31536000,immutable",
+                    customMetadata: {
+                        filename: uniqueFilename,
+                        projectUid,
+                        userUid: uid,
+                        docUid: documentId
+                    }
+                };
+
+                storageReference(`${uid}/${projectUid}/${documentId}`).then(
+                    (ref) => {
+                        const uploadTask = uploadBytesResumable(
+                            ref,
+                            file.buffer,
+                            metadata
+                        );
+                        uploadTask.on(
+                            "state_changed",
+                            (snapshot) => {
+                                const progress =
+                                    (snapshot.bytesTransferred /
+                                        snapshot.totalBytes) *
+                                    100;
+                                setUploadProgress(progress);
+                                // console.log("Upload is " + progress + "% done");
+                            },
+                            (error) => {
+                                console.error(error);
+                                dispatch(
+                                    openSnackbar(
+                                        error.message,
+                                        SnackbarType.Error
+                                    )
+                                );
+                            },
+                            () => {
+                                dispatch(
+                                    tabClose(projectUid, file.name, false)
+                                );
+                                dispatch(deleteNonCloudFiles(file.name));
+                                nonCloudFiles.delete(file.name);
+                                setUploadProgress(-1);
+                                dispatch(
+                                    openSnackbar(
+                                        "Upload done, the file should appear in a second...",
+                                        SnackbarType.Info
+                                    )
+                                );
+                            }
+                        );
+                    }
+                );
+            }
+        },
+        [
+            dispatch,
+            existingRootFilenames,
+            file,
+            projectUid,
+            setUploadProgress,
+            mimeType
+        ]
+    );
 
     return uploadProgress > -1 ? (
         <div
@@ -281,12 +292,17 @@ function DownloadNonCloudFileIcon({
     file: NonCloudFile;
     mimeType: string;
 }) {
-    const onClick = useCallback((event: React.MouseEvent) => {
-        event.stopPropagation();
-        const blob = new Blob([file.buffer as BlobPart], { type: mimeType });
-        const tmpUrl = URL.createObjectURL(blob);
-        (window as any).open(tmpUrl);
-    }, [file, mimeType]);
+    const onClick = useCallback(
+        (event: React.MouseEvent) => {
+            event.stopPropagation();
+            const blob = new Blob([file.buffer as BlobPart], {
+                type: mimeType
+            });
+            const tmpUrl = URL.createObjectURL(blob);
+            (window as any).open(tmpUrl);
+        },
+        [file, mimeType]
+    );
 
     return (
         <Tooltip
@@ -551,9 +567,7 @@ const makeTree = (
                                 <Draggable
                                     isDragDisabled={Boolean(!isOwner)}
                                     draggableId={`${document_.documentUid}`}
-                                    isCombineEnabled={false}
                                     index={index}
-                                    ignoreContainerClipping
                                 >
                                     {(provided: any) => (
                                         <ListItem
@@ -624,9 +638,7 @@ const makeTree = (
                         droppableId={`${document_.documentUid}`}
                         key={`${document_.documentUid}-fragment`}
                         isDropDisabled={!isOwner}
-                        isCombineEnabled={false}
-                        ignoreContainerClipping
-                        vertical
+                        direction="vertical"
                     >
                         {(droppableProvided: any) => (
                             <RootReference ref={droppableProvided.innerRef}>
@@ -813,14 +825,14 @@ export const FileTree = ({
                                                 {file.name}
                                             </p>
                                         </Tooltip>
-                                        <Box
-                                            css={SS.nonCloudActionsContainer}
-                                        >
+                                        <Box css={SS.nonCloudActionsContainer}>
                                             {isOwner && (
                                                 <UploadNonCloudFileIcon
                                                     file={file}
                                                     mimeType={mimeType}
-                                                    projectUid={activeProjectUid}
+                                                    projectUid={
+                                                        activeProjectUid
+                                                    }
                                                 />
                                             )}
                                             <DownloadNonCloudFileIcon

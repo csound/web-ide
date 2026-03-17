@@ -1,5 +1,5 @@
 import { arrayMove } from "array-move";
 
 export default {
-  simpleSwitch: arrayMove,
+    simpleSwitch: arrayMove
 };

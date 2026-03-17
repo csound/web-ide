@@ -1,4 +1,4 @@
-import React, { RefObject, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import {
@@ -69,7 +69,7 @@ export const Header = () => {
         (store: RootState) => store.LoginReducer.isLoginDialogOpen
     );
 
-    const anchorElement: RefObject<HTMLButtonElement | null> = useRef(null);
+    const anchorElement = useRef<HTMLButtonElement>(null);
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 

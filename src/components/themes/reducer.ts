@@ -69,7 +69,11 @@ const initialState = getInitialTheme();
 
 const ThemeReducer = (
     state: IThemeReducer | undefined,
-    action: { newTheme?: string; type: string; profile?: { themeName?: string } }
+    action: {
+        newTheme?: string;
+        type: string;
+        profile?: { themeName?: string };
+    }
 ): IThemeReducer => {
     if (!state) {
         return initialState;
@@ -77,8 +81,13 @@ const ThemeReducer = (
 
     switch (action.type) {
         case UPDATE_USER_PROFILE: {
-            const themeFromProfile = normalizeThemeName(action.profile?.themeName);
-            if (!themeFromProfile || themeFromProfile === state.selectedThemeName) {
+            const themeFromProfile = normalizeThemeName(
+                action.profile?.themeName
+            );
+            if (
+                !themeFromProfile ||
+                themeFromProfile === state.selectedThemeName
+            ) {
                 return state;
             }
             localStorage.setItem("theme", themeFromProfile);
@@ -94,7 +103,7 @@ const ThemeReducer = (
             return {
                 selectedTheme: getThemeFromName(normalizedThemeName),
                 selectedThemeName: normalizedThemeName
-            }
+            };
         }
 
         default: {

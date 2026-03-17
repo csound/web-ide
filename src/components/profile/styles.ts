@@ -71,8 +71,13 @@ export const settingsIcon = (theme: Theme): SerializedStyles => css`
     height: 42px;
     display: flex;
     justify-content: center;
-    box-shadow: 0 1px 3px black, 0 1px 2px black;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
+    box-shadow:
+        0 1px 3px black,
+        0 1px 2px black;
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.3s ease;
     background-color: ${theme.highlightBackgroundAlt};
     position: relative;
     border-radius: 50%;
@@ -104,7 +109,8 @@ export const settingsIcon = (theme: Theme): SerializedStyles => css`
     }
     &:hover:after {
         transform: scale(1);
-        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
+        box-shadow:
+            10px 0 20px rgba(0, 0, 0, 0.49),
             6px 0 6px rgba(0, 0, 0, 0.53);
     }
     &:active {
@@ -129,8 +135,13 @@ export const deleteIcon = (theme: Theme): SerializedStyles => css`
     height: 42px;
     display: flex;
     justify-content: center;
-    box-shadow: 0 1px 3px black, 0 1px 2px black;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.5s ease;
+    box-shadow:
+        0 1px 3px black,
+        0 1px 2px black;
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.5s ease;
     background-color: ${theme.highlightBackgroundAlt};
     color: ${theme.errorText};
     & svg {
@@ -167,7 +178,8 @@ export const deleteIcon = (theme: Theme): SerializedStyles => css`
         }
     }
     &:hover:after {
-        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.49),
+        box-shadow:
+            10px 0 20px rgba(0, 0, 0, 0.49),
             6px 0 6px rgba(0, 0, 0, 0.53);
     }
     &:active {
@@ -228,8 +240,13 @@ export const avatar = css`
             z-index: 10;
         }
     }
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.3s ease;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.12),
+        0 1px 2px rgba(0, 0, 0, 0.24);
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.3s ease;
     &:after {
         content: "";
         width: 100%;
@@ -243,7 +260,8 @@ export const avatar = css`
     }
     &:hover:after {
         transform: scale(2);
-        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.19),
+        box-shadow:
+            10px 0 20px rgba(0, 0, 0, 0.19),
             6px 0 6px rgba(0, 0, 0, 0.23);
     }
     &:hover {
@@ -281,8 +299,8 @@ export const StyledAvatar = styled(Avatar as any, {
         properties.hasError
             ? properties.theme.errorText
             : properties.isPlaying || properties.isStartingUp
-            ? "black"
-            : properties.iconBackgroundColorProp};
+              ? "black"
+              : properties.iconBackgroundColorProp};
     ${shadow}
     .project-avatar {
         transition: all 400ms;

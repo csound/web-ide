@@ -9,7 +9,7 @@ import {
     DragTabList,
     DragTab,
     PanelList,
-    Panel,
+    Panel as TabPanel,
     TabListComponent
 } from "@root/tabtab/index.js";
 import { arrayMoveImmutable as simpleSwitch } from "array-move";
@@ -22,7 +22,6 @@ import tabStyles, { tabListStyle } from "./tab-styles";
 import { isAudioFile } from "../projects/utils";
 import { Beforeunload } from "react-beforeunload";
 import { IOpenDocument } from "./types";
-import SplitPane_ from "react-split-pane";
 import Editor from "../editor/editor";
 import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
@@ -49,9 +48,26 @@ import {
 } from "../bottom-tabs/selectors";
 import { BottomTab } from "../bottom-tabs/types";
 import { useSetConsole } from "@comp/console/context";
+import {
+    Panel as ResizablePanel,
+    PanelGroup,
+    PanelResizeHandle
+} from "react-resizable-panels";
 
 const TabStyles = tabStyles(false);
-const SplitPane = SplitPane_ as any;
+
+const getDefaultPanelSizes = (
+    primary: string,
+    defaultSize: string
+): [number | undefined, number | undefined] => {
+    const size = Number.parseFloat(defaultSize);
+
+    if (Number.isNaN(size) || size <= 0 || size >= 100) {
+        return [undefined, undefined];
+    }
+
+    return primary === "second" ? [100 - size, size] : [size, 100 - size];
+};
 
 type IEditorForDocumentProperties = {
     uid: any;
@@ -79,23 +95,37 @@ const MySplit = ({
     defaultSize: string;
     onDragStarted: () => void;
     onDragFinished: () => void;
-    children: React.ReactNode[];
+    children: React.ReactNode;
 }): React.ReactElement => {
-    const filteredChildren = children.filter(Boolean);
+    const filteredChildren = React.Children.toArray(children).filter(Boolean);
+
     return filteredChildren.length === 1 ? (
         (filteredChildren[0] as React.ReactElement)
     ) : (
-        <SplitPane
-            primary={primary}
-            split={split}
-            minSize={minSize}
-            maxSize={maxSize}
-            defaultSize={defaultSize}
-            onDragStarted={onDragStarted}
-            onDragFinished={onDragFinished}
+        <PanelGroup
+            direction={split === "vertical" ? "horizontal" : "vertical"}
         >
-            {filteredChildren}
-        </SplitPane>
+            <ResizablePanel
+                defaultSize={getDefaultPanelSizes(primary, defaultSize)[0]}
+            >
+                {filteredChildren[0]}
+            </ResizablePanel>
+            <PanelResizeHandle
+                className={`Resizer ${split}`}
+                onDragging={(isDragging) => {
+                    if (isDragging) {
+                        onDragStarted();
+                    } else {
+                        onDragFinished();
+                    }
+                }}
+            />
+            <ResizablePanel
+                defaultSize={getDefaultPanelSizes(primary, defaultSize)[1]}
+            >
+                {filteredChildren[1]}
+            </ResizablePanel>
+        </PanelGroup>
     );
 };
 
@@ -155,17 +185,24 @@ const MainSection = ({
 
     return (
         <div>
-            <SplitPane
-                split="horizontal"
-                primary="first"
-                minSize={showBottomTabs ? "25%" : "100%"}
-                defaultSize="75%"
-                className={"main-tab-panels"}
-                onDragStarted={() => setIsDragging && setIsDragging(true)}
-                onDragFinished={() => setIsDragging && setIsDragging(false)}
-            >
-                {[tabDock, <BottomTabs key="2" />]}
-            </SplitPane>
+            {showBottomTabs ? (
+                <PanelGroup direction="vertical">
+                    <ResizablePanel defaultSize={75}>{tabDock}</ResizablePanel>
+                    <PanelResizeHandle
+                        className="Resizer horizontal"
+                        onDragging={(isDragging) => {
+                            if (setIsDragging) {
+                                setIsDragging(isDragging);
+                            }
+                        }}
+                    />
+                    <ResizablePanel defaultSize={25}>
+                        <BottomTabs />
+                    </ResizablePanel>
+                </PanelGroup>
+            ) : (
+                tabDock
+            )}
         </div>
     );
 };
@@ -298,14 +335,14 @@ const ProjectEditor = ({
     }, openDocuments as IDocument[]);
 
     const openTabPanels = openDocuments.map((document_: any, index: number) => (
-        <Panel key={index}>
+        <TabPanel key={index}>
             <EditorForDocument
                 uid={activeProject.userUid}
                 projectUid={projectUid}
                 isOwner={isOwner}
                 doc={document_}
             />
-        </Panel>
+        </TabPanel>
     ));
 
     const someUnsavedData: boolean = isOwner

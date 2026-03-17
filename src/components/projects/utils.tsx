@@ -62,8 +62,7 @@ export const getUniqueFilename = (
     incomingFilename: string,
     existingFilenames: string[]
 ): string => {
-    const { directory, filename } =
-        splitDirectoryAndFilename(incomingFilename);
+    const { directory, filename } = splitDirectoryAndFilename(incomingFilename);
 
     if (!filename) {
         return incomingFilename;
@@ -210,7 +209,10 @@ const fetchBinaryDocument = async (
             return new Uint8Array(cachedBuffer);
         }
     } catch (error) {
-        console.warn("Binary cache read failed, falling back to network", error);
+        console.warn(
+            "Binary cache read failed, falling back to network",
+            error
+        );
     }
 
     const networkResponse = await fetch(downloadUrl);

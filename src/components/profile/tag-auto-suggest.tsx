@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // @ts-expect-error No type definitions available for react-autosuggest
