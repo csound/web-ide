@@ -9,6 +9,7 @@
         "start:prod": "cross-env REACT_APP_DATABASE=PROD vite",
         "build": "cross-env NODE_ENV=production REACT_APP_DATABASE=PROD tsc && vite build",
         "build:dev": "cross-env NODE_ENV=production REACT_APP_DATABASE=DEV tsc && vite build",
+        "typecheck": "tsc --noEmit",
         "test": "cross-env REACT_APP_DATABASE=DEV vitest",
         "test:ci": "cross-env REACT_APP_DATABASE=DEV vitest run",
         "lint": "eslint --max-warnings=0 src vite.config.ts vite-env.d.ts eslint.config.mjs",
@@ -19,7 +20,7 @@
         "electron:dev": "concurrently \"BROWSER=none npm run start\" \"npx wait-on http-get://127.0.0.1:3000 && ELECTRON_IS_DEV=1 npx electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
         "deploy:dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN",
-        "precommit-hook": "npm run lint && npm run format:check",
+        "precommit-hook": "npm run lint && npm run typecheck && npm run format:check",
         "prepare": "husky"
     },
     "dependencies": {

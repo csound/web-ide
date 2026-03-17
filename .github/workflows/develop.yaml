@@ -21,6 +21,7 @@ jobs:
             - name: Lint And Format Check
               run: |
                   npm run lint
+                  npm run typecheck
                   npm run format:check
             - name: Build
               run: |
