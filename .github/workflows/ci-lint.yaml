@@ -1,0 +1,34 @@
+name: "CI Lint"
+on:
+    pull_request:
+        branches:
+            - develop
+            - master
+    push:
+        branches:
+            - develop
+            - master
+jobs:
+    lint-and-format:
+        name: lint-format-typecheck
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+            - name: Install Dependencies
+              run: npm install
+            - name: Install Rollup Linux Native Binary
+              if: runner.os == 'Linux'
+              run: |
+                  ROLLUP_VERSION=$(node -e "const fs=require('fs'); const path=require('path'); const main=require.resolve('rollup'); const pkg=JSON.parse(fs.readFileSync(path.join(path.dirname(main), '..', 'package.json'),'utf8')); process.stdout.write(pkg.version)")
+                  npm install --no-save @rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION
+            - name: Run Lint
+              run: npm run lint
+            - name: Run TypeScript Check
+              run: npm run typecheck
+            - name: Run Prettier Check
+              run: npm run format:check

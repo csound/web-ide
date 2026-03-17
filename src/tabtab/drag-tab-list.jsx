@@ -56,7 +56,11 @@ const DragTabList = ({
     };
 
     return (
-        <div role="tablist" className={`tablist ${className}`.trim()} {...props}>
+        <div
+            role="tablist"
+            className={`tablist ${className}`.trim()}
+            {...props}
+        >
             <DndContext
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}

@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import checker from "vite-plugin-checker";
-import viteRawPlugin from "vite-raw-plugin";
 
 export default defineConfig({
     define: {
@@ -35,5 +34,9 @@ export default defineConfig({
         open: true,
         // this sets a default port to 3000
         port: 3000
+    },
+    test: {
+        environment: "jsdom",
+        include: ["src/**/*.test.{ts,tsx}"]
     }
 });

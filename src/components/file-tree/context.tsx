@@ -1,5 +1,5 @@
 import { collection, doc, updateDoc } from "firebase/firestore";
-import { DragDropContext } from "react-beautiful-dnd";
+import { DragDropContext } from "@hello-pangea/dnd";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
 import React, { createContext, useContext, useReducer } from "react";
 import { IProject } from "@comp/projects/types";

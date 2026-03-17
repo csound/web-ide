@@ -18,16 +18,21 @@ import {
 import { closeModal, openSimpleModal } from "../modal/actions";
 import { database, profiles, usernames } from "../../config/firestore";
 import {
+    FacebookAuthProvider,
+    GoogleAuthProvider,
     createUserWithEmailAndPassword,
     getAuth,
     sendPasswordResetEmail,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    signInWithRedirect
 } from "firebase/auth";
 import { isEmpty } from "lodash";
-import { push } from "connected-react-router";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 import { IProfile } from "../profile/types";
+import { navigateTo } from "@comp/router/navigate";
+import { isElectron } from "@root/utils";
 
 export const login = (
     email: string,
@@ -49,9 +54,40 @@ export const login = (
                 type: SIGNIN_SUCCESS,
                 user
             });
-        } catch {
+        } catch (error: any) {
             dispatch({
-                type: SIGNIN_FAIL
+                type: SIGNIN_FAIL,
+                errorCode: error.code,
+                errorMessage: error.message
+            });
+        }
+    };
+};
+
+export const loginWithProvider = (
+    providerName: "google" | "facebook"
+): ((dispatch: any) => Promise<void>) => {
+    return async (dispatch: any) => {
+        dispatch({
+            type: SIGNIN_REQUEST
+        });
+
+        const provider =
+            providerName === "google"
+                ? new GoogleAuthProvider()
+                : new FacebookAuthProvider();
+
+        try {
+            if (isElectron) {
+                await signInWithRedirect(getAuth(), provider);
+            } else {
+                await signInWithPopup(getAuth(), provider);
+            }
+        } catch (error: any) {
+            dispatch({
+                type: SIGNIN_FAIL,
+                errorCode: error.code,
+                errorMessage: error.message
             });
         }
     };
@@ -270,7 +306,7 @@ export const thirdPartyAuthSuccess = (
             });
             !fromAutoLogin &&
                 profileData &&
-                dispatch(push(`/profile/${profileData.username}`));
+                navigateTo(`/profile/${profileData.username}`);
         }
     };
 };
@@ -298,7 +334,7 @@ export const logOut = (): ((dispatch: any) => Promise<void>) => {
         } catch (error) {
             console.error(error);
         }
-        dispatch(push("/"));
+        navigateTo("/");
         dispatch({
             type: LOG_OUT
         });

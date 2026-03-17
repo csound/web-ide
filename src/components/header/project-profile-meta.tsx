@@ -172,7 +172,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
 
     return project ? (
         <div css={SS.projectProfileMetaContainer}>
-            <div css={SS.projectProfileMetaTextContainer}>{projectMetaBody}</div>
+            <div css={SS.projectProfileMetaTextContainer}>
+                {projectMetaBody}
+            </div>
         </div>
     ) : (
         <></>

@@ -27,16 +27,16 @@ export const homePageHeadingBreak = (theme: Theme): SerializedStyles => css`
     bottom: 0;
 `;
 
-export const paginationButton = (isActive: boolean) => (
-    theme: Theme
-): SerializedStyles => css`
-    position: absolute;
-    right: 0;
-    bottom: 6px;
-    svg {
-        fill: ${isActive ? theme.textColor : "inherit"}!important;
-    }
-`;
+export const paginationButton =
+    (isActive: boolean) =>
+    (theme: Theme): SerializedStyles => css`
+        position: absolute;
+        right: 0;
+        bottom: 6px;
+        svg {
+            fill: ${isActive ? theme.textColor : "inherit"}!important;
+        }
+    `;
 
 export const cardBackground = css`
     position: absolute;

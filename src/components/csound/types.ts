@@ -1,6 +1,8 @@
-import { CsoundObj as BrowserCsoundObj } from "@csound/browser";
+import type { Csound as BrowserCsoundFactory } from "@csound/browser";
 
-export type CsoundObj = BrowserCsoundObj & { getAudioContext: any };
+export type CsoundObj = NonNullable<
+    Awaited<ReturnType<BrowserCsoundFactory>>
+> & { getAudioContext: any };
 
 export async function compileCSD(
     csound: CsoundObj,

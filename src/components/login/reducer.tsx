@@ -50,7 +50,9 @@ const LoginReducer = (
                 ...state,
                 requesting: false,
                 authenticated: false,
-                failed: true
+                failed: true,
+                errorCode: action.errorCode,
+                errorMessage: action.errorMessage
             };
         }
         case CREATE_CLEAR_ERROR: {

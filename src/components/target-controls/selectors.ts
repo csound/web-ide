@@ -20,8 +20,8 @@ export const selectSelectedTarget = (curry as any)(
         store: RootState
     ): string | undefined => {
         return activeProjectUid
-            ? store.TargetControlsReducer[activeProjectUid]?.selectedTarget ??
-                  undefined
+            ? (store.TargetControlsReducer[activeProjectUid]?.selectedTarget ??
+                  undefined)
             : undefined;
     }
 );
@@ -66,8 +66,8 @@ export const selectProjectDocuments = (curry as any)(
 export const selectDefaultTargetName =
     (activeProjectUid: string | undefined) => (store: RootState) => {
         return activeProjectUid
-            ? store.TargetControlsReducer[activeProjectUid]?.defaultTarget ??
-                  undefined
+            ? (store.TargetControlsReducer[activeProjectUid]?.defaultTarget ??
+                  undefined)
             : undefined;
     };
 
@@ -75,9 +75,9 @@ export const selectTarget =
     (activeProjectUid: string | undefined, targetName: string | undefined) =>
     (store: RootState) => {
         return activeProjectUid && targetName
-            ? store.TargetControlsReducer[activeProjectUid]?.targets[
+            ? (store.TargetControlsReducer[activeProjectUid]?.targets[
                   targetName
-              ] ?? undefined
+              ] ?? undefined)
             : undefined;
     };
 

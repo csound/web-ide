@@ -53,19 +53,19 @@ background-size:100px 100px;
     }
 };
 
-export const gradient = (shapeIndex: number) => (
-    theme: Theme
-): SerializedStyles => css`
-    &:after {
-        content: " ";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        ${shapes(shapeIndex, theme)}
-    }
-    position: relative;
-    top: ${headerHeight}px;
-`;
+export const gradient =
+    (shapeIndex: number) =>
+    (theme: Theme): SerializedStyles => css`
+        &:after {
+            content: " ";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            ${shapes(shapeIndex, theme)}
+        }
+        position: relative;
+        top: ${headerHeight}px;
+    `;

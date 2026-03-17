@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import {
     login,
+    loginWithProvider,
     closeLoginDialog,
     createNewUser,
     createUserClearError,
@@ -27,22 +28,6 @@ import {
 import { validateEmail, isElectron } from "@root/utils";
 import * as SS from "./styles";
 import { assoc, isEmpty, pipe } from "ramda";
-import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
-import firebase from "firebase/compat/app";
-import { getAuth } from "firebase/auth";
-import "firebase/compat/auth";
-
-// Configure FirebaseUI.
-const uiConfig = {
-    signInFlow: isElectron ? "redirect" : "popup",
-    signInOptions: [
-        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        firebase.auth.FacebookAuthProvider.PROVIDER_ID
-    ],
-    callbacks: {
-        signInSuccessWithAuthResult: () => false
-    }
-};
 
 type LoginMode = "login" | "create" | "reset";
 
@@ -167,7 +152,28 @@ const Login = (): React.ReactElement => {
                     </Button>
                 </DialogActions>
             </DialogContent>
-            <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={getAuth()} />
+            <div css={SS.providerButtonsContainer}>
+                <Button
+                    onClick={() => dispatch(loginWithProvider("google"))}
+                    color="primary"
+                    variant="outlined"
+                    fullWidth
+                >
+                    {isElectron
+                        ? "Continue with Google (redirect)"
+                        : "Continue with Google"}
+                </Button>
+                <Button
+                    onClick={() => dispatch(loginWithProvider("facebook"))}
+                    color="primary"
+                    variant="outlined"
+                    fullWidth
+                >
+                    {isElectron
+                        ? "Continue with Facebook (redirect)"
+                        : "Continue with Facebook"}
+                </Button>
+            </div>
             <div css={SS.centerLink}>
                 <Link onClick={() => switchLoginMode("reset")}>
                     Forgot password?

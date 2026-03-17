@@ -10,8 +10,7 @@ import {
     updateDoc,
     writeBatch
 } from "firebase/firestore";
-import { push } from "connected-react-router";
-import { CsoundObj } from "@csound/browser";
+import type { CsoundObj } from "@comp/csound/types";
 import { tabDockInit, closeTabDock } from "@comp/project-editor/actions";
 import {
     selectDefaultTargetName,
@@ -66,6 +65,7 @@ import {
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { IFirestoreDocument } from "@root/db/types";
+import { navigateTo } from "@comp/router/navigate";
 
 // Track ongoing downloads to prevent duplicates
 const ongoingDownloads = new Map<string, Promise<{ exists: boolean }>>();
@@ -380,7 +380,7 @@ export const saveAllFiles = () => {
 };
 
 export const saveAllAndClose = (dispatch: any, goTo: string) => {
-    return saveAllFiles()().then(() => dispatch(push(goTo)), console.error);
+    return saveAllFiles()().then(() => navigateTo(goTo), console.error);
 };
 
 // for unauthorized or offline playing

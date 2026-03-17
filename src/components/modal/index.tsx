@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { TargetControlsConfigDialog } from "@comp/target-controls/config-dialog";
 import ShareDialog from "@comp/share-dialog";
@@ -34,7 +34,7 @@ function getModalStyle(width: number, height: number) {
 }
 
 export default function GlobalModal() {
-    const modalReference: RefObject<HTMLDivElement | null> = useRef(null);
+    const modalReference = useRef<HTMLDivElement>(null);
     const [[width, height], setDimensions] = useState([0, 0]);
     const dispatch = useDispatch();
     const isOpen: boolean = useSelector(
