@@ -16,7 +16,7 @@ import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { rgba } from "@styles/utils";
 import { Theme, useTheme } from "@emotion/react";
-import { Droppable, Draggable } from "react-beautiful-dnd";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
@@ -567,9 +567,7 @@ const makeTree = (
                                 <Draggable
                                     isDragDisabled={Boolean(!isOwner)}
                                     draggableId={`${document_.documentUid}`}
-                                    isCombineEnabled={false}
                                     index={index}
-                                    ignoreContainerClipping
                                 >
                                     {(provided: any) => (
                                         <ListItem
@@ -640,9 +638,7 @@ const makeTree = (
                         droppableId={`${document_.documentUid}`}
                         key={`${document_.documentUid}-fragment`}
                         isDropDisabled={!isOwner}
-                        isCombineEnabled={false}
-                        ignoreContainerClipping
-                        vertical
+                        direction="vertical"
                     >
                         {(droppableProvided: any) => (
                             <RootReference ref={droppableProvided.innerRef}>

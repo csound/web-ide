@@ -4,7 +4,6 @@ declare module "d3-scale";
 declare module "file-saver";
 declare module "react-beforeunload";
 declare module "react-iframe-comm";
-declare module "react-beautiful-dnd";
 declare module "@hlolli/codemirror-lang-csound";
 
 declare module "history" {
