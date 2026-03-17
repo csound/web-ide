@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { uploadBytesResumable } from "firebase/storage";
 import { useSelector } from "react-redux";
@@ -302,7 +302,6 @@ export function NewDocumentPrompt({
 
 export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
     const dispatch = useDispatch();
-    const [files, setFiles] = useState(null as FileList | null);
     const [filesToUpload, setFilesToUpload] = useState([] as File[]);
     const [uploadingIndex, setUploadingIndex] = useState(-1);
 
@@ -490,6 +489,19 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
         return false;
     };
 
+    useEffect(() => {
+        setNameCollides(checkFileNameCollisions(filesToUpload));
+    }, [filesToUpload, reservedFilenames]);
+
+    const enqueueSelectedFiles = (selectedFiles: FileList | null) => {
+        if (!selectedFiles || selectedFiles.length === 0) {
+            return;
+        }
+
+        const filesArray = Array.from(selectedFiles);
+        setFilesToUpload((previousFiles) => [...previousFiles, ...filesArray]);
+    };
+
     const removeFileFromQueue = (index: number) => {
         const updated = filesToUpload.filter((_, i) => i !== index);
         setFilesToUpload(updated);
@@ -518,17 +530,12 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
                     type="file"
                     multiple
                     style={{ display: "none" }}
+                    onClick={(event) => {
+                        event.currentTarget.value = "";
+                    }}
                     onChange={(event) => {
-                        const selectedFiles: FileList | null =
-                            event.target.files;
-                        if (selectedFiles) {
-                            const filesArray = Array.from(selectedFiles);
-                            setFilesToUpload(filesArray);
-                            setFiles(selectedFiles);
-                            setNameCollides(
-                                checkFileNameCollisions(filesArray)
-                            );
-                        }
+                        enqueueSelectedFiles(event.currentTarget.files);
+                        event.currentTarget.value = "";
                     }}
                 ></input>
             </Button>
