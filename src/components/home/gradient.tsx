@@ -57,5 +57,11 @@ export const Gradient = styled.span<IGradient>`
             ${(properties) => properties.colorC}
         );
     background-size: 80px 140px;
-    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+    background-position:
+        0 0,
+        0 0,
+        40px 70px,
+        40px 70px,
+        0 0,
+        40px 70px;
 `;

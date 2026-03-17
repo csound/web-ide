@@ -24,10 +24,10 @@ import {
     signInWithEmailAndPassword
 } from "firebase/auth";
 import { isEmpty } from "lodash";
-import { push } from "connected-react-router";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 import { IProfile } from "../profile/types";
+import { navigateTo } from "@comp/router/navigate";
 
 export const login = (
     email: string,
@@ -270,7 +270,7 @@ export const thirdPartyAuthSuccess = (
             });
             !fromAutoLogin &&
                 profileData &&
-                dispatch(push(`/profile/${profileData.username}`));
+                navigateTo(`/profile/${profileData.username}`);
         }
     };
 };
@@ -298,7 +298,7 @@ export const logOut = (): ((dispatch: any) => Promise<void>) => {
         } catch (error) {
             console.error(error);
         }
-        dispatch(push("/"));
+        navigateTo("/");
         dispatch({
             type: LOG_OUT
         });

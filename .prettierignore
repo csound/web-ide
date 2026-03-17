@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.firebase/
+functions/lib/
+functions/.env
+functions/.env.dev
+public/static-manual-index.json

@@ -64,6 +64,12 @@ export const Gradient = (properties: IGradient): SerializedStyles => css`
                 ${properties.colorC}
             );
         background-size: 80px 140px;
-        background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+        background-position:
+            0 0,
+            0 0,
+            40px 70px,
+            40px 70px,
+            0 0,
+            40px 70px;
     }
 `;

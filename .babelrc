@@ -24,8 +24,6 @@
     "plugins": [
         "@emotion",
         "@babel/plugin-transform-runtime",
-        "@babel/proposal-class-properties",
-        "@babel/proposal-object-rest-spread",
         [
             "babel-plugin-named-asset-import",
             {

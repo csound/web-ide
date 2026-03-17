@@ -1,0 +1,27 @@
+name: "CI Test"
+on:
+    pull_request:
+        branches:
+            - develop
+            - master
+    push:
+        branches:
+            - develop
+            - master
+jobs:
+    test:
+        name: test
+        runs-on: ubuntu-latest
+        env:
+            REACT_APP_DATABASE: DEV
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+            - name: Install Dependencies
+              run: npm install
+            - name: Run Tests
+              run: npm run test:ci

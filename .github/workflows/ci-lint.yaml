@@ -1,0 +1,27 @@
+name: "CI Lint"
+on:
+    pull_request:
+        branches:
+            - develop
+            - master
+    push:
+        branches:
+            - develop
+            - master
+jobs:
+    lint-and-format:
+        name: lint-and-format
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+            - name: Install Dependencies
+              run: npm install
+            - name: Run Lint
+              run: npm run lint
+            - name: Run Prettier Check
+              run: npm run format:check
