@@ -10,7 +10,19 @@ export const splitterRoot = css`
     padding-top: ${headerHeight}px;
     left: 0;
     box-sizing: border-box;
-    .Pane2 > div {
+    [data-panel-group] {
+        height: 100%;
+        width: 100%;
+    }
+    [data-panel] {
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    [data-panel] > div,
+    [data-panel] > main,
+    [data-panel] > section {
         height: 100%;
         width: 100%;
     }

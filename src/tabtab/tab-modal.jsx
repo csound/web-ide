@@ -1,5 +1,4 @@
 import React from "react";
-import Poppop from "react-poppop";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
     SortableContext,
@@ -8,6 +7,10 @@ import {
     verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 const DragTab = ({ id, children }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
@@ -76,24 +79,28 @@ export default function TabModal({
     handleTabChange
 }) {
     return (
-        <Poppop
-            open={true}
-            onClose={closeModal}
-            closeOnEsc={true}
-            closeBtn={true}
-        >
-            <ModalTabListWrapper
-                items={items}
-                setItems={setItems}
-                handleTabSequence={handleTabSequence}
-                handleTabChange={handleTabChange}
+        <Dialog open={true} onClose={closeModal} fullWidth maxWidth="sm">
+            <IconButton
+                aria-label="close"
+                onClick={closeModal}
+                sx={{ position: "absolute", right: 8, top: 8, zIndex: 1 }}
             >
-                {items.map((item) => (
-                    <DragTab key={item.id} id={item.id}>
-                        {item.content}
-                    </DragTab>
-                ))}
-            </ModalTabListWrapper>
-        </Poppop>
+                <CloseIcon />
+            </IconButton>
+            <DialogContent>
+                <ModalTabListWrapper
+                    items={items}
+                    setItems={setItems}
+                    handleTabSequence={handleTabSequence}
+                    handleTabChange={handleTabChange}
+                >
+                    {items.map((item) => (
+                        <DragTab key={item.id} id={item.id}>
+                            {item.content}
+                        </DragTab>
+                    ))}
+                </ModalTabListWrapper>
+            </DialogContent>
+        </Dialog>
     );
 }

@@ -15,17 +15,17 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: yarn
+                  cache: npm
             - name: Install Dependencies
-              run: yarn install --frozen-lockfile
+              run: npm install
             - name: Lint And Format Check
               run: |
-                  yarn lint
-                  yarn format:check
+                  npm run lint
+                  npm run format:check
             - name: Build
               run: |
                   echo "STORAGE_BUCKET_URL=gs://csound-ide-dev.appspot.com" >> functions/.env.dev
-                  PUBLIC_URL="https://csound-ide-dev.web.app" yarn build:dev
+                  PUBLIC_URL="https://csound-ide-dev.web.app" npm run build:dev
                   cp dist/index.html functions
                   cd functions
                   yarn install
