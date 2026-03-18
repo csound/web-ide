@@ -126,7 +126,7 @@ export const listItemIcon = css`
 export const listItemIconMui = css`
     ${listItemIcon}
     left: 12px;
-    top: 4px;
+    top: 2px;
 `;
 
 export const muiIcon = (theme: Theme): SerializedStyles => css`
@@ -137,9 +137,14 @@ export const muiIcon = (theme: Theme): SerializedStyles => css`
 `;
 
 export const csoundFileIcon = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     svg {
-        width: 28px;
-        height: 28px;
+        width: 36px;
+        height: 36px;
+        display: block;
     }
 `;
 
@@ -154,17 +159,6 @@ const musicIconBase = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-`;
-
-export const mediaIcon = (theme: Theme): SerializedStyles => css`
-    ${musicIconBase}
-    fill: ${theme.altTextColor};
-    opacity: 0.95;
-    svg {
-        width: 22px;
-        height: 22px;
-        display: block;
-    }
 `;
 
 export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`

@@ -81,5 +81,15 @@ declare module "@emotion/react" {
         commentDef: string;
         commentTag: string;
         commentType: string;
+        fileIcons: {
+            csd: { panel: string; shadow: string };
+            orc: { panel: string; shadow: string };
+            sco: { panel: string; shadow: string };
+            udo: { panel: string; shadow: string };
+            audio: { panel: string; shadow: string };
+            midi: { panel: string; shadow: string };
+            sample: { panel: string; shadow: string };
+            media: { panel: string; shadow: string };
+        };
     }
 }
