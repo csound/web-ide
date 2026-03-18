@@ -84,7 +84,7 @@ export function MenuBar() {
                     disabled: !isOwner
                 },
                 {
-                    label: "Add File…",
+                    label: "Add File(s)…",
                     hotKey: "add_file",
                     disabled: !isOwner
                 },
