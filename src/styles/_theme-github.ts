@@ -71,7 +71,17 @@ const theme = {
     commentDef: "#8b949e",
     commentTag: "#8b949e",
     commentType: "#8b949e",
-    caretColor: "#58a6ff"
+    caretColor: "#58a6ff",
+    fileIcons: {
+        csd: { panel: "#d2a8ff", shadow: "#9A78CC" },
+        orc: { panel: "#79c0ff", shadow: "#4A8ACC" },
+        sco: { panel: "#56d364", shadow: "#30903A" },
+        udo: { panel: "#ffa657", shadow: "#C07030" },
+        audio: { panel: "#F29A2E", shadow: "#9C4E16" },
+        midi: { panel: "#2BAE9C", shadow: "#15594F" },
+        sample: { panel: "#7D69D6", shadow: "#43367A" },
+        media: { panel: "#5A88B5", shadow: "#294662" }
+    }
 };
 
 export default theme;

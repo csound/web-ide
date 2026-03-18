@@ -32,7 +32,17 @@ const theme = {
     fRateVar: "#cb4b16",
     pField: "#b58900",
     comment: "#657b83",
-    caretColor: "#268bd2"
+    caretColor: "#268bd2",
+    fileIcons: {
+        csd: { panel: "#d33682", shadow: "#A02060" },
+        orc: { panel: "#268bd2", shadow: "#1A6090" },
+        sco: { panel: "#2aa198", shadow: "#1A7068" },
+        udo: { panel: "#cb4b16", shadow: "#90320E" },
+        audio: { panel: "#F29A2E", shadow: "#9C4E16" },
+        midi: { panel: "#2BAE9C", shadow: "#15594F" },
+        sample: { panel: "#7D69D6", shadow: "#43367A" },
+        media: { panel: "#5A88B5", shadow: "#294662" }
+    }
 };
 
 export default deepMerge(defaultTheme, theme) as any;

@@ -20,12 +20,7 @@ import { Droppable, Draggable } from "@hello-pangea/dnd";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import {
-    CsdFileIcon,
-    OrcFileIcon,
-    ScoFileIcon,
-    UdoFileIcon
-} from "@elem/filetype-icons";
+import { FileTypeIcon, getFileTypeIconDetails } from "@elem/filetype-icons";
 import EditIcon from "@mui/icons-material/EditTwoTone";
 import DeleteIcon from "@mui/icons-material/DeleteTwoTone";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -36,7 +31,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import DirectoryClose from "@root/svgs/fad-close.svg?react";
 import DirectoryOpen from "@root/svgs/fad-open.svg?react";
-import WaveFormIcon from "@root/svgs/fad-waveform.svg?react";
 import { IDocument } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { textOrBinary } from "@comp/projects/utils";
@@ -359,56 +353,47 @@ function DeleteNonCloudFileIcon({
 function FileExtIcon({
     isBinary,
     filename,
+    mimeType,
     nestingDepth = 0
 }: {
     isBinary: boolean;
     filename: string;
+    mimeType?: string;
     nestingDepth?: number;
 }) {
-    if (isBinary) {
+    const iconDetails = getFileTypeIconDetails(filename, mimeType);
+
+    if (iconDetails) {
         return (
             <ListItemIcon
-                css={SS.listItemIcon}
+                css={SS.listItemIconMui}
                 style={{
                     left: 6,
-                    marginLeft: 24 * nestingDepth,
-                    top: "50%",
-                    transform: "translateY(-50%)"
+                    marginLeft: 24 * nestingDepth
                 }}
             >
-                <span css={SS.mediaIcon}>
-                    <WaveFormIcon />
+                <span css={SS.csoundFileIcon}>
+                    <FileTypeIcon filename={filename} mimeType={mimeType} />
                 </span>
             </ListItemIcon>
         );
     }
 
-    return filename.endsWith(".csd") ||
-        filename.endsWith(".sco") ||
-        filename.endsWith(".orc") ||
-        filename.endsWith(".udo") ? (
-        <ListItemIcon
-            css={SS.listItemIconMui}
-            style={{
-                left: 6,
-                marginLeft: 24 * nestingDepth
-            }}
-        >
-            <span css={SS.csoundFileIcon}>
-                {filename.endsWith(".csd") ? (
-                    <CsdFileIcon />
-                ) : filename.endsWith(".orc") ? (
-                    <OrcFileIcon />
-                ) : filename.endsWith(".sco") ? (
-                    <ScoFileIcon />
-                ) : filename.endsWith(".udo") ? (
-                    <UdoFileIcon />
-                ) : (
-                    <CsdFileIcon />
-                )}
-            </span>
-        </ListItemIcon>
-    ) : (
+    if (isBinary) {
+        return (
+            <ListItemIcon
+                css={SS.listItemIconMui}
+                style={{
+                    left: 0,
+                    marginLeft: 24 * nestingDepth
+                }}
+            >
+                <InsertDriveFileIcon css={SS.muiIcon} />
+            </ListItemIcon>
+        );
+    }
+
+    return (
         <ListItemIcon
             css={SS.listItemIconMui}
             style={{
@@ -797,6 +782,7 @@ export const FileTree = ({
                                             isBinary={mimeType.startsWith(
                                                 "audio"
                                             )}
+                                            mimeType={mimeType}
                                             nestingDepth={0}
                                         />
                                         <Tooltip

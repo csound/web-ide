@@ -101,7 +101,17 @@ const theme = {
     commentDef: monokaiOrange,
     commentTag: monokaiMagenta,
     commentType: monokaiCyan,
-    caretColor: monokaiCyan
+    caretColor: monokaiCyan,
+    fileIcons: {
+        csd: { panel: monokaiMagenta, shadow: "#B03CA7" },
+        orc: { panel: monokaiCyan, shadow: "#6ABFB5" },
+        sco: { panel: monokaiLightBlue, shadow: "#45A8BC" },
+        udo: { panel: monokaiOrange, shadow: "#C06A10" },
+        audio: { panel: "#F29A2E", shadow: "#9C4E16" },
+        midi: { panel: "#2BAE9C", shadow: "#15594F" },
+        sample: { panel: "#7D69D6", shadow: "#43367A" },
+        media: { panel: "#5A88B5", shadow: "#294662" }
+    }
 };
 
 export default theme;
