@@ -12,8 +12,14 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import BottomNavigation from "@mui/material/BottomNavigation";
+import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import CameraIcon from "@mui/icons-material/CameraAltOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
+import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import Box from "@mui/material/Box";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
@@ -65,7 +71,10 @@ import {
     contentActionsStyle,
     ListContainer,
     EditProfileButtonSection,
-    fabButton
+    fabButton,
+    mobileNavigationContainer,
+    mobileNavigationButton,
+    profileMobileBottomSpacer
 } from "./profile-ui";
 
 const UserLink = ({ link }: { link: string | undefined }) => {
@@ -367,43 +376,47 @@ export const Profile = () => {
                         theme={theme}
                         showSearch={selectedSection === 0}
                     >
-                        <ContentTabsContainer>
-                            <Tabs
-                                value={selectedSection}
-                                onChange={(_, index) => {
-                                    switch (index) {
-                                        case 0: {
-                                            navigate(`/profile/${username}`);
-                                            break;
+                        {!isMobile() && (
+                            <ContentTabsContainer>
+                                <Tabs
+                                    value={selectedSection}
+                                    onChange={(_, index) => {
+                                        switch (index) {
+                                            case 0: {
+                                                navigate(
+                                                    `/profile/${username}`
+                                                );
+                                                break;
+                                            }
+                                            case 1: {
+                                                navigate(
+                                                    `/profile/${username}/following`
+                                                );
+                                                break;
+                                            }
+                                            case 2: {
+                                                navigate(
+                                                    `/profile/${username}/followers`
+                                                );
+                                                break;
+                                            }
+                                            case 3: {
+                                                navigate(
+                                                    `/profile/${username}/stars`
+                                                );
+                                                break;
+                                            }
                                         }
-                                        case 1: {
-                                            navigate(
-                                                `/profile/${username}/following`
-                                            );
-                                            break;
-                                        }
-                                        case 2: {
-                                            navigate(
-                                                `/profile/${username}/followers`
-                                            );
-                                            break;
-                                        }
-                                        case 3: {
-                                            navigate(
-                                                `/profile/${username}/stars`
-                                            );
-                                            break;
-                                        }
-                                    }
-                                }}
-                                indicatorColor={"primary"}
-                            >
-                                <Tab label="Projects" />
-                                <Tab label="Following" />
-                                <Tab label="Followers" />
-                                <Tab label="Stars" />
-                            </Tabs>
-                        </ContentTabsContainer>
+                                    }}
+                                    indicatorColor={"primary"}
+                                >
+                                    <Tab label="Projects" />
+                                    <Tab label="Following" />
+                                    <Tab label="Followers" />
+                                    <Tab label="Stars" />
+                                </Tabs>
+                            </ContentTabsContainer>
+                        )}
 
                         <Box
                             css={contentActionsStyle}
@@ -463,7 +476,52 @@ export const Profile = () => {
                             </ListContainer>
                         )}
                     </ContentSection>
+                    {isMobile() && <div css={profileMobileBottomSpacer} />}
                 </ProfileContainer>
+                {isMobile() && (
+                    <BottomNavigation
+                        value={selectedSection}
+                        css={mobileNavigationContainer}
+                        showLabels
+                    >
+                        <BottomNavigationAction
+                            value={0}
+                            onClick={() => navigate(`/profile/${username}`)}
+                            css={mobileNavigationButton}
+                            label="Projects"
+                            icon={<FolderOutlinedIcon fontSize="large" />}
+                        />
+                        <BottomNavigationAction
+                            value={1}
+                            onClick={() =>
+                                navigate(`/profile/${username}/following`)
+                            }
+                            css={mobileNavigationButton}
+                            label="Following"
+                            icon={
+                                <PersonAddAlt1OutlinedIcon fontSize="large" />
+                            }
+                        />
+                        <BottomNavigationAction
+                            value={2}
+                            onClick={() =>
+                                navigate(`/profile/${username}/followers`)
+                            }
+                            css={mobileNavigationButton}
+                            label="Followers"
+                            icon={<PeopleOutlineIcon fontSize="large" />}
+                        />
+                        <BottomNavigationAction
+                            value={3}
+                            onClick={() =>
+                                navigate(`/profile/${username}/stars`)
+                            }
+                            css={mobileNavigationButton}
+                            label="Stars"
+                            icon={<StarBorderOutlinedIcon fontSize="large" />}
+                        />
+                    </BottomNavigation>
+                )}
             </Box>
         </Box>
     );
