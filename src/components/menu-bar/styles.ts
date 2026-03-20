@@ -17,6 +17,68 @@ export const root = (theme: Theme): SerializedStyles => css`
     z-index: 1;
 `;
 
+export const mobileMenuButton = (theme: Theme): SerializedStyles => css`
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 2px solid ${theme.line};
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin: 2px;
+    cursor: pointer;
+    color: ${theme.headerTextColor};
+    ${shadow}
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+
+    &:hover {
+        background-color: ${theme.buttonBackgroundHover};
+        transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+        outline: 2px solid ${theme.highlightBackground};
+        outline-offset: 2px;
+    }
+
+    span {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        line-height: 1;
+    }
+`;
+
+export const mobileMenuIcon = (theme: Theme): SerializedStyles => css`
+    color: ${theme.headerTextColor};
+`;
+
+export const mobileDropdownList = (theme: Theme): SerializedStyles => css`
+    ${dropdownList(theme)}
+    position: fixed;
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+    margin-top: 0;
+`;
+
+export const mobileBackItem = (theme: Theme): SerializedStyles => css`
+    ${listItem(theme)}
+    border-bottom: 1px solid ${theme.line};
+    align-items: center;
+`;
+
+export const mobileBackIcon = (theme: Theme): SerializedStyles => css`
+    color: ${theme.headerTextColor};
+    margin-left: 6px;
+`;
+
 export const selectedIcon = (theme: Theme): SerializedStyles => css`
     position: absolute;
     fill: ${theme.headerTextColor};
@@ -45,17 +107,25 @@ export const dropdownButtonWrapper = css`
 `;
 
 export const dropdownButton = (theme: Theme): SerializedStyles => css`
-    $[shadow];
+    ${shadow}
     z-index: 2;
     display: inline;
     border: 2px solid ${theme.line};
     border-radius: 6px;
     padding: 4px 8px;
-   margin: 2px;
+    margin: 2px;
+    transition:
+        background-color 0.16s ease,
+        transform 0.16s ease;
     &:hover {
         cursor: pointer;
         background-color: ${theme.buttonBackgroundHover};
         z-index: 3;
+        transform: translateY(-1px);
+    }
+    &:focus-visible {
+        outline: 2px solid ${theme.highlightBackground};
+        outline-offset: 2px;
     }
     & > span {
         font-size: 14px;
@@ -74,13 +144,24 @@ export const dropdownList = (theme: Theme): SerializedStyles => css`
     position: absolute;
     list-style: none !important;
     padding: 0;
-    animation: fadeIn 0.01s linear;
+    animation: menuSlideFadeIn 0.16s ease;
     outline: 0;
     margin: 0;
     margin-top: 24px;
     left: 0;
     top: 5px;
     ${shadow}
+
+    @keyframes menuSlideFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 `;
 
 export const dropdownListNested = (theme: Theme): SerializedStyles => css`
@@ -108,6 +189,11 @@ export const listItem = (theme: Theme): SerializedStyles => css`
         background-color: ${theme.buttonBackgroundHover};
         border-radius: 2px;
         ${shadow};
+    }
+    &:focus-visible {
+        outline: 2px solid ${theme.highlightBackground};
+        outline-offset: -2px;
+        border-radius: 2px;
     }
     & > p,
     & span {
