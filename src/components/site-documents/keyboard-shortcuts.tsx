@@ -1,4 +1,53 @@
 import React from "react";
+import { isMac } from "@root/utils";
+
+type ShortcutRow = {
+    shortcut: string;
+    action: string;
+};
+
+const shortcutRows: ShortcutRow[] = [
+    {
+        shortcut: isMac ? "ctrl-command-n" : "ctrl-alt-n",
+        action: "New file"
+    },
+    {
+        shortcut: isMac ? "ctrl-command-u" : "ctrl-alt-u",
+        action: "Add file(s)"
+    },
+    {
+        shortcut: isMac ? "command-e" : "ctrl-e",
+        action: "Evaluate current line"
+    },
+    {
+        shortcut: isMac ? "command-enter" : "ctrl-enter",
+        action: "Evaluate current block"
+    },
+    {
+        shortcut: isMac ? "ctrl-." : "alt-.",
+        action: "Show opcode documentation for opcode at cursor"
+    },
+    {
+        shortcut: isMac ? "command-; / opt-command-;" : "ctrl-; / ctrl-shift-;",
+        action: "Toggle comment"
+    },
+    {
+        shortcut: isMac ? "command-s" : "ctrl-s",
+        action: "Save current document"
+    },
+    {
+        shortcut: isMac ? "opt-command-s" : "ctrl-shift-s",
+        action: "Save all documents"
+    },
+    {
+        shortcut: isMac ? "command-r" : "ctrl-r",
+        action: "Run/Restart realtime rendering"
+    },
+    {
+        shortcut: isMac ? "command-p" : "ctrl-p",
+        action: "Pause realtime rendering"
+    }
+];
 
 export const KeyboardShortcuts = () => (
     <div>
@@ -11,46 +60,12 @@ export const KeyboardShortcuts = () => (
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>ctrl-e</td>
-                    <td>Evaluate current line</td>
-                </tr>
-                <tr>
-                    <td>ctrl-enter</td>
-                    <td>Evaluate current block</td>
-                </tr>
-                <tr>
-                    <td>ctrl-.</td>
-                    <td>Show opcode documentation for opcode at cursor</td>
-                </tr>
-                <tr>
-                    <td>ctrl-;</td>
-                    <td>Toggle comment</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ctrl-s</td>
-                    <td>Save current document</td>
-                </tr>
-                <tr>
-                    <td>shift-ctrl-s</td>
-                    <td>Save all documents</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>ctrl-r</td>
-                    <td>Run/Restart realtime rendering</td>
-                </tr>
-                <tr>
-                    <td>ctrl-p</td>
-                    <td>Pause realtime rendering</td>
-                </tr>
+                {shortcutRows.map(({ shortcut, action }) => (
+                    <tr key={action}>
+                        <td>{shortcut}</td>
+                        <td>{action}</td>
+                    </tr>
+                ))}
             </tbody>
         </table>
     </div>
