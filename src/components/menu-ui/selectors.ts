@@ -8,3 +8,6 @@ export const selectIsMobileTopMenuOpen = (state: RootState): boolean =>
 
 export const selectMobileTopMenuPath = (state: RootState): number[] =>
     state.MenuUiReducer.mobileTopMenuPath;
+
+export const selectIsMobileDockOpen = (state: RootState): boolean =>
+    state.MenuUiReducer.isMobileDockOpen;

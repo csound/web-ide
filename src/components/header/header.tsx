@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 import { AccountBox } from "@mui/icons-material";
 import Button from "@mui/material/Button";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import CachedAvatar from "@comp/profile/cached-avatar";
 import MenuIcon from "@mui/icons-material/Menu";
 import HelpIcon from "@mui/icons-material/Help";
@@ -43,6 +44,8 @@ import { selectIsHeaderDrawerOpen } from "@comp/menu-ui/selectors";
 
 export const Header = () => {
     const dispatch = useDispatch();
+    const isCompactViewport = useMediaQuery("(max-width:900px)");
+    const mobileView = isMobile() || isCompactViewport;
 
     const authenticated = useSelector(
         (store: RootState) => store.LoginReducer.authenticated
@@ -204,19 +207,23 @@ export const Header = () => {
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     {burgerMenu}
 
+                    {routeIsEditor && activeProjectUid && mobileView && (
+                        <MenuBar />
+                    )}
+
                     <CSLogo size={38} interactive={true} />
 
-                    {routeIsEditor &&
-                        activeProjectUid &&
-                        (isOwner || !isMobile()) && <MenuBar />}
+                    {routeIsEditor && activeProjectUid && !mobileView && (
+                        <MenuBar />
+                    )}
                     <div style={{ flexGrow: 1 }} />
                     <div css={SS.headerRightSideGroup}>
-                        {routeIsEditor && activeProjectUid && !isMobile() && (
+                        {routeIsEditor && activeProjectUid && (
                             <TargetControls
                                 activeProjectUid={activeProjectUid}
                             />
                         )}
-                        {routeIsEditor && activeProjectUid && !isMobile() && (
+                        {routeIsEditor && activeProjectUid && !mobileView && (
                             <SocialControls
                                 activeProjectUid={activeProjectUid}
                             />
@@ -285,7 +292,7 @@ export const Header = () => {
                         </List> */}
                 </div>
             </Drawer>
-            {routeIsEditor && !isOwner && !isMobile() && <ProjectProfileMeta />}
+            {routeIsEditor && !isOwner && !mobileView && <ProjectProfileMeta />}
         </>
     );
 };

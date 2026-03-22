@@ -6,13 +6,17 @@ import {
     PUSH_MOBILE_TOP_MENU_PATH,
     RESET_MOBILE_TOP_MENU_PATH,
     TOGGLE_MOBILE_TOP_MENU,
+    TOGGLE_MOBILE_DOCK,
+    CLOSE_MOBILE_DOCK,
     CloseHeaderDrawerAction,
     CloseMobileTopMenuAction,
     OpenHeaderDrawerAction,
     PopMobileTopMenuPathAction,
     PushMobileTopMenuPathAction,
     ResetMobileTopMenuPathAction,
-    ToggleMobileTopMenuAction
+    ToggleMobileTopMenuAction,
+    ToggleMobileDockAction,
+    CloseMobileDockAction
 } from "./types";
 
 export const openHeaderDrawer = (): OpenHeaderDrawerAction => ({
@@ -44,4 +48,12 @@ export const popMobileTopMenuPath = (): PopMobileTopMenuPathAction => ({
 
 export const resetMobileTopMenuPath = (): ResetMobileTopMenuPathAction => ({
     type: RESET_MOBILE_TOP_MENU_PATH
+});
+
+export const toggleMobileDock = (): ToggleMobileDockAction => ({
+    type: TOGGLE_MOBILE_DOCK
+});
+
+export const closeMobileDock = (): CloseMobileDockAction => ({
+    type: CLOSE_MOBILE_DOCK
 });

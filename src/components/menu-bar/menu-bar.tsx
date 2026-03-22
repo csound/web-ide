@@ -11,12 +11,18 @@ import SelectedIcon from "@mui/icons-material/DoneSharp";
 import NestedMenuIcon from "@mui/icons-material/ArrowRightSharp";
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import EditIcon from "@mui/icons-material/Edit";
+import BuildIcon from "@mui/icons-material/Build";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import * as SS from "./styles";
 import { hr as hrCss } from "@styles/_common";
 import { MenuItemDef } from "./types";
 import { useSetConsole } from "@comp/console/context";
 import { invokeHotKeyCallback } from "@comp/hot-keys/actions";
-import { BindingsMap } from "@comp/hot-keys/types";
 import { humanizeKeySequence } from "@comp/hot-keys/utils";
 import { showTargetsConfigDialog } from "@comp/target-controls/actions";
 import { exportProject } from "@comp/projects/actions";
@@ -33,21 +39,23 @@ import { showKeyboardShortcuts } from "@comp/site-documents/actions";
 import { openBottomTab } from "@comp/bottom-tabs/actions";
 import { isMobile } from "@root/utils";
 import {
+    closeMobileDock,
     closeMobileTopMenu,
     popMobileTopMenuPath,
     pushMobileTopMenuPath,
     resetMobileTopMenuPath,
+    toggleMobileDock,
     toggleMobileTopMenu
 } from "@comp/menu-ui/actions";
 import {
+    selectIsMobileDockOpen,
     selectIsMobileTopMenuOpen,
     selectMobileTopMenuPath
 } from "@comp/menu-ui/selectors";
 
 export function MenuBar() {
     const setConsole = useSetConsole();
-    const menuRootRef = useRef<HTMLUListElement | null>(null);
-    const firstMobileItemRef = useRef<HTMLLIElement | null>(null);
+    const menuRootRef = useRef<HTMLDivElement | null>(null);
 
     const activeProjectUid = useSelector(
         (store: RootState) => store.ProjectsReducer.activeProjectUid || ""
@@ -86,10 +94,12 @@ export function MenuBar() {
 
     const isMobileMenuOpen = useSelector(selectIsMobileTopMenuOpen);
     const mobilePath = useSelector(selectMobileTopMenuPath);
+    const isMobileDockVisible = useSelector(selectIsMobileDockOpen);
 
     const [isSabEnabled, setIsSabEnabled] = useLocalStorage("sab", "false");
     const [openPath, setOpenPath] = useState<number[]>([]);
-    const mobileView = isMobile();
+    const isCompactViewport = useMediaQuery("(max-width:900px)");
+    const mobileView = isMobile() || isCompactViewport;
 
     const menuBarItems: MenuItemDef[] = useMemo(
         () => [
@@ -354,6 +364,7 @@ export function MenuBar() {
                 return;
             }
             setOpenPath([]);
+            dispatch(closeMobileDock());
             dispatch(closeMobileTopMenu());
         };
 
@@ -369,8 +380,31 @@ export function MenuBar() {
             return;
         }
 
-        firstMobileItemRef.current?.focus();
+        const firstItem = menuRootRef.current?.querySelector<HTMLElement>(
+            '#mobile-top-menu [role="menuitem"]'
+        );
+        firstItem?.focus();
     }, [isMobileMenuOpen, mobilePath]);
+
+    useEffect(() => {
+        const className = "mobile-left-menu-docked";
+        if (mobileView && isMobileDockVisible) {
+            document.body.classList.add(className);
+        } else {
+            document.body.classList.remove(className);
+        }
+
+        return () => {
+            document.body.classList.remove(className);
+        };
+    }, [isMobileDockVisible, mobileView]);
+
+    // Close dock and panel state when component unmounts (e.g. navigating away)
+    useEffect(() => {
+        return () => {
+            dispatch(closeMobileDock());
+        };
+    }, [dispatch]);
 
     const runMenuItem = useCallback(
         (item: MenuItemDef, event?: React.MouseEvent) => {
@@ -412,6 +446,25 @@ export function MenuBar() {
             return false;
         }
         return targetPath.every((value, index) => value === openedPath[index]);
+    };
+
+    const topLevelIcon = (label: string | undefined): React.ReactNode => {
+        switch (label) {
+            case "File":
+                return <InsertDriveFileIcon />;
+            case "Edit":
+                return <EditIcon />;
+            case "Project":
+                return <BuildIcon />;
+            case "View":
+                return <VisibilityIcon />;
+            case "I/O":
+                return <SettingsInputComponentIcon />;
+            case "Help":
+                return <HelpOutlineIcon />;
+            default:
+                return <MenuIcon />;
+        }
     };
 
     const reduceRow = (
@@ -503,123 +556,212 @@ export function MenuBar() {
         });
 
     const mobileColumns = () => {
-        const currentItems = getItemsAtPath(menuBarItems, mobilePath);
+        const activeTopLevelIndex = mobilePath.length > 0 ? mobilePath[0] : 0;
+        const activePath =
+            mobilePath.length > 0 ? mobilePath : [activeTopLevelIndex];
+        const currentItems = getItemsAtPath(menuBarItems, activePath);
+        const activeTopLevelItem = menuBarItems[activeTopLevelIndex];
         const currentLabel =
-            mobilePath.length > 0
-                ? getItemsAtPath(menuBarItems, mobilePath.slice(0, -1))[
-                      mobilePath[mobilePath.length - 1]
+            activePath.length > 1
+                ? getItemsAtPath(menuBarItems, activePath.slice(0, -1))[
+                      activePath[activePath.length - 1]
                   ]?.label
-                : "Menu";
+                : activeTopLevelItem?.label || "Menu";
+
+        const toggleDockFromHeader = () => {
+            if (isMobileDockVisible) {
+                dispatch(closeMobileDock());
+                return;
+            }
+
+            dispatch(toggleMobileDock());
+            dispatch(toggleMobileTopMenu());
+            dispatch(pushMobileTopMenuPath(0));
+        };
+
+        const closeMobileMenu = () => {
+            dispatch(closeMobileTopMenu());
+            dispatch(resetMobileTopMenuPath());
+        };
+
+        const selectTopLevel = (index: number) => {
+            if (
+                isMobileMenuOpen &&
+                mobilePath.length === 1 &&
+                mobilePath[0] === index
+            ) {
+                closeMobileMenu();
+                return;
+            }
+
+            if (!isMobileMenuOpen) {
+                dispatch(toggleMobileTopMenu());
+            }
+            dispatch(resetMobileTopMenuPath());
+            dispatch(pushMobileTopMenuPath(index));
+        };
 
         return (
             <>
                 <button
                     type="button"
-                    css={SS.mobileMenuButton}
-                    aria-label="Toggle menu"
-                    aria-haspopup="menu"
-                    aria-controls="mobile-top-menu"
-                    aria-expanded={isMobileMenuOpen}
-                    onClick={() => {
-                        dispatch(toggleMobileTopMenu());
-                        if (isMobileMenuOpen) {
-                            dispatch(resetMobileTopMenuPath());
-                        }
-                    }}
+                    css={SS.mobileTopTriggerButton(isMobileDockVisible)}
+                    aria-label={
+                        isMobileDockVisible
+                            ? "Close editor menu"
+                            : "Open editor menu"
+                    }
+                    aria-expanded={isMobileDockVisible}
+                    onClick={toggleDockFromHeader}
                 >
-                    <MenuIcon css={SS.mobileMenuIcon} />
-                    <span>Menu</span>
+                    <MenuIcon />
                 </button>
-                {isMobileMenuOpen && (
-                    <ul
-                        id="mobile-top-menu"
-                        role="menu"
-                        css={SS.mobileDropdownList}
-                    >
-                        {mobilePath.length > 0 && (
-                            <li
-                                ref={firstMobileItemRef}
-                                role="menuitem"
-                                tabIndex={0}
-                                css={SS.mobileBackItem}
-                                onClick={() => {
-                                    dispatch(popMobileTopMenuPath());
-                                }}
-                            >
-                                <ArrowBackIcon css={SS.mobileBackIcon} />
-                                <span>{currentLabel}</span>
-                            </li>
-                        )}
 
-                        {currentItems.map((item, index) => {
-                            if (item.seperator) {
-                                return <hr key={index} css={hrCss} />;
-                            }
+                {isMobileDockVisible && (
+                    <div
+                        css={SS.mobileDockBackdrop}
+                        onClick={() => dispatch(closeMobileDock())}
+                        aria-hidden="true"
+                    />
+                )}
 
-                            const hasChild = !!item.submenu;
+                {isMobileDockVisible && (
+                    <div css={SS.mobileDock}>
+                        <div css={SS.mobileRail}>
+                            <ul css={SS.mobileRailList}>
+                                {menuBarItems.map((item, index) => (
+                                    <li key={item.label || index}>
+                                        <button
+                                            type="button"
+                                            css={SS.mobileRailButton(
+                                                index === activeTopLevelIndex &&
+                                                    isMobileMenuOpen
+                                            )}
+                                            onClick={() => {
+                                                selectTopLevel(index);
+                                            }}
+                                            aria-label={item.label || "Menu"}
+                                        >
+                                            <span css={SS.mobileRailIcon}>
+                                                {topLevelIcon(item.label)}
+                                            </span>
+                                            <span css={SS.mobileRailText}>
+                                                {item.label}
+                                            </span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
 
-                            return (
-                                <li
-                                    key={index}
-                                    ref={
-                                        mobilePath.length === 0 && index === 0
-                                            ? firstMobileItemRef
-                                            : null
-                                    }
-                                    role="menuitem"
-                                    tabIndex={0}
-                                    css={
-                                        item.disabled
-                                            ? SS.listItemDisabled
-                                            : SS.listItem
-                                    }
-                                    onClick={(event) => {
-                                        if (item.disabled) {
-                                            event.preventDefault();
-                                            return;
-                                        }
-
-                                        if (hasChild) {
-                                            dispatch(
-                                                pushMobileTopMenuPath(index)
-                                            );
-                                            return;
-                                        }
-
-                                        runMenuItem(item, event);
-                                    }}
-                                    onKeyDown={(event) => {
-                                        if (
-                                            event.key === "Enter" ||
-                                            event.key === " "
-                                        ) {
-                                            event.preventDefault();
-                                            if (item.disabled) {
-                                                return;
-                                            }
-                                            if (hasChild) {
+                        {isMobileMenuOpen && (
+                            <div css={SS.mobilePanel}>
+                                <div css={SS.mobilePanelHeader}>
+                                    {activePath.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            css={SS.mobileBackButton}
+                                            onClick={() => {
                                                 dispatch(
-                                                    pushMobileTopMenuPath(index)
+                                                    popMobileTopMenuPath()
                                                 );
-                                                return;
-                                            }
-                                            runMenuItem(item);
-                                        }
-                                    }}
+                                            }}
+                                            aria-label="Go back"
+                                        >
+                                            <ArrowBackIcon
+                                                css={SS.mobileBackIcon}
+                                            />
+                                            <span>{currentLabel}</span>
+                                        </button>
+                                    ) : (
+                                        <h3 css={SS.mobilePanelTitle}>
+                                            {currentLabel}
+                                        </h3>
+                                    )}
+                                </div>
+
+                                <ul
+                                    id="mobile-top-menu"
+                                    role="menu"
+                                    css={SS.mobilePanelList}
                                 >
-                                    {item.checked && (
-                                        <SelectedIcon css={SS.selectedIcon} />
-                                    )}
-                                    <p css={SS.paraLabel}>{item.label}</p>
-                                    {hasChild && (
-                                        <NestedMenuIcon
-                                            css={SS.nestedMenuIcon}
-                                        />
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
+                                    {currentItems.map((item, index) => {
+                                        if (item.seperator) {
+                                            return (
+                                                <hr key={index} css={hrCss} />
+                                            );
+                                        }
+
+                                        const hasChild = !!item.submenu;
+
+                                        return (
+                                            <li
+                                                key={index}
+                                                role="menuitem"
+                                                tabIndex={0}
+                                                css={
+                                                    item.disabled
+                                                        ? SS.listItemDisabled
+                                                        : SS.listItem
+                                                }
+                                                onClick={(event) => {
+                                                    if (item.disabled) {
+                                                        event.preventDefault();
+                                                        return;
+                                                    }
+
+                                                    if (hasChild) {
+                                                        dispatch(
+                                                            pushMobileTopMenuPath(
+                                                                index
+                                                            )
+                                                        );
+                                                        return;
+                                                    }
+
+                                                    runMenuItem(item, event);
+                                                }}
+                                                onKeyDown={(event) => {
+                                                    if (
+                                                        event.key === "Enter" ||
+                                                        event.key === " "
+                                                    ) {
+                                                        event.preventDefault();
+                                                        if (item.disabled) {
+                                                            return;
+                                                        }
+                                                        if (hasChild) {
+                                                            dispatch(
+                                                                pushMobileTopMenuPath(
+                                                                    index
+                                                                )
+                                                            );
+                                                            return;
+                                                        }
+                                                        runMenuItem(item);
+                                                    }
+                                                }}
+                                            >
+                                                {item.checked && (
+                                                    <SelectedIcon
+                                                        css={SS.selectedIcon}
+                                                    />
+                                                )}
+                                                <p css={SS.paraLabel}>
+                                                    {item.label}
+                                                </p>
+                                                {hasChild && (
+                                                    <NestedMenuIcon
+                                                        css={SS.nestedMenuIcon}
+                                                    />
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
                 )}
             </>
         );
@@ -662,9 +804,9 @@ export function MenuBar() {
 
     return (
         <>
-            <ul css={SS.root} ref={menuRootRef}>
+            <div css={SS.root} ref={menuRootRef}>
                 {mobileView ? mobileColumns() : columns(openPath)}
-            </ul>
+            </div>
         </>
     );
 }
