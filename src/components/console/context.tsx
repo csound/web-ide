@@ -2,17 +2,20 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { setClearConsoleCallback } from "./actions";
 
 type IConsoleContextProperties = string[];
+type SetConsole = React.Dispatch<React.SetStateAction<string[]>>;
 
 export const ConsoleContext = createContext([] as IConsoleContextProperties);
 
-export const ConsoleWriteContext = createContext(undefined);
+export const ConsoleWriteContext = createContext<SetConsole | undefined>(
+    undefined
+);
 
 export const ConsoleProvider = ({
     children
 }: {
     children: React.ReactElement | React.ReactNode;
 }) => {
-    const [logs, setLogs]: [string[], any] = useState([""]);
+    const [logs, setLogs] = useState<string[]>([""]);
 
     useEffect(() => {
         setClearConsoleCallback(() => {
@@ -29,7 +32,7 @@ export const ConsoleProvider = ({
     );
 };
 
-export const useConsole = (): string[] | undefined => {
+export const useConsole = (): string[] => {
     const context = useContext(ConsoleContext);
     if (context === undefined) {
         throw new Error("useConsole must be used within a ConsoleProvider");
@@ -37,7 +40,7 @@ export const useConsole = (): string[] | undefined => {
     return context;
 };
 
-export const useSetConsole = (): string[] | undefined => {
+export const useSetConsole = (): SetConsole => {
     const context = useContext(ConsoleWriteContext);
     if (context === undefined) {
         throw new Error(

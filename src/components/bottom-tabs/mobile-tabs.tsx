@@ -20,24 +20,19 @@ const MobileTabs = ({
 }): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
 
-    const MobileFileTree = (
+    const mobileFileTree = (
         <div css={SS.mobileFileTree}>
             <FileTree activeProjectUid={projectUid} />
         </div>
     );
 
-    const MobileConsole = (
-        <div
-            css={SS.mobileConsole}
-            style={{
-                display: mobileTabIndex === 2 ? "inherit" : "none"
-            }}
-        >
+    const mobileConsole = (
+        <div css={SS.mobileConsole}>
             <Console />
         </div>
     );
 
-    const MobileManual = (
+    const mobileManual = (
         <div css={SS.mobileManual}>
             <CsoundManualWindow projectUid={projectUid} />
         </div>
@@ -45,40 +40,32 @@ const MobileTabs = ({
 
     return (
         <DnDProvider project={activeProject}>
-            <>
-                <style>
-                    {`body {overflow: hidden!important;}` +
-                        `#drag-tab-list {display: none;}
-                         .cm-editor {  zoom: 120%; }
-                         .cm-theme {
-                           overflow-y: scroll;
-                           top: 68px;
-                           height: calc(100vh - 68px - 56px)!important;
-                           position: absolute;
-                           left: 0;
-                           right: 0;
-                          bottom: 56px;}`}
-                </style>
-                {MobileConsole}
-                {mobileTabIndex === 0
-                    ? currentDocument && (
-                          <EditorForDocument
-                              uid={projectUid}
-                              projectUid={projectUid}
-                              doc={currentDocument}
-                              isOwner={false}
-                          />
-                      )
-                    : mobileTabIndex === 1
-                      ? MobileFileTree
-                      : mobileTabIndex === 3
-                        ? MobileManual
-                        : undefined}
+            <div css={SS.mobileLayout}>
+                <div css={SS.mobileContent}>
+                    {mobileTabIndex === 0 ? (
+                        <div css={SS.mobileEditor}>
+                            {currentDocument && (
+                                <EditorForDocument
+                                    uid={projectUid}
+                                    projectUid={projectUid}
+                                    doc={currentDocument}
+                                    isOwner={false}
+                                />
+                            )}
+                        </div>
+                    ) : mobileTabIndex === 1 ? (
+                        mobileFileTree
+                    ) : mobileTabIndex === 2 ? (
+                        mobileConsole
+                    ) : mobileTabIndex === 3 ? (
+                        mobileManual
+                    ) : undefined}
+                </div>
                 <MobileNavigation
                     mobileTabIndex={mobileTabIndex}
                     setMobileTabIndex={setMobileTabIndex}
                 />
-            </>
+            </div>
         </DnDProvider>
     );
 };
