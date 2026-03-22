@@ -10,11 +10,12 @@ export const headerRoot = (theme: Theme): SerializedStyles => css`
     background-color: ${theme.headerBackground};
     z-index: 3;
     & > div {
-       height ${headerHeight}px;
+        height: ${headerHeight}px;
     }
     font-family: ${theme.font.regular};
     /* because of mui's <Menu> */
-    padding: 0!important;
+    padding: 0 !important;
+    overflow-x: clip;
 `;
 
 export const drawer = css`
@@ -39,7 +40,10 @@ export const menuItemLink = css`
 
 export const toolbar = css`
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
 `;
 
 export const avatar = css`
@@ -55,6 +59,10 @@ export const userMenu = css`
     margin-right: 12px;
     & > button {
         padding: 0 !important;
+    }
+
+    @media (max-width: 900px) {
+        margin-right: 8px;
     }
 `;
 
@@ -85,7 +93,8 @@ export const headerRightSideGroup = css`
     top: 0px;
     height: 42px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-shrink: 0;
 
     & > div {
         height: 42px;
@@ -94,10 +103,22 @@ export const headerRightSideGroup = css`
         display: inline;
         vertical-align: middle;
     }
+
+    @media (max-width: 900px) {
+        margin-left: 4px;
+
+        & > div {
+            margin-right: 2px;
+        }
+    }
 `;
 
 export const spacer = css`
     margin-left: 12px;
+
+    @media (max-width: 900px) {
+        margin-left: 8px;
+    }
 `;
 
 export const clearfixHeader = css`

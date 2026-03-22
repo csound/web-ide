@@ -9,6 +9,8 @@ import { setSelectedTarget } from "./actions";
 import { values } from "ramda";
 import StopButton from "./stop-button";
 import { findFallbackTargetName } from "./utils";
+import { isMobile } from "@root/utils";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 export const TargetControls = ({
     activeProjectUid
@@ -21,6 +23,8 @@ export const TargetControls = ({
         useSelector(selectSelectedTarget);
 
     const isOwner = useSelector(selectIsOwner);
+    const isCompactViewport = useMediaQuery("(max-width:900px)");
+    const mobileView = isMobile() || isCompactViewport;
 
     const targets: ITargetMap | undefined = useSelector(
         selectProjectTargets(activeProjectUid)
@@ -69,7 +73,9 @@ export const TargetControls = ({
         <>
             <PlayButton activeProjectUid={activeProjectUid} isOwner={isOwner} />
             <StopButton />
-            {isOwner && <TargetDropdown activeProjectUid={activeProjectUid} />}
+            {isOwner && !mobileView && (
+                <TargetDropdown activeProjectUid={activeProjectUid} />
+            )}
         </>
     ) : (
         <></>

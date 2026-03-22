@@ -1,3 +1,5 @@
+import { IHotKeysCallbacks } from "@comp/hot-keys/types";
+
 // type MenuItemType = "normal" | "separator";
 
 export interface MenuItemDef {
@@ -5,7 +7,7 @@ export interface MenuItemDef {
     disabled?: boolean;
     doc?: string;
     checked?: boolean;
-    hotKey?: string;
+    hotKey?: keyof IHotKeysCallbacks;
     label?: string;
     seperator?: boolean;
     submenu?: MenuItemDef[];

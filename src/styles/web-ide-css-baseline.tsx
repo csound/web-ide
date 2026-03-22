@@ -1,6 +1,5 @@
 import React from "react";
 import { Theme } from "@emotion/react";
-import { headerHeight } from "@styles/constants";
 
 const WebIdeCssBaseline = ({ theme }: { theme: Theme }): React.ReactElement => (
     <style>{`
@@ -31,6 +30,13 @@ body {
     padding: 0!important;
     overflow: auto!important;
     min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  body.mobile-left-menu-docked main {
+    box-sizing: border-box;
+    padding-left: 104px;
+  }
 }
 
 #root {
