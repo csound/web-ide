@@ -214,6 +214,37 @@ export const publicIcon = (theme: Theme): SerializedStyles => css`
     }
 `;
 
+export const mobileActionsContainer = css`
+    position: absolute;
+    top: calc(50% - 20px);
+    right: 12px;
+`;
+
+export const mobileActionsButton = (theme: Theme): SerializedStyles => css`
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: ${theme.highlightBackgroundAlt};
+    color: ${theme.altTextColor};
+    box-shadow:
+        0 1px 3px black,
+        0 1px 2px black;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    & > svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    &:hover {
+        background-color: ${theme.highlightBackground};
+    }
+`;
+
 export const showAvatarPlayButton = css`
     .projectIcon {
         opacity: 0;
