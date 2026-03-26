@@ -24,8 +24,15 @@ function getModalStyle(width: number, height: number) {
     if (!width || !height) {
         return {};
     }
-    const topOffset = window.innerHeight / 2 - height / 2;
-    const leftOffset = window.innerWidth / 2 - width / 2;
+    const viewportPadding = 2;
+    const topOffset = Math.max(
+        viewportPadding,
+        window.innerHeight / 2 - height / 2
+    );
+    const leftOffset = Math.max(
+        viewportPadding,
+        window.innerWidth / 2 - width / 2
+    );
 
     return {
         top: `${topOffset}px`,

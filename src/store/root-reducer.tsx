@@ -8,6 +8,7 @@ import HotKeysReducer from "@comp/hot-keys/reducer";
 import IDReducer from "../db/id-reducer";
 import LoginReducer from "@comp/login/reducer";
 import ModalReducer from "@comp/modal/reducer";
+import MenuUiReducer from "@comp/menu-ui/reducer";
 import ProfileReducer from "@comp/profile/reducer";
 import ProjectEditorReducer from "@comp/project-editor/reducer";
 import ProjectLastModifiedReducer from "@comp/project-last-modified/reducer";
@@ -24,6 +25,7 @@ export const reducer = {
     csound: CsoundReducer,
     FileTreeReducer,
     ThemeReducer,
+    MenuUiReducer,
     ModalReducer,
     ConsoleReducer,
     ProfileReducer,

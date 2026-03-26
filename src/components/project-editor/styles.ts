@@ -75,3 +75,55 @@ export const mobileNavigationContainer = (
 export const mobileNavigationButton = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
 `;
+
+// ── New custom mobile bottom navigation ──────────────────────────────────────
+
+export const mobileNavContainer = (theme: Theme): SerializedStyles => css`
+    background-color: ${theme.headerBackground};
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    z-index: 10;
+    height: 56px;
+    display: flex;
+    align-items: stretch;
+    ${shadow};
+    border-top: 1px solid ${theme.line};
+`;
+
+export const mobileNavTabGroup = css`
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+`;
+
+export const mobileNavTabButton =
+    (isActive: boolean) =>
+    (theme: Theme): SerializedStyles => css`
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        flex: 1;
+        border: 0;
+        border-left: 1px solid ${theme.line};
+        border-top: 2px solid
+            ${isActive ? theme.headerTextColor : "transparent"};
+        background: transparent;
+        color: ${theme.headerTextColor};
+        opacity: ${isActive ? 1 : 0.6};
+        cursor: pointer;
+        font-size: 10px;
+        padding: 4px 2px;
+        transition: opacity 0.15s;
+
+        &:hover {
+            opacity: 1;
+            background: ${theme.buttonBackgroundHover};
+        }
+
+        svg {
+            font-size: 20px;
+        }
+    `;

@@ -6,12 +6,14 @@ import { css } from "@emotion/react";
 
 export const ProfileContainer = styled.div`
     ${isMobile()
-        ? `padding: 12.5vw;`
+        ? `padding: 16px;
+    box-sizing: border-box;`
         : `display: grid;
     grid-template-columns: 24px 250px 800px;
     grid-template-rows: 50px 175px 1fr 70px;
     grid-auto-rows: minmax(90px, auto);`}
     width: 100%;
+    overflow-x: hidden;
 `;
 export const IDContainer = styled(Card)`
     grid-row-start: 2;
@@ -117,7 +119,7 @@ export const NameSectionWrapper = styled.div`
     display: grid;
     grid-template-rows: 1fr auto;
     grid-template-columns: 1fr;
-    min-width: 680px;
+    min-width: ${isMobile() ? "0" : "680px"};
 `;
 export const NameSection = styled.div`
     grid-row: 2;
@@ -135,6 +137,8 @@ export const ContentSection = styled.div<any>`
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 `;
 export const ContentTabsContainer = styled.div`
     background-color: rgba(0, 0, 0, 0.2);
@@ -155,8 +159,12 @@ export const ListContainer = styled.div`
     padding-top: 10px;
     grid-row: 3;
     grid-column: 1;
+    width: 100%;
+    box-sizing: border-box;
     & > ul {
         padding: 0 !important;
+        width: 100%;
+        box-sizing: border-box;
     }
     .MuiListItem-button {
         padding: 8px 24px !important;
@@ -262,4 +270,22 @@ export const fabButton = css`
     align-self: center;
     align-items: center;
     justify-content: space-between;
+`;
+
+export const mobileNavigationContainer = (theme: any) => css`
+    background-color: ${theme.headerBackground};
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    border-top: 1px solid;
+`;
+
+export const mobileNavigationButton = (theme: any) => css`
+    color: ${theme.headerTextColor};
+`;
+
+export const profileMobileBottomSpacer = css`
+    height: 72px;
 `;

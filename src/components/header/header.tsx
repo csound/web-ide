@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import {
@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 import { AccountBox } from "@mui/icons-material";
 import Button from "@mui/material/Button";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import CachedAvatar from "@comp/profile/cached-avatar";
 import MenuIcon from "@mui/icons-material/Menu";
 import HelpIcon from "@mui/icons-material/Help";
@@ -38,9 +39,13 @@ import ProjectProfileMeta from "./project-profile-meta";
 import { TargetControls } from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
 import { isMobile } from "@root/utils";
+import { closeHeaderDrawer, openHeaderDrawer } from "@comp/menu-ui/actions";
+import { selectIsHeaderDrawerOpen } from "@comp/menu-ui/selectors";
 
 export const Header = () => {
     const dispatch = useDispatch();
+    const isCompactViewport = useMediaQuery("(max-width:900px)");
+    const mobileView = isMobile() || isCompactViewport;
 
     const authenticated = useSelector(
         (store: RootState) => store.LoginReducer.authenticated
@@ -73,7 +78,7 @@ export const Header = () => {
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const isDrawerOpen = useSelector(selectIsHeaderDrawerOpen);
 
     const handleProfileMenuOpen = () => {
         setIsProfileMenuOpen(true);
@@ -82,6 +87,23 @@ export const Header = () => {
     const handleProfileMenuClose = () => {
         setIsProfileMenuOpen(false);
     };
+
+    useEffect(() => {
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            handleProfileMenuClose();
+            dispatch(closeHeaderDrawer());
+        };
+
+        window.addEventListener("keydown", closeOnEscape);
+
+        return () => {
+            window.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [dispatch]);
 
     const logout = () => dispatch(loginActions.logOut());
     const openLoginDialog = () => dispatch(loginActions.openLoginDialog());
@@ -95,17 +117,22 @@ export const Header = () => {
     const userMenu = () => (
         <div css={SS.userMenu}>
             <IconButton
-                aria-owns={isProfileMenuOpen ? "menu-appbar" : undefined}
+                aria-controls={
+                    isProfileMenuOpen ? "user-menu-appbar" : undefined
+                }
+                aria-expanded={isProfileMenuOpen}
                 data-tip="UserMenu"
                 aria-haspopup="true"
+                aria-label="Open user menu"
                 color="inherit"
                 onClick={handleProfileMenuOpen}
                 ref={anchorElement}
                 component="button"
             >
-                {avatar as any}
+                {avatar}
             </IconButton>
             <Menu
+                id="user-menu-appbar"
                 css={SS.menuPaper}
                 anchorEl={anchorElement.current}
                 anchorOrigin={{
@@ -158,8 +185,12 @@ export const Header = () => {
             <IconButton
                 color="inherit"
                 aria-label="open drawer"
+                aria-controls={
+                    isDrawerOpen ? "top-navigation-drawer" : undefined
+                }
+                aria-expanded={isDrawerOpen}
                 data-tip="Open drawer"
-                onClick={() => setIsDrawerOpen(true)}
+                onClick={() => dispatch(openHeaderDrawer())}
                 edge="start"
                 css={SS.menuButton}
             >
@@ -176,11 +207,15 @@ export const Header = () => {
                 <Toolbar disableGutters={true} css={SS.toolbar}>
                     {burgerMenu}
 
+                    {routeIsEditor && activeProjectUid && mobileView && (
+                        <MenuBar />
+                    )}
+
                     <CSLogo size={38} interactive={true} />
 
-                    {routeIsEditor &&
-                        activeProjectUid &&
-                        (isOwner || !isMobile()) && <MenuBar />}
+                    {routeIsEditor && activeProjectUid && !mobileView && (
+                        <MenuBar />
+                    )}
                     <div style={{ flexGrow: 1 }} />
                     <div css={SS.headerRightSideGroup}>
                         {routeIsEditor && activeProjectUid && (
@@ -188,7 +223,7 @@ export const Header = () => {
                                 activeProjectUid={activeProjectUid}
                             />
                         )}
-                        {routeIsEditor && activeProjectUid && (
+                        {routeIsEditor && activeProjectUid && !mobileView && (
                             <SocialControls
                                 activeProjectUid={activeProjectUid}
                             />
@@ -198,7 +233,11 @@ export const Header = () => {
                 </Toolbar>
             </AppBar>
 
-            <Drawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
+            <Drawer
+                id="top-navigation-drawer"
+                open={isDrawerOpen}
+                onClose={() => dispatch(closeHeaderDrawer())}
+            >
                 <div css={SS.drawer}>
                     <div css={SS.drawerHeader}>
                         <h2>Csound Web-IDE</h2>
@@ -253,7 +292,7 @@ export const Header = () => {
                         </List> */}
                 </div>
             </Drawer>
-            {routeIsEditor && !isOwner && !isMobile() && <ProjectProfileMeta />}
+            {routeIsEditor && !isOwner && !mobileView && <ProjectProfileMeta />}
         </>
     );
 };

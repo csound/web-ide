@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "@root/store";
 import { List, ListItem, ListItemText } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import LockIcon from "@mui/icons-material/Lock";
+import PublicIcon from "@mui/icons-material/Public";
 import {
     selectFollowingLoading,
     selectFollowersLoading,
@@ -15,7 +18,10 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Tooltip from "@mui/material/Tooltip";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import {
     StyledListItemContainer,
     StyledListItemTopRowText,
@@ -39,6 +45,40 @@ const ProjectListItem = ({
 }) => {
     const dispatch = useDispatch();
     const { isPublic, projectUid, name, description, tags } = project;
+    const isMobileLayout = useMediaQuery("(max-width: 760px)");
+    const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+
+    const closeMenu = () => {
+        setMenuAnchor(null);
+    };
+
+    const openMenu = (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setMenuAnchor(event.currentTarget);
+    };
+
+    const onEditProject = (event: React.MouseEvent<HTMLElement>) => {
+        dispatch(editProject(project));
+        event.preventDefault();
+        event.stopPropagation();
+        closeMenu();
+    };
+
+    const onDeleteProject = (event: React.MouseEvent<HTMLElement>) => {
+        dispatch(deleteProject(project));
+        event.preventDefault();
+        event.stopPropagation();
+        closeMenu();
+    };
+
+    const onTogglePublic = (event: React.MouseEvent<HTMLElement>) => {
+        dispatch(markProjectPublic(projectUid, !isPublic));
+        event.preventDefault();
+        event.stopPropagation();
+        closeMenu();
+    };
+
     return (
         <div style={{ position: "relative" }}>
             <Link to={"/editor/" + projectUid}>
@@ -46,7 +86,48 @@ const ProjectListItem = ({
                     <StyledListItemContainer isProfileOwner={isProfileOwner}>
                         <StyledListItemTopRowText>
                             <ListItemText
-                                primary={name}
+                                primary={
+                                    <span
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 8
+                                        }}
+                                    >
+                                        <span>{name}</span>
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: 4,
+                                                fontSize: 12,
+                                                lineHeight: 1,
+                                                border: "1px solid currentColor",
+                                                borderRadius: 12,
+                                                padding: "3px 8px",
+                                                opacity: isPublic ? 0.75 : 1,
+                                                fontWeight: 600
+                                            }}
+                                            aria-label={
+                                                isPublic
+                                                    ? "Project is public"
+                                                    : "Project is private"
+                                            }
+                                            title={
+                                                isPublic
+                                                    ? "Project is public"
+                                                    : "Project is private"
+                                            }
+                                        >
+                                            {isPublic ? (
+                                                <PublicIcon fontSize="inherit" />
+                                            ) : (
+                                                <LockIcon fontSize="inherit" />
+                                            )}
+                                            {isPublic ? "Public" : "Private"}
+                                        </span>
+                                    </span>
+                                }
                                 secondary={description}
                             />
                         </StyledListItemTopRowText>
@@ -69,7 +150,9 @@ const ProjectListItem = ({
                         </StyledListItemChipsRow>
                     </StyledListItemContainer>
                 </ListItem>
-                {isProfileOwner && <StyledListButtonsContainer />}
+                {isProfileOwner && !isMobileLayout && (
+                    <StyledListButtonsContainer />
+                )}
             </Link>
             <StyledListPlayButtonContainer>
                 <ListPlayButton
@@ -79,18 +162,66 @@ const ProjectListItem = ({
                     iconForegroundColor={project.iconForegroundColor}
                 />
             </StyledListPlayButtonContainer>
-            {isProfileOwner && (
+            {isProfileOwner && isMobileLayout && (
+                <>
+                    <Tooltip title="Project actions" followCursor>
+                        <div css={SS.mobileActionsContainer}>
+                            <div
+                                css={SS.mobileActionsButton}
+                                onClick={openMenu}
+                            >
+                                <MoreVertIcon />
+                            </div>
+                        </div>
+                    </Tooltip>
+                    <Menu
+                        anchorEl={menuAnchor}
+                        open={Boolean(menuAnchor)}
+                        onClose={closeMenu}
+                        anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "right"
+                        }}
+                        transformOrigin={{
+                            vertical: "top",
+                            horizontal: "right"
+                        }}
+                    >
+                        <MenuItem onClick={onTogglePublic}>
+                            {isPublic ? (
+                                <VisibilityOffIcon />
+                            ) : (
+                                <VisibilityIcon />
+                            )}
+                            <span style={{ marginLeft: 8 }}>
+                                {isPublic
+                                    ? "Make project private"
+                                    : "Make project public"}
+                            </span>
+                        </MenuItem>
+                        <MenuItem onClick={onEditProject}>
+                            <SettingsIcon />
+                            <span style={{ marginLeft: 8 }}>
+                                Rename/Edit project
+                            </span>
+                        </MenuItem>
+                        <MenuItem onClick={onDeleteProject}>
+                            <DeleteIcon />
+                            <span
+                                style={{ marginLeft: 8 }}
+                            >{`Delete ${name}`}</span>
+                        </MenuItem>
+                    </Menu>
+                </>
+            )}
+            {isProfileOwner && !isMobileLayout && (
                 <>
                     <Tooltip title="Toggle project settings" followCursor>
                         <div css={SS.settingsIconContainer}>
                             <div
                                 css={SS.settingsIcon}
                                 key={projectUid}
-                                onClick={(event) => {
-                                    dispatch(editProject(project));
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                }}
+                                onClick={onEditProject}
                             >
                                 <SettingsIcon />
                             </div>
@@ -98,14 +229,7 @@ const ProjectListItem = ({
                     </Tooltip>
                     <Tooltip title={`Delete ${name}`} followCursor>
                         <div css={SS.deleteIconContainer}>
-                            <div
-                                css={SS.deleteIcon}
-                                onClick={(event) => {
-                                    dispatch(deleteProject(project));
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                }}
-                            >
+                            <div css={SS.deleteIcon} onClick={onDeleteProject}>
                                 <DeleteIcon />
                             </div>
                         </div>
@@ -122,13 +246,7 @@ const ProjectListItem = ({
                             <div
                                 css={SS.publicIcon}
                                 style={{ opacity: isPublic ? 1 : 0.6 }}
-                                onClick={(event) => {
-                                    dispatch(
-                                        markProjectPublic(projectUid, !isPublic)
-                                    );
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                }}
+                                onClick={onTogglePublic}
                             >
                                 {isPublic ? (
                                     <VisibilityIcon />

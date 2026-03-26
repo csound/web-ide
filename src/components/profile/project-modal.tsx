@@ -20,11 +20,11 @@ import { SnackbarType } from "../snackbar/types";
 import { closeModal } from "../modal/actions";
 
 const avatarContainer = css`
-    margin-left: -16px;
-    margin-top: -16px;
+    margin-left: -10px;
+    margin-top: -10px;
     width: 62px;
     height: 62px;
-    padding: 28px;
+    padding: 14px;
     -webkit-box-pack: center;
     justify-content: center;
     cursor: pointer;
@@ -36,9 +36,25 @@ const avatarContainer = css`
 
 const ModalContainer = styled.div`
     display: grid;
-    grid-auto-rows: minmax(90px, auto);
-    grid-template-columns: 400px;
+    grid-auto-rows: minmax(72px, auto);
+    grid-template-columns: min(400px, calc(100vw - 24px));
     border-radius: 5px;
+    box-sizing: border-box;
+    padding: 6px 2px;
+    row-gap: 6px;
+
+    h2 {
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    @media (max-width: 760px) {
+        grid-template-columns: calc(100vw - 24px);
+        grid-auto-rows: minmax(58px, auto);
+        row-gap: 8px;
+        padding: 8px 2px;
+        border-radius: 8px;
+    }
 `;
 interface IFieldRow {
     row: number;
@@ -46,6 +62,11 @@ interface IFieldRow {
 const FieldRow = styled.div<IFieldRow>`
     grid-row: ${(properties) => properties.row};
     grid-column: 1;
+
+    @media (max-width: 760px) {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
 `;
 
 const IconPickerContainer = styled.div`
@@ -56,22 +77,47 @@ const IconPickerContainer = styled.div`
     grid-gap: 10px;
     padding: 4px;
     align-items: center;
+
+    @media (max-width: 760px) {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        grid-gap: 12px;
+        justify-items: stretch;
+    }
 `;
 
 const StyledSketchPicker = styled(SliderPicker)`
     grid-column: 2;
     grid-row: 1;
+
+    @media (max-width: 760px) {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100% !important;
+        max-width: 100%;
+    }
 `;
 
 const RadioGroupContainer = styled.div`
     grid-column: 3;
     grid-row: 1;
+
+    @media (max-width: 760px) {
+        grid-column: 1;
+        grid-row: 3;
+    }
 `;
 
 const PopoverContainer = styled.div`
     padding: 10px;
     width: 300px;
     height: 400px;
+
+    @media (max-width: 760px) {
+        width: min(300px, calc(100vw - 40px));
+        height: min(380px, calc(100vh - 120px));
+        overflow-y: auto;
+    }
 `;
 
 interface IProjectModal {
@@ -146,7 +192,7 @@ export const ProjectModal = (properties: IProjectModal) => {
             );
         }
     };
-    const textFieldStyle = { marginBottom: 12, marginRight: 5 };
+    const textFieldStyle = { marginBottom: 12 };
 
     const handleProfileDropDown = (
         event: React.MouseEvent<HTMLSpanElement>
@@ -315,7 +361,8 @@ export const ProjectModal = (properties: IProjectModal) => {
                     color="primary"
                     disabled={shouldDisable}
                     onClick={handleOnSubmit}
-                    style={{ marginTop: 42 }}
+                    style={{ marginTop: 18 }}
+                    fullWidth
                 >
                     {properties.label}
                 </Button>

@@ -3,6 +3,7 @@ import { replace, pipe, when } from "ramda";
 
 export const humanizeKeySequence = (keySequence: string): string =>
     pipe(
+        when(() => isMac, replace("ctrl", "⌃")),
         when(() => isMac, replace("command", "⌘")),
         when(() => isMac, replace("opt", "⌥"))
     )(keySequence);
