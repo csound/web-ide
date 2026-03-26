@@ -62,44 +62,18 @@ export const mobileNavigationContainer = (
     theme: Theme
 ): SerializedStyles => css`
     background-color: ${theme.headerBackground};
-    position: fixed;
+    position: relative;
     width: 100%;
-    bottom: 0;
-    z-index: 10;
+    z-index: 2;
+    min-height: 56px;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
     ${shadow};
     border-top: 1px solid;
 `;
 
 export const mobileNavigationButton = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
-`;
-
-export const mobileNavigationButtonAwesome = (
-    theme: Theme
-): SerializedStyles => css`
-    color: ${theme.headerTextColor};
-    width: 28px !important;
-    height: 28px !important;
-    margin-top: 3px;
-    margin-bottom: 5px;
-`;
-
-export const mobileConsole = css`
-    height: calc(100vh - 130px);
-`;
-
-export const mobileManual = css`
-    height: calc(100vh - 130px);
-    & > div {
-        padding: 0 !important;
-    }
-`;
-
-export const mobileFileTree = css`
-    zoom: 140%;
-    & > div {
-        padding: 0 !important;
-    }
 `;
 
 // ── New custom mobile bottom navigation ──────────────────────────────────────
@@ -109,7 +83,7 @@ export const mobileNavContainer = (theme: Theme): SerializedStyles => css`
     position: fixed;
     width: 100%;
     bottom: 0;
-    z-index: 10;
+    z-index: 9999;
     height: 56px;
     display: flex;
     align-items: stretch;
