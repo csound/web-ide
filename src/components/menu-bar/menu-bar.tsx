@@ -30,7 +30,7 @@ import {
     toggleManualPanel,
     setFileTreePanelOpen
 } from "@comp/project-editor/actions";
-import { renderToDisk } from "@comp/csound/actions";
+import { renderToDisk, listAvailableOpcodes } from "@comp/csound/actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import { changeTheme } from "@comp/themes/action";
@@ -306,6 +306,13 @@ export function MenuBar() {
                     {
                         label: "Show Keyboard Shortcuts",
                         callback: () => dispatch(showKeyboardShortcuts())
+                    },
+                    {
+                        seperator: true
+                    },
+                    {
+                        label: "List Available Opcodes",
+                        callback: listAvailableOpcodes
                     }
                 ]
             }
@@ -422,6 +429,7 @@ export function MenuBar() {
 
             if (mobileView) {
                 dispatch(closeMobileTopMenu());
+                dispatch(closeMobileDock());
             }
         },
         [dispatch, mobileView]

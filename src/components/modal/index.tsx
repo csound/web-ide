@@ -3,6 +3,7 @@ import { RootState, useDispatch, useSelector } from "@root/store";
 import { TargetControlsConfigDialog } from "@comp/target-controls/config-dialog";
 import ShareDialog from "@comp/share-dialog";
 import { KeyboardShortcuts } from "@comp/site-documents/keyboard-shortcuts";
+import { OpcodeList, OpcodeListProps } from "@comp/site-documents/opcode-list";
 import {
     AddDocumentPrompt,
     DeleteDocumentPrompt,
@@ -126,6 +127,9 @@ export default function GlobalModal() {
                     )}
                     {modalComponentName === "keyboard-shortcuts" && (
                         <KeyboardShortcuts {...modalProperties} />
+                    )}
+                    {modalComponentName === "opcode-list" && (
+                        <OpcodeList {...(modalProperties as OpcodeListProps)} />
                     )}
                     {modalComponentName === "new-document-prompt" && (
                         <NewDocumentPrompt {...(modalProperties as any)} />
