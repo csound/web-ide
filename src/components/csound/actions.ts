@@ -1,12 +1,13 @@
 import { AppThunkDispatch, RootState, store } from "@root/store";
 import { IDocument, IProject } from "../projects/types";
-import { Csound } from "@csound/browser";
+import { Csound, libcsound } from "@csound/browser";
 import {
     cleanupNonCloudFiles,
     nonCloudFiles,
     addNonCloudFile
 } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
+import { openSimpleModal } from "@comp/modal/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import {
     CsoundObj,
@@ -572,4 +573,34 @@ export const renderToDisk = (
             );
         }
     };
+};
+
+export const listAvailableOpcodes = async (): Promise<void> => {
+    let lib: Awaited<ReturnType<typeof libcsound>> | undefined;
+    try {
+        lib = await libcsound();
+    } catch {
+        store.dispatch(
+            openSnackbar("Failed to load Csound library", SnackbarType.Error)
+        );
+        return;
+    }
+
+    const csound = lib.csoundCreate();
+    const factory = lib.csoundUgenFactoryNew(csound);
+    const rawOpcodes = lib.csoundUgenListOpcodes(factory);
+    lib.csoundUgenFactoryDelete(factory);
+    lib.csoundDestroy(csound);
+
+    if (!rawOpcodes || rawOpcodes.length === 0) {
+        store.dispatch(
+            openSnackbar(
+                "No opcodes returned from Csound library",
+                SnackbarType.Warning
+            )
+        );
+        return;
+    }
+
+    store.dispatch(openSimpleModal("opcode-list", { opcodes: rawOpcodes }));
 };
