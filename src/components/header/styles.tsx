@@ -29,9 +29,29 @@ export const drawerHeader = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
 `;
 
-export const menuButton = css`
+export const menuButton = (theme: Theme): SerializedStyles => css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     margin-left: 12px;
     margin-right: 6px;
+    border: 2px solid ${theme.line};
+    border-radius: 8px;
+    color: ${theme.headerTextColor};
+    background: transparent;
+    cursor: pointer;
+    ${shadow}
+
+    &:hover {
+        background: ${theme.buttonBackgroundHover};
+    }
+
+    &:focus-visible {
+        outline: 2px solid ${theme.highlightBackground};
+        outline-offset: 2px;
+    }
 `;
 
 export const menuItemLink = css`
