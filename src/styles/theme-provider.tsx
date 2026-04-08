@@ -65,7 +65,10 @@ const globalStyles = (theme: Theme): SerializedStyles => css`
     .MuiInputBase-root > input,
     .MuiInputBase-root > textarea {
         font-family: ${theme.font.regular};
-        color: ${theme.textColor};
+        color: ${theme.textColor} !important;
+    }
+    .MuiDialogContentText-root {
+        color: ${theme.textColor} !important;
     }
     .MuiListItem-root {
         padding: 12px 24px !important;

@@ -22,7 +22,9 @@ const IosWarning = (): React.ReactElement => {
                                 width: "100%"
                             }}
                         >
-                            <h1>{`Dear iOS user`}</h1>
+                            <h1
+                                style={{ color: "white" }}
+                            >{`Dear iOS user`}</h1>
                             <img
                                 src="/img/ios_notification_warning.png"
                                 alt="iphone notification switch"
@@ -36,7 +38,8 @@ const IosWarning = (): React.ReactElement => {
                                 style={{
                                     fontSize: 15,
                                     width: 360,
-                                    alignSelf: "center"
+                                    alignSelf: "center",
+                                    color: "white"
                                 }}
                             >{`Please make sure that you have the notifications turned ON (Ring) while using the web-ide, otherwise you wont experience any audio trough your web-browser. Enjoy!`}</p>
                             <Button

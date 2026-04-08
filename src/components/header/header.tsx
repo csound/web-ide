@@ -62,6 +62,8 @@ export const Header = () => {
 
     const routeIsProfile = currentRoute.pathname.startsWith("/profile");
 
+    const routeIsDocumentation = currentRoute.pathname === "/documentation";
+
     const isOwner = useSelector(selectIsOwner);
 
     const loggedInUid = useSelector(selectLoggedInUid);
@@ -181,7 +183,7 @@ export const Header = () => {
     );
 
     const burgerMenu =
-        routeIsHome || routeIsProfile ? (
+        routeIsHome || routeIsProfile || routeIsDocumentation ? (
             <IconButton
                 color="inherit"
                 aria-label="open drawer"
