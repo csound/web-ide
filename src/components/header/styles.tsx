@@ -91,10 +91,11 @@ export const menuPaper = css`
     padding: 0 !important;
 `;
 
-export const loginButton = css`
+export const loginButton = (theme: Theme): SerializedStyles => css`
     position: relative;
     right: 12px;
     margin-left: 12px;
+    color: ${theme.headerTextColor} !important;
 `;
 
 export const accountTooltip = css`

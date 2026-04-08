@@ -14,12 +14,14 @@ export const ConsoleContainer = (theme: Theme): SerializedStyles => css`
     background: ${theme.background};
     padding: 0 6px;
     padding-top: 6px;
+    padding-bottom: 6px;
     outline: none;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
     ${_scrollbars(theme)}
     code {
-        height: 100%;
+        display: block;
+        min-height: 100%;
         width: 100%;
         position: relative;
     }
