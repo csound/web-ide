@@ -127,8 +127,9 @@ function sortResults(
 }
 
 // Main search function
-export const searchProjects = onCall<SearchProjectsParams>(
-    async ({ data }): Promise<SearchResponse> => {
+export const searchProjects = onCall(
+    { cors: true },
+    async ({ data }: { data: SearchProjectsParams }): Promise<SearchResponse> => {
         try {
             const {
                 query,
@@ -139,11 +140,7 @@ export const searchProjects = onCall<SearchProjectsParams>(
             } = data;
 
             // Validate input parameters
-            if (
-                !query ||
-                typeof query !== "string" ||
-                query.trim().length === 0
-            ) {
+            if (typeof query !== "string" || query.trim().length === 0) {
                 throw new Error(
                     "Query parameter is required and must be a non-empty string"
                 );
@@ -285,9 +282,11 @@ export const searchProjects = onCall<SearchProjectsParams>(
             };
         } catch (error) {
             log(`Error in searchProjects function: ${error}`);
-            throw new Error(
-                `Search failed: ${error instanceof Error ? error.message : "Unknown error"}`
-            );
+            throw error instanceof Error
+                ? error
+                : new Error(
+                      `Search failed: ${String(error ?? "Unknown error")}`
+                  );
         }
     }
 );

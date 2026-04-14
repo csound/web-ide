@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { Header } from "@comp/header/header";
 import Search from "./search";
@@ -22,13 +22,21 @@ const Home = () => {
     const [currentPopularProjectsOffset, setCurrentPopularProjectsOffset] =
         useState(0);
 
+    const popularProjectsSliceSelector = useMemo(
+        () =>
+            selectPopularProjectsSlice(
+                popularProjectsFetchOffset < 0
+                    ? 0
+                    : currentPopularProjectsOffset,
+                popularProjectsFetchOffset < 0
+                    ? -1
+                    : currentPopularProjectsOffset + 8
+            ),
+        [currentPopularProjectsOffset, popularProjectsFetchOffset]
+    );
+
     const currentPopularProjectsPagination = useSelector(
-        selectPopularProjectsSlice(
-            popularProjectsFetchOffset < 0 ? 0 : currentPopularProjectsOffset,
-            popularProjectsFetchOffset < 0
-                ? -1
-                : currentPopularProjectsOffset + 8
-        )
+        popularProjectsSliceSelector
     );
 
     const handlePopularProjectsNextPage = useCallback(() => {

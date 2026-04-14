@@ -9,34 +9,47 @@ export const ProfileContainer = styled.div`
         ? `padding: 16px;
     box-sizing: border-box;`
         : `display: grid;
-    grid-template-columns: 24px 250px 800px;
-    grid-template-rows: 50px 175px 1fr 70px;
-    grid-auto-rows: minmax(90px, auto);`}
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: 120px auto;
+    grid-auto-rows: auto;
+    align-items: start;
+    padding: 24px;`}
     width: 100%;
     overflow-x: hidden;
+    box-sizing: border-box;
 `;
 export const IDContainer = styled(Card)`
-    grid-row-start: 2;
-    grid-row-end: 3;
-    grid-column-start: 2;
-    grid-column-end: 3;
+    grid-row: 1 / -1;
+    grid-column: 1 / 2;
     display: grid;
-    grid-template-rows: 250px 1fr auto 60px;
+    grid-template-rows: 250px 1fr auto auto;
     grid-template-columns: 1fr;
     z-index: 2;
     min-height: 420px;
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     & > div {
         max-width: 250px;
     }
-    overflow: initial;
-    height: fit-content;
+    overflow: hidden;
+    align-self: stretch;
+    position: sticky;
+    top: 70px;
+    max-height: calc(100vh - 80px);
+`;
+
+export const MobileAboutSection = styled.div`
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 `;
 
 export const DescriptionSection = styled.div`
     grid-row: ${(properties: { gridRow: string }) => properties.gridRow};
     grid-column: 1;
-    padding: 20px;
+    padding: 16px;
+    overflow-y: auto;
     div,
     a,
     h1,
@@ -47,17 +60,21 @@ export const DescriptionSection = styled.div`
     a > div {
         font-weight: 300;
         font-size: 14px;
-        line-height: 32px;
+        line-height: 1.5;
         white-space: nowrap;
         text-decoration: underline;
     }
-    height: fit-content;
 `;
 
 export const EditProfileButtonSection = styled.div`
     grid-row: 4;
     grid-column: 1;
-    margin: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px 16px;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
 `;
 
 export const ProfilePictureContainer = styled.div`
@@ -114,30 +131,31 @@ export const ProfilePicture = styled.img`
     object-fit: cover;
 `;
 export const NameSectionWrapper = styled.div`
-    grid-row: 2;
-    grid-column: 3;
+    grid-row: 1;
+    grid-column: 2;
+    align-self: end;
     display: grid;
     grid-template-rows: 1fr auto;
     grid-template-columns: 1fr;
-    min-width: ${isMobile() ? "0" : "680px"};
+    ${!isMobile() && "padding-left: 32px;"}
 `;
 export const NameSection = styled.div`
     grid-row: 2;
     grid-column: 1;
     color: white;
-    padding: 20px;
+    padding: ${isMobile() ? "12px 0 4px" : "16px 24px"};
 `;
 export const ContentSection = styled.div<any>`
-    grid-row-start: 3;
-    grid-row-end: auto;
-    grid-column: 3;
+    grid-row: 2;
+    grid-column: 2;
+    align-self: start;
     z-index: 2;
-    ${!isMobile() && "margin-left: 48px;"}
+    margin-top: 16px;
+    ${!isMobile() && "margin-left: 32px;"}
     background: ${(properties) => properties.theme.background};
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-    width: 100%;
-    max-width: 100%;
+    min-width: 0;
     overflow-x: hidden;
 `;
 export const ContentTabsContainer = styled.div`
@@ -148,15 +166,16 @@ export const contentActionsStyle = css`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 58px;
+    height: 56px;
     padding-left: 24px;
-    padding-right: 12px;
+    padding-right: 24px;
     margin-top: 12px;
     margin-bottom: 24px;
 `;
 
 export const ListContainer = styled.div`
-    padding-top: 10px;
+    padding-top: 8px;
+    padding-bottom: 16px;
     grid-row: 3;
     grid-column: 1;
     width: 100%;
@@ -217,8 +236,8 @@ export const StyledListItemTopRowText = styled.div`
     text-align: left;
     & p {
         white-space: pre-line;
-        padding-right: 6px;
-        padding-top: 6px;
+        padding-right: 8px;
+        padding-top: 8px;
     }
 `;
 export const StyledListItemChipsRow = styled.div`
@@ -251,7 +270,7 @@ export const StyledListButtonsContainer = styled.div`
     & button {
         width: 100%;
         align-self: center;
-        margin-top: 6px;
+        margin-top: 8px;
     }
 `;
 
@@ -270,6 +289,11 @@ export const fabButton = css`
     align-self: center;
     align-items: center;
     justify-content: space-between;
+`;
+
+export const profileActionButton = css`
+    width: 100%;
+    justify-content: flex-start;
 `;
 
 export const mobileNavigationContainer = (theme: any) => css`

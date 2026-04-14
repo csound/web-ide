@@ -273,6 +273,11 @@ export const deleteUserProject =
         }
     };
 
+export const deleteAccountPrompt = (username: string) => {
+    return openSimpleModal("delete-account-prompt", {
+        username
+    });
+};
 export const setCurrentTagText = (text: string): ProfileActionTypes => {
     return {
         type: SET_CURRENT_TAG_TEXT,

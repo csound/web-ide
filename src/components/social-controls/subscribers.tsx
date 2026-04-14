@@ -11,10 +11,12 @@ export const subscribeToProjectStars = (
         (stars) => {
             const starsData = stars.data();
             const starsDataSerializeable: Record<string, number> = {};
-            for (const sdk in starsData) {
-                const sdkd: Timestamp = starsData[sdk];
-                if (typeof sdkd === "object") {
-                    starsDataSerializeable[sdk] = sdkd.toMillis();
+            if (starsData) {
+                for (const sdk in starsData) {
+                    const sdkd = starsData[sdk] as Timestamp | null | undefined;
+                    if (sdkd && typeof sdkd.toMillis === "function") {
+                        starsDataSerializeable[sdk] = sdkd.toMillis();
+                    }
                 }
             }
             dispatch({

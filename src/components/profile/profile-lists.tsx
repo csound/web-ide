@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "@root/store";
+import { shallowEqual } from "react-redux";
+import { createSelector } from "@reduxjs/toolkit";
 import { List, ListItem, ListItemText } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import LockIcon from "@mui/icons-material/Lock";
@@ -31,10 +33,13 @@ import {
     StyledListButtonsContainer
 } from "./profile-ui";
 import { IProject } from "@comp/projects/types";
+import { IProfile } from "./types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
 import { descend, sort, propOr } from "ramda";
 import * as SS from "./styles";
+
+const EMPTY_STRING_ARRAY: string[] = [];
 
 const ProjectListItem = ({
     isProfileOwner,
@@ -271,18 +276,36 @@ export const ProfileLists = ({
     profileUid: string;
     selectedSection: number;
     isProfileOwner: boolean;
-    filteredProjects: Array<any>;
+    filteredProjects: IProject[];
 }) => {
-    const userFollowing = useSelector(
-        (state) =>
-            state.ProfileReducer.profiles[profileUid]?.userFollowing ?? []
+    const userFollowingSelector = useMemo(
+        () =>
+            createSelector(
+                [(state) => state.ProfileReducer.profiles],
+                (profiles): string[] =>
+                    profiles[profileUid]?.following ?? EMPTY_STRING_ARRAY
+            ),
+        [profileUid]
     );
 
-    const userFollowers = useSelector((state) =>
-        (state.ProfileReducer.profiles[profileUid]?.followers ?? []).map(
-            (followerUid) => state.ProfileReducer.profiles[followerUid]
-        )
+    const userFollowersSelector = useMemo(
+        () =>
+            createSelector(
+                [(state) => state.ProfileReducer.profiles],
+                (profiles): Array<IProfile | undefined> => {
+                    const followerUids =
+                        profiles[profileUid]?.followers ?? EMPTY_STRING_ARRAY;
+
+                    return followerUids.map(
+                        (followerUid: string) => profiles[followerUid]
+                    );
+                }
+            ),
+        [profileUid]
     );
+
+    const userFollowing = useSelector(userFollowingSelector, shallowEqual);
+    const userFollowers = useSelector(userFollowersSelector, shallowEqual);
 
     // Loading states
     const followingLoading = useSelector(selectFollowingLoading(profileUid));

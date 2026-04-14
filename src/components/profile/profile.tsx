@@ -1,12 +1,13 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "@root/store";
 import { ProfileLists } from "./profile-lists";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
-import { isMobile, updateBodyScroller } from "@root/utils";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
-import { useLocation, useParams, useNavigate } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { createButtonAddIcon } from "./styles";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -18,8 +19,11 @@ import CameraIcon from "@mui/icons-material/CameraAltOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Box from "@mui/material/Box";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
@@ -44,6 +48,7 @@ import {
     editProfile,
     followUser,
     unfollowUser,
+    deleteAccountPrompt,
     setProjectFilterString
 } from "./actions";
 import {
@@ -72,10 +77,39 @@ import {
     ListContainer,
     EditProfileButtonSection,
     fabButton,
+    profileActionButton,
     mobileNavigationContainer,
     mobileNavigationButton,
-    profileMobileBottomSpacer
+    profileMobileBottomSpacer,
+    MobileAboutSection
 } from "./profile-ui";
+
+type ProfileSection =
+    | "projects"
+    | "following"
+    | "followers"
+    | "stars"
+    | "about";
+
+const PROFILE_ROUTE_SECTION_MAP: Record<
+    string,
+    Exclude<ProfileSection, "about">
+> = {
+    following: "following",
+    followers: "followers",
+    stars: "stars"
+};
+
+const PROFILE_SECTION_VALUE: Record<ProfileSection, number> = {
+    projects: 0,
+    following: 1,
+    followers: 2,
+    stars: 3,
+    about: 4
+};
+
+const getRouteSection = (tab?: string): Exclude<ProfileSection, "about"> =>
+    PROFILE_ROUTE_SECTION_MAP[tab || ""] || "projects";
 
 const UserLink = ({ link }: { link: string | undefined }) => {
     return typeof link === "string" ? (
@@ -90,23 +124,41 @@ const UserLink = ({ link }: { link: string | undefined }) => {
 };
 
 export const Profile = () => {
-    const [profileUid, setProfileUid]: [string | undefined, any] = useState();
+    const [profileUid, setProfileUid] = useState<string | undefined>();
     const theme = useTheme();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const { username, tab } = useParams();
-    const profile = useSelector(selectUserProfile(profileUid));
-    const imageUrl = useSelector(selectUserImageURL(profileUid));
     const loggedInUserUid = useSelector(selectLoggedInUid);
-    const filteredProjects = useSelector(selectUserProjects(profileUid));
+    const profileSelector = useMemo(
+        () => selectUserProfile(profileUid),
+        [profileUid]
+    );
+    const imageUrlSelector = useMemo(
+        () => selectUserImageURL(profileUid),
+        [profileUid]
+    );
+    const projectsSelector = useMemo(
+        () => selectUserProjects(profileUid),
+        [profileUid]
+    );
+    const followingSelector = useMemo(
+        () => selectUserFollowing(loggedInUserUid),
+        [loggedInUserUid]
+    );
+
+    const profile = useSelector(profileSelector);
+    const imageUrl = useSelector(imageUrlSelector);
+    const filteredProjects = useSelector(projectsSelector);
     // const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
-    const [selectedSection, setSelectedSection] = useState(0);
-    const loggedInUserFollowing: string[] = useSelector(
-        selectUserFollowing(loggedInUserUid)
-    );
+    const [selectedSection, setSelectedSection] =
+        useState<ProfileSection>("projects");
+    const loggedInUserFollowing: string[] = useSelector(followingSelector);
+    const isMobileLayout = useMediaQuery("(max-width: 760px)");
+    const routeSection = getRouteSection(tab);
 
     const isFollowing = profileUid
         ? loggedInUserFollowing.includes(profileUid)
@@ -123,18 +175,16 @@ export const Profile = () => {
     }, []);
 
     useEffect(() => {
-        if (username) {
-            if (!tab && selectedSection !== 0) {
-                setSelectedSection(0);
-            } else if (tab === "following" && selectedSection !== 1) {
-                setSelectedSection(1);
-            } else if (tab === "followers" && selectedSection !== 2) {
-                setSelectedSection(2);
-            } else if (tab === "stars" && selectedSection !== 3) {
-                setSelectedSection(3);
-            }
+        if (!isMobileLayout && selectedSection === "about") {
+            setSelectedSection(routeSection);
         }
-    }, [tab, selectedSection, username]);
+    }, [isMobileLayout, routeSection, selectedSection]);
+
+    useEffect(() => {
+        if (selectedSection !== "about") {
+            setSelectedSection(routeSection);
+        }
+    }, [routeSection, selectedSection]);
 
     useEffect(() => {
         if (!isRequestingLogin) {
@@ -172,7 +222,7 @@ export const Profile = () => {
                 ),
                 subscribeToProfileStars(profileUid, dispatch),
                 subscribeToProjectsCount(profileUid, dispatch)
-            ] as any[];
+            ];
             // make sure the logged in user's following is listed
             // when viewing another profile, for un/follow state
             if (loggedInUserUid && !isProfileOwner) {
@@ -221,12 +271,170 @@ export const Profile = () => {
         }
     }, [displayName]);
 
+    const selectedSectionValue = PROFILE_SECTION_VALUE[selectedSection];
+    const isProjectsSection = selectedSection === "projects";
+    const isAboutSection = selectedSection === "about";
+
+    const handleSectionChange = (section: ProfileSection) => {
+        switch (section) {
+            case "projects": {
+                setSelectedSection("projects");
+                navigate(`/profile/${username}`);
+                return;
+            }
+            case "following": {
+                setSelectedSection("following");
+                navigate(`/profile/${username}/following`);
+                return;
+            }
+            case "followers": {
+                setSelectedSection("followers");
+                navigate(`/profile/${username}/followers`);
+                return;
+            }
+            case "stars": {
+                setSelectedSection("stars");
+                navigate(`/profile/${username}/stars`);
+                return;
+            }
+            case "about": {
+                setSelectedSection("about");
+                return;
+            }
+        }
+    };
+
+    const profileActions = (
+        <>
+            {isProfileOwner && profileUid && (
+                <EditProfileButtonSection>
+                    <Button
+                        css={profileActionButton}
+                        variant="outlined"
+                        color="primary"
+                        size="medium"
+                        startIcon={<EditIcon />}
+                        aria-label="Edit profile settings"
+                        onClick={() =>
+                            profile &&
+                            dispatch(
+                                editProfile(
+                                    profile.username,
+                                    displayName || "",
+                                    bio || "",
+                                    link1 || "",
+                                    link2 || "",
+                                    link3 || "",
+                                    backgroundIndex
+                                )
+                            )
+                        }
+                    >
+                        Edit Profile
+                    </Button>
+                    <Button
+                        css={profileActionButton}
+                        variant="outlined"
+                        color="error"
+                        size="medium"
+                        startIcon={<DeleteIcon />}
+                        aria-label="Delete account permanently"
+                        onClick={() =>
+                            profile &&
+                            dispatch(deleteAccountPrompt(profile.username))
+                        }
+                    >
+                        Delete Account
+                    </Button>
+                </EditProfileButtonSection>
+            )}
+            {!isProfileOwner && profileUid && loggedInUserUid && (
+                <EditProfileButtonSection>
+                    <Button
+                        css={fabButton}
+                        color="primary"
+                        aria-label="Add"
+                        size="medium"
+                        onClick={() => {
+                            isFollowing
+                                ? dispatch(
+                                      unfollowUser(loggedInUserUid, profileUid)
+                                  )
+                                : dispatch(
+                                      followUser(loggedInUserUid, profileUid)
+                                  );
+                        }}
+                    >
+                        {isFollowing ? "Unfollow" : "Follow"}
+                    </Button>
+                </EditProfileButtonSection>
+            )}
+        </>
+    );
+
+    const desktopProfileDetails = (
+        <>
+            <DescriptionSection gridRow="2">
+                <Typography variant="h5" component="h4">
+                    Bio
+                </Typography>
+                <Typography
+                    variant="body2"
+                    component="p"
+                    color="textSecondary"
+                    gutterBottom
+                >
+                    {profile && profile.bio}
+                </Typography>
+            </DescriptionSection>
+            <DescriptionSection gridRow="3">
+                <Typography variant="h5" component="h4">
+                    Links
+                </Typography>
+                {profile && (
+                    <>
+                        <UserLink link={link1} />
+                        <UserLink link={link2} />
+                        <UserLink link={link3} />
+                    </>
+                )}
+            </DescriptionSection>
+            {profileActions}
+        </>
+    );
+
+    const mobileAboutContent = (
+        <MobileAboutSection>
+            <div>
+                <Typography variant="h5" component="h4" gutterBottom>
+                    Bio
+                </Typography>
+                <Typography variant="body2" component="p" color="textSecondary">
+                    {profile?.bio || "No bio available."}
+                </Typography>
+            </div>
+            <div>
+                <Typography variant="h5" component="h4" gutterBottom>
+                    Links
+                </Typography>
+                {profile ? (
+                    <>
+                        <UserLink link={link1} />
+                        <UserLink link={link2} />
+                        <UserLink link={link3} />
+                    </>
+                ) : null}
+            </div>
+            {profileActions}
+        </MobileAboutSection>
+    );
+
     return (
         <Box>
             <Header />
             <Box css={gradient(backgroundIndex)}>
                 <ProfileContainer>
-                    {!isMobile() && (
+                    {!isMobileLayout && (
                         <IDContainer>
                             <ProfilePictureContainer
                                 onMouseEnter={() => setImageHover(true)}
@@ -280,134 +488,38 @@ export const Profile = () => {
                                     </UploadProfilePicture>
                                 )}
                             </ProfilePictureContainer>
-                            <DescriptionSection gridRow="2">
-                                <Typography variant="h5" component="h4">
-                                    Bio
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component="p"
-                                    color="textSecondary"
-                                    gutterBottom
-                                >
-                                    {profile && profile.bio}
-                                </Typography>
-                            </DescriptionSection>
-                            <DescriptionSection gridRow="3">
-                                <Typography variant="h5" component="h4">
-                                    Links
-                                </Typography>
-                                {profile && (
-                                    <>
-                                        <UserLink link={link1} />
-                                        <UserLink link={link2} />
-                                        <UserLink link={link3} />
-                                    </>
-                                )}
-                            </DescriptionSection>
-                            {isProfileOwner && profileUid && (
-                                <EditProfileButtonSection>
-                                    <Button
-                                        css={fabButton}
-                                        color="primary"
-                                        aria-label="Add"
-                                        size="medium"
-                                        onClick={() =>
-                                            profile &&
-                                            dispatch(
-                                                editProfile(
-                                                    profile.username,
-                                                    displayName || "",
-                                                    bio || "",
-                                                    link1 || "",
-                                                    link2 || "",
-                                                    link3 || "",
-                                                    backgroundIndex
-                                                )
-                                            )
-                                        }
-                                    >
-                                        Edit Profile
-                                    </Button>
-                                </EditProfileButtonSection>
-                            )}
-                            {!isProfileOwner &&
-                                profileUid &&
-                                loggedInUserUid && (
-                                    <EditProfileButtonSection>
-                                        <Button
-                                            css={fabButton}
-                                            color="primary"
-                                            aria-label="Add"
-                                            size="medium"
-                                            onClick={() => {
-                                                isFollowing
-                                                    ? dispatch(
-                                                          unfollowUser(
-                                                              loggedInUserUid,
-                                                              profileUid
-                                                          )
-                                                      )
-                                                    : dispatch(
-                                                          followUser(
-                                                              loggedInUserUid,
-                                                              profileUid
-                                                          )
-                                                      );
-                                            }}
-                                        >
-                                            {isFollowing
-                                                ? "Unfollow"
-                                                : "Follow"}
-                                        </Button>
-                                    </EditProfileButtonSection>
-                                )}
+                            {desktopProfileDetails}
                         </IDContainer>
                     )}
                     <NameSectionWrapper>
                         <NameSection>
-                            <Typography variant="h3" component="h3">
+                            <Typography
+                                variant={isMobileLayout ? "h4" : "h3"}
+                                component="h3"
+                            >
                                 {profile && displayName}
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
-
                     <ContentSection
                         theme={theme}
-                        showSearch={selectedSection === 0}
+                        showSearch={isProjectsSection}
                     >
-                        {!isMobile() && (
+                        {!isMobileLayout && (
                             <ContentTabsContainer>
                                 <Tabs
-                                    value={selectedSection}
-                                    onChange={(_, index) => {
-                                        switch (index) {
-                                            case 0: {
-                                                navigate(
-                                                    `/profile/${username}`
-                                                );
-                                                break;
-                                            }
-                                            case 1: {
-                                                navigate(
-                                                    `/profile/${username}/following`
-                                                );
-                                                break;
-                                            }
-                                            case 2: {
-                                                navigate(
-                                                    `/profile/${username}/followers`
-                                                );
-                                                break;
-                                            }
-                                            case 3: {
-                                                navigate(
-                                                    `/profile/${username}/stars`
-                                                );
-                                                break;
-                                            }
-                                        }
-                                    }}
+                                    value={selectedSectionValue}
+                                    onChange={(_, value: number) =>
+                                        handleSectionChange(
+                                            value === 1
+                                                ? "following"
+                                                : value === 2
+                                                  ? "followers"
+                                                  : value === 3
+                                                    ? "stars"
+                                                    : "projects"
+                                        )
+                                    }
                                     indicatorColor={"primary"}
                                 >
                                     <Tab label="Projects" />
@@ -418,84 +530,96 @@ export const Profile = () => {
                             </ContentTabsContainer>
                         )}
 
-                        <Box
-                            css={contentActionsStyle}
-                            style={{
-                                display: selectedSection === 0 ? "flex" : "none"
-                            }}
-                            component="form"
-                            noValidate
-                            autoComplete="off"
-                        >
-                            {selectedSection === 0 && (
-                                <TextField
-                                    id="input-with-icon-adornment"
-                                    label="Search Projects"
-                                    value={projectFilterString || ""}
-                                    variant="outlined"
-                                    margin="dense"
-                                    InputProps={{
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <SearchIcon />
-                                            </InputAdornment>
-                                        )
-                                    }}
-                                    onChange={(event) => {
-                                        dispatch(
-                                            setProjectFilterString(
-                                                event.target.value
+                        {!isAboutSection && (
+                            <Box
+                                css={contentActionsStyle}
+                                style={{
+                                    display: isProjectsSection ? "flex" : "none"
+                                }}
+                                component="form"
+                                noValidate
+                                autoComplete="off"
+                            >
+                                {isProjectsSection && (
+                                    <TextField
+                                        id="input-with-icon-adornment"
+                                        label="Search Projects"
+                                        value={projectFilterString || ""}
+                                        variant="outlined"
+                                        margin="dense"
+                                        InputProps={{
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <SearchIcon />
+                                                </InputAdornment>
                                             )
-                                        );
-                                    }}
-                                />
-                            )}
+                                        }}
+                                        onChange={(event) => {
+                                            dispatch(
+                                                setProjectFilterString(
+                                                    event.target.value
+                                                )
+                                            );
+                                        }}
+                                    />
+                                )}
 
-                            {isProfileOwner && selectedSection === 0 && (
-                                <Button
-                                    css={fabButton}
-                                    color="primary"
-                                    aria-label="Add"
-                                    size="medium"
-                                    onClick={() => dispatch(addProject())}
-                                    data-tip={"Create new project"}
-                                >
-                                    Create
-                                    <AddIcon css={createButtonAddIcon} />
-                                </Button>
-                            )}
-                        </Box>
-                        {profileUid && username && (
+                                {isProfileOwner && isProjectsSection && (
+                                    <Button
+                                        css={fabButton}
+                                        color="primary"
+                                        aria-label="Add"
+                                        size="medium"
+                                        onClick={() => dispatch(addProject())}
+                                        data-tip={"Create new project"}
+                                    >
+                                        Create
+                                        <AddIcon css={createButtonAddIcon} />
+                                    </Button>
+                                )}
+                            </Box>
+                        )}
+                        {profileUid && username && !isAboutSection && (
                             <ListContainer>
                                 <ProfileLists
                                     profileUid={profileUid}
                                     isProfileOwner={isProfileOwner}
-                                    selectedSection={selectedSection}
+                                    selectedSection={selectedSectionValue}
                                     filteredProjects={filteredProjects}
                                 />
                             </ListContainer>
                         )}
+                        {isMobileLayout && isAboutSection && mobileAboutContent}
                     </ContentSection>
-                    {isMobile() && <div css={profileMobileBottomSpacer} />}
+                    {isMobileLayout && <div css={profileMobileBottomSpacer} />}
                 </ProfileContainer>
-                {isMobile() && (
+                {isMobileLayout && (
                     <BottomNavigation
-                        value={selectedSection}
+                        value={selectedSectionValue}
+                        onChange={(_, value: number) =>
+                            handleSectionChange(
+                                value === 1
+                                    ? "following"
+                                    : value === 2
+                                      ? "followers"
+                                      : value === 3
+                                        ? "stars"
+                                        : value === 4
+                                          ? "about"
+                                          : "projects"
+                            )
+                        }
                         css={mobileNavigationContainer}
                         showLabels
                     >
                         <BottomNavigationAction
                             value={0}
-                            onClick={() => navigate(`/profile/${username}`)}
                             css={mobileNavigationButton}
                             label="Projects"
                             icon={<FolderOutlinedIcon fontSize="large" />}
                         />
                         <BottomNavigationAction
                             value={1}
-                            onClick={() =>
-                                navigate(`/profile/${username}/following`)
-                            }
                             css={mobileNavigationButton}
                             label="Following"
                             icon={
@@ -504,21 +628,21 @@ export const Profile = () => {
                         />
                         <BottomNavigationAction
                             value={2}
-                            onClick={() =>
-                                navigate(`/profile/${username}/followers`)
-                            }
                             css={mobileNavigationButton}
                             label="Followers"
                             icon={<PeopleOutlineIcon fontSize="large" />}
                         />
                         <BottomNavigationAction
                             value={3}
-                            onClick={() =>
-                                navigate(`/profile/${username}/stars`)
-                            }
                             css={mobileNavigationButton}
                             label="Stars"
                             icon={<StarBorderOutlinedIcon fontSize="large" />}
+                        />
+                        <BottomNavigationAction
+                            value={4}
+                            css={mobileNavigationButton}
+                            label="About"
+                            icon={<PersonOutlineIcon fontSize="large" />}
                         />
                     </BottomNavigation>
                 )}

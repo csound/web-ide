@@ -1,15 +1,11 @@
 import { RootState } from "@root/store";
 import { createSelector } from "@reduxjs/toolkit";
 import { IProject, IProjectsReducer, Star } from "../projects/types";
-import { keys, propOr } from "ramda";
+import { propOr } from "ramda";
 import { selectActiveProject } from "../projects/selectors";
 
-export const selectActiveProjectUid = (
-    store: RootState
-): string | undefined => {
-    const state: IProjectsReducer = store.ProjectsReducer;
-    return state.activeProjectUid;
-};
+export const selectActiveProjectUid = (store: RootState): string | undefined =>
+    store.ProjectsReducer?.activeProjectUid;
 
 export const selectProjects = (
     store: RootState
@@ -18,26 +14,28 @@ export const selectProjects = (
     return state.projects;
 };
 
-export const selectProjectStars = (projectUid: string) =>
-    createSelector(
-        [
-            (state: RootState) =>
-                state.ProjectsReducer.projects[projectUid]?.stars
-        ],
-        (projectStars: Star | undefined) => projectStars || {}
-    );
+export const selectProjectStars =
+    (projectUid: string) =>
+    (state: RootState): Star | undefined =>
+        state.ProjectsReducer.projects[projectUid]?.stars;
 
 export const selectUserStarredProject = (
     loggedInUserUid: string | undefined,
     projectUid: string | undefined
-) =>
-    createSelector(
-        [selectProjectStars(projectUid || "")],
-        (projectStars: Star) => {
-            if (!projectUid || !loggedInUserUid) return false;
-            return Object.keys(projectStars).includes(loggedInUserUid);
+) => {
+    const projectStars = projectUid
+        ? selectProjectStars(projectUid)
+        : undefined;
+    return (state: RootState): boolean => {
+        const stars = projectStars ? projectStars(state) : undefined;
+
+        if (!projectUid || !loggedInUserUid || !stars) {
+            return false;
         }
-    );
+
+        return Object.prototype.hasOwnProperty.call(stars, loggedInUserUid);
+    };
+};
 
 export const selectProjectPublic = (store: RootState): boolean => {
     const activeProject = selectActiveProject(store);
