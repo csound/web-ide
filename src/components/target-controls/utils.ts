@@ -1,4 +1,5 @@
 import { curry, find, path, pathOr, propEq, values } from "ramda";
+import { createSelector } from "reselect";
 import { RootState } from "@root/store";
 import { ITarget, ITargetMap } from "./types";
 import { IDocument } from "@comp/projects/types";
@@ -160,86 +161,113 @@ const getDefaultTargetDocumentInternal = (
     return findFallbackPlayTarget(allDocuments);
 };
 
-export const getPlayActionFromProject = curry(
-    (projectUid: string, store: RootState) => {
-        const targetDocument = getDefaultTargetDocumentInternal(
-            projectUid,
-            store
-        );
-        if (!targetDocument) {
-            return;
-        }
+export const getPlayActionFromProject = (projectUid: string) =>
+    createSelector(
+        [
+            (store: RootState) =>
+                store?.TargetControlsReducer?.[projectUid]?.defaultTarget,
+            (store: RootState) =>
+                store?.TargetControlsReducer?.[projectUid]?.targets,
+            (store: RootState) =>
+                store?.ProjectsReducer?.projects?.[projectUid]?.documents
+        ],
+        (defaultTargetName, targets, allDocuments) => {
+            if (!allDocuments) return undefined;
 
-        const csoundDocumentType = filenameToCsoundType(
-            (targetDocument as IDocument).filename
-        );
-        switch (csoundDocumentType) {
-            case "csd": {
-                return playCsdFromFs({
-                    projectUid,
-                    csdPath: (targetDocument as IDocument).filename
-                });
+            let targetDocument: IDocument | undefined;
+            if (defaultTargetName && targets?.[defaultTargetName]) {
+                const defaultTarget = targets[defaultTargetName];
+                const documentId =
+                    defaultTarget.targetType === "main"
+                        ? defaultTarget.targetDocumentUid
+                        : defaultTarget.playlistDocumentsUid?.[0];
+                if (documentId && allDocuments[documentId]) {
+                    targetDocument = allDocuments[documentId];
+                }
             }
-            case "orc": {
-                return playORCFromString({
-                    projectUid,
-                    orc: (targetDocument as IDocument).savedValue
-                });
+
+            if (!targetDocument) {
+                targetDocument = findFallbackPlayTarget(allDocuments);
             }
-        }
-    }
-);
 
-export const getPlayActionFromTarget =
-    (projectUid: string) =>
-    (
-        store: RootState
-    ): undefined | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
-        const selectedTarget =
-            store?.TargetControlsReducer?.[projectUid]?.selectedTarget;
+            if (!targetDocument) return undefined;
 
-        const selectedTargetPlaylistIndex =
-            store?.TargetControlsReducer?.[projectUid]
-                ?.selectedTargetPlaylistIndex ?? -1;
-
-        const target: ITarget | undefined = selectedTarget
-            ? store.TargetControlsReducer[projectUid].targets[selectedTarget]
-            : undefined;
-
-        if (!target) {
-            return;
-        }
-
-        const documentId =
-            target && (target as ITarget).targetType === "main"
-                ? target && (target as ITarget).targetDocumentUid
-                : target &&
-                  target.playlistDocumentsUid?.[selectedTargetPlaylistIndex];
-
-        const targetDocument: IDocument | undefined =
-            target && documentId
-                ? store.ProjectsReducer.projects[projectUid].documents[
-                      documentId
-                  ]
-                : undefined;
-
-        if (targetDocument && (targetDocument as IDocument).filename) {
             const csoundDocumentType = filenameToCsoundType(
-                (targetDocument as IDocument).filename
+                targetDocument.filename
             );
             switch (csoundDocumentType) {
                 case "csd": {
                     return playCsdFromFs({
                         projectUid,
-                        csdPath: (targetDocument as IDocument).filename
+                        csdPath: targetDocument.filename
                     });
                 }
                 case "orc": {
                     return playORCFromString({
                         projectUid,
-                        orc: (targetDocument as IDocument).savedValue
+                        orc: targetDocument.savedValue
                     });
                 }
             }
+            return undefined;
         }
-    };
+    );
+
+export const getPlayActionFromTarget = (projectUid: string) =>
+    createSelector(
+        [
+            (store: RootState) =>
+                store?.TargetControlsReducer?.[projectUid]?.selectedTarget,
+            (store: RootState) =>
+                store?.TargetControlsReducer?.[projectUid]
+                    ?.selectedTargetPlaylistIndex ?? -1,
+            (store: RootState) =>
+                store?.TargetControlsReducer?.[projectUid]?.targets,
+            (store: RootState) =>
+                store?.ProjectsReducer?.projects?.[projectUid]?.documents
+        ],
+        (
+            selectedTarget,
+            selectedTargetPlaylistIndex,
+            targets,
+            documents
+        ):
+            | undefined
+            | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
+            if (!selectedTarget || !targets) return undefined;
+
+            const target: ITarget | undefined = targets[selectedTarget];
+            if (!target) return undefined;
+
+            const documentId =
+                target.targetType === "main"
+                    ? target.targetDocumentUid
+                    : target.playlistDocumentsUid?.[
+                          selectedTargetPlaylistIndex
+                      ];
+
+            const targetDocument: IDocument | undefined =
+                documentId && documents ? documents[documentId] : undefined;
+
+            if (targetDocument?.filename) {
+                const csoundDocumentType = filenameToCsoundType(
+                    targetDocument.filename
+                );
+                switch (csoundDocumentType) {
+                    case "csd": {
+                        return playCsdFromFs({
+                            projectUid,
+                            csdPath: targetDocument.filename
+                        });
+                    }
+                    case "orc": {
+                        return playORCFromString({
+                            projectUid,
+                            orc: targetDocument.savedValue
+                        });
+                    }
+                }
+            }
+            return undefined;
+        }
+    );

@@ -44,7 +44,11 @@ const ProjectProfileMeta = (): React.ReactElement => {
     const profileDisplayName = profile?.displayName ?? "unknown user";
     const profileBio = profile?.bio ?? "";
     const profileLinks = [profile?.link1, profile?.link2, profile?.link3]
-        .filter((url): url is string => typeof url === "string" && !!url)
+        .map((url, i) => ({ url, i }))
+        .filter(
+            (item): item is { url: string; i: number } =>
+                typeof item.url === "string" && !!item.url
+        )
         .slice(0, 3);
     const profileImage = useSelector(selectUserImageURL(projectOwnerUid));
     const profileProjectsCount = useSelector(
@@ -151,9 +155,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
 
                     {profileLinks.length > 0 && (
                         <div css={SS.projectProfileLinks}>
-                            {profileLinks.map((url) => (
+                            {profileLinks.map(({ url, i }) => (
                                 <a
-                                    key={url}
+                                    key={i}
                                     href={normalizeUrl(url)}
                                     target="_blank"
                                     rel="noreferrer"

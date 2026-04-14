@@ -556,7 +556,7 @@ export const playListItem =
 
         const playAction =
             getPlayActionFromTarget(projectUid)(state) ||
-            getPlayActionFromProject(projectUid, state);
+            getPlayActionFromProject(projectUid)(state);
 
         if (playAction) {
             (playAction as any)(dispatch);
