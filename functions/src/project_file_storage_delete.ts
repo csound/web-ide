@@ -24,6 +24,9 @@ async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
 export const projectFileStorageDeleteCallback = onDocumentDeleted(
     "projects/{projectId}/files/{fileId}",
     async ({ params: { projectId, fileId }, data }) => {
+        if (!data) {
+            return;
+        }
         const uid = data.get("userUid");
         const filetype = data.get("type");
         const binaryUrl = `${uid}/${projectId}/${fileId}`;

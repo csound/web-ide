@@ -29,7 +29,6 @@ const printBuildError = require("react-dev-utils/printBuildError");
 const measureFileSizesBeforeBuild =
     FileSizeReporter.measureFileSizesBeforeBuild;
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
-const useYarn = fs.existsSync(paths.yarnLockFile);
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
@@ -101,7 +100,7 @@ checkBrowsers(paths.appPath, isInteractive)
                 publicUrl,
                 publicPath,
                 buildFolder,
-                useYarn
+                false
             );
         },
         (err) => {
