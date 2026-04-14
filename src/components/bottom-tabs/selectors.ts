@@ -2,11 +2,13 @@ import { RootState } from "@root/store";
 import { BottomTab, IBottomTabsReducer } from "./types";
 // import { path, prop } from "ramda";
 
+const EMPTY_BOTTOM_TABS: BottomTab[] = [];
+
 export const selectOpenBottomTabs = (
     store: RootState
 ): BottomTab[] | undefined => {
     const state: IBottomTabsReducer | undefined = store.BottomTabsReducer;
-    return state ? state.openTabs : ([] as BottomTab[]);
+    return state ? state.openTabs : EMPTY_BOTTOM_TABS;
 };
 
 export const selectBottomTabIndex = (store: RootState): number => {

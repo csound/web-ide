@@ -4,33 +4,40 @@ import { IProfileReducer } from "./reducer";
 import { path, pathOr } from "ramda";
 // import Fuse from "fuse.js";
 import { IProject } from "../projects/types";
+import { IProfile } from "./types";
 
-export const selectUserFollowing =
-    (profileUid: string | undefined): ((store: RootState) => Array<any>) =>
-    (store: RootState) => {
-        if (profileUid) {
-            const state: IProfileReducer = store.ProfileReducer;
-            return pathOr([], ["profiles", profileUid, "following"], state);
-        } else {
-            return [];
+const EMPTY_STRING_ARRAY: string[] = [];
+const EMPTY_PROJECT_ARRAY: IProject[] = [];
+const EMPTY_PROJECTS_COUNT = {
+    all: 0,
+    public: 0
+};
+
+export const selectUserFollowing = (profileUid: string | undefined) =>
+    createSelector(
+        [(store: RootState) => store.ProfileReducer.profiles],
+        (profiles) => {
+            if (!profileUid) {
+                return EMPTY_STRING_ARRAY;
+            }
+
+            return profiles[profileUid]?.following ?? EMPTY_STRING_ARRAY;
         }
-    };
+    );
 
-export const selectUserProjects =
-    (profileUid: string | undefined) => (store: RootState) => {
-        if (profileUid) {
-            const state = store.ProjectsReducer.projects;
+export const selectUserProjects = (profileUid: string | undefined) =>
+    createSelector(
+        [(store: RootState) => store.ProjectsReducer.projects],
+        (projects) => {
+            if (!profileUid) {
+                return EMPTY_PROJECT_ARRAY;
+            }
 
-            // Filter projects by matching `userUid` with `profileUid`
-            const filteredProjects = Object.values(state).filter(
+            return Object.values(projects).filter(
                 (project) => project.userUid === profileUid
             );
-
-            return filteredProjects;
-        } else {
-            return [];
         }
-    };
+    );
 
 export const selectProjectFilterString = (
     store: RootState
@@ -47,7 +54,8 @@ export const selectFollowingFilterString = (
 };
 
 export const selectUserProfile =
-    (profileUid: string | undefined) => (store: RootState) => {
+    (profileUid: string | undefined) =>
+    (store: RootState): IProfile | undefined => {
         if (profileUid) {
             const state: IProfileReducer = store.ProfileReducer;
             return state.profiles[profileUid];
@@ -76,9 +84,13 @@ export const selectLoggedInUserStars = (store: RootState): Array<any> => {
     const loggedInUid: string | undefined = store.LoginReducer.loggedInUid;
     if (loggedInUid) {
         const state: IProfileReducer = store.ProfileReducer;
-        return pathOr([], ["profiles", loggedInUid, "starred"], state);
+        return pathOr(
+            EMPTY_STRING_ARRAY,
+            ["profiles", loggedInUid, "starred"],
+            state
+        );
     } else {
-        return [];
+        return EMPTY_STRING_ARRAY;
     }
 };
 
@@ -135,15 +147,15 @@ export const selectLoggedInUserStars = (store: RootState): Array<any> => {
 //         )(store);
 
 export const selectFilteredUserFollowers =
-    (profileUid: string): ((store: RootState) => any) =>
+    (profileUid: string): ((store: RootState) => Array<IProfile | undefined>) =>
     (store) => {
         const state: IProfileReducer = store.ProfileReducer;
         const followerUids = pathOr(
-            [],
+            EMPTY_STRING_ARRAY,
             ["profiles", profileUid, "followers"],
             state
         );
-        return (followerUids || []).map((followerUid) =>
+        return followerUids.map((followerUid) =>
             path(["profiles", followerUid], state)
         );
     };
@@ -171,23 +183,20 @@ export const selectCurrentTagText = (store: RootState): string => {
 };
 
 export const selectTags =
-    (projectUid: string): ((store: RootState) => any) =>
+    (projectUid: string): ((store: RootState) => string[]) =>
     (store) => {
         return pathOr(
-            [],
+            EMPTY_STRING_ARRAY,
             ["ProjectsReducer", "projects", projectUid, "tags"],
             store
         );
     };
 
 export const selectProfileStars =
-    (profileUid: string) => (store: RootState) => {
-        return pathOr(
-            [],
-            ["ProfileReducer", "profiles", profileUid, "stars"],
-            store
-        );
-    };
+    (profileUid: string) =>
+    (store: RootState): string[] =>
+        store.ProfileReducer?.profiles?.[profileUid]?.stars ??
+        EMPTY_STRING_ARRAY;
 
 export const selectAllUserProjectUids =
     (profileUid: string | undefined) => (store: RootState) => {
@@ -201,42 +210,32 @@ export const selectAllUserProjectUids =
 
             return allUserProjects.map((p) => p.projectUid);
         } else {
-            return [];
+            return EMPTY_STRING_ARRAY;
         }
     };
 
 export const selectAllTagsFromUser =
-    (profileUid: string): ((store: RootState) => any) =>
+    (profileUid: string): ((store: RootState) => string[]) =>
     (store) => {
         return pathOr(
-            [],
+            EMPTY_STRING_ARRAY,
             ["ProfileReducer", "profiles", profileUid, "allTags"],
             store
         );
     };
 
 // Selector to get profileUid (customize this as per your state structure)
-export const selectProfileUid = createSelector(
-    [(state: RootState) => state.LoginReducer.loggedInUid], // Replace with the correct state slice
-    (loggedInUid) => loggedInUid
-);
+export const selectProfileUid = (state: RootState): string | undefined =>
+    state.LoginReducer.loggedInUid;
 
 // Selector to get the projectsCount for the logged-in user
 export const selectProfileProjectsCount = createSelector(
     [selectProfiles, selectProfileUid],
     (profiles, profileUid) => {
         if (!profileUid || !profiles[profileUid]) {
-            return {
-                all: 0,
-                public: 0
-            };
+            return EMPTY_PROJECTS_COUNT;
         }
-        return (
-            profiles[profileUid].projectsCount ?? {
-                all: 0,
-                public: 0
-            }
-        );
+        return profiles[profileUid].projectsCount ?? EMPTY_PROJECTS_COUNT;
     }
 );
 
@@ -244,24 +243,13 @@ export const selectProfileProjectsCount = createSelector(
 export const selectUserProjectsCount =
     (profileUid: string | undefined) => (store: RootState) => {
         if (!profileUid) {
-            return {
-                all: 0,
-                public: 0
-            };
+            return EMPTY_PROJECTS_COUNT;
         }
         const profiles = selectProfiles(store);
         if (!profiles[profileUid]) {
-            return {
-                all: 0,
-                public: 0
-            };
+            return EMPTY_PROJECTS_COUNT;
         }
-        return (
-            profiles[profileUid].projectsCount ?? {
-                all: 0,
-                public: 0
-            }
-        );
+        return profiles[profileUid].projectsCount ?? EMPTY_PROJECTS_COUNT;
     };
 
 // export const selectProjectIconStyle = (

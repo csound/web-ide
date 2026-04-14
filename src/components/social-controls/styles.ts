@@ -1,23 +1,22 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { shadow } from "@styles/_common";
 
 export const buttonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
-    top: 0;
     color: ${theme.headerTextColor};
-    border: 2px solid ${theme.highlightBackground};
+    border: 1px solid ${theme.line};
     cursor: pointer;
-    border-radius: 3px;
-    ${shadow}
+    border-radius: 8px;
     height: 42px;
-    width: auto;
+    width: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin: 0;
-    margin-right: 6px;
+    margin-right: 4px;
+    line-height: 1;
+    transition: background-color 0.15s;
+
     &:hover {
-        cursor: pointer;
-        border: 2px solid ${theme.line};
-        & > button {
-            border-color: transparent transparent transparent ${theme.line};
-        }
+        background-color: ${theme.buttonBackgroundHover};
     }
 `;

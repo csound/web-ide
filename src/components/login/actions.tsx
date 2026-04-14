@@ -20,6 +20,7 @@ import { database, profiles, usernames } from "../../config/firestore";
 import {
     FacebookAuthProvider,
     GoogleAuthProvider,
+    User,
     createUserWithEmailAndPassword,
     getAuth,
     sendPasswordResetEmail,
@@ -34,6 +35,16 @@ import { IProfile } from "../profile/types";
 import { navigateTo } from "@comp/router/navigate";
 import { isElectron } from "@root/utils";
 
+type AuthUserPayload = {
+    uid: string;
+    displayName: string | undefined;
+};
+
+const serializeAuthUser = (user: User): AuthUserPayload => ({
+    uid: user.uid,
+    displayName: user.displayName ?? undefined
+});
+
 export const login = (
     email: string,
     password: string
@@ -44,7 +55,7 @@ export const login = (
         });
 
         try {
-            const user = await signInWithEmailAndPassword(
+            const credentials = await signInWithEmailAndPassword(
                 getAuth(),
                 email,
                 password
@@ -52,7 +63,7 @@ export const login = (
 
             dispatch({
                 type: SIGNIN_SUCCESS,
-                user
+                user: serializeAuthUser(credentials.user)
             });
         } catch (error: any) {
             dispatch({
@@ -354,7 +365,7 @@ export const createNewUser = (
             );
             dispatch({
                 type: CREATE_USER_SUCCESS,
-                credentials
+                user: serializeAuthUser(credentials.user)
             });
         } catch (error: any) {
             dispatch({

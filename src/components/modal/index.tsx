@@ -14,6 +14,7 @@ import { CloseUnsavedFilePrompt } from "@comp/project-editor/modals";
 import { ProjectModal } from "@comp/profile/project-modal";
 import { ProfileModal } from "@comp/profile/profile-modal";
 import { DeleteProjectModal } from "@comp/profile/delete-project-modal";
+import DeleteAccountModal from "@comp/profile/delete-account-modal";
 import { ProfileFinalize } from "@comp/login/actions";
 import { always } from "ramda";
 import * as SS from "./styles";
@@ -25,7 +26,7 @@ function getModalStyle(width: number, height: number) {
     if (!width || !height) {
         return {};
     }
-    const viewportPadding = 2;
+    const viewportPadding = window.innerWidth <= 760 ? 16 : 12;
     const topOffset = Math.max(
         viewportPadding,
         window.innerHeight / 2 - height / 2
@@ -110,7 +111,7 @@ export default function GlobalModal() {
                       ? always
                       : modalProperties.onClose || onClose
             }
-            style={{ zIndex: 3 }}
+            style={{ zIndex: 1000 }}
         >
             <Fade in={isOpen}>
                 <div
@@ -154,6 +155,9 @@ export default function GlobalModal() {
                     )}
                     {modalComponentName === "delete-project-prompt" && (
                         <DeleteProjectModal {...(modalProperties as any)} />
+                    )}
+                    {modalComponentName === "delete-account-prompt" && (
+                        <DeleteAccountModal {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "project-finalize" && (
                         <ProfileFinalize {...(modalProperties as any)} />

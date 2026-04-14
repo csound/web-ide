@@ -5,7 +5,6 @@ import {
 } from "../profile-ui";
 import ProjectAvatar from "@elem/project-avatar";
 import { IProject } from "@comp/projects/types";
-import { selectProfileStars } from "../selectors";
 import {
     ListItemButton,
     ListItemText,
@@ -13,11 +12,13 @@ import {
     Box,
     CircularProgress
 } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useSelector, shallowEqual } from "react-redux";
 import { useNavigate } from "react-router";
 import { isEmpty } from "ramda";
 import StarIcon from "@mui/icons-material/Star";
 import * as SS from "./styles";
+
+const EMPTY_STRING_ARRAY: string[] = [];
 
 export const StarsList = ({
     profileUid,
@@ -27,7 +28,12 @@ export const StarsList = ({
     isLoading?: boolean;
 }) => {
     const navigate = useNavigate();
-    const profileStars = useSelector(selectProfileStars(profileUid));
+    const profileStars = useSelector(
+        (store: RootState): string[] =>
+            store.ProfileReducer?.profiles?.[profileUid]?.stars ??
+            EMPTY_STRING_ARRAY,
+        shallowEqual
+    );
     const cachedProjects = useSelector(
         (store: RootState) => store.ProjectsReducer.projects
     );

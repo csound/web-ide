@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
 import functions from "firebase-functions/v1";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { log } from "firebase-functions/logger";
 
 const deleteUserDocument = async (
@@ -108,17 +109,49 @@ const deleteProjectsCount = async (
     }
 };
 
+const cleanupDeletedUserData = async (
+    user: admin.auth.UserRecord
+): Promise<void> => {
+    await deleteUserProjects(user);
+    await deleteProfileDocument(user);
+    await deleteUserDocument(user);
+    await deleteUsernameDocument(user);
+    await deleteProjectsCount(user);
+};
+
+export const deleteAccount = onCall({ cors: true }, async (request) => {
+    const auth = request.auth;
+
+    if (!auth?.uid) {
+        throw new HttpsError("unauthenticated", "Authentication required.");
+    }
+
+    try {
+        const user = await admin.auth().getUser(auth.uid);
+        await cleanupDeletedUserData(user);
+        await admin.auth().deleteUser(auth.uid);
+
+        return { success: true };
+    } catch (error) {
+        log(
+            "deleteAccount error: " +
+                JSON.stringify(error, Object.getOwnPropertyNames(error || {}))
+        );
+
+        throw new HttpsError(
+            "internal",
+            "Failed to delete account and associated data."
+        );
+    }
+});
+
 export const deleteUserCallback = functions.auth
     .user()
     .onDelete(async (user) => {
         log(
             `deleteUserCallback: Removing user: ${user.displayName}, uid: ${user.uid}`
         );
-        await deleteUserProjects(user);
-        await deleteProfileDocument(user);
-        await deleteUserDocument(user);
-        await deleteUsernameDocument(user);
-        await deleteProjectsCount(user);
+        await cleanupDeletedUserData(user);
 
         return true;
     });

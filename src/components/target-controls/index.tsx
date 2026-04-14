@@ -3,7 +3,7 @@ import { RootState, useDispatch, useSelector } from "@root/store";
 import TargetDropdown from "./dropdown";
 import PlayButton from "./play-button";
 import { selectProjectTargets, selectSelectedTarget } from "./selectors";
-import { selectIsOwner } from "@comp/project-editor/selectors";
+import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
 import { ITarget, ITargetMap } from "./types";
 import { setSelectedTarget } from "./actions";
 import { values } from "ramda";
@@ -19,10 +19,11 @@ export const TargetControls = ({
 }) => {
     const dispatch = useDispatch();
 
-    const selectedTarget: string | undefined =
-        useSelector(selectSelectedTarget);
+    const selectedTarget: string | undefined = useSelector(
+        selectSelectedTarget(activeProjectUid)
+    );
 
-    const isOwner = useSelector(selectIsOwner);
+    const isOwner = useSelector(selectIsOwnerForProject(activeProjectUid));
     const isCompactViewport = useMediaQuery("(max-width:900px)");
     const mobileView = isMobile() || isCompactViewport;
 

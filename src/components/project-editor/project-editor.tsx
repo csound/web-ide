@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwner } from "./selectors";
 import { DnDProvider } from "@comp/file-tree/context";
@@ -53,6 +53,8 @@ import {
     PanelGroup,
     PanelResizeHandle
 } from "react-resizable-panels";
+
+const EMPTY_OPEN_DOCUMENTS: IOpenDocument[] = [];
 
 const TabStyles = tabStyles(false);
 
@@ -276,7 +278,7 @@ const ProjectEditor = ({
     const tabDockDocuments: IOpenDocument[] = useSelector(
         (store: RootState) =>
             store.ProjectEditorReducer?.tabDock?.openDocuments ??
-            ([] as IOpenDocument[])
+            EMPTY_OPEN_DOCUMENTS
     );
 
     const tabIndex: number = useSelector(
@@ -284,18 +286,24 @@ const ProjectEditor = ({
             store.ProjectEditorReducer?.tabDock?.tabIndex ?? -1
     );
 
-    const openDocuments: AnyTab[] = tabDockDocuments.reduce(
-        (accumulator: AnyTab[], tabDocument: IOpenDocument) => {
-            const maybeDocument = activeProject.documents[tabDocument.uid];
-            const isNonCloudFile = tabDocument.isNonCloudDocument || false;
+    const openDocuments: AnyTab[] = useMemo(
+        () =>
+            tabDockDocuments.reduce(
+                (accumulator: AnyTab[], tabDocument: IOpenDocument) => {
+                    const maybeDocument =
+                        activeProject.documents[tabDocument.uid];
+                    const isNonCloudFile =
+                        tabDocument.isNonCloudDocument || false;
 
-            return isNonCloudFile
-                ? [...accumulator, tabDocument]
-                : maybeDocument && Object.keys(maybeDocument).length > 0
-                  ? [...accumulator, maybeDocument]
-                  : accumulator;
-        },
-        [] as AnyTab[]
+                    return isNonCloudFile
+                        ? [...accumulator, tabDocument]
+                        : maybeDocument && Object.keys(maybeDocument).length > 0
+                          ? [...accumulator, maybeDocument]
+                          : accumulator;
+                },
+                [] as AnyTab[]
+            ),
+        [tabDockDocuments, activeProject.documents]
     );
 
     const closeTab = (documentUid: string, isModified: boolean) => {

@@ -1,6 +1,5 @@
 // import { css as classCss } from "@emotion/react";
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { shadow } from "@styles/_common";
 import { headerHeight } from "@styles/constants";
 
 const drawerWidth = 260;
@@ -15,7 +14,7 @@ export const headerRoot = (theme: Theme): SerializedStyles => css`
     font-family: ${theme.font.regular};
     /* because of mui's <Menu> */
     padding: 0 !important;
-    overflow-x: clip;
+    overflow: visible;
 `;
 
 export const drawer = css`
@@ -37,12 +36,11 @@ export const menuButton = (theme: Theme): SerializedStyles => css`
     height: 36px;
     margin-left: 12px;
     margin-right: 6px;
-    border: 2px solid ${theme.line};
-    border-radius: 8px;
+    border: 1px solid ${theme.line};
+    border-radius: 6px;
     color: ${theme.headerTextColor};
     background: transparent;
     cursor: pointer;
-    ${shadow}
 
     &:hover {
         background: ${theme.buttonBackgroundHover};
@@ -51,6 +49,29 @@ export const menuButton = (theme: Theme): SerializedStyles => css`
     &:focus-visible {
         outline: 2px solid ${theme.highlightBackground};
         outline-offset: 2px;
+    }
+`;
+
+export const menuSlot = css`
+    display: inline-flex;
+    align-items: center;
+    min-width: 42px;
+`;
+
+export const utilityNav = css`
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    flex-shrink: 0;
+`;
+
+export const utilityToggle = (theme: Theme): SerializedStyles => css`
+    color: ${theme.headerTextColor} !important;
+    width: 36px;
+    height: 36px;
+
+    svg {
+        font-size: 20px;
     }
 `;
 
@@ -98,6 +119,26 @@ export const loginButton = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor} !important;
 `;
 
+export const authSlot = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 56px;
+`;
+
+export const authPlaceholder = (theme: Theme): SerializedStyles => css`
+    width: 42px;
+    height: 42px;
+    margin-right: 12px;
+    border-radius: 8px;
+    background: ${theme.buttonBackground};
+    border: 1px solid ${theme.line};
+
+    @media (max-width: 900px) {
+        margin-right: 8px;
+    }
+`;
+
 export const accountTooltip = css`
     margin-right: 24px;
 `;
@@ -110,35 +151,62 @@ export const projectProfileTooltipTitleContainer = css`
 
 export const headerRightSideGroup = css`
     position: relative;
-    right: 0px;
-    top: 0px;
     height: 42px;
     display: flex;
-    justify-content: flex-start;
+    align-items: center;
+    justify-content: flex-end;
     flex-shrink: 0;
+    gap: 4px;
+    line-height: 1;
 
     & > div {
         height: 42px;
         margin: 0;
-        margin-right: 6px;
-        display: inline;
-        vertical-align: middle;
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
     }
+`;
+
+export const defaultRightSideGroup = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+`;
+
+export const headerControlsPlaceholder = (
+    theme: Theme
+): SerializedStyles => css`
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
 
     @media (max-width: 900px) {
-        margin-left: 4px;
-
-        & > div {
-            margin-right: 2px;
-        }
+        gap: 2px;
     }
+
+    span {
+        display: inline-block;
+        background: ${theme.buttonBackground};
+        border: 1px solid ${theme.line};
+    }
+`;
+
+export const headerControlCircle = css`
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
 `;
 
 export const spacer = css`
     margin-left: 12px;
+    width: 36px;
+    flex-shrink: 0;
 
     @media (max-width: 900px) {
-        margin-left: 8px;
+        display: none;
     }
 `;
 
@@ -152,10 +220,16 @@ export const projectProfileMetaContainer = css`
     position: fixed;
     right: 16px;
     bottom: 16px;
-    z-index: 30000;
-    width: min(360px, calc(100vw - 32px));
+    z-index: 10;
+    width: min(320px, calc(100vw - 32px));
     border-radius: 14px;
     padding: 10px 12px;
+    opacity: 0.92;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 1;
+    }
 `;
 
 export const projectProfileMetaTextContainer = (
@@ -328,25 +402,4 @@ export const projectProfileExternalLink = (
 
 export const drawerIcon = css`
     fill: #fff;
-`;
-
-export const buttonContainer = (theme: Theme): SerializedStyles => css`
-    position: relative;
-    top: 0;
-    color: ${theme.headerTextColor};
-    border: 2px solid ${theme.highlightBackground};
-    cursor: pointer;
-    border-radius: 3px;
-    ${shadow}
-    height: 42px;
-    width: auto;
-    margin: 0;
-    margin-left: 6px;
-    &:hover {
-        cursor: pointer;
-        border: 2px solid ${theme.line};
-        & > button {
-            border-color: transparent transparent transparent ${theme.line};
-        }
-    }
 `;

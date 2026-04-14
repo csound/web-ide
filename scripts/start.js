@@ -18,7 +18,6 @@ const fs = require("fs");
 const chalk = require("react-dev-utils/chalk");
 const webpack = require("webpack");
 const WebpackDevServer = require("webpack-dev-server");
-const clearConsole = require("react-dev-utils/clearConsole");
 const checkRequiredFiles = require("react-dev-utils/checkRequiredFiles");
 const {
     choosePort,
@@ -31,7 +30,6 @@ const paths = require("../config/paths");
 const configFactory = require("../config/webpack.config");
 const createDevServerConfig = require("../config/webpackDevServer.config");
 
-const useYarn = fs.existsSync(paths.yarnLockFile);
 const isInteractive = process.stdout.isTTY;
 
 // Warn and crash if required files are missing
@@ -98,7 +96,7 @@ checkBrowsers(paths.appPath, isInteractive)
             config,
             devSocket,
             urls,
-            useYarn,
+            useYarn: false,
             useTypeScript,
             tscCompileOnError,
             webpack

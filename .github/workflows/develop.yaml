@@ -34,8 +34,8 @@ jobs:
                   PUBLIC_URL="https://csound-ide-dev.web.app" npm run build:dev
                   cp dist/index.html functions
                   cd functions
-                  yarn install
-                  yarn build
+                  npm ci
+                  npm run build
             - name: Deploy to Firebase
               uses: w9jds/firebase-action@master
               with:

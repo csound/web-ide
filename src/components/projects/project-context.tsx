@@ -5,11 +5,12 @@ import { Theme, useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/project-editor/project-editor";
+import { selectLoginRequesting } from "@comp/login/selectors";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
 import { activateProject, downloadProjectOnce, closeProject } from "./actions";
-import { isEmpty, pathOr } from "ramda";
+import { isEmpty } from "ramda";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
 
@@ -27,6 +28,7 @@ export const ProjectContext = () => {
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
     const projectUid = routeParams.id ?? "";
+    const isLoginRequesting = useSelector(selectLoginRequesting);
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
     if (invalidUrl) {
@@ -45,10 +47,10 @@ export const ProjectContext = () => {
             ? store?.ProjectsReducer?.projects?.[activeProjectUid]
             : undefined
     );
-
-    const tabIndex: number = useSelector(
-        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
+    const shouldShowEditor = Boolean(
+        project && !needsLoading && !isLoginRequesting
     );
+    const shouldShowLoading = needsLoading || isLoginRequesting;
 
     // Effect 1: Reset states when projectUid changes
     useEffect(() => {
@@ -123,10 +125,12 @@ export const ProjectContext = () => {
     return (
         <>
             <ForceBackgroundColor theme={theme} />
-            {project && <ProjectEditor activeProject={project} />}
             <Header />
-            {needsLoading && (
-                <main css={SS.loadMain}>
+            {shouldShowEditor && project && (
+                <ProjectEditor activeProject={project} />
+            )}
+            {shouldShowLoading && (
+                <main css={SS.loadMain(theme)}>
                     <AudioSpinner
                         color={theme.highlightBackground}
                         height={80}

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable no-undef */
 const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;

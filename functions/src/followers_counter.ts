@@ -4,6 +4,9 @@ import { onDocumentWritten } from "firebase-functions/v2/firestore";
 export const followersCounter = onDocumentWritten(
     "followers/{userUid}",
     async (event) => {
+        if (!event.data) {
+            return;
+        }
         const before = event.data.before;
         const after = event.data.after;
         const userUid = event.params.userUid;
