@@ -23,12 +23,31 @@ export const selectProjectOwner = createSelector(
     }
 );
 
+export const selectProjectOwnerForProject =
+    (projectUid: string | undefined) =>
+    (state: RootState): string | undefined => {
+        if (!projectUid) {
+            return undefined;
+        }
+
+        return state.ProjectsReducer?.projects?.[projectUid]?.userUid;
+    };
+
 export const selectIsOwner = createSelector(
     [selectProjectOwner, selectLoggedInUid],
     (ownerUid, loggedInUid) => {
-        return ownerUid === loggedInUid;
+        return !!ownerUid && !!loggedInUid && ownerUid === loggedInUid;
     }
 );
+
+export const selectIsOwnerForProject =
+    (projectUid: string | undefined) =>
+    (state: RootState): boolean => {
+        const ownerUid = selectProjectOwnerForProject(projectUid)(state);
+        const loggedInUid = selectLoggedInUid(state);
+
+        return !!ownerUid && !!loggedInUid && ownerUid === loggedInUid;
+    };
 
 export const selectTabDockIndex = (store: RootState): number =>
     pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"], store);

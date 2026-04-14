@@ -15,6 +15,7 @@ import Avatar from "@mui/material/Avatar";
 import { IProject } from "@comp/projects/types";
 import IconButton from "@mui/material/IconButton";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import * as SS from "./styles";
@@ -22,7 +23,8 @@ import { isEmpty } from "ramda";
 
 const ProjectProfileMeta = (): React.ReactElement => {
     const now = new Date();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isDismissed, setIsDismissed] = useState(false);
 
     const project: IProject | undefined = useSelector(selectActiveProject);
     const projectName = project?.name ?? "unknown project name";
@@ -109,12 +111,25 @@ const ProjectProfileMeta = (): React.ReactElement => {
                     size="small"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     css={SS.projectProfileCollapseButton}
+                    aria-label={
+                        isCollapsed
+                            ? "Expand project info"
+                            : "Collapse project info"
+                    }
                 >
                     {isCollapsed ? (
                         <KeyboardArrowUpIcon fontSize="small" />
                     ) : (
                         <KeyboardArrowDownIcon fontSize="small" />
                     )}
+                </IconButton>
+                <IconButton
+                    size="small"
+                    onClick={() => setIsDismissed(true)}
+                    css={SS.projectProfileCollapseButton}
+                    aria-label="Dismiss project info"
+                >
+                    <CloseIcon fontSize="small" />
                 </IconButton>
             </div>
 
@@ -174,7 +189,7 @@ const ProjectProfileMeta = (): React.ReactElement => {
         </>
     );
 
-    return project ? (
+    return project && !isDismissed ? (
         <div css={SS.projectProfileMetaContainer}>
             <div css={SS.projectProfileMetaTextContainer}>
                 {projectMetaBody}

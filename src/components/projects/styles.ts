@@ -1,4 +1,5 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
+import { headerHeight } from "@styles/constants";
 import { rgba } from "@styles/utils";
 
 export const main: SerializedStyles = css`
@@ -6,12 +7,21 @@ export const main: SerializedStyles = css`
     min-height: calc(100vh - 40px); /* minus the header height! */
 `;
 
-export const loadMain: SerializedStyles = css`
+export const loadMain = (theme: Theme): SerializedStyles => css`
+    position: fixed;
+    top: ${headerHeight}px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+    background: ${theme.background};
+
     > div {
-        position: fixed;
-        left: calc(50vw - 80px);
-        top: calc(50vh - 80px);
+        position: static;
     }
 `;
 

@@ -1,22 +1,26 @@
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
-import { isMobile } from "@root/utils";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
+const MOBILE_BP = "(max-width: 760px)";
+const DESKTOP_BP = "(min-width: 761px)";
+
 export const ProfileContainer = styled.div`
-    ${isMobile()
-        ? `padding: 16px;
-    box-sizing: border-box;`
-        : `display: grid;
-    grid-template-columns: 250px 1fr;
-    grid-template-rows: 120px auto;
-    grid-auto-rows: auto;
-    align-items: start;
-    padding: 24px;`}
     width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    @media ${MOBILE_BP} {
+        padding: 16px;
+    }
+    @media ${DESKTOP_BP} {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        grid-template-rows: 120px auto;
+        grid-auto-rows: auto;
+        align-items: start;
+        padding: 24px;
+    }
 `;
 export const IDContainer = styled(Card)`
     grid-row: 1 / -1;
@@ -137,13 +141,20 @@ export const NameSectionWrapper = styled.div`
     display: grid;
     grid-template-rows: 1fr auto;
     grid-template-columns: 1fr;
-    ${!isMobile() && "padding-left: 32px;"}
+    @media ${DESKTOP_BP} {
+        padding-left: 32px;
+    }
 `;
 export const NameSection = styled.div`
     grid-row: 2;
     grid-column: 1;
     color: white;
-    padding: ${isMobile() ? "12px 0 4px" : "16px 24px"};
+    @media ${MOBILE_BP} {
+        padding: 12px 0 4px;
+    }
+    @media ${DESKTOP_BP} {
+        padding: 16px 24px;
+    }
 `;
 export const ContentSection = styled.div<any>`
     grid-row: 2;
@@ -151,12 +162,15 @@ export const ContentSection = styled.div<any>`
     align-self: start;
     z-index: 2;
     margin-top: 16px;
-    ${!isMobile() && "margin-left: 32px;"}
     background: ${(properties) => properties.theme.background};
     border-radius: 4px;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     min-width: 0;
     overflow-x: hidden;
+    min-height: 300px;
+    @media ${DESKTOP_BP} {
+        margin-left: 32px;
+    }
 `;
 export const ContentTabsContainer = styled.div`
     background-color: rgba(0, 0, 0, 0.2);

@@ -1,16 +1,16 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { shadow } from "@styles/_common";
 
 export const dropdownContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
     width: auto;
     height: 42px;
-    margin-right: 6px;
+    margin-right: 4px;
     box-sizing: content-box;
     & > div {
-        border: 2px solid ${theme.highlightBackground};
+        border: 1px solid ${theme.line};
+        border-radius: 8px;
         &:hover {
-            border: 2px solid ${theme.line};
+            background-color: ${theme.buttonBackgroundHover};
         }
     }
 `;
@@ -32,17 +32,17 @@ export const dropdownContainerForDialog = (
 `;
 
 export const menu = (theme: Theme): SerializedStyles => css`
-    ${shadow}
-    z-index: 2;
+    z-index: 200;
     position: absolute;
-    border: 2px solid ${theme.line};
+    border: 1px solid ${theme.line};
     border-radius: 6px;
     background-color: ${theme.headerBackground};
     min-width: 120px;
     width: 100%;
     margin-top: 6px;
     right: 0px;
-    font-size: 14px;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
     @keyframes dropIn {
         from,
         60%,
@@ -91,23 +91,20 @@ export const control = (theme: Theme): SerializedStyles => css`
     height: 38px;
     width: auto;
     transition: width 2s;
-    border-radius: 0;
     text-decoration: none;
     color: ${theme.headerTextColor};
     font-size: 15px;
     padding: 0px;
-    border: 2px solid ${theme.highlightBackground};
-    border-radius: 3px;
+    border: 1px solid ${theme.line};
+    border-radius: 8px;
     cursor: default;
-    ${shadow}
     & span {
         display: none;
     }
     & div:hover {
-        background-color: ${theme.line};
+        background-color: ${theme.buttonBackgroundHover};
     }
     &:hover {
-        border: 2px solid ${theme.line};
         cursor: pointer;
     }
 `;
@@ -115,9 +112,9 @@ export const control = (theme: Theme): SerializedStyles => css`
 export const controlError = (theme: Theme): SerializedStyles => css`
     ${control(theme)}
     color: ${theme.errorText};
-    border: 2px solid ${theme.errorText};
+    border: 1px solid ${theme.errorText};
     &:hover {
-        border: 2px solid ${theme.errorText};
+        border: 1px solid ${theme.errorText};
     }
 `;
 
@@ -183,24 +180,24 @@ export const indicatorSeparator: SerializedStyles = css`
 
 export const playButtonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
-    overflow: hidden;
-    border: 2px solid ${theme.highlightBackground};
-    border-radius: 3px;
-    ${shadow}
-    height: 100%;
+    border: 1px solid ${theme.line};
+    border-radius: 8px;
+    height: 42px;
     width: 42px;
-    margin-right: 6px;
+    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background-color 0.15s;
     &:hover {
         cursor: pointer;
-        border: 2px solid ${theme.line};
         background-color: ${theme.buttonBackgroundHover};
     }
 `;
 
 export const playButtonLoadingSpinner = css`
     cursor: auto;
-    margin-top: 6px;
-    margin-left: 6px;
 `;
 
 export const playButtonStyle =
@@ -216,8 +213,6 @@ export const playButtonStyle =
         transition: 100ms all ease;
 
         // play state
-        margin-top: 6px;
-        margin-left: 10px;
         border-style: solid;
         border-width: 12px 0 12px 20px;
 
@@ -227,34 +222,38 @@ cursor: pointer;
 border-style: double;
 border-width: 0px 0 0px 20px;
 height: 26px;
-margin-top: 6px;
-margin-left: 9px;
 `}
     `;
 
 export const buttonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
-    top: 0;
     color: ${theme.headerTextColor};
-    ${shadow}
     height: 42px;
-    width: auto;
+    width: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin: 0;
-    margin-right: 6px;
+    margin-right: 4px;
+    line-height: 1;
 
     & > .Mui-disabled {
         opacity: 0.4;
     }
 
     button {
-        border: 2px solid ${theme.highlightBackground};
-        border-radius: 3px;
+        border: 1px solid ${theme.line};
+        border-radius: 8px;
+        transition: background-color 0.15s;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
         &:hover {
             cursor: pointer;
-            border: 2px solid ${theme.line};
-            & > button {
-                border-color: transparent transparent transparent ${theme.line};
-            }
+            background-color: ${theme.buttonBackgroundHover};
         }
         .Mui-disabled:hover {
             cursor: default !important;
@@ -263,8 +262,14 @@ export const buttonContainer = (theme: Theme): SerializedStyles => css`
 `;
 
 export const iconButton = (): SerializedStyles => css`
-    border-radius: 0;
-    padding: 2px;
+    border-radius: 8px;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 `;
 
 export const stopIcon = (theme: Theme): SerializedStyles => css`

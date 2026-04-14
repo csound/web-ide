@@ -1,11 +1,11 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow } from "@styles/_common";
-import { headerHeight } from "@styles/constants";
+import { headerHeight, mobileNavHeight } from "@styles/constants";
 
 export const splitterRoot = css`
     position: relative;
     width: 100vw;
-    height: calc(100vh - ${headerHeight}px);
+    height: 100vh;
     top: 0;
     padding-top: ${headerHeight}px;
     left: 0;
@@ -36,6 +36,30 @@ export const closeButton = css`
     z-index: 10;
     span {
         pointer-events: none;
+    }
+`;
+
+export const manualWindowRoot = css`
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+`;
+
+export const manualWindowHeader = css`
+    position: relative;
+    flex: 0 0 36px;
+`;
+
+export const manualWindowFrame = css`
+    flex: 1 1 auto;
+    min-height: 0;
+
+    iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
     }
 `;
 
@@ -83,8 +107,8 @@ export const mobileNavContainer = (theme: Theme): SerializedStyles => css`
     position: fixed;
     width: 100%;
     bottom: 0;
-    z-index: 9999;
-    height: 56px;
+    z-index: 50;
+    height: ${mobileNavHeight}px;
     display: flex;
     align-items: stretch;
     ${shadow};

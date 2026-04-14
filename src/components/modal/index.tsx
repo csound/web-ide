@@ -111,7 +111,7 @@ export default function GlobalModal() {
                       ? always
                       : modalProperties.onClose || onClose
             }
-            style={{ zIndex: 3 }}
+            style={{ zIndex: 1000 }}
         >
             <Fade in={isOpen}>
                 <div

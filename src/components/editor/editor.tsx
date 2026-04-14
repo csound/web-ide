@@ -185,7 +185,9 @@ const CodeEditor = ({
                       parent: editorReference.current
                   });
 
-            newEditor.scrollDOM.addEventListener("scroll", onScroll);
+            newEditor.scrollDOM.addEventListener("scroll", onScroll, {
+                passive: true
+            });
             openEditors.set(documentUid, newEditor);
 
             newEditor.dispatch({

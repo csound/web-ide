@@ -1,5 +1,5 @@
 import { css, SerializedStyles } from "@emotion/react";
-import { headerHeight } from "@styles/constants";
+import { headerHeight, mobileNavHeight } from "@styles/constants";
 
 export const mobileLayout = css`
     width: 100%;
@@ -8,8 +8,8 @@ export const mobileLayout = css`
     overflow: hidden;
     min-height: 0;
     margin-top: ${headerHeight}px;
-    height: calc(100vh - ${headerHeight}px);
-    height: calc(100dvh - ${headerHeight}px);
+    height: calc(100vh - ${headerHeight}px - ${mobileNavHeight}px);
+    height: calc(100dvh - ${headerHeight}px - ${mobileNavHeight}px);
 `;
 
 export const mobileContent = css`

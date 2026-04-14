@@ -1,11 +1,5 @@
 import { RootState } from "@root/store";
-import { createSelector } from "@reduxjs/toolkit";
 import { IProject, IProjectsReducer, Star } from "../projects/types";
-import { propOr } from "ramda";
-import { selectActiveProject } from "../projects/selectors";
-
-export const selectActiveProjectUid = (store: RootState): string | undefined =>
-    store.ProjectsReducer?.activeProjectUid;
 
 export const selectProjects = (
     store: RootState
@@ -37,7 +31,12 @@ export const selectUserStarredProject = (
     };
 };
 
-export const selectProjectPublic = (store: RootState): boolean => {
-    const activeProject = selectActiveProject(store);
-    return propOr(true, "isPublic", activeProject);
-};
+export const selectProjectPublic =
+    (projectUid: string | undefined) =>
+    (store: RootState): boolean => {
+        if (!projectUid) {
+            return false;
+        }
+
+        return !!store.ProjectsReducer?.projects?.[projectUid]?.isPublic;
+    };

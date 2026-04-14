@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
-import { selectIsOwner } from "@comp/project-editor/selectors";
+import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
 import {
     selectUserImageURL,
     selectLoggedInUserName
 } from "@comp/profile/selectors";
-import { selectLoggedInUid } from "@comp/login/selectors";
+import {
+    selectLoggedInUid,
+    selectLoginRequesting
+} from "@comp/login/selectors";
 import AppBar from "@mui/material/AppBar";
 import Login from "@comp/login/login";
 import * as loginActions from "@comp/login/actions";
@@ -16,31 +19,23 @@ import {
     IconButton,
     MenuItem,
     Menu,
-    Drawer,
-    List,
-    ListItemButton,
     ListItemIcon,
-    ListItemText,
-    Divider
+    ListItemText
 } from "@mui/material";
 import { AccountBox } from "@mui/icons-material";
 import Button from "@mui/material/Button";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import CachedAvatar from "@comp/profile/cached-avatar";
-import MenuIcon from "@mui/icons-material/Menu";
 import HelpIcon from "@mui/icons-material/Help";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import * as SS from "./styles";
-// import { tooltipClasses } from "@comp/styles";
 import { isEmpty } from "ramda";
 import { MenuBar } from "@comp/menu-bar/menu-bar";
 import ProjectProfileMeta from "./project-profile-meta";
 import { TargetControls } from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
 import { isMobile } from "@root/utils";
-import { closeHeaderDrawer, openHeaderDrawer } from "@comp/menu-ui/actions";
-import { selectIsHeaderDrawerOpen } from "@comp/menu-ui/selectors";
 
 export const Header = () => {
     const dispatch = useDispatch();
@@ -50,6 +45,7 @@ export const Header = () => {
     const authenticated = useSelector(
         (store: RootState) => store.LoginReducer.authenticated
     );
+    const isAuthRequesting = useSelector(selectLoginRequesting);
     const activeProjectUid = useSelector(
         (store: RootState) => store.ProjectsReducer.activeProjectUid
     );
@@ -59,12 +55,18 @@ export const Header = () => {
     const routeIsHome = currentRoute.pathname === "/";
 
     const routeIsEditor = currentRoute.pathname.startsWith("/editor");
+    const routeProjectUid = routeIsEditor
+        ? currentRoute.pathname.split("/")[2] || ""
+        : "";
+    const editorProjectUid = activeProjectUid || routeProjectUid;
+    const projectControlsReady =
+        !!editorProjectUid && activeProjectUid === editorProjectUid;
 
     const routeIsProfile = currentRoute.pathname.startsWith("/profile");
 
     const routeIsDocumentation = currentRoute.pathname === "/documentation";
 
-    const isOwner = useSelector(selectIsOwner);
+    const isOwner = useSelector(selectIsOwnerForProject(editorProjectUid));
 
     const loggedInUid = useSelector(selectLoggedInUid);
 
@@ -79,8 +81,6 @@ export const Header = () => {
     const anchorElement = useRef<HTMLButtonElement>(null);
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-
-    const isDrawerOpen = useSelector(selectIsHeaderDrawerOpen);
 
     const handleProfileMenuOpen = () => {
         setIsProfileMenuOpen(true);
@@ -97,7 +97,6 @@ export const Header = () => {
             }
 
             handleProfileMenuClose();
-            dispatch(closeHeaderDrawer());
         };
 
         window.addEventListener("keydown", closeOnEscape);
@@ -182,118 +181,134 @@ export const Header = () => {
         </Button>
     );
 
-    const burgerMenu =
-        routeIsHome || routeIsProfile || routeIsDocumentation ? (
-            <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                aria-controls={
-                    isDrawerOpen ? "top-navigation-drawer" : undefined
-                }
-                aria-expanded={isDrawerOpen}
-                data-tip="Open drawer"
-                onClick={() => dispatch(openHeaderDrawer())}
-                edge="start"
-                css={SS.menuButton}
-            >
-                <MenuIcon />
-            </IconButton>
+    const utilityLinks = [
+        {
+            label: "Site Documentation",
+            icon: <HelpIcon />,
+            onClick: () => window.open("/documentation", "_blank")
+        },
+        {
+            label: "Report an Issue",
+            icon: <ReportProblemIcon />,
+            onClick: () =>
+                window.open(
+                    "https://github.com/csound/web-ide/issues",
+                    "_blank"
+                )
+        },
+        {
+            label: "Github Project",
+            icon: <GitHubIcon />,
+            onClick: () =>
+                window.open("https://github.com/csound/web-ide", "_blank")
+        }
+    ];
+
+    const utilityMenuAnchor = useRef<HTMLButtonElement>(null);
+    const [isUtilityMenuOpen, setIsUtilityMenuOpen] = useState(false);
+
+    const leadingSlot =
+        routeIsEditor && mobileView ? (
+            <div css={SS.menuSlot}>
+                {editorProjectUid ? (
+                    <MenuBar projectUid={editorProjectUid} />
+                ) : null}
+            </div>
         ) : (
             <div css={SS.spacer} />
         );
+
+    const editorControlsPlaceholder = (
+        <div css={SS.headerControlsPlaceholder}>
+            <span css={SS.headerControlCircle} />
+            <span css={SS.headerControlCircle} />
+        </div>
+    );
+
+    const utilityNav = (
+        <div css={SS.utilityNav}>
+            <IconButton
+                ref={utilityMenuAnchor}
+                size="small"
+                css={SS.utilityToggle}
+                onClick={() => setIsUtilityMenuOpen(true)}
+                aria-label="Help and links"
+                aria-controls={isUtilityMenuOpen ? "utility-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={isUtilityMenuOpen}
+            >
+                <HelpIcon />
+            </IconButton>
+            <Menu
+                id="utility-menu"
+                anchorEl={utilityMenuAnchor.current}
+                open={isUtilityMenuOpen}
+                onClose={() => setIsUtilityMenuOpen(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                {utilityLinks.map(({ label, icon, onClick }) => (
+                    <MenuItem
+                        key={label}
+                        onClick={() => {
+                            setIsUtilityMenuOpen(false);
+                            onClick();
+                        }}
+                    >
+                        <ListItemIcon>{icon}</ListItemIcon>
+                        <ListItemText>{label}</ListItemText>
+                    </MenuItem>
+                ))}
+            </Menu>
+        </div>
+    );
 
     return (
         <>
             {isLoginDialogOpen && <Login />}
             <AppBar position={"fixed"} css={SS.headerRoot}>
                 <Toolbar disableGutters={true} css={SS.toolbar}>
-                    {burgerMenu}
-
-                    {routeIsEditor && activeProjectUid && mobileView && (
-                        <MenuBar />
-                    )}
+                    {leadingSlot}
 
                     <CSLogo size={38} interactive={true} />
 
-                    {routeIsEditor && activeProjectUid && !mobileView && (
-                        <MenuBar />
+                    {routeIsEditor && editorProjectUid && !mobileView && (
+                        <MenuBar projectUid={editorProjectUid} />
                     )}
                     <div style={{ flexGrow: 1 }} />
-                    <div css={SS.headerRightSideGroup}>
-                        {routeIsEditor && activeProjectUid && (
-                            <TargetControls
-                                activeProjectUid={activeProjectUid}
-                            />
-                        )}
-                        {routeIsEditor && activeProjectUid && !mobileView && (
-                            <SocialControls
-                                activeProjectUid={activeProjectUid}
-                            />
+                    {routeIsEditor ? (
+                        <div css={SS.headerRightSideGroup}>
+                            {editorProjectUid && projectControlsReady && (
+                                <TargetControls
+                                    activeProjectUid={editorProjectUid}
+                                />
+                            )}
+                            {editorProjectUid &&
+                                !projectControlsReady &&
+                                editorControlsPlaceholder}
+                            {editorProjectUid &&
+                                projectControlsReady &&
+                                !mobileView && (
+                                    <SocialControls
+                                        activeProjectUid={editorProjectUid}
+                                    />
+                                )}
+                        </div>
+                    ) : (
+                        <div css={SS.defaultRightSideGroup} />
+                    )}
+                    {!mobileView && utilityNav}
+                    <div css={SS.authSlot}>
+                        {isAuthRequesting ? (
+                            <div css={SS.authPlaceholder} />
+                        ) : authenticated ? (
+                            userMenu()
+                        ) : (
+                            loginButton()
                         )}
                     </div>
-                    {authenticated ? userMenu() : loginButton()}
                 </Toolbar>
             </AppBar>
-
-            <Drawer
-                id="top-navigation-drawer"
-                open={isDrawerOpen}
-                onClose={() => dispatch(closeHeaderDrawer())}
-            >
-                <div css={SS.drawer}>
-                    <div css={SS.drawerHeader}>
-                        <h2>Csound Web-IDE</h2>
-                    </div>
-                    <Divider />
-                    <List>
-                        <ListItemButton
-                            onClick={() =>
-                                window.open("/documentation", "_blank")
-                            }
-                        >
-                            <ListItemIcon>
-                                <HelpIcon css={SS.drawerIcon} />
-                            </ListItemIcon>
-                            <ListItemText primary="Site Documentation" />
-                        </ListItemButton>
-                        <ListItemButton
-                            onClick={() =>
-                                window.open(
-                                    "https://github.com/csound/web-ide/issues",
-                                    "_blank"
-                                )
-                            }
-                        >
-                            <ListItemIcon>
-                                <ReportProblemIcon css={SS.drawerIcon} />
-                            </ListItemIcon>
-                            <ListItemText primary="Report an Issue" />
-                        </ListItemButton>
-                    </List>
-                    <Divider />
-                    <List>
-                        <ListItemButton
-                            onClick={() =>
-                                window.open(
-                                    "https://github.com/csound/web-ide",
-                                    "_blank"
-                                )
-                            }
-                        >
-                            <ListItemIcon>
-                                <GitHubIcon css={SS.drawerIcon} />
-                            </ListItemIcon>
-                            <ListItemText primary="Github Project" />
-                        </ListItemButton>
-                    </List>
-                    {/* <Divider/>
-                        <List >
-                        <ListItem>
-                        <ListItemText primary={`Version: `} />
-                        </ListItem>
-                        </List> */}
-                </div>
-            </Drawer>
             {routeIsEditor && !isOwner && !mobileView && <ProjectProfileMeta />}
         </>
     );

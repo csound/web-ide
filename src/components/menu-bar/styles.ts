@@ -1,8 +1,5 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { shadow } from "@styles/_common";
 import { headerHeight } from "@styles/constants";
-
-const mobileBottomInset = 56;
 
 export const root = (theme: Theme): SerializedStyles => css`
     color: ${theme.headerTextColor};
@@ -17,7 +14,7 @@ export const root = (theme: Theme): SerializedStyles => css`
     margin: 0;
     user-select: none;
     margin-left: 12px;
-    z-index: 1;
+    z-index: 200;
 
     @media (max-width: 900px) {
         margin-left: 6px;
@@ -33,12 +30,11 @@ export const mobileTopTriggerButton =
         width: 36px;
         height: 36px;
         margin: 0 8px 0 0;
-        border: 2px solid ${theme.line};
-        border-radius: 8px;
+        border: 1px solid ${theme.line};
+        border-radius: 6px;
         color: ${theme.headerTextColor};
         background: ${isActive ? theme.buttonBackgroundHover : "transparent"};
         cursor: pointer;
-        ${shadow}
 
         &:hover {
             background: ${theme.buttonBackgroundHover};
@@ -52,14 +48,15 @@ export const mobileTopTriggerButton =
 
 export const mobileDock = css`
     position: fixed;
-    top: ${headerHeight + 8}px;
-    left: 8px;
-    right: 8px;
-    bottom: ${mobileBottomInset}px;
-    z-index: 20000;
+    top: ${headerHeight + 4}px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
     display: flex;
-    align-items: stretch;
-    gap: 10px;
+    flex-direction: column;
+    padding: 0 8px;
+    pointer-events: none;
 `;
 
 export const mobileDockBackdrop = css`
@@ -68,47 +65,51 @@ export const mobileDockBackdrop = css`
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 19999;
+    z-index: 199;
     background: rgba(0, 0, 0, 0.4);
 `;
 
 export const mobileRail = (theme: Theme): SerializedStyles => css`
+    pointer-events: auto;
     display: flex;
-    flex-direction: column;
-    width: 88px;
-    min-width: 88px;
-    border-right: 1px solid ${theme.line};
-    background: ${theme.buttonBackground};
-    border-radius: 12px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 2px;
+    padding: 6px;
+    background: ${theme.headerBackground};
+    border-radius: 0 0 12px 12px;
     border: 1px solid ${theme.line};
-    min-height: 0;
+    border-top: 0;
+    overflow-x: auto;
 `;
 
 export const mobileRailList = css`
     list-style: none;
     margin: 0;
-    padding: 4px;
-    overflow-y: auto;
-    min-height: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
     flex: 1;
 `;
 
 export const mobileRailButton =
     (isActive: boolean) =>
     (theme: Theme): SerializedStyles => css`
-        width: 100%;
         border: 0;
-        border-radius: 10px;
-        margin-bottom: 6px;
-        padding: 8px 6px;
+        border-radius: 8px;
+        padding: 8px 14px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         justify-content: center;
-        gap: 4px;
+        gap: 6px;
         color: ${theme.headerTextColor};
         background: ${isActive ? theme.buttonBackgroundHover : "transparent"};
         cursor: pointer;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: ${isActive ? 600 : 400};
 
         &:hover {
             background: ${theme.buttonBackgroundHover};
@@ -126,29 +127,27 @@ export const mobileRailIcon = css`
     justify-content: center;
 
     svg {
-        font-size: 18px;
+        font-size: 16px;
     }
 `;
 
 export const mobileRailText = css`
-    font-size: 11px;
+    font-size: 13px;
     line-height: 1;
-    text-align: center;
 `;
 
 export const mobilePanel = (theme: Theme): SerializedStyles => css`
-    position: relative;
+    pointer-events: auto;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-width: 0;
-    width: auto;
-    max-width: 100%;
+    max-height: calc(100vh - ${headerHeight + 80}px);
+    max-height: calc(100dvh - ${headerHeight + 80}px);
+    margin-top: 4px;
     border-radius: 12px;
-    border: 2px solid ${theme.line};
+    border: 1px solid ${theme.line};
     background: ${theme.headerBackground};
     overflow: hidden;
-    ${shadow}
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
 `;
 
 export const mobilePanelHeader = (theme: Theme): SerializedStyles => css`
@@ -219,8 +218,8 @@ export const nestedMenuIcon = (theme: Theme): SerializedStyles => css`
 `;
 
 export const paraLabel = css`
-    margin: 9px 12px 9px 24px;
-    font-size: 14px;
+    margin: 6px 12px 6px 24px;
+    font-size: 13px;
     white-space: nowrap;
 `;
 
@@ -228,53 +227,48 @@ export const dropdownButtonWrapper = css`
     display: inline;
     margin-left: 6px;
     position: relative;
+    z-index: 200;
 `;
 
 export const dropdownButton = (theme: Theme): SerializedStyles => css`
-    ${shadow}
     z-index: 2;
     display: inline;
-    border: 2px solid ${theme.line};
+    border: 1px solid ${theme.line};
     border-radius: 6px;
-    padding: 4px 8px;
+    padding: 4px 10px;
     margin: 2px;
-    transition:
-        background-color 0.16s ease,
-        transform 0.16s ease;
+    transition: background-color 0.12s ease;
     &:hover {
         cursor: pointer;
         background-color: ${theme.buttonBackgroundHover};
         z-index: 3;
-        transform: translateY(-1px);
     }
     &:focus-visible {
         outline: 2px solid ${theme.highlightBackground};
         outline-offset: 2px;
     }
     & > span {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 500;
-        letter-spacing: 1.25px;
     }
 `;
 
 export const dropdownList = (theme: Theme): SerializedStyles => css`
-    z-index: 20000;
+    z-index: 200;
     width: fit-content;
-    border: 2px solid ${theme.line};
+    border: 1px solid ${theme.line};
     border-radius: 6px;
     background-color: ${theme.headerBackground};
     opacity: 1;
     position: absolute;
     list-style: none !important;
-    padding: 0;
-    animation: menuSlideFadeIn 0.16s ease;
+    padding: 4px 0;
     outline: 0;
     margin: 0;
     margin-top: 24px;
     left: 0;
     top: 5px;
-    ${shadow}
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
 
     @keyframes menuSlideFadeIn {
         from {
@@ -298,26 +292,26 @@ export const dropdownListNested = (theme: Theme): SerializedStyles => css`
 
 export const nestedWrapper = css`
     position: relative;
+    z-index: 200;
 `;
 
 export const listItem = (theme: Theme): SerializedStyles => css`
-    padding: 2px 12px;
+    padding: 4px 12px;
     padding-right: 18px;
     width: 100%;
     display: flex;
     justify-content: space-between;
     background-color: ${theme.headerBackground};
     position: relative;
+    border-radius: 4px;
     &:hover {
         cursor: pointer;
         background-color: ${theme.buttonBackgroundHover};
-        border-radius: 2px;
-        ${shadow};
     }
     &:focus-visible {
         outline: 2px solid ${theme.highlightBackground};
         outline-offset: -2px;
-        border-radius: 2px;
+        border-radius: 4px;
     }
     & > p,
     & span {

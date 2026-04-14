@@ -26,7 +26,7 @@ export const editIcon = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     width: 22px;
     height: 22px;
-    z-index: 3;
+    z-index: 0;
     border-radius: 50%;
     background-clip: content-box;
     &:hover {
@@ -40,7 +40,7 @@ export const deleteIcon = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     width: 24px;
     height: 24px;
-    z-index: 3;
+    z-index: 0;
     border-radius: 50%;
     background-clip: content-box;
     &:hover {
@@ -67,7 +67,7 @@ export const nonCloudActionIcon = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     width: 22px;
     height: 22px;
-    z-index: 3;
+    z-index: 0;
     padding: 3px;
     border-radius: 6px;
     border: 1px solid ${theme.line};

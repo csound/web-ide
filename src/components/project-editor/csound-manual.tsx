@@ -35,22 +35,10 @@ const ManualWindow = ({
 
     return (
         <div
-            style={{
-                width: "100%",
-                height: "100%",
-                paddingTop: 35,
-                pointerEvents: isDragging ? "none" : "auto"
-            }}
+            css={SS.manualWindowRoot}
+            style={{ pointerEvents: isDragging ? "none" : "auto" }}
         >
-            <IframeComm
-                attributes={{
-                    src: "/manual?cache=1002",
-                    width: "100%",
-                    height: "100%"
-                }}
-                postMessageData={manualLookupString || ""}
-            />
-            <div css={windowHeaderStyle}>
+            <div css={[windowHeaderStyle(theme), SS.manualWindowHeader]}>
                 <p>
                     Csound Manual
                     <span css={SS.headIconsContainer}>
@@ -69,6 +57,16 @@ const ManualWindow = ({
                         </Tooltip>
                     </span>
                 </p>
+            </div>
+            <div css={SS.manualWindowFrame}>
+                <IframeComm
+                    attributes={{
+                        src: "/manual?cache=1002",
+                        width: "100%",
+                        height: "100%"
+                    }}
+                    postMessageData={manualLookupString || ""}
+                />
             </div>
         </div>
     );

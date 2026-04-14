@@ -154,11 +154,14 @@ export const Profile = () => {
     // const followingFilterString = useSelector(selectFollowingFilterString);
     const projectFilterString = useSelector(selectProjectFilterString);
     const [imageHover, setImageHover] = useState(false);
-    const [selectedSection, setSelectedSection] =
-        useState<ProfileSection>("projects");
+    const [isAboutSelected, setIsAboutSelected] = useState(false);
     const loggedInUserFollowing: string[] = useSelector(followingSelector);
     const isMobileLayout = useMediaQuery("(max-width: 760px)");
     const routeSection = getRouteSection(tab);
+
+    // Derive section synchronously: "about" only visible on mobile when explicitly chosen
+    const selectedSection: ProfileSection =
+        isMobileLayout && isAboutSelected ? "about" : routeSection;
 
     const isFollowing = profileUid
         ? loggedInUserFollowing.includes(profileUid)
@@ -174,17 +177,12 @@ export const Profile = () => {
         rootElement && rootElement.scrollTo(0, 0);
     }, []);
 
+    // Reset "about" when switching to desktop or navigating to a new route tab
     useEffect(() => {
-        if (!isMobileLayout && selectedSection === "about") {
-            setSelectedSection(routeSection);
+        if (!isMobileLayout || routeSection !== getRouteSection(tab)) {
+            setIsAboutSelected(false);
         }
-    }, [isMobileLayout, routeSection, selectedSection]);
-
-    useEffect(() => {
-        if (selectedSection !== "about") {
-            setSelectedSection(routeSection);
-        }
-    }, [routeSection, selectedSection]);
+    }, [isMobileLayout, routeSection, tab]);
 
     useEffect(() => {
         if (!isRequestingLogin) {
@@ -276,29 +274,26 @@ export const Profile = () => {
     const isAboutSection = selectedSection === "about";
 
     const handleSectionChange = (section: ProfileSection) => {
+        if (section === "about") {
+            setIsAboutSelected(true);
+            return;
+        }
+        setIsAboutSelected(false);
         switch (section) {
             case "projects": {
-                setSelectedSection("projects");
                 navigate(`/profile/${username}`);
                 return;
             }
             case "following": {
-                setSelectedSection("following");
                 navigate(`/profile/${username}/following`);
                 return;
             }
             case "followers": {
-                setSelectedSection("followers");
                 navigate(`/profile/${username}/followers`);
                 return;
             }
             case "stars": {
-                setSelectedSection("stars");
                 navigate(`/profile/${username}/stars`);
-                return;
-            }
-            case "about": {
-                setSelectedSection("about");
                 return;
             }
         }

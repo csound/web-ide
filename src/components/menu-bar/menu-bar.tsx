@@ -25,19 +25,26 @@ import { useSetConsole } from "@comp/console/context";
 import { invokeHotKeyCallback } from "@comp/hot-keys/actions";
 import { humanizeKeySequence } from "@comp/hot-keys/utils";
 import { showTargetsConfigDialog } from "@comp/target-controls/actions";
-import { exportProject } from "@comp/projects/actions";
+import { exportProject, markProjectPublic } from "@comp/projects/actions";
 import {
     toggleManualPanel,
     setFileTreePanelOpen
 } from "@comp/project-editor/actions";
 import { renderToDisk, listAvailableOpcodes } from "@comp/csound/actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
-import { selectIsOwner } from "@comp/project-editor/selectors";
+import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
 import { changeTheme } from "@comp/themes/action";
 import { equals, isEmpty } from "ramda";
 import { showKeyboardShortcuts } from "@comp/site-documents/actions";
 import { openBottomTab } from "@comp/bottom-tabs/actions";
 import { isMobile } from "@root/utils";
+import { openSimpleModal } from "@comp/modal/actions";
+import { starOrUnstarProject } from "@comp/profile/actions";
+import {
+    selectUserStarredProject,
+    selectProjectPublic
+} from "@comp/social-controls/selectors";
+import { selectLoggedInUid } from "@comp/login/selectors";
 import {
     closeMobileDock,
     closeMobileTopMenu,
@@ -53,16 +60,17 @@ import {
     selectMobileTopMenuPath
 } from "@comp/menu-ui/selectors";
 
-export function MenuBar() {
+export function MenuBar({ projectUid }: { projectUid?: string }) {
     const setConsole = useSetConsole();
     const menuRootRef = useRef<HTMLDivElement | null>(null);
 
     const activeProjectUid = useSelector(
         (store: RootState) => store.ProjectsReducer.activeProjectUid || ""
     );
+    const resolvedProjectUid = projectUid || activeProjectUid;
 
     const dispatch = useDispatch();
-    const isOwner = useSelector(selectIsOwner);
+    const isOwner = useSelector(selectIsOwnerForProject(resolvedProjectUid));
     const csoundStatus = useSelector(selectCsoundStatus);
     const keyBindings = useSelector(
         (store: RootState) => store.HotKeysReducer.bindings
@@ -95,6 +103,12 @@ export function MenuBar() {
     const isMobileMenuOpen = useSelector(selectIsMobileTopMenuOpen);
     const mobilePath = useSelector(selectMobileTopMenuPath);
     const isMobileDockVisible = useSelector(selectIsMobileDockOpen);
+
+    const loggedInUid = useSelector(selectLoggedInUid);
+    const isPublic = useSelector(selectProjectPublic(resolvedProjectUid));
+    const starred = useSelector(
+        selectUserStarredProject(loggedInUid, resolvedProjectUid)
+    );
 
     const [isSabEnabled, setIsSabEnabled] = useLocalStorage("sab", "false");
     const [openPath, setOpenPath] = useState<number[]>([]);
@@ -221,6 +235,34 @@ export function MenuBar() {
                         label: "Configure Targets",
                         callback: () => dispatch(showTargetsConfigDialog()),
                         disabled: !isOwner
+                    },
+                    {
+                        seperator: true
+                    },
+                    {
+                        label: isPublic ? "Share Project" : "Share Project",
+                        callback: () =>
+                            dispatch(openSimpleModal("share-dialog", {})),
+                        disabled: !isPublic
+                    },
+                    {
+                        label: starred ? "Unstar Project" : "Star Project",
+                        callback: () => {
+                            if (resolvedProjectUid && loggedInUid) {
+                                dispatch(
+                                    starOrUnstarProject(
+                                        resolvedProjectUid,
+                                        loggedInUid
+                                    )
+                                );
+                            }
+                        },
+                        disabled: !loggedInUid
+                    },
+                    {
+                        label: "Download Project (.zip)",
+                        callback: () => dispatch(exportProject()),
+                        disabled: !isPublic && !isOwner
                     }
                 ]
             },
@@ -349,7 +391,10 @@ export function MenuBar() {
         };
 
         document.addEventListener("mousedown", closeOnOutsideClick, true);
-        document.addEventListener("touchstart", closeOnOutsideClick, true);
+        document.addEventListener("touchstart", closeOnOutsideClick, {
+            capture: true,
+            passive: true
+        });
 
         return () => {
             document.removeEventListener(
@@ -357,11 +402,9 @@ export function MenuBar() {
                 closeOnOutsideClick,
                 true
             );
-            document.removeEventListener(
-                "touchstart",
-                closeOnOutsideClick,
-                true
-            );
+            document.removeEventListener("touchstart", closeOnOutsideClick, {
+                capture: true
+            });
         };
     }, [dispatch]);
 
