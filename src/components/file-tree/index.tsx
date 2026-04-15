@@ -466,11 +466,12 @@ const makeTree = (
                 <DeleteIcon
                     color="secondary"
                     css={SS.deleteIcon}
-                    onClick={() =>
+                    onClick={(event) => {
+                        event.stopPropagation();
                         dispatch(
                             deleteFile(activeProjectUid, document_.documentUid)
-                        )
-                    }
+                        );
+                    }}
                 />
             </Tooltip>
         );
@@ -483,15 +484,16 @@ const makeTree = (
             >
                 <EditIcon
                     css={SS.editIcon}
-                    onClick={() =>
+                    onClick={(event) => {
+                        event.stopPropagation();
                         dispatch(
                             renameDocument(
                                 activeProjectUid,
                                 document_.documentUid,
                                 propOr("", "filename", document_)
                             )
-                        )
-                    }
+                        );
+                    }}
                 />
             </Tooltip>
         );
@@ -746,6 +748,7 @@ export const FileTree = ({
         <React.Fragment>
             {shouldDisplayTree && (
                 <div css={SS.container}>
+                    <FileTreeHeader isOwner={isOwner} project={project} />
                     <List css={SS.listContainer} dense>
                         {treeElements}
                         {nonCloudFileSources.length > 0 && <hr />}
@@ -835,7 +838,6 @@ export const FileTree = ({
                             );
                         })}
                     </List>
-                    <FileTreeHeader isOwner={isOwner} project={project} />
                 </div>
             )}
         </React.Fragment>

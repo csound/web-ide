@@ -11,6 +11,13 @@ import { _shadow } from "@styles/_common";
 import { isMobile } from "@root/utils";
 
 export const tabListStyle = (theme: Theme): SerializedStyles => css`
+    height: 100%;
+    width: 100%;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
     & li::after {
         z-index: 0;
     }
@@ -61,6 +68,8 @@ const TabListStyleCustom = styled(TabListStyle)`
     bottom: 0;
     box-shadow: 0 10px 12px -12px rgba(0, 0, 0, 0.65);
     position: relative;
+    width: 100%;
+    min-width: 0;
 
     & li::after {
         z-index: 0;

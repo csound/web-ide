@@ -1,7 +1,29 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@root/store";
-import { path, pathOr } from "ramda";
-import { IOpenDocument } from "./types";
+import { pathOr } from "ramda";
+import { IProjectEditorReducer } from "./reducer";
+import {
+    IOpenDocument,
+    IWorkspaceLayoutNode,
+    IWorkspacePanelNode
+} from "./types";
+
+const selectProjectEditorReducer = (store: RootState): IProjectEditorReducer =>
+    store.ProjectEditorReducer as IProjectEditorReducer;
+
+const findPanelById = (
+    node: IWorkspaceLayoutNode,
+    panelId: string
+): IWorkspacePanelNode | undefined => {
+    if (node.kind === "panel") {
+        return node.id === panelId ? node : undefined;
+    }
+
+    return (
+        findPanelById(node.first, panelId) ||
+        findPanelById(node.second, panelId)
+    );
+};
 
 export const selectLoggedInUid = createSelector(
     [
@@ -51,21 +73,30 @@ export const selectCurrentTab = (
     store: RootState
 ): IOpenDocument | undefined => {
     const tabIndex = selectTabDockIndex(store);
-    if (tabIndex > -1) {
-        return path(
-            ["ProjectEditorReducer", "tabDock", "openDocuments", tabIndex],
-            store
-        );
-    }
+    const projectEditorReducer = selectProjectEditorReducer(store);
+    return tabIndex > -1
+        ? projectEditorReducer.tabDock.openDocuments?.[tabIndex]
+        : undefined;
 };
 
 export const selectCurrentTabDocumentUid = (
     store: RootState
 ): string | undefined => {
     const tabIndex = selectTabDockIndex(store);
+    const projectEditorReducer = selectProjectEditorReducer(store);
     if (tabIndex > -1) {
-        return store?.ProjectEditorReducer?.tabDock?.openDocuments?.[tabIndex]
-            ?.uid;
+        return projectEditorReducer.tabDock.openDocuments?.[tabIndex]?.uid;
     }
     return undefined;
 };
+
+export const selectWorkspaceRoot = (store: RootState) =>
+    selectProjectEditorReducer(store).root;
+
+export const selectActivePanelId = (store: RootState) =>
+    selectProjectEditorReducer(store).activePanelId;
+
+export const selectActivePanel = createSelector(
+    [selectWorkspaceRoot, selectActivePanelId],
+    (root, activePanelId) => findPanelById(root, activePanelId)
+);
