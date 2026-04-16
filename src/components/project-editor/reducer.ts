@@ -904,26 +904,21 @@ const ProjectEditorReducer = (
         }
         case SET_MANUAL_PANEL_OPEN: {
             if (!action.open) {
+                const filteredTabs =
+                    state.rightSidebar?.tabs.filter(
+                        (tab) => tab.type !== "manual"
+                    ) ?? [];
                 return syncLegacyState({
                     ...state,
                     manualLookupString: "",
-                    rightSidebar: state.rightSidebar
-                        ? {
-                              ...state.rightSidebar,
-                              tabs: state.rightSidebar.tabs.filter(
-                                  (tab) => tab.type !== "manual"
-                              ),
-                              tabIndex: 0
-                          }.tabs.length
+                    rightSidebar:
+                        filteredTabs.length > 0
                             ? {
-                                  ...state.rightSidebar,
-                                  tabs: state.rightSidebar.tabs.filter(
-                                      (tab) => tab.type !== "manual"
-                                  ),
+                                  ...state.rightSidebar!,
+                                  tabs: filteredTabs,
                                   tabIndex: 0
                               }
                             : null
-                        : null
                 });
             }
 
@@ -941,25 +936,20 @@ const ProjectEditorReducer = (
         }
         case SET_FILE_TREE_PANEL_OPEN: {
             if (!action.open) {
+                const filteredTabs =
+                    state.leftSidebar?.tabs.filter(
+                        (tab) => tab.type !== "fileTree"
+                    ) ?? [];
                 return syncLegacyState({
                     ...state,
-                    leftSidebar: state.leftSidebar
-                        ? {
-                              ...state.leftSidebar,
-                              tabs: state.leftSidebar.tabs.filter(
-                                  (tab) => tab.type !== "fileTree"
-                              ),
-                              tabIndex: 0
-                          }.tabs.length
+                    leftSidebar:
+                        filteredTabs.length > 0
                             ? {
-                                  ...state.leftSidebar,
-                                  tabs: state.leftSidebar.tabs.filter(
-                                      (tab) => tab.type !== "fileTree"
-                                  ),
+                                  ...state.leftSidebar!,
+                                  tabs: filteredTabs,
                                   tabIndex: 0
                               }
                             : null
-                        : null
                 });
             }
 
