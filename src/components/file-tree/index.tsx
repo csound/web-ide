@@ -466,6 +466,7 @@ const makeTree = (
                 <DeleteIcon
                     color="secondary"
                     css={SS.deleteIcon}
+                    onMouseDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
                         event.stopPropagation();
                         dispatch(
@@ -484,6 +485,7 @@ const makeTree = (
             >
                 <EditIcon
                     css={SS.editIcon}
+                    onMouseDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
                         event.stopPropagation();
                         dispatch(
