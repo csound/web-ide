@@ -25,25 +25,11 @@ const findPanelById = (
     );
 };
 
-export const selectLoggedInUid = createSelector(
-    [
-        (state: RootState) => {
-            if (!state.LoginReducer) return undefined;
-            return state.LoginReducer.loggedInUid;
-        }
-    ],
-    (loggedInUid) => loggedInUid
-);
+export const selectLoggedInUid = (state: RootState): string | undefined =>
+    state.LoginReducer?.loggedInUid;
 
-export const selectActiveProjectUid = createSelector(
-    [
-        (state: RootState) => {
-            if (!state.ProjectsReducer) return undefined;
-            return state.ProjectsReducer.activeProjectUid;
-        }
-    ],
-    (activeProjectUid) => activeProjectUid
-);
+export const selectActiveProjectUid = (state: RootState): string | undefined =>
+    state.ProjectsReducer?.activeProjectUid;
 
 export const selectProjectOwner = createSelector(
     [

@@ -19,8 +19,9 @@ export const TargetControls = ({
 }) => {
     const dispatch = useDispatch();
 
-    const selectedTarget: string | undefined =
-        useSelector(selectSelectedTarget);
+    const selectedTarget: string | undefined = useSelector(
+        selectSelectedTarget(activeProjectUid)
+    );
 
     const isOwner = useSelector(selectIsOwner);
     const isCompactViewport = useMediaQuery("(max-width:900px)");
