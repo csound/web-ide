@@ -28,6 +28,7 @@ import { showTargetsConfigDialog } from "@comp/target-controls/actions";
 import { exportProject } from "@comp/projects/actions";
 import {
     openSidebarTab,
+    closeSidebarTab,
     toggleManualPanel,
     setFileTreePanelOpen
 } from "@comp/project-editor/actions";
@@ -242,22 +243,56 @@ export function MenuBar() {
                     },
                     {
                         label: "Console",
-                        callback: () =>
-                            dispatch(openSidebarTab("bottom", "console")),
+                        callback: () => {
+                            if (isConsoleVisible) {
+                                const tab = (
+                                    projectEditorState.bottomSidebar?.tabs || []
+                                ).find(
+                                    (t: IWorkspaceTab) => t.type === "console"
+                                );
+                                if (tab)
+                                    dispatch(closeSidebarTab("bottom", tab.id));
+                            } else {
+                                dispatch(openSidebarTab("bottom", "console"));
+                            }
+                        },
                         checked: isConsoleVisible
                     },
                     {
                         label: "Spectral Analyzer",
-                        callback: () =>
-                            dispatch(
-                                openSidebarTab("bottom", "spectralAnalyzer")
-                            ),
+                        callback: () => {
+                            if (isSpectralAnalyzerVisible) {
+                                const tab = (
+                                    projectEditorState.bottomSidebar?.tabs || []
+                                ).find(
+                                    (t: IWorkspaceTab) =>
+                                        t.type === "spectralAnalyzer"
+                                );
+                                if (tab)
+                                    dispatch(closeSidebarTab("bottom", tab.id));
+                            } else {
+                                dispatch(
+                                    openSidebarTab("bottom", "spectralAnalyzer")
+                                );
+                            }
+                        },
                         checked: isSpectralAnalyzerVisible
                     },
                     {
                         label: "Virtual Midi Keyboard",
-                        callback: () =>
-                            dispatch(openSidebarTab("bottom", "piano")),
+                        callback: () => {
+                            if (isMidiPianoVisible) {
+                                const tab = (
+                                    projectEditorState.bottomSidebar?.tabs || []
+                                ).find(
+                                    (t: IWorkspaceTab) => t.type === "piano"
+                                );
+                                if (tab)
+                                    dispatch(closeSidebarTab("bottom", tab.id));
+                            } else {
+                                dispatch(openSidebarTab("bottom", "piano"));
+                            }
+                        },
                         checked: isMidiPianoVisible
                     }
                 ]
