@@ -98,5 +98,5 @@ export const selectActivePanelId = (store: RootState) =>
 
 export const selectActivePanel = createSelector(
     [selectWorkspaceRoot, selectActivePanelId],
-    (root, activePanelId) => findPanelById(root, activePanelId)
+    (root, activePanelId) => root ? findPanelById(root, activePanelId) : undefined
 );
