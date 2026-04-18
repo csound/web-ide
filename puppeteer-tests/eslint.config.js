@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import prettier from "eslint-config-prettier";
+import globals from "globals";
 
 export default [
     js.configs.recommended,
@@ -8,15 +9,7 @@ export default [
         languageOptions: {
             ecmaVersion: "latest",
             sourceType: "module",
-            globals: {
-                console: "readonly",
-                document: "readonly",
-                process: "readonly",
-                window: "readonly",
-                URL: "readonly",
-                setTimeout: "readonly",
-                PopStateEvent: "readonly"
-            }
+            globals: { ...globals.node, ...globals.browser }
         },
         rules: {
             "no-unused-vars": "warn",
