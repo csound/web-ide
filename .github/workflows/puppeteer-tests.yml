@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e:
+  e2e-remote:
     name: E2E — ${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -35,3 +35,37 @@ jobs:
         run: npm test
         env:
           TARGET: ${{ matrix.target }}
+
+  e2e-local:
+    name: E2E — local (PR changes)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        working-directory: puppeteer-tests
+        run: npm ci
+
+      - name: Start dev server
+        run: npm run start -- --open false &
+        env:
+          BROWSER: none
+
+      - name: Wait for dev server
+        run: npx wait-on http://localhost:3000 --timeout 120000
+
+      - name: Run E2E tests against local server
+        working-directory: puppeteer-tests
+        run: npm test
+        env:
+          TARGET: local
