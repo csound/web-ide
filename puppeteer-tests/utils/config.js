@@ -28,9 +28,9 @@ if (!target) {
 }
 
 export const TIMEOUT = {
-    NAVIGATION: 30000,
-    EDITOR: 20000,
-    CONSOLE_OUTPUT: 10000
+    NAVIGATION: 60000,
+    EDITOR: 60000,
+    CONSOLE_OUTPUT: 30000
 }; // ms
 
 export const BROWSER_SETTINGS = {

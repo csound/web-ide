@@ -14,7 +14,8 @@ export default [
                 process: "readonly",
                 window: "readonly",
                 URL: "readonly",
-                setTimeout: "readonly"
+                setTimeout: "readonly",
+                PopStateEvent: "readonly"
             }
         },
         rules: {

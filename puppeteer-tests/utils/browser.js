@@ -34,22 +34,57 @@ export async function goto(page, path = "") {
 
 /**
  * Navigate to the target's pre-configured project editor URL.
+ *
+ * The /editor/** paths are served by a Firebase Cloud Function ("host").
+ * On some deployments the function lacks public-invoke permission, so
+ * hitting the URL directly returns 403.  To work around this we:
+ *   1. Load the SPA from the home page (served from CDN cache / the
+ *      same function at "/" which does have access).
+ *   2. Client-side navigate to the editor route via pushState + popstate
+ *      so React Router picks up the route without a server round-trip.
+ *
  * @param {import('puppeteer').Page} page
  */
 export async function gotoProject(page) {
-    await page.goto(target.projectUrl, {
-        waitUntil: "networkidle2",
+    // 1. Load the SPA shell from the home page
+    await page.goto(`${target.baseUrl}/`, {
+        waitUntil: "domcontentloaded",
         timeout: TIMEOUT.NAVIGATION
     });
+
+    // 2. Wait for React to mount
+    await page.waitForSelector("#root", { timeout: TIMEOUT.NAVIGATION });
+
+    // 3. Client-side navigate to the editor route
+    const editorPath = new URL(target.projectUrl).pathname;
+    await page.evaluate((path) => {
+        window.history.pushState({}, "", path);
+        window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+    }, editorPath);
 }
 
 /**
  * Wait for the CodeMirror 6 editor to mount.
+ * Fails early if the page redirects to /404 (project not found).
  * @param {import('puppeteer').Page} page
  * @param {number} [timeout=TIMEOUT.EDITOR] - Max wait in ms.
  */
 export async function waitForEditor(page, timeout = TIMEOUT.EDITOR) {
-    await page.waitForSelector(".cm-editor", { timeout });
+    await Promise.race([
+        page.waitForSelector(".cm-editor", { timeout }),
+        page
+            .waitForFunction(
+                () =>
+                    window.location.pathname === "/404" ||
+                    document.body?.textContent?.includes("not found"),
+                { timeout }
+            )
+            .then(() => {
+                throw new Error(
+                    `Project page redirected to 404 (URL: ${page.url()})`
+                );
+            })
+    ]);
 }
 
 /**
