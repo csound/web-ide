@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer";
-import { target, TIMEOUT, BROWSER_SETTINGS } from "./config.js";
+import { target, targetName, TIMEOUT, BROWSER_SETTINGS } from "./config.js";
 
 /**
  * Launch a headless Chromium instance.
@@ -35,9 +35,13 @@ export async function goto(page, path = "") {
 /**
  * Navigate to the target's pre-configured project editor URL.
  *
- * The /editor/** paths are served by a Firebase Cloud Function ("host").
- * On some deployments the function lacks public-invoke permission, so
- * hitting the URL directly returns 403.  To work around this we:
+ * For local (Vite dev server), navigate directly — Vite serves index.html
+ * for all routes via SPA fallback, so React Router handles it natively.
+ *
+ * For remote deployments, the /editor/** paths are served by a Firebase
+ * Cloud Function ("host").  On some deployments the function lacks
+ * public-invoke permission, so hitting the URL directly returns 403.
+ * To work around this we:
  *   1. Load the SPA from the home page (served from CDN cache / the
  *      same function at "/" which does have access).
  *   2. Client-side navigate to the editor route via pushState + popstate
@@ -46,6 +50,15 @@ export async function goto(page, path = "") {
  * @param {import('puppeteer').Page} page
  */
 export async function gotoProject(page) {
+    if (targetName === "local") {
+        await page.goto(target.projectUrl, {
+            waitUntil: "networkidle2",
+            timeout: TIMEOUT.NAVIGATION
+        });
+        return;
+    }
+
+    // Remote targets: use pushState workaround for Firebase hosting
     // 1. Load the SPA shell from the home page
     await page.goto(`${target.baseUrl}/`, {
         waitUntil: "domcontentloaded",

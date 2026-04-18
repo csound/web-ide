@@ -8,36 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e-remote:
-    name: E2E — ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [dev, prod]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: puppeteer-tests/package-lock.json
-
-      - name: Install dependencies
-        working-directory: puppeteer-tests
-        run: npm ci
-
-      - name: Run E2E tests
-        working-directory: puppeteer-tests
-        run: npm test
-        env:
-          TARGET: ${{ matrix.target }}
-
   e2e-local:
-    name: E2E — local (PR changes)
+    name: E2E — local
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -69,3 +42,53 @@ jobs:
         run: npm test
         env:
           TARGET: local
+
+  e2e-dev:
+    name: E2E — dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: puppeteer-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: puppeteer-tests
+        run: npm ci
+
+      - name: Run E2E tests against dev
+        working-directory: puppeteer-tests
+        run: npm test
+        env:
+          TARGET: dev
+
+  e2e-prod:
+    name: E2E — prod
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: puppeteer-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: puppeteer-tests
+        run: npm ci
+
+      - name: Run E2E tests against prod
+        working-directory: puppeteer-tests
+        run: npm test
+        env:
+          TARGET: prod
