@@ -27,12 +27,15 @@ describe(`Editor [${targetName}]`, () => {
     });
 
     it("has a run button", async () => {
+        await waitForEditor(page);
         const btn = await findRunButton(page);
         assert.ok(btn, "Run/play button not found");
     });
 
     it("runs and produces console output", async () => {
+        await waitForEditor(page);
         const btn = await findRunButton(page);
+        assert.ok(btn, "Run button not found");
         await btn.click();
         await activateConsoleTab(page);
         await waitForConsoleOutput(page);
