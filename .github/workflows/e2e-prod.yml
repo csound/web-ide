@@ -27,10 +27,12 @@ jobs:
         working-directory: puppeteer-tests
         run: npm ci
 
-      - name: Cache node_modules
+      - name: Cache node_modules and Puppeteer browsers
         uses: actions/cache/save@v4
         with:
-          path: puppeteer-tests/node_modules
+          path: |
+            puppeteer-tests/node_modules
+            ~/.cache/puppeteer
           key: nm-puppeteer-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
 
   e2e:
@@ -52,10 +54,12 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Restore node_modules
+      - name: Restore node_modules and Puppeteer browsers
         uses: actions/cache/restore@v4
         with:
-          path: puppeteer-tests/node_modules
+          path: |
+            puppeteer-tests/node_modules
+            ~/.cache/puppeteer
           key: nm-puppeteer-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
 
       - name: Run ${{ matrix.suite }} tests
@@ -63,3 +67,12 @@ jobs:
         run: node --test tests/${{ matrix.suite }}.js
         env:
           TARGET: prod
+
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-debug-prod-${{ matrix.suite }}
+          path: puppeteer-tests/screenshots/
+          retention-days: 7
+          if-no-files-found: ignore
