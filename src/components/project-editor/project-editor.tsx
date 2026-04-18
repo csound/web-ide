@@ -822,6 +822,7 @@ const SidebarLaunchers = ({
                     onClick={() => handleLauncherClick(sidebar, item.type)}
                     aria-label={item.label}
                     aria-pressed={isActive}
+                    data-testid={`sidebar-${sidebar}-${item.type}`}
                 >
                     <Icon fontSize="small" />
                     <span>{item.label}</span>

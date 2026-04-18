@@ -5,7 +5,7 @@
 firebase-debug.log
 
 # dependencies
-/node_modules
+**/node_modules
 
 # testing
 /coverage
@@ -38,7 +38,6 @@ yarn-error*
 
 # Search app
 search/service-key.json
-search/node_modules
 dev-database.json
 prod-database.json
 database.json

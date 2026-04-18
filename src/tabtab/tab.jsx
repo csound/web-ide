@@ -48,7 +48,8 @@ export const Tab = React.forwardRef(
             index,
             children,
             currentIndex,
-            thisIndex
+            thisIndex,
+            ...rest
         },
         ref
     ) => {
@@ -70,6 +71,7 @@ export const Tab = React.forwardRef(
                 aria-controls={`react-tabtab-panel-${index}`}
                 aria-selected={active}
                 onClick={clickTab}
+                {...rest}
             >
                 <TabText ref={ref}>{children}</TabText>
                 <Tooltip title={"close"} placement="right-end">

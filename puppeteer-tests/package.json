@@ -1,0 +1,25 @@
+{
+    "name": "csound-ide-tests",
+    "version": "1.0.0",
+    "description": "Puppeteer E2E tests for the Csound Web IDE",
+    "type": "module",
+    "scripts": {
+        "test": "node --test tests/*.js",
+        "test:dev": "TARGET=dev node --test tests/*.js",
+        "test:prod": "TARGET=prod node --test tests/*.js",
+        "test:local": "TARGET=local node --test tests/*.js",
+        "format": "prettier --write .",
+        "lint": "eslint .",
+        "lint:fix": "eslint --fix ."
+    },
+    "dependencies": {
+        "puppeteer": "^24.40.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "eslint": "^10.2.0",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^17.5.0",
+        "prettier": "^3.8.1"
+    }
+}
