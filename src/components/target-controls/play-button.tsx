@@ -72,6 +72,7 @@ const PlayButton = ({
         <Tooltip title={isLoading ? "loading..." : tooltipText}>
             <div
                 css={SS.playButtonContainer}
+                data-testid="run-button"
                 onClick={async () => {
                     if (isLoading) {
                         return;
@@ -135,6 +136,7 @@ const PlayButton = ({
                     />
                 ) : (
                     <button
+                        data-testid="run-button-native"
                         css={SS.playButtonStyle(
                             ["playing", "rendering"].includes(csoundPlayState)
                         )}

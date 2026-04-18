@@ -1,5 +1,9 @@
 import { target, targetName, TIMEOUT } from "./config.js";
 
+const RUN_BUTTON_SELECTOR = '[data-testid="run-button"]';
+const CONSOLE_TAB_SELECTOR = '[data-testid="console-tab"]';
+const CONSOLE_OUTPUT_SELECTOR = '[data-testid="console-output"]';
+
 /**
  * Navigate to a path on the current target's base URL.
  * @param {import('puppeteer').Page} page
@@ -86,11 +90,7 @@ export async function waitForEditor(page, timeout = TIMEOUT.EDITOR) {
  * @returns {Promise<import('puppeteer').ElementHandle | null>}
  */
 export async function findRunButton(page) {
-    return page.$(
-        'div[aria-label*="play" i] button, div[aria-label*="run" i] button, ' +
-            'button[aria-label*="run" i], button[aria-label*="play" i], ' +
-            'button[title*="run" i], button[title*="play" i]'
-    );
+    return page.$(RUN_BUTTON_SELECTOR);
 }
 
 /**
@@ -98,17 +98,8 @@ export async function findRunButton(page) {
  * @param {import('puppeteer').Page} page
  */
 export async function activateConsoleTab(page) {
-    const tab = await page.evaluateHandle(() => {
-        const els = Array.from(
-            document.querySelectorAll('[role="tab"], button')
-        );
-        return (
-            els.find((el) => /console|output/i.test(el.textContent || "")) ||
-            null
-        );
-    });
-    const exists = await page.evaluate((el) => !!el, tab);
-    if (exists) await tab.click();
+    const tab = await page.$(CONSOLE_TAB_SELECTOR);
+    if (tab) await tab.click();
 }
 
 /**
@@ -121,12 +112,46 @@ export async function waitForConsoleOutput(
     timeout = TIMEOUT.CONSOLE_OUTPUT
 ) {
     await page.waitForFunction(
-        () => {
-            const el = document.querySelector(
-                '[role="tabpanel"] code, [class*="console"] span, [class*="Console"] span'
-            );
+        (selector) => {
+            const el = document.querySelector(selector);
             return el && el.textContent.trim().length > 0;
         },
-        { timeout }
+        { timeout },
+        CONSOLE_OUTPUT_SELECTOR
+    );
+}
+
+/**
+ * Read current console output length.
+ * @param {import('puppeteer').Page} page
+ * @returns {Promise<number>}
+ */
+export async function getConsoleOutputLength(page) {
+    return page.evaluate((selector) => {
+        const el = document.querySelector(selector);
+        return el?.textContent?.trim().length ?? 0;
+    }, CONSOLE_OUTPUT_SELECTOR);
+}
+
+/**
+ * Wait for console output to grow after an action.
+ * @param {import('puppeteer').Page} page
+ * @param {number} previousLength
+ * @param {number} [timeout=TIMEOUT.CONSOLE_OUTPUT] - Max wait in ms.
+ */
+export async function waitForConsoleOutputGrowth(
+    page,
+    previousLength,
+    timeout = TIMEOUT.CONSOLE_OUTPUT
+) {
+    await page.waitForFunction(
+        (selector, minLength) => {
+            const el = document.querySelector(selector);
+            const currentLength = el?.textContent?.trim().length ?? 0;
+            return currentLength > minLength;
+        },
+        { timeout },
+        CONSOLE_OUTPUT_SELECTOR,
+        previousLength
     );
 }
