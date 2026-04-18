@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'Test target environment'
+        required: true
+        default: 'local'
+        type: choice
+        options:
+          - local
+          - dev
+          - prod
 
 jobs:
   e2e:
@@ -17,11 +27,17 @@ jobs:
       matrix:
         include:
           - target: local
-            condition: github.event_name == 'pull_request'
+            condition: >-
+              github.event_name == 'pull_request' ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'local')
           - target: dev
-            condition: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+            condition: >-
+              (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'dev')
           - target: prod
-            condition: github.event_name == 'push' && github.ref == 'refs/heads/main'
+            condition: >-
+              (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'prod')
 
     # Matrix-level 'if' doesn't support expressions from matrix values,
     # so each step checks the condition instead.
