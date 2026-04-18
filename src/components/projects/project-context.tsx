@@ -123,16 +123,22 @@ export const ProjectContext = () => {
     return (
         <>
             <ForceBackgroundColor theme={theme} />
-            {project && <ProjectEditor activeProject={project} />}
             <Header />
+            <main css={SS.main}>
+                {project && <ProjectEditor activeProject={project} />}
+            </main>
             {needsLoading && (
-                <main css={SS.loadMain}>
+                <div
+                    css={SS.loadMain}
+                    aria-live="polite"
+                    aria-label="Loading project"
+                >
                     <AudioSpinner
                         color={theme.highlightBackground}
                         height={80}
                         width={80}
                     />
-                </main>
+                </div>
             )}
         </>
     );

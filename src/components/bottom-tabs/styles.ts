@@ -1,15 +1,12 @@
 import { css, SerializedStyles } from "@emotion/react";
-import { headerHeight } from "@styles/constants";
 
 export const mobileLayout = css`
     width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
-    margin-top: ${headerHeight}px;
-    height: calc(100vh - ${headerHeight}px);
-    height: calc(100dvh - ${headerHeight}px);
 `;
 
 export const mobileContent = css`

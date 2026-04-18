@@ -6,7 +6,30 @@ export const container = (theme: Theme): SerializedStyles => css`
     height: 100%;
     background-color: ${theme.fileTreeBackground};
     color: ${theme.textColor} !important;
-    margin-top: 32px;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+`;
+
+export const headerBar = (theme: Theme): SerializedStyles => css`
+    flex: 0 0 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background-color: ${theme.highlightBackgroundAlt};
+    color: ${theme.lineNumber};
+    box-shadow: inset 0 -1px 0 ${theme.line};
+
+    p {
+        margin: 0;
+        margin-left: 12px;
+        margin-right: 64px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 `;
 
 export const fileIcon = (theme: Theme): SerializedStyles => css`
@@ -50,10 +73,12 @@ export const deleteIcon = (theme: Theme): SerializedStyles => css`
 `;
 
 export const delEditContainer = css`
-    width: 38px;
     display: flex;
-    justify-content: space-between;
-    margin-top: 1px;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    flex: 0 0 auto;
+    min-width: 44px;
 `;
 
 export const nonCloudActionsContainer = css`
@@ -101,14 +126,21 @@ export const headIconsContainer = (theme: Theme): SerializedStyles => css`
 `;
 
 export const listContainer = css`
-    margin-top: -3px;
+    margin-top: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
 `;
 
 export const listItem = css`
     padding-left: 32px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     cursor: pointer;
+    box-sizing: border-box;
+    min-height: 36px;
+    overflow: hidden;
 `;
 
 export const draggingOver = (theme: Theme): SerializedStyles => css`

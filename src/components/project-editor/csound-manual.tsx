@@ -7,20 +7,25 @@ import { windowHeader as windowHeaderStyle } from "@styles/_common";
 import Tooltip from "@mui/material/Tooltip";
 import IframeComm from "react-iframe-comm";
 import { setManualPanelOpen } from "./actions";
+import { IProjectEditorReducer } from "./reducer";
 import * as SS from "./styles";
 
 const ManualWindow = ({
     projectUid,
-    isDragging = false
+    isDragging = false,
+    showHeader = true
 }: {
     projectUid: string;
     isDragging?: boolean;
+    showHeader?: boolean;
 }): React.ReactElement => {
     const dispatch = useDispatch();
     const theme: any = useTheme();
 
     const manualLookupString = useSelector(
-        (store: RootState) => store.ProjectEditorReducer.manualLookupString
+        (store: RootState) =>
+            (store.ProjectEditorReducer as IProjectEditorReducer)
+                .manualLookupString
     );
 
     // const onManualMessage = (event_) => {
@@ -38,37 +43,51 @@ const ManualWindow = ({
             style={{
                 width: "100%",
                 height: "100%",
-                paddingTop: 35,
+                minHeight: 0,
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
                 pointerEvents: isDragging ? "none" : "auto"
             }}
         >
-            <IframeComm
-                attributes={{
-                    src: "/manual?cache=1002",
+            {showHeader && (
+                <div css={windowHeaderStyle}>
+                    <p>
+                        Csound Manual
+                        <span css={SS.headIconsContainer}>
+                            <Tooltip title="close window">
+                                <span
+                                    onClick={() =>
+                                        dispatch(setManualPanelOpen(false))
+                                    }
+                                >
+                                    <DisabledByDefaultRoundedIcon
+                                        style={{
+                                            fill: theme.highlightBackgroundAlt
+                                        }}
+                                    />
+                                </span>
+                            </Tooltip>
+                        </span>
+                    </p>
+                </div>
+            )}
+            <div
+                style={{
+                    flex: "1 1 auto",
+                    minHeight: 0,
                     width: "100%",
-                    height: "100%"
+                    height: showHeader ? "calc(100% - 35px)" : "100%"
                 }}
-                postMessageData={manualLookupString || ""}
-            />
-            <div css={windowHeaderStyle}>
-                <p>
-                    Csound Manual
-                    <span css={SS.headIconsContainer}>
-                        <Tooltip title="close window">
-                            <span
-                                onClick={() =>
-                                    dispatch(setManualPanelOpen(false))
-                                }
-                            >
-                                <DisabledByDefaultRoundedIcon
-                                    style={{
-                                        fill: theme.highlightBackgroundAlt
-                                    }}
-                                />
-                            </span>
-                        </Tooltip>
-                    </span>
-                </p>
+            >
+                <IframeComm
+                    attributes={{
+                        src: "/manual?cache=1002",
+                        width: "100%",
+                        height: "100%"
+                    }}
+                    postMessageData={manualLookupString || ""}
+                />
             </div>
         </div>
     );
