@@ -40,10 +40,13 @@ Targets are defined in [`utils/config.js`](utils/config.js):
 ├── templates/
 │   └── example.js           ← starter template for new test files
 ├── utils/
-│   ├── browser.js           ← Puppeteer launch + DOM helpers
-│   └── config.js            ← target environment map, timeouts, browser settings
+│   ├── browser.js           ← Navigation + editor/console DOM helpers
+│   ├── config.js            ← target environment map, timeouts, browser settings
+│   └── session.js           ← shared browser session lifecycle
 ├── .github/workflows/
-│   └── puppeteer-tests.yml  ← CI matrix: dev + prod
+│   ├── e2e-dev.yml          ← push to develop, TARGET=dev
+│   ├── e2e-prod.yml         ← push to main, TARGET=prod
+│   └── e2e-local.yml        ← pull_request + manual dispatch, TARGET=local
 ├── eslint.config.js
 └── package.json
 ```
@@ -57,18 +60,25 @@ Test files are organised by route — one file per page/route under test.
 3. Write `it(...)` blocks using assertions from `node:assert/strict`.
 4. Run `npm test` — new files are auto-discovered, no registration needed.
 
-### Available Helpers (`utils/browser.js`)
+### Available Helpers
+
+`utils/browser.js`
 
 | Helper                       | Description                                   |
 | ---------------------------- | --------------------------------------------- |
-| `launchBrowser()`            | Start a headless Chromium instance            |
-| `newPage(browser)`           | Create a page with a 1280×900 viewport        |
 | `goto(page, path)`           | Navigate to a route on the target's base URL  |
 | `gotoProject(page)`          | Navigate to the target's test project editor  |
 | `waitForEditor(page)`        | Wait for CodeMirror 6 (`.cm-editor`) to mount |
 | `findRunButton(page)`        | Locate the run/play button                    |
 | `activateConsoleTab(page)`   | Click the Console/Output tab                  |
 | `waitForConsoleOutput(page)` | Wait for non-empty console output             |
+
+`utils/session.js`
+
+| Helper           | Description                                           |
+| ---------------- | ----------------------------------------------------- |
+| `getSession()`   | Acquire shared Chromium and create a fresh page       |
+| `closeSession()` | Release one suite's session and close browser if last |
 
 ### Common Assertion Patterns
 
@@ -103,18 +113,20 @@ Each test file follows this pattern:
 
 ```js
 import { describe, it, before, after } from "node:test";
+import { goto } from "../utils/browser.js";
+import { getSession, closeSession } from "../utils/session.js";
 
 describe("RouteName [${targetName}]", () => {
-    let browser, page;
+    let page;
 
     before(async () => {
-        browser = await launchBrowser();
-        page = await newPage(browser);
+        ({ page } = await getSession());
         await goto(page, "/your-route");
     });
 
     after(async () => {
-        await browser?.close();
+        await page?.close();
+        await closeSession();
     });
 
     it("does something", async () => {
@@ -123,11 +135,17 @@ describe("RouteName [${targetName}]", () => {
 });
 ```
 
-`before` runs once before all tests in the suite. `after` closes the browser.
+`before` runs once before all tests in the suite. `after` closes the page and releases the shared browser session.
 
 ## CI
 
-GitHub Actions runs the test suite against both `dev` and `prod` on every push/PR to `develop` or `main`. See [`.github/workflows/puppeteer-tests.yml`](../.github/workflows/puppeteer-tests.yml).
+GitHub Actions runs E2E tests with three dedicated workflows:
+
+- `e2e-dev.yml`: runs on push to `develop` with `TARGET=dev`
+- `e2e-prod.yml`: runs on push to `main` with `TARGET=prod`
+- `e2e-local.yml`: runs on pull requests (opened/synchronize/reopened) and manual dispatch with `TARGET=local`
+
+See [`.github/workflows/e2e-dev.yml`](../.github/workflows/e2e-dev.yml), [`.github/workflows/e2e-prod.yml`](../.github/workflows/e2e-prod.yml), and [`.github/workflows/e2e-local.yml`](../.github/workflows/e2e-local.yml).
 
 ## Debugging
 
