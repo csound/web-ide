@@ -8,87 +8,57 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e-local:
-    name: E2E — local
-    if: github.event_name == 'pull_request'
+  e2e:
+    name: E2E — ${{ matrix.target }}
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: local
+            condition: github.event_name == 'pull_request'
+          - target: dev
+            condition: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+          - target: prod
+            condition: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    # Matrix-level 'if' doesn't support expressions from matrix values,
+    # so each step checks the condition instead.
     steps:
       - uses: actions/checkout@v4
+        if: ${{ matrix.condition }}
 
       - name: Set up Node.js
+        if: ${{ matrix.condition }}
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: ${{ matrix.target == 'local' && 'package-lock.json' || 'puppeteer-tests/package-lock.json' }}
 
       - name: Install project dependencies
+        if: ${{ matrix.condition && matrix.target == 'local' }}
         run: npm ci
 
       - name: Install test dependencies
+        if: ${{ matrix.condition }}
         working-directory: puppeteer-tests
         run: npm ci
 
       - name: Start dev server
+        if: ${{ matrix.condition && matrix.target == 'local' }}
         run: npm run start -- --open false &
         env:
           BROWSER: none
 
       - name: Wait for dev server
+        if: ${{ matrix.condition && matrix.target == 'local' }}
         run: npx wait-on http://localhost:3000 --timeout 120000
 
-      - name: Run E2E tests against local server
+      - name: Run E2E tests
+        if: ${{ matrix.condition }}
         working-directory: puppeteer-tests
         run: npm test
         env:
-          TARGET: local
-
-  e2e-dev:
-    name: E2E — dev
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: puppeteer-tests/package-lock.json
-
-      - name: Install dependencies
-        working-directory: puppeteer-tests
-        run: npm ci
-
-      - name: Run E2E tests against dev
-        working-directory: puppeteer-tests
-        run: npm test
-        env:
-          TARGET: dev
-
-  e2e-prod:
-    name: E2E — prod
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: puppeteer-tests/package-lock.json
-
-      - name: Install dependencies
-        working-directory: puppeteer-tests
-        run: npm ci
-
-      - name: Run E2E tests against prod
-        working-directory: puppeteer-tests
-        run: npm test
-        env:
-          TARGET: prod
+          TARGET: ${{ matrix.target }}
