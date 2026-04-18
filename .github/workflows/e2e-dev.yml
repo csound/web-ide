@@ -1,0 +1,40 @@
+name: E2E — Dev
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: e2e-dev-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: E2E dev — ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [home, editor]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: puppeteer-tests/package-lock.json
+
+      - name: Install test dependencies
+        working-directory: puppeteer-tests
+        run: npm ci
+
+      - name: Run ${{ matrix.suite }} tests
+        working-directory: puppeteer-tests
+        run: node --test tests/${{ matrix.suite }}.js
+        env:
+          TARGET: dev
