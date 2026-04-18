@@ -7,7 +7,7 @@
 const TARGETS = {
     local: {
         baseUrl: "http://localhost:3000",
-        projectUrl: "http://localhost:3000/editor/FHIOJxCAB2lugoJ3iwBd"
+        projectUrl: "http://localhost:3000/editor/ElPGLLOOc5qWNM4VmfVV"
     },
     dev: {
         baseUrl: "https://csound-ide-dev.web.app",

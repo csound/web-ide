@@ -79,15 +79,9 @@ export const ProjectContext = () => {
                         error
                     );
                     setProjectIsReady(true);
-                    if (
-                        typeof error === "object" &&
-                        typeof error.code === "string"
-                    ) {
-                        error.code === "permission-denied" &&
-                            navigate("/404", {
-                                state: { message: "Project not found" }
-                            });
-                    }
+                    navigate("/404", {
+                        state: { message: "Project not found" }
+                    });
                     return;
                 }
 
