@@ -79,10 +79,13 @@ export const ProjectContext = () => {
                         projectUid
                     };
                     dispatch(storeProjectLocally([mock]));
+                    // activateProject must run before addProjectDocuments
+                    // because it calls closeTabDock(), which would wipe
+                    // the tab dock that addProjectDocuments initializes.
+                    await activateProject(projectUid)(dispatch);
                     dispatch(
                         addProjectDocuments(projectUid, mock.documents) as any
                     );
-                    await activateProject(projectUid)(dispatch);
                     setProjectIsReady(true);
                     return;
                 }
