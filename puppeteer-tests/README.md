@@ -35,12 +35,13 @@ Targets are defined in [`utils/config.js`](utils/config.js):
 
 ```text
 ├── tests/
-│   ├── _example.js      ← template for new test files (not run by CI)
-│   ├── home.js          ← / route: page load, rendered content
-│   └── editor.js        ← /editor/:id route: editor mount, run, console output
+│   ├── home.js              ← / route: page load, rendered content
+│   └── editor.js            ← /editor/:id route: editor mount, run, console output
+├── templates/
+│   └── example.js           ← starter template for new test files
 ├── utils/
-│   ├── browser.js       ← Puppeteer launch + DOM helpers
-│   └── config.js        ← target environment map, timeouts, browser settings
+│   ├── browser.js           ← Puppeteer launch + DOM helpers
+│   └── config.js            ← target environment map, timeouts, browser settings
 ├── .github/workflows/
 │   └── puppeteer-tests.yml  ← CI matrix: dev + prod
 ├── eslint.config.js
@@ -51,7 +52,7 @@ Test files are organised by route — one file per page/route under test.
 
 ## Writing a New Test
 
-1. Copy `tests/_example.js` and rename it to match your route (e.g. `tests/profile.js`).
+1. Copy `templates/example.js` into `tests/` and rename it to match your route (e.g. `tests/profile.js`).
 2. Update the `describe` label and the `goto(page, '/your-route')` path.
 3. Write `it(...)` blocks using assertions from `node:assert/strict`.
 4. Run `npm test` — new files are auto-discovered, no registration needed.

@@ -1,8 +1,8 @@
 /**
- * tests/_example.js
+ * templates/example.js
  *
- * Template for creating a new route-based test file.
- * Copy this file, rename it to match the route you're testing,
+ * Starter template for a new route-based test file.
+ * Copy this file into tests/, rename it to match your route,
  * and replace the placeholder tests with real assertions.
  *
  * Run with:  npm test

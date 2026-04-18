@@ -4,10 +4,10 @@
     "description": "Puppeteer E2E tests for the Csound Web IDE",
     "type": "module",
     "scripts": {
-        "test": "node --test 'tests/[!_]*.js'",
-        "test:dev": "TARGET=dev node --test 'tests/[!_]*.js'",
-        "test:prod": "TARGET=prod node --test 'tests/[!_]*.js'",
-        "test:local": "TARGET=local node --test 'tests/[!_]*.js'",
+        "test": "node --test tests/*.js",
+        "test:dev": "TARGET=dev node --test tests/*.js",
+        "test:prod": "TARGET=prod node --test tests/*.js",
+        "test:local": "TARGET=local node --test tests/*.js",
         "format": "prettier --write .",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
