@@ -27,6 +27,8 @@ import { humanizeKeySequence } from "@comp/hot-keys/utils";
 import { showTargetsConfigDialog } from "@comp/target-controls/actions";
 import { exportProject } from "@comp/projects/actions";
 import {
+    openSidebarTab,
+    closeSidebarTab,
     toggleManualPanel,
     setFileTreePanelOpen
 } from "@comp/project-editor/actions";
@@ -36,7 +38,6 @@ import { selectIsOwner } from "@comp/project-editor/selectors";
 import { changeTheme } from "@comp/themes/action";
 import { equals, isEmpty } from "ramda";
 import { showKeyboardShortcuts } from "@comp/site-documents/actions";
-import { openBottomTab } from "@comp/bottom-tabs/actions";
 import { isMobile } from "@root/utils";
 import {
     closeMobileDock,
@@ -52,6 +53,8 @@ import {
     selectIsMobileTopMenuOpen,
     selectMobileTopMenuPath
 } from "@comp/menu-ui/selectors";
+import { IProjectEditorReducer } from "@comp/project-editor/reducer";
+import { IWorkspaceTab } from "@comp/project-editor/types";
 
 export function MenuBar() {
     const setConsole = useSetConsole();
@@ -64,6 +67,10 @@ export function MenuBar() {
     const dispatch = useDispatch();
     const isOwner = useSelector(selectIsOwner);
     const csoundStatus = useSelector(selectCsoundStatus);
+    const projectEditorState = useSelector(
+        (store: RootState) =>
+            store.ProjectEditorReducer as IProjectEditorReducer
+    );
     const keyBindings = useSelector(
         (store: RootState) => store.HotKeysReducer.bindings
     );
@@ -72,25 +79,21 @@ export function MenuBar() {
         (store: RootState) => store.ThemeReducer.selectedThemeName
     );
 
-    const isManualOpen = useSelector(
-        (store: RootState) => store.ProjectEditorReducer.manualVisible
-    );
+    const isManualOpen = projectEditorState.manualVisible;
 
-    const isConsoleVisible = useSelector((store: RootState) =>
-        (store.BottomTabsReducer.openTabs || []).includes("console")
-    );
+    const isConsoleVisible = (
+        projectEditorState.bottomSidebar?.tabs || []
+    ).some((tab: IWorkspaceTab) => tab.type === "console");
 
-    const isFileTreeVisible = useSelector(
-        (store: RootState) => store.ProjectEditorReducer.fileTreeVisible
-    );
+    const isFileTreeVisible = projectEditorState.fileTreeVisible;
 
-    const isSpectralAnalyzerVisible = useSelector((store: RootState) =>
-        store.BottomTabsReducer.openTabs.includes("spectralAnalyzer")
-    );
+    const isSpectralAnalyzerVisible = (
+        projectEditorState.bottomSidebar?.tabs || []
+    ).some((tab: IWorkspaceTab) => tab.type === "spectralAnalyzer");
 
-    const isMidiPianoVisible = useSelector((store: RootState) =>
-        store.BottomTabsReducer.openTabs.includes("piano")
-    );
+    const isMidiPianoVisible = (
+        projectEditorState.bottomSidebar?.tabs || []
+    ).some((tab: IWorkspaceTab) => tab.type === "piano");
 
     const isMobileMenuOpen = useSelector(selectIsMobileTopMenuOpen);
     const mobilePath = useSelector(selectMobileTopMenuPath);
@@ -240,18 +243,56 @@ export function MenuBar() {
                     },
                     {
                         label: "Console",
-                        callback: () => dispatch(openBottomTab("console")),
+                        callback: () => {
+                            if (isConsoleVisible) {
+                                const tab = (
+                                    projectEditorState.bottomSidebar?.tabs || []
+                                ).find(
+                                    (t: IWorkspaceTab) => t.type === "console"
+                                );
+                                if (tab)
+                                    dispatch(closeSidebarTab("bottom", tab.id));
+                            } else {
+                                dispatch(openSidebarTab("bottom", "console"));
+                            }
+                        },
                         checked: isConsoleVisible
                     },
                     {
                         label: "Spectral Analyzer",
-                        callback: () =>
-                            dispatch(openBottomTab("spectralAnalyzer")),
+                        callback: () => {
+                            if (isSpectralAnalyzerVisible) {
+                                const tab = (
+                                    projectEditorState.bottomSidebar?.tabs || []
+                                ).find(
+                                    (t: IWorkspaceTab) =>
+                                        t.type === "spectralAnalyzer"
+                                );
+                                if (tab)
+                                    dispatch(closeSidebarTab("bottom", tab.id));
+                            } else {
+                                dispatch(
+                                    openSidebarTab("bottom", "spectralAnalyzer")
+                                );
+                            }
+                        },
                         checked: isSpectralAnalyzerVisible
                     },
                     {
                         label: "Virtual Midi Keyboard",
-                        callback: () => dispatch(openBottomTab("piano")),
+                        callback: () => {
+                            if (isMidiPianoVisible) {
+                                const tab = (
+                                    projectEditorState.bottomSidebar?.tabs || []
+                                ).find(
+                                    (t: IWorkspaceTab) => t.type === "piano"
+                                );
+                                if (tab)
+                                    dispatch(closeSidebarTab("bottom", tab.id));
+                            } else {
+                                dispatch(openSidebarTab("bottom", "piano"));
+                            }
+                        },
                         checked: isMidiPianoVisible
                     }
                 ]
