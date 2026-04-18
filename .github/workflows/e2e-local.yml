@@ -10,16 +10,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e:
-    name: E2E local — ${{ matrix.suite }}
+  install:
+    name: Install dependencies
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        suite: [home, editor]
-
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +29,41 @@ jobs:
       - name: Install test dependencies
         working-directory: puppeteer-tests
         run: npm ci
+
+      - name: Cache node_modules
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            puppeteer-tests/node_modules
+          key: nm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'puppeteer-tests/package-lock.json') }}
+
+  e2e:
+    name: E2E local — ${{ matrix.suite }}
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [home, editor]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            puppeteer-tests/node_modules
+          key: nm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'puppeteer-tests/package-lock.json') }}
 
       - name: Start dev server
         run: npm run start -- --open false &
