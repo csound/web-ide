@@ -13,6 +13,7 @@ describe(`Home [${targetName}]`, () => {
     });
 
     after(async () => {
+        await page?.close();
         await closeSession();
     });
 

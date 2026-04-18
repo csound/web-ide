@@ -11,7 +11,8 @@
 
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { launchBrowser, newPage, goto } from "../utils/browser.js";
+import { goto } from "../utils/browser.js";
+import { getSession, closeSession } from "../utils/session.js";
 import { targetName } from "../utils/config.js";
 
 /**
@@ -19,18 +20,18 @@ import { targetName } from "../utils/config.js";
  * The [${targetName}] suffix shows which environment ran (local/dev/prod).
  */
 describe(`Example [${targetName}]`, () => {
-    let browser, page;
+    let page;
 
     // ── Setup: runs once before all tests in this describe block ─────
     before(async () => {
-        browser = await launchBrowser();
-        page = await newPage(browser);
+        ({ page } = await getSession());
         await goto(page, "/"); // change to your route, e.g. '/profile'
     });
 
     // ── Teardown: runs once after all tests ──────────────────────────
     after(async () => {
-        await browser?.close();
+        await page?.close();
+        await closeSession();
     });
 
     // ── Tests ────────────────────────────────────────────────────────
