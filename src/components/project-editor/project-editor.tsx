@@ -251,6 +251,8 @@ const ProjectEditor = ({
     }, []);
 
     useEffect(() => {
+        if (import.meta.env.VITE_E2E === "true") return;
+
         const unsubscribeProjectChanges = subscribeToProjectChanges(
             projectUid,
             dispatch
