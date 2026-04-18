@@ -12,12 +12,6 @@
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
     },
-    "lint-staged": {
-        "*.{js,jsx}": [
-            "prettier --write",
-            "eslint --fix"
-        ]
-    },
     "dependencies": {
         "puppeteer": "^24.40.0"
     },
@@ -25,10 +19,7 @@
         "@eslint/js": "^10.0.1",
         "eslint": "^10.2.0",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "^5.5.5",
         "globals": "^17.5.0",
-        "husky": "^9.1.7",
-        "lint-staged": "^16.4.0",
         "prettier": "^3.8.1"
     }
 }
