@@ -30,12 +30,13 @@ jobs:
         working-directory: puppeteer-tests
         run: npm ci
 
-      - name: Cache node_modules
+      - name: Cache node_modules and Puppeteer browsers
         uses: actions/cache/save@v4
         with:
           path: |
             node_modules
             puppeteer-tests/node_modules
+            ~/.cache/puppeteer
           key: nm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'puppeteer-tests/package-lock.json') }}
 
   e2e:
@@ -57,12 +58,13 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Restore node_modules
+      - name: Restore node_modules and Puppeteer browsers
         uses: actions/cache/restore@v4
         with:
           path: |
             node_modules
             puppeteer-tests/node_modules
+            ~/.cache/puppeteer
           key: nm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'puppeteer-tests/package-lock.json') }}
 
       - name: Start dev server
