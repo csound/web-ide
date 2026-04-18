@@ -1,8 +1,66 @@
+import fs from "node:fs";
+import path from "node:path";
 import { target, targetName, TIMEOUT } from "./config.js";
 
 const RUN_BUTTON_SELECTOR = '[data-testid="run-button"]';
 const CONSOLE_TAB_SELECTOR = '[data-testid="console-tab"]';
 const CONSOLE_OUTPUT_SELECTOR = '[data-testid="console-output"]';
+
+const SCREENSHOTS_DIR = path.join(import.meta.dirname, "..", "screenshots");
+
+/**
+ * Attach console and error listeners to a page for CI debugging.
+ * Collected messages are stored on the page object for later retrieval.
+ * @param {import('puppeteer').Page} page
+ */
+export function attachPageDebugListeners(page) {
+    /** @type {string[]} */
+    const logs = [];
+    page.__debugLogs = logs;
+
+    page.on("console", (msg) => {
+        logs.push(`[${msg.type()}] ${msg.text()}`);
+    });
+    page.on("pageerror", (err) => {
+        logs.push(`[PAGE ERROR] ${err.message}`);
+    });
+    page.on("requestfailed", (req) => {
+        logs.push(`[REQ FAIL] ${req.url()} ${req.failure()?.errorText}`);
+    });
+}
+
+/**
+ * Save a screenshot and dump collected browser logs.
+ * @param {import('puppeteer').Page} page
+ * @param {string} name - Base filename (without extension).
+ */
+export async function dumpDebugInfo(page, name) {
+    fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
+
+    try {
+        const screenshotPath = path.join(SCREENSHOTS_DIR, `${name}.png`);
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        console.log(`Screenshot saved: ${screenshotPath}`);
+    } catch (e) {
+        console.error("Failed to save screenshot:", e.message);
+    }
+
+    const logs = page.__debugLogs ?? [];
+    if (logs.length > 0) {
+        console.log(`--- Browser logs (${name}) ---`);
+        for (const line of logs.slice(-50)) console.log(line);
+        console.log("--- end browser logs ---");
+    }
+
+    try {
+        const html = await page.content();
+        const htmlPath = path.join(SCREENSHOTS_DIR, `${name}.html`);
+        fs.writeFileSync(htmlPath, html);
+        console.log(`Page HTML saved: ${htmlPath}`);
+    } catch (e) {
+        console.error("Failed to save HTML:", e.message);
+    }
+}
 
 /**
  * Navigate to a path on the current target's base URL.
@@ -35,8 +93,12 @@ export async function goto(page, path = "") {
  */
 export async function gotoProject(page) {
     if (targetName === "local") {
+        // Use "domcontentloaded" instead of "networkidle2" for Vite dev
+        // server.  Vite transforms modules on-demand, so network activity
+        // can fluctuate long after the HTML is parsed.  The actual
+        // readiness check (editor mount) is handled by waitForEditor().
         await page.goto(target.projectUrl, {
-            waitUntil: "networkidle2",
+            waitUntil: "domcontentloaded",
             timeout: TIMEOUT.NAVIGATION
         });
         return;
@@ -63,10 +125,22 @@ export async function gotoProject(page) {
 /**
  * Wait for the CodeMirror 6 editor to mount.
  * Fails early if the page redirects to /404 (project not found).
+ * Waits for the React root to render content first, which helps
+ * surface issues where the app JS fails to bootstrap.
  * @param {import('puppeteer').Page} page
  * @param {number} [timeout=TIMEOUT.EDITOR] - Max wait in ms.
  */
 export async function waitForEditor(page, timeout = TIMEOUT.EDITOR) {
+    // First, wait for the React app to produce any DOM inside #root.
+    // If this times out the app's JS likely crashed during bootstrap.
+    await page.waitForFunction(
+        () => {
+            const root = document.querySelector("#root");
+            return root && root.children.length > 0;
+        },
+        { timeout: Math.min(timeout, 30_000) }
+    );
+
     await Promise.race([
         page.waitForSelector(".cm-editor", { timeout }),
         page

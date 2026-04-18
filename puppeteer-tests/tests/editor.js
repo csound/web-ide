@@ -7,7 +7,9 @@ import {
     activateConsoleTab,
     waitForConsoleOutput,
     getConsoleOutputLength,
-    waitForConsoleOutputGrowth
+    waitForConsoleOutputGrowth,
+    attachPageDebugListeners,
+    dumpDebugInfo
 } from "../utils/browser.js";
 import { getSession, closeSession } from "../utils/session.js";
 import { targetName } from "../utils/config.js";
@@ -17,8 +19,14 @@ describe(`Editor [${targetName}]`, () => {
 
     before(async () => {
         ({ page } = await getSession());
+        attachPageDebugListeners(page);
         await gotoProject(page);
-        await waitForEditor(page);
+        try {
+            await waitForEditor(page);
+        } catch (err) {
+            await dumpDebugInfo(page, "editor-before-hook-failure");
+            throw err;
+        }
     });
 
     after(async () => {

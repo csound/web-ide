@@ -79,3 +79,12 @@ jobs:
         run: node --test tests/${{ matrix.suite }}.js
         env:
           TARGET: local
+
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-debug-${{ matrix.suite }}
+          path: puppeteer-tests/screenshots/
+          retention-days: 7
+          if-no-files-found: ignore
