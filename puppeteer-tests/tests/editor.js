@@ -2,9 +2,10 @@ import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import {
     gotoProject,
-    waitForEditor,
+    waitForProject,
+    openFileFromTree,
     findRunButton,
-    activateConsoleTab,
+    openConsolePanel,
     waitForConsoleOutput,
     getConsoleOutputLength,
     waitForConsoleOutputGrowth,
@@ -22,7 +23,7 @@ describe(`Editor [${targetName}]`, () => {
         attachPageDebugListeners(page);
         await gotoProject(page);
         try {
-            await waitForEditor(page);
+            await waitForProject(page);
         } catch (err) {
             await dumpDebugInfo(page, "editor-before-hook-failure");
             throw err;
@@ -34,9 +35,20 @@ describe(`Editor [${targetName}]`, () => {
         await closeSession();
     });
 
-    it("mounts the code editor", async () => {
+    it("shows the file tree with project files", async () => {
+        const tree = await page.$('[data-testid="file-tree"]');
+        assert.ok(tree, "File tree not mounted");
+    });
+
+    it("opens a file and mounts the code editor", async () => {
+        try {
+            await openFileFromTree(page, "project.csd");
+        } catch (err) {
+            await dumpDebugInfo(page, "editor-open-file-failure");
+            throw err;
+        }
         const editor = await page.$(".cm-editor");
-        assert.ok(editor, "Editor not mounted");
+        assert.ok(editor, "Editor not mounted after clicking file");
     });
 
     it("has a run button", async () => {
@@ -49,7 +61,7 @@ describe(`Editor [${targetName}]`, () => {
         assert.ok(btn, "Run button not found");
         const beforeLength = await getConsoleOutputLength(page);
         await btn.click();
-        await activateConsoleTab(page);
+        await openConsolePanel(page);
         await waitForConsoleOutputGrowth(page, beforeLength);
         await waitForConsoleOutput(page);
     });

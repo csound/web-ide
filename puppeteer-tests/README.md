@@ -64,14 +64,17 @@ Test files are organised by route — one file per page/route under test.
 
 `utils/browser.js`
 
-| Helper                       | Description                                   |
-| ---------------------------- | --------------------------------------------- |
-| `goto(page, path)`           | Navigate to a route on the target's base URL  |
-| `gotoProject(page)`          | Navigate to the target's test project editor  |
-| `waitForEditor(page)`        | Wait for CodeMirror 6 (`.cm-editor`) to mount |
-| `findRunButton(page)`        | Locate the run/play button                    |
-| `activateConsoleTab(page)`   | Click the Console/Output tab                  |
-| `waitForConsoleOutput(page)` | Wait for non-empty console output             |
+| Helper                             | Description                                     |
+| ---------------------------------- | ----------------------------------------------- |
+| `goto(page, path)`                 | Navigate to a route on the target's base URL    |
+| `gotoProject(page)`                | Navigate to the target's test project editor    |
+| `waitForProject(page)`             | Wait for project load and file tree to appear   |
+| `openFileFromTree(page, filename)` | Click a file in the tree, wait for `.cm-editor` |
+| `findRunButton(page)`              | Locate the run/play button                      |
+| `openConsolePanel(page)`           | Open the console via the sidebar launcher       |
+| `waitForConsoleOutput(page)`       | Wait for non-empty console output               |
+| `attachPageDebugListeners(page)`   | Capture browser logs for CI debugging           |
+| `dumpDebugInfo(page, name)`        | Save screenshot + logs + HTML snapshot          |
 
 `utils/session.js`
 
@@ -145,29 +148,15 @@ GitHub Actions runs E2E tests with three dedicated workflows:
 - `e2e-prod.yml`: runs on push to `main` with `TARGET=prod`
 - `e2e-local.yml`: runs on pull requests (opened/synchronize/reopened) and manual dispatch with `TARGET=local`
 
-### Local E2E and the Firestore mock
+### Local E2E
 
-The `local` target uses a fake project URL (`/editor/null-test-url`) that
-doesn't exist in any Firestore database. To make the editor mount without a
-real backend, the Vite dev server is started with `VITE_E2E=true`.
-
-When that env var is set:
-
-1. `ProjectContext` skips Firestore and injects a hardcoded mock project
-   (defined in `src/components/projects/e2e-mock.ts`) directly into Redux.
-2. `ProjectEditor` skips Firestore subscriptions (file changes, targets,
-   last-modified timestamps, profile metadata).
-
-The mock project contains a single `project.csd` file with a minimal Csound
-instrument so the "runs and produces console output" test has something to
-execute.
-
-The CI workflow (`e2e-local.yml`) passes `VITE_E2E: "true"` to the dev server
-automatically. For local development you can do the same:
+The `local` target connects to the **dev** Firebase backend
+(`REACT_APP_DATABASE=DEV`) and uses a real project ID
+(`ElPGLLOOc5qWNM4VmfVV`) — the same one used by the `dev` target.
 
 ```bash
-# Terminal 1 — start dev server with mock
-VITE_E2E=true npm run start
+# Terminal 1 — start dev server
+npm run start
 
 # Terminal 2 — run tests
 cd puppeteer-tests && npm run test:local

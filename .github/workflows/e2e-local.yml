@@ -71,7 +71,6 @@ jobs:
         run: npm run start -- --open false &
         env:
           BROWSER: none
-          VITE_E2E: "true"
 
       - name: Wait for dev server
         run: npx wait-on http://localhost:3000 --timeout 120000

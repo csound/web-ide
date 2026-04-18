@@ -8,19 +8,10 @@ import ProjectEditor from "@comp/project-editor/project-editor";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
-import {
-    activateProject,
-    addProjectDocuments,
-    downloadProjectOnce,
-    closeProject,
-    storeProjectLocally
-} from "./actions";
+import { activateProject, downloadProjectOnce, closeProject } from "./actions";
 import { isEmpty, pathOr } from "ramda";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
-import { e2eMockProject } from "./e2e-mock";
-
-const isE2E = import.meta.env.VITE_E2E === "true";
 
 const ForceBackgroundColor = ({ theme }: { theme: Theme }) => (
     <style>{`body {background-color: ${theme.background}}`}</style>
@@ -78,24 +69,6 @@ export const ProjectContext = () => {
             setProjectFetchStarted(true);
 
             const downloadProject = async () => {
-                if (isE2E) {
-                    // Bypass Firestore: inject the mock project directly
-                    const mock = {
-                        ...e2eMockProject,
-                        projectUid
-                    };
-                    dispatch(storeProjectLocally([mock]));
-                    // activateProject must run before addProjectDocuments
-                    // because it calls closeTabDock(), which would wipe
-                    // the tab dock that addProjectDocuments initializes.
-                    await activateProject(projectUid)(dispatch);
-                    dispatch(
-                        addProjectDocuments(projectUid, mock.documents) as any
-                    );
-                    setProjectIsReady(true);
-                    return;
-                }
-
                 try {
                     const result =
                         await downloadProjectOnce(projectUid)(dispatch);

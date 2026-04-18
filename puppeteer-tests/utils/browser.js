@@ -3,8 +3,9 @@ import path from "node:path";
 import { target, targetName, TIMEOUT } from "./config.js";
 
 const RUN_BUTTON_SELECTOR = '[data-testid="run-button"]';
-const CONSOLE_TAB_SELECTOR = '[data-testid="console-tab"]';
 const CONSOLE_OUTPUT_SELECTOR = '[data-testid="console-output"]';
+const FILE_TREE_SELECTOR = '[data-testid="file-tree"]';
+const CONSOLE_SIDEBAR_SELECTOR = '[data-testid="sidebar-bottom-console"]';
 
 const SCREENSHOTS_DIR = path.join(import.meta.dirname, "..", "screenshots");
 
@@ -96,7 +97,7 @@ export async function gotoProject(page) {
         // Use "domcontentloaded" instead of "networkidle2" for Vite dev
         // server.  Vite transforms modules on-demand, so network activity
         // can fluctuate long after the HTML is parsed.  The actual
-        // readiness check (editor mount) is handled by waitForEditor().
+        // readiness check (project load) is handled by waitForProject().
         await page.goto(target.projectUrl, {
             waitUntil: "domcontentloaded",
             timeout: TIMEOUT.NAVIGATION
@@ -123,14 +124,12 @@ export async function gotoProject(page) {
 }
 
 /**
- * Wait for the CodeMirror 6 editor to mount.
+ * Wait for the project to load and the file tree to appear.
  * Fails early if the page redirects to /404 (project not found).
- * Waits for the React root to render content first, which helps
- * surface issues where the app JS fails to bootstrap.
  * @param {import('puppeteer').Page} page
  * @param {number} [timeout=TIMEOUT.EDITOR] - Max wait in ms.
  */
-export async function waitForEditor(page, timeout = TIMEOUT.EDITOR) {
+export async function waitForProject(page, timeout = TIMEOUT.EDITOR) {
     // First, wait for the React app to produce any DOM inside #root.
     // If this times out the app's JS likely crashed during bootstrap.
     await page.waitForFunction(
@@ -142,7 +141,7 @@ export async function waitForEditor(page, timeout = TIMEOUT.EDITOR) {
     );
 
     await Promise.race([
-        page.waitForSelector(".cm-editor", { timeout }),
+        page.waitForSelector(FILE_TREE_SELECTOR, { timeout }),
         page
             .waitForFunction(
                 () =>
@@ -159,6 +158,24 @@ export async function waitForEditor(page, timeout = TIMEOUT.EDITOR) {
 }
 
 /**
+ * Click a file in the file tree by filename to open it in the editor.
+ * Waits for the CodeMirror editor to mount after clicking.
+ * @param {import('puppeteer').Page} page
+ * @param {string} filename - Exact filename to click, e.g. "project.csd".
+ * @param {number} [timeout=TIMEOUT.EDITOR] - Max wait in ms.
+ */
+export async function openFileFromTree(
+    page,
+    filename,
+    timeout = TIMEOUT.EDITOR
+) {
+    const selector = `[data-testid="file-tree-item-${filename}"]`;
+    await page.waitForSelector(selector, { timeout });
+    await page.click(selector);
+    await page.waitForSelector(".cm-editor", { timeout });
+}
+
+/**
  * Find the run/play button in the editor toolbar.
  * @param {import('puppeteer').Page} page
  * @returns {Promise<import('puppeteer').ElementHandle | null>}
@@ -168,12 +185,19 @@ export async function findRunButton(page) {
 }
 
 /**
- * Click the Console/Output tab if it exists.
+ * Open the console panel via the sidebar launcher button.
  * @param {import('puppeteer').Page} page
  */
-export async function activateConsoleTab(page) {
-    const tab = await page.$(CONSOLE_TAB_SELECTOR);
-    if (tab) await tab.click();
+export async function openConsolePanel(page) {
+    const btn = await page.$(CONSOLE_SIDEBAR_SELECTOR);
+    if (btn) {
+        const isActive = await btn.evaluate(
+            (el) => el.getAttribute("aria-pressed") === "true"
+        );
+        if (!isActive) {
+            await btn.click();
+        }
+    }
 }
 
 /**
