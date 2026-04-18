@@ -1,27 +1,25 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import {
-    launchBrowser,
-    newPage,
     gotoProject,
     waitForEditor,
     findRunButton,
     activateConsoleTab,
     waitForConsoleOutput
 } from "../utils/browser.js";
+import { getSession, closeSession } from "../utils/session.js";
 import { targetName } from "../utils/config.js";
 
 describe(`Editor [${targetName}]`, () => {
-    let browser, page;
+    let page;
 
     before(async () => {
-        browser = await launchBrowser();
-        page = await newPage(browser);
+        ({ page } = await getSession());
         await gotoProject(page);
     });
 
     after(async () => {
-        await browser?.close();
+        await closeSession();
     });
 
     it("mounts the code editor", async () => {

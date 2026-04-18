@@ -1,24 +1,4 @@
-import puppeteer from "puppeteer";
-import { target, targetName, TIMEOUT, BROWSER_SETTINGS } from "./config.js";
-
-/**
- * Launch a headless Chromium instance.
- * @returns {Promise<import('puppeteer').Browser>}
- */
-export async function launchBrowser() {
-    return puppeteer.launch(BROWSER_SETTINGS);
-}
-
-/**
- * Create a new page with a 1280×900 viewport.
- * @param {import('puppeteer').Browser} browser
- * @returns {Promise<import('puppeteer').Page>}
- */
-export async function newPage(browser) {
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 900 });
-    return page;
-}
+import { target, targetName, TIMEOUT } from "./config.js";
 
 /**
  * Navigate to a path on the current target's base URL.

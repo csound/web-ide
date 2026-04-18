@@ -1,19 +1,19 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { launchBrowser, newPage, goto } from "../utils/browser.js";
+import { goto } from "../utils/browser.js";
+import { getSession, closeSession } from "../utils/session.js";
 import { targetName } from "../utils/config.js";
 
 describe(`Home [${targetName}]`, () => {
-    let browser, page;
+    let page;
 
     before(async () => {
-        browser = await launchBrowser();
-        page = await newPage(browser);
+        ({ page } = await getSession());
         await goto(page, "/");
     });
 
     after(async () => {
-        await browser?.close();
+        await closeSession();
     });
 
     it("loads with a non-empty title", async () => {
