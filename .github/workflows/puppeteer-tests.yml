@@ -1,0 +1,37 @@
+name: E2E Tests with Puppeteer
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: E2E — ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [dev, prod]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: puppeteer-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: puppeteer-tests
+        run: npm ci
+
+      - name: Run E2E tests
+        working-directory: puppeteer-tests
+        run: npm test
+        env:
+          TARGET: ${{ matrix.target }}
