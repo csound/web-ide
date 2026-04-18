@@ -15,7 +15,7 @@ const TARGETS = {
     },
     prod: {
         baseUrl: "https://ide.csound.com",
-        projectUrl: "http://ide.csound.com/editor/oRl3K1TaYnICnAxv7bUg"
+        projectUrl: "https://ide.csound.com/editor/oRl3K1TaYnICnAxv7bUg"
     }
 };
 
