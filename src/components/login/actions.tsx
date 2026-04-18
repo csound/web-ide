@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { doc, getDoc, writeBatch } from "firebase/firestore";
-import { RootState, useDispatch, useSelector } from "@root/store";
+import { AppThunk, useDispatch, useSelector } from "@root/store";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {
@@ -51,11 +51,8 @@ const openProjectCreationModal = () =>
         iconBackgroundColor: undefined
     });
 
-export const login = (
-    email: string,
-    password: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const login = (email: string, password: string): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: SIGNIN_REQUEST
         });
@@ -83,8 +80,8 @@ export const login = (
 
 export const loginWithProvider = (
     providerName: "google" | "facebook"
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: SIGNIN_REQUEST
         });
@@ -289,8 +286,8 @@ export function ProfileFinalize({
 export const thirdPartyAuthSuccess = (
     user: { uid: string; displayName: string | undefined },
     fromAutoLogin: boolean
-): ((dispatch: any, getState: () => RootState) => Promise<void>) => {
-    return async (dispatch: any, getState: () => RootState) => {
+): AppThunk => {
+    return async (dispatch, getState) => {
         let profile;
 
         try {
@@ -343,10 +340,8 @@ export const thirdPartyAuthSuccess = (
     };
 };
 
-export const setPostAuthFlow = (
-    postAuthFlow: PostAuthFlow
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const setPostAuthFlow = (postAuthFlow: PostAuthFlow): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: SET_POST_AUTH_FLOW,
             postAuthFlow
@@ -356,8 +351,8 @@ export const setPostAuthFlow = (
 
 export const openLoginDialog = (
     dialogMode: LoginDialogMode = "login"
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: OPEN_DIALOG,
             dialogMode
@@ -365,16 +360,16 @@ export const openLoginDialog = (
     };
 };
 
-export const closeLoginDialog = (): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const closeLoginDialog = (): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: CLOSE_DIALOG
         });
     };
 };
 
-export const logOut = (): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const logOut = (): AppThunk => {
+    return async (dispatch) => {
         try {
             await getAuth().signOut();
         } catch (error) {
@@ -387,11 +382,8 @@ export const logOut = (): ((dispatch: any) => Promise<void>) => {
     };
 };
 
-export const createNewUser = (
-    email: string,
-    password: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const createNewUser = (email: string, password: string): AppThunk => {
+    return async (dispatch) => {
         try {
             const credentials = await createUserWithEmailAndPassword(
                 getAuth(),
@@ -412,18 +404,16 @@ export const createNewUser = (
     };
 };
 
-export const createUserClearError = (): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const createUserClearError = (): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: CREATE_CLEAR_ERROR
         });
     };
 };
 
-export const setRequestingStatus = (
-    status: boolean
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
+export const setRequestingStatus = (status: boolean): AppThunk => {
+    return async (dispatch) => {
         dispatch({
             type: SET_REQUESTING_STATUS,
             status
