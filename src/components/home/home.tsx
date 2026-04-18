@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { Header } from "@comp/header/header";
+import AddIcon from "@mui/icons-material/Add";
+import Button from "@mui/material/Button";
+import { addProject } from "@comp/profile/actions";
 import Search from "./search";
 import PopularProjects from "./popular-projects";
 import RandomProjects from "./random-projects";
 import PopularArtists from "./popular-artists";
 import { homeBackground } from "./background-style";
+import { homeActionBar, homeCreateButton } from "./styles";
 import { fetchPopularProjects } from "./actions";
 import {
     selectPopularProjectsFetchOffset,
@@ -68,6 +72,16 @@ const Home = () => {
         <>
             <Header />
             <div css={homeBackground}>
+                <div css={homeActionBar}>
+                    <Button
+                        css={homeCreateButton}
+                        color="inherit"
+                        onClick={() => dispatch(addProject())}
+                        startIcon={<AddIcon />}
+                    >
+                        New Project
+                    </Button>
+                </div>
                 <Search />
                 {/* <p>Search is being fixed...</p> */}
                 {/* <PopularProjects

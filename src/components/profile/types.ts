@@ -59,11 +59,11 @@ export type ProfileActionTypes = {
 };
 
 export interface IProfile {
-    allTags?: any[];
+    allTags?: string[];
     bio?: string;
     userUid: string;
-    userFollowing?: [];
-    followers?: [];
+    following?: string[];
+    followers?: string[];
     projectsCount?: ProjectsCount;
     userImageURL?: string;
     backgroundIndex: number;
@@ -75,4 +75,5 @@ export interface IProfile {
     username: string;
     photoUrl?: string;
     userJoinDate?: number;
+    stars?: string[];
 }

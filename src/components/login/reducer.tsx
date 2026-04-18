@@ -8,7 +8,10 @@ import {
     CREATE_USER_FAIL,
     CREATE_USER_SUCCESS,
     CREATE_CLEAR_ERROR,
-    LOG_OUT
+    LOG_OUT,
+    LoginDialogMode,
+    PostAuthFlow,
+    SET_POST_AUTH_FLOW
 } from "./types";
 import { assoc, dissoc, pipe } from "ramda";
 
@@ -18,6 +21,8 @@ export interface ILoginReducer {
     errorMessage: string | undefined;
     failed: boolean;
     isLoginDialogOpen: boolean;
+    dialogMode: LoginDialogMode;
+    postAuthFlow: PostAuthFlow;
     loggedInUid: string | undefined;
     requesting: boolean;
 }
@@ -28,6 +33,8 @@ const INITIAL_STATE: ILoginReducer = {
     errorMessage: undefined,
     failed: false,
     isLoginDialogOpen: false,
+    dialogMode: "login",
+    postAuthFlow: undefined,
     loggedInUid: undefined,
     // we start always with onAuthStateChanged
     requesting: true
@@ -69,6 +76,7 @@ const LoginReducer = (
                 ...state,
                 loggedInUid: action.user.uid,
                 isLoginDialogOpen: false,
+                dialogMode: "login",
                 requesting: false,
                 authenticated: true
             };
@@ -78,6 +86,8 @@ const LoginReducer = (
             return {
                 ...restState,
                 isLoginDialogOpen: false,
+                dialogMode: "login",
+                postAuthFlow: undefined,
                 authenticated: false,
                 requesting: false,
                 failed: false,
@@ -85,10 +95,25 @@ const LoginReducer = (
             };
         }
         case OPEN_DIALOG: {
-            return { ...state, isLoginDialogOpen: true };
+            return {
+                ...state,
+                isLoginDialogOpen: true,
+                dialogMode: action.dialogMode || "login"
+            };
         }
         case CLOSE_DIALOG: {
-            return { ...state, isLoginDialogOpen: false };
+            return {
+                ...state,
+                isLoginDialogOpen: false,
+                dialogMode: "login",
+                postAuthFlow: undefined
+            };
+        }
+        case SET_POST_AUTH_FLOW: {
+            return {
+                ...state,
+                postAuthFlow: action.postAuthFlow
+            };
         }
         default: {
             return state;

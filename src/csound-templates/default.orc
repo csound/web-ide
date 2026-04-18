@@ -1,16 +1,13 @@
-sr=44100
-ksmps=32
-0dbfs=1
-nchnls=2
+sr = 44100 ; sample rate
+0dbfs = 1 ; full-scale amplitude
+nchnls = 2 ; stereo output
+ksmps = 64 ; control rate block size
 
+; Instrument 1 plays a simple sawtooth tone.
+; p4 is amplitude and p5 is frequency.
 instr 1
-
-  iamp = ampdbfs(p5)
-  ipch = cps2pch(p4,12)
-  ipan = 0.5
-
-  asig = vco2(iamp, ipch)
-  al, ar pan2 asig, ipan
-
-  out(al, ar)
+    iAmp = p4
+    iFreq = p5
+    aOut = vco2:a(iAmp, iFreq)
+    outall(aOut)
 endin

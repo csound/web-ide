@@ -13,8 +13,13 @@ import Select from "react-select";
 const ModalContainer = styled.div`
     display: grid;
     grid-auto-rows: minmax(60px, auto);
-    grid-template-columns: 400px;
+    grid-template-columns: minmax(0, 400px);
+    width: min(400px, calc(100vw - 32px));
     border-radius: 5px;
+
+    @media (max-width: 760px) {
+        width: min(400px, calc(100vw - 40px));
+    }
 `;
 
 interface IFieldRow {

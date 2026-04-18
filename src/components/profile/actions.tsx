@@ -47,10 +47,17 @@ import {
     SET_FOLLOWERS_LOADING,
     SET_STARS_LOADING
 } from "./types";
-import { defaultCsd, defaultOrc, defaultSco } from "@root/csound-templates";
+import {
+    defaultCsd,
+    defaultSplitCsd,
+    defaultOrc,
+    defaultSco,
+    emptyCsd
+} from "@root/csound-templates";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
-import { openSimpleModal } from "@comp/modal/actions";
+import { closeModal, openSimpleModal } from "@comp/modal/actions";
+import { openLoginDialog, setPostAuthFlow } from "@comp/login/actions";
 import { selectLoggedInUid } from "@comp/login/selectors";
 import { selectCurrentlyPlayingProject } from "./selectors";
 import {
@@ -66,6 +73,59 @@ import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
 import { unsetProject } from "@comp/projects/actions";
 import { assoc, difference, keys, path, hasPath } from "ramda";
+import { navigateTo } from "@comp/router/navigate";
+
+export type ProjectStarterTemplate = "single-csd" | "split-csd" | "empty";
+
+export const PROJECT_STARTER_TEMPLATE_OPTIONS: Array<{
+    value: ProjectStarterTemplate;
+    label: string;
+    description: string;
+}> = [
+    {
+        value: "single-csd",
+        label: "Single CSD",
+        description: "One commented Csound 7 project.csd file."
+    },
+    {
+        value: "split-csd",
+        label: "CSD + ORC + SCO",
+        description: "Split the new starter into project.csd, .orc, and .sco."
+    },
+    {
+        value: "empty",
+        label: "Empty",
+        description: "Start with a blank project.csd file."
+    }
+];
+
+const getStarterFiles = (
+    starterTemplate: ProjectStarterTemplate,
+    loggedInUserUid: string
+) => {
+    const withUser = (document: {
+        name: string;
+        value: string;
+        type: string;
+    }) => ({
+        ...document,
+        userUid: loggedInUserUid
+    });
+
+    switch (starterTemplate) {
+        case "split-csd":
+            return [
+                withUser(defaultSplitCsd),
+                withUser(defaultOrc),
+                withUser(defaultSco)
+            ];
+        case "empty":
+            return [withUser(emptyCsd)];
+        case "single-csd":
+        default:
+            return [withUser(defaultCsd)];
+    }
+};
 
 const addUserProjectAction = (): ProfileActionTypes => {
     return {
@@ -134,7 +194,8 @@ export const addUserProject =
         projectUid: string,
         iconName: string,
         iconForegroundColor: string,
-        iconBackgroundColor: string
+        iconBackgroundColor: string,
+        starterTemplate: ProjectStarterTemplate
     ) =>
     async (dispatch: AppThunkDispatch, getState: () => RootState) => {
         const currentState = getState();
@@ -156,31 +217,36 @@ export const addUserProject =
                 const newProjectReference = doc(projects);
                 batch.set(newProjectReference, newProject);
                 const filesReference = collection(newProjectReference, "files");
-                const csdFileReference = doc(filesReference);
-                batch.set(csdFileReference, {
-                    ...defaultCsd,
-                    userUid: loggedInUserUid
+                const starterFiles = getStarterFiles(
+                    starterTemplate,
+                    loggedInUserUid
+                );
+                let csdFileReferenceId: string | undefined;
+
+                starterFiles.forEach((starterFile) => {
+                    const fileReference = doc(filesReference);
+
+                    if (starterFile.name === "project.csd") {
+                        csdFileReferenceId = fileReference.id;
+                    }
+
+                    batch.set(fileReference, starterFile);
                 });
-                batch.set(doc(filesReference), {
-                    ...defaultOrc,
-                    userUid: loggedInUserUid
-                });
-                batch.set(doc(filesReference), {
-                    ...defaultSco,
-                    userUid: loggedInUserUid
-                });
+
                 batch.set(
                     doc(targets, newProjectReference.id),
                     {
-                        targets: {
-                            "project.csd": {
-                                csoundOptions: {},
-                                targetName: "project.csd",
-                                targetType: "main",
-                                targetDocumentUid: csdFileReference.id
-                            }
-                        },
-                        defaultTarget: "project.csd"
+                        targets: csdFileReferenceId
+                            ? {
+                                  "project.csd": {
+                                      csoundOptions: {},
+                                      targetName: "project.csd",
+                                      targetType: "main",
+                                      targetDocumentUid: csdFileReferenceId
+                                  }
+                              }
+                            : {},
+                        defaultTarget: csdFileReferenceId ? "project.csd" : ""
                     },
                     { merge: true }
                 );
@@ -191,7 +257,10 @@ export const addUserProject =
                     currentTags
                 );
                 dispatch(addUserProjectAction());
+                dispatch(closeModal());
+                navigateTo(`/editor/${newProjectReference.id}`);
                 dispatch(openSnackbar("Project Added", SnackbarType.Success));
+                return newProjectReference.id;
             } catch (error) {
                 console.log(error);
                 dispatch(
@@ -306,17 +375,32 @@ export const setTagsInput = (tags: Array<any>): ProfileActionTypes => {
 //         }
 //     };
 
-export const addProject = () => {
+const openNewProjectModal = () => {
     return openSimpleModal("new-project-prompt", {
         name: "New Project",
         description: "",
         label: "Create Project",
         newProject: true,
         projectID: "",
+        starterTemplate: "single-csd",
         iconName: undefined,
         iconForegroundColor: undefined,
         iconBackgroundColor: undefined
     });
+};
+
+export const addProject = () => {
+    return async (dispatch: AppThunkDispatch, getState: () => RootState) => {
+        const loggedInUserUid = selectLoggedInUid(getState());
+
+        if (loggedInUserUid) {
+            dispatch(openNewProjectModal());
+            return;
+        }
+
+        dispatch(setPostAuthFlow("create-project"));
+        dispatch(openLoginDialog("create"));
+    };
 };
 
 export const followUser =
@@ -444,6 +528,7 @@ export const editProject = (project: IProject) => {
         description: project.description,
         label: "Apply changes",
         projectID: project.projectUid,
+        starterTemplate: "single-csd",
         iconName: project.iconName,
         iconForegroundColor: project.iconForegroundColor,
         iconBackgroundColor: project.iconBackgroundColor,
