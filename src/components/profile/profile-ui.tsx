@@ -26,17 +26,17 @@ export const IDContainer = styled(Card)`
     grid-row: 1 / -1;
     grid-column: 1 / 2;
     display: grid;
-    grid-template-rows: 250px 1fr auto auto;
+    grid-template-rows: 250px auto auto auto;
     grid-template-columns: 1fr;
     z-index: 2;
-    min-height: 420px;
     box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.08);
     & > div {
         max-width: 250px;
     }
-    overflow: hidden;
-    align-self: stretch;
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-self: start;
     position: sticky;
     top: 70px;
     max-height: calc(100vh - 80px);
@@ -53,7 +53,6 @@ export const DescriptionSection = styled.div`
     grid-row: ${(properties: { gridRow: string }) => properties.gridRow};
     grid-column: 1;
     padding: 16px;
-    overflow-y: auto;
     div,
     a,
     h1,
