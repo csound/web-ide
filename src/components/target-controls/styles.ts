@@ -1,5 +1,7 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 
+const controlButtonShadow = "0 1px 2px rgba(0, 0, 0, 0.12)";
+
 export const dropdownContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
     width: auto;
@@ -180,8 +182,10 @@ export const indicatorSeparator: SerializedStyles = css`
 
 export const playButtonContainer = (theme: Theme): SerializedStyles => css`
     position: relative;
-    border: 1px solid ${theme.line};
-    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid ${theme.highlightBackground};
+    border-radius: 4px;
+    box-shadow: ${controlButtonShadow};
     height: 42px;
     width: 42px;
     margin-right: 4px;
@@ -189,9 +193,13 @@ export const playButtonContainer = (theme: Theme): SerializedStyles => css`
     align-items: center;
     justify-content: center;
     line-height: 1;
-    transition: background-color 0.15s;
+    background-color: ${theme.headerBackground};
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
     &:hover {
         cursor: pointer;
+        border-color: ${theme.line};
         background-color: ${theme.buttonBackgroundHover};
     }
 `;
@@ -203,14 +211,18 @@ export const playButtonLoadingSpinner = css`
 export const playButtonStyle =
     (playing: boolean) =>
     (theme: Theme): SerializedStyles => css`
+        appearance: none;
         border: 0;
         background: transparent;
         box-sizing: border-box;
         width: 0;
         height: 12px;
+        padding: 0;
+        display: block;
         cursor: pointer;
         border-color: transparent transparent transparent ${theme.buttonIcon};
         transition: 100ms all ease;
+        transform: translateX(2px);
 
         // play state
         border-style: solid;
@@ -221,7 +233,8 @@ export const playButtonStyle =
 cursor: pointer;
 border-style: double;
 border-width: 0px 0 0px 20px;
-height: 26px;
+height: 24px;
+transform: translateX(1px);
 `}
     `;
 
@@ -236,23 +249,28 @@ export const buttonContainer = (theme: Theme): SerializedStyles => css`
     margin: 0;
     margin-right: 4px;
     line-height: 1;
+    box-shadow: ${controlButtonShadow};
 
     & > .Mui-disabled {
         opacity: 0.4;
     }
 
     button {
-        border: 1px solid ${theme.line};
-        border-radius: 8px;
-        transition: background-color 0.15s;
+        border: 2px solid ${theme.highlightBackground};
+        border-radius: 4px;
+        transition:
+            background-color 0.15s,
+            border-color 0.15s;
         width: 100%;
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         line-height: 1;
+        background-color: ${theme.headerBackground};
         &:hover {
             cursor: pointer;
+            border-color: ${theme.line};
             background-color: ${theme.buttonBackgroundHover};
         }
         .Mui-disabled:hover {
@@ -262,7 +280,7 @@ export const buttonContainer = (theme: Theme): SerializedStyles => css`
 `;
 
 export const iconButton = (): SerializedStyles => css`
-    border-radius: 8px;
+    border-radius: 2px;
     padding: 0 !important;
     width: 100%;
     height: 100%;

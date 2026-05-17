@@ -1,5 +1,11 @@
 import React from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+    DndContext,
+    PointerSensor,
+    closestCenter,
+    useSensor,
+    useSensors
+} from "@dnd-kit/core";
 import {
     SortableContext,
     useSortable,
@@ -36,8 +42,20 @@ const ModalTabListWrapper = ({
     handleTabSequence,
     children
 }) => {
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8
+            }
+        })
+    );
+
     const handleDragEnd = (event) => {
         const { active, over } = event;
+
+        if (!over) {
+            return;
+        }
 
         if (active.id !== over.id) {
             const oldIndex = items.findIndex((item) => item.id === active.id);
@@ -60,6 +78,7 @@ const ModalTabListWrapper = ({
         <DndContext
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
+            sensors={sensors}
         >
             <SortableContext
                 items={items}

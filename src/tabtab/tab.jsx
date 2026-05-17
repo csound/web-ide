@@ -60,6 +60,20 @@ export const Tab = React.forwardRef(
             handleTabChange(index);
         }, [handleTabChange, index]);
 
+        const stopCloseInteraction = React.useCallback((event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        }, []);
+
+        const handleClose = React.useCallback(
+            (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                closeCallback();
+            },
+            [closeCallback]
+        );
+
         return (
             <CustomTabStyle
                 className="tab"
@@ -79,9 +93,9 @@ export const Tab = React.forwardRef(
                         size="small"
                         css={ProjectEditorCloseButtonStyle}
                         style={{ marginTop: "-4px", marginRight: "-5px" }}
-                        onClick={() => {
-                            closeCallback();
-                        }}
+                        aria-label="close tab"
+                        onPointerDown={stopCloseInteraction}
+                        onClick={handleClose}
                     >
                         <CloseIcon
                             style={{
