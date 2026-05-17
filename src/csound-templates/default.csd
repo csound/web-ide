@@ -1,20 +1,27 @@
 <CsoundSynthesizer>
 <CsOptions>
+-o dac ; real-time audio output
 </CsOptions>
 <CsInstruments>
-0dbfs=1
-nchnls=2
+sr = 44100 ; sample rate
+0dbfs = 1 ; full-scale amplitude
+nchnls = 2 ; stereo output
+ksmps = 64 ; control rate block size
 
+; Instrument 1 plays a simple sawtooth tone.
+; p4 is amplitude and p5 is frequency.
 instr 1
-  asig vco2 p4, p5
-  aenv linenr asig,0.01,0.1,0.01
-  out aenv, aenv
+    iAmp = p4
+    iFreq = p5
+    aOut = vco2:a(iAmp, iFreq)
+    outall(aOut)
 endin
-
-event_i "i", 1, 0, 2, 0dbfs/2, A4
-event_i "e", 0, 2.5
 
 </CsInstruments>
 <CsScore>
+; A short "hello world" phrase for new projects.
+i 1 0 0.35 0.10 440
+i 1 0.45 0.35 0.08 660
+i 1 0.95 0.60 0.06 550
 </CsScore>
 </CsoundSynthesizer>

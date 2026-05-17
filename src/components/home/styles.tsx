@@ -8,6 +8,31 @@ export const homeHeading = css`
     height: 40px;
 `;
 
+export const homeActionBar = css`
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+`;
+
+export const homeCreateButton = (theme: Theme): SerializedStyles => css`
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid ${theme.line};
+    background: linear-gradient(
+        180deg,
+        ${theme.highlightBackgroundAlt},
+        ${theme.highlightBackground}
+    );
+    color: ${theme.textColor};
+    font-weight: 600;
+
+    &:hover {
+        background: ${theme.highlightBackgroundAlt};
+    }
+`;
+
 export const homePageHeading = (theme: Theme): SerializedStyles => css`
     position: absolute;
     bottom: -6px;

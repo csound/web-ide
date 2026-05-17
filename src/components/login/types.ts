@@ -10,3 +10,7 @@ export const LOG_OUT = PREFIX + "LOG_OUT";
 export const CREATE_USER_FAIL = PREFIX + "CREATE_USER_FAIL";
 export const CREATE_USER_SUCCESS = PREFIX + "CREATE_USER_SUCCESS";
 export const CREATE_CLEAR_ERROR = PREFIX + "CREATE_USER_CLEAR_ERROR";
+export const SET_POST_AUTH_FLOW = PREFIX + "SET_POST_AUTH_FLOW";
+
+export type LoginDialogMode = "login" | "create" | "reset";
+export type PostAuthFlow = "create-project" | undefined;
