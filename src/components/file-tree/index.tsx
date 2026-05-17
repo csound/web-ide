@@ -641,6 +641,7 @@ const makeTree = (
                                             ref={provided.innerRef}
                                             css={SS.listItem}
                                             className={folderClassName}
+                                            data-testid={`file-tree-item-${document_.filename}`}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
                                             onClick={() =>
@@ -751,7 +752,7 @@ export const FileTree = ({
             {shouldDisplayTree && (
                 <div css={SS.container}>
                     <FileTreeHeader isOwner={isOwner} project={project} />
-                    <List css={SS.listContainer} dense>
+                    <List css={SS.listContainer} dense data-testid="file-tree">
                         {treeElements}
                         {nonCloudFileSources.length > 0 && <hr />}
                         {nonCloudFileSources.map((file, index) => {

@@ -87,6 +87,9 @@ const BottomTabs = (): React.ReactElement => {
                             <DragTab
                                 id={"drag-tab-" + index}
                                 key={index}
+                                data-testid={
+                                    k === "console" ? "console-tab" : undefined
+                                }
                                 closable={true}
                                 closeCallback={() =>
                                     dispatch(closeBottomTab(k))

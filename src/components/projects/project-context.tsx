@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Audio as AudioSpinner } from "react-loader-spinner";
 import { useParams, useNavigate } from "react-router";
 import { Theme, useTheme } from "@emotion/react";
@@ -26,6 +26,10 @@ export const ProjectContext = () => {
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
+    // Ref guard: prevents StrictMode double-invocation from running
+    // the download effect twice (which would closeTabDock after
+    // tabDockInit, leaving the editor tab dock empty).
+    const fetchStartedRef = useRef(false);
     const projectUid = routeParams.id ?? "";
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
@@ -55,11 +59,13 @@ export const ProjectContext = () => {
         setProjectFetchStarted(false);
         setProjectIsReady(false);
         setNeedsLoading(true);
+        fetchStartedRef.current = false;
     }, [projectUid]);
 
     // Effect 2: Handle project download initiation
     useEffect(() => {
-        if (!projectFetchStarted && projectUid) {
+        if (!projectFetchStarted && projectUid && !fetchStartedRef.current) {
+            fetchStartedRef.current = true;
             setProjectFetchStarted(true);
 
             const downloadProject = async () => {
@@ -79,15 +85,9 @@ export const ProjectContext = () => {
                         error
                     );
                     setProjectIsReady(true);
-                    if (
-                        typeof error === "object" &&
-                        typeof error.code === "string"
-                    ) {
-                        error.code === "permission-denied" &&
-                            navigate("/404", {
-                                state: { message: "Project not found" }
-                            });
-                    }
+                    navigate("/404", {
+                        state: { message: "Project not found" }
+                    });
                     return;
                 }
 

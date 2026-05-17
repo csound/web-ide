@@ -1,0 +1,78 @@
+name: E2E — Dev
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: e2e-dev-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: puppeteer-tests/package-lock.json
+
+      - name: Install test dependencies
+        working-directory: puppeteer-tests
+        run: npm ci
+
+      - name: Cache node_modules and Puppeteer browsers
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            puppeteer-tests/node_modules
+            ~/.cache/puppeteer
+          key: nm-puppeteer-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+
+  e2e:
+    name: E2E dev — ${{ matrix.suite }}
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [home, editor]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Restore node_modules and Puppeteer browsers
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            puppeteer-tests/node_modules
+            ~/.cache/puppeteer
+          key: nm-puppeteer-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+
+      - name: Run ${{ matrix.suite }} tests
+        working-directory: puppeteer-tests
+        run: node --test tests/${{ matrix.suite }}.js
+        env:
+          TARGET: dev
+
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-debug-dev-${{ matrix.suite }}
+          path: puppeteer-tests/screenshots/
+          retention-days: 7
+          if-no-files-found: ignore

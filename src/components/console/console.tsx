@@ -24,8 +24,14 @@ const Console = (): React.ReactElement => {
     }, [logs, onMessage]);
 
     return (
-        <div css={SS.ConsoleContainer} ref={consoleReference}>
-            <code>{((logs || []) as string[]).join("")}</code>
+        <div
+            css={SS.ConsoleContainer}
+            ref={consoleReference}
+            data-testid="console-output-container"
+        >
+            <code data-testid="console-output">
+                {((logs || []) as string[]).join("")}
+            </code>
         </div>
     );
 };
