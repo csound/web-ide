@@ -21,10 +21,7 @@ const countStars = (value: unknown): number => {
 export const popularArtists = onCall<{ count: number }>(async ({ data }) => {
     const requestedCount = Math.max(1, Math.min(50, data?.count || 8));
 
-    if (
-        cachedArtists.length === 0 ||
-        Date.now() - lastUpdate > CACHE_TTL
-    ) {
+    if (cachedArtists.length === 0 || Date.now() - lastUpdate > CACHE_TTL) {
         const db = admin.firestore();
 
         const [projectsSnapshot, starsSnapshot] = await Promise.all([
