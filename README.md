@@ -1,6 +1,7 @@
 # Csound Web IDE
 
 ![Csound Web IDE logo](https://raw.githubusercontent.com/csound/web-ide/refs/heads/develop/public/favicon.ico)
+
 > A browser-based IDE for the Csound audio programming language — write, run, and share Csound
 > projects entirely in the browser, or install it as a native desktop app via Electron.
 
