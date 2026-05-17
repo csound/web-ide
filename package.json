@@ -64,7 +64,7 @@
         "redux": "^5.0.1",
         "redux-first-history": "^5.2.0",
         "url": "^0.11.4",
-        "vite": "^6.4.1",
+        "vite": "^6.4.2",
         "vite-raw-plugin": "^1.0.2",
         "vite-tsconfig-paths": "^5.1.4",
         "wait-on": "^8.0.1"
@@ -129,7 +129,7 @@
         "husky": "^9.1.7",
         "jsdom": "^26.1.0",
         "jszip": "^3.10.1",
-        "lodash": "^4.17.23",
+        "lodash": "^4.18.1",
         "moment": "^2.30.1",
         "prettier": "^3.4.2",
         "react-app-polyfill": "^3.0.0",
@@ -140,7 +140,7 @@
         "ts-pnp": "1.2.0",
         "typescript": "^5.7.2",
         "typescript-eslint": "^8.18.0",
-        "uuid": "^11.0.3",
+        "uuid": "^14.0.0",
         "vite-plugin-checker": "^0.8.0",
         "vite-plugin-svgr": "^4.3.0",
         "vitest": "^3.2.4"
