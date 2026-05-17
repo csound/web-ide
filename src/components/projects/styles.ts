@@ -3,22 +3,28 @@ import { headerHeight } from "@styles/constants";
 import { rgba } from "@styles/utils";
 
 export const main: SerializedStyles = css`
-    top: 39px;
-    min-height: calc(100vh - 40px); /* minus the header height! */
-`;
-
-export const loadMain = (theme: Theme): SerializedStyles => css`
     position: fixed;
     top: ${headerHeight}px;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 2;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+`;
+
+export const loadMain: SerializedStyles = css`
+    position: fixed;
+    top: ${headerHeight}px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    background: ${theme.background};
+    pointer-events: none;
 
     > div {
         position: static;

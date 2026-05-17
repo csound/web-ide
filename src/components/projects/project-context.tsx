@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Audio as AudioSpinner } from "react-loader-spinner";
 import { useParams, useNavigate } from "react-router";
 import { Theme, useTheme } from "@emotion/react";
 // import { IStore } from "@store/types";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectEditor from "@comp/project-editor/project-editor";
-import { selectLoginRequesting } from "@comp/login/selectors";
 import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
 import { activateProject, downloadProjectOnce, closeProject } from "./actions";
-import { isEmpty } from "ramda";
+import { isEmpty, pathOr } from "ramda";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
 
@@ -27,8 +26,11 @@ export const ProjectContext = () => {
     const [projectFetchStarted, setProjectFetchStarted] = useState(false);
     const [projectIsReady, setProjectIsReady] = useState(false);
     const [needsLoading, setNeedsLoading] = useState(true);
+    // Ref guard: prevents StrictMode double-invocation from running
+    // the download effect twice (which would closeTabDock after
+    // tabDockInit, leaving the editor tab dock empty).
+    const fetchStartedRef = useRef(false);
     const projectUid = routeParams.id ?? "";
-    const isLoginRequesting = useSelector(selectLoginRequesting);
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
     if (invalidUrl) {
@@ -47,21 +49,23 @@ export const ProjectContext = () => {
             ? store?.ProjectsReducer?.projects?.[activeProjectUid]
             : undefined
     );
-    const shouldShowEditor = Boolean(
-        project && !needsLoading && !isLoginRequesting
+
+    const tabIndex: number = useSelector(
+        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
     );
-    const shouldShowLoading = needsLoading || isLoginRequesting;
 
     // Effect 1: Reset states when projectUid changes
     useEffect(() => {
         setProjectFetchStarted(false);
         setProjectIsReady(false);
         setNeedsLoading(true);
+        fetchStartedRef.current = false;
     }, [projectUid]);
 
     // Effect 2: Handle project download initiation
     useEffect(() => {
-        if (!projectFetchStarted && projectUid) {
+        if (!projectFetchStarted && projectUid && !fetchStartedRef.current) {
+            fetchStartedRef.current = true;
             setProjectFetchStarted(true);
 
             const downloadProject = async () => {
@@ -81,15 +85,9 @@ export const ProjectContext = () => {
                         error
                     );
                     setProjectIsReady(true);
-                    if (
-                        typeof error === "object" &&
-                        typeof error.code === "string"
-                    ) {
-                        error.code === "permission-denied" &&
-                            navigate("/404", {
-                                state: { message: "Project not found" }
-                            });
-                    }
+                    navigate("/404", {
+                        state: { message: "Project not found" }
+                    });
                     return;
                 }
 
@@ -126,17 +124,21 @@ export const ProjectContext = () => {
         <>
             <ForceBackgroundColor theme={theme} />
             <Header />
-            {shouldShowEditor && project && (
-                <ProjectEditor activeProject={project} />
-            )}
-            {shouldShowLoading && (
-                <main css={SS.loadMain(theme)}>
+            <main css={SS.main}>
+                {project && <ProjectEditor activeProject={project} />}
+            </main>
+            {needsLoading && (
+                <div
+                    css={SS.loadMain}
+                    aria-live="polite"
+                    aria-label="Loading project"
+                >
                     <AudioSpinner
                         color={theme.highlightBackground}
                         height={80}
                         width={80}
                     />
-                </main>
+                </div>
             )}
         </>
     );

@@ -10,16 +10,16 @@ upload({
     token: process.env.SENTRY_AUTH_TOKEN,
     files: getFiles()
 })
-    .then(data => console.log("----- SUCCESS ----\n", data))
-    .catch(error => console.log("---- ERROR ----\n", error));
+    .then((data) => console.log("----- SUCCESS ----\n", data))
+    .catch((error) => console.log("---- ERROR ----\n", error));
 function getFiles() {
     const BUILD_DIR = "dist";
     const assetsFile = path.resolve(BUILD_DIR, "asset-manifest.json");
     const filePaths = require(assetsFile);
     const jsFilesRegex = /(\.js(.map)?)$/;
     const files = Object.keys(filePaths)
-        .filter(f => jsFilesRegex.test(f))
-        .map(f => ({
+        .filter((f) => jsFilesRegex.test(f))
+        .map((f) => ({
             name: `${filePaths[f]}`,
             path: `build${filePaths[f]}`
         }));

@@ -4,8 +4,9 @@ const R = require("ramda");
 
 const newTimestamp = admin.firestore.FieldValue.serverTimestamp;
 
-const serviceAccountCredentials = require(process.env
-    .GOOGLE_APPLICATION_CREDENTIALS);
+const serviceAccountCredentials = require(
+    process.env.GOOGLE_APPLICATION_CREDENTIALS
+);
 
 async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
@@ -21,13 +22,10 @@ const defaultApp = admin.initializeApp({
 // projectsCount
 const migration2020_1 = async () => {
     const batch = admin.firestore().batch();
-    const allUsers = await admin
-        .firestore()
-        .collection("usernames")
-        .get();
-    const allUserIds = await allUsers.docs.map(x => x.data().userUid);
+    const allUsers = await admin.firestore().collection("usernames").get();
+    const allUserIds = await allUsers.docs.map((x) => x.data().userUid);
 
-    await asyncForEach(allUserIds, async userUid => {
+    await asyncForEach(allUserIds, async (userUid) => {
         const countRef = await admin
             .firestore()
             .collection("projectsCount")
@@ -58,13 +56,10 @@ const migration2020_1 = async () => {
 // followersCount and followingCount
 const migration2020_2 = async () => {
     const batch = admin.firestore().batch();
-    const allUsers = await admin
-        .firestore()
-        .collection("usernames")
-        .get();
-    const allUserIds = await allUsers.docs.map(x => x.data().userUid);
+    const allUsers = await admin.firestore().collection("usernames").get();
+    const allUserIds = await allUsers.docs.map((x) => x.data().userUid);
 
-    await asyncForEach(allUserIds, async userUid => {
+    await asyncForEach(allUserIds, async (userUid) => {
         const followersCountRef = await admin
             .firestore()
             .collection("followersCount")
@@ -102,12 +97,9 @@ const migration2020_2 = async () => {
 // projectCreated timestamp
 const migration2020_3 = async () => {
     const batch = admin.firestore().batch();
-    const allProjectsRef = await admin
-        .firestore()
-        .collection("projects")
-        .get();
+    const allProjectsRef = await admin.firestore().collection("projects").get();
 
-    await asyncForEach(allProjectsRef.docs, async projectSnap => {
+    await asyncForEach(allProjectsRef.docs, async (projectSnap) => {
         const projectUid = projectSnap.id;
         const data = projectSnap.data();
 
@@ -138,10 +130,7 @@ const migration2020_3 = async () => {
 // profileStars
 const migration2020_4 = async () => {
     const batch = admin.firestore().batch();
-    const allStarsRef = await admin
-        .firestore()
-        .collection("stars")
-        .get();
+    const allStarsRef = await admin.firestore().collection("stars").get();
 
     const allStars = allStarsRef.docs.reduce((a, doc) => {
         const data = doc.data();
@@ -158,7 +147,7 @@ const migration2020_4 = async () => {
             allUserIds
         );
     }, {});
-    await asyncForEach(R.keys(allStars), async userID => {
+    await asyncForEach(R.keys(allStars), async (userID) => {
         const starsMap = allStars[userID];
         const profileStarsRef = await admin
             .firestore()

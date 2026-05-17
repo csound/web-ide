@@ -567,11 +567,14 @@ export const removeDocumentLocally = (
 export const renameDocument = (
     projectUid: string,
     documentUid: string,
-    newFilename: string
-): ((dispatch: any) => Promise<void>) => {
-    return async (dispatch: any) => {
-        dispatch(renameDocumentLocally(documentUid, newFilename));
-    };
+    initFilename: string
+) => {
+    return openSimpleModal("new-document-prompt", {
+        isRenameAction: true,
+        initFilename,
+        renameDocumentUid: documentUid,
+        projectUid
+    });
 };
 
 const createExportPath = (document: IDocument, projectUid: string): string => {

@@ -3,7 +3,16 @@ import { IDocument } from "@comp/projects/types";
 import { ITarget } from "@comp/target-controls/types";
 import { sortByStoredTabOrder } from "./utils";
 import {
+    CLOSE_PANEL,
+    CLOSE_SIDEBAR_TAB,
+    IPersistedWorkspaceLayout,
     MANUAL_LOOKUP_STRING,
+    OPEN_SIDEBAR_TAB,
+    PANEL_CLOSE_TAB,
+    MOVE_PANEL,
+    PANEL_REORDER_TABS,
+    PANEL_SWITCH_TAB,
+    SET_ACTIVE_PANEL,
     TAB_DOCK_OPEN_NON_CLOUD_FILE,
     TAB_DOCK_OPEN_TAB_BY_DOCUMENT_UID,
     TAB_DOCK_CLOSE,
@@ -14,8 +23,16 @@ import {
     TOGGLE_MANUAL_PANEL,
     SET_MANUAL_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
-    IOpenDocument
+    IOpenDocument,
+    SET_SIDEBAR_TAB_INDEX,
+    SidebarPosition,
+    SPLIT_ACTIVE_PANEL,
+    TOGGLE_MAXIMIZE_PANEL,
+    WorkspaceTabType
 } from "./types";
+
+const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
+    `${projectUid}:workspaceLayout`;
 
 export const tabDockInit = (
     projectUid: string,
@@ -127,22 +144,43 @@ export const tabDockInit = (
         initialIndex = 0;
     }
 
+    let savedWorkspaceState: IPersistedWorkspaceLayout | undefined;
+    try {
+        const rawLayout = localStorage.getItem(
+            WORKSPACE_LAYOUT_STORAGE_KEY(projectUid)
+        );
+        if (rawLayout) {
+            savedWorkspaceState = JSON.parse(
+                rawLayout
+            ) as IPersistedWorkspaceLayout;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
     return async (dispatch: any) => {
-        dispatch({ type: TAB_DOCK_INIT, initialOpenDocuments, initialIndex });
+        dispatch({
+            type: TAB_DOCK_INIT,
+            initialOpenDocuments,
+            initialIndex,
+            savedWorkspaceState
+        });
     };
 };
 
 export const rearrangeTabs = (
     projectUid: string,
-    modifiedDock: IOpenDocument[],
-    newActiveIndex: number
+    modifiedDock: string[],
+    newActiveIndex: number,
+    panelId?: string
 ): ((dispatch: any) => Promise<void>) => {
     return async (dispatch: any) => {
         dispatch({
             type: TAB_DOCK_REARRANGE_TABS,
             projectUid,
             modifiedDock,
-            newActiveIndex
+            newActiveIndex,
+            panelId
         });
     };
 };
@@ -186,24 +224,99 @@ export const closeTabDock = () => {
 export const tabClose = (
     activeProjectUid: string,
     documentUid: string,
-    isModified: boolean
+    isModified: boolean,
+    panelId?: string,
+    tabId?: string
 ) => {
     return isModified
         ? openSimpleModal("close-unsaved-prompt", {
               projectUid: activeProjectUid,
-              documentUid
+              documentUid,
+              panelId,
+              tabId
           })
         : {
               type: TAB_CLOSE,
               projectUid: activeProjectUid,
-              documentUid
+              documentUid,
+              panelId,
+              tabId
           };
 };
 
-export const tabSwitch = (index: number) => {
+export const tabSwitch = (index: number, panelId?: string) => {
     return {
         type: TAB_DOCK_SWITCH_TAB,
-        tabIndex: index
+        tabIndex: index,
+        panelId
+    };
+};
+
+export const setActivePanel = (panelId: string) => {
+    return {
+        type: SET_ACTIVE_PANEL,
+        panelId
+    };
+};
+
+export const switchPanelTab = (panelId: string, tabIndex: number) => {
+    return {
+        type: PANEL_SWITCH_TAB,
+        panelId,
+        tabIndex
+    };
+};
+
+export const reorderPanelTabs = (
+    panelId: string,
+    tabIds: string[],
+    tabIndex: number
+) => {
+    return {
+        type: PANEL_REORDER_TABS,
+        panelId,
+        tabIds,
+        tabIndex
+    };
+};
+
+export const closePanelTab = (panelId: string, tabId: string) => {
+    return {
+        type: PANEL_CLOSE_TAB,
+        panelId,
+        tabId
+    };
+};
+
+export const splitActivePanel = (side: "right" | "bottom") => {
+    return {
+        type: SPLIT_ACTIVE_PANEL,
+        side
+    };
+};
+
+export const movePanel = (
+    panelId: string,
+    side: "left" | "right" | "bottom"
+) => {
+    return {
+        type: MOVE_PANEL,
+        panelId,
+        side
+    };
+};
+
+export const closePanel = (panelId: string) => {
+    return {
+        type: CLOSE_PANEL,
+        panelId
+    };
+};
+
+export const toggleMaximizePanel = (panelId: string) => {
+    return {
+        type: TOGGLE_MAXIMIZE_PANEL,
+        panelId
     };
 };
 
@@ -231,5 +344,35 @@ export const setFileTreePanelOpen = (open: boolean) => {
     return {
         type: SET_FILE_TREE_PANEL_OPEN,
         open
+    };
+};
+
+export const openSidebarTab = (
+    sidebar: SidebarPosition,
+    tabType: Exclude<WorkspaceTabType, "editor">
+) => {
+    return {
+        type: OPEN_SIDEBAR_TAB,
+        sidebar,
+        tabType
+    };
+};
+
+export const closeSidebarTab = (sidebar: SidebarPosition, tabId: string) => {
+    return {
+        type: CLOSE_SIDEBAR_TAB,
+        sidebar,
+        tabId
+    };
+};
+
+export const setSidebarTabIndex = (
+    sidebar: SidebarPosition,
+    tabIndex: number
+) => {
+    return {
+        type: SET_SIDEBAR_TAB_INDEX,
+        sidebar,
+        tabIndex
     };
 };

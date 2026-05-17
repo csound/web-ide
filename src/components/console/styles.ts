@@ -5,9 +5,11 @@ import { _scrollbars } from "@styles/_common";
 export const ConsoleContainer = (theme: Theme): SerializedStyles => css`
     height: 100%;
     width: 100%;
-    top: 0;
-    left: 0;
-    position: absolute;
+    min-height: 0;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
     white-space: break-spaces;
     font-family: ${theme.font.monospace};
     color: ${theme.console};
@@ -21,6 +23,7 @@ export const ConsoleContainer = (theme: Theme): SerializedStyles => css`
     ${_scrollbars(theme)}
     code {
         display: block;
+        flex: 1 1 auto;
         min-height: 100%;
         width: 100%;
         position: relative;

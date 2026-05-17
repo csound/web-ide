@@ -26,6 +26,9 @@ const MobileNavigation = ({
                     <button
                         key={index}
                         type="button"
+                        data-testid={
+                            label === "Console" ? "console-tab" : undefined
+                        }
                         css={SS.mobileNavTabButton(mobileTabIndex === index)}
                         onClick={() => setMobileTabIndex(index)}
                         aria-label={label}

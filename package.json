@@ -20,7 +20,8 @@
         "electron:dev": "concurrently \"BROWSER=none npm run start\" \"npx wait-on http-get://127.0.0.1:3000 && ELECTRON_IS_DEV=1 npx electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
         "deploy:dev": "./node_modules/.bin/firebase deploy -P develop --token=$FIREBASE_TOKEN",
-        "precommit-hook": "npm run lint && npm run typecheck && npm run format:check",
+        "precommit-hook:puppeteer": "cd puppeteer-tests && npm run lint && npm run format -- --check",
+        "precommit-hook": "npm run lint && npm run typecheck && npm run format:check && npm run precommit-hook:puppeteer",
         "prepare": "husky"
     },
     "dependencies": {

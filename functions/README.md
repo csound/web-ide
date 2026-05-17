@@ -1,6 +1,6 @@
 # Local Testing Setup
 
-This guide explains how to run a local copy of the web IDE connected to your own Firebase project, so you can test UI/UX flows (including account deletion) against a real database.
+This guide explains how to run a local copy of the web IDE connected to your own Firebase project, so you can test UI/UX flows, including account deletion, against a real database.
 
 ## Prerequisites
 
@@ -78,3 +78,17 @@ npm run dev
 ```
 
 The app will be available at <http://localhost:3000>.
+
+## Understanding the firebase-cli
+
+Firebase is pretty strict on the directory structure. All cloud functions must be uploaded from one .js file from the functions directory.
+
+## Troubleshoot
+
+- Read the firebase-debug.log file when something crashes
+- Common tip is to try `npm install -g @google-cloud/functions-emulator` for strange errors
+
+## Online resources
+
+- https://github.com/firebase/functions-samples
+- https://firebase.google.com/docs/functions/firestore-events

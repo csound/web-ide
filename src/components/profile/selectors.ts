@@ -224,7 +224,6 @@ export const selectAllTagsFromUser =
         );
     };
 
-// Selector to get profileUid (customize this as per your state structure)
 export const selectProfileUid = (state: RootState): string | undefined =>
     state.LoginReducer.loggedInUid;
 

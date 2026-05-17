@@ -15,12 +15,26 @@ export default class PanelList extends React.PureComponent {
         // to prevent the type of one children is object type
         const result = React.Children.toArray(children).map((child, index) =>
             React.cloneElement(child, {
-                key: index,
+                key: child.key ?? index,
                 active: index === activeIndex,
                 index,
                 ...props
             })
         );
-        return <div style={style || {}}>{result}</div>;
+        return (
+            <div
+                style={{
+                    height: "100%",
+                    width: "100%",
+                    minHeight: 0,
+                    minWidth: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    ...(style || {})
+                }}
+            >
+                {result}
+            </div>
+        );
     }
 }

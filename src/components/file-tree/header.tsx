@@ -22,7 +22,7 @@ const FileTreeHeader = ({
     return (
         <div
             id="web-ide-file-tree-header"
-            css={windowHeaderStyle}
+            css={SS.headerBar}
             style={{ zIndex: 2 }}
         >
             <p>

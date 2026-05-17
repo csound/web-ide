@@ -159,7 +159,6 @@ export const Profile = () => {
     const isMobileLayout = useMediaQuery("(max-width: 760px)");
     const routeSection = getRouteSection(tab);
 
-    // Derive section synchronously: "about" only visible on mobile when explicitly chosen
     const selectedSection: ProfileSection =
         isMobileLayout && isAboutSelected ? "about" : routeSection;
 
@@ -177,7 +176,6 @@ export const Profile = () => {
         rootElement && rootElement.scrollTo(0, 0);
     }, []);
 
-    // Reset "about" when switching to desktop or navigating to a new route tab
     useEffect(() => {
         if (!isMobileLayout || routeSection !== getRouteSection(tab)) {
             setIsAboutSelected(false);
