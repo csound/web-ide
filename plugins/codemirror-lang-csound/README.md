@@ -47,5 +47,5 @@ npm run typecheck
 - `src/highlighter.ts` — token classification and `styleTags`
 - `src/parser-utils.ts` — opcode metadata helpers
 - `src/builtin-opcodes.json` — bundled opcode metadata
-- `config/webpack.config.cjs` — package build
+- `vite.config.ts` — Vite build configuration (lib mode + lezer grammar plugin)
 - `dev/fixtures/` — grammar test fixtures
