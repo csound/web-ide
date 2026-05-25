@@ -210,9 +210,7 @@ export function MarkdownEditor({
                 <div css={toolbarStyle(theme)}>
                     <button
                         css={toggleButtonStyle(theme)}
-                        onClick={() =>
-                            setShowPreviewInternal((prev) => !prev)
-                        }
+                        onClick={() => setShowPreviewInternal((prev) => !prev)}
                         title={
                             showPreview
                                 ? "Switch to editor"
@@ -234,10 +232,7 @@ export function MarkdownEditor({
                 </div>
             ) : (
                 <div css={editorWrapperStyle}>
-                    <Editor
-                        documentUid={documentUid}
-                        projectUid={projectUid}
-                    />
+                    <Editor documentUid={documentUid} projectUid={projectUid} />
                 </div>
             )}
         </div>

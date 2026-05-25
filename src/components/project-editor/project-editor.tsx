@@ -669,8 +669,7 @@ const WorkspaceNodeView = ({
                         isOwner,
                         isDragging,
                         showPreview,
-                        onTogglePreview: () =>
-                            setShowPreview((prev) => !prev)
+                        onTogglePreview: () => setShowPreview((prev) => !prev)
                     })
                 }
                 actions={
