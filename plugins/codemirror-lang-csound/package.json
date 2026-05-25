@@ -13,8 +13,8 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist",
-    "build": "npm run clean && cross-env NODE_ENV=production npx webpack build -c ./config/webpack.config.cjs",
-    "start": "webpack serve --open -c ./config/webpack.config.cjs",
+    "build": "npm run clean && vite build",
+    "start": "vite",
     "prettify": "prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,22 +22,11 @@
   "license": "LGPL-2.0",
   "devDependencies": {
     "@lezer/generator": "^1.8.0",
-    "@types/live-server": "^1.2.3",
     "@types/node": "^22.10.5",
-    "chokidar": "^4.0.3",
     "cross-env": "^7.0.3",
-    "esbuild": "^0.24.2",
-    "html-webpack-plugin": "^5.6.3",
-    "live-server": "^1.2.2",
-    "mkdirp": "^3.0.1",
     "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.2",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.0"
+    "typescript": "^5.7.2"
   },
   "peerDependencies": {
     "codemirror": "6.x",
