@@ -205,7 +205,7 @@ web-ide/
 
 The frontend is a single-page application built with Vite and React 18. Redux Toolkit manages all
 shared application state — auth session, open projects, editor documents, and playback status.
-The code editor uses CodeMirror 6 with `@hlolli/codemirror-lang-csound` for Csound-specific
+The code editor uses CodeMirror 6 with `@csound/codemirror-lang-csound` for Csound-specific
 syntax highlighting and opcode completion. Audio execution is handled by `@csound/browser`, a
 WebAssembly build of the Csound engine; it can optionally run inside a Web Worker when
 `SharedArrayBuffer` is available (the `/editor/**` route sets the required `COEP` / `COOP`
