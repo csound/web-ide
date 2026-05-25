@@ -1,0 +1,286 @@
+{
+  "y": {
+    "synopsis": ["y [p1]"],
+    "short_desc": "Set seed for random numbers."
+  },
+  "x": {
+    "synopsis": ["x anything"],
+    "short_desc": "Skip the rest of the current section."
+  },
+  "v": {
+    "synopsis": ["v p1"],
+    "short_desc": "Provides for locally variable time warping of score events."
+  },
+  "t": {
+    "synopsis": ["t p1 p2 p3 p4 ... (unlimited)"],
+    "short_desc": "Sets the tempo."
+  },
+  "s": {
+    "synopsis": ["s [time]"],
+    "short_desc": "Marks the end of a section."
+  },
+  "rightbrace": {
+    "synopsis": ["}"],
+    "short_desc": "Ends a non-sectional, nestable loop."
+  },
+  "r": {
+    "synopsis": ["r p1 p2"],
+    "short_desc": "Starts a repeated section."
+  },
+  "q": {
+    "synopsis": ["q p1 p2 p3"],
+    "short_desc": "This statement may be used to quiet an instrument."
+  },
+  "n": {
+    "synopsis": ["n p1"],
+    "short_desc": "Repeats a section."
+  },
+  "m": {
+    "synopsis": ["m p1"],
+    "short_desc": "Sets a named mark in the score."
+  },
+  "leftbrace": {
+    "synopsis": ["{ p1 p2"],
+    "short_desc": "Begins a non-sectional, nestable loop."
+  },
+  "i": {
+    "synopsis": ["i p1 p2 p3 p4 ..."],
+    "short_desc": "Makes an instrument active at a specific time and for a certain duration."
+  },
+  "GENwave": {
+    "synopsis": ["f # time size \"wave\" fnsf seq rescale"],
+    "short_desc": "Generates a compactly supported wavelet function."
+  },
+  "GENtanh": {
+    "synopsis": ["f # time size \"tanh\" start end rescale"],
+    "short_desc": "Generate a table with values on the tanh function."
+  },
+  "GENsone": {
+    "synopsis": ["f # time size \"sone\" start end equalpoint rescale"],
+    "short_desc": "Generate a table with values of the sone function."
+  },
+  "GENquadbezier": {
+    "synopsis": [
+      "f # time size \"quadbezier\" y1 cx1 cy1 x2 y2 [cx2 cy2 x3 y3 ...]"
+    ],
+    "short_desc": "Generate a table with values from a quadratic Bézier function."
+  },
+  "GENpadsynth": {
+    "synopsis": [
+      "f # score_time table_size \"padsynth\" fundamental_frequency partial_bandwidth partial_scale harmonic_stretch profile_shape profile_shape_parameter partial1_amplitude [partial2_amplitude ...]"
+    ],
+    "short_desc": "Generate a sample table using the padsynth algorithm."
+  },
+  "GENfarey": {
+    "synopsis": ["f # time size \"farey\" fareynum mode"],
+    "short_desc": "Fills a table with the Farey Sequence Fn of the integer n."
+  },
+  "GENexp": {
+    "synopsis": ["f # time size \"exp\" start end rescale"],
+    "short_desc": "Generate a table with values on the exp function."
+  },
+  "GEN53": {
+    "synopsis": ["f # time size 53 fsrc [mode fwin]"],
+    "short_desc": "Creates a linear-phase or minimum-phase impulse response table from a source table containing a frequency response or an impulse response."
+  },
+  "GEN52": {
+    "synopsis": [
+      "f # time size 52 nchannels fsrc1 offset1 srcchnls1 [fsrc2 offset2 srcchnls2 ... fsrcN offsetN srcchnlsN]"
+    ],
+    "short_desc": "Creates an interleaved multichannel table from the specified source tables, in the format expected by the ftconv opcode."
+  },
+  "GEN51": {
+    "synopsis": [
+      "f # time size -51 numgrades interval basefreq basekey tuningRatio1 tuningRatio2 .... tuningRationN"
+    ],
+    "short_desc": "This subroutine fills a table with a fully customized micro-tuning scale, in the manner of Csound opcodes cpstun, cpstuni and cpstmid."
+  },
+  "GEN49": {
+    "synopsis": ["f# time size 49 filcod skiptime format"],
+    "short_desc": "Transfers data from an MP3 soundfile into a function table."
+  },
+  "GEN44": {
+    "synopsis": ["f # time size -44 \"filename\"", "f # time size -44 num"],
+    "short_desc": "Generates a stiffness (connection) matrix for use in scanu/scanu2."
+  },
+  "GEN43": {
+    "synopsis": ["f # time size 43 filecod channel"],
+    "short_desc": "Loads a PVOCEX file containing a PV analysis."
+  },
+  "GEN42": {
+    "synopsis": [
+      "f # time size -42 min1 max1 prob1 min2 max2 prob2 min3 max3 prob3 ... minN maxN probN"
+    ],
+    "short_desc": "Generates a random distribution of discrete ranges of values."
+  },
+  "GEN41": {
+    "synopsis": [
+      "f # time size -41 value1 prob1 value2 prob2 value3 prob3 ... valueN probN "
+    ],
+    "short_desc": "Generates a random list of numerical pairs."
+  },
+  "GEN40": {
+    "synopsis": ["f # time size 40 shapetab"],
+    "short_desc": "Generates a random distribution using a distribution histogram."
+  },
+  "GEN34": {
+    "synopsis": ["f # time size 34 src nh scl [fmode]"],
+    "short_desc": "Generate composite waveforms by mixing simple sinusoids."
+  },
+  "GEN33": {
+    "synopsis": ["f # time size 33 src nh scl [fmode]"],
+    "short_desc": "Generate composite waveforms by mixing simple sinusoids."
+  },
+  "GEN32": {
+    "synopsis": ["f # time size 32 srca pna stra phsa srcb pnb strb phsb ..."],
+    "short_desc": "Mixes any waveform, resampled with either FFT or linear interpolation."
+  },
+  "GEN31": {
+    "synopsis": ["f # time size 31 src pna stra phsa pnb strb phsb ..."],
+    "short_desc": "Mixes any waveform specified in an existing table."
+  },
+  "GEN30": {
+    "synopsis": ["f # time size 30 src minh maxh [ref_sr] [interp]"],
+    "short_desc": "Generates harmonic partials by analyzing an existing table."
+  },
+  "GEN28": {
+    "synopsis": ["f # time size 28 ifilcod"],
+    "short_desc": "Reads a text file which contains a time-tagged trajectory."
+  },
+  "GEN27": {
+    "synopsis": ["f # time size 27 x1 y1 x2 y2 x3 ..."],
+    "short_desc": "Construct functions from segments of straight lines in breakpoint fashion."
+  },
+  "GEN25": {
+    "synopsis": ["f # time size 25 x1 y1 x2 y2 x3 ..."],
+    "short_desc": "Construct functions from segments of exponential curves in breakpoint fashion."
+  },
+  "GEN24": {
+    "synopsis": ["f # time size -24 ftable min max"],
+    "short_desc": "Reads numeric values from another allocated function-table and rescales them."
+  },
+  "GEN23": {
+    "synopsis": ["f # time size -23 \"filename.txt\""],
+    "short_desc": "Reads numeric values from a text file."
+  },
+  "GEN22": {
+    "synopsis": [],
+    "short_desc": "Deprecated."
+  },
+  "GEN21": {
+    "synopsis": ["f # time size 21 type level [arg1 [arg2]]"],
+    "short_desc": "Generates tables of different random distributions."
+  },
+  "GEN20": {
+    "synopsis": ["f # time size 20 window max [opt]"],
+    "short_desc": "Generates functions of different windows."
+  },
+  "GEN19": {
+    "synopsis": ["f # time size 19 pna stra phsa dcoa pnb strb phsb dcob ..."],
+    "short_desc": "Generate composite waveforms made up of weighted sums of simple sinusoids."
+  },
+  "GEN18": {
+    "synopsis": [
+      "f # time size 18 fna ampa starta finisha fnb ampb startb finishb ..."
+    ],
+    "short_desc": "Writes composite waveforms made up of pre-existing waveforms."
+  },
+  "GEN17": {
+    "synopsis": ["f # time size 17 x1 a x2 b x3 c ..."],
+    "short_desc": "Creates a step function from given x-y pairs."
+  },
+  "GEN16": {
+    "synopsis": [
+      "f # time size 16 val1 dur1 type1 val2 [dur2 type2 val3 ... typeX valN]"
+    ],
+    "short_desc": "Creates a table from a starting value to an ending value."
+  },
+  "GEN15": {
+    "synopsis": ["f # time size 15 xint xamp h0 phs0 h1 phs1 h2 phs2 ..."],
+    "short_desc": "Creates two tables of stored polynomial functions."
+  },
+  "GEN14": {
+    "synopsis": ["f # time size 14 xint xamp h0 h1 h2 ..."],
+    "short_desc": "Stores a polynomial whose coefficients derive from Chebyshevs of the second kind."
+  },
+  "GEN13": {
+    "synopsis": ["f # time size 13 xint xamp h0 h1 h2 ..."],
+    "short_desc": "Stores a polynomial whose coefficients derive from the Chebyshev polynomials of the first kind."
+  },
+  "GEN12": {
+    "synopsis": ["f # time size 12 xint"],
+    "short_desc": "Generates the log of a modified Bessel function of the second kind."
+  },
+  "GEN11": {
+    "synopsis": ["f # time size 11 nh [lh] [r]"],
+    "short_desc": "Generates an additive set of cosine partials."
+  },
+  "GEN10": {
+    "synopsis": ["f # time size 10 str1 str2 str3 str4 ..."],
+    "short_desc": "Generate composite waveforms made up of weighted sums of simple sinusoids."
+  },
+  "GEN09": {
+    "synopsis": ["f # time size 9 pna stra phsa pnb strb phsb ..."],
+    "short_desc": "Generate composite waveforms made up of weighted sums of simple sinusoids."
+  },
+  "GEN08": {
+    "synopsis": ["f # time size 8 a n1 b n2 c n3 d ..."],
+    "short_desc": "Generate a piecewise cubic spline curve."
+  },
+  "GEN07": {
+    "synopsis": ["f # time size 7 a n1 b n2 c ..."],
+    "short_desc": "Constructs functions from segments of straight lines."
+  },
+  "GEN06": {
+    "synopsis": ["f # time size 6 a n1 b n2 c n3 d ..."],
+    "short_desc": "Generates a function comprised of segments of cubic polynomials."
+  },
+  "GEN05": {
+    "synopsis": ["f # time size 5 a n1 b n2 c ..."],
+    "short_desc": "Constructs functions from segments of exponential curves."
+  },
+  "GEN04": {
+    "synopsis": ["f # time size 4 source# sourcemode"],
+    "short_desc": "Generates a normalizing function."
+  },
+  "GEN03": {
+    "synopsis": ["f # time size 3 xval1 xval2 c0 c1 c2 ... cn"],
+    "short_desc": "Generates a stored function table by evaluating a polynomial."
+  },
+  "GEN02": {
+    "synopsis": ["f # time size 2 v1 v2 v3 ..."],
+    "short_desc": "Transfers data from immediate pfields into a function table."
+  },
+  "GEN01": {
+    "synopsis": ["f# time size 1 filcod skiptime format channel"],
+    "short_desc": "Transfers data from a soundfile into a function table."
+  },
+  "f": {
+    "synopsis": ["f p1 p2 p3 p4 p5 ... PMAX"],
+    "short_desc": "Causes a GEN subroutine to place values in a stored function table."
+  },
+  "e": {
+    "synopsis": ["e [0 time]"],
+    "short_desc": "This statement may be used to mark the end of the last section of the score."
+  },
+  "d": {
+    "synopsis": ["d p1 p2 p3 p4"],
+    "short_desc": "removes an active instrument at a specific time."
+  },
+  "capB": {
+    "synopsis": ["B p1"],
+    "short_desc": "This statement adjusts the clock."
+  },
+  "b": {
+    "synopsis": ["b p1"],
+    "short_desc": "This statement resets the clock."
+  },
+  "a": {
+    "synopsis": ["a p1 p2 p3"],
+    "short_desc": "Advance score time by a specified amount."
+  },
+  "C": {
+    "synopsis": ["C p1"],
+    "short_desc": "This statement switches automatic carrying of arguments on or off."
+  }
+}

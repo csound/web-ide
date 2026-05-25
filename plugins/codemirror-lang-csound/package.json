@@ -1,0 +1,55 @@
+{
+  "name": "@csound/codemirror-lang-csound",
+  "version": "1.0.0-alpha10",
+  "description": "codemirror6 editor-plugin for csound",
+  "main": "dist/index.js",
+  "typings": "index.d.ts",
+  "type": "module",
+  "files": [
+    "dist/*",
+    "tsconfig.json",
+    "src/*",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "npm run clean && cross-env NODE_ENV=production npx webpack build -c ./config/webpack.config.cjs",
+    "start": "webpack serve --open -c ./config/webpack.config.cjs",
+    "prettify": "prettier --write ./src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Hlöðver Sigurðsson",
+  "license": "LGPL-2.0",
+  "devDependencies": {
+    "@lezer/generator": "^1.8.0",
+    "@types/live-server": "^1.2.3",
+    "@types/node": "^22.10.5",
+    "chokidar": "^4.0.3",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.24.2",
+    "html-webpack-plugin": "^5.6.3",
+    "live-server": "^1.2.2",
+    "mkdirp": "^3.0.1",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  },
+  "peerDependencies": {
+    "codemirror": "6.x",
+    "@codemirror/autocomplete": "6.x",
+    "@codemirror/language": "6.x",
+    "@codemirror/state": "6.x",
+    "@codemirror/view": "6.x",
+    "@lezer/common": "^1.0.0",
+    "@lezer/highlight": "^1.0.0"
+  },
+  "dependencies": {
+    "ramda": "^0.30.1",
+    "style-mod": "^4.1.3"
+  }
+}
