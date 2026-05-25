@@ -15,7 +15,8 @@ export const Gradient = (properties: IGradient): SerializedStyles => css`
         left: 0;
         width: 100%;
         z-index: 1;
-        background-image: linear-gradient(
+        background-image:
+            linear-gradient(
                 30deg,
                 ${properties.colorA} 12%,
                 transparent 12.5%,

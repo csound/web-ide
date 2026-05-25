@@ -809,8 +809,8 @@ const SidebarLaunchers = ({
             -1;
         const isActive = Boolean(
             currentSidebar &&
-                tabIndex > -1 &&
-                currentSidebar.tabIndex === tabIndex
+            tabIndex > -1 &&
+            currentSidebar.tabIndex === tabIndex
         );
         const Icon = item.Icon;
 
