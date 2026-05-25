@@ -80,7 +80,8 @@ const theme = {
         audio: { panel: "#F29A2E", shadow: "#9C4E16" },
         midi: { panel: "#2BAE9C", shadow: "#15594F" },
         sample: { panel: "#7D69D6", shadow: "#43367A" },
-        media: { panel: "#5A88B5", shadow: "#294662" }
+        media: { panel: "#5A88B5", shadow: "#294662" },
+        md: { panel: "#e3b341", shadow: "#A07820" }
     }
 };
 
