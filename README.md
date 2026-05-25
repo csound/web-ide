@@ -127,23 +127,23 @@ NixOS users: a development shell with Electron patched for NixOS is provided in 
 
 <!-- #available-scripts -->
 
-| Script                 | What it does                                    | When to use it                    |
-| ---------------------- | ----------------------------------------------- | --------------------------------- |
-| `npm run start`        | Vite dev server targeting DEV Firebase          | Day-to-day local development      |
-| `npm run start:prod`   | Vite dev server targeting PROD Firebase         | Testing against production data   |
-| `npm run build`        | Type-check + production Vite build (PROD)       | Creating a release artifact       |
-| `npm run build:dev`    | Type-check + Vite build (DEV)                   | Staging / preview deploys         |
-| `npm run test`         | Vitest in watch mode                            | TDD / local test iteration        |
-| `npm run test:ci`      | Vitest single run (no watch)                    | CI pipelines                      |
-| `npm run lint`         | ESLint with zero-warnings policy                | Pre-commit / CI quality gate      |
-| `npm run lint:fix`     | ESLint with auto-fix                            | Cleaning up lint issues quickly   |
-| `npm run format`       | Prettier write across `src/`                    | Auto-formatting source files      |
-| `npm run format:check` | Prettier check (no write)                       | CI formatting gate                |
-| `npm run typecheck`    | `tsc --noEmit` strict type check                | Validating types without building |
-| `npm run electron:dev` | Launches Electron against the local dev server  | Desktop app development           |
-| `npm run deploy`       | Firebase deploy to default (production) project | Production release                |
-| `npm run deploy:dev`              | Firebase deploy to develop project                  | Staging release                        |
-| `npm run build:codemirror-lang-csound` | Build the vendored CodeMirror Csound plugin    | Runs automatically as a pre-hook  |
+| Script                                 | What it does                                    | When to use it                    |
+| -------------------------------------- | ----------------------------------------------- | --------------------------------- |
+| `npm run start`                        | Vite dev server targeting DEV Firebase          | Day-to-day local development      |
+| `npm run start:prod`                   | Vite dev server targeting PROD Firebase         | Testing against production data   |
+| `npm run build`                        | Type-check + production Vite build (PROD)       | Creating a release artifact       |
+| `npm run build:dev`                    | Type-check + Vite build (DEV)                   | Staging / preview deploys         |
+| `npm run test`                         | Vitest in watch mode                            | TDD / local test iteration        |
+| `npm run test:ci`                      | Vitest single run (no watch)                    | CI pipelines                      |
+| `npm run lint`                         | ESLint with zero-warnings policy                | Pre-commit / CI quality gate      |
+| `npm run lint:fix`                     | ESLint with auto-fix                            | Cleaning up lint issues quickly   |
+| `npm run format`                       | Prettier write across `src/`                    | Auto-formatting source files      |
+| `npm run format:check`                 | Prettier check (no write)                       | CI formatting gate                |
+| `npm run typecheck`                    | `tsc --noEmit` strict type check                | Validating types without building |
+| `npm run electron:dev`                 | Launches Electron against the local dev server  | Desktop app development           |
+| `npm run deploy`                       | Firebase deploy to default (production) project | Production release                |
+| `npm run deploy:dev`                   | Firebase deploy to develop project              | Staging release                   |
+| `npm run build:codemirror-lang-csound` | Build the vendored CodeMirror Csound plugin     | Runs automatically as a pre-hook  |
 
 ---
 
