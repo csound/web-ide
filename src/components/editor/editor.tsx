@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
-import { csoundMode } from "@hlolli/codemirror-lang-csound";
+import { csoundMode } from "@csound/codemirror-lang-csound";
+import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "codemirror";
 import {
     crosshairCursor,
@@ -20,8 +21,10 @@ import {
 } from "@codemirror/commands";
 import {
     bracketMatching,
+    defaultHighlightStyle,
     foldGutter,
-    indentOnInput
+    indentOnInput,
+    syntaxHighlighting
 } from "@codemirror/language";
 import { EditorState, StateField } from "@codemirror/state";
 import { filenameToCsoundType } from "@comp/csound/utils";
@@ -80,6 +83,7 @@ const CodeEditor = ({
     const document = project?.documents?.[documentUid] ?? ({} as IDocument);
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
+    const isMarkdown = /\.md(?:own)?$/i.test(document.filename || "");
 
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState<
         StateField<{ documentUid: string; documentType: string }> | undefined
@@ -142,13 +146,22 @@ const CodeEditor = ({
                     dropCursor(),
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
-                    csoundMode({
-                        fileType:
-                            csoundFileType &&
-                            ((["sco", "orc", "csd"].includes(csoundFileType)
-                                ? csoundFileType
-                                : "orc") as "sco" | "orc" | "csd")
-                    }),
+                    ...(isMarkdown
+                        ? [
+                              markdown(),
+                              syntaxHighlighting(defaultHighlightStyle)
+                          ]
+                        : [
+                              csoundMode({
+                                  fileType:
+                                      csoundFileType &&
+                                      ((["sco", "orc", "csd"].includes(
+                                          csoundFileType
+                                      )
+                                          ? csoundFileType
+                                          : "orc") as "sco" | "orc" | "csd")
+                              })
+                          ]),
                     keymap.of([
                         ...defaultKeymap.filter(
                             (keyb) =>
