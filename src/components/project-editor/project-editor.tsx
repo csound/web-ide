@@ -8,7 +8,9 @@ import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
 import CloseIcon from "@mui/icons-material/Close";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import CropFreeIcon from "@mui/icons-material/CropFree";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import HorizontalSplitIcon from "@mui/icons-material/HorizontalSplit";
 import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -44,6 +46,7 @@ import {
 } from "./types";
 import { IProjectEditorReducer } from "./reducer";
 import Editor from "../editor/editor";
+import { MarkdownPreview } from "../editor/markdown-preview";
 import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 import CsoundManualWindow from "./csound-manual";
@@ -92,6 +95,7 @@ type IEditorForDocumentProperties = {
     doc: AnyTab;
     projectUid: string;
     isOwner: boolean;
+    showPreview?: boolean;
 };
 
 const utilityTabDefinitions: Record<
@@ -185,9 +189,19 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
 export function EditorForDocument({
     uid,
     projectUid,
-    doc
+    doc,
+    showPreview
 }: IEditorForDocumentProperties) {
     if ((doc as IDocument).type === "txt") {
+        const filename = (doc as IDocument).filename || "";
+        if (showPreview && /\.(md|markdown)$/i.test(filename)) {
+            return (
+                <MarkdownPreview
+                    documentUid={(doc as IDocument).documentUid}
+                    projectUid={projectUid}
+                />
+            );
+        }
         return (
             <Editor
                 documentUid={(doc as IDocument).documentUid}
@@ -305,7 +319,8 @@ const renderWorkspaceTabContent = ({
     projectUid,
     projectUserUid,
     isOwner,
-    isDragging
+    isDragging,
+    showPreview
 }: {
     tab: IWorkspaceTab;
     activeProject: IProject;
@@ -313,6 +328,7 @@ const renderWorkspaceTabContent = ({
     projectUserUid: string;
     isOwner: boolean;
     isDragging: boolean;
+    showPreview?: boolean;
 }) => {
     if (tab.type === "editor") {
         const document = getDocumentForTab(tab, activeProject);
@@ -322,6 +338,7 @@ const renderWorkspaceTabContent = ({
                 projectUid={projectUid}
                 isOwner={isOwner}
                 doc={document}
+                showPreview={showPreview}
             />
         ) : null;
     }
@@ -597,6 +614,7 @@ const WorkspaceNodeView = ({
     panelCount: number;
 }) => {
     const dispatch = useDispatch();
+    const [showPreview, setShowPreview] = useState(false);
 
     if (node.kind === "split") {
         return (
@@ -638,6 +656,13 @@ const WorkspaceNodeView = ({
 
     const panelTabIds = node.tabs.map((tab) => tab.id);
     const activeTab = node.tabs[Math.min(node.tabIndex, node.tabs.length - 1)];
+    const activeDocument =
+        activeTab?.type === "editor"
+            ? getDocumentForTab(activeTab, activeProject)
+            : undefined;
+    const isMarkdown = /\.(md|markdown)$/i.test(
+        (activeDocument as IDocument | undefined)?.filename ?? ""
+    );
 
     return (
         <div
@@ -689,7 +714,8 @@ const WorkspaceNodeView = ({
                         projectUid,
                         projectUserUid,
                         isOwner,
-                        isDragging
+                        isDragging,
+                        showPreview
                     })
                 }
                 actions={
@@ -706,6 +732,35 @@ const WorkspaceNodeView = ({
                                     aria-label="Create new directory"
                                 >
                                     <CreateNewFolderIcon />
+                                </button>
+                            </Tooltip>
+                        )}
+                        {isMarkdown && (
+                            <Tooltip
+                                title={
+                                    showPreview
+                                        ? "Edit Markdown"
+                                        : "Preview Markdown"
+                                }
+                            >
+                                <button
+                                    type="button"
+                                    css={SS.panelActionButton}
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        setShowPreview((prev) => !prev);
+                                    }}
+                                    aria-label={
+                                        showPreview
+                                            ? "Edit markdown"
+                                            : "Preview markdown"
+                                    }
+                                >
+                                    {showPreview ? (
+                                        <EditRoundedIcon />
+                                    ) : (
+                                        <VisibilityRoundedIcon />
+                                    )}
                                 </button>
                             </Tooltip>
                         )}

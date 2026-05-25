@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { csoundEditorLanguage } from "./csound-language";
+import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "codemirror";
 import {
     crosshairCursor,
@@ -21,8 +22,10 @@ import {
 } from "@codemirror/commands";
 import {
     bracketMatching,
+    defaultHighlightStyle,
     foldGutter,
-    indentOnInput
+    indentOnInput,
+    syntaxHighlighting
 } from "@codemirror/language";
 import { Compartment, EditorState, StateField } from "@codemirror/state";
 import { filenameToCsoundType } from "@comp/csound/utils";
@@ -86,6 +89,7 @@ const CodeEditor = ({
     const document = project?.documents?.[documentUid] ?? ({} as IDocument);
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
+    const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
 
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState<
         StateField<{ documentUid: string; documentType: string }> | undefined
@@ -150,7 +154,12 @@ const CodeEditor = ({
                     dropCursor(),
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
-                    csoundEditorLanguage(csoundFileType),
+                    ...(isMarkdown
+                        ? [
+                              markdown(),
+                              syntaxHighlighting(defaultHighlightStyle)
+                          ]
+                        : [csoundEditorLanguage(csoundFileType)]),
                     keymap.of([
                         ...defaultKeymap.filter(
                             (keyb) =>
@@ -217,6 +226,7 @@ const CodeEditor = ({
         editorReference,
         currentDocumentValue,
         csoundFileType,
+        isMarkdown,
         documentUid,
         onChange,
         onScroll,
