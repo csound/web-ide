@@ -2,7 +2,7 @@ import React from "react";
 import { useTheme } from "@emotion/react";
 import mime from "mime";
 
-export type MediaFileCategory = "audio" | "midi" | "sample" | "media";
+export type MediaFileCategory = "audio" | "midi" | "sample" | "media" | "md";
 
 type MediaFileIconProps = {
     label: string;
@@ -73,6 +73,10 @@ export function getFileTypeIconDetails(
             kind: "csound",
             category: extensionWithoutDot as CsoundFileCategory
         };
+    }
+
+    if (extension === ".md" || extension === ".markdown") {
+        return { kind: "media", category: "md", label: "MD" };
     }
 
     const normalizedMimeType =

@@ -1,0 +1,6 @@
+node_modules
+dist
+*~
+*#
+src/syntax.grammar.js
+src/syntax.grammar.terms.js

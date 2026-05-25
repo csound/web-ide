@@ -47,8 +47,8 @@ Firebase backend**.
 <!-- #features -->
 
 - Real-time Csound audio synthesis executed in-browser via a WebAssembly engine
-- Syntax-highlighted code editor (CodeMirror 6 with a dedicated Csound language plugin)
-- Multi-file project tree — CSD, ORC, SCO, UDO, and binary audio assets in one place
+- Syntax-highlighted code editor (CodeMirror 6 with a dedicated Csound language plugin for `.csd`, `.orc`, `.sco`, and `.md` files)
+- Multi-file project tree — CSD, ORC, SCO, UDO, Markdown, and binary audio assets in one place
 - Cloud persistence — projects saved to Firestore and audio files to Firebase Storage
 - User profiles with followers, project discovery, and public/private project visibility
 - Shareable editor URLs with injected Open Graph metadata for social previews
@@ -127,22 +127,23 @@ NixOS users: a development shell with Electron patched for NixOS is provided in 
 
 <!-- #available-scripts -->
 
-| Script                 | What it does                                    | When to use it                    |
-| ---------------------- | ----------------------------------------------- | --------------------------------- |
-| `npm run start`        | Vite dev server targeting DEV Firebase          | Day-to-day local development      |
-| `npm run start:prod`   | Vite dev server targeting PROD Firebase         | Testing against production data   |
-| `npm run build`        | Type-check + production Vite build (PROD)       | Creating a release artifact       |
-| `npm run build:dev`    | Type-check + Vite build (DEV)                   | Staging / preview deploys         |
-| `npm run test`         | Vitest in watch mode                            | TDD / local test iteration        |
-| `npm run test:ci`      | Vitest single run (no watch)                    | CI pipelines                      |
-| `npm run lint`         | ESLint with zero-warnings policy                | Pre-commit / CI quality gate      |
-| `npm run lint:fix`     | ESLint with auto-fix                            | Cleaning up lint issues quickly   |
-| `npm run format`       | Prettier write across `src/`                    | Auto-formatting source files      |
-| `npm run format:check` | Prettier check (no write)                       | CI formatting gate                |
-| `npm run typecheck`    | `tsc --noEmit` strict type check                | Validating types without building |
-| `npm run electron:dev` | Launches Electron against the local dev server  | Desktop app development           |
-| `npm run deploy`       | Firebase deploy to default (production) project | Production release                |
-| `npm run deploy:dev`   | Firebase deploy to develop project              | Staging release                   |
+| Script                                 | What it does                                    | When to use it                    |
+| -------------------------------------- | ----------------------------------------------- | --------------------------------- |
+| `npm run start`                        | Vite dev server targeting DEV Firebase          | Day-to-day local development      |
+| `npm run start:prod`                   | Vite dev server targeting PROD Firebase         | Testing against production data   |
+| `npm run build`                        | Type-check + production Vite build (PROD)       | Creating a release artifact       |
+| `npm run build:dev`                    | Type-check + Vite build (DEV)                   | Staging / preview deploys         |
+| `npm run test`                         | Vitest in watch mode                            | TDD / local test iteration        |
+| `npm run test:ci`                      | Vitest single run (no watch)                    | CI pipelines                      |
+| `npm run lint`                         | ESLint with zero-warnings policy                | Pre-commit / CI quality gate      |
+| `npm run lint:fix`                     | ESLint with auto-fix                            | Cleaning up lint issues quickly   |
+| `npm run format`                       | Prettier write across `src/`                    | Auto-formatting source files      |
+| `npm run format:check`                 | Prettier check (no write)                       | CI formatting gate                |
+| `npm run typecheck`                    | `tsc --noEmit` strict type check                | Validating types without building |
+| `npm run electron:dev`                 | Launches Electron against the local dev server  | Desktop app development           |
+| `npm run deploy`                       | Firebase deploy to default (production) project | Production release                |
+| `npm run deploy:dev`                   | Firebase deploy to develop project              | Staging release                   |
+| `npm run build:codemirror-lang-csound` | Build the vendored CodeMirror Csound plugin     | Runs automatically as a pre-hook  |
 
 ---
 
@@ -186,8 +187,10 @@ web-ide/
 │   └── styles/           # Emotion themes and global styles
 ├── functions/            # Firebase Cloud Functions (TypeScript, Node 20)
 │   └── src/              # Function handlers (auth, search, counters, SSR host)
+├── plugins/              # Vendored packages (npm workspaces)
+│   └── codemirror-lang-csound/  # @csound/codemirror-lang-csound — CodeMirror 6 Csound language plugin
 ├── public/               # Static assets and Electron entry point
-├── config/               # Legacy webpack/build helpers (unused in Vite flow)
+├── config/               # Legacy build helpers (unused in Vite flow)
 ├── docs/                 # Developer notes and architecture documentation
 ├── scripts/              # Utility build scripts
 ├── search/               # Experimental standalone search service (inactive)
@@ -205,7 +208,7 @@ web-ide/
 
 The frontend is a single-page application built with Vite and React 18. Redux Toolkit manages all
 shared application state — auth session, open projects, editor documents, and playback status.
-The code editor uses CodeMirror 6 with `@hlolli/codemirror-lang-csound` for Csound-specific
+The code editor uses CodeMirror 6 with `@csound/codemirror-lang-csound` for Csound-specific
 syntax highlighting and opcode completion. Audio execution is handled by `@csound/browser`, a
 WebAssembly build of the Csound engine; it can optionally run inside a Web Worker when
 `SharedArrayBuffer` is available (the `/editor/**` route sets the required `COEP` / `COOP`
