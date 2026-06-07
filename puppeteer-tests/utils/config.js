@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+
 /**
  * Target environment configurations.
  * Each entry maps a target name to its base URL and a project editor URL
@@ -33,8 +35,19 @@ export const TIMEOUT = {
     CONSOLE_OUTPUT: 30000
 }; // ms
 
+const chromePathFile = new URL("../.chrome-path", import.meta.url);
+const installedChromePath = existsSync(chromePathFile)
+    ? readFileSync(chromePathFile, "utf8").trim()
+    : "";
+const executablePath =
+    process.env.PUPPETEER_EXECUTABLE_PATH ||
+    (installedChromePath && existsSync(installedChromePath)
+        ? installedChromePath
+        : undefined);
+
 export const BROWSER_SETTINGS = {
     headless: process.env.HEADLESS !== "false",
+    executablePath,
     args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",

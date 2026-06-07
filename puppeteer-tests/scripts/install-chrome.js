@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { Browser, Cache, detectBrowserPlatform } from "@puppeteer/browsers";
 import puppeteer from "puppeteer";
 
@@ -32,4 +32,15 @@ const result = spawnSync("puppeteer", ["browsers", "install", browser], {
     shell: process.platform === "win32"
 });
 
-process.exit(result.status ?? 1);
+if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+}
+
+if (!existsSync(executablePath)) {
+    console.error(
+        `Installed ${browser}@${buildId}, but ${executablePath} is missing`
+    );
+    process.exit(1);
+}
+
+writeFileSync(".chrome-path", `${executablePath}\n`);
