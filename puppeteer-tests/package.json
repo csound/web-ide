@@ -8,12 +8,13 @@
         "test:dev": "TARGET=dev node --test tests/*.js",
         "test:prod": "TARGET=prod node --test tests/*.js",
         "test:local": "TARGET=local node --test tests/*.js",
-        "install:chrome": "puppeteer browsers install chrome",
+        "install:chrome": "node scripts/install-chrome.js",
         "format": "prettier --write .",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
     },
     "dependencies": {
+        "@puppeteer/browsers": "2.13.0",
         "puppeteer": "^24.40.0"
     },
     "devDependencies": {
