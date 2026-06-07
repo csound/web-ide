@@ -27,13 +27,17 @@ jobs:
               working-directory: puppeteer-tests
               run: npm ci
 
+            - name: Install Puppeteer Chrome
+              working-directory: puppeteer-tests
+              run: npm run install:chrome
+
             - name: Cache node_modules and Puppeteer browsers
               uses: actions/cache/save@v4
               with:
                   path: |
                       puppeteer-tests/node_modules
                       ~/.cache/puppeteer
-                  key: nm-puppeteer-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+                  key: nm-puppeteer-v2-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
 
     e2e:
         name: E2E prod — ${{ matrix.suite }}
@@ -60,7 +64,11 @@ jobs:
                   path: |
                       puppeteer-tests/node_modules
                       ~/.cache/puppeteer
-                  key: nm-puppeteer-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+                  key: nm-puppeteer-v2-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+
+            - name: Ensure Puppeteer Chrome is installed
+              working-directory: puppeteer-tests
+              run: npm run install:chrome
 
             - name: Run ${{ matrix.suite }} tests
               working-directory: puppeteer-tests

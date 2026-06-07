@@ -8,6 +8,7 @@
         "test:dev": "TARGET=dev node --test tests/*.js",
         "test:prod": "TARGET=prod node --test tests/*.js",
         "test:local": "TARGET=local node --test tests/*.js",
+        "install:chrome": "puppeteer browsers install chrome",
         "format": "prettier --write .",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
