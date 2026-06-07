@@ -45,7 +45,7 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
         position: relative;
         display: flex;
         align-items: stretch;
-        background-color: transparent !important;
+        background-color: transparent;
         height: 100%;
         box-shadow: none;
         white-space: nowrap;
@@ -116,7 +116,9 @@ const TabStyleCustom = styled(TabStyle)`
             : properties.theme.unfocusedTextColor};
     font-weight: ${(properties: any) => (properties.active ? 500 : 400)};
     background-color: ${(properties: any) =>
-        properties.active ? "rgba(0, 0, 0, 0.16)" : "transparent"};
+        properties.active
+            ? properties.theme.highlightBackgroundAlt
+            : "transparent"};
     border: 0;
     font-size: 12px;
     padding: 0 !important;
@@ -131,7 +133,7 @@ const TabStyleCustom = styled(TabStyle)`
         color: ${(properties) => properties.theme.textColor}!important;
         background-color: ${(properties: any) =>
             properties.active
-                ? "rgba(0, 0, 0, 0.2)"
+                ? properties.theme.highlightBackground
                 : properties.theme.highlightBackground};
     }
     &::after {

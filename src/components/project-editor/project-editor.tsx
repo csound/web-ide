@@ -462,7 +462,7 @@ const WorkspacePanelTabs = ({
 
     return (
         <div css={SS.panelShell(isActive)}>
-            <div css={tabListStyle as any} style={{ position: "relative" }}>
+            <div css={tabListStyle} style={{ position: "relative" }}>
                 <Tabs
                     defaultIndex={safeIndex}
                     activeIndex={safeIndex}

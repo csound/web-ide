@@ -220,7 +220,6 @@ export const panelActionGroup = css`
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
-    margin-left: auto;
 `;
 
 export const panelActionButton = (theme: Theme): SerializedStyles => css`
