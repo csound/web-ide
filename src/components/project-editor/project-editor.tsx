@@ -556,7 +556,9 @@ const WorkspaceNodeView = ({
                         panelCount={panelCount}
                     />
                 </ResizablePanel>
-                <PanelResizeHandle className={`Resizer ${node.direction}`} />
+                <PanelResizeHandle
+                    className={`ProjectEditorResizer ${node.direction}`}
+                />
                 <ResizablePanel defaultSize={50}>
                     <WorkspaceNodeView
                         node={node.second}
@@ -1038,7 +1040,7 @@ const ProjectEditor = ({
                 />
             </ResizablePanel>
             <PanelResizeHandle
-                className="Resizer horizontal"
+                className="ProjectEditorResizer horizontal"
                 onDragging={(dragging) => setIsDragging(dragging)}
             />
             <ResizablePanel defaultSize={24}>
@@ -1127,7 +1129,7 @@ const ProjectEditor = ({
                                                 />
                                             </ResizablePanel>
                                             <PanelResizeHandle
-                                                className="Resizer vertical"
+                                                className="ProjectEditorResizer vertical"
                                                 onDragging={(dragging) =>
                                                     setIsDragging(dragging)
                                                 }
@@ -1143,7 +1145,7 @@ const ProjectEditor = ({
                                     {rightSidebar && (
                                         <>
                                             <PanelResizeHandle
-                                                className="Resizer vertical"
+                                                className="ProjectEditorResizer vertical"
                                                 onDragging={(dragging) =>
                                                     setIsDragging(dragging)
                                                 }

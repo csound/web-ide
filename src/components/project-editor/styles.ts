@@ -27,7 +27,7 @@ export const splitterRoot = (theme: Theme): SerializedStyles => css`
         width: 100%;
     }
 
-    .Resizer {
+    .ProjectEditorResizer {
         flex: 0 0 auto;
         position: relative;
         z-index: 5;
@@ -35,19 +35,19 @@ export const splitterRoot = (theme: Theme): SerializedStyles => css`
         transition: background-color 0.15s ease;
     }
 
-    .Resizer.vertical {
+    .ProjectEditorResizer.vertical {
         width: 6px;
         cursor: col-resize;
     }
 
-    .Resizer.horizontal {
+    .ProjectEditorResizer.horizontal {
         height: 6px;
         cursor: row-resize;
     }
 
-    .Resizer:hover,
-    .Resizer[data-resize-handle-active="pointer"],
-    .Resizer[data-resize-handle-state="drag"] {
+    .ProjectEditorResizer:hover,
+    .ProjectEditorResizer[data-resize-handle-active="pointer"],
+    .ProjectEditorResizer[data-resize-handle-state="drag"] {
         background-color: rgba(255, 255, 255, 0.14);
     }
 `;
