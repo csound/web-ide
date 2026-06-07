@@ -12,24 +12,26 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ShareIcon from "@mui/icons-material/Share";
 import styled from "@emotion/styled";
-import {
-    selectUserStarredProject,
-    selectActiveProjectUid,
-    selectProjectPublic
-} from "./selectors";
+import { selectUserStarredProject, selectProjectPublic } from "./selectors";
 import {
     selectLoggedInUid,
     selectLoginRequesting
 } from "@comp/login/selectors";
 
 import { starOrUnstarProject } from "@comp/profile/actions";
-import { selectIsOwner } from "@comp/project-editor/selectors";
+import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
 import { openSimpleModal } from "../modal/actions";
 
 const StyledIconButton = styled(IconButton)`
     && {
-        border-radius: 0;
-        padding: 2px;
+        border-radius: 8px;
+        padding: 0 !important;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
     }
 `;
 const StyledDownloadIcon = styled(CloudDownloadIcon)`
@@ -73,8 +75,8 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
         selectUserStarredProject(loggedInUserUid, activeProjectUid)
     );
     const isRequestingLogin = useSelector(selectLoginRequesting);
-    const isOwner = useSelector(selectIsOwner);
-    const isPublic = useSelector(selectProjectPublic);
+    const isOwner = useSelector(selectIsOwnerForProject(activeProjectUid));
+    const isPublic = useSelector(selectProjectPublic(activeProjectUid));
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -98,7 +100,7 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
                                 dispatch(exportProject());
                             }}
                         >
-                            <StyledDownloadIcon fontSize="large" />
+                            <StyledDownloadIcon fontSize="small" />
                         </StyledIconButton>
                     </div>
                 </Tooltip>
@@ -112,7 +114,7 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
                                 dispatch(openSimpleModal("share-dialog", {}));
                             }}
                         >
-                            <StyledShareIcon fontSize="large" />
+                            <StyledShareIcon fontSize="small" />
                         </StyledIconButton>
                     </div>
                 </Tooltip>
@@ -136,9 +138,9 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
                         }}
                     >
                         {starred ? (
-                            <StyledStarIcon fontSize="large" />
+                            <StyledStarIcon fontSize="small" />
                         ) : (
-                            <StyledOutlinedStarIcon fontSize="large" />
+                            <StyledOutlinedStarIcon fontSize="small" />
                         )}
                     </StyledIconButton>
                 </div>
@@ -160,9 +162,9 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
                             }}
                         >
                             {isPublic ? (
-                                <StyledPublicIcon fontSize="large" />
+                                <StyledPublicIcon fontSize="small" />
                             ) : (
-                                <StyledPublicOffIcon fontSize="large" />
+                                <StyledPublicOffIcon fontSize="small" />
                             )}
                         </StyledIconButton>
                     </div>

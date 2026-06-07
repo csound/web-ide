@@ -14,7 +14,7 @@
         "noUnusedParameters": false,
         "forceConsistentCasingInFileNames": true,
         "module": "esnext",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "noEmit": true,
         "baseUrl": "src",

@@ -2,5 +2,7 @@
   "projects": {
     "default": "csound-ide",
     "develop": "csound-ide-dev"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

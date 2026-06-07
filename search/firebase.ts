@@ -1,3 +1,11 @@
+// This file requires service account key files that are NOT committed to the repo.
+// See search/README.md (or functions/README.md) for setup instructions.
+//
+// To activate, place your service key JSON files at:
+//   search/service-key-dev.json
+//   search/service-key-prod.json
+// Then uncomment the code below.
+
 // import firebase from "firebase-admin";
 // import serviceAccountDev from "./service-key-dev.json";
 // import serviceAccountProd from "./service-key-prod.json";

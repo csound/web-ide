@@ -23,6 +23,7 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Box from "@mui/material/Box";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
@@ -47,6 +48,7 @@ import {
     editProfile,
     followUser,
     unfollowUser,
+    deleteAccountPrompt,
     setProjectFilterString
 } from "./actions";
 import {
@@ -75,6 +77,7 @@ import {
     ListContainer,
     EditProfileButtonSection,
     fabButton,
+    profileActionButton,
     mobileNavigationContainer,
     mobileNavigationButton,
     profileMobileBottomSpacer,
@@ -299,7 +302,7 @@ export const Profile = () => {
             {isProfileOwner && profileUid && (
                 <EditProfileButtonSection>
                     <Button
-                        css={fabButton}
+                        css={profileActionButton}
                         variant="outlined"
                         color="primary"
                         size="medium"
@@ -321,6 +324,20 @@ export const Profile = () => {
                         }
                     >
                         Edit Profile
+                    </Button>
+                    <Button
+                        css={profileActionButton}
+                        variant="outlined"
+                        color="error"
+                        size="medium"
+                        startIcon={<DeleteIcon />}
+                        aria-label="Delete account permanently"
+                        onClick={() =>
+                            profile &&
+                            dispatch(deleteAccountPrompt(profile.username))
+                        }
+                    >
+                        Delete Account
                     </Button>
                 </EditProfileButtonSection>
             )}
@@ -477,7 +494,6 @@ export const Profile = () => {
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
-
                     <ContentSection
                         theme={theme}
                         showSearch={isProjectsSection}

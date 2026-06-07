@@ -1,5 +1,11 @@
 import React from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+    DndContext,
+    PointerSensor,
+    closestCenter,
+    useSensor,
+    useSensors
+} from "@dnd-kit/core";
 import {
     SortableContext,
     horizontalListSortingStrategy,
@@ -18,6 +24,13 @@ const DragTabList = ({
     ...props
 }) => {
     const childrenArray = React.Children.toArray(children);
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8
+            }
+        })
+    );
     const initialItems = childrenArray.map((child, index) => ({
         id: child.props.id || `tab-${index}`,
         child
@@ -36,6 +49,10 @@ const DragTabList = ({
 
     const handleDragEnd = (event) => {
         const { active, over } = event;
+
+        if (!over) {
+            return;
+        }
 
         if (active.id !== over.id) {
             const oldIndex = items.findIndex((item) => item.id === active.id);
@@ -64,6 +81,7 @@ const DragTabList = ({
             <DndContext
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
+                sensors={sensors}
             >
                 <SortableContext
                     items={items.map((item) => item.id)}

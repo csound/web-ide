@@ -9,6 +9,18 @@ export default [
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
     {
+        files: ["scripts/**/*.js", "config/**/*.js", "functions/**/*.js"],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                ...globals.builtin
+            }
+        },
+        rules: {
+            "@typescript-eslint/no-require-imports": "off"
+        }
+    },
+    {
         files: ["**/*.{js,jsx,ts,tsx}"],
         languageOptions: {
             globals: {

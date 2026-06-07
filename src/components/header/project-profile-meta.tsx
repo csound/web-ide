@@ -15,6 +15,7 @@ import Avatar from "@mui/material/Avatar";
 import { IProject } from "@comp/projects/types";
 import IconButton from "@mui/material/IconButton";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import * as SS from "./styles";
@@ -22,7 +23,8 @@ import { isEmpty } from "ramda";
 
 const ProjectProfileMeta = (): React.ReactElement => {
     const now = new Date();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isDismissed, setIsDismissed] = useState(false);
 
     const project: IProject | undefined = useSelector(selectActiveProject);
     const projectName = project?.name ?? "unknown project name";
@@ -44,7 +46,11 @@ const ProjectProfileMeta = (): React.ReactElement => {
     const profileDisplayName = profile?.displayName ?? "unknown user";
     const profileBio = profile?.bio ?? "";
     const profileLinks = [profile?.link1, profile?.link2, profile?.link3]
-        .filter((url): url is string => typeof url === "string" && !!url)
+        .map((url, i) => ({ url, i }))
+        .filter(
+            (item): item is { url: string; i: number } =>
+                typeof item.url === "string" && !!item.url
+        )
         .slice(0, 3);
     const profileImage = useSelector(selectUserImageURL(projectOwnerUid));
     const profileProjectsCount = useSelector(
@@ -105,12 +111,25 @@ const ProjectProfileMeta = (): React.ReactElement => {
                     size="small"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     css={SS.projectProfileCollapseButton}
+                    aria-label={
+                        isCollapsed
+                            ? "Expand project info"
+                            : "Collapse project info"
+                    }
                 >
                     {isCollapsed ? (
                         <KeyboardArrowUpIcon fontSize="small" />
                     ) : (
                         <KeyboardArrowDownIcon fontSize="small" />
                     )}
+                </IconButton>
+                <IconButton
+                    size="small"
+                    onClick={() => setIsDismissed(true)}
+                    css={SS.projectProfileCollapseButton}
+                    aria-label="Dismiss project info"
+                >
+                    <CloseIcon fontSize="small" />
                 </IconButton>
             </div>
 
@@ -151,9 +170,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
 
                     {profileLinks.length > 0 && (
                         <div css={SS.projectProfileLinks}>
-                            {profileLinks.map((url) => (
+                            {profileLinks.map(({ url, i }) => (
                                 <a
-                                    key={url}
+                                    key={i}
                                     href={normalizeUrl(url)}
                                     target="_blank"
                                     rel="noreferrer"
@@ -170,7 +189,7 @@ const ProjectProfileMeta = (): React.ReactElement => {
         </>
     );
 
-    return project ? (
+    return project && !isDismissed ? (
         <div css={SS.projectProfileMetaContainer}>
             <div css={SS.projectProfileMetaTextContainer}>
                 {projectMetaBody}

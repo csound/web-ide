@@ -23,6 +23,7 @@ import { database, profiles, usernames } from "../../config/firestore";
 import {
     FacebookAuthProvider,
     GoogleAuthProvider,
+    User,
     createUserWithEmailAndPassword,
     getAuth,
     sendPasswordResetEmail,
@@ -37,6 +38,16 @@ import { IProfile } from "../profile/types";
 import { navigateTo } from "@comp/router/navigate";
 import { isElectron } from "@root/utils";
 import { selectPostAuthFlow } from "./selectors";
+
+type AuthUserPayload = {
+    uid: string;
+    displayName: string | undefined;
+};
+
+const serializeAuthUser = (user: User): AuthUserPayload => ({
+    uid: user.uid,
+    displayName: user.displayName ?? undefined
+});
 
 const openProjectCreationModal = () =>
     openSimpleModal("new-project-prompt", {
@@ -58,7 +69,7 @@ export const login = (email: string, password: string): AppThunk => {
         });
 
         try {
-            const user = await signInWithEmailAndPassword(
+            const credentials = await signInWithEmailAndPassword(
                 getAuth(),
                 email,
                 password
@@ -66,7 +77,7 @@ export const login = (email: string, password: string): AppThunk => {
 
             dispatch({
                 type: SIGNIN_SUCCESS,
-                user
+                user: serializeAuthUser(credentials.user)
             });
         } catch (error: any) {
             dispatch({
@@ -392,7 +403,7 @@ export const createNewUser = (email: string, password: string): AppThunk => {
             );
             dispatch({
                 type: CREATE_USER_SUCCESS,
-                credentials
+                user: serializeAuthUser(credentials.user)
             });
         } catch (error: any) {
             dispatch({

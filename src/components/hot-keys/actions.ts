@@ -57,8 +57,7 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
             const playActionDefault = getPlayActionFromTarget(projectUid)(
                 store.getState()
             );
-            const playActionFallback = getPlayActionFromProject(
-                projectUid,
+            const playActionFallback = getPlayActionFromProject(projectUid)(
                 store.getState()
             );
             const playAction = playActionDefault || playActionFallback;

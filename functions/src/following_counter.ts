@@ -5,6 +5,9 @@ import { log } from "firebase-functions/logger";
 export const followingCounter = onDocumentWritten(
     "following/{userUid}",
     async (event) => {
+        if (!event.data) {
+            return;
+        }
         const before = event.data.before;
         const after = event.data.after;
         const userUid = event.params.userUid;

@@ -91,7 +91,7 @@ a {text-decoration: none;}
   padding: 5px;
   cursor: row-resize;
   width: 100%;
-  z-index: 2;
+  z-index: 1;
 }
 
 .Resizer.horizontal::before {

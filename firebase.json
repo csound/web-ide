@@ -17,17 +17,7 @@
             },
             {
                 "source": "/editor/**",
-                "function": "host",
-                "headers": [
-                    {
-                        "key": "Cross-Origin-Embedder-Policy",
-                        "value": "require-corp"
-                    },
-                    {
-                        "key": "Cross-Origin-Opener-Policy",
-                        "value": "same-origin"
-                    }
-                ]
+                "function": "host"
             },
             {
                 "source": "/profile/**",
@@ -43,6 +33,19 @@
             }
         ],
         "headers": [
+            {
+                "source": "/editor/**",
+                "headers": [
+                    {
+                        "key": "Cross-Origin-Embedder-Policy",
+                        "value": "require-corp"
+                    },
+                    {
+                        "key": "Cross-Origin-Opener-Policy",
+                        "value": "same-origin"
+                    }
+                ]
+            },
             {
                 "source": "**/*.@(jpg|svg|jpeg|png|eot|otf|ttf|ttc|woff|css|wasm|ico)",
                 "headers": [

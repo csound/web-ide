@@ -6,6 +6,9 @@ import { log } from "firebase-functions/logger";
 export const projectsCounter = onDocumentWritten(
     "projects/{projectUid}",
     async (event) => {
+        if (!event.data) {
+            return;
+        }
         const before = event.data.before;
         const after = event.data.after;
 

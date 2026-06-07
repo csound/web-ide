@@ -5,7 +5,6 @@ import {
 } from "../profile-ui";
 import ProjectAvatar from "@elem/project-avatar";
 import { IProject } from "@comp/projects/types";
-import { selectProfileStars } from "../selectors";
 import {
     ListItemButton,
     ListItemText,

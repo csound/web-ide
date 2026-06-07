@@ -934,7 +934,6 @@ const ProjectEditor = ({
                 .filter(Boolean) as AnyTab[],
         [root, activeProject]
     );
-
     const someUnsavedData: boolean = isOwner
         ? !!find(
               allOpenDocuments,

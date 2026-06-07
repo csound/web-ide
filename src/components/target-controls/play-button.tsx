@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { useTheme } from "@emotion/react";
 import { TailSpin } from "react-loader-spinner";
@@ -27,13 +27,17 @@ const PlayButton = ({
 
     const theme = useTheme();
 
-    const playActionDefault = useSelector(
-        getPlayActionFromTarget(activeProjectUid)
+    const playActionDefaultSelector = useMemo(
+        () => getPlayActionFromTarget(activeProjectUid),
+        [activeProjectUid]
     );
+    const playActionDefault = useSelector(playActionDefaultSelector);
 
-    const playActionFallback = useSelector(
-        getPlayActionFromProject(activeProjectUid)
+    const playActionFallbackSelector = useMemo(
+        () => getPlayActionFromProject(activeProjectUid),
+        [activeProjectUid]
     );
+    const playActionFallback = useSelector(playActionFallbackSelector);
 
     const csoundPlayState: string = useSelector((store: RootState) => {
         return store.csound.status;
