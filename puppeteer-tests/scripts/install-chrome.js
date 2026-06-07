@@ -1,46 +1,73 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
-import { Browser, Cache, detectBrowserPlatform } from "@puppeteer/browsers";
-import puppeteer from "puppeteer";
 
-const browser = Browser.CHROME;
-const buildId = puppeteer.defaultBrowserRevision;
-const cacheDir = puppeteer.configuration.cacheDirectory;
-const platform = detectBrowserPlatform();
+const pathCandidatesByPlatform = {
+    linux: [
+        "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser"
+    ],
+    darwin: [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium"
+    ],
+    win32: [
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+    ]
+};
 
-if (!platform) {
-    throw new Error("Unable to detect a Puppeteer browser platform.");
+const commandCandidatesByPlatform = {
+    linux: [
+        "google-chrome",
+        "google-chrome-stable",
+        "chromium",
+        "chromium-browser"
+    ],
+    darwin: ["google-chrome", "chromium"],
+    win32: ["chrome.exe"]
+};
+
+function resolveCommand(command) {
+    const resolver = process.platform === "win32" ? "where" : "which";
+    const result = spawnSync(resolver, [command], { encoding: "utf8" });
+
+    if (result.status !== 0) {
+        return "";
+    }
+
+    return result.stdout.trim().split(/\r?\n/)[0] || "";
 }
 
-const cache = new Cache(cacheDir);
-const installDir = cache.installationDir(browser, platform, buildId);
-const executablePath = cache.computeExecutablePath({
-    browser,
-    buildId,
-    platform
+function chromeVersion(chromePath) {
+    const result = spawnSync(chromePath, ["--version"], { encoding: "utf8" });
+
+    if (result.status !== 0) {
+        return "";
+    }
+
+    return result.stdout.trim();
+}
+
+const candidates = [
+    process.env.PUPPETEER_EXECUTABLE_PATH,
+    process.env.CHROME_PATH,
+    ...(pathCandidatesByPlatform[process.platform] || []),
+    ...(commandCandidatesByPlatform[process.platform] || []).map(resolveCommand)
+].filter(Boolean);
+
+const chromePath = candidates.find((candidate) => {
+    return existsSync(candidate) && chromeVersion(candidate);
 });
 
-if (existsSync(installDir) && !existsSync(executablePath)) {
-    console.warn(
-        `Removing incomplete ${browser}@${buildId} install from ${installDir}`
-    );
-    cache.uninstall(browser, platform, buildId);
-}
-
-const result = spawnSync("puppeteer", ["browsers", "install", browser], {
-    stdio: "inherit",
-    shell: process.platform === "win32"
-});
-
-if (result.status !== 0) {
-    process.exit(result.status ?? 1);
-}
-
-if (!existsSync(executablePath)) {
+if (!chromePath) {
     console.error(
-        `Installed ${browser}@${buildId}, but ${executablePath} is missing`
+        `Could not find a usable Chrome executable. Checked: ${candidates.join(", ")}`
     );
     process.exit(1);
 }
 
-writeFileSync(".chrome-path", `${executablePath}\n`);
+writeFileSync(".chrome-path", `${chromePath}\n`);
+console.log(`Using Chrome at ${chromePath}`);
+console.log(chromeVersion(chromePath));

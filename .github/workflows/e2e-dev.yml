@@ -27,17 +27,15 @@ jobs:
               working-directory: puppeteer-tests
               run: npm ci
 
-            - name: Install Puppeteer Chrome
+            - name: Resolve Chrome executable
               working-directory: puppeteer-tests
               run: npm run install:chrome
 
-            - name: Cache node_modules and Puppeteer browsers
+            - name: Cache node_modules
               uses: actions/cache/save@v4
               with:
-                  path: |
-                      puppeteer-tests/node_modules
-                      ~/.cache/puppeteer
-                  key: nm-puppeteer-v2-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+                  path: puppeteer-tests/node_modules
+                  key: nm-puppeteer-v3-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
 
     e2e:
         name: E2E dev — ${{ matrix.suite }}
@@ -58,15 +56,13 @@ jobs:
               with:
                   node-version: "24"
 
-            - name: Restore node_modules and Puppeteer browsers
+            - name: Restore node_modules
               uses: actions/cache/restore@v4
               with:
-                  path: |
-                      puppeteer-tests/node_modules
-                      ~/.cache/puppeteer
-                  key: nm-puppeteer-v2-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+                  path: puppeteer-tests/node_modules
+                  key: nm-puppeteer-v3-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
 
-            - name: Ensure Puppeteer Chrome is installed
+            - name: Resolve Chrome executable
               working-directory: puppeteer-tests
               run: npm run install:chrome
 
