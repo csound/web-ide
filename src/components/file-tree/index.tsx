@@ -47,7 +47,6 @@ import {
 import { nonCloudFiles, deleteNonCloudFiles } from "./actions";
 import { useDnD } from "./context";
 import * as SS from "./styles";
-import FileTreeHeader from "./header";
 import { selectNonCloudFiles } from "./selectors";
 import { NonCloudFile } from "./types";
 
@@ -751,7 +750,6 @@ export const FileTree = ({
         <React.Fragment>
             {shouldDisplayTree && (
                 <div css={SS.container}>
-                    <FileTreeHeader isOwner={isOwner} project={project} />
                     <List css={SS.listContainer} dense data-testid="file-tree">
                         {treeElements}
                         {nonCloudFileSources.length > 0 && <hr />}

@@ -39,25 +39,32 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
     }
     .tablist {
         width: 100%;
-        flex: 0 0 ${tabListHeight}px;
+        flex: 1 1 auto;
+        min-width: 0;
         z-index: 1;
         position: relative;
-        background-color: ${theme.highlightBackgroundAlt}!important;
-        height: ${tabListHeight}px;
-        box-shadow: 0 10px 12px -12px rgba(0, 0, 0, 0.65);
+        display: flex;
+        align-items: stretch;
+        background-color: transparent !important;
+        height: 100%;
+        box-shadow: none;
         white-space: nowrap;
         overflow: hidden;
     }
 
     .tablist > li {
         height: 100%;
+        flex: 1 1 180px;
+        min-width: 0;
+        max-width: 220px;
     }
     .tablist > li > span {
-        margin: auto 0;
+        margin: 0;
         height: 100%;
+        width: 100%;
+        min-width: 0;
         display: flex;
         align-items: center;
-        padding-left: 12px;
     }
 `;
 
@@ -109,42 +116,34 @@ const TabStyleCustom = styled(TabStyle)`
             : properties.theme.unfocusedTextColor};
     font-weight: ${(properties: any) => (properties.active ? 500 : 400)};
     background-color: ${(properties: any) =>
-        properties.active
-            ? properties.theme.highlightBackground
-            : properties.theme.background};
+        properties.active ? "rgba(0, 0, 0, 0.16)" : "transparent"};
     border: 0;
-    font-size: 14px;
+    font-size: 12px;
     padding: 0 !important;
-    padding-right: 42px !important;
-    padding-bottom: 2px !important;
+    padding-right: ${(properties: any) =>
+        properties.closable ? "24px" : "10px"} !important;
+    padding-left: 10px !important;
+    height: 100%;
     user-select: inherit;
-    margin-bottom: -1px;
+    min-width: 0;
+    overflow: hidden;
     &:hover {
         color: ${(properties) => properties.theme.textColor}!important;
         background-color: ${(properties: any) =>
             properties.active
-                ? properties.theme.highlightBackground
-                : properties.theme.highlightBackgroundAlt};
+                ? "rgba(0, 0, 0, 0.2)"
+                : properties.theme.highlightBackground};
     }
     &::after {
-        z-index: 10;
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        height: 3px;
-        background-color: ${(properties: any) =>
-            properties.active
-                ? properties.theme.tabHighlightActive
-                : properties.theme.tabHighlight};
-        box-shadow:
-            0 -4px 8px -7px rgba(0, 0, 0, 0.6),
-            0 5px 9px -6px rgba(0, 0, 0, 0.85);
+        content: none;
     }
 
     p {
         user-select: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
     }
 `;
 

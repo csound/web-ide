@@ -88,25 +88,26 @@ export const Tab = React.forwardRef(
                 {...rest}
             >
                 <TabText ref={ref}>{children}</TabText>
-                <Tooltip title={"close"} placement="right-end">
-                    <IconButton
-                        size="small"
-                        css={ProjectEditorCloseButtonStyle}
-                        style={{ marginTop: "-4px", marginRight: "-5px" }}
-                        aria-label="close tab"
-                        onPointerDown={stopCloseInteraction}
-                        onClick={handleClose}
-                    >
-                        <CloseIcon
-                            style={{
-                                fill:
-                                    currentIndex === thisIndex
-                                        ? theme.textColor
-                                        : theme.unfocusedTextColor
-                            }}
-                        />
-                    </IconButton>
-                </Tooltip>
+                {closable && (
+                    <Tooltip title={"close"} placement="right-end">
+                        <IconButton
+                            size="small"
+                            css={ProjectEditorCloseButtonStyle}
+                            aria-label="close tab"
+                            onPointerDown={stopCloseInteraction}
+                            onClick={handleClose}
+                        >
+                            <CloseIcon
+                                style={{
+                                    fill:
+                                        currentIndex === thisIndex
+                                            ? theme.textColor
+                                            : theme.unfocusedTextColor
+                                }}
+                            />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </CustomTabStyle>
         );
     }
