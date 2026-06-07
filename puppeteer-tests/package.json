@@ -14,7 +14,6 @@
         "lint:fix": "eslint --fix ."
     },
     "dependencies": {
-        "@puppeteer/browsers": "2.13.0",
         "puppeteer": "^24.40.0"
     },
     "devDependencies": {
