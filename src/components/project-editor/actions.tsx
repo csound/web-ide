@@ -24,13 +24,13 @@ import {
     SET_MANUAL_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
     IOpenDocument,
-    IWorkspacePanelNode,
     SET_SIDEBAR_TAB_INDEX,
     SidebarPosition,
     SPLIT_ACTIVE_PANEL,
     TOGGLE_MAXIMIZE_PANEL,
     WorkspaceTabType
 } from "./types";
+import { createDefaultBottomSidebar } from "./defaults";
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
     `${projectUid}:workspaceLayout`;
@@ -38,20 +38,6 @@ const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
 export const WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY = (
     projectUid: string
 ) => `${projectUid}:defaultConsoleDismissed`;
-
-const createDefaultBottomSidebar = (): IWorkspacePanelNode => ({
-    id: "sidebar-bottom",
-    kind: "panel",
-    tabs: [
-        {
-            id: "sidebar-bottom-console",
-            type: "console",
-            uid: "console",
-            editorInstance: undefined
-        }
-    ],
-    tabIndex: 0
-});
 
 const findDocumentByFilename = (
     documents: IDocument[],

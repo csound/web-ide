@@ -31,6 +31,7 @@ import {
     WorkspaceTabType
 } from "./types";
 import { nonCloudFiles } from "../file-tree/actions";
+import { createDefaultBottomSidebar } from "./defaults";
 
 export interface IProjectEditorReducer {
     root: IWorkspaceLayoutNode;
@@ -68,11 +69,6 @@ const createUtilityTab = (
     uid: type,
     editorInstance: undefined
 });
-
-const createDefaultBottomSidebar = (): IWorkspacePanelNode =>
-    createPanel("sidebar-bottom", [
-        createUtilityTab("sidebar-bottom-console", "console")
-    ]);
 
 const createEditorTab = (
     id: string,
