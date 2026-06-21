@@ -69,6 +69,11 @@ const createUtilityTab = (
     editorInstance: undefined
 });
 
+const createDefaultBottomSidebar = (): IWorkspacePanelNode =>
+    createPanel("sidebar-bottom", [
+        createUtilityTab("sidebar-bottom-console", "console")
+    ]);
+
 const createEditorTab = (
     id: string,
     openDocument: IOpenDocument
@@ -86,7 +91,7 @@ const initialLayoutState = (): IProjectEditorReducer => ({
         createUtilityTab("sidebar-left-fileTree", "fileTree")
     ]),
     rightSidebar: null,
-    bottomSidebar: null,
+    bottomSidebar: createDefaultBottomSidebar(),
     tabDock: {
         tabIndex: -1,
         openDocuments: []

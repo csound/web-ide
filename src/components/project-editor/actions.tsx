@@ -24,6 +24,7 @@ import {
     SET_MANUAL_PANEL_OPEN,
     SET_FILE_TREE_PANEL_OPEN,
     IOpenDocument,
+    IWorkspacePanelNode,
     SET_SIDEBAR_TAB_INDEX,
     SidebarPosition,
     SPLIT_ACTIVE_PANEL,
@@ -33,6 +34,24 @@ import {
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
     `${projectUid}:workspaceLayout`;
+
+export const WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY = (
+    projectUid: string
+) => `${projectUid}:defaultConsoleDismissed`;
+
+const createDefaultBottomSidebar = (): IWorkspacePanelNode => ({
+    id: "sidebar-bottom",
+    kind: "panel",
+    tabs: [
+        {
+            id: "sidebar-bottom-console",
+            type: "console",
+            uid: "console",
+            editorInstance: undefined
+        }
+    ],
+    tabIndex: 0
+});
 
 const findDocumentByFilename = (
     documents: IDocument[],
@@ -130,6 +149,17 @@ export const tabDockInit = (
             savedWorkspaceState = JSON.parse(
                 rawLayout
             ) as IPersistedWorkspaceLayout;
+            if (
+                !savedWorkspaceState.bottomSidebar &&
+                localStorage.getItem(
+                    WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY(projectUid)
+                ) !== "true"
+            ) {
+                savedWorkspaceState = {
+                    ...savedWorkspaceState,
+                    bottomSidebar: createDefaultBottomSidebar()
+                };
+            }
         }
     } catch (error) {
         console.error(error);
