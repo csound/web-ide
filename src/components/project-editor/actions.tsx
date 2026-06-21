@@ -34,6 +34,29 @@ import {
 const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
     `${projectUid}:workspaceLayout`;
 
+const findDocumentByFilename = (
+    documents: IDocument[],
+    filename: string
+): IDocument | undefined =>
+    documents.find((document) => document.filename === filename);
+
+const findFirstDocumentByExtensions = (
+    documents: IDocument[],
+    extensions: string[]
+): IDocument | undefined =>
+    documents.find((document) =>
+        extensions.some((extension) => document.filename.endsWith(extension))
+    );
+
+const findInitialFallbackDocument = (
+    documents: IDocument[]
+): IDocument | undefined =>
+    findDocumentByFilename(documents, "README.md") ||
+    findDocumentByFilename(documents, "project.csd") ||
+    findFirstDocumentByExtensions(documents, [".csd"]) ||
+    findFirstDocumentByExtensions(documents, [".sco", ".orc"]) ||
+    (documents.length === 1 ? documents[0] : undefined);
+
 export const tabDockInit = (
     projectUid: string,
     allDocuments: IDocument[],
@@ -75,68 +98,22 @@ export const tabDockInit = (
         }
     }
 
-    if (
-        defaultTarget &&
-        defaultTarget.targetDocumentUid &&
-        initialOpenDocuments.length === 0 &&
-        allDocuments.length > 0
-    ) {
-        initialOpenDocuments.push({
-            uid: defaultTarget.targetDocumentUid
-        });
-    } else if (
-        defaultTarget &&
-        defaultTarget.playlistDocumentsUid &&
-        initialOpenDocuments.length === 0 &&
-        allDocuments.length > 0
-    ) {
-        defaultTarget.playlistDocumentsUid.forEach((documentUid) => {
-            initialOpenDocuments.push({
-                uid: documentUid
-            });
-        });
-    } else if (
-        allDocuments.length > 0 &&
-        allDocuments.some((d) => d.filename === "project.csd")
-    ) {
-        const projectCsd = allDocuments.find(
-            (d) => d.filename === "project.csd"
-        );
-
-        projectCsd &&
-            !initialOpenDocuments.find(
-                (d) => d.uid === projectCsd.documentUid
-            ) &&
-            initialOpenDocuments.push({
-                uid: projectCsd.documentUid
-            });
-    }
-
-    // Additional fallback logic for when no tabs are open yet
     if (initialOpenDocuments.length === 0 && allDocuments.length > 0) {
-        // First, try to find any .csd file
-        const csdFiles = allDocuments.filter((d) =>
-            d.filename.endsWith(".csd")
-        );
-        if (csdFiles.length > 0) {
+        const fallbackDocument = findInitialFallbackDocument(allDocuments);
+        if (fallbackDocument) {
             initialOpenDocuments.push({
-                uid: csdFiles[0].documentUid
+                uid: fallbackDocument.documentUid
             });
-        } else {
-            // If no .csd files, try to find any .orc file
-            const orcFiles = allDocuments.filter((d) =>
-                d.filename.endsWith(".orc")
-            );
-            if (orcFiles.length > 0) {
+        } else if (defaultTarget?.targetDocumentUid) {
+            initialOpenDocuments.push({
+                uid: defaultTarget.targetDocumentUid
+            });
+        } else if (defaultTarget?.playlistDocumentsUid) {
+            defaultTarget.playlistDocumentsUid.forEach((documentUid) => {
                 initialOpenDocuments.push({
-                    uid: orcFiles[0].documentUid
+                    uid: documentUid
                 });
-            } else if (allDocuments.length === 1) {
-                // If there's only 1 file/document, open it
-                initialOpenDocuments.push({
-                    uid: allDocuments[0].documentUid
-                });
-            }
+            });
         }
     }
 
