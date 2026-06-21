@@ -10,6 +10,7 @@ interface CachedImageProps {
     style?: React.CSSProperties;
     onLoad?: () => void;
     onError?: () => void;
+    showLoadingPlaceholder?: boolean;
 }
 
 const StyledImg = styled("img")`
@@ -270,7 +271,8 @@ export const CachedProfileImage: React.FC<CachedImageProps> = ({
     className,
     style,
     onLoad,
-    onError
+    onError,
+    showLoadingPlaceholder = true
 }) => {
     const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
@@ -321,8 +323,7 @@ export const CachedProfileImage: React.FC<CachedImageProps> = ({
 
                 // Only update if this is still the current request
                 if (loadingRef.current === src) {
-                    // Fallback to original URL
-                    setImageSrc(src);
+                    setImageSrc(undefined);
                     setIsLoading(false);
                     setHasError(true);
                     loadingRef.current = null;
@@ -345,7 +346,7 @@ export const CachedProfileImage: React.FC<CachedImageProps> = ({
         return null;
     }
 
-    if (isLoading && !imageSrc) {
+    if (isLoading && !imageSrc && showLoadingPlaceholder) {
         // Show a placeholder while loading
         return (
             <div
@@ -365,6 +366,10 @@ export const CachedProfileImage: React.FC<CachedImageProps> = ({
                 </div>
             </div>
         );
+    }
+
+    if (!imageSrc || hasError) {
+        return null;
     }
 
     return (

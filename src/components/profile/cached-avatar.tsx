@@ -19,7 +19,7 @@ export const CachedAvatar: React.FC<CachedAvatarProps> = ({
     children,
     ...otherProps
 }) => {
-    const [cachedSrc, setCachedSrc] = useState<string | undefined>(src);
+    const [cachedSrc, setCachedSrc] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -27,6 +27,8 @@ export const CachedAvatar: React.FC<CachedAvatarProps> = ({
             setCachedSrc(undefined);
             return;
         }
+
+        setCachedSrc(undefined);
 
         // Check cache first
         const cached = profileImageCache.get(src);
@@ -37,9 +39,6 @@ export const CachedAvatar: React.FC<CachedAvatarProps> = ({
 
         // If not cached, show loading state and cache the image
         setIsLoading(true);
-
-        // Use the original src while we cache it in the background
-        setCachedSrc(src);
 
         // Cache the image for future use
         const cacheImage = async () => {
@@ -70,12 +69,14 @@ export const CachedAvatar: React.FC<CachedAvatarProps> = ({
 
                 img.onerror = () => {
                     console.warn("Failed to load avatar image for caching");
+                    setCachedSrc(undefined);
                     setIsLoading(false);
                 };
 
                 img.src = src;
             } catch (error) {
                 console.warn("Failed to cache avatar image:", error);
+                setCachedSrc(undefined);
                 setIsLoading(false);
             }
         };

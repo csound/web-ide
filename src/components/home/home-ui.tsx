@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import styled from "@emotion/styled";
 import { headerHeight } from "@styles/constants";
+import CachedProfileImage from "@comp/profile/cached-profile-image";
 
 export const StyledGrid = styled.div`
     && {
@@ -202,6 +203,7 @@ export const ProjectCardContentBottomPhoto = styled.div`
     padding-bottom: 6px;
     display: flex;
     align-items: center;
+    position: relative;
     overflow: hidden;
 `;
 
@@ -215,15 +217,32 @@ export const ProjectCardContentBottomID = styled.div`
     grid-template-columns: 1fr;
 `;
 
-export const Photo: any = styled.div`
-    position: relative;
-    bottom: 3px;
+export const Photo = styled(CachedProfileImage)`
+    position: absolute;
+    left: 10px;
+    top: 3px;
     vertical-align: middle;
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background-image: url("${(property: any) => property.src}");
-    background-size: cover;
+    object-fit: cover;
+    box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
+`;
+
+export const ProfilePhotoFallback = styled.div`
+    position: absolute;
+    left: 10px;
+    top: 3px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    background-color: rgba(0, 0, 0, 0.45);
     box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.4);
 `;
 
