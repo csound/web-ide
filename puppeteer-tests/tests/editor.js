@@ -5,6 +5,7 @@ import {
     waitForProject,
     openFileFromTree,
     findRunButton,
+    openConsolePanel,
     waitForConsoleOutput,
     getConsoleOutputLength,
     waitForConsoleOutputGrowth,
@@ -69,6 +70,9 @@ describe(`Editor [${targetName}]`, () => {
     it("runs and produces console output", async () => {
         const btn = await findRunButton(page);
         assert.ok(btn, "Run button not found");
+        await openConsolePanel(page);
+        const consoleOutput = await page.$('[data-testid="console-output"]');
+        assert.ok(consoleOutput, "Console panel not mounted before run");
         const beforeLength = await getConsoleOutputLength(page);
         await btn.click();
         await waitForConsoleOutputGrowth(page, beforeLength);
