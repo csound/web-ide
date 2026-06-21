@@ -37,7 +37,7 @@ jobs:
                   npm ci
                   npm run build
             - name: Deploy to Firebase
-              uses: w9jds/firebase-action@master
+              uses: docker://w9jds/firebase-action:v15.19.1
               with:
                   args: deploy -P default
               env:
