@@ -5,7 +5,6 @@ import {
     waitForProject,
     openFileFromTree,
     findRunButton,
-    openConsolePanel,
     waitForConsoleOutput,
     getConsoleOutputLength,
     waitForConsoleOutputGrowth,
@@ -56,12 +55,22 @@ describe(`Editor [${targetName}]`, () => {
         assert.ok(btn, "Run/play button not found");
     });
 
+    it("shows the console panel below the editor by default", async () => {
+        const consoleOutput = await page.$('[data-testid="console-output"]');
+        assert.ok(consoleOutput, "Console panel not mounted by default");
+
+        const launcherIsActive = await page.$eval(
+            '[data-testid="sidebar-bottom-console"]',
+            (el) => el.getAttribute("aria-pressed") === "true"
+        );
+        assert.equal(launcherIsActive, true, "Console launcher is not active");
+    });
+
     it("runs and produces console output", async () => {
         const btn = await findRunButton(page);
         assert.ok(btn, "Run button not found");
         const beforeLength = await getConsoleOutputLength(page);
         await btn.click();
-        await openConsolePanel(page);
         await waitForConsoleOutputGrowth(page, beforeLength);
         await waitForConsoleOutput(page);
     });

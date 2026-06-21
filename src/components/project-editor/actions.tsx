@@ -30,9 +30,14 @@ import {
     TOGGLE_MAXIMIZE_PANEL,
     WorkspaceTabType
 } from "./types";
+import { createDefaultBottomSidebar } from "./defaults";
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
     `${projectUid}:workspaceLayout`;
+
+export const WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY = (
+    projectUid: string
+) => `${projectUid}:defaultConsoleDismissed`;
 
 const findDocumentByFilename = (
     documents: IDocument[],
@@ -130,6 +135,17 @@ export const tabDockInit = (
             savedWorkspaceState = JSON.parse(
                 rawLayout
             ) as IPersistedWorkspaceLayout;
+            if (
+                !savedWorkspaceState.bottomSidebar &&
+                localStorage.getItem(
+                    WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY(projectUid)
+                ) !== "true"
+            ) {
+                savedWorkspaceState = {
+                    ...savedWorkspaceState,
+                    bottomSidebar: createDefaultBottomSidebar()
+                };
+            }
         }
     } catch (error) {
         console.error(error);

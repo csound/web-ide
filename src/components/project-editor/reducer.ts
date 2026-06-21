@@ -31,6 +31,7 @@ import {
     WorkspaceTabType
 } from "./types";
 import { nonCloudFiles } from "../file-tree/actions";
+import { createDefaultBottomSidebar } from "./defaults";
 
 export interface IProjectEditorReducer {
     root: IWorkspaceLayoutNode;
@@ -86,7 +87,7 @@ const initialLayoutState = (): IProjectEditorReducer => ({
         createUtilityTab("sidebar-left-fileTree", "fileTree")
     ]),
     rightSidebar: null,
-    bottomSidebar: null,
+    bottomSidebar: createDefaultBottomSidebar(),
     tabDock: {
         tabIndex: -1,
         openDocuments: []

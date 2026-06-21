@@ -66,7 +66,8 @@ import {
     splitActivePanel,
     switchPanelTab,
     tabClose,
-    toggleMaximizePanel
+    toggleMaximizePanel,
+    WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY
 } from "./actions";
 import { isMobile } from "@root/utils";
 import * as SS from "./styles";
@@ -1066,6 +1067,20 @@ const ProjectEditor = ({
                 nextTabNumber
             })
         );
+
+        const consoleIsOpen = Boolean(
+            bottomSidebar?.tabs.some((tab) => tab.type === "console")
+        );
+        if (consoleIsOpen) {
+            localStorage.removeItem(
+                WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY(projectUid)
+            );
+        } else {
+            localStorage.setItem(
+                WORKSPACE_DEFAULT_CONSOLE_DISMISSED_STORAGE_KEY(projectUid),
+                "true"
+            );
+        }
     }, [
         activePanelId,
         bottomSidebar,
