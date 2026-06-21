@@ -1,20 +1,26 @@
 name: E2E — Dev
 
 on:
-    push:
+    workflow_run:
+        workflows: ["Deploy Develop"]
         branches: [develop]
+        types: [completed]
+    workflow_dispatch:
 
 concurrency:
-    group: e2e-dev-${{ github.sha }}
+    group: e2e-dev-${{ github.event.workflow_run.head_sha || github.sha }}
     cancel-in-progress: true
 
 jobs:
     install:
         name: Install dependencies
+        if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
             - name: Set up Node.js
               uses: actions/setup-node@v4
@@ -50,6 +56,8 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
             - name: Set up Node.js
               uses: actions/setup-node@v4
