@@ -6,6 +6,7 @@ import ArrowDownward from "@mui/icons-material/ArrowDownward";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
 import CloseIcon from "@mui/icons-material/Close";
+import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import HorizontalSplitIcon from "@mui/icons-material/HorizontalSplit";
@@ -31,6 +32,7 @@ import {
 } from "@comp/profile/subscribers";
 import tabStyles, { tabListStyle } from "./tab-styles";
 import { isAudioFile } from "../projects/utils";
+import { newFolder } from "@comp/projects/actions";
 import { Beforeunload } from "react-beforeunload";
 import {
     IOpenDocument,
@@ -270,7 +272,9 @@ const getWorkspaceTabTitle = (
     isOwner: boolean
 ): string => {
     if (tab.type === "fileTree") {
-        return "File Tree";
+        return activeProject.name
+            ? `File Tree - ${activeProject.name}`
+            : "File Tree";
     }
 
     if (tab.type === "manual") {
@@ -349,6 +353,80 @@ const renderWorkspaceTabContent = ({
     );
 };
 
+const WorkspacePanelHeader = ({
+    panel,
+    activeProject,
+    isOwner,
+    title,
+    actions,
+    hideTabBar,
+    onTabChange,
+    onCloseTab,
+    handleTabChange,
+    handleTabSequence,
+    activeIndex = 0
+}: {
+    panel: IWorkspacePanelNode;
+    activeProject: IProject;
+    isOwner: boolean;
+    title: string;
+    actions?: React.ReactNode;
+    hideTabBar?: boolean;
+    onTabChange: (index: number) => void;
+    onCloseTab: (tab: IWorkspaceTab) => void;
+    handleTabChange?: (index: number) => void;
+    handleTabSequence?: ({
+        oldIndex,
+        newIndex
+    }: {
+        oldIndex: number;
+        newIndex: number;
+    }) => void;
+    activeIndex?: number;
+}) => {
+    const changeTab = handleTabChange || onTabChange;
+
+    return (
+        <div css={SS.panelTopBar}>
+            {hideTabBar ? (
+                <span css={SS.panelTopBarTitle}>{title}</span>
+            ) : (
+                <div css={SS.panelHeaderTabs}>
+                    <DragTabList
+                        id={`workspace-panel-${panel.id}`}
+                        handleTabSequence={handleTabSequence}
+                        handleTabChange={changeTab}
+                    >
+                        {panel.tabs.map((tab, index) => (
+                            <DragTab
+                                id={`workspace-tab-${tab.id}`}
+                                closable={tab.type !== "fileTree"}
+                                key={tab.id}
+                                closeCallback={() => onCloseTab(tab)}
+                                currentIndex={activeIndex}
+                                thisIndex={index}
+                                CustomTabStyle={TabStyles.Tab}
+                                handleTabChange={changeTab}
+                                index={index}
+                                active={index === activeIndex}
+                            >
+                                <p style={{ margin: 0 }}>
+                                    {getWorkspaceTabTitle(
+                                        tab,
+                                        activeProject,
+                                        isOwner
+                                    )}
+                                </p>
+                            </DragTab>
+                        ))}
+                    </DragTabList>
+                </div>
+            )}
+            {actions && <div css={SS.panelActionGroup}>{actions}</div>}
+        </div>
+    );
+};
+
 const WorkspacePanelTabs = ({
     panel,
     activeProject,
@@ -360,7 +438,8 @@ const WorkspacePanelTabs = ({
     onTabSequenceChange,
     onCloseTab,
     renderTabContent,
-    actions
+    actions,
+    hideTabBar
 }: {
     panel: IWorkspacePanelNode;
     activeProject: IProject;
@@ -373,6 +452,7 @@ const WorkspacePanelTabs = ({
     onCloseTab: (tab: IWorkspaceTab) => void;
     renderTabContent: (tab: IWorkspaceTab) => React.ReactNode;
     actions?: React.ReactNode;
+    hideTabBar?: boolean;
 }) => {
     if (isEmpty(panel.tabs)) {
         return <div style={{ position: "relative", height: "100%" }} />;
@@ -382,84 +462,46 @@ const WorkspacePanelTabs = ({
 
     return (
         <div css={SS.panelShell(isActive)}>
-            <div css={SS.panelTopBar}>
-                <span css={SS.panelTopBarTitle}>{title}</span>
-                {actions && <div css={SS.panelActionGroup}>{actions}</div>}
-            </div>
-            <div css={SS.panelTabsBody}>
-                <div css={tabListStyle as any} style={{ position: "relative" }}>
-                    <Tabs
-                        defaultIndex={safeIndex}
-                        activeIndex={safeIndex}
+            <div css={tabListStyle} style={{ position: "relative" }}>
+                <Tabs
+                    defaultIndex={safeIndex}
+                    activeIndex={safeIndex}
+                    onTabChange={onTabChange}
+                    customStyle={TabStyles}
+                    showModalButton={false}
+                    showArrowButton={false}
+                    onTabSequenceChange={
+                        onTabSequenceChange
+                            ? ({
+                                  oldIndex,
+                                  newIndex
+                              }: {
+                                  oldIndex: number;
+                                  newIndex: number;
+                              }) => onTabSequenceChange(oldIndex, newIndex)
+                            : undefined
+                    }
+                >
+                    <WorkspacePanelHeader
+                        panel={panel}
+                        activeProject={activeProject}
+                        isOwner={isOwner}
+                        title={title}
+                        actions={actions}
+                        hideTabBar={hideTabBar}
                         onTabChange={onTabChange}
-                        customStyle={TabStyles}
-                        showModalButton={false}
-                        showArrowButton={"auto"}
-                        onTabSequenceChange={
-                            onTabSequenceChange
-                                ? ({
-                                      oldIndex,
-                                      newIndex
-                                  }: {
-                                      oldIndex: number;
-                                      newIndex: number;
-                                  }) => onTabSequenceChange(oldIndex, newIndex)
-                                : undefined
-                        }
-                    >
-                        <DragTabList
-                            id={`workspace-panel-${panel.id}`}
-                            handleTabSequence={
-                                onTabSequenceChange
-                                    ? ({
-                                          oldIndex,
-                                          newIndex
-                                      }: {
-                                          oldIndex: number;
-                                          newIndex: number;
-                                      }) =>
-                                          onTabSequenceChange(
-                                              oldIndex,
-                                              newIndex
-                                          )
-                                    : undefined
-                            }
-                            handleTabChange={onTabChange}
-                        >
-                            {panel.tabs.map((tab, index) => (
-                                <DragTab
-                                    id={`workspace-tab-${tab.id}`}
-                                    closable={true}
-                                    key={tab.id}
-                                    closeCallback={() => onCloseTab(tab)}
-                                    currentIndex={safeIndex}
-                                    thisIndex={index}
-                                    CustomTabStyle={TabStyles.Tab}
-                                    handleTabChange={onTabChange}
-                                    index={index}
-                                    active={index === safeIndex}
-                                >
-                                    <p style={{ margin: 0 }}>
-                                        {getWorkspaceTabTitle(
-                                            tab,
-                                            activeProject,
-                                            isOwner
-                                        )}
-                                    </p>
-                                </DragTab>
-                            ))}
-                        </DragTabList>
-                        <PanelList style={{ height: "100%", width: "100%" }}>
-                            {panel.tabs.map((tab) => (
-                                <TabPanel
-                                    key={`workspace-panel-${projectUserUid}-${tab.id}`}
-                                >
-                                    {renderTabContent(tab)}
-                                </TabPanel>
-                            ))}
-                        </PanelList>
-                    </Tabs>
-                </div>
+                        onCloseTab={onCloseTab}
+                    />
+                    <PanelList style={{ height: "100%", width: "100%" }}>
+                        {panel.tabs.map((tab) => (
+                            <TabPanel
+                                key={`workspace-panel-${projectUserUid}-${tab.id}`}
+                            >
+                                {renderTabContent(tab)}
+                            </TabPanel>
+                        ))}
+                    </PanelList>
+                </Tabs>
             </div>
         </div>
     );
@@ -485,6 +527,8 @@ const SidebarPanelView = ({
     const dispatch = useDispatch();
     const activeTab =
         sidebar.tabs[Math.min(sidebar.tabIndex, sidebar.tabs.length - 1)];
+    const isSingleFileTreeTab =
+        sidebar.tabs.length === 1 && sidebar.tabs[0]?.type === "fileTree";
 
     return (
         <WorkspacePanelTabs
@@ -502,6 +546,24 @@ const SidebarPanelView = ({
                 dispatch(setSidebarTabIndex(position, index))
             }
             onCloseTab={(tab) => dispatch(closeSidebarTab(position, tab.id))}
+            hideTabBar={isSingleFileTreeTab}
+            actions={
+                activeTab?.type === "fileTree" && isOwner ? (
+                    <Tooltip title="Create New Directory">
+                        <button
+                            type="button"
+                            css={SS.panelActionButton}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                dispatch(newFolder(projectUid));
+                            }}
+                            aria-label="Create new directory"
+                        >
+                            <CreateNewFolderIcon />
+                        </button>
+                    </Tooltip>
+                ) : null
+            }
             renderTabContent={(tab) =>
                 renderWorkspaceTabContent({
                     tab,
@@ -642,6 +704,21 @@ const WorkspaceNodeView = ({
                 }
                 actions={
                     <>
+                        {activeTab?.type === "fileTree" && isOwner && (
+                            <Tooltip title="Create New Directory">
+                                <button
+                                    type="button"
+                                    css={SS.panelActionButton}
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        dispatch(newFolder(projectUid));
+                                    }}
+                                    aria-label="Create new directory"
+                                >
+                                    <CreateNewFolderIcon />
+                                </button>
+                            </Tooltip>
+                        )}
                         <Tooltip title="Split Right">
                             <button
                                 type="button"

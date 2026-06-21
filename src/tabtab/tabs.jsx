@@ -64,7 +64,9 @@ export default function Tabs({
     return (
         <div>
             {React.Children.map(children, (child) => {
-                return React.cloneElement(child, nextProps);
+                return React.isValidElement(child)
+                    ? React.cloneElement(child, nextProps)
+                    : child;
             })}
         </div>
     );

@@ -168,7 +168,7 @@ export const panelShell = (isActive: boolean) => (theme: Theme) => css`
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    border: 1px solid ${isActive ? theme.tabHighlightActive : `${theme.line}77`};
+    border: 0;
     background: linear-gradient(
         180deg,
         ${theme.background} 0%,
@@ -185,12 +185,13 @@ export const panelTopBar = (theme: Theme): SerializedStyles => css`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 0 10px 0 12px;
+    gap: 8px;
+    padding: 0 8px 0 12px;
     background: ${theme.headerBackground};
     border-bottom: 1px solid ${theme.line};
     color: ${theme.headerTextColor};
     box-sizing: border-box;
+    overflow: hidden;
 `;
 
 export const panelTopBarTitle = (theme: Theme): SerializedStyles => css`
@@ -199,16 +200,26 @@ export const panelTopBarTitle = (theme: Theme): SerializedStyles => css`
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 12px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: ${theme.unfocusedTextColor};
+`;
+
+export const panelHeaderTabs = css`
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
 `;
 
 export const panelActionGroup = css`
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    flex: 0 0 auto;
+    justify-content: flex-end;
+    gap: 4px;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
 `;
 
 export const panelActionButton = (theme: Theme): SerializedStyles => css`
@@ -217,6 +228,7 @@ export const panelActionButton = (theme: Theme): SerializedStyles => css`
     justify-content: center;
     width: 28px;
     height: 28px;
+    flex: 0 0 28px;
     border: 0;
     border-radius: 6px;
     background: ${theme.highlightBackgroundAlt};
@@ -247,13 +259,19 @@ export const panelTabsBody = css`
 `;
 
 export const closeButton = css`
-    top: 4px;
-    right: 8px;
-    padding: 6px;
+    top: 50%;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    padding: 2px;
     position: absolute;
     z-index: 10;
+    transform: translateY(-50%);
     span {
         pointer-events: none;
+    }
+    svg {
+        font-size: 15px;
     }
 `;
 
