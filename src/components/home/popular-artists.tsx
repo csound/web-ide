@@ -4,6 +4,7 @@ import { range } from "ramda";
 import StarIcon from "@mui/icons-material/Star";
 import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
 import { Link } from "react-router";
+import CachedProfileImage from "@comp/profile/cached-profile-image";
 import { fetchPopularArtists } from "./actions";
 import * as SS from "./styles";
 
@@ -39,7 +40,7 @@ const ArtistAvatar = ({
         <span css={SS.artistAvatarShell}>
             <span css={SS.artistAvatarFallback}>{getInitials(name)}</span>
             {hasValidPhoto && (
-                <img
+                <CachedProfileImage
                     src={photoUrl}
                     alt={name}
                     css={SS.artistAvatarImage}

@@ -17,6 +17,7 @@ import {
     ProjectCardContentBottomHeader,
     ProjectCardContentBottomDescription,
     Photo,
+    ProfilePhotoFallback,
     ProjectCardContentBottomID
 } from "./home-ui";
 import { RandomProjectResponse, PopularProjectResponse } from "./types";
@@ -40,6 +41,9 @@ export const ProjectCard = ({
     profile: IProfile;
     project: IProject | RandomProjectResponse | PopularProjectResponse;
 }) => {
+    const displayName = profile.displayName || profile.username;
+    const fallbackInitial = displayName?.trim().charAt(0).toUpperCase() || "?";
+
     return (
         <ProjectCardContainer duration={200} projectIndex={projectIndex}>
             <div css={SS.cardBackground}>
@@ -68,11 +72,20 @@ export const ProjectCard = ({
                 </ProjectCardContentMiddle>
                 <ProjectCardContentBottom to={`profile/${profile.username}`}>
                     <ProjectCardContentBottomPhoto>
-                        {profile.photoUrl && <Photo src={profile.photoUrl} />}
+                        <ProfilePhotoFallback>
+                            {fallbackInitial}
+                        </ProfilePhotoFallback>
+                        {profile.photoUrl && (
+                            <Photo
+                                src={profile.photoUrl}
+                                alt={displayName}
+                                showLoadingPlaceholder={false}
+                            />
+                        )}
                     </ProjectCardContentBottomPhoto>
                     <ProjectCardContentBottomID>
                         <ProjectCardContentBottomHeader>
-                            {profile.displayName || profile.username}
+                            {displayName}
                         </ProjectCardContentBottomHeader>
                         <ProjectCardContentBottomDescription>
                             {profile.bio}

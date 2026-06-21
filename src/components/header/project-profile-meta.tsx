@@ -11,7 +11,7 @@ import {
 } from "@comp/profile/selectors";
 import ProjectAvatar from "@elem/project-avatar";
 import { AccountBox } from "@mui/icons-material";
-import Avatar from "@mui/material/Avatar";
+import CachedAvatar from "@comp/profile/cached-avatar";
 import { IProject } from "@comp/projects/types";
 import IconButton from "@mui/material/IconButton";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -140,11 +140,13 @@ const ProjectProfileMeta = (): React.ReactElement => {
                             {isEmpty(profileImage) ? (
                                 <AccountBox />
                             ) : (
-                                <Avatar
+                                <CachedAvatar
                                     variant="square"
                                     src={profileImage}
                                     imgProps={{ style: { objectFit: "cover" } }}
-                                />
+                                >
+                                    <AccountBox />
+                                </CachedAvatar>
                             )}
                         </div>
                         <p css={SS.projectProfileDescription}>

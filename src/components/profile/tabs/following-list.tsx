@@ -6,7 +6,6 @@ import {
 } from "../profile-ui";
 import {
     ListItemButton,
-    Avatar,
     ListItemText,
     Typography,
     Box,
@@ -14,6 +13,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import PeopleIcon from "@mui/icons-material/People";
+import CachedAvatar from "../cached-avatar";
 
 export const FollowingList = ({
     filteredFollowing,
@@ -81,7 +81,9 @@ export const FollowingList = ({
                     >
                         <StyledUserListItemContainer>
                             <StyledListItemAvatar>
-                                <Avatar src={p.photoUrl} />
+                                <CachedAvatar src={p.photoUrl}>
+                                    <PeopleIcon />
+                                </CachedAvatar>
                             </StyledListItemAvatar>
 
                             <StyledListItemTopRowText>
