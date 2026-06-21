@@ -394,6 +394,42 @@ const syncLegacyState = (
     };
 };
 
+const openInitialDocumentsInWorkspaceState = (
+    state: IProjectEditorReducer,
+    initialOpenDocuments: IOpenDocument[],
+    initialIndex: number
+): IProjectEditorReducer => {
+    if (initialOpenDocuments.length === 0) {
+        return state;
+    }
+
+    const panelId = containsPanel(state.root, state.activePanelId)
+        ? state.activePanelId
+        : findFirstPanelId(state.root);
+    const startTabNumber = state.nextTabNumber;
+    const tabs = initialOpenDocuments.map(
+        (openDocument: IOpenDocument, index: number) =>
+            createEditorTab(`tab-${startTabNumber + index}`, openDocument)
+    );
+    const safeInitialIndex = Math.max(
+        0,
+        Math.min(initialIndex, tabs.length - 1)
+    );
+
+    const [root] = mapPanel(state.root, panelId, (panel) => ({
+        ...panel,
+        tabs: [...panel.tabs, ...tabs],
+        tabIndex: panel.tabs.length + safeInitialIndex
+    }));
+
+    return syncLegacyState({
+        ...state,
+        root,
+        activePanelId: panelId,
+        nextTabNumber: startTabNumber + tabs.length
+    });
+};
+
 const getSidebarKey = (sidebar: SidebarPosition) => {
     if (sidebar === "left") return "leftSidebar" as const;
     if (sidebar === "right") return "rightSidebar" as const;
@@ -504,13 +540,23 @@ const ProjectEditorReducer = (
                 const savedWorkspaceState =
                     action.savedWorkspaceState as IPersistedWorkspaceLayout;
 
-                return syncLegacyState({
+                const restoredState = syncLegacyState({
                     ...initialLayoutState(),
                     ...savedWorkspaceState,
                     manualLookupString: "",
                     maximizedPanelId:
                         savedWorkspaceState.maximizedPanelId || null
                 });
+
+                if (restoredState.tabDock.openDocuments.length > 0) {
+                    return restoredState;
+                }
+
+                return openInitialDocumentsInWorkspaceState(
+                    restoredState,
+                    action.initialOpenDocuments as IOpenDocument[],
+                    action.initialIndex
+                );
             }
 
             const tabs = (action.initialOpenDocuments as IOpenDocument[]).map(
