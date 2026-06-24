@@ -22,6 +22,157 @@ import { append, isEmpty, difference } from "ramda";
 
 export let csoundInstance: CsoundObj;
 
+// State management for Web Audio microphone nodes
+let microphoneStream: MediaStream | undefined;
+let microphoneSourceNode: MediaStreamAudioSourceNode | undefined;
+let microphoneProcessingNodes: AudioNode[] = [];
+let microphoneConnectInFlight: Promise<void> | undefined;
+
+const cleanupMicrophoneBridge = (): void => {
+    microphoneProcessingNodes.forEach((node) => {
+        try {
+            node.disconnect();
+        } catch {}
+    });
+    microphoneProcessingNodes = [];
+
+    if (microphoneSourceNode) {
+        try {
+            microphoneSourceNode.disconnect();
+        } catch {}
+        microphoneSourceNode = undefined;
+    }
+
+    if (microphoneStream) {
+        microphoneStream.getTracks().forEach((track) => track.stop());
+        microphoneStream = undefined;
+    }
+};
+
+const waitForCsoundInputNode = async (
+    csound: CsoundObj,
+    retries: number = 10,
+    delay: number = 100
+): Promise<AudioNode> => {
+    for (let i = 0; i < retries; i++) {
+        const node = await csound.getNode();
+        if (node instanceof AudioNode && node.numberOfInputs > 0) {
+            return node;
+        }
+        await new Promise((r) => setTimeout(r, delay));
+    }
+    throw new Error("Csound AudioNode timed out or has no input ports.");
+};
+
+const connectMicrophoneToCsoundNode = async (
+    csound: CsoundObj,
+    requestedInputChannels: number
+): Promise<void> => {
+    const audioContext = await csound.getAudioContext();
+    if (!audioContext) throw new Error("No AudioContext found.");
+    if (!(audioContext instanceof AudioContext)) {
+        throw new Error(
+            "Microphone bridge requires a realtime AudioContext, not OfflineAudioContext."
+        );
+    }
+
+    if (audioContext.state === "suspended") {
+        await audioContext.resume();
+    }
+
+    const csoundNode = await waitForCsoundInputNode(csound);
+
+    // Tear down any previous bridge before acquiring the new stream
+    cleanupMicrophoneBridge();
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            deviceId: "default",
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            sampleRate: audioContext.sampleRate
+        }
+    });
+
+    microphoneStream = stream;
+    const sourceNode = audioContext.createMediaStreamSource(stream);
+    microphoneSourceNode = sourceNode;
+    const sourceChannels = sourceNode.channelCount;
+
+    if (requestedInputChannels <= 1) {
+        sourceNode.connect(csoundNode, 0, 0);
+    } else {
+        const merger = audioContext.createChannelMerger(requestedInputChannels);
+        const splitter = audioContext.createChannelSplitter(sourceChannels);
+        sourceNode.connect(splitter);
+
+        const channelsToRoute = Math.min(
+            requestedInputChannels,
+            sourceChannels
+        );
+        for (let i = 0; i < channelsToRoute; i++) {
+            splitter.connect(merger, i, i);
+        }
+
+        merger.connect(csoundNode, 0, 0);
+        microphoneProcessingNodes.push(splitter, merger);
+    }
+};
+
+const ensureMicrophoneConnected = async (
+    csound: CsoundObj,
+    channels: number
+): Promise<void> => {
+    if (microphoneConnectInFlight) return microphoneConnectInFlight;
+    microphoneConnectInFlight = connectMicrophoneToCsoundNode(csound, channels);
+    try {
+        await microphoneConnectInFlight;
+    } finally {
+        microphoneConnectInFlight = undefined;
+    }
+};
+
+const installDeterministicMicrophoneBridge = (
+    csound: CsoundObj,
+    channels: number,
+    useWorker: boolean
+): void => {
+    if (useWorker) return;
+    csound.enableAudioInput = async () => {
+        await ensureMicrophoneConnected(csound, channels);
+    };
+};
+
+const hasAdcInputFlagInCsOptions = (csd: string = ""): boolean => {
+    const match = csd.match(/<CsOptions>[\s\S]*?<\/CsOptions>/i);
+    if (!match) {
+        return false;
+    }
+    const options = match[0].replace(/;.*$/gm, "");
+    return (
+        /(^|\s)-i\s*(?:"adc"|'adc'|adc)(?=\s|$)/i.test(options) ||
+        /(^|\s)--input\s*(?:=\s*)?(?:"adc"|'adc'|adc)(?=\s|$)/i.test(options)
+    );
+};
+
+const stripAdcInputFlagFromCsOptions = (csd: string = ""): string => {
+    if (!csd) {
+        return csd;
+    }
+
+    return csd.replace(/<CsOptions>[\s\S]*?<\/CsOptions>/i, (block) => {
+        return block
+            .replace(/(^|\s)-i\s*(?:"adc"|'adc'|adc)(?=\s|$)/gi, "$1")
+            .replace(
+                /(^|\s)--input\s*(?:=\s*)?(?:"adc"|'adc'|adc)(?=\s|$)/gi,
+                "$1"
+            )
+            .replace(/[ \t]+\n/g, "\n")
+            .replace(/[ \t]{2,}/g, " ");
+    });
+};
+
 const parseOutputNameFromCsOptions = (
     csdContents: string | undefined
 ): string | undefined => {
@@ -72,6 +223,7 @@ export const setCsoundPlayState = (
 
 export const setCsound = (csound: CsoundObj): void => {
     csound.on("realtimePerformanceEnded", async () => {
+        cleanupMicrophoneBridge();
         try {
             await csound.cleanup();
         } catch {}
@@ -142,8 +294,32 @@ export const playCsdFromFs = ({
     csdPath: string;
 }) => {
     return async (dispatch: AppThunkDispatch, setConsole: any) => {
+        cleanupMicrophoneBridge();
+        const useWorker = localStorage.getItem("sab") === "true";
+
+        const state = store.getState();
+        const project = state.ProjectsReducer.projects?.[projectUid];
+        const targetDoc = Object.values(project?.documents || {}).find(
+            (doc) => doc.filename === csdPath
+        );
+        const csdContent = targetDoc?.currentValue || "";
+        const shouldMapAdcToBrowserInput =
+            !useWorker && hasAdcInputFlagInCsOptions(csdContent);
+        const csdToCompile = shouldMapAdcToBrowserInput
+            ? stripAdcInputFlagFromCsOptions(csdContent)
+            : csdContent;
+
+        if (shouldMapAdcToBrowserInput) {
+            dispatch(
+                openSnackbar(
+                    "Input note: -iadc mapped to browser microphone input.",
+                    SnackbarType.Info
+                )
+            );
+        }
+
         const csoundObj = await Csound({
-            useWorker: localStorage.getItem("sab") === "true"
+            useWorker
         });
 
         if (!csoundObj) {
@@ -152,6 +328,7 @@ export const playCsdFromFs = ({
         csoundInstance = csoundObj;
 
         setCsound(csoundInstance);
+        installDeterministicMicrophoneBridge(csoundObj, 1, useWorker);
         await syncFs(csoundObj, projectUid, store.getState());
 
         if (csoundObj && setConsole) {
@@ -171,13 +348,14 @@ export const playCsdFromFs = ({
             const outputFromCsOptions = parseOutputNameFromCsOptions(
                 targetDoc?.currentValue
             );
-
             if (!outputFromCsOptions) {
                 await csoundObj.setOption("-odac");
             } else {
                 await csoundObj.setOption(`-o${outputFromCsOptions}`);
             }
-            const result = await compileCSD(csoundObj, csdPath);
+            const result = shouldMapAdcToBrowserInput
+                ? await compileCSD(csoundObj, csdToCompile, true)
+                : await compileCSD(csoundObj, csdPath);
 
             if (result === 0) {
                 const filesPre = await csoundObj.fs.readdir("/");
@@ -280,8 +458,30 @@ export const playCsdFromFs = ({
                     csoundObj.once("realtimePerformanceEnded", async () => {
                         await addOutputsToTree();
                     });
-                    await csoundObj.start();
-                    dispatch(setCsoundPlayState("playing"));
+                    try {
+                        await csoundObj.start();
+                        if (!useWorker) {
+                            await csoundObj.enableAudioInput();
+                        }
+                        dispatch(setCsoundPlayState("playing"));
+                    } catch (error: unknown) {
+                        cleanupMicrophoneBridge();
+                        try {
+                            await csoundObj.stop();
+                        } catch {}
+                        try {
+                            await csoundObj.cleanup();
+                        } catch {}
+
+                        dispatch(setCsoundPlayState("error"));
+                        dispatch(
+                            openSnackbar(
+                                "Audio input error: unable to start microphone input. Check permission settings and browser audio policy.",
+                                SnackbarType.Error
+                            )
+                        );
+                        console.error(error);
+                    }
                 }
             } else {
                 try {
@@ -350,6 +550,7 @@ export const playORCFromString = ({
 };
 
 export const stopCsound = () => {
+    cleanupMicrophoneBridge();
     csoundInstance && csoundInstance.stop();
     return setCsoundPlayState("stopped");
 };
