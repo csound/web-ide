@@ -17,6 +17,9 @@ export type FileTypeIconDetails =
           category: CsoundFileCategory;
       }
     | {
+          kind: "wasm";
+      }
+    | {
           kind: "media";
           category: MediaFileCategory;
           label: string;
@@ -78,6 +81,10 @@ export function getFileTypeIconDetails(
     const normalizedMimeType =
         mimeType?.toLowerCase() || mime.getType(filename) || "";
 
+    if (extension === ".wasm" || normalizedMimeType === "application/wasm") {
+        return { kind: "wasm" };
+    }
+
     if (sampleExtensions.has(extension)) {
         return {
             kind: "media",
@@ -135,6 +142,10 @@ export function FileTypeIcon({
         return null;
     }
 
+    if (iconDetails.kind === "wasm") {
+        return <WasmFileIcon />;
+    }
+
     if (iconDetails.kind === "media") {
         return (
             <MediaFileIcon
@@ -158,17 +169,12 @@ export function FileTypeIcon({
     }
 }
 
-function FileIconBadge({
-    label,
-    panel,
-    shadow
+function FileIconDocument({
+    children
 }: {
-    label: string;
-    panel: string;
-    shadow: string;
+    children: React.ReactNode;
 }): React.ReactElement {
     const theme = useTheme();
-    const normalizedLabel = label.trim().slice(0, 3).toUpperCase() || "???";
 
     return (
         <svg
@@ -177,6 +183,8 @@ function FileIconBadge({
             height="512"
             viewBox="0 0 512 512"
             xmlSpace="preserve"
+            aria-hidden="true"
+            focusable="false"
         >
             {/* Paper body — theme-aware so it fits dark & light themes */}
             <path
@@ -198,6 +206,25 @@ function FileIconBadge({
                 fill={theme.line}
                 d="M260 39.219V116c0 17.645 14.355 32 32 32h100.13L260 39.219z"
             />
+            {children}
+        </svg>
+    );
+}
+
+function FileIconBadge({
+    label,
+    panel,
+    shadow
+}: {
+    label: string;
+    panel: string;
+    shadow: string;
+}): React.ReactElement {
+    const theme = useTheme();
+    const normalizedLabel = label.trim().slice(0, 3).toUpperCase() || "???";
+
+    return (
+        <FileIconDocument>
             {/* Shadow for type panel */}
             <rect
                 x="88"
@@ -229,7 +256,7 @@ function FileIconBadge({
             >
                 {normalizedLabel}
             </text>
-        </svg>
+        </FileIconDocument>
     );
 }
 
@@ -286,5 +313,31 @@ export function UdoFileIcon(): React.ReactElement {
             panel={theme.fileIcons.udo.panel}
             shadow={theme.fileIcons.udo.shadow}
         />
+    );
+}
+
+export function WasmFileIcon(): React.ReactElement {
+    const theme = useTheme();
+    const { panel, shadow } = theme.fileIcons.wasm;
+
+    return (
+        <FileIconDocument>
+            <rect
+                x="128"
+                y="196"
+                width="256"
+                height="256"
+                fill={shadow}
+                opacity="0.25"
+            />
+            <rect x="128" y="188" width="256" height="256" fill="#FFFFFF" />
+            {/* WebAssembly mark by Carlos Baraza, CC0 1.0 */}
+            <path
+                fill={panel}
+                fillRule="evenodd"
+                transform="translate(128 188) scale(10.6667)"
+                d="M14.745 0v.129a2.752 2.752 0 0 1-5.504 0V0H0v24h24V0h-9.255Zm-3.291 21.431-1.169-5.783h-.02l-1.264 5.783H7.39l-1.824-8.497h1.59l1.088 5.783h.02l1.311-5.783h1.487l1.177 5.854h.02l1.242-5.854h1.561l-2.027 8.497h-1.581Zm8.755 0-.542-1.891h-2.861l-.417 1.891h-1.59l2.056-8.497h2.509l2.5 8.497h-1.655Zm-2.397-6.403-.694 3.118h2.159l-.796-3.118h-.669Z"
+            />
+        </FileIconDocument>
     );
 }

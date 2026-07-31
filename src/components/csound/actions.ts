@@ -16,9 +16,14 @@ import {
     compileCSD
 } from "./types";
 import { selectActiveProject } from "@comp/projects/selectors";
-import { addDocumentToCsoundFS, getUniqueFilename } from "@comp/projects/utils";
+import {
+    addDocumentToCsoundFS,
+    getUniqueFilename,
+    loadBinaryDocument
+} from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { append, isEmpty, difference } from "ramda";
+import { createCsoundForProject } from "./plugins";
 
 export let csoundInstance: CsoundObj;
 
@@ -142,8 +147,17 @@ export const playCsdFromFs = ({
     csdPath: string;
 }) => {
     return async (dispatch: AppThunkDispatch, setConsole: any) => {
-        const csoundObj = await Csound({
-            useWorker: localStorage.getItem("sab") === "true"
+        const pluginDocuments =
+            store.getState().ProjectsReducer.projects?.[projectUid]
+                ?.documents ?? {};
+        const csoundObj = await createCsoundForProject({
+            csoundFactory: Csound,
+            loadBinaryDocument,
+            projectUid,
+            documents: pluginDocuments,
+            options: {
+                useWorker: localStorage.getItem("sab") === "true"
+            }
         });
 
         if (!csoundObj) {
@@ -309,8 +323,17 @@ export const playORCFromString = ({
     orc: string;
 }): ((dispatch: any, setConsole: any) => Promise<void>) => {
     return async (dispatch, setConsole: any) => {
-        const csoundObj = await Csound({
-            useWorker: localStorage.getItem("sab") === "true"
+        const projectDocuments =
+            store.getState().ProjectsReducer.projects?.[projectUid]
+                ?.documents ?? {};
+        const csoundObj = await createCsoundForProject({
+            csoundFactory: Csound,
+            loadBinaryDocument,
+            projectUid,
+            documents: projectDocuments,
+            options: {
+                useWorker: localStorage.getItem("sab") === "true"
+            }
         });
 
         if (!csoundObj) {
@@ -399,8 +422,14 @@ export const renderToDisk = (
         }
 
         // Non-worker mode has more reliable render lifecycle events for offline -o rendering.
-        const csound = await Csound({
-            useWorker: false
+        const csound = await createCsoundForProject({
+            csoundFactory: Csound,
+            loadBinaryDocument,
+            projectUid: project.projectUid,
+            documents: project.documents,
+            options: {
+                useWorker: false
+            }
         });
 
         csoundInstance = csound as CsoundObj;

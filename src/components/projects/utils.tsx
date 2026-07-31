@@ -140,16 +140,8 @@ export const addDocumentToCsoundFS = async (
     }
 
     if (document.type === "bin") {
-        const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
         try {
-            const downloadUrl = await getDownloadURL(
-                await storageReference(path)
-            );
-            const binary = await fetchBinaryDocument(
-                downloadUrl,
-                projectUid,
-                document
-            );
+            const binary = await loadBinaryDocument(projectUid, document);
             await csound.fs.writeFile(absolutePath, binary);
         } catch (error) {
             console.error(error);
@@ -194,6 +186,11 @@ const fetchBinaryDocument = async (
 
     if (!hasCacheStorage) {
         const response = await fetch(downloadUrl);
+        if (!response.ok) {
+            throw new Error(
+                `Failed to download binary document: ${response.status}`
+            );
+        }
         const arrayBuffer = await response.arrayBuffer();
         return new Uint8Array(arrayBuffer);
     }
@@ -236,6 +233,16 @@ const fetchBinaryDocument = async (
     const networkBuffer = await networkResponse.arrayBuffer();
 
     return new Uint8Array(networkBuffer);
+};
+
+export const loadBinaryDocument = async (
+    projectUid: string,
+    document: IDocument
+): Promise<Uint8Array> => {
+    const path = `${document.userUid}/${projectUid}/${document.documentUid}`;
+    const downloadUrl = await getDownloadURL(await storageReference(path));
+
+    return fetchBinaryDocument(downloadUrl, projectUid, document);
 };
 
 export const fileDocumentDataToDocumentType = (
