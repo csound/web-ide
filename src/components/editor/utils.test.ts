@@ -14,6 +14,9 @@ const contextAt = (
         extensions: [csoundMode({ fileType })]
     });
     const position = source.indexOf(search);
+    if (position < 0) {
+        throw new Error(`Search string not found in source: ${search}`);
+    }
     const context = findSurroundingContext(
         syntaxTree(state).cursorAt(position, 1)
     );
