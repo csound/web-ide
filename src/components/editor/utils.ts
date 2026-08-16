@@ -2,7 +2,7 @@ import { curry } from "ramda";
 import { syntaxTree } from "@codemirror/language";
 import { StateEffect, StateField, Transaction } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
-import { TreeCursor } from "@lezer/common";
+import type { SyntaxNode, TreeCursor } from "@lezer/common";
 import type { CsoundObj } from "@comp/csound/types";
 
 const addBlinkSuccessMarks = StateEffect.define();
@@ -46,32 +46,33 @@ export const evalBlinkExtension = StateField.define({
     provide: (f) => EditorView.decorations.from(f)
 });
 
-const findSurroundingContext = (view: EditorView, tree: TreeCursor) => {
-    const treeRoot = tree.node;
-    let maybeContext: any = treeRoot;
-    let lastContext: any = maybeContext;
+const evaluableBlockNames = new Set(["InstrumentDefinition", "UdoDefinition"]);
 
-    while (maybeContext) {
-        if (
-            ["InstrumentDeclaration", "UdoDeclaration"].includes(
-                maybeContext.type.name
-            )
-        ) {
-            return maybeContext;
+export const findSurroundingContext = (
+    tree: TreeCursor
+): SyntaxNode | undefined => {
+    let statement: SyntaxNode | undefined;
+    let node: SyntaxNode | null = tree.node;
+
+    while (node) {
+        if (evaluableBlockNames.has(node.type.name)) {
+            return node;
         }
 
-        // if we find ourselves in global scope, check if the user wanted to evaluate a global statement
+        const parentName = node.parent?.type.name;
         if (
-            maybeContext.type.name === "Program" &&
-            ["OpcodeStatement", "CallbackExpression"].includes(
-                lastContext.type.name
-            )
+            (node.type.name === "OrcStatement" &&
+                parentName === "OrcStatements") ||
+            (node.type.name === "ScoStatement" &&
+                parentName === "ScoStatements")
         ) {
-            return lastContext;
+            statement = node;
         }
-        lastContext = maybeContext;
-        maybeContext = maybeContext.node.parent;
+
+        node = node.parent;
     }
+
+    return statement;
 };
 
 const evalSelection = async ({
@@ -116,19 +117,21 @@ export const editorEvalCode = curry(
             view.state.selection.main.from !== view.state.selection.main.to;
 
         let selection;
-        let context: { from: number; to: number };
+        let context: { from: number; to: number } | undefined;
 
         if (userHasSelection && !blockEval) {
-            selection = view.state.sliceDoc(
-                view.state.selection.main.from,
-                view.state.selection.main.to
-            );
+            context = {
+                from: view.state.selection.main.from,
+                to: view.state.selection.main.to
+            };
+            selection = view.state.sliceDoc(context.from, context.to);
         } else if (blockEval) {
             const treeRoot = syntaxTree(view.state).cursorAt(
-                view.state.selection.main.head
+                view.state.selection.main.head,
+                1
             );
 
-            context = findSurroundingContext(view, treeRoot);
+            context = findSurroundingContext(treeRoot);
 
             if (
                 typeof context === "object" &&
@@ -145,7 +148,7 @@ export const editorEvalCode = curry(
             selection = view.state.sliceDoc(line.from, line.to);
         }
 
-        if (selection) {
+        if (selection && context) {
             evalSelection({ csound, documentType, evalString: selection }).then(
                 (result: number) => {
                     if (result === 0) {
