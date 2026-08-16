@@ -16,7 +16,11 @@ interface DatabaseStructure {
     [key: string]: DatabaseRecord[] | undefined;
 }
 
-const createFuzzySearch = (database: DatabaseStructure = {}, key: string = "", options: SearchOptions = {}): Fuse<DatabaseRecord> | null => {
+const createFuzzySearch = (
+    database: DatabaseStructure = {},
+    key: string = "",
+    options: SearchOptions = {}
+): Fuse<DatabaseRecord> | null => {
     const items = database[key];
     if (typeof items === "undefined" || !Array.isArray(items)) {
         return null;
@@ -33,27 +37,33 @@ const createDatabaseSearch = (database: DatabaseStructure = {}) => {
         keys: ["username", "displayName", "bio"]
     });
     const tags = createFuzzySearch(database, "tags", { keys: ["id"] });
-    const searchMap: Record<string, Fuse<DatabaseRecord> | null> = { projects, profiles, tags };
+    const searchMap: Record<string, Fuse<DatabaseRecord> | null> = {
+        projects,
+        profiles,
+        tags
+    };
 
-    return memoize((collection: string = "", query: string = ""): DatabaseRecord[] => {
-        if (
-            typeof collection !== "string" ||
-            typeof query !== "string" ||
-            typeof searchMap[collection] === "undefined" ||
-            collection === "" ||
-            query === ""
-        ) {
-            return [];
+    return memoize(
+        (collection: string = "", query: string = ""): DatabaseRecord[] => {
+            if (
+                typeof collection !== "string" ||
+                typeof query !== "string" ||
+                typeof searchMap[collection] === "undefined" ||
+                collection === "" ||
+                query === ""
+            ) {
+                return [];
+            }
+
+            const fuse = searchMap[collection];
+            if (!fuse) {
+                return [];
+            }
+
+            const result = fuse.search(query);
+            return result.map((item) => item.item);
         }
-
-        const fuse = searchMap[collection];
-        if (!fuse) {
-            return [];
-        }
-
-        const result = fuse.search(query);
-        return result.map(item => item.item);
-    });
+    );
 };
 
 const compareValues = (key: string, order: string = "asc") => {
@@ -62,8 +72,14 @@ const compareValues = (key: string, order: string = "asc") => {
             return 0;
         }
 
-        const varA = typeof a[key] === "string" ? (a[key] as string).toUpperCase() : a[key];
-        const varB = typeof b[key] === "string" ? (b[key] as string).toUpperCase() : b[key];
+        const varA =
+            typeof a[key] === "string"
+                ? (a[key] as string).toUpperCase()
+                : a[key];
+        const varB =
+            typeof b[key] === "string"
+                ? (b[key] as string).toUpperCase()
+                : b[key];
 
         let comparison = 0;
         if (varA > varB) {
@@ -75,27 +91,39 @@ const compareValues = (key: string, order: string = "asc") => {
     };
 };
 
-const orderArrayByKey = memoize((array: DatabaseRecord[] = [], orderKey: string | boolean = "", order: string | boolean = "asc"): DatabaseRecord[] => {
-    if (
-        Array.isArray(array) &&
-        array.length > 0 &&
-        orderKey !== false &&
-        order !== false &&
-        typeof orderKey === "string" &&
-        typeof array[0][orderKey] !== "undefined" &&
-        typeof order === "string"
-    ) {
-        array.sort(compareValues(orderKey, order));
-    }
+const orderArrayByKey = memoize(
+    (
+        array: DatabaseRecord[] = [],
+        orderKey: string | boolean = "",
+        order: string | boolean = "asc"
+    ): DatabaseRecord[] => {
+        if (
+            Array.isArray(array) &&
+            array.length > 0 &&
+            orderKey !== false &&
+            order !== false &&
+            typeof orderKey === "string" &&
+            typeof array[0][orderKey] !== "undefined" &&
+            typeof order === "string"
+        ) {
+            array.sort(compareValues(orderKey, order));
+        }
 
-    return array;
-});
+        return array;
+    }
+);
 
 const searchResultFilter = memoize(
-    (result: DatabaseRecord[] = [], count: number | string | boolean = 0, offset: number | string | boolean = 0, orderKey: string | boolean = false, order: string | boolean = false): DatabaseRecord[] => {
+    (
+        result: DatabaseRecord[] = [],
+        count: number | string | boolean = 0,
+        offset: number | string | boolean = 0,
+        orderKey: string | boolean = false,
+        order: string | boolean = false
+    ): DatabaseRecord[] => {
         let parsedCount = count;
         let parsedOffset = offset;
-        
+
         if (count !== false && offset !== false) {
             parsedCount = parseInt(String(count));
             parsedOffset = parseInt(String(offset));
@@ -133,8 +161,4 @@ const createDatabaseList = (database: DatabaseStructure = {}) => {
     };
 };
 
-export {
-    createDatabaseSearch,
-    searchResultFilter,
-    createDatabaseList
-};
+export { createDatabaseSearch, searchResultFilter, createDatabaseList };
