@@ -38,7 +38,7 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@hello-pangea/dnd": "^18.0.1",
-        "@hlolli/codemirror-lang-csound": "^1.0.0-alpha11",
+        "@kunstmusik/codemirror-lang-csound": "^1.0.3",
         "@lezer/common": "^1.5.2",
         "@mui/icons-material": "^6.2.0",
         "@mui/material": "^6.2.0",

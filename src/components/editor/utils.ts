@@ -1,8 +1,13 @@
 import { curry } from "ramda";
-import { syntaxTree } from "@codemirror/language";
-import { StateEffect, StateField, Transaction } from "@codemirror/state";
+import { ensureSyntaxTree, syntaxTree } from "@codemirror/language";
+import {
+    EditorState,
+    StateEffect,
+    StateField,
+    Transaction
+} from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
-import type { SyntaxNode, TreeCursor } from "@lezer/common";
+import type { SyntaxNode } from "@lezer/common";
 import type { CsoundObj } from "@comp/csound/types";
 
 const addBlinkSuccessMarks = StateEffect.define();
@@ -46,17 +51,33 @@ export const evalBlinkExtension = StateField.define({
     provide: (f) => EditorView.decorations.from(f)
 });
 
-const evaluableBlockNames = new Set(["InstrumentDefinition", "UdoDefinition"]);
+export interface EvaluationContext {
+    from: number;
+    to: number;
+    kind: "instrument" | "udo" | "orchestra-statement" | "score-statement";
+}
 
+// Keep grammar knowledge here; evaluation and UI code consume plain ranges.
 export const findSurroundingContext = (
-    tree: TreeCursor
-): SyntaxNode | undefined => {
-    let statement: SyntaxNode | undefined;
-    let node: SyntaxNode | null = tree.node;
+    state: EditorState,
+    position = state.selection.main.head
+): EvaluationContext | undefined => {
+    const tree =
+        ensureSyntaxTree(state, state.doc.length, 100) ?? syntaxTree(state);
+    let statement: EvaluationContext | undefined;
+    let node: SyntaxNode | null = tree.resolveInner(position, 1);
 
     while (node) {
-        if (evaluableBlockNames.has(node.type.name)) {
-            return node;
+        if (
+            node.name === "InstrumentDefinition" ||
+            node.name === "UdoDefinition"
+        ) {
+            return {
+                from: node.from,
+                to: node.to,
+                kind:
+                    node.name === "InstrumentDefinition" ? "instrument" : "udo"
+            };
         }
 
         const parentName = node.parent?.type.name;
@@ -66,7 +87,14 @@ export const findSurroundingContext = (
             (node.type.name === "ScoStatement" &&
                 parentName === "ScoStatements")
         ) {
-            statement = node;
+            statement = {
+                from: node.from,
+                to: node.to,
+                kind:
+                    node.name === "OrcStatement"
+                        ? "orchestra-statement"
+                        : "score-statement"
+            };
         }
 
         node = node.parent;
@@ -117,7 +145,9 @@ export const editorEvalCode = curry(
             view.state.selection.main.from !== view.state.selection.main.to;
 
         let selection;
-        let context: { from: number; to: number } | undefined;
+        let context:
+            | { from: number; to: number; kind?: EvaluationContext["kind"] }
+            | undefined;
 
         if (userHasSelection && !blockEval) {
             context = {
@@ -126,12 +156,7 @@ export const editorEvalCode = curry(
             };
             selection = view.state.sliceDoc(context.from, context.to);
         } else if (blockEval) {
-            const treeRoot = syntaxTree(view.state).cursorAt(
-                view.state.selection.main.head,
-                1
-            );
-
-            context = findSurroundingContext(treeRoot);
+            context = findSurroundingContext(view.state);
 
             if (
                 typeof context === "object" &&
@@ -149,46 +174,47 @@ export const editorEvalCode = curry(
         }
 
         if (selection && context) {
-            evalSelection({ csound, documentType, evalString: selection }).then(
-                (result: number) => {
-                    if (result === 0) {
-                        view.dispatch({
-                            effects: addBlinkSuccessMarks.of([
-                                blinkSuccessMarks.range(
-                                    context.from,
-                                    context.to
-                                )
-                            ] as any)
-                        });
-                    } else {
-                        view.dispatch({
-                            effects: addBlinkErrorMarks.of([
-                                blinkErrorMarks.range(context.from, context.to)
-                            ] as any)
-                        });
-                    }
-
-                    setTimeout(
-                        () =>
-                            result === 0
-                                ? view.dispatch({
-                                      effects: removeBlinkSuccessMarks.of(
-                                          ((from: number, to: number) =>
-                                              to <= context.from ||
-                                              from >= context.to) as any
-                                      )
-                                  })
-                                : view.dispatch({
-                                      effects: removeBlinkErrorMarks.of(
-                                          ((from: number, to: number) =>
-                                              to <= context.from ||
-                                              from >= context.to) as any
-                                      )
-                                  }),
-                        200
-                    );
+            const evaluationType =
+                context.kind === "score-statement" ? "sco" : documentType;
+            evalSelection({
+                csound,
+                documentType: evaluationType,
+                evalString: selection
+            }).then((result: number) => {
+                if (result === 0) {
+                    view.dispatch({
+                        effects: addBlinkSuccessMarks.of([
+                            blinkSuccessMarks.range(context.from, context.to)
+                        ] as any)
+                    });
+                } else {
+                    view.dispatch({
+                        effects: addBlinkErrorMarks.of([
+                            blinkErrorMarks.range(context.from, context.to)
+                        ] as any)
+                    });
                 }
-            );
+
+                setTimeout(
+                    () =>
+                        result === 0
+                            ? view.dispatch({
+                                  effects: removeBlinkSuccessMarks.of(
+                                      ((from: number, to: number) =>
+                                          to <= context.from ||
+                                          from >= context.to) as any
+                                  )
+                              })
+                            : view.dispatch({
+                                  effects: removeBlinkErrorMarks.of(
+                                      ((from: number, to: number) =>
+                                          to <= context.from ||
+                                          from >= context.to) as any
+                                  )
+                              }),
+                    200
+                );
+            });
         }
     }
 );

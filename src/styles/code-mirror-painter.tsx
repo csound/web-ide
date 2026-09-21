@@ -47,9 +47,16 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         white-space: nowrap;
         color: ${theme.textColor};
         font-family: ${theme.font.monospace};
-        font-size: "14px";
-        user-select: "none";
+        font-size: 14px;
+        user-select: none;
         background-color: ${theme.gutterBackground};
+    }
+
+    .cm-csound-synopsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 2px 6px;
+        min-height: 1.4em;
     }
 
     .cm-lineNumbers {
@@ -62,6 +69,25 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
 
     .cm-csound-a-rate-var {
         color: ${theme.aRateVar}!important;
+    }
+
+    .cm-csound-i-rate-var,
+    .cm-csound-number {
+        color: ${theme.iRateVar}!important;
+    }
+
+    .cm-csound-comment {
+        color: ${theme.comment}!important;
+    }
+
+    .cm-csound-bracket {
+        color: ${theme.bracket}!important;
+    }
+
+    .cm-csound-boolean,
+    .cm-csound-xml-tag,
+    .cm-csound-goto-token {
+        color: ${theme.keyword}!important;
     }
 
     .cm-csound-p-field-var {
