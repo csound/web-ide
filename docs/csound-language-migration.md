@@ -10,6 +10,9 @@ of `@kunstmusik/codemirror-lang-csound`.
   UI, keeps completion, and sets the IDE's two-space indent.
 - `csound-highlighting.ts` supplies the IDE's rate classes, using upstream's
   semantic results to distinguish opcode calls from variables.
+  Its identifier group comes from upstream's `/syntax` entry. Checked names
+  and sets also cover the synopsis and context adapters, so a renamed node
+  fails typechecking instead of silently losing behavior.
 - `csound-synopsis.ts` renders the bottom panel from `getCsoundHoverInfo`.
   The IDE owns the DOM, layout, and stale-result handling.
 - `src/styles/code-mirror-painter.tsx` chooses all colors and panel styles.

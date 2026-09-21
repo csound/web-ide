@@ -1,3 +1,8 @@
+import {
+    csoundNodeNames as nodes,
+    csoundNodeGroups,
+    csoundNodeSet
+} from "@kunstmusik/codemirror-lang-csound/syntax";
 import { syntaxTree } from "@codemirror/language";
 import type { Extension, Range } from "@codemirror/state";
 import {
@@ -9,17 +14,7 @@ import {
 } from "@codemirror/view";
 import { analyzeCsoundSemanticLine } from "@kunstmusik/codemirror-lang-csound";
 
-const identifierNodes = new Set([
-    "Identifier",
-    "LegacyTypeIdentifier",
-    "TypedIdentifier",
-    "GlobalTypedIdentifier",
-    "ArrayIdentifier",
-    "TypedArrayIdentifier",
-    "GlobalTypedArrayIdentifier",
-    "HeaderIdentifier",
-    "PField"
-]);
+const identifierNodes = csoundNodeSet(csoundNodeGroups.CsoundIdentifier);
 const headerNames = new Set([
     "sr",
     "kr",
@@ -29,7 +24,7 @@ const headerNames = new Set([
     "nchnls_hw",
     "0dbfs"
 ]);
-const definitionNodes = new Set([
+const definitionNodes = csoundNodeSet([
     "instr",
     "endin",
     "opcode",
@@ -37,10 +32,10 @@ const definitionNodes = new Set([
     "struct",
     "declare",
     "void",
-    "HashDefine",
-    "HashUndef"
+    nodes.HashDefine,
+    nodes.HashUndef
 ]);
-const controlNodes = new Set([
+const controlNodes = csoundNodeSet([
     "if",
     "then",
     "ithen",
@@ -71,10 +66,10 @@ const controlNodes = new Set([
     "rireturn",
     "xin",
     "xout",
-    "HashIfdef",
-    "HashIfndef",
-    "HashElse",
-    "HashEnd"
+    nodes.HashIfdef,
+    nodes.HashIfndef,
+    nodes.HashElse,
+    nodes.HashEnd
 ]);
 
 function identifierClass(
@@ -82,14 +77,14 @@ function identifierClass(
     parent: string | undefined,
     isOpcode: boolean
 ): string | null {
-    if (parent === "MemberAccessSegment") return null;
+    if (parent === nodes.MemberAccessSegment) return null;
     if (headerNames.has(text)) return "cm-csound-global-constant";
     if (/^p\d+$/.test(text)) return "cm-csound-p-field-var";
-    if (parent === "LabelName") return "cm-csound-goto-token";
+    if (parent === nodes.LabelName) return "cm-csound-goto-token";
     if (
-        parent === "FunctionCallee" ||
-        parent === "ScoreFunctionCallee" ||
-        parent === "UdoName" ||
+        parent === nodes.FunctionCallee ||
+        parent === nodes.ScoreFunctionCallee ||
+        parent === nodes.UdoName ||
         isOpcode
     )
         return "cm-csound-opcode";
@@ -113,7 +108,7 @@ function decorations(view: EditorView, documentText: string): DecorationSet {
             enter(node) {
                 // A token can straddle more than one visible range.
                 if (node.to <= from || node.from >= to) return;
-                if (node.name === "OrcGenericLine") {
+                if (node.name === nodes.OrcGenericLine) {
                     const text = view.state.sliceDoc(node.from, node.to);
                     for (const span of analyzeCsoundSemanticLine(text, {
                         offset: node.from,
@@ -137,14 +132,18 @@ function decorations(view: EditorView, documentText: string): DecorationSet {
                     className = "cm-csound-define";
                 else if (controlNodes.has(node.name))
                     className = "cm-csound-control-flow";
-                else if (node.name === "MacroUsageToken")
+                else if (node.name === nodes.MacroUsageToken)
                     className = "cm-csound-macro-token";
-                else if (node.name === "ScoreOpcode")
+                else if (node.name === nodes.ScoreOpcode)
                     className = "cm-csound-opcode";
-                else if (node.name === "String" || node.name === "RawString")
+                else if (
+                    node.name === nodes.String ||
+                    node.name === nodes.RawString
+                )
                     className = "cm-csound-s-rate-var";
-                else if (node.name === "Number") className = "cm-csound-number";
-                else if (node.name === "BooleanLiteral")
+                else if (node.name === nodes.Number)
+                    className = "cm-csound-number";
+                else if (node.name === nodes.BooleanLiteral)
                     className = "cm-csound-boolean";
                 else if (/^[()[\]{}]$/.test(node.name))
                     className = "cm-csound-bracket";

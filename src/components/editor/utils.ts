@@ -1,3 +1,4 @@
+import { csoundNodeNames as nodes } from "@kunstmusik/codemirror-lang-csound/syntax";
 import { curry } from "ramda";
 import { ensureSyntaxTree, syntaxTree } from "@codemirror/language";
 import {
@@ -69,29 +70,31 @@ export const findSurroundingContext = (
 
     while (node) {
         if (
-            node.name === "InstrumentDefinition" ||
-            node.name === "UdoDefinition"
+            node.name === nodes.InstrumentDefinition ||
+            node.name === nodes.UdoDefinition
         ) {
             return {
                 from: node.from,
                 to: node.to,
                 kind:
-                    node.name === "InstrumentDefinition" ? "instrument" : "udo"
+                    node.name === nodes.InstrumentDefinition
+                        ? "instrument"
+                        : "udo"
             };
         }
 
         const parentName = node.parent?.type.name;
         if (
-            (node.type.name === "OrcStatement" &&
-                parentName === "OrcStatements") ||
-            (node.type.name === "ScoStatement" &&
-                parentName === "ScoStatements")
+            (node.type.name === nodes.OrcStatement &&
+                parentName === nodes.OrcStatements) ||
+            (node.type.name === nodes.ScoStatement &&
+                parentName === nodes.ScoStatements)
         ) {
             statement = {
                 from: node.from,
                 to: node.to,
                 kind:
-                    node.name === "OrcStatement"
+                    node.name === nodes.OrcStatement
                         ? "orchestra-statement"
                         : "score-statement"
             };

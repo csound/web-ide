@@ -1,3 +1,4 @@
+import { csoundNodeNames as nodes } from "@kunstmusik/codemirror-lang-csound/syntax";
 import { syntaxTree } from "@codemirror/language";
 import type { EditorState, Extension } from "@codemirror/state";
 import type { SyntaxNode } from "@lezer/common";
@@ -14,15 +15,15 @@ function opcodeAtSelection(state: EditorState): string | undefined {
     );
     while (node) {
         if (
-            node.name === "FunctionCallExpr" ||
-            node.name === "ScoreFunctionCallExpr"
+            node.name === nodes.FunctionCallExpr ||
+            node.name === nodes.ScoreFunctionCallExpr
         ) {
             const callee =
-                node.getChild("FunctionCallee") ??
-                node.getChild("ScoreFunctionCallee");
+                node.getChild(nodes.FunctionCallee) ??
+                node.getChild(nodes.ScoreFunctionCallee);
             if (callee) return state.sliceDoc(callee.from, callee.to).trim();
         }
-        if (node.name === "OrcGenericLine") {
+        if (node.name === nodes.OrcGenericLine) {
             const text = state.sliceDoc(node.from, node.to);
             const span = analyzeCsoundSemanticLine(text, {
                 documentText: state.doc.toString()
