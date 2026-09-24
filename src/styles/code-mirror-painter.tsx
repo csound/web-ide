@@ -132,15 +132,33 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
 
+    .cm-tooltip-autocomplete > ul {
+        display: grid;
+        grid-template-columns: auto fit-content(24ch) minmax(0, 1fr);
+        column-gap: 1ch;
+    }
+
     .cm-tooltip-autocomplete > ul > li {
         color: ${theme.textColor};
-        display: flex;
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
         align-items: baseline;
     }
 
-    .cm-tooltip-autocomplete .cm-completionIcon,
+    .cm-tooltip-autocomplete > ul > completion-section {
+        grid-column: 1 / -1;
+    }
+
+    .cm-tooltip-autocomplete .cm-completionIcon {
+        grid-column: 1;
+    }
+
     .cm-tooltip-autocomplete .cm-completionLabel {
-        flex: 0 0 auto;
+        grid-column: 2;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .cm-tooltip-autocomplete > ul > li[aria-selected],
@@ -152,8 +170,9 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-tooltip-autocomplete .cm-completionDetail {
         color: ${theme.altTextColor};
         opacity: 1;
-        flex: 1 1 auto;
+        grid-column: 3;
         min-width: 0;
+        margin-left: 0;
         max-width: 48ch;
         white-space: normal;
         overflow-wrap: anywhere;
