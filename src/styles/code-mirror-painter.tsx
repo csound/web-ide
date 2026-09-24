@@ -134,6 +134,13 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
 
     .cm-tooltip-autocomplete > ul > li {
         color: ${theme.textColor};
+        display: flex;
+        align-items: baseline;
+    }
+
+    .cm-tooltip-autocomplete .cm-completionIcon,
+    .cm-tooltip-autocomplete .cm-completionLabel {
+        flex: 0 0 auto;
     }
 
     .cm-tooltip-autocomplete > ul > li[aria-selected],
@@ -145,6 +152,12 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-tooltip-autocomplete .cm-completionDetail {
         color: ${theme.altTextColor};
         opacity: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 48ch;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-style: normal;
     }
 
     .cm-tooltip-autocomplete .cm-completionMatchedText {

@@ -1,4 +1,14 @@
-import { EditorState } from "@codemirror/state";
+import { EditorState, type Extension } from "@codemirror/state";
+import {
+    autocompletion,
+    startCompletion,
+    currentCompletions,
+    setSelectedCompletion,
+    acceptCompletion,
+    CompletionContext,
+    type CompletionSource
+} from "@codemirror/autocomplete";
+import { csoundCompletionSource } from "@kunstmusik/codemirror-lang-csound";
 import { EditorView } from "@codemirror/view";
 import { indentUnit, syntaxTree } from "@codemirror/language";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -11,12 +21,17 @@ afterEach(() => {
     }
 });
 
-function editor(doc: string, fileType = "orc", position = 0) {
+function editor(
+    doc: string,
+    fileType = "orc",
+    position = 0,
+    extensions: Extension[] = []
+) {
     const view = new EditorView({
         state: EditorState.create({
             doc,
             selection: { anchor: position },
-            extensions: [csoundEditorLanguage(fileType)]
+            extensions: [csoundEditorLanguage(fileType), ...extensions]
         }),
         parent: document.body
     });
@@ -31,6 +46,81 @@ function marked(view: EditorView, className: string, token: string) {
 }
 
 describe("the IDE Csound adapter", () => {
+    it("shows descriptions beside opcode completions without a second info popup", async () => {
+        const doc = "a1 = oscil";
+        const view = editor(doc, "orc", doc.length, [
+            autocompletion({ activateOnTyping: false, interactionDelay: 0 })
+        ]);
+        view.focus();
+        startCompletion(view);
+        await vi.waitFor(() => {
+            const completion = currentCompletions(view.state).find(
+                (entry) => entry.label === "oscili"
+            );
+            expect(completion?.detail).toBe(
+                "A simple oscillator with linear interpolation."
+            );
+            expect(completion?.info).toBeUndefined();
+        });
+        const index = currentCompletions(view.state).findIndex(
+            (entry) => entry.label === "oscili"
+        );
+        view.dispatch({ effects: setSelectedCompletion(index) });
+        await vi.waitFor(() => {
+            const row = view.dom.querySelector(
+                '.cm-tooltip-autocomplete li[aria-selected="true"]'
+            );
+            expect(row?.querySelector(".cm-completionLabel")?.textContent).toBe(
+                "oscili"
+            );
+            expect(
+                row?.querySelector(".cm-completionDetail")?.textContent
+            ).toBe("A simple oscillator with linear interpolation.");
+            expect(view.dom.querySelector(".cm-completionInfo")).toBeNull();
+        });
+        expect(acceptCompletion(view)).toBe(true);
+        expect(view.state.doc.toString()).toBe("a1 = oscili");
+    });
+
+    it("keeps UDO priority and insertion without category filler or changing upstream options", async () => {
+        const doc =
+            "opcode localPass(signal:a):a\n xout(signal)\nendop\na1 = loc";
+        const view = editor(doc, "orc", doc.length, [
+            autocompletion({ activateOnTyping: false, interactionDelay: 0 })
+        ]);
+        const context = new CompletionContext(view.state, doc.length, true);
+        const sources = view.state.languageDataAt<CompletionSource>(
+            "autocomplete",
+            doc.length
+        );
+        expect(sources).toHaveLength(1);
+        const result = await sources[0](context);
+        const udo = result?.options.find(
+            (entry) => entry.label === "localPass"
+        );
+        expect(udo).toMatchObject({
+            label: "localPass",
+            type: "function",
+            boost: 20
+        });
+        expect(udo?.detail).toBeUndefined();
+        expect(udo?.info).toBeUndefined();
+        const upstream = csoundCompletionSource(context)?.options.find(
+            (entry) => entry.label === "oscili"
+        );
+        expect(upstream?.detail).toContain("Csound opcode");
+        expect(upstream?.info).toBe(
+            "A simple oscillator with linear interpolation."
+        );
+        view.focus();
+        startCompletion(view);
+        await vi.waitFor(() =>
+            expect(currentCompletions(view.state)[0]?.label).toBe("localPass")
+        );
+        expect(acceptCompletion(view)).toBe(true);
+        expect(view.state.doc.toString()).toBe(doc.slice(0, -3) + "localPass");
+    });
+
     it("chooses the core language and the IDE's indentation and completion", () => {
         for (const [fileType, top] of [
             ["csd", "CsdFile"],
