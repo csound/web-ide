@@ -47,9 +47,20 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         white-space: nowrap;
         color: ${theme.textColor};
         font-family: ${theme.font.monospace};
-        font-size: "14px";
-        user-select: "none";
+        font-size: 14px;
+        user-select: none;
         background-color: ${theme.gutterBackground};
+    }
+
+    .cm-csound-synopsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 2px 6px;
+        min-height: 1.4em;
+    }
+
+    .cm-csound-synopsis .cm-csound-active-argument {
+        font-weight: 700;
     }
 
     .cm-lineNumbers {
@@ -62,6 +73,25 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
 
     .cm-csound-a-rate-var {
         color: ${theme.aRateVar}!important;
+    }
+
+    .cm-csound-i-rate-var,
+    .cm-csound-number {
+        color: ${theme.iRateVar}!important;
+    }
+
+    .cm-csound-comment {
+        color: ${theme.comment}!important;
+    }
+
+    .cm-csound-bracket {
+        color: ${theme.bracket}!important;
+    }
+
+    .cm-csound-boolean,
+    .cm-csound-xml-tag,
+    .cm-csound-goto-token {
+        color: ${theme.keyword}!important;
     }
 
     .cm-csound-p-field-var {
@@ -102,8 +132,33 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
 
+    .cm-tooltip-autocomplete > ul {
+        display: grid;
+        grid-template-columns: auto fit-content(24ch) minmax(0, 1fr);
+        column-gap: 1ch;
+    }
+
     .cm-tooltip-autocomplete > ul > li {
         color: ${theme.textColor};
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
+        align-items: baseline;
+    }
+
+    .cm-tooltip-autocomplete > ul > completion-section {
+        grid-column: 1 / -1;
+    }
+
+    .cm-tooltip-autocomplete .cm-completionIcon {
+        grid-column: 1;
+    }
+
+    .cm-tooltip-autocomplete .cm-completionLabel {
+        grid-column: 2;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .cm-tooltip-autocomplete > ul > li[aria-selected],
@@ -115,6 +170,13 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-tooltip-autocomplete .cm-completionDetail {
         color: ${theme.altTextColor};
         opacity: 1;
+        grid-column: 3;
+        min-width: 0;
+        margin-left: 0;
+        max-width: 48ch;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-style: normal;
     }
 
     .cm-tooltip-autocomplete .cm-completionMatchedText {

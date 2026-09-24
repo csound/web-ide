@@ -1,8 +1,14 @@
+import { csoundNodeNames as nodes } from "@kunstmusik/codemirror-lang-csound/syntax";
 import { curry } from "ramda";
-import { syntaxTree } from "@codemirror/language";
-import { StateEffect, StateField, Transaction } from "@codemirror/state";
+import { ensureSyntaxTree, syntaxTree } from "@codemirror/language";
+import {
+    EditorState,
+    StateEffect,
+    StateField,
+    Transaction
+} from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
-import { TreeCursor } from "@lezer/common";
+import type { SyntaxNode } from "@lezer/common";
 import type { CsoundObj } from "@comp/csound/types";
 
 const addBlinkSuccessMarks = StateEffect.define();
@@ -46,32 +52,58 @@ export const evalBlinkExtension = StateField.define({
     provide: (f) => EditorView.decorations.from(f)
 });
 
-const findSurroundingContext = (view: EditorView, tree: TreeCursor) => {
-    const treeRoot = tree.node;
-    let maybeContext: any = treeRoot;
-    let lastContext: any = maybeContext;
+export interface EvaluationContext {
+    from: number;
+    to: number;
+    kind: "instrument" | "udo" | "orchestra-statement" | "score-statement";
+}
 
-    while (maybeContext) {
+// Keep grammar knowledge here; evaluation and UI code consume plain ranges.
+export const findSurroundingContext = (
+    state: EditorState,
+    position = state.selection.main.head
+): EvaluationContext | undefined => {
+    const tree =
+        ensureSyntaxTree(state, state.doc.length, 100) ?? syntaxTree(state);
+    let statement: EvaluationContext | undefined;
+    let node: SyntaxNode | null = tree.resolveInner(position, 1);
+
+    while (node) {
         if (
-            ["InstrumentDeclaration", "UdoDeclaration"].includes(
-                maybeContext.type.name
-            )
+            node.name === nodes.InstrumentDefinition ||
+            node.name === nodes.UdoDefinition
         ) {
-            return maybeContext;
+            return {
+                from: node.from,
+                to: node.to,
+                kind:
+                    node.name === nodes.InstrumentDefinition
+                        ? "instrument"
+                        : "udo"
+            };
         }
 
-        // if we find ourselves in global scope, check if the user wanted to evaluate a global statement
+        const parentName = node.parent?.type.name;
         if (
-            maybeContext.type.name === "Program" &&
-            ["OpcodeStatement", "CallbackExpression"].includes(
-                lastContext.type.name
-            )
+            (node.type.name === nodes.OrcStatement &&
+                parentName === nodes.OrcStatements) ||
+            (node.type.name === nodes.ScoStatement &&
+                parentName === nodes.ScoStatements)
         ) {
-            return lastContext;
+            statement = {
+                from: node.from,
+                to: node.to,
+                kind:
+                    node.name === nodes.OrcStatement
+                        ? "orchestra-statement"
+                        : "score-statement"
+            };
         }
-        lastContext = maybeContext;
-        maybeContext = maybeContext.node.parent;
+
+        node = node.parent;
     }
+
+    return statement;
 };
 
 const evalSelection = async ({
@@ -116,19 +148,18 @@ export const editorEvalCode = curry(
             view.state.selection.main.from !== view.state.selection.main.to;
 
         let selection;
-        let context: { from: number; to: number };
+        let context:
+            | { from: number; to: number; kind?: EvaluationContext["kind"] }
+            | undefined;
 
         if (userHasSelection && !blockEval) {
-            selection = view.state.sliceDoc(
-                view.state.selection.main.from,
-                view.state.selection.main.to
-            );
+            context = {
+                from: view.state.selection.main.from,
+                to: view.state.selection.main.to
+            };
+            selection = view.state.sliceDoc(context.from, context.to);
         } else if (blockEval) {
-            const treeRoot = syntaxTree(view.state).cursorAt(
-                view.state.selection.main.head
-            );
-
-            context = findSurroundingContext(view, treeRoot);
+            context = findSurroundingContext(view.state);
 
             if (
                 typeof context === "object" &&
@@ -145,47 +176,48 @@ export const editorEvalCode = curry(
             selection = view.state.sliceDoc(line.from, line.to);
         }
 
-        if (selection) {
-            evalSelection({ csound, documentType, evalString: selection }).then(
-                (result: number) => {
-                    if (result === 0) {
-                        view.dispatch({
-                            effects: addBlinkSuccessMarks.of([
-                                blinkSuccessMarks.range(
-                                    context.from,
-                                    context.to
-                                )
-                            ] as any)
-                        });
-                    } else {
-                        view.dispatch({
-                            effects: addBlinkErrorMarks.of([
-                                blinkErrorMarks.range(context.from, context.to)
-                            ] as any)
-                        });
-                    }
-
-                    setTimeout(
-                        () =>
-                            result === 0
-                                ? view.dispatch({
-                                      effects: removeBlinkSuccessMarks.of(
-                                          ((from: number, to: number) =>
-                                              to <= context.from ||
-                                              from >= context.to) as any
-                                      )
-                                  })
-                                : view.dispatch({
-                                      effects: removeBlinkErrorMarks.of(
-                                          ((from: number, to: number) =>
-                                              to <= context.from ||
-                                              from >= context.to) as any
-                                      )
-                                  }),
-                        200
-                    );
+        if (selection && context) {
+            const evaluationType =
+                context.kind === "score-statement" ? "sco" : documentType;
+            evalSelection({
+                csound,
+                documentType: evaluationType,
+                evalString: selection
+            }).then((result: number) => {
+                if (result === 0) {
+                    view.dispatch({
+                        effects: addBlinkSuccessMarks.of([
+                            blinkSuccessMarks.range(context.from, context.to)
+                        ] as any)
+                    });
+                } else {
+                    view.dispatch({
+                        effects: addBlinkErrorMarks.of([
+                            blinkErrorMarks.range(context.from, context.to)
+                        ] as any)
+                    });
                 }
-            );
+
+                setTimeout(
+                    () =>
+                        result === 0
+                            ? view.dispatch({
+                                  effects: removeBlinkSuccessMarks.of(
+                                      ((from: number, to: number) =>
+                                          to <= context.from ||
+                                          from >= context.to) as any
+                                  )
+                              })
+                            : view.dispatch({
+                                  effects: removeBlinkErrorMarks.of(
+                                      ((from: number, to: number) =>
+                                          to <= context.from ||
+                                          from >= context.to) as any
+                                  )
+                              }),
+                    200
+                );
+            });
         }
     }
 );

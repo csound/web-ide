@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
-import { csoundMode } from "@hlolli/codemirror-lang-csound";
+import { csoundEditorLanguage } from "./csound-language";
 import { EditorView } from "codemirror";
 import {
     crosshairCursor,
@@ -142,13 +142,7 @@ const CodeEditor = ({
                     dropCursor(),
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
-                    csoundMode({
-                        fileType:
-                            csoundFileType &&
-                            ((["sco", "orc", "csd"].includes(csoundFileType)
-                                ? csoundFileType
-                                : "orc") as "sco" | "orc" | "csd")
-                    }),
+                    csoundEditorLanguage(csoundFileType),
                     keymap.of([
                         ...defaultKeymap.filter(
                             (keyb) =>
