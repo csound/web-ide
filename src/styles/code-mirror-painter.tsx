@@ -59,6 +59,10 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         min-height: 1.4em;
     }
 
+    .cm-csound-synopsis .cm-csound-active-argument {
+        font-weight: 700;
+    }
+
     .cm-lineNumbers {
         fontfamily: ${theme.font.monospace};
         fontsize: "16px";

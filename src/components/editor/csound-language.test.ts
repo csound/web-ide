@@ -106,8 +106,17 @@ describe("the IDE Csound adapter", () => {
         expect(marked(view, "cm-csound-f-rate-var", "field")).toBeUndefined();
     });
 
-    it("renders opcode help in its own bottom panel for both call styles", async () => {
-        for (const line of ["a1 oscili 0.2, 440", "a1 = oscili:a(0.2, 440)"]) {
+    it.each([
+        ["a1 oscili 0.2, 440", "ares oscili xamp, xcps[, ifn, iphs]", "xcps"],
+        [
+            "a1 = oscili:a(0.2, 440)",
+            "ares = oscili:a(xamp, xcps[, ifn, iphs])",
+            "xcps"
+        ],
+        ["k1 oscili 0.2, 440", "kres oscili kamp, kcps[, ifn, iphs]", "kcps"]
+    ])(
+        "matches the call style and rate in %s",
+        async (line, syntax, active) => {
             const view = editor(line + "\n", "orc", line.indexOf("440"));
             const panel = view.dom.querySelector(
                 ".cm-panels-bottom .cm-csound-synopsis"
@@ -117,9 +126,169 @@ describe("the IDE Csound adapter", () => {
                 expect(
                     panel?.querySelector(".cm-csound-opcode")?.textContent
                 ).toBe("oscili");
-                expect(panel?.textContent).toContain("xamp");
+                expect(panel?.textContent).toBe(syntax);
+                expect(panel?.querySelector("strong")?.textContent).toBe(
+                    active
+                );
             });
         }
+    );
+
+    it.each(["a1 oscili 0.2, 440, 1, 0", "a1 = oscili:a(0.2, 440, 1, 0)"])(
+        "tracks cursor moves through required and optional inputs in %s",
+        async (line) => {
+            const view = editor(line + "\n", "orc", line.indexOf("0.2"));
+            const panel = view.dom.querySelector(".cm-csound-synopsis");
+            const comma = line.indexOf(",");
+            for (const [position, active] of [
+                [line.indexOf("0.2"), "xamp"],
+                [comma, "xamp"],
+                [comma + 1, "xcps"],
+                [line.indexOf("440"), "xcps"],
+                [line.indexOf(", 1") + 2, "ifn"],
+                [line.lastIndexOf(", 0") + 2, "iphs"]
+            ] as const) {
+                view.dispatch({ selection: { anchor: position } });
+                await vi.waitFor(() => {
+                    expect(panel?.querySelectorAll("strong")).toHaveLength(1);
+                    expect(panel?.querySelector("strong")?.textContent).toBe(
+                        active
+                    );
+                });
+            }
+            view.dispatch({ selection: { anchor: line.indexOf("oscili") } });
+            await vi.waitFor(() => {
+                expect(
+                    panel?.querySelector(".cm-csound-opcode")?.textContent
+                ).toBe("oscili");
+                expect(panel?.querySelector("strong")).toBeNull();
+            });
+        }
+    );
+
+    it.each([
+        ["a1 oscili max(0.1, 0.2), 440", "440", "xcps"],
+        ["a1 = oscili:a(max(0.1, 0.2), 440)", "440", "xcps"],
+        ["a1 oscili values[limit(1, 2, 3)], 440", "440", "xcps"],
+        ["a1 oscili 0.2 /* a, b */, 440", "440", "xcps"],
+        ["a1 = oscili:a(\n 0.2, ; a, b\n 440\n)", "440", "xcps"],
+        ["a1 oscili 0.2, \\\n 440", "440", "xcps"],
+        ['printf "a,b", 1, 2', "1", "ktrig"],
+        ['printf("a,b", 1, 2)', "1", "ktrig"],
+        ["printf {{a,b}}, 1, 2", "1", "ktrig"],
+        ['printf "a,\\"b,c", 1, 2', "1", "ktrig"],
+        ["out a1, a2", "a2", "asig2"],
+        ["out(a1, a2)", "a2", "asig2"]
+    ])("ignores nested separators in %s", async (line, at, active) => {
+        const view = editor(line + "\n", "orc", line.indexOf(at));
+        await vi.waitFor(() =>
+            expect(
+                view.dom.querySelector(".cm-csound-synopsis strong")
+                    ?.textContent
+            ).toBe(active)
+        );
+    });
+
+    it.each(["a1 oscili 0.2, ", "a1 = oscili:a(0.2, "])(
+        "tracks an empty argument while typing %s",
+        async (line) => {
+            const view = editor(line, "orc", line.length);
+            await vi.waitFor(() =>
+                expect(
+                    view.dom.querySelector(".cm-csound-synopsis strong")
+                        ?.textContent
+                ).toBe("xcps")
+            );
+        }
+    );
+
+    it.each([
+        "a1 oscili max(0.1, 0.2), 440",
+        "a1 = oscili:a(max(0.1, 0.2), 440)"
+    ])(
+        "tracks the innermost call and returns to its parent in %s",
+        async (line) => {
+            const view = editor(line + "\n", "orc", line.indexOf("0.2"));
+            const panel = view.dom.querySelector(".cm-csound-synopsis");
+            for (const [position, opcode, active] of [
+                [line.indexOf("0.2"), "max", "ain2"],
+                [line.indexOf("),") + 1, "oscili", "xamp"],
+                [line.indexOf("440"), "oscili", "xcps"]
+            ] as const) {
+                view.dispatch({ selection: { anchor: position } });
+                await vi.waitFor(() => {
+                    expect(
+                        panel?.querySelector(".cm-csound-opcode")?.textContent
+                    ).toBe(opcode);
+                    expect(panel?.querySelector("strong")?.textContent).toBe(
+                        active
+                    );
+                });
+            }
+        }
+    );
+
+    it("converts a valid legacy synopsis when the catalog's function form is malformed", async () => {
+        const line = "k1 = pow:k(2, 3)";
+        const view = editor(line + "\n", "orc", line.indexOf("3"));
+        await vi.waitFor(() => {
+            const panel = view.dom.querySelector(".cm-csound-synopsis");
+            expect(panel?.textContent).toBe(
+                "kres = pow:k(karg, kpow [, inorm])"
+            );
+            expect(panel?.querySelector("strong")?.textContent).toBe("kpow");
+        });
+    });
+
+    it.each([
+        ["a1 localPass 0.2, 440", "a localPass a, k"],
+        ["a1 = localPass:a(0.2, 440)", "a = localPass:a(a, k)"]
+    ])(
+        "tracks UDO arguments without manual syntax in %s",
+        async (line, syntax) => {
+            const doc =
+                "opcode localPass(signal:a, frequency:k):a\n xout(signal)\nendop\n" +
+                line +
+                "\n";
+            const view = editor(doc, "orc", doc.indexOf("440"));
+            await vi.waitFor(() => {
+                const panel = view.dom.querySelector(".cm-csound-synopsis");
+                expect(panel?.textContent).toBe(syntax);
+                expect(panel?.querySelector("strong")?.textContent).toBe("k");
+            });
+        }
+    );
+
+    it("updates the active argument and call style after edits", async () => {
+        const line = "a1 oscili 0.2, 440";
+        const position = line.indexOf("440");
+        const view = editor(line + "\n", "orc", position);
+        const panel = view.dom.querySelector(".cm-csound-synopsis");
+        await vi.waitFor(() =>
+            expect(panel?.querySelector("strong")?.textContent).toBe("xcps")
+        );
+        view.dispatch({
+            changes: { from: position, insert: "1, " },
+            selection: { anchor: position + 3 }
+        });
+        await vi.waitFor(() =>
+            expect(panel?.querySelector("strong")?.textContent).toBe("ifn")
+        );
+        const modern = "a1 = oscili:a(0.2, 440)";
+        view.dispatch({
+            changes: {
+                from: 0,
+                to: view.state.doc.length,
+                insert: modern + "\n"
+            },
+            selection: { anchor: modern.indexOf("440") }
+        });
+        await vi.waitFor(() => {
+            expect(panel?.textContent).toBe(
+                "ares = oscili:a(xamp, xcps[, ifn, iphs])"
+            );
+            expect(panel?.querySelector("strong")?.textContent).toBe("xcps");
+        });
     });
 
     it("updates UDO help on edits and clears stale results when the cursor moves", async () => {
