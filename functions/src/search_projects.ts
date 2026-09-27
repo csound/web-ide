@@ -129,7 +129,11 @@ function sortResults(
 // Main search function
 export const searchProjects = onCall(
     { cors: true },
-    async ({ data }: { data: SearchProjectsParams }): Promise<SearchResponse> => {
+    async ({
+        data
+    }: {
+        data: SearchProjectsParams;
+    }): Promise<SearchResponse> => {
         try {
             const {
                 query,

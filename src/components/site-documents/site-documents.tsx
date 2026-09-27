@@ -1,12 +1,13 @@
+import { useTheme } from "@emotion/react";
 import { mainStyle, rootStyle } from "./styles";
 import { Header } from "../header/header";
-import { main } from "../projects/styles";
 
 export const SiteDocuments = () => {
+    const theme = useTheme();
     return (
-        <div css={rootStyle}>
+        <div css={rootStyle(theme)}>
             <Header />
-            <main css={[mainStyle, main]}>
+            <main css={mainStyle(theme)}>
                 <section>
                     <h1>Csound Web-IDE</h1>
 
