@@ -8,6 +8,12 @@ export default defineConfig({
     define: {
         "process.env.REACT_APP_DATABASE": JSON.stringify(
             process.env.REACT_APP_DATABASE
+        ),
+        "process.env.REACT_APP_FIREBASE_DEV_API_KEY": JSON.stringify(
+            process.env.REACT_APP_FIREBASE_DEV_API_KEY
+        ),
+        "process.env.REACT_APP_FIREBASE_PROD_API_KEY": JSON.stringify(
+            process.env.REACT_APP_FIREBASE_PROD_API_KEY
         )
     },
     // depending on your application, base can also be "/"

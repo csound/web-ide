@@ -9,7 +9,7 @@ import {
 import { getStorage, ref } from "firebase/storage";
 
 const DEV = {
-    apiKey: "AIzaSyDFV4Pm43eQXbFUrayG9Dj_7ddEBzQ9Gd4",
+    apiKey: process.env.REACT_APP_FIREBASE_DEV_API_KEY,
     authDomain: "csound-ide-dev.firebaseapp.com",
     databaseURL: "https://csound-ide-dev.firebaseio.com",
     projectId: "csound-ide-dev",
@@ -19,7 +19,7 @@ const DEV = {
 };
 
 const PROD = {
-    apiKey: "AIzaSyCbwSqIRwrsmioXL7b0yqrHJnOcNNqWN9E",
+    apiKey: process.env.REACT_APP_FIREBASE_PROD_API_KEY,
     authDomain: "csound-ide.firebaseapp.com",
     databaseURL: "https://csound-ide.firebaseio.com",
     projectId: "csound-ide",
