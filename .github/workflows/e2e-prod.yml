@@ -14,12 +14,12 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Set up Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v7
               with:
-                  node-version: "24"
+                  node-version-file: .nvmrc
                   cache: "npm"
                   cache-dependency-path: puppeteer-tests/package-lock.json
 
@@ -32,10 +32,10 @@ jobs:
               run: npm run install:chrome
 
             - name: Cache node_modules
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@v6
               with:
                   path: puppeteer-tests/node_modules
-                  key: nm-puppeteer-v3-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+                  key: nm-puppeteer-v3-${{ runner.os }}-${{ hashFiles('.nvmrc', 'puppeteer-tests/package-lock.json') }}
 
     e2e:
         name: E2E prod — ${{ matrix.suite }}
@@ -49,18 +49,18 @@ jobs:
                 suite: [home, editor]
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Set up Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v7
               with:
-                  node-version: "24"
+                  node-version-file: .nvmrc
 
             - name: Restore node_modules
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@v6
               with:
                   path: puppeteer-tests/node_modules
-                  key: nm-puppeteer-v3-${{ runner.os }}-${{ hashFiles('puppeteer-tests/package-lock.json') }}
+                  key: nm-puppeteer-v3-${{ runner.os }}-${{ hashFiles('.nvmrc', 'puppeteer-tests/package-lock.json') }}
 
             - name: Resolve Chrome executable
               working-directory: puppeteer-tests
@@ -74,7 +74,7 @@ jobs:
 
             - name: Upload debug artifacts
               if: failure()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: e2e-debug-prod-${{ matrix.suite }}
                   path: puppeteer-tests/screenshots/

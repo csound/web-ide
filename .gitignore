@@ -3,6 +3,7 @@
 # Firebase
 .firebase
 firebase-debug.log
+firebase.dev.generated.json
 
 # dependencies
 **/node_modules
