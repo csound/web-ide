@@ -61,12 +61,12 @@ Firebase backend**.
 
 <!-- #prerequisites -->
 
-| Tool         | Required  | Notes                                                 |
-| ------------ | --------- | ----------------------------------------------------- |
-| Node.js      | >= 20 LTS | Matches CI and Firebase Functions runtime             |
-| npm          | >= 10     | Bundled with Node 20                                  |
-| Firebase CLI | Optional  | Required for local Functions emulation and deployment |
-| Electron     | Optional  | Required for desktop builds only                      |
+| Tool         | Required   | Notes                                                |
+| ------------ | ---------- | ---------------------------------------------------- |
+| Node.js      | >= 22.13.0 | Required by @csound/browser; build and CI use Node 22  |
+| npm          | >= 10      | Bundled with Node 22                                 |
+| Firebase CLI | Optional   | Required for local Functions emulation and deployment |
+| Electron     | Optional   | Required for desktop builds only                     |
 
 Install the Firebase CLI globally when needed:
 
