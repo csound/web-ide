@@ -148,6 +148,12 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                     },
                     {
                         label: "Render to Disk",
+                        disabled: [
+                            "loading",
+                            "rendering",
+                            "playing",
+                            "paused"
+                        ].includes(csoundStatus),
                         callback: () => dispatch(renderToDisk(setConsole))
                     },
                     {

@@ -32,16 +32,16 @@ export const getSelectedTargetDocumentUid =
     (store: RootState): string | undefined => {
         if (!activeProjectUid) return undefined;
 
-        const targetName =
-            store?.TargetControlsReducer?.[activeProjectUid]?.selectedTarget;
-        const documentUid = targetName
-            ? store?.TargetControlsReducer?.[activeProjectUid]?.targets?.[
-                  targetName
-              ]?.targetDocumentUid
-            : undefined;
-
-        if (documentUid) {
-            return documentUid;
+        const controls = store.TargetControlsReducer[activeProjectUid];
+        const targetName = controls?.selectedTarget ?? controls?.defaultTarget;
+        if (targetName) {
+            const target = controls.targets[targetName];
+            return (
+                target?.targetDocumentUid ??
+                target?.playlistDocumentsUid?.[
+                    controls.selectedTargetPlaylistIndex ?? 0
+                ]
+            );
         } else {
             const allDocuments: Record<string, IDocument> | undefined =
                 store?.ProjectsReducer?.projects?.[activeProjectUid]?.documents;

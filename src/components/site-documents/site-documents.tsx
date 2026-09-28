@@ -1,6 +1,7 @@
 import { useTheme } from "@emotion/react";
 import { mainStyle, rootStyle } from "./styles";
 import { Header } from "../header/header";
+import { WebMcpGuide } from "@root/webmcp/guide";
 
 export const SiteDocuments = () => {
     const theme = useTheme();
@@ -220,6 +221,7 @@ export const SiteDocuments = () => {
                     </p>
                 </section>
 
+                <WebMcpGuide />
                 <section>
                     <h2>Audio/MIDI Input</h2>
 

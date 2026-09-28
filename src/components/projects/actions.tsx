@@ -340,6 +340,35 @@ export const saveFile = (): ((dispatch: any) => Promise<void>) => {
     };
 };
 
+// Await the cloud write so callers can report save errors and preserve edits made during it.
+export const saveDocumentValue = async (
+    projectUid: string,
+    documentUid: string,
+    value: string
+): Promise<void> => {
+    await updateDoc(
+        doc(collection(doc(projects, projectUid), "files"), documentUid),
+        {
+            value,
+            lastModified: getFirebaseTimestamp()
+        }
+    );
+    const current =
+        store.getState().ProjectsReducer.projects[projectUid]?.documents[
+            documentUid
+        ];
+    if (current) {
+        store.dispatch(
+            saveUpdatedDocument(projectUid, {
+                ...current,
+                savedValue: value,
+                isModifiedLocally: current.currentValue !== value
+            })
+        );
+    }
+    updateProjectLastModified(projectUid);
+};
+
 export const saveAllFiles = () => {
     return async () => {
         const state = store.getState() as RootState;
@@ -486,7 +515,7 @@ export const deleteFile = (
 export const saveUpdatedDocument = (
     projectUid: string,
     document: IDocument
-): Record<string, any> => ({
+) => ({
     type: DOCUMENT_SAVE,
     document,
     projectUid

@@ -11,10 +11,10 @@ jobs:
             REACT_APP_DATABASE: DEV
         steps:
             - name: Checkout Repo
-              uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
+              uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
               with:
-                  node-version: 22
+                  node-version-file: .nvmrc
                   cache: npm
             - name: Install Dependencies
               run: npm install
@@ -36,9 +36,13 @@ jobs:
                   cd functions
                   npm ci
                   npm run build
+            - name: Prepare dev deploy without Extensions
+              run: |
+                  npm run test:deploy:dev
+                  npm run prepare:deploy:dev
             - name: Deploy to Firebase
               uses: docker://w9jds/firebase-action:v15.19.1
               with:
-                  args: deploy -P develop
+                  args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}

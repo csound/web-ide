@@ -4,7 +4,11 @@ import { RootState } from "@root/store";
 import { ITarget, ITargetMap } from "./types";
 import { IDocument } from "@comp/projects/types";
 import type { CsoundObj } from "@comp/csound/types";
-import { playORCFromString, playCsdFromFs } from "@comp/csound/actions";
+import {
+    documentPath,
+    playORCFromString,
+    playCsdFromFs
+} from "@comp/csound/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
 
 /**
@@ -199,13 +203,13 @@ export const getPlayActionFromProject = (projectUid: string) =>
                 case "csd": {
                     return playCsdFromFs({
                         projectUid,
-                        csdPath: targetDocument.filename
+                        csdPath: documentPath(targetDocument, allDocuments)
                     });
                 }
                 case "orc": {
                     return playORCFromString({
                         projectUid,
-                        orc: targetDocument.savedValue
+                        orc: targetDocument.currentValue
                     });
                 }
             }
@@ -233,7 +237,10 @@ export const getPlayActionFromTarget = (projectUid: string) =>
             documents
         ):
             | undefined
-            | ((dispatch: any, csound: CsoundObj) => Promise<void>) => {
+            | ((
+                  dispatch: any,
+                  setConsole: React.Dispatch<React.SetStateAction<string[]>>
+              ) => Promise<void>) => {
             if (!selectedTarget || !targets) return undefined;
 
             const target: ITarget | undefined = targets[selectedTarget];
@@ -257,13 +264,16 @@ export const getPlayActionFromTarget = (projectUid: string) =>
                     case "csd": {
                         return playCsdFromFs({
                             projectUid,
-                            csdPath: targetDocument.filename
+                            csdPath: documentPath(
+                                targetDocument,
+                                documents ?? {}
+                            )
                         });
                     }
                     case "orc": {
                         return playORCFromString({
                             projectUid,
-                            orc: targetDocument.savedValue
+                            orc: targetDocument.currentValue
                         });
                     }
                 }

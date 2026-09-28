@@ -129,14 +129,14 @@ export const addDocumentToCsoundFS = async (
     }
 
     if (document.type === "folder") {
-        csound.fs.mkdir(document.filename);
+        await csound.fs.mkdir(absolutePath);
         return;
     }
 
     const steps = absolutePath.split("/").filter((p) => p.length > 0);
 
     if (steps.length > 1) {
-        csound.fs.mkdir(dropLast(1, steps).join("/"));
+        await csound.fs.mkdir(dropLast(1, steps).join("/"));
     }
 
     if (document.type === "bin") {

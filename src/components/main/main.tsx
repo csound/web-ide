@@ -14,6 +14,7 @@ import {
 import { getAuth } from "firebase/auth";
 import { ConsoleProvider } from "@comp/console/context";
 import HotKeys from "@comp/hot-keys/hot-keys";
+import { WebMcpProvider } from "@root/webmcp/provider";
 
 const Main = () => {
     const dispatch = useDispatch();
@@ -65,7 +66,9 @@ const Main = () => {
                     <Modal />
                     <IosWarning />
                     <Snackbar />
-                    <WebIdeRouter />
+                    <WebMcpProvider>
+                        <WebIdeRouter />
+                    </WebMcpProvider>
                 </HotKeys>
             </ConsoleProvider>
         </ThemeProvider>

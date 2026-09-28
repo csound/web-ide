@@ -63,8 +63,8 @@ Firebase backend**.
 
 | Tool         | Required   | Notes                                                |
 | ------------ | ---------- | ---------------------------------------------------- |
-| Node.js      | >= 22.13.0 | Required by @csound/browser; build and CI use Node 22  |
-| npm          | >= 10      | Bundled with Node 22                                 |
+| Node.js      | 24.x       | Local builds and CI use the version in `.nvmrc`       |
+| npm          | >= 11      | Bundled with Node 24                                  |
 | Firebase CLI | Optional   | Required for local Functions emulation and deployment |
 | Electron     | Optional   | Required for desktop builds only                     |
 
@@ -184,7 +184,7 @@ web-ide/
 │   ├── elements/         # Shared UI primitives (icons, MIDI piano, scrollbar)
 │   ├── store/            # Redux store, slices, and root reducer
 │   └── styles/           # Emotion themes and global styles
-├── functions/            # Firebase Cloud Functions (TypeScript, Node 20)
+├── functions/            # Firebase Cloud Functions (TypeScript, Node 22)
 │   └── src/              # Function handlers (auth, search, counters, SSR host)
 ├── public/               # Static assets and Electron entry point
 ├── config/               # Legacy webpack/build helpers (unused in Vite flow)
@@ -228,7 +228,19 @@ Deployments are automated by GitHub Actions:
 - Pushes to `develop` → DEV Firebase project (`csound-ide-dev`)
 - Pushes to `master` → PROD Firebase project (`csound-ide`)
 
-Both pipelines run lint, type-check, and format checks before deploying.
+Both pipelines run lint, type-check, and format checks before deploying. Builds and CI use
+Node 24. Cloud Functions use Node 22 because the auth triggers still use first-generation
+Functions, which [do not support Node 24](https://docs.cloud.google.com/functions/docs/runtime-support).
+
+Dev still deploys Functions and Hosting. Its deploy script asks the Functions SDK for a fresh
+manifest, removes the empty Extensions list, and copies the Functions source into `.firebase/`.
+This avoids a Firebase CLI billing check for Extensions that this app does not use. The script
+fails if it finds any actual Extension declarations. Production uses the original Functions
+source and its normal discovery process.
+
+Build the app and Functions before a manual dev deploy. Run `npm run test:deploy:dev` after
+installing the Functions dependencies and building them to check that dev keeps all function
+definitions and Hosting routes.
 
 To deploy manually, set `FIREBASE_TOKEN` (obtain via `firebase login:ci`) and run:
 
@@ -301,3 +313,9 @@ Distributed under the [GNU Lesser General Public License v2.1](LICENSE).
 Csound Web IDE is built on the work of the global [Csound community](https://csound.com) —
 composers, researchers, and developers who have maintained and extended Csound for over three
 decades.
+
+## WebMCP
+
+Browser agents can read and edit Csound source, switch tabs, choose targets, play,
+stop, render, and read the console through 16 WebMCP tools. Click **WebMCP ready**
+in an open project for setup and the tool guide, or read [WebMCP usage](docs/webmcp.md).
