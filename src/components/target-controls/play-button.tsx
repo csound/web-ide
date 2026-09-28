@@ -70,7 +70,7 @@ const PlayButton = ({
 
     const playAction = playActionDefault || playActionFallback;
 
-    return csoundPlayState === "rendering" ? (
+    return ["rendering", "loading"].includes(csoundPlayState) ? (
         <></>
     ) : (
         <Tooltip title={isLoading ? "loading..." : tooltipText}>

@@ -16,6 +16,7 @@ const PREFIX = "CSOUND.";
 
 export type ICsoundStatus =
     | "initialized"
+    | "loading"
     | "stopped"
     | "paused"
     | "playing"

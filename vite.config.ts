@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import checker from "vite-plugin-checker";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
     define: {
@@ -36,6 +37,15 @@ export default defineConfig({
         port: 3000
     },
     test: {
+        // The browser package has a module entry but no Node main entry.
+        alias: {
+            "@csound/browser": fileURLToPath(
+                new URL(
+                    "./node_modules/@csound/browser/dist/csound.js",
+                    import.meta.url
+                )
+            )
+        },
         environment: "jsdom",
         include: ["src/**/*.test.{ts,tsx}"]
     }

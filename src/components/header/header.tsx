@@ -36,6 +36,7 @@ import ProjectProfileMeta from "./project-profile-meta";
 import { TargetControls } from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
 import { isMobile } from "@root/utils";
+import { WebMcpLink } from "@root/webmcp/provider";
 
 export const Header = () => {
     const dispatch = useDispatch();
@@ -297,6 +298,7 @@ export const Header = () => {
                     ) : (
                         <div css={SS.defaultRightSideGroup} />
                     )}
+                    <WebMcpLink />
                     {!mobileView && utilityNav}
                     <div css={SS.authSlot}>
                         {isAuthRequesting ? (

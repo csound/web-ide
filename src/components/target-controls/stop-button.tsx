@@ -25,6 +25,7 @@ const StopButton = (): React.ReactElement => {
                     size="medium"
                     onClick={() => {
                         switch (csoundPlayState) {
+                            case "loading":
                             case "playing":
                             case "rendering":
                             case "paused": {

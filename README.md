@@ -301,3 +301,9 @@ Distributed under the [GNU Lesser General Public License v2.1](LICENSE).
 Csound Web IDE is built on the work of the global [Csound community](https://csound.com) —
 composers, researchers, and developers who have maintained and extended Csound for over three
 decades.
+
+## WebMCP
+
+Browser agents can read and edit Csound source, switch tabs, choose targets, play,
+stop, render, and read the console through 16 WebMCP tools. Click **WebMCP ready**
+in an open project for setup and the tool guide, or read [WebMCP usage](docs/webmcp.md).

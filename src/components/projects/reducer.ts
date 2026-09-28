@@ -226,6 +226,19 @@ export const ProjectsReducer = (
 
         case ProjectsTypes.DOCUMENT_SAVE: {
             const action = unknownAction as ProjectsTypes.DocumentSaveAction;
+            const current =
+                state.projects[action.projectUid]?.documents[
+                    action.document.documentUid
+                ];
+            // A save acknowledgement may arrive after another local edit.
+            const document = current?.isModifiedLocally
+                ? {
+                      ...action.document,
+                      currentValue: current.currentValue,
+                      isModifiedLocally:
+                          current.currentValue !== action.document.savedValue
+                  }
+                : action.document;
 
             return {
                 ...state,
@@ -235,7 +248,7 @@ export const ProjectsReducer = (
                         ...state.projects[action.projectUid],
                         documents: {
                             ...state.projects[action.projectUid].documents,
-                            [action.document.documentUid]: action.document
+                            [action.document.documentUid]: document
                         }
                     }
                 }

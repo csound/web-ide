@@ -8,6 +8,7 @@
         "test:dev": "TARGET=dev node --test tests/*.js",
         "test:prod": "TARGET=prod node --test tests/*.js",
         "test:local": "TARGET=local node --test tests/*.js",
+        "test:webmcp": "RUN_WEBMCP=1 TARGET=local node --test tests/webmcp.js",
         "install:chrome": "node scripts/install-chrome.js",
         "format": "prettier --write .",
         "lint": "eslint .",
