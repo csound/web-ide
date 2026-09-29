@@ -47,6 +47,6 @@ export default defineConfig({
             )
         },
         environment: "jsdom",
-        include: ["src/**/*.test.{ts,tsx}"]
+        include: ["src/**/*.test.{ts,tsx}", "functions/test/**/*.test.ts"]
     }
 });

@@ -2,33 +2,15 @@ import admin from "firebase-admin";
 import { onRequest } from "firebase-functions/v2/https";
 import { isbot } from "isbot";
 import fs from "node:fs";
-import path from "node:path";
-import * as R from "ramda";
 
-function printTree(dirPath: string, indent = "") {
-    const files = fs.readdirSync(dirPath);
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const isLast = i === files.length - 1;
-        const filePath = path.join(dirPath, file);
-        const stats = fs.statSync(filePath);
-
-        const prefix = isLast ? "└── " : "├── ";
-        console.log(indent + prefix + file);
-
-        if (stats.isDirectory() && file !== "node_modules") {
-            const newIndent = indent + (isLast ? "    " : "│   ");
-            printTree(filePath, newIndent);
-        }
-    }
-}
+const ogPlaceholder = /<meta name="functions-insert-dynamic-og"\s*\/?>/;
 
 export const host = onRequest(async (req, res) => {
+    // Recheck visibility on each request, including after a project is hidden.
+    res.set("Cache-Control", "private, no-store");
     try {
         let indexHTML = fs.readFileSync("./dist/index.html").toString();
         const reqPath = req.path ? req.path.split("/") : req.path;
-        const ogPlaceholder = '<meta name="functions-insert-dynamic-og"/>';
 
         if (
             isbot(req.headers["user-agent"] || "") &&
@@ -37,6 +19,10 @@ export const host = onRequest(async (req, res) => {
             reqPath[1] === "editor"
         ) {
             const projectUid = reqPath[2];
+            if (!projectUid) {
+                res.status(404).send();
+                return;
+            }
 
             const projectSnapshot = await admin
                 .firestore()
@@ -44,15 +30,16 @@ export const host = onRequest(async (req, res) => {
                 .doc(projectUid)
                 .get();
 
-            if (R.isNil(projectSnapshot) || !projectSnapshot.exists) {
+            const projectData = projectSnapshot.data();
+            // Admin SDK reads bypass Firestore rules. Only public projects may
+            // contribute metadata to this unauthenticated page response.
+            if (!projectSnapshot.exists || projectData?.public !== true) {
                 res.status(404).send();
                 return;
             }
 
-            const projectData = projectSnapshot.data();
-            const userUid = R.pathOr(null, ["userUid"], projectData || {});
-
-            if (R.isNil(userUid)) {
+            const userUid = projectData.userUid;
+            if (typeof userUid !== "string" || !userUid) {
                 res.status(404).send();
                 return;
             }
@@ -63,21 +50,16 @@ export const host = onRequest(async (req, res) => {
                 .doc(userUid)
                 .get();
 
-            if (R.isNil(profileSnap) || !profileSnap.exists) {
+            const profile = profileSnap.data();
+            if (!profileSnap.exists || !profile) {
                 res.status(404).send();
                 return;
             }
 
-            const profile = profileSnap.data();
-            const projectWithUid = R.assoc(
-                "projectUid",
-                projectUid,
-                projectData
-            );
-
             indexHTML = indexHTML.replace(
                 ogPlaceholder,
-                getProjectOg(projectWithUid, profile)
+                // A callback keeps $&, $` and $' in user text literal.
+                () => getProjectOg(projectData, profile, projectUid)
             );
             res.status(200).send(indexHTML);
         } else {
@@ -95,28 +77,41 @@ const defaultDesc =
 const defaultTitle = "Csound WebIDE";
 const defaultLogo = "https://ide.csound.com/apple-touch-icon.png";
 
-const getProjectOg = (project: any, profile: any): string => {
-    let og = `<meta property="fb:app_id" content="428548837960735" />`;
-    og += `<meta property="og:type" content="website" />`;
-    og += `<meta property="og:title" content="${R.propOr(
-        profile.username,
-        "displayName",
-        profile
-    )} - ${R.propOr(defaultTitle, "name", project)}" />`;
-    og += `<meta property="og:description" content="${R.propOr(
-        defaultDesc,
-        "description",
-        project
-    )}" />`;
-    og += `<meta property="og:image" content="${R.propOr(
-        defaultLogo,
-        "photoUrl",
-        profile
-    )}" />`;
-    og += `<meta property="og:url" content="https://ide.csound.com/editor/${R.propOr(
-        "",
-        "projectUid",
-        project
-    )}" />`;
-    return og;
+const textOr = (value: unknown, fallback: string): string =>
+    typeof value === "string" ? value : fallback;
+
+const htmlEscapes: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+};
+
+const escapeAttribute = (value: string): string =>
+    value.replace(/[&<>"']/g, (character) => htmlEscapes[character]);
+
+const getProjectOg = (
+    project: Record<string, unknown>,
+    profile: Record<string, unknown>,
+    projectUid: string
+): string => {
+    const author = textOr(
+        profile.displayName,
+        textOr(profile.username, defaultTitle)
+    );
+    const metadata = {
+        "fb:app_id": "428548837960735",
+        "og:type": "website",
+        "og:title": `${author} - ${textOr(project.name, defaultTitle)}`,
+        "og:description": textOr(project.description, defaultDesc),
+        "og:image": textOr(profile.photoUrl, defaultLogo),
+        "og:url": `https://ide.csound.com/editor/${encodeURIComponent(projectUid)}`
+    };
+    return Object.entries(metadata)
+        .map(
+            ([property, content]) =>
+                `<meta property="${property}" content="${escapeAttribute(content)}" />`
+        )
+        .join("");
 };
