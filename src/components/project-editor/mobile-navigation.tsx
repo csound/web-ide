@@ -4,6 +4,7 @@ import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
 import AccountTree from "@mui/icons-material/AccountTree";
 import FormatTextdirectionLToR from "@mui/icons-material/FormatTextdirectionLToR";
 import * as SS from "./styles";
+import { WebMcpLink } from "@root/webmcp/provider";
 
 const tabs = [
     { label: "Edit", Icon: FormatTextdirectionLToR, index: 0 },
@@ -20,7 +21,7 @@ const MobileNavigation = ({
     setMobileTabIndex: (index: number) => void;
 }): React.ReactElement => {
     return (
-        <div css={SS.mobileNavContainer}>
+        <footer css={SS.mobileNavContainer} aria-label="Editor footer">
             <div css={SS.mobileNavTabGroup}>
                 {tabs.map(({ label, Icon, index }) => (
                     <button
@@ -39,7 +40,8 @@ const MobileNavigation = ({
                     </button>
                 ))}
             </div>
-        </div>
+            <WebMcpLink />
+        </footer>
     );
 };
 

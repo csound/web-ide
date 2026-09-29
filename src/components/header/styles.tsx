@@ -219,7 +219,7 @@ export const clearfixHeader = css`
 export const projectProfileMetaContainer = css`
     position: fixed;
     right: 16px;
-    bottom: 16px;
+    bottom: 56px;
     z-index: 10;
     width: min(320px, calc(100vw - 32px));
     border-radius: 14px;

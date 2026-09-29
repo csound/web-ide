@@ -94,16 +94,28 @@ export function WebMcpLink() {
             title={title}
             data-testid="webmcp-status"
             css={(theme) => ({
-                fontSize: 12,
-                color: theme.headerTextColor,
+                display: "inline-flex",
+                alignItems: "center",
+                alignSelf: "center",
+                flexShrink: 0,
+                minHeight: 24,
+                padding: "0 6px",
+                fontSize: 11,
+                color: theme.unfocusedTextColor,
                 whiteSpace: "nowrap",
-                margin: "0 8px",
-                textDecoration: "underline",
+                marginLeft: "auto",
+                textDecoration: "none",
                 textUnderlineOffset: 3,
+                "&:hover, &:focus-visible": {
+                    color: theme.textColor,
+                    textDecoration: "underline"
+                },
+                "&:focus-visible": {
+                    outline: `2px solid ${theme.tabHighlightActive}`,
+                    outlineOffset: 2
+                },
                 "@media (max-width: 600px)": {
-                    fontSize: 10,
-                    maxWidth: 62,
-                    whiteSpace: "normal"
+                    fontSize: 10
                 }
             })}
         >

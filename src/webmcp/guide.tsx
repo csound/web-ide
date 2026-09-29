@@ -7,8 +7,8 @@ export function WebMcpGuide() {
             <p>
                 The Web IDE gives browser agents tools to read and edit Csound
                 source, change tabs, choose targets, play, stop, and render
-                audio. The header shows <strong>WebMCP ready</strong> after the
-                browser registers all tools for an open project.
+                audio. The editor footer shows <strong>WebMCP ready</strong>{" "}
+                after the browser registers all tools for an open project.
             </p>
             <h3>Set up your browser</h3>
             <ol>

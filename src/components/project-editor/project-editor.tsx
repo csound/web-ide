@@ -80,6 +80,7 @@ import {
     PanelResizeHandle
 } from "react-resizable-panels";
 import Tooltip from "@mui/material/Tooltip";
+import { WebMcpLink } from "@root/webmcp/provider";
 
 const TabStyles = tabStyles(false);
 
@@ -846,7 +847,11 @@ const SidebarLaunchers = ({
     const dispatch = useDispatch();
 
     if (maximized) {
-        return null;
+        return (
+            <footer css={SS.bottomRail} aria-label="Editor footer">
+                <WebMcpLink />
+            </footer>
+        );
     }
 
     const sidebars: Record<SidebarPosition, IWorkspacePanelNode | null> = {
@@ -923,11 +928,14 @@ const SidebarLaunchers = ({
                     renderRailButton("right", item, true)
                 )}
             </div>
-            <div css={SS.bottomRail}>
-                {sidebarChoices.bottom.map((item) =>
-                    renderRailButton("bottom", item, false)
-                )}
-            </div>
+            <footer css={SS.bottomRail} aria-label="Editor footer">
+                <div css={SS.bottomRailActions}>
+                    {sidebarChoices.bottom.map((item) =>
+                        renderRailButton("bottom", item, false)
+                    )}
+                </div>
+                <WebMcpLink />
+            </footer>
         </>
     );
 };

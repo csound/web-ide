@@ -1,6 +1,6 @@
 # WebMCP
 
-Open a project and click **WebMCP ready** in the header for the setup guide at
+Open a project and click **WebMCP ready** in the editor footer for the setup guide at
 `/documentation#webmcp`. The guide lists every tool and its fields from the same
 catalog the browser uses.
 
@@ -13,7 +13,7 @@ catalog the browser uses.
    [Model Context Tool Inspector](https://developer.chrome.com/docs/ai/webmcp).
 4. Discover tools and call `csound_read_workspace` with `{}`.
 
-The badge says **WebMCP ready** only after all 16 tools register. **WebMCP supported**
+The footer link says **WebMCP ready** only after all 16 tools register. **WebMCP supported**
 means the app includes the feature but no tools are ready in this tab. Check browser
 support and open a project. **WebMCP unavailable** means registration failed; check
 the browser console and reload. Other browsers can use the editor as usual.
@@ -128,7 +128,7 @@ WEBMCP_TEST_URL=http://127.0.0.1:3000/editor/ElPGLLOOc5qWNM4VmfVV npm run test:w
 
 The check verifies native discovery, editing and stale revisions, tab selection,
 play/pause/resume/stop, a real RIFF/WAVE render, compile errors, cancellation,
-the guide link, mobile badge layout, and cleanup on navigation. It reads the audio
+the guide link, mobile footer layout, and cleanup on navigation. It reads the audio
 preview to check the generated WAV bytes. Other browser tests skip this check
 unless `RUN_WEBMCP=1`.
 
