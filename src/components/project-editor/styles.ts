@@ -103,11 +103,18 @@ export const bottomRail = (theme: Theme): SerializedStyles => css`
     gap: 0;
     padding: 0 10px;
     min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
     box-sizing: border-box;
     background: ${theme.headerBackground};
     border-top: 1px solid ${theme.line};
+`;
+
+export const bottomRailActions = css`
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
 `;
 
 export const activityButton =
