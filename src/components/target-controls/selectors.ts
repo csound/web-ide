@@ -1,6 +1,5 @@
 import { RootState } from "@root/store";
 import { curry } from "ramda";
-import { IDocument } from "../projects/types";
 import { findFallbackPlayTarget } from "./utils";
 import { createSelector } from "reselect";
 
@@ -33,25 +32,24 @@ export const getSelectedTargetDocumentUid =
         if (!activeProjectUid) return undefined;
 
         const controls = store.TargetControlsReducer[activeProjectUid];
+        const allDocuments =
+            store.ProjectsReducer.projects[activeProjectUid]?.documents;
         const targetName = controls?.selectedTarget ?? controls?.defaultTarget;
         if (targetName) {
             const target = controls.targets[targetName];
-            return (
-                target?.targetDocumentUid ??
-                target?.playlistDocumentsUid?.[
-                    controls.selectedTargetPlaylistIndex ?? 0
-                ]
-            );
-        } else {
-            const allDocuments: Record<string, IDocument> | undefined =
-                store?.ProjectsReducer?.projects?.[activeProjectUid]?.documents;
-
-            const fallbackDocument = allDocuments
-                ? findFallbackPlayTarget(allDocuments)
-                : undefined;
-
-            return fallbackDocument?.documentUid;
+            const playlistIndex = controls.selectedTarget
+                ? (controls.selectedTargetPlaylistIndex ?? 0)
+                : 0;
+            const documentUid =
+                target?.targetType === "main"
+                    ? target.targetDocumentUid
+                    : target?.playlistDocumentsUid?.[playlistIndex];
+            if (documentUid && allDocuments?.[documentUid]) return documentUid;
         }
+
+        return allDocuments
+            ? findFallbackPlayTarget(allDocuments)?.documentUid
+            : undefined;
     };
 
 export const selectProjectDocuments = (curry as any)(

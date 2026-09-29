@@ -65,7 +65,7 @@ export function outputNameFromCsd(source: string): string | undefined {
         /(?:^|\s)(?:-o\s*|--output(?:=|\s+))(?:"([^"]+)"|'([^']+)'|([^\s]+))/
     );
     const name = match?.slice(1).find(Boolean);
-    return name && !/^dac(?::|$)/.test(name) ? name : undefined;
+    return name && !/^dac(?:\d+|:.*)?$/.test(name) ? name : undefined;
 }
 
 export type PerformanceResult = {
@@ -324,9 +324,9 @@ export async function stopPerformance(): Promise<void> {
     }
 }
 
-export const stopCsound = () => {
-    void stopPerformance().catch(console.error);
-    return setCsoundPlayState("stopped");
+export const stopCsound = () => async () => {
+    // finish() publishes the final state once cleanup and termination finish.
+    await stopPerformance().catch(console.error);
 };
 export const pauseCsound = () => {
     if (csoundInstance) void csoundInstance.pause();

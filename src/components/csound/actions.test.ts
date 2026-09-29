@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Csound } from "@csound/browser";
 import { store } from "../../store";
-import { isCsoundBusy, runPerformance, stopPerformance } from "./actions";
+import {
+    isCsoundBusy,
+    outputNameFromCsd,
+    runPerformance,
+    stopCsound,
+    stopPerformance
+} from "./actions";
 import { nonCloudFiles } from "../file-tree/actions";
 
 vi.mock("@csound/browser", () => ({ Csound: vi.fn(), libcsound: vi.fn() }));
@@ -87,6 +93,88 @@ afterEach(async () => {
 });
 
 describe("shared Csound performance", () => {
+    it.each([
+        ["auto", "-odac1"],
+        ["auto", "-o dac2"],
+        ["play", "--output=dac12"],
+        ["play", "--output dac:device"]
+    ] as const)(
+        "plays rather than renders in %s mode with %s",
+        async (mode, output) => {
+            store.dispatch({
+                type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
+                projectUid: "audio-test",
+                documentUid: "csd",
+                val: source.replace("-odac", output)
+            });
+            expect(
+                await runPerformance({
+                    projectUid: "audio-test",
+                    csdPath: "scores/piece.csd",
+                    mode,
+                    setConsole
+                })
+            ).toEqual({ status: "playing", files: [] });
+            expect(options.at(-1)).toBe("-odac");
+            expect(nonCloudFiles.size).toBe(0);
+        }
+    );
+
+    it.each(["dac1.wav", "audio/dac2", "a score.wav"])(
+        "keeps file output %s",
+        (filename) => {
+            expect(
+                outputNameFromCsd(`<CsOptions>-o "${filename}"</CsOptions>`)
+            ).toBe(filename);
+        }
+    );
+
+    it("keeps the UI busy until Stop finishes cleanup and termination", async () => {
+        let finishCleanup!: () => void;
+        let finishTermination!: () => void;
+        const cleanup = new Promise<void>((resolve) => {
+            finishCleanup = resolve;
+        });
+        const termination = new Promise<void>((resolve) => {
+            finishTermination = resolve;
+        });
+        engine.cleanup.mockReturnValue(cleanup);
+        engine.terminateInstance.mockReturnValue(termination);
+        await runPerformance({
+            projectUid: "audio-test",
+            csdPath: "scores/piece.csd",
+            setConsole
+        });
+        const stopping = store.dispatch(stopCsound());
+        try {
+            await vi.waitFor(() =>
+                expect(engine.cleanup).toHaveBeenCalledOnce()
+            );
+            expect(store.getState().csound.status).toBe("playing");
+            expect(isCsoundBusy()).toBe(true);
+            finishCleanup();
+            await vi.waitFor(() =>
+                expect(engine.terminateInstance).toHaveBeenCalledOnce()
+            );
+            expect(store.getState().csound.status).toBe("playing");
+            expect(isCsoundBusy()).toBe(true);
+        } finally {
+            finishCleanup();
+            finishTermination();
+            await stopping;
+            await stopPerformance();
+        }
+        expect(store.getState().csound.status).toBe("stopped");
+        expect(isCsoundBusy()).toBe(false);
+        await expect(
+            runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                setConsole
+            })
+        ).resolves.toMatchObject({ status: "playing" });
+    });
+
     it("syncs current source at nested paths and waits for the rendered file", async () => {
         const result = await runPerformance({
             projectUid: "audio-test",

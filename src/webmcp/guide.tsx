@@ -62,7 +62,9 @@ export function WebMcpGuide() {
                 files to the file tree; stop cancels it. Use the console tool to
                 read compile errors. Use <code>csound_save_document</code> only
                 when you want to save to the cloud; saving a public project
-                publishes the source.
+                publishes the source. Once a cloud save starts, cancellation or
+                leaving the project does not undo it. Wait for its result before
+                assuming the source was saved.
             </p>
             <h3>Available tools</h3>
             <p>

@@ -79,6 +79,8 @@ tools accept at most 1,048,576 characters.
 Call `csound_save_document` only when the user wants a cloud save. It requires the
 latest revision and the signed-in project owner. Saving a public project publishes
 the source. Local editing works for other authors' projects, as in the UI.
+Once a cloud save starts, cancellation or leaving the project does not undo it.
+Wait for its result before assuming the source was saved.
 
 All tools return JSON with `ok: true` or `ok: false`. Errors include `error.code`
 and `error.message`. Input validation rejects unknown fields, wrong types, and
