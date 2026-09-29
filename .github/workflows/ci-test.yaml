@@ -23,6 +23,8 @@ jobs:
                   cache: npm
             - name: Install Dependencies
               run: npm install
+            - name: Install Functions Dependencies
+              run: npm ci --prefix functions
             - name: Install Rollup Linux Native Binary
               if: runner.os == 'Linux'
               run: |
@@ -30,3 +32,6 @@ jobs:
                   npm install --no-save @rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION
             - name: Run Tests
               run: npm run test:ci
+            - name: Check Functions Types
+              working-directory: functions
+              run: npx tsc --noEmit -p tsconfig.json
