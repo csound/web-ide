@@ -9,6 +9,7 @@ import { useDispatch } from "@root/store";
 import { useTheme } from "@emotion/react";
 import * as TargetSS from "@comp/target-controls/styles";
 import Select from "react-select";
+import { isValidUsername } from "./save-profile";
 
 const ModalContainer = styled.div`
     display: grid;
@@ -62,7 +63,7 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const existingName = properties.existingNames.includes(username);
-    const nonAlphaNumeric = !/^[\w-]{5,40}$/.test(username);
+    const nonAlphaNumeric = !isValidUsername(username);
     const emptyString = username.length === 0;
 
     let errorMessage = "";
@@ -72,14 +73,13 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
     }
 
     if (nonAlphaNumeric === true) {
-        errorMessage = "Only alphanumeric no spaces, 5-40 characters";
+        errorMessage = "Use 1–49 letters, numbers, underscores or hyphens";
     }
 
     const handleOnSubmit = async () => {
         try {
-            dispatch(
+            await dispatch(
                 updateUserProfile(
-                    properties.username,
                     username,
                     displayName,
                     bio,
@@ -93,7 +93,7 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
         } catch (error) {
             dispatch(
                 openSnackbar(
-                    "Could not create project: " + error,
+                    "Could not save profile: " + error,
                     SnackbarType.Error
                 )
             );

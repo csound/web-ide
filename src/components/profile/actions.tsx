@@ -1,12 +1,11 @@
 import { AppThunkDispatch, RootState } from "@root/store";
+import { saveProfile } from "./save-profile";
 import { getDownloadURL, uploadBytes } from "firebase/storage";
 import {
     collection,
-    deleteDoc,
     doc,
     getDoc,
     getDocs,
-    setDoc,
     updateDoc,
     query,
     where,
@@ -453,7 +452,6 @@ export const unfollowUser =
 
 export const updateUserProfile =
     (
-        originalUsername: string,
         username: string,
         displayName: string,
         bio: string,
@@ -466,8 +464,7 @@ export const updateUserProfile =
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
-            await updateDoc(doc(profiles, loggedInUserUid), {
-                username,
+            await saveProfile(loggedInUserUid, username, {
                 displayName,
                 bio,
                 link1,
@@ -476,10 +473,6 @@ export const updateUserProfile =
                 backgroundIndex
             });
 
-            await deleteDoc(doc(usernames, originalUsername));
-            await setDoc(doc(usernames, username), {
-                userUid: loggedInUserUid
-            });
             dispatch({
                 type: REFRESH_USER_PROFILE,
                 payload: { username, displayName, bio, link1, link2, link3 }

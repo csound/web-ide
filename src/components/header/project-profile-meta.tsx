@@ -99,12 +99,16 @@ const ProjectProfileMeta = (): React.ReactElement => {
                     <h1 css={SS.projectProfileMetaH1}>{projectName}</h1>
                     <p css={SS.projectProfileMetaP}>
                         <span css={SS.projectProfileBySpan}>By </span>
-                        <Link
-                            to={`/profile/${profileUserName}`}
-                            css={SS.projectProfileLink}
-                        >
-                            {profileDisplayName}
-                        </Link>
+                        {profileUserName ? (
+                            <Link
+                                to={`/profile/${profileUserName}`}
+                                css={SS.projectProfileLink}
+                            >
+                                {profileDisplayName}
+                            </Link>
+                        ) : (
+                            <span>{profileDisplayName}</span>
+                        )}
                     </p>
                 </div>
                 <IconButton
