@@ -2,42 +2,18 @@ import { css, SerializedStyles, Theme } from "@emotion/react";
 
 export const editorStyle = (theme: Theme): SerializedStyles => css`
     height: 100%;
+    min-width: 0;
+    min-height: 0;
     color: ${theme.textColor};
     background-color: ${theme.background};
-
-    .cm-focused .cm-selectionBackground,
-    .cm-selectionLayer .cm-selectionBackground,
-    .cm-content ::selection {
-        background-color: ${theme.selectedTextColor};
-    }
-
-    .cm-selectionLayer .cm-selectionBackground {
-        opacity: 0.4;
-    }
-
-    .cm-focused .cm-selectionBackground {
-        opacity: 0.5;
-    }
-    .cm-content {
-        font-size: 16px;
-        font-family: ${theme.font.monospace};
-    }
-    .cm-focused .cm-cursor {
-        border-left-color: ${theme.caretColor};
-    }
-    .cm-gutters {
-        background-color: ${theme.gutterBackground};
-        color: "#ddd";
-        border: "none";
-    }
-    .cm-gutter {
-        order: 1;
-    }
 
     .cm-csound-define {
         color: ${theme.keyword}!important;
     }
-    .cm-csound-control-flow,
+    .cm-csound-control-flow {
+        color: ${theme.controlFlow}!important;
+    }
+
     .cm-csound-opcode {
         color: ${theme.opcode}!important;
     }
@@ -47,7 +23,7 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         white-space: nowrap;
         color: ${theme.textColor};
         font-family: ${theme.font.monospace};
-        font-size: 14px;
+        font-size: 12px;
         user-select: none;
         background-color: ${theme.gutterBackground};
     }
@@ -55,7 +31,7 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-csound-synopsis {
         overflow: hidden;
         text-overflow: ellipsis;
-        padding: 2px 6px;
+        padding: 4px 10px;
         min-height: 1.4em;
     }
 
@@ -63,10 +39,6 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         font-weight: 700;
     }
 
-    .cm-lineNumbers {
-        fontfamily: ${theme.font.monospace};
-        fontsize: "16px";
-    }
     .cm-csound-global-var {
         font-weight: 600;
     }
@@ -75,8 +47,11 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         color: ${theme.aRateVar}!important;
     }
 
-    .cm-csound-i-rate-var,
     .cm-csound-number {
+        color: ${theme.number}!important;
+    }
+
+    .cm-csound-i-rate-var {
         color: ${theme.iRateVar}!important;
     }
 
@@ -119,12 +94,6 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     .cm-csound-s-rate-var {
         color: ${theme.string}!important;
     }
-    .cm-activeLineGutter,
-    .cm-activeLine,
-    .cm-foldPlaceholder {
-        background-color: rgba(0, 0, 0, 0.1) !important;
-    }
-
     .cm-tooltip {
         border: 1px solid ${theme.line};
         background-color: ${theme.tooltipBackground};

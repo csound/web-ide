@@ -80,6 +80,7 @@ import {
     PanelResizeHandle
 } from "react-resizable-panels";
 import Tooltip from "@mui/material/Tooltip";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { WebMcpLink } from "@root/webmcp/provider";
 
 const TabStyles = tabStyles(false);
@@ -173,7 +174,6 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             label: "Virtual Midi Keyboard",
             Icon: MusicNoteIcon
         },
-        { type: "fileTree", label: "File Tree", Icon: AccountTree },
         {
             type: "manual",
             label: "Csound Manual",
@@ -945,6 +945,7 @@ const ProjectEditor = ({
 }: {
     activeProject: IProject;
 }): React.ReactElement => {
+    const compactLayout = useMediaQuery("(max-width: 767px)");
     const dispatch = useDispatch();
     const setConsole = useSetConsole() as
         | ((value: string[] | ((logs: string[]) => string[])) => void)
@@ -1127,7 +1128,7 @@ const ProjectEditor = ({
 
     const centerContent = bottomSidebar ? (
         <PanelGroup direction="vertical">
-            <ResizablePanel defaultSize={76}>
+            <ResizablePanel defaultSize={80} minSize={30}>
                 <WorkspaceNodeView
                     node={root}
                     activeProject={activeProject}
@@ -1143,7 +1144,7 @@ const ProjectEditor = ({
                 className="ProjectEditorResizer horizontal"
                 onDragging={(dragging) => setIsDragging(dragging)}
             />
-            <ResizablePanel defaultSize={24}>
+            <ResizablePanel defaultSize={20} minSize={10}>
                 <SidebarPanelView
                     sidebar={bottomSidebar}
                     position="bottom"
@@ -1168,7 +1169,7 @@ const ProjectEditor = ({
         />
     );
 
-    return isMobile() ? (
+    return isMobile() || compactLayout ? (
         <MobileTabs
             activeProject={activeProject}
             projectUid={projectUid}
@@ -1237,7 +1238,11 @@ const ProjectEditor = ({
                                         </>
                                     )}
                                     <ResizablePanel
-                                        defaultSize={64}
+                                        defaultSize={
+                                            100 -
+                                            (leftSidebar ? 18 : 0) -
+                                            (rightSidebar ? 18 : 0)
+                                        }
                                         minSize={24}
                                     >
                                         {centerContent}

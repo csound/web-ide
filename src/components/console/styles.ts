@@ -12,11 +12,12 @@ export const ConsoleContainer = (theme: Theme): SerializedStyles => css`
     flex-direction: column;
     white-space: break-spaces;
     font-family: ${theme.font.monospace};
+    font-size: 13px;
+    line-height: 1.6;
+    box-sizing: border-box;
     color: ${theme.console};
     background: ${theme.background};
-    padding: 0 6px;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    padding: 8px 12px;
     outline: none;
     overflow-x: hidden;
     overflow-y: auto;

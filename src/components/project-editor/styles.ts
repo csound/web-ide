@@ -31,31 +31,32 @@ export const splitterRoot = (theme: Theme): SerializedStyles => css`
         flex: 0 0 auto;
         position: relative;
         z-index: 5;
-        background-color: rgba(255, 255, 255, 0.04);
+        background-color: ${theme.line};
         transition: background-color 0.15s ease;
     }
 
     .ProjectEditorResizer.vertical {
-        width: 6px;
+        width: 1px;
         cursor: col-resize;
     }
 
     .ProjectEditorResizer.horizontal {
-        height: 6px;
+        height: 1px;
         cursor: row-resize;
     }
 
+    .ProjectEditorResizer:focus-visible,
     .ProjectEditorResizer:hover,
     .ProjectEditorResizer[data-resize-handle-active="pointer"],
     .ProjectEditorResizer[data-resize-handle-state="drag"] {
-        background-color: rgba(255, 255, 255, 0.14);
+        background-color: ${theme.tabHighlightActive};
     }
 `;
 
 export const workbenchShell = css`
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) 44px;
-    grid-template-rows: minmax(0, 1fr) 40px;
+    grid-template-rows: minmax(0, 1fr) 34px;
     width: 100%;
     height: 100%;
     min-height: 0;
@@ -101,7 +102,7 @@ export const bottomRail = (theme: Theme): SerializedStyles => css`
     display: flex;
     align-items: center;
     gap: 0;
-    padding: 0 10px;
+    padding: 0 8px 0 0;
     min-width: 0;
     overflow: hidden;
     box-sizing: border-box;
@@ -130,10 +131,8 @@ export const activityButton =
         padding: ${compact ? "0" : "0 10px"};
         border: 0;
         border-radius: ${compact ? "0" : "6px 6px 0 0"};
-        background: ${active
-            ? `${theme.highlightBackgroundAlt}CC`
-            : "transparent"};
-        color: ${active ? theme.textColor : theme.unfocusedTextColor};
+        background: ${active ? theme.highlightBackgroundAlt : "transparent"};
+        color: ${active ? theme.textColor : theme.altTextColor};
         cursor: pointer;
         transition:
             background-color 0.15s ease,
@@ -176,24 +175,20 @@ export const panelShell = (isActive: boolean) => (theme: Theme) => css`
     flex-direction: column;
     box-sizing: border-box;
     border: 0;
-    background: linear-gradient(
-        180deg,
-        ${theme.background} 0%,
-        ${theme.gutterBackground} 100%
-    );
+    background: ${theme.background};
     box-shadow: ${isActive
-        ? `inset 0 0 0 1px ${theme.tabHighlightActive}44`
-        : "inset 0 0 0 1px rgba(0,0,0,0.08)"};
+        ? `inset 0 1px 0 ${theme.tabHighlightActive}`
+        : "none"};
 `;
 
 export const panelTopBar = (theme: Theme): SerializedStyles => css`
-    flex: 0 0 34px;
-    height: 34px;
+    flex: 0 0 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 0 8px 0 12px;
+    padding: 0;
     background: ${theme.headerBackground};
     border-bottom: 1px solid ${theme.line};
     color: ${theme.headerTextColor};
@@ -207,7 +202,8 @@ export const panelTopBarTitle = (theme: Theme): SerializedStyles => css`
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 12px;
-    color: ${theme.unfocusedTextColor};
+    color: ${theme.altTextColor};
+    padding-left: 8px;
 `;
 
 export const panelHeaderTabs = css`
@@ -220,11 +216,12 @@ export const panelHeaderTabs = css`
 `;
 
 export const panelActionGroup = css`
+    padding-right: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
     gap: 4px;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
     overflow: hidden;
 `;
@@ -237,15 +234,14 @@ export const panelActionButton = (theme: Theme): SerializedStyles => css`
     height: 28px;
     flex: 0 0 28px;
     border: 0;
-    border-radius: 6px;
-    background: ${theme.highlightBackgroundAlt};
-    color: ${theme.lineNumber};
+    border-radius: 4px;
+    background: transparent;
+    color: ${theme.altTextColor};
     padding: 0;
     cursor: pointer;
     transition:
         background-color 0.15s ease,
-        color 0.15s ease,
-        transform 0.15s ease;
+        color 0.15s ease;
 
     svg {
         font-size: 16px;
@@ -254,7 +250,6 @@ export const panelActionButton = (theme: Theme): SerializedStyles => css`
     &:hover {
         background: ${theme.highlightBackground};
         color: ${theme.textColor};
-        transform: translateY(-1px);
     }
 `;
 

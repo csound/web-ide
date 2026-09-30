@@ -53,9 +53,9 @@ main {
     width: 100%;
     top: 0;
 }
-nav,
-button {
-    outline: none;
+button:focus-visible, [role="tab"]:focus-visible {
+    outline: 2px solid ${theme.tabHighlightActive};
+    outline-offset: -2px;
 }
 a {text-decoration: none;}
 
@@ -166,41 +166,6 @@ a {text-decoration: none;}
   cursor: grabbing!important;
 }
 
-.cm-theme,.cm-editor {
-  height: 100%;
-}
-
-.cm-scroller {
-  overflow: auto;
-}
-
-// scrollbar style from https://gist.github.com/spemer/a0e218bbb45433bd611e68446523a00b
-.cm-scroller::-webkit-scrollbar {
-  background-color: #fff;
-  width: 12px;
-}
-
-/* background of the scrollbar except button or resizer */
-.cm-scroller::-webkit-scrollbar-track {
-    background-color: #fff;
-}
-
-/* scrollbar itself */
-.cm-scroller::-webkit-scrollbar-thumb {
-    background-color: #babac0;
-    border-radius: 16px;
-    border: 4px solid #fff;
-}
-
-/* set button(top and bottom of the scrollbar) */
-.cm-scroller::-webkit-scrollbar-button {
-    display:none;
-}
-
-.cm-lineNumbers {
-  order: 0!important;
-}
-
 .flexible-modal {
   position: absolute;
   z-index: 1;
@@ -266,9 +231,6 @@ a {text-decoration: none;}
 .cm-line:has(.blink-eval-error) {
     z-index: 9999999;
     background-color: ${theme.errorText};
-}
-.cm-lineNumbers {
-  margin-right: 2px;
 }
 
     `}</style>

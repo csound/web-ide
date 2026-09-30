@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { csoundEditorLanguage } from "./csound-language";
 import { EditorView } from "codemirror";
@@ -7,6 +7,7 @@ import {
     keymap,
     lineNumbers,
     highlightActiveLineGutter,
+    highlightActiveLine,
     highlightSpecialChars,
     drawSelection,
     dropCursor
@@ -23,12 +24,15 @@ import {
     foldGutter,
     indentOnInput
 } from "@codemirror/language";
-import { EditorState, StateField } from "@codemirror/state";
+import { Compartment, EditorState, StateField } from "@codemirror/state";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
 import * as projectActions from "../projects/actions";
 import { editorStyle } from "@styles/code-mirror-painter";
+
+import { useTheme } from "@emotion/react";
+import { codeMirrorTheme } from "@styles/code-mirror-theme";
 
 export const openEditors: Map<string, EditorView> = new Map();
 
@@ -68,6 +72,8 @@ const CodeEditor = ({
     documentUid: string;
     projectUid: string;
 }) => {
+    const theme = useTheme();
+    const themeCompartment = useMemo(() => new Compartment(), []);
     const editorReference = useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = useState(false);
     const dispatch = useDispatch();
@@ -89,7 +95,7 @@ const CodeEditor = ({
 
     const onChange = useCallback(
         (event: any) => {
-            if (event?.state?.doc) {
+            if (event.docChanged) {
                 dispatch(
                     projectActions.updateDocumentValue(
                         event.state.doc.toString(),
@@ -134,7 +140,9 @@ const CodeEditor = ({
 
             const config = {
                 extensions: [
+                    themeCompartment.of(codeMirrorTheme(theme)),
                     lineNumbers(),
+                    highlightActiveLine(),
                     highlightActiveLineGutter(),
                     highlightSpecialChars(),
                     foldGutter(),
@@ -211,8 +219,16 @@ const CodeEditor = ({
         csoundFileType,
         documentUid,
         onChange,
-        onScroll
+        onScroll,
+        theme,
+        themeCompartment
     ]);
+
+    useEffect(() => {
+        openEditors.get(documentUid)?.dispatch({
+            effects: themeCompartment.reconfigure(codeMirrorTheme(theme))
+        });
+    }, [documentUid, theme, themeCompartment]);
 
     useEffect(() => {
         if (isMounted && documentUid && !csoundDocumentStateField) {
