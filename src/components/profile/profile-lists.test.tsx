@@ -26,16 +26,16 @@ it.each([
     (section, relation) => {
         const store = configureStore({ reducer: { ProfileReducer } });
         for (const [profileUid, profile] of Object.entries({
-            owner: { [relation]: ["steven", "missing", "unnamed", "eddie"] },
-            steven: {
-                userUid: "steven",
-                username: "stevenyi",
-                displayName: "Steven Yi"
+            owner: { [relation]: ["alpha", "missing", "unnamed", "beta"] },
+            alpha: {
+                userUid: "alpha",
+                username: "fixture-alpha",
+                displayName: "Fixture Alpha"
             },
-            eddie: {
-                userUid: "eddie",
-                username: "eddyc",
-                displayName: "Ed Costello"
+            beta: {
+                userUid: "beta",
+                username: "fixture-beta",
+                displayName: "Fixture Beta"
             },
             unnamed: { userUid: "unnamed", displayName: "No username" }
         })) {
@@ -56,13 +56,15 @@ it.each([
         );
         expect(
             screen.getAllByRole("button").map((button) => button.textContent)
-        ).toEqual(["Steven Yi", "Ed Costello"]);
-        fireEvent.click(screen.getByRole("button", { name: "Steven Yi" }));
+        ).toEqual(["Fixture Alpha", "Fixture Beta"]);
+        fireEvent.click(screen.getByRole("button", { name: "Fixture Alpha" }));
         expect(screen.getByRole("status").textContent).toBe(
-            "/profile/stevenyi"
+            "/profile/fixture-alpha"
         );
-        fireEvent.click(screen.getByRole("button", { name: "Ed Costello" }));
-        expect(screen.getByRole("status").textContent).toBe("/profile/eddyc");
+        fireEvent.click(screen.getByRole("button", { name: "Fixture Beta" }));
+        expect(screen.getByRole("status").textContent).toBe(
+            "/profile/fixture-beta"
+        );
     }
 );
 
