@@ -86,15 +86,13 @@ const ProfileReducer = (
         }
         case STORE_USER_PROFILE: {
             const userUid = (action as any).profileUid;
-            return state.profiles[userUid]
-                ? state
-                : {
-                      ...state,
-                      profiles: {
-                          ...state.profiles,
-                          [userUid]: action.profile
-                      }
-                  };
+            return {
+                ...state,
+                profiles: {
+                    ...state.profiles,
+                    [userUid]: { ...state.profiles[userUid], ...action.profile }
+                }
+            };
         }
         case GET_ALL_TAGS: {
             return {

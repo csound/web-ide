@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { doc, getDoc, writeBatch } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { AppThunk, useDispatch, useSelector } from "@root/store";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -19,7 +19,7 @@ import {
     SET_POST_AUTH_FLOW
 } from "./types";
 import { closeModal, openSimpleModal } from "../modal/actions";
-import { database, profiles, usernames } from "../../config/firestore";
+import { profiles, usernames } from "../../config/firestore";
 import {
     FacebookAuthProvider,
     GoogleAuthProvider,
@@ -38,6 +38,7 @@ import { IProfile } from "../profile/types";
 import { navigateTo } from "@comp/router/navigate";
 import { isElectron } from "@root/utils";
 import { selectPostAuthFlow } from "./selectors";
+import { isValidUsername, saveProfile } from "../profile/save-profile";
 
 type AuthUserPayload = {
     uid: string;
@@ -142,26 +143,17 @@ export function ProfileFinalize({
 
     const checkReservedUsername = async (candidate: string) => {
         const document_ = await getDoc(doc(usernames, candidate));
-        setNameReserved(document_.exists());
+        setNameReserved(
+            document_.exists() && document_.data().userUid !== user.uid
+        );
     };
 
-    const shouldDisable = isEmpty(input) || !/^[\dA-Za-z]+$/.test(input);
+    const shouldDisable = !isValidUsername(input);
 
     const handleOnSubmit = useCallback(async () => {
-        if (!nameReserved) {
-            const batch = writeBatch(database);
-
-            const usernameReference = doc(usernames, input);
-            const profileReference = doc(profiles, user.uid);
-            batch.set(
-                usernameReference,
-                { userUid: user.uid },
-                { merge: true }
-            );
-            batch.set(
-                profileReference,
-                {
-                    username: input,
+        if (!nameReserved && isValidUsername(input)) {
+            try {
+                await saveProfile(user.uid, input, {
                     displayName,
                     bio,
                     link1,
@@ -171,12 +163,7 @@ export function ProfileFinalize({
                         localStorage.getItem("theme") === "monokai"
                             ? "default"
                             : localStorage.getItem("theme") || "default"
-                },
-                { merge: true }
-            );
-
-            try {
-                await batch.commit();
+                });
                 dispatch(
                     openSnackbar("Profile created!", SnackbarType.Success)
                 );
@@ -202,6 +189,7 @@ export function ProfileFinalize({
         }
     }, [
         dispatch,
+        postAuthFlow,
         nameReserved,
         input,
         bio,
@@ -220,8 +208,8 @@ export function ProfileFinalize({
                 Please choose a unique username and tell us something about you
                 (if you want to).
                 <br />
-                You can change this data at anytime, except for your username,
-                so choose it carefully.
+                Until you choose a name, your profile uses your user ID. You can
+                change your username later in your profile settings.
             </p>
             <TextField
                 style={textFieldStyle}
@@ -321,8 +309,9 @@ export const thirdPartyAuthSuccess = (
 
         if (
             profile !== undefined &&
-            (!profile.exists ||
-                (profile.data() && isEmpty(profile.data()!.username)))
+            (!profile.exists() ||
+                !profile.data()?.username?.trim() ||
+                profile.data()?.username === user.uid)
         ) {
             dispatch(
                 openSimpleModal("project-finalize", {

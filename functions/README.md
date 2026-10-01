@@ -2,6 +2,31 @@
 
 This guide explains how to run a local copy of the web IDE connected to your own Firebase project, so you can test UI/UX flows, including account deletion, against a real database.
 
+## Username repair
+
+New accounts use their user ID as a username until they choose a name. The auth
+trigger creates the profile and username lookup in one transaction and preserves
+any name the user has already chosen. Signup still asks users with a fallback
+name to choose one. Profile edits keep the user-ID lookup so shared fallback
+links continue to work.
+
+From the repo root, audit profiles without changing data:
+
+```bash
+./functions/node_modules/.bin/tsx functions/scripts/repair-usernames.ts \
+  --project csound-ide --report /tmp/username-audit.json --firebase-login
+```
+
+Add `--apply` to repair the listed profiles. The tool restores an existing
+registered name where possible, otherwise uses the user ID. It also creates
+missing lookup entries. It checks each profile again in a transaction, preserves
+other fields, and reports conflicting or ambiguous names without changing them.
+Each run saves the old username and repair result in the report. Keep that report
+outside Git. Rerunning the tool skips profiles that already have valid lookups.
+
+`--firebase-login` uses the Firebase CLI account already signed in on this
+machine. Omit it to use Google application default credentials.
+
 ## Prerequisites
 
 ```bash
