@@ -269,10 +269,18 @@ export function csoundSynopsis(): Extension {
         let request = 0;
         let destroyed = false;
 
+        /** Replace argument hints and remeasure when the panel appears or hides. */
+        function setSynopsis(content?: HTMLElement) {
+            const wasEmpty = !dom.hasChildNodes();
+            dom.replaceChildren(...(content ? [content] : []));
+            // Hiding the empty panel changes the editor's available height.
+            if (wasEmpty !== !dom.hasChildNodes()) view.requestMeasure();
+        }
+
         function refresh() {
             const current = ++request;
             const call = callAtSelection(view.state);
-            dom.replaceChildren();
+            setSynopsis();
             if (!call) return;
             const [name] = call.token.split(":");
             void getCsoundHoverInfo(name, {
@@ -281,11 +289,10 @@ export function csoundSynopsis(): Extension {
                 .then((info) => {
                     // The rich catalog loads on demand. Ignore a result for an old cursor.
                     if (destroyed || current !== request || !info) return;
-                    dom.replaceChildren(renderSynopsis(info, call));
+                    setSynopsis(renderSynopsis(info, call));
                 })
                 .catch(() => {
-                    if (!destroyed && current === request)
-                        dom.replaceChildren();
+                    if (!destroyed && current === request) setSynopsis();
                 });
         }
 

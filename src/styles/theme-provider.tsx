@@ -1,7 +1,7 @@
 import CssBaseline from "@mui/material/CssBaseline";
 import WebIdeCssBaseline from "./web-ide-css-baseline";
 import { useSelector } from "react-redux";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import { assocPath, mergeAll, path, pipe } from "ramda";
 import { Global, SerializedStyles, Theme, css } from "@emotion/react";
 import { makeMuiTheme } from "./material-ui-style";
@@ -41,7 +41,7 @@ const globalStyles = (theme: Theme): SerializedStyles => css`
         color: ${theme.textColor} !important;
         min-width: 160px !important;
         :hover {
-            background: rgba(62, 61, 49, 0.5) !important;
+            background: ${theme.buttonBackgroundHover} !important;
         }
     }
     .MuiInputLabel-root {
@@ -73,32 +73,22 @@ const globalStyles = (theme: Theme): SerializedStyles => css`
     .MuiListItem-root {
         padding: 12px 24px !important;
         :hover {
-            background-color: rgba(62, 61, 49, 0.5) !important;
+            background-color: ${theme.buttonBackgroundHover} !important;
         }
     }
 
     .MuiTooltip-tooltip {
         font-family: ${theme.font.regular}!important;
-        color: ${theme.textColor}!important;
-        background: rgba(12, 12, 12, 0.5) !important;
-        font-size: 13px !important;
-        padding: 8px !important;
-        opacity: 0.7;
     }
     .MuiTypography-body2 {
         color: ${theme.altTextColor} !important;
     }
     .MuiFab-root,
     .MuiButton-textPrimary {
-        color: ${theme.textColor} !important;
         opacity: 0.95;
-        background-color: ${theme.buttonBackground} !important;
-        :hover {
-            background-color: ${theme.buttonBackgroundHover} !important;
-        }
     }
     .MuiFab-root.Mui-disabled {
-        background-color: rgba(0, 0, 0, 0.12) !important;
+        background-color: ${theme.disabledButtonBackground} !important;
     }
     .MuiMenu-list {
         color: ${theme.textColor} !important;
@@ -126,7 +116,7 @@ const CsoundWebIdeThemeProvider = ({
         assocPath(["font", "regular"], regularFont)
     )(useSelector(path(["ThemeReducer", "selectedTheme"]))) as Theme;
 
-    const muiTheme = makeMuiTheme(createTheme(), themeWebIde);
+    const muiTheme = makeMuiTheme(themeWebIde);
     const theme = mergeAll([muiTheme, themeWebIde]);
 
     return (

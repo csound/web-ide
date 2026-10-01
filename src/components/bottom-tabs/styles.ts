@@ -23,7 +23,6 @@ export const mobileEditor = css`
 
     .cm-editor {
         height: 100%;
-        zoom: 120%;
     }
 
     .cm-scroller {

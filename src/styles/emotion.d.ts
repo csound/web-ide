@@ -7,6 +7,7 @@ type ThemeFont = {
 
 declare module "@emotion/react" {
     export interface Theme {
+        mode: "dark" | "light";
         // fonts
         font: ThemeFont;
         // basic colors

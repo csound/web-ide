@@ -1,5 +1,4 @@
-import { deepMerge } from "@root/utils";
-import defaultTheme from "./_theme-monokai";
+import { completeTheme } from "./complete-theme";
 
 const theme = {
     background: "#002b36",
@@ -10,13 +9,13 @@ const theme = {
     buttonBackground: "#184955",
     highlightBackground: "#184955",
     highlightBackgroundAlt: "#0f3e4a",
-    selectedTextColor: "#1f5b67",
+    selectedTextColor: "#164550",
     line: "#2f6f7b",
     lineHover: "#3f7f8b",
-    buttonBackgroundHover: "#2f6f7b",
-    textColor: "#93a1a1",
-    headerTextColor: "#93a1a1",
-    altTextColor: "#839496",
+    buttonBackgroundHover: "#184955",
+    textColor: "#b2bdbd",
+    headerTextColor: "#b2bdbd",
+    altTextColor: "#a8b5b7",
     disabledTextColor: "#657b83",
     scrollbar: "#2f6f7b",
     scrollbarHover: "#3f7f8b",
@@ -31,7 +30,7 @@ const theme = {
     kRateVar: "#2aa198",
     fRateVar: "#cb4b16",
     pField: "#b58900",
-    comment: "#657b83",
+    comment: "#839496",
     caretColor: "#268bd2",
     fileIcons: {
         csd: { panel: "#d33682", shadow: "#A02060" },
@@ -45,4 +44,4 @@ const theme = {
     }
 };
 
-export default deepMerge(defaultTheme, theme) as any;
+export default completeTheme(theme, "#268bd2");

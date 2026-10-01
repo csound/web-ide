@@ -1,4 +1,5 @@
 const theme = {
+    mode: "light" as "dark" | "light",
     // Backgrounds
     background: "#ffffff",
     headerBackground: "#f6f8fa",
@@ -20,7 +21,7 @@ const theme = {
     errorText: "#cf222e",
     buttonTextColor: "#24292f",
     altTextColor: "#57606a",
-    unfocusedTextColor: "rgba(87, 96, 106, 0.75)",
+    unfocusedTextColor: "#57606a",
     disabledTextColor: "#8c959f",
 
     // hr/dragger/underline
@@ -65,7 +66,7 @@ const theme = {
     flashFade: "#eaf2ff",
     gutterMarker: "#0969da",
     gutterMarkerSubtle: "#8c959f",
-    lineNumber: "#8c959f",
+    lineNumber: "#57606a",
     comment: "#6e7781",
     commentAttribute: "#6e7781",
     commentDef: "#6e7781",

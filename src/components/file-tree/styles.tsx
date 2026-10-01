@@ -6,6 +6,7 @@ export const container = (theme: Theme): SerializedStyles => css`
     height: 100%;
     background-color: ${theme.fileTreeBackground};
     color: ${theme.textColor} !important;
+    font-size: 13px;
     min-height: 0;
     overflow: hidden;
     display: flex;
@@ -79,6 +80,10 @@ export const delEditContainer = css`
     gap: 2px;
     flex: 0 0 auto;
     min-width: 44px;
+
+    &:empty {
+        display: none;
+    }
 `;
 
 export const nonCloudActionsContainer = css`
@@ -214,7 +219,7 @@ export const directoryOpenIcon = css`
 
 export const filenameStyle = (theme: Theme): SerializedStyles => css`
     font-family: ${theme.font.regular};
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 400;
     color: ${theme.textColor};
     padding: 0;

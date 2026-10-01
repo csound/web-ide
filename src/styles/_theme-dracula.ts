@@ -1,5 +1,4 @@
-import { deepMerge } from "@root/utils";
-import defaultTheme from "./_theme-monokai";
+import { completeTheme } from "./complete-theme";
 
 const theme = {
     background: "#0f1117",
@@ -45,4 +44,4 @@ const theme = {
     }
 };
 
-export default deepMerge(defaultTheme, theme) as any;
+export default completeTheme(theme, "#bd93f9");

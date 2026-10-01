@@ -49,13 +49,16 @@ export const tabListStyle = (theme: Theme): SerializedStyles => css`
         height: 100%;
         box-shadow: none;
         white-space: nowrap;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: ${theme.scrollbar} transparent;
     }
 
     .tablist > li {
         height: 100%;
-        flex: 1 1 180px;
-        min-width: 0;
+        flex: 0 0 auto;
+        min-width: 96px;
         max-width: 220px;
     }
     .tablist > li > span {
@@ -113,13 +116,17 @@ const TabStyleCustom = styled(TabStyle)`
     color: ${(properties: any) =>
         properties.active
             ? properties.theme.textColor
-            : properties.theme.unfocusedTextColor};
+            : properties.theme.altTextColor};
     font-weight: ${(properties: any) => (properties.active ? 500 : 400)};
     background-color: ${(properties: any) =>
         properties.active
             ? properties.theme.highlightBackgroundAlt
             : "transparent"};
     border: 0;
+    box-shadow: ${(properties: any) =>
+        properties.active
+            ? `inset 0 2px 0 ${properties.theme.tabHighlightActive}`
+            : "none"};
     font-size: 12px;
     padding: 0 !important;
     padding-right: ${(properties: any) =>

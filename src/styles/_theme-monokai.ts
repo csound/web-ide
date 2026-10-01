@@ -1,5 +1,3 @@
-import { rgba } from "./utils";
-
 // Monokai
 // https://www.colourlovers.com/palette/1718713/Monokai
 // https://github.com/oneKelvinSmith/monokai-emacs/blob/master/monokai-theme.el
@@ -19,9 +17,9 @@ const sundriedClay = `#1f2023`;
 const monokaiViolet = "#AE81FF";
 const monokaiForeground = "#f3f4f6";
 const monokaiBackground = "#222326";
-const monokaiComments = "#7a7f8a";
+const monokaiComments = "#969ba6";
 const monokaiEmphasis = "#F8F8F0";
-const monokaiLineNumber = "#8f94a0";
+const monokaiLineNumber = "#a0a5b1";
 const monokaiHighlight = "#35373d";
 const monokaiHighlightAlt = "#2c2e34";
 const monokaiHighlightLine = "#2b2d33";
@@ -30,6 +28,7 @@ const monokaiLightBlue2 = "#92E7F7";
 const monokaiBlueHighContrast = "#1DB4D0";
 
 const theme = {
+    mode: "dark" as "dark" | "light",
     // Backgrounds
     background: monokaiBackground,
     headerBackground: monokaiBackground,
@@ -42,26 +41,26 @@ const theme = {
     highlightBackground: monokaiHighlight,
     highlightBackgroundAlt: monokaiHighlightAlt,
     textFieldBackground: sundriedClay,
-    gutterBackground: monokaiHighlightAlt,
+    gutterBackground: monokaiBackground,
     // Text colors
     headerTextColor: monokaiForeground,
     textColor: monokaiForeground,
-    selectedTextColor: monokaiHighlightLine,
+    selectedTextColor: "#494b56",
     errorText: monokaiRed,
     buttonTextColor: monokaiForeground,
     altTextColor: monokaiLineNumber,
-    unfocusedTextColor: `rgba(${rgba(monokaiForeground, 0.4)})`,
+    unfocusedTextColor: monokaiLineNumber,
     disabledTextColor: monokaiGray,
     // hr/dragger/underline
     line: monokaiHighlightLine,
-    lineHover: `rgba(${rgba(monokaiHighlightAlt, 0.1)})`,
+    lineHover: monokaiGray,
     // Hover colors
     // - background Hover
-    buttonBackgroundHover: `rgba(${rgba(monokaiHighlightAlt, 0.5)})`,
-    buttonTextColorHover: `rgba(${rgba(monokaiForeground, 0.1)})`,
-    dropdownBackgroundHover: `rgba(${rgba(monokaiHighlight, 0.1)})`,
+    buttonBackgroundHover: monokaiHighlight,
+    buttonTextColorHover: monokaiForeground,
+    dropdownBackgroundHover: monokaiHighlightAlt,
     // - text Hover
-    textColorHover: `rgba(${rgba(monokaiForeground, 0.1)})`,
+    textColorHover: monokaiForeground,
     tabHighlight: monokaiLightBlue2,
     tabHighlightActive: monokaiMagenta,
     allowed: monokaiGreen,
@@ -69,7 +68,7 @@ const theme = {
 
     // Other
     starActive: monokaiYellow,
-    buttonIcon: monokaiGray,
+    buttonIcon: monokaiLineNumber,
     settingsIcon: monokaiViolet,
     profilePlayButton: henn1nk,
     profilePlayButtonActive: monokaiOrange,
