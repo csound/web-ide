@@ -17,8 +17,13 @@ const {
     Delegate
 } = require("firebase-tools/lib/deploy/functions/runtimes/node/index.js");
 const { Config } = require("firebase-tools/lib/config.js");
+const { parse } = require("yaml");
+const backend = require("firebase-tools/lib/deploy/functions/backend.js");
+const {
+    promptForFailurePolicies
+} = require("firebase-tools/lib/deploy/functions/prompts.js");
 
-test("dev skips the empty Extensions deploy and preserves every function and hosting route", async () => {
+test("dev skips the empty Extensions deploy and preserves every function and hosting route", async (t) => {
     const originalDir = await mkdtemp(
         path.join(tmpdir(), "web-ide-functions-")
     );
@@ -102,6 +107,31 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
             readFile(path.join(functionsDir, "functions.yaml")),
             { code: "ENOENT" }
         );
+        await t.test("CI accepts newly enabled function retries", async () => {
+            const workflow = parse(
+                await readFile(
+                    path.join(root, ".github/workflows/develop.yaml"),
+                    "utf8"
+                )
+            );
+            const deploy = workflow.jobs["deploy-dev"].steps.find(
+                (step) => step.name === "Deploy to Firebase"
+            );
+            const endpoint = dev.endpoints.new_user_callback;
+            assert.equal(endpoint.eventTrigger.retry, true);
+            await promptForFailurePolicies(
+                {
+                    nonInteractive: true,
+                    force: deploy.with.args.split(/\s+/).includes("--force")
+                },
+                backend.of({
+                    ...endpoint,
+                    id: "new_user_callback",
+                    region: "us-central1"
+                }),
+                backend.empty()
+            );
+        });
     } finally {
         await rm(originalDir, { recursive: true, force: true });
         if (devSource) await rm(devSource, { recursive: true, force: true });
