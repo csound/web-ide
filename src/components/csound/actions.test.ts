@@ -67,6 +67,8 @@ beforeEach(() => {
         setOption: vi.fn(async (option) => options.push(option)),
         compileCSD: vi.fn(async (path) => (writes.has(path) ? 0 : -1)),
         compileOrc: vi.fn(async () => 0),
+        isRequestingRtAudioInput: vi.fn(async () => 0),
+        enableAudioInput: vi.fn(async () => undefined),
         start: vi.fn(async () => {
             if (options.at(-1) !== "-odac") {
                 writes.set("piece.wav", new Uint8Array([82, 73, 70, 70]));
@@ -89,10 +91,141 @@ beforeEach(() => {
 
 afterEach(async () => {
     await stopPerformance();
+    localStorage.removeItem("sab");
     vi.clearAllMocks();
 });
 
 describe("shared Csound performance", () => {
+    it.each([false, true])(
+        "prepares requested microphone input before starting (worker: %s)",
+        async (useWorker) => {
+            localStorage.setItem("sab", String(useWorker));
+            const inputSource = source.replace("-odac", "-odac -iadc");
+            store.dispatch({
+                type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
+                projectUid: "audio-test",
+                documentUid: "csd",
+                val: inputSource
+            });
+            engine.compileCSD.mockImplementation(async () => {
+                engine.isRequestingRtAudioInput.mockResolvedValue(1);
+                return 0;
+            });
+            let allowMicrophone!: () => void;
+            engine.enableAudioInput.mockReturnValue(
+                new Promise<void>((resolve) => {
+                    allowMicrophone = resolve;
+                })
+            );
+            const playing = runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                setConsole
+            });
+            try {
+                await vi.waitFor(() =>
+                    expect(engine.enableAudioInput).toHaveBeenCalledOnce()
+                );
+                expect(engine.start).not.toHaveBeenCalled();
+                expect(store.getState().csound.status).toBe("loading");
+            } finally {
+                allowMicrophone();
+                await playing;
+            }
+            expect(Csound).toHaveBeenCalledWith({ useWorker });
+            expect(engine.compileCSD).toHaveBeenCalledWith(
+                "scores/piece.csd",
+                0
+            );
+            expect(
+                new TextDecoder().decode(writes.get("scores/piece.csd"))
+            ).toBe(inputSource);
+            expect(engine.start).toHaveBeenCalledOnce();
+            expect(store.getState().csound.status).toBe("playing");
+        }
+    );
+
+    it("uses the input query for orchestra startup too", async () => {
+        engine.isRequestingRtAudioInput.mockResolvedValue(1);
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        expect(engine.enableAudioInput).toHaveBeenCalledOnce();
+        expect(engine.start).toHaveBeenCalledOnce();
+    });
+
+    it.each(["-odac", "-odac -i samples/adc.wav"])(
+        "does not request a microphone when Csound reports no live input (%s)",
+        async (flags) => {
+            store.dispatch({
+                type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
+                projectUid: "audio-test",
+                documentUid: "csd",
+                val: source.replace("-odac", flags)
+            });
+            await runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                setConsole
+            });
+            expect(engine.isRequestingRtAudioInput).toHaveBeenCalledOnce();
+            expect(engine.enableAudioInput).not.toHaveBeenCalled();
+            expect(engine.start).toHaveBeenCalledOnce();
+        }
+    );
+
+    it("cleans up and reports microphone permission errors before startup", async () => {
+        engine.isRequestingRtAudioInput.mockResolvedValue(1);
+        const denied = new DOMException("Permission denied", "NotAllowedError");
+        engine.enableAudioInput.mockRejectedValue(denied);
+        await expect(
+            runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                setConsole
+            })
+        ).rejects.toMatchObject({
+            message: expect.stringContaining(
+                "Could not start microphone input"
+            ),
+            cause: denied
+        });
+        expect(engine.start).not.toHaveBeenCalled();
+        expect(engine.terminateInstance).toHaveBeenCalledOnce();
+        expect(store.getState().csound.status).toBe("error");
+        expect(isCsoundBusy()).toBe(false);
+    });
+
+    it.each(["isRequestingRtAudioInput", "enableAudioInput"])(
+        "cancels while %s is pending without starting audio later",
+        async (pendingCall) => {
+            engine.isRequestingRtAudioInput.mockResolvedValue(1);
+            let complete!: (value: number) => void;
+            engine[pendingCall].mockReturnValue(
+                new Promise<number>((resolve) => {
+                    complete = resolve;
+                })
+            );
+            const playing = runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                setConsole
+            });
+            const rejection = expect(playing).rejects.toMatchObject({
+                name: "AbortError"
+            });
+            await vi.waitFor(() =>
+                expect(engine[pendingCall]).toHaveBeenCalledOnce()
+            );
+            await stopPerformance();
+            await rejection;
+            complete(1);
+            await Promise.resolve();
+            expect(engine.start).not.toHaveBeenCalled();
+            expect(engine.terminateInstance).toHaveBeenCalledOnce();
+            expect(store.getState().csound.status).toBe("stopped");
+            expect(isCsoundBusy()).toBe(false);
+        }
+    );
+
     it.each([
         ["auto", "-odac1"],
         ["auto", "-o dac2"],
@@ -190,6 +323,7 @@ describe("shared Csound performance", () => {
         expect(result).toEqual({ status: "completed", files: ["piece.wav"] });
         expect(nonCloudFiles.get("piece.wav")?.buffer.length).toBe(4);
         expect(engine.terminateInstance).toHaveBeenCalledOnce();
+        expect(engine.enableAudioInput).not.toHaveBeenCalled();
         expect(isCsoundBusy()).toBe(false);
     });
 
