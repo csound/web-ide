@@ -25,6 +25,18 @@ export const selectUserFollowing = (profileUid: string | undefined) =>
         }
     );
 
+export const selectProfileConnections = (
+    profileUid: string,
+    relation: "following" | "followers"
+) =>
+    createSelector(
+        [(state: RootState) => state.ProfileReducer.profiles],
+        (profiles): IProfile[] =>
+            (profiles[profileUid]?.[relation] ?? EMPTY_STRING_ARRAY)
+                .map((uid) => profiles[uid])
+                .filter((profile) => !!profile?.username?.trim())
+    );
+
 export const selectUserProjects = (profileUid: string | undefined) =>
     createSelector(
         [(store: RootState) => store.ProjectsReducer.projects],

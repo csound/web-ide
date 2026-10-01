@@ -144,7 +144,7 @@ const ProfileReducer = (
             const updatedProfiles = action.userProfiles.reduce(
                 (accumulator: any, item: any) => ({
                     ...accumulator,
-                    [item.userUid]: item
+                    [item.userUid]: { ...accumulator[item.userUid], ...item }
                 }),
                 state.profiles
             );
@@ -164,7 +164,7 @@ const ProfileReducer = (
             const updatedProfiles = action.userProfiles.reduce(
                 (accumulator: any, item: any) => ({
                     ...accumulator,
-                    [item.userUid]: item
+                    [item.userUid]: { ...accumulator[item.userUid], ...item }
                 }),
                 state.profiles
             );
