@@ -116,7 +116,16 @@ export default function GlobalModal() {
             <Fade in={isOpen}>
                 <div
                     id="modal-window"
-                    css={SS.content}
+                    css={[
+                        SS.content,
+                        [
+                            "new-project-prompt",
+                            "profile-edit-dialog",
+                            "delete-project-prompt",
+                            "delete-account-prompt"
+                        ].includes(modalComponentName || "") &&
+                            SS.profileContent
+                    ]}
                     ref={modalReference}
                     style={getModalStyle(width, height)}
                 >

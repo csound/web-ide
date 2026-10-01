@@ -1,35 +1,12 @@
 import React, { useState } from "react";
-import styled from "@emotion/styled";
+import { ProfileDialog } from "./profile-dialog";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 import { updateUserProfile } from "./actions";
 import { closeModal } from "../modal/actions";
-import { TextField, Button } from "@mui/material";
+import { TextField, Button, MenuItem } from "@mui/material";
 import { useDispatch } from "@root/store";
-import { useTheme } from "@emotion/react";
-import * as TargetSS from "@comp/target-controls/styles";
-import Select from "react-select";
 import { isValidUsername } from "./save-profile";
-
-const ModalContainer = styled.div`
-    display: grid;
-    grid-auto-rows: minmax(60px, auto);
-    grid-template-columns: minmax(0, 400px);
-    width: min(400px, calc(100vw - 32px));
-    border-radius: 5px;
-
-    @media (max-width: 760px) {
-        width: min(400px, calc(100vw - 40px));
-    }
-`;
-
-interface IFieldRow {
-    row: number;
-}
-const FieldRow = styled.div<IFieldRow>`
-    grid-row: ${(properties) => properties.row};
-    grid-column: 1;
-`;
 
 interface IProfileModal {
     username: string;
@@ -61,7 +38,6 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
         properties.backgroundIndex || 0
     );
     const dispatch = useDispatch();
-    const theme = useTheme();
     const existingName = properties.existingNames.includes(username);
     const nonAlphaNumeric = !isValidUsername(username);
     const emptyString = username.length === 0;
@@ -99,131 +75,92 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
             );
         }
     };
-    const textFieldStyle = { marginBottom: 12, marginRight: 5 };
-
     return (
-        <ModalContainer>
-            <FieldRow row={1}>
-                <h2>Edit Profile</h2>
-            </FieldRow>
-            <FieldRow row={2}>
-                <TextField
-                    style={textFieldStyle}
-                    label={"Username"}
-                    value={username}
-                    onChange={(event) => {
-                        setUsername(event.target.value);
-                    }}
-                    fullWidth
-                    helperText={errorMessage}
-                    error={nonAlphaNumeric || existingName || emptyString}
-                />
-            </FieldRow>
-            <FieldRow row={3}>
-                <TextField
-                    style={textFieldStyle}
-                    label={"Display Name"}
-                    value={displayName}
-                    onChange={(event) => {
-                        setDisplayName(event.target.value);
-                    }}
-                    fullWidth
-                />
-            </FieldRow>
-            <FieldRow row={4}>
-                <TextField
-                    style={textFieldStyle}
-                    label={"Bio"}
-                    value={bio}
-                    multiline={true}
-                    onChange={(event) => {
-                        setBio(event.target.value);
-                    }}
-                    margin="normal"
-                    fullWidth
-                />
-            </FieldRow>
-            <FieldRow row={5}>
-                <TextField
-                    style={textFieldStyle}
-                    label={"Link 1"}
-                    value={link1}
-                    rows="4"
-                    onChange={(event) => {
-                        setLink1(event.target.value);
-                    }}
-                    margin="normal"
-                    fullWidth
-                />
-            </FieldRow>
-            <FieldRow row={6}>
-                <TextField
-                    style={textFieldStyle}
-                    label={"Link 2"}
-                    value={link2}
-                    rows="4"
-                    onChange={(event) => {
-                        setLink2(event.target.value);
-                    }}
-                    margin="normal"
-                    fullWidth
-                />
-            </FieldRow>
-            <FieldRow row={7}>
-                <TextField
-                    style={textFieldStyle}
-                    label={"Link 3"}
-                    value={link3}
-                    rows="4"
-                    onChange={(event) => {
-                        setLink3(event.target.value);
-                    }}
-                    margin="normal"
-                    fullWidth
-                />
-            </FieldRow>
-            <FieldRow row={8} style={{ marginTop: 24 }}>
-                <div>
-                    <strong>{"Profile page background shape"}</strong>
-                    <Select
-                        value={backgroundIndex}
-                        placeholder={backgroundOptions[backgroundIndex].label}
-                        isSearchable={false}
-                        onChange={(event: any) =>
-                            setBackgroundIndex(event.value)
+        <ProfileDialog
+            title="Edit Profile"
+            actions={
+                <>
+                    <Button
+                        color="inherit"
+                        onClick={() => dispatch(closeModal())}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleOnSubmit}
+                        disabled={
+                            nonAlphaNumeric || existingName || emptyString
                         }
-                        options={backgroundOptions as any}
-                        styles={
-                            {
-                                control: () => TargetSS.control,
-                                container: () =>
-                                    TargetSS.dropdownContainer(theme),
-                                valueContainer: () => TargetSS.valueContainer,
-                                groupHeading: () => TargetSS.groupHeading,
-                                placeholder: () => TargetSS.placeholder,
-                                menu: () => TargetSS.menu,
-                                menuList: () => TargetSS.menuList(theme),
-                                option: () => TargetSS.menuOption,
-                                indicatorsContainer: () =>
-                                    TargetSS.indicatorContainer(theme),
-                                indicatorSeparator: () =>
-                                    TargetSS.indicatorSeparator
-                            } as any
-                        }
-                    />
-                </div>
-            </FieldRow>
-            <FieldRow row={9} style={{ marginTop: 24 }}>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={handleOnSubmit}
-                    style={{ marginTop: 11 }}
-                    disabled={nonAlphaNumeric || existingName || emptyString}
-                >
-                    Submit
-                </Button>
-            </FieldRow>
-        </ModalContainer>
+                    >
+                        Save changes
+                    </Button>
+                </>
+            }
+        >
+            <TextField
+                label="Username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                fullWidth
+                size="small"
+                helperText={errorMessage}
+                error={nonAlphaNumeric || existingName || emptyString}
+            />
+            <TextField
+                label="Display Name"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                fullWidth
+                size="small"
+            />
+            <TextField
+                label="Bio"
+                value={bio}
+                onChange={(event) => setBio(event.target.value)}
+                multiline
+                minRows={3}
+                maxRows={6}
+                fullWidth
+                size="small"
+            />
+            <TextField
+                label="Link 1"
+                value={link1}
+                onChange={(event) => setLink1(event.target.value)}
+                fullWidth
+                size="small"
+            />
+            <TextField
+                label="Link 2"
+                value={link2}
+                onChange={(event) => setLink2(event.target.value)}
+                fullWidth
+                size="small"
+            />
+            <TextField
+                label="Link 3"
+                value={link3}
+                onChange={(event) => setLink3(event.target.value)}
+                fullWidth
+                size="small"
+            />
+            <TextField
+                select
+                label="Profile page background shape"
+                value={backgroundIndex}
+                onChange={(event) =>
+                    setBackgroundIndex(Number(event.target.value))
+                }
+                fullWidth
+                size="small"
+            >
+                {backgroundOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                    </MenuItem>
+                ))}
+            </TextField>
+        </ProfileDialog>
     );
 };

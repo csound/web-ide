@@ -1,3 +1,4 @@
+import { ProfileDialog } from "./profile-dialog";
 import React, { useMemo, useState } from "react";
 import { useDispatch } from "@root/store";
 import Tooltip from "@mui/material/Tooltip";
@@ -11,7 +12,7 @@ import { TextField, Button, Popover, Grid } from "@mui/material";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import IconButton from "@mui/material/IconButton";
-import ReactAutosuggestExample from "./tag-auto-suggest";
+import TagAutosuggest from "./tag-auto-suggest";
 import { isEmpty } from "ramda";
 import {
     addUserProject,
@@ -24,10 +25,10 @@ import { SnackbarType } from "../snackbar/types";
 import { closeModal } from "../modal/actions";
 
 const avatarContainer = css`
-    width: 88px;
-    height: 88px;
-    padding: 16px;
-    border-radius: 18px;
+    width: 72px;
+    height: 72px;
+    padding: 8px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,42 +40,6 @@ const avatarContainer = css`
         position: relative;
         border-radius: 50%;
         transform: scale(1.15);
-    }
-`;
-
-const ModalContainer = styled.div`
-    width: min(520px, calc(100vw - 24px));
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    @media (max-width: 760px) {
-        width: calc(100vw - 24px);
-        gap: 14px;
-    }
-`;
-
-const HeaderBlock = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-`;
-
-const HeaderEyebrow = styled.span`
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.68;
-`;
-
-const HeaderTitle = styled.h2`
-    margin: 0;
-    line-height: 1.15;
-    font-size: 28px;
-
-    @media (max-width: 760px) {
-        font-size: 24px;
     }
 `;
 
@@ -91,22 +56,22 @@ const StepRail = styled.div`
     gap: 8px;
 `;
 
-const StepCard = styled.button<{ active: boolean; complete: boolean }>`
+const StepCard = styled.button<{ active: boolean }>`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
     padding: 10px 12px;
-    border-radius: 12px;
+    border-radius: 4px;
     border: 1px solid
         ${(properties) =>
             properties.active
-                ? "rgb(255 255 255 / 24%)"
-                : properties.complete
-                  ? "rgb(255 255 255 / 12%)"
-                  : "rgb(255 255 255 / 8%)"};
+                ? properties.theme.textColor
+                : properties.theme.line};
     background: ${(properties) =>
-        properties.active ? "rgb(255 255 255 / 8%)" : "rgb(0 0 0 / 7%)"};
+        properties.active
+            ? properties.theme.highlightBackground
+            : "transparent"};
     color: inherit;
     text-align: left;
     cursor: pointer;
@@ -134,10 +99,7 @@ const Section = styled.section`
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 14px;
-    border-radius: 14px;
-    background: rgb(0 0 0 / 7%);
-    border: 1px solid rgb(255 255 255 / 8%);
+    min-width: 0;
 `;
 
 const SectionTitle = styled.h3`
@@ -158,20 +120,6 @@ const FieldStack = styled.div`
     gap: 12px;
 `;
 
-const fieldSx = {
-    "& .MuiFormHelperText-root": {
-        color: "rgb(224 230 247 / 78%)",
-        marginLeft: 0,
-        marginRight: 0
-    },
-    "& .MuiInputLabel-root": {
-        color: "rgb(224 230 247 / 84%)"
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-        color: "rgb(248 250 255 / 92%)"
-    }
-};
-
 const StarterTemplateContainer = styled.div`
     display: grid;
     gap: 8px;
@@ -180,7 +128,7 @@ const StarterTemplateContainer = styled.div`
         align-items: flex-start;
         margin: 0;
         padding: 10px 12px;
-        border-radius: 12px;
+        border-radius: 4px;
         background: rgb(0 0 0 / 7%);
         border: 1px solid transparent;
         transition:
@@ -189,8 +137,8 @@ const StarterTemplateContainer = styled.div`
     }
 
     .MuiFormControlLabel-root.selected {
-        border-color: rgb(255 255 255 / 24%);
-        background: rgb(255 255 255 / 6%);
+        border-color: ${(properties) => properties.theme.textColor};
+        background: ${(properties) => properties.theme.highlightBackground};
     }
 
     .MuiFormControlLabel-label {
@@ -210,7 +158,7 @@ const TemplateGuide = styled.div`
     flex-direction: column;
     gap: 4px;
     padding: 12px;
-    border-radius: 12px;
+    border-radius: 4px;
     background: rgb(255 255 255 / 4%);
     border: 1px solid rgb(255 255 255 / 6%);
 `;
@@ -231,8 +179,8 @@ const IconPickerContainer = styled.div`
     grid-template-columns: 1fr;
     gap: 12px;
 
-    @media (min-width: 760px) {
-        grid-template-columns: 110px minmax(0, 1fr) 130px;
+    @media (min-width: 480px) {
+        grid-template-columns: 96px minmax(0, 1fr);
         align-items: center;
     }
 `;
@@ -257,6 +205,9 @@ const StyledSketchPicker = styled(SliderPicker)`
 `;
 
 const RadioGroupContainer = styled.div`
+    @media (min-width: 480px) {
+        grid-column: 2;
+    }
     display: flex;
     align-items: center;
 
@@ -282,25 +233,10 @@ const PopoverContainer = styled.div`
     }
 `;
 
-const FooterActions = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    @media (min-width: 760px) {
-        flex-direction: row;
-        justify-content: space-between;
-    }
-`;
-
 const FooterLeadingActions = styled.div`
     display: flex;
-    gap: 10px;
-    flex-direction: column;
-
-    @media (min-width: 760px) {
-        flex-direction: row;
-    }
+    gap: 8px;
+    margin-right: auto;
 `;
 
 type WizardStep = 0 | 1 | 2;
@@ -314,6 +250,7 @@ interface IProjectModal {
     iconBackgroundColor: string | undefined;
     iconName: string | undefined;
     newProject: boolean;
+    tags?: string[];
     starterTemplate?: ProjectStarterTemplate;
 }
 
@@ -365,9 +302,11 @@ export const ProjectModal = (properties: IProjectModal) => {
         );
     const [popupState, setPopupState] = useState(false);
     const [anchorElement, setAnchorElement] = useState(
-        null as HTMLSpanElement | null
+        null as HTMLButtonElement | null
     );
-    const [modifiedTags, setModifiedTags] = useState<string[]>([]);
+    const [modifiedTags, setModifiedTags] = useState<string[]>(
+        properties.tags || []
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [step, setStep] = useState<WizardStep>(0);
 
@@ -427,11 +366,11 @@ export const ProjectModal = (properties: IProjectModal) => {
     };
 
     const handleProfileDropDown = (
-        event: React.MouseEvent<HTMLSpanElement>
+        event: React.MouseEvent<HTMLButtonElement>
     ) => {
         event.preventDefault();
         setPopupState(!popupState);
-        setAnchorElement(event.currentTarget as HTMLSpanElement);
+        setAnchorElement(event.currentTarget as HTMLButtonElement);
     };
 
     const handlePopoverClose = () => {
@@ -451,23 +390,62 @@ export const ProjectModal = (properties: IProjectModal) => {
         setStep(nextStep);
     };
 
+    const footerActions = (
+        <>
+            <FooterLeadingActions>
+                <Button
+                    variant="text"
+                    color="inherit"
+                    onClick={() => dispatch(closeModal())}
+                >
+                    Cancel
+                </Button>
+                {isWizard && step > 0 && (
+                    <Button
+                        variant="text"
+                        color="inherit"
+                        onClick={() => setStep((step - 1) as WizardStep)}
+                    >
+                        Back
+                    </Button>
+                )}
+            </FooterLeadingActions>
+            {isWizard && step < 2 ? (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={step === 0 && isEmpty(name.trim())}
+                    onClick={() => setStep((step + 1) as WizardStep)}
+                >
+                    Next
+                </Button>
+            ) : (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    disabled={shouldDisable}
+                    onClick={handleOnSubmit}
+                >
+                    {isSubmitting
+                        ? properties.newProject
+                            ? "Creating..."
+                            : "Saving..."
+                        : properties.label}
+                </Button>
+            )}
+        </>
+    );
+
     return (
-        <ModalContainer>
-            <HeaderBlock>
-                <HeaderEyebrow>
-                    {properties.newProject ? "New Project" : "Project Settings"}
-                </HeaderEyebrow>
-                <HeaderTitle>
-                    {properties.newProject
-                        ? "Create a project"
-                        : `Edit ${name || "project"}`}
-                </HeaderTitle>
-                <HeaderBody>
-                    {properties.newProject
-                        ? "Set up the project in three short steps, then jump into the editor."
-                        : "Update the name, description, tags, and icon for this project."}
-                </HeaderBody>
-            </HeaderBlock>
+        <ProfileDialog
+            title={properties.newProject ? "Create a project" : "Edit project"}
+            actions={footerActions}
+        >
+            <HeaderBody>
+                {properties.newProject
+                    ? "Set up the project in three short steps, then jump into the editor."
+                    : "Update the name, description, tags, and icon for this project."}
+            </HeaderBody>
 
             {isWizard && (
                 <StepRail>
@@ -476,7 +454,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                             key={item.label}
                             type="button"
                             active={step === index}
-                            complete={step > index}
+                            aria-current={step === index ? "step" : undefined}
                             onClick={() => goToStep(index as WizardStep)}
                         >
                             <StepIndex>{`Step ${index + 1}`}</StepIndex>
@@ -504,7 +482,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                                 setName(event.target.value);
                             }}
                             fullWidth
-                            sx={fieldSx}
+                            size="small"
                         />
                         <TextField
                             label="Description"
@@ -515,14 +493,11 @@ export const ProjectModal = (properties: IProjectModal) => {
                                 setDescription(event.target.value);
                             }}
                             fullWidth
-                            sx={fieldSx}
+                            size="small"
                         />
-                        <ReactAutosuggestExample
-                            projectUid={properties.projectID}
+                        <TagAutosuggest
                             modifiedTags={modifiedTags}
                             setModifiedTags={setModifiedTags}
-                            fullWidth
-                            label="Tags"
                         />
                     </FieldStack>
                 </Section>
@@ -588,7 +563,9 @@ export const ProjectModal = (properties: IProjectModal) => {
                     <IconPickerContainer>
                         <AvatarPreviewCard>
                             <Tooltip title="Choose an icon for your project">
-                                <span
+                                <IconButton
+                                    aria-label="Choose project icon"
+                                    aria-expanded={popupState}
                                     css={avatarContainer}
                                     onClick={handleProfileDropDown}
                                 >
@@ -601,7 +578,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                                             iconForegroundColor
                                         }
                                     />
-                                </span>
+                                </IconButton>
                             </Tooltip>
                             <AvatarPreviewHint>
                                 Tap the avatar to browse icons.
@@ -633,12 +610,12 @@ export const ProjectModal = (properties: IProjectModal) => {
                                                 return (
                                                     <Grid
                                                         item
-                                                        xs={6}
+                                                        xs={3}
                                                         sm={3}
                                                         key={index}
                                                     >
                                                         <IconButton
-                                                            aria-label="select icon"
+                                                            aria-label={`Select ${entry[0]} icon`}
                                                             onClick={() => {
                                                                 setIconName(
                                                                     entry[0]
@@ -704,54 +681,6 @@ export const ProjectModal = (properties: IProjectModal) => {
                     </IconPickerContainer>
                 </Section>
             )}
-
-            <FooterActions>
-                <FooterLeadingActions>
-                    <Button
-                        variant="text"
-                        color="inherit"
-                        onClick={() => dispatch(closeModal())}
-                        fullWidth
-                    >
-                        Cancel
-                    </Button>
-                    {isWizard && step > 0 && (
-                        <Button
-                            variant="text"
-                            color="inherit"
-                            onClick={() => setStep((step - 1) as WizardStep)}
-                            fullWidth
-                        >
-                            Back
-                        </Button>
-                    )}
-                </FooterLeadingActions>
-                {isWizard && step < 2 ? (
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        disabled={step === 0 && isEmpty(name.trim())}
-                        onClick={() => setStep((step + 1) as WizardStep)}
-                        fullWidth
-                    >
-                        Next
-                    </Button>
-                ) : (
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        disabled={shouldDisable}
-                        onClick={handleOnSubmit}
-                        fullWidth
-                    >
-                        {isSubmitting
-                            ? properties.newProject
-                                ? "Creating..."
-                                : "Saving..."
-                            : properties.label}
-                    </Button>
-                )}
-            </FooterActions>
-        </ModalContainer>
+        </ProfileDialog>
     );
 };
