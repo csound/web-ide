@@ -1,6 +1,6 @@
 // import { css as classCss } from "@emotion/react";
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { headerHeight } from "@styles/constants";
+import { headerHeight, pageMaxWidth } from "@styles/constants";
 
 const drawerWidth = 260;
 
@@ -61,7 +61,6 @@ export const menuSlot = css`
 export const utilityNav = css`
     display: inline-flex;
     align-items: center;
-    margin-left: 8px;
     flex-shrink: 0;
 `;
 
@@ -79,43 +78,59 @@ export const menuItemLink = css`
     text-decoration: none;
 `;
 
-export const toolbar = css`
+export const toolbar = (contained: boolean) => css`
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    gap: 8px;
     width: 100%;
     min-width: 0;
+    min-height: ${headerHeight}px !important;
+    max-width: ${contained ? `${pageMaxWidth}px` : "none"};
+    margin: 0 auto;
+    padding: 0 ${contained ? 24 : 12}px;
+    @media (max-width: 767px) {
+        padding: 0 ${contained ? 16 : 8}px;
+        gap: 4px;
+    }
+`;
+
+export const logoSlot = css`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    a {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
 `;
 
 export const avatar = css`
-    height: 42px;
-    width: 42px;
-    padding: 0 !important;
-    margin-right: 6px;
-    border-radius: 4px;
+    height: 36px;
+    width: 36px;
+    border-radius: 6px;
 `;
 
 export const userMenu = css`
-    position: static;
-    margin-right: 12px;
+    display: flex;
     & > button {
-        padding: 0 !important;
-    }
-
-    @media (max-width: 900px) {
-        margin-right: 8px;
+        padding: 4px;
     }
 `;
 
 export const menuPaper = css`
-    top: 52px !important;
-    padding: 0 !important;
+    .MuiMenu-paper {
+        margin-top: 4px;
+    }
 `;
 
 export const loginButton = (theme: Theme): SerializedStyles => css`
-    position: relative;
-    right: 12px;
-    margin-left: 12px;
+    min-height: 36px;
+    padding: 6px 12px;
     color: ${theme.headerTextColor} !important;
 `;
 
@@ -123,20 +138,16 @@ export const authSlot = css`
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    min-width: 56px;
+    flex-shrink: 0;
+    min-width: 64px;
 `;
 
 export const authPlaceholder = (theme: Theme): SerializedStyles => css`
-    width: 42px;
-    height: 42px;
-    margin-right: 12px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
     background: ${theme.buttonBackground};
     border: 1px solid ${theme.line};
-
-    @media (max-width: 900px) {
-        margin-right: 8px;
-    }
 `;
 
 export const accountTooltip = css`

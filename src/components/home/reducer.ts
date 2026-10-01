@@ -6,7 +6,9 @@ import {
     ADD_POPULAR_ARTISTS,
     ADD_POPULAR_PROJECTS,
     ADD_RANDOM_PROJECTS,
-    SET_POPULAR_PROJECTS_OFFSET,
+    SET_POPULAR_PROJECTS_LOADING,
+    SET_POPULAR_PROJECTS_ERROR,
+    SET_POPULAR_ARTISTS_ERROR,
     SET_RANDOM_PROJECTS_LOADING,
     SET_POPULAR_ARTISTS_LOADING,
     AddPopularArtistsAction,
@@ -14,7 +16,8 @@ import {
     AddUserProfiles,
     AddRandomProjectsAction,
     SetPopularArtistsLoading,
-    SetPopularProjectsOffsetAction,
+    SetPopularProjectsLoading,
+    SetPopularRankingError,
     SetRandomProjectsLoading,
     SearchProjectsRequest,
     SearchProjectsSuccess
@@ -31,7 +34,9 @@ export interface IHomeReducer {
     popularArtists: PopularArtistResponse[];
     popularArtistsLoading: boolean;
     popularProjects: PopularProjectResponse[];
-    popularProjectsOffset: number;
+    popularProjectsLoading: boolean;
+    popularProjectsError: string | null;
+    popularArtistsError: string | null;
     profiles: { [uid: string]: IProfile };
     searchProjectsRequest: boolean;
     searchResult: IProject[];
@@ -46,7 +51,9 @@ const INITIAL_STATE: IHomeReducer = {
     popularArtists: [],
     popularArtistsLoading: true,
     popularProjects: [],
-    popularProjectsOffset: -1,
+    popularProjectsLoading: true,
+    popularProjectsError: null,
+    popularArtistsError: null,
     profiles: {},
     searchProjectsRequest: false,
     searchResult: [],
@@ -108,14 +115,27 @@ const HomeReducer = (
             const action = unknownAction as AddPopularProjectsAction;
             return {
                 ...state,
-                popularProjects: [...state.popularProjects, ...action.payload]
+                popularProjects: action.payload || []
             };
         }
-        case SET_POPULAR_PROJECTS_OFFSET: {
-            const action = unknownAction as SetPopularProjectsOffsetAction;
+        case SET_POPULAR_PROJECTS_LOADING: {
+            const action = unknownAction as SetPopularProjectsLoading;
             return {
                 ...state,
-                popularProjectsOffset: action.newOffset
+                popularProjectsLoading: action.isLoading,
+                popularProjectsError: action.isLoading
+                    ? null
+                    : state.popularProjectsError
+            };
+        }
+        case SET_POPULAR_PROJECTS_ERROR:
+        case SET_POPULAR_ARTISTS_ERROR: {
+            const action = unknownAction as SetPopularRankingError;
+            return {
+                ...state,
+                [action.type === SET_POPULAR_PROJECTS_ERROR
+                    ? "popularProjectsError"
+                    : "popularArtistsError"]: action.error
             };
         }
         case ADD_RANDOM_PROJECTS: {
@@ -136,7 +156,10 @@ const HomeReducer = (
             const action = unknownAction as SetPopularArtistsLoading;
             return {
                 ...state,
-                popularArtistsLoading: action.isLoading
+                popularArtistsLoading: action.isLoading,
+                popularArtistsError: action.isLoading
+                    ? null
+                    : state.popularArtistsError
             };
         }
         default: {

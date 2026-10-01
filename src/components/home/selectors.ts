@@ -1,4 +1,3 @@
-import { createSelector } from "@reduxjs/toolkit";
 import { IHomeReducer } from "./reducer";
 import { IProject } from "@comp/projects/types";
 import { RootState } from "@root/store";
@@ -108,11 +107,6 @@ import { PopularArtistResponse } from "./types";
 //     }
 // );
 
-export const selectPopularProjectsFetchOffset = (store: RootState): number => {
-    const state: IHomeReducer = store.HomeReducer;
-    return state.popularProjectsOffset;
-};
-
 export const selectPopularProjects = (
     state: RootState
 ): PopularProjectResponse[] => state.HomeReducer.popularProjects;
@@ -120,13 +114,6 @@ export const selectPopularProjects = (
 export const selectPopularArtists = (
     state: RootState
 ): PopularArtistResponse[] => state.HomeReducer.popularArtists;
-
-export const selectPopularProjectsSlice = (from: number, to: number) =>
-    createSelector(
-        [selectPopularProjects],
-        (popularProjects: PopularProjectResponse[]) =>
-            popularProjects.slice(from, to)
-    );
 
 export const selectSearchResult = (store: RootState): IProject[] => {
     const state: IHomeReducer = store.HomeReducer;

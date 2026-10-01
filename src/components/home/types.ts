@@ -9,7 +9,9 @@ export const ADD_USER_PROFILES = "HOME.ADD_USER_PROFILES";
 export const ADD_RANDOM_PROJECTS = "HOME.ADD_RANDOM_PROJECTS";
 export const ADD_POPULAR_PROJECTS = "HOME.ADD_POPULAR_PROJECTS";
 export const ADD_POPULAR_ARTISTS = "HOME.ADD_POPULAR_ARTISTS";
-export const SET_POPULAR_PROJECTS_OFFSET = "HOME.SET_POPULAR_PROJECTS_OFFSET";
+export const SET_POPULAR_PROJECTS_LOADING = "HOME.SET_POPULAR_PROJECTS_LOADING";
+export const SET_POPULAR_PROJECTS_ERROR = "HOME.SET_POPULAR_PROJECTS_ERROR";
+export const SET_POPULAR_ARTISTS_ERROR = "HOME.SET_POPULAR_ARTISTS_ERROR";
 export const SET_RANDOM_PROJECTS_LOADING = "HOME.SET_RANDOM_PROJECTS_LOADING";
 export const SET_POPULAR_ARTISTS_LOADING = "HOME.SET_POPULAR_ARTISTS_LOADING";
 
@@ -25,16 +27,8 @@ export interface RandomProjectResponse {
     userUid: string;
 }
 
-export interface PopularProjectResponse {
-    created: Timestamp;
-    description: string;
-    iconBackgroundColor: string | undefined;
-    iconForegroundColor: string | undefined;
-    iconName: string | undefined;
-    name: string;
-    projectUid: string;
-    public: boolean;
-    userUid: string;
+export interface PopularProjectResponse extends RandomProjectResponse {
+    starCount: number;
 }
 
 export interface PopularArtistResponse {
@@ -65,9 +59,14 @@ export interface AddPopularProjectsAction {
     payload: PopularProjectResponse[];
 }
 
-export interface SetPopularProjectsOffsetAction {
-    type: typeof SET_POPULAR_PROJECTS_OFFSET;
-    newOffset: number;
+export interface SetPopularProjectsLoading {
+    type: typeof SET_POPULAR_PROJECTS_LOADING;
+    isLoading: boolean;
+}
+
+export interface SetPopularRankingError {
+    type: typeof SET_POPULAR_PROJECTS_ERROR | typeof SET_POPULAR_ARTISTS_ERROR;
+    error: string;
 }
 
 export interface AddRandomProjectsAction {
@@ -98,6 +97,7 @@ export type HomeActionTypes =
     | AddPopularArtistsAction
     | AddPopularProjectsAction
     | AddRandomProjectsAction
-    | SetPopularProjectsOffsetAction
+    | SetPopularProjectsLoading
+    | SetPopularRankingError
     | SetRandomProjectsLoading
     | SetPopularArtistsLoading;

@@ -1,38 +1,48 @@
 import admin from "firebase-admin";
 import { onCall } from "firebase-functions/v2/https";
-import { log } from "firebase-functions/logger";
 
-const shuffle = <T>(items: T[]): T[] => {
-    const shuffled = [...items];
-
-    for (let index = shuffled.length - 1; index > 0; index -= 1) {
-        const swapIndex = Math.floor(Math.random() * (index + 1));
-        [shuffled[index], shuffled[swapIndex]] = [
-            shuffled[swapIndex],
-            shuffled[index]
-        ];
-    }
-
-    return shuffled;
-};
-
-let lastUpdate = Date.now();
-let projects: any[] = [];
-
-export const popularProjects = onCall(
+/** Rank public projects by their current star records, with stable ties. */
+export const popularProjects = onCall<{ count?: number }>(
     { cors: true },
-    async ({ data }: { data: { count: number } }) => {
-        if (projects.length === 0 || Date.now() - lastUpdate > 1000 * 60 * 5) {
-            lastUpdate = Date.now();
-            const db = admin.firestore();
-            const randomStars = await db.collection("stars").limit(200).get();
-            // log("randomStarsLength: " + randomStars.docs.length);
-            const projectUids = randomStars.docs.map((doc) => doc.id);
-            // log("projectUids: " + JSON.stringify(projectUids, null, 2));
-            // log("projectsLength: " + projects.length);
-            projects = projectUids;
-        }
+    async ({ data }) => {
+        const count = data?.count;
+        const requestedCount =
+            typeof count === "number" && Number.isFinite(count)
+                ? Math.max(1, Math.min(50, Math.floor(count)))
+                : 8;
+        const db = admin.firestore();
+        const [projects, stars] = await Promise.all([
+            db.collection("projects").where("public", "==", true).get(),
+            db.collection("stars").get()
+        ]);
+        const starsByProject = new Map(
+            stars.docs.map((doc) => [doc.id, Object.keys(doc.data()).length])
+        );
 
-        return shuffle(projects).slice(0, data.count);
+        return projects.docs
+            .map((doc) => {
+                const project = doc.data();
+                return {
+                    projectUid: doc.id,
+                    userUid: project.userUid || "",
+                    name: project.name || "Untitled project",
+                    description: project.description || "",
+                    created: project.created ?? null,
+                    public: true,
+                    iconName: project.iconName || "fadwaveform",
+                    iconBackgroundColor:
+                        project.iconBackgroundColor || "#212226",
+                    iconForegroundColor:
+                        project.iconForegroundColor || "#f3f4f6",
+                    starCount: starsByProject.get(doc.id) ?? 0
+                };
+            })
+            .filter((project) => project.starCount > 0)
+            .sort(
+                (a, b) =>
+                    b.starCount - a.starCount ||
+                    a.projectUid.localeCompare(b.projectUid)
+            )
+            .slice(0, requestedCount);
     }
 );
