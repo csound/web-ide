@@ -79,22 +79,13 @@ const globalStyles = (theme: Theme): SerializedStyles => css`
 
     .MuiTooltip-tooltip {
         font-family: ${theme.font.regular}!important;
-        color: ${theme.textColor}!important;
-        background: ${theme.tooltipBackground} !important;
-        font-size: 13px !important;
-        padding: 8px !important;
     }
     .MuiTypography-body2 {
         color: ${theme.altTextColor} !important;
     }
     .MuiFab-root,
     .MuiButton-textPrimary {
-        color: ${theme.textColor} !important;
         opacity: 0.95;
-        background-color: ${theme.buttonBackground} !important;
-        :hover {
-            background-color: ${theme.buttonBackgroundHover} !important;
-        }
     }
     .MuiFab-root.Mui-disabled {
         background-color: ${theme.disabledButtonBackground} !important;

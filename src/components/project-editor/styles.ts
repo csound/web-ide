@@ -219,11 +219,13 @@ export const panelActionGroup = css`
     padding-right: 4px;
     display: inline-flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 4px;
-    flex: 0 0 auto;
+    flex: 0 1 auto;
     min-width: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
 `;
 
 export const panelActionButton = (theme: Theme): SerializedStyles => css`

@@ -1,6 +1,6 @@
 import defaultTheme from "./_theme-monokai";
 
-// Keep shared token names while deriving UI colors from the chosen palette.
+/** Fill shared UI colors from the chosen palette and accent. */
 export function completeTheme(
     palette: Partial<typeof defaultTheme> & {
         background: string;

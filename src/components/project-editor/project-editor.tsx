@@ -1170,19 +1170,22 @@ const ProjectEditor = ({
     );
 
     return isMobile() || compactLayout ? (
-        <MobileTabs
-            activeProject={activeProject}
-            projectUid={projectUid}
-            currentDocument={
-                (currentMobileTab
-                    ? activeProject.documents[currentMobileTab.uid]
-                    : undefined) ||
-                (mobileOpenDocuments[tabIndex] as
-                    | IDocument
-                    | IOpenDocument
-                    | undefined)
-            }
-        />
+        <>
+            {unsavedDataExitPrompt}
+            <MobileTabs
+                activeProject={activeProject}
+                projectUid={projectUid}
+                currentDocument={
+                    (currentMobileTab
+                        ? activeProject.documents[currentMobileTab.uid]
+                        : undefined) ||
+                    (mobileOpenDocuments[tabIndex] as
+                        | IDocument
+                        | IOpenDocument
+                        | undefined)
+                }
+            />
+        </>
     ) : (
         <>
             {unsavedDataExitPrompt}

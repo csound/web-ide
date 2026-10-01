@@ -1,6 +1,8 @@
 import type { Theme } from "@emotion/react";
 import { EditorView } from "@codemirror/view";
+import { alpha } from "@mui/material/styles";
 
+/** Apply the IDE palette and sizing to CodeMirror's editor surfaces. */
 export const codeMirrorTheme = (theme: Theme) =>
     EditorView.theme(
         {
@@ -38,7 +40,9 @@ export const codeMirrorTheme = (theme: Theme) =>
                 backgroundColor: theme.highlightBackgroundAlt,
                 color: theme.textColor
             },
-            ".cm-activeLine": { backgroundColor: theme.highlightBackgroundAlt },
+            ".cm-activeLine": {
+                backgroundColor: alpha(theme.highlightBackgroundAlt, 0.4)
+            },
             ".cm-cursor, .cm-dropCursor": { borderLeftColor: theme.caretColor },
             ".cm-selectionBackground, &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection":
                 {

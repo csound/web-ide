@@ -1,6 +1,7 @@
 import type { Theme } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
 
+/** Match MUI controls to the selected IDE palette and shared spacing. */
 export const makeMuiTheme = (theme: Theme) =>
     createTheme({
         palette: {

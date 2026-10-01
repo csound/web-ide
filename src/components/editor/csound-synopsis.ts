@@ -269,6 +269,7 @@ export function csoundSynopsis(): Extension {
         let request = 0;
         let destroyed = false;
 
+        /** Replace argument hints and remeasure when the panel appears or hides. */
         function setSynopsis(content?: HTMLElement) {
             const wasEmpty = !dom.hasChildNodes();
             dom.replaceChildren(...(content ? [content] : []));
