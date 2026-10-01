@@ -14,6 +14,7 @@ vi.mock("./tabs/stars-list", () => ({ StarsList: () => null }));
 
 afterEach(cleanup);
 
+/** Exposes the in-memory route to check profile links without network access. */
 function Location() {
     return <output>{useLocation().pathname}</output>;
 }
