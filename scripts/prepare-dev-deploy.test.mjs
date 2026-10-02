@@ -20,7 +20,8 @@ const { Config } = require("firebase-tools/lib/config.js");
 const { parse } = require("yaml");
 const backend = require("firebase-tools/lib/deploy/functions/backend.js");
 const {
-    promptForFailurePolicies
+    promptForFailurePolicies,
+    promptForFunctionDeletion
 } = require("firebase-tools/lib/deploy/functions/prompts.js");
 
 test("dev skips the empty Extensions deploy and preserves every function and hosting route", async (t) => {
@@ -107,31 +108,58 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
             readFile(path.join(functionsDir, "functions.yaml")),
             { code: "ENOENT" }
         );
-        await t.test("CI accepts newly enabled function retries", async () => {
-            const workflow = parse(
-                await readFile(
-                    path.join(root, ".github/workflows/develop.yaml"),
-                    "utf8"
-                )
-            );
-            const deploy = workflow.jobs["deploy-dev"].steps.find(
-                (step) => step.name === "Deploy to Firebase"
-            );
-            const endpoint = dev.endpoints.new_user_callback;
-            assert.equal(endpoint.eventTrigger.retry, true);
-            await promptForFailurePolicies(
-                {
-                    nonInteractive: true,
-                    force: deploy.with.args.split(/\s+/).includes("--force")
-                },
-                backend.of({
+        await t.test(
+            "CI preserves deployment confirmations and accepts existing retries",
+            async () => {
+                const workflow = parse(
+                    await readFile(
+                        path.join(root, ".github/workflows/develop.yaml"),
+                        "utf8"
+                    )
+                );
+                const deploy = workflow.jobs["deploy-dev"].steps.find(
+                    (step) => step.name === "Deploy to Firebase"
+                );
+                const args = deploy.with.args.split(/\s+/);
+                const options = {
+                    nonInteractive: args.includes("--non-interactive"),
+                    force: args.includes("--force")
+                };
+                assert.equal(options.nonInteractive, true);
+                assert.equal(options.force, false);
+                const endpoint = dev.endpoints.new_user_callback;
+                assert.equal(endpoint.eventTrigger.retry, true);
+                const deployedEndpoint = {
                     ...endpoint,
                     id: "new_user_callback",
                     region: "us-central1"
-                }),
-                backend.empty()
-            );
-        });
+                };
+                const desired = backend.of(deployedEndpoint);
+                await assert.rejects(
+                    promptForFailurePolicies(options, desired, backend.empty()),
+                    /Pass the --force option to deploy functions with a failure policy/
+                );
+                await assert.rejects(
+                    promptForFailurePolicies(
+                        options,
+                        desired,
+                        backend.of({
+                            ...deployedEndpoint,
+                            eventTrigger: {
+                                ...endpoint.eventTrigger,
+                                retry: false
+                            }
+                        })
+                    ),
+                    /Pass the --force option to deploy functions with a failure policy/
+                );
+                await promptForFailurePolicies(options, desired, desired);
+                await assert.rejects(
+                    promptForFunctionDeletion([deployedEndpoint], options),
+                    /deletion cannot proceed in non-interactive mode/
+                );
+            }
+        );
     } finally {
         await rm(originalDir, { recursive: true, force: true });
         if (devSource) await rm(devSource, { recursive: true, force: true });

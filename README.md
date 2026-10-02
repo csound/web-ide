@@ -242,6 +242,35 @@ Build the app and Functions before a manual dev deploy. Run `npm run test:deploy
 installing the Functions dependencies and building them to check that dev keeps all function
 definitions and Hosting routes.
 
+#### Enable retries once before unattended dev deploys
+
+Dev CI uses `--non-interactive` without `--force`. When a function first enables retries,
+Firebase requires confirmation. CI stops until a maintainer approves that change in an
+interactive terminal. Once the deployed retry policy matches the source, later deploys
+need no retry confirmation.
+
+For `new_user_callback`, wait until the database backup is complete and verified. Then,
+from the repository root, build and prepare the dev source and deploy only that function:
+
+```bash
+npm ci
+npm ci --prefix functions
+npm run build:dev
+npm run build --prefix functions
+npm run prepare:deploy:dev
+./functions/node_modules/.bin/firebase deploy \
+    --project csound-ide-dev \
+    --config firebase.dev.generated.json \
+    --only functions:new_user_callback
+```
+
+Use a terminal signed into Firebase. Review the retry warning and deployment prompts before
+confirming, then rerun the failed **Deploy Develop** workflow. The command above is a live
+deployment, not a validation step. It does not deploy Hosting or the other functions.
+
+Keep `--force` out of routine CI: it also accepts function deletion, unsafe trigger changes,
+and some cost increases. See [Firebase's deployment confirmation checks](https://github.com/firebase/firebase-tools/blob/v15.19.1/src/deploy/functions/prompts.ts).
+
 To deploy manually, set `FIREBASE_TOKEN` (obtain via `firebase login:ci`) and run:
 
 ```bash

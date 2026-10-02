@@ -43,7 +43,7 @@ jobs:
             - name: Deploy to Firebase
               uses: docker://w9jds/firebase-action:v15.19.1
               with:
-                  # Firebase requires --force when CI enables function retries.
-                  args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive --force
+                  # Enable new retry policies interactively first; see README.
+                  args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
