@@ -174,6 +174,37 @@ it("resolves a username even when a blank profile was already cached", async () 
     );
 });
 
+it("retries blank usernames on later random loads and reuses resolved profiles", async () => {
+    const store = createStore();
+    random.mockResolvedValue({ data: [project] });
+    let registered = false;
+    getDocs.mockImplementation(async ({ collection }) =>
+        snapshot(
+            collection === "profiles"
+                ? { author: { displayName: "Fixture Artist", username: "" } }
+                : registered
+                  ? { "fixture-artist": { userUid: "author" } }
+                  : {}
+        )
+    );
+
+    await store.dispatch(fetchRandomProjects() as any);
+    expect(store.getState().HomeReducer.profiles.author.username).toBe("");
+
+    registered = true;
+    await store.dispatch(fetchRandomProjects() as any);
+    expect(store.getState().HomeReducer.profiles.author.username).toBe(
+        "fixture-artist"
+    );
+    expect(getDocs).toHaveBeenCalledTimes(4);
+
+    await store.dispatch(fetchRandomProjects() as any);
+    expect(store.getState().HomeReducer.profiles.author.username).toBe(
+        "fixture-artist"
+    );
+    expect(getDocs).toHaveBeenCalledTimes(4);
+});
+
 it.each([{}, { first: { userUid: "author" }, second: { userUid: "author" } }])(
     "does not invent a username when mappings are missing or ambiguous: %j",
     async (names) => {

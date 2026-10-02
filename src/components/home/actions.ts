@@ -215,7 +215,12 @@ export const fetchRandomProjects = () => {
         }
 
         const userIDs = randomProjects.map((project) => project.userUid);
-        const missingProfiles = difference(userIDs, keys(state.profiles));
+        const missingProfiles = difference(
+            userIDs,
+            keys(state.profiles).filter((uid) =>
+                Boolean(state.profiles[uid]?.username)
+            )
+        );
 
         if (!isEmpty(missingProfiles)) {
             const projectProfiles: Record<string, IProfile> = {};
