@@ -223,7 +223,7 @@ offline-capable desktop app.
 
 ### Firebase Web Hosting
 
-For site maintainers, see the [deployment guide](docs/deployment.md).
+GitHub Actions handles website deployment.
 
 ### Electron Desktop App
 

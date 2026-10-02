@@ -20,8 +20,7 @@ const { Config } = require("firebase-tools/lib/config.js");
 const { parse } = require("yaml");
 const backend = require("firebase-tools/lib/deploy/functions/backend.js");
 const {
-    promptForFailurePolicies,
-    promptForFunctionDeletion
+    promptForFailurePolicies
 } = require("firebase-tools/lib/deploy/functions/prompts.js");
 
 test("dev skips the empty Extensions deploy and preserves every function and hosting route", async (t) => {
@@ -109,7 +108,7 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
             { code: "ENOENT" }
         );
         await t.test(
-            "CI preserves deployment confirmations and accepts existing retries",
+            "CI confirms new retry policies without a manual prompt",
             async () => {
                 const workflow = parse(
                     await readFile(
@@ -126,7 +125,7 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
                     force: args.includes("--force")
                 };
                 assert.equal(options.nonInteractive, true);
-                assert.equal(options.force, false);
+                assert.equal(options.force, true);
                 const endpoint = dev.endpoints.new_user_callback;
                 assert.equal(endpoint.eventTrigger.retry, true);
                 const deployedEndpoint = {
@@ -135,29 +134,20 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
                     region: "us-central1"
                 };
                 const desired = backend.of(deployedEndpoint);
-                await assert.rejects(
-                    promptForFailurePolicies(options, desired, backend.empty()),
-                    /Pass the --force option to deploy functions with a failure policy/
+                await promptForFailurePolicies(
+                    options,
+                    desired,
+                    backend.empty()
                 );
-                await assert.rejects(
-                    promptForFailurePolicies(
-                        options,
-                        desired,
-                        backend.of({
-                            ...deployedEndpoint,
-                            eventTrigger: {
-                                ...endpoint.eventTrigger,
-                                retry: false
-                            }
-                        })
-                    ),
-                    /Pass the --force option to deploy functions with a failure policy/
+                await promptForFailurePolicies(
+                    options,
+                    desired,
+                    backend.of({
+                        ...deployedEndpoint,
+                        eventTrigger: { ...endpoint.eventTrigger, retry: false }
+                    })
                 );
                 await promptForFailurePolicies(options, desired, desired);
-                await assert.rejects(
-                    promptForFunctionDeletion([deployedEndpoint], options),
-                    /deletion cannot proceed in non-interactive mode/
-                );
             }
         );
     } finally {

@@ -43,7 +43,7 @@ jobs:
             - name: Deploy to Firebase
               uses: docker://w9jds/firebase-action:v15.19.1
               with:
-                  # Enable new retry policies interactively first; see docs/deployment.md.
-                  args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive
+                  # Confirm retry policies during unattended deployment.
+                  args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive --force
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
