@@ -4,8 +4,9 @@ import { headerHeight } from "@styles/constants";
 export const homeBackground = (theme: Theme): SerializedStyles => css`
     position: relative;
     isolation: isolate;
-    padding: 24px;
-    top: ${headerHeight}px;
+    margin-top: ${headerHeight}px;
+    min-height: calc(100dvh - ${headerHeight}px);
+    background-color: ${theme.background};
 
     &:before {
         content: " ";
@@ -13,6 +14,7 @@ export const homeBackground = (theme: Theme): SerializedStyles => css`
         inset: 0;
         z-index: -1;
         pointer-events: none;
+        opacity: 0.12;
         background-color: ${theme.background};
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cpath fill='%23${(
             theme.altButtonBackground || ""

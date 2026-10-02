@@ -36,8 +36,11 @@ const RandomProjects = () => {
     });
 
     return (
-        <>
-            <div css={SS.homeHeading} style={{ marginTop: 12 }}>
+        <section aria-labelledby="random-projects">
+            <div css={SS.homeHeading}>
+                <h2 id="random-projects" css={SS.homePageHeading}>
+                    Random Projects
+                </h2>
                 <IconButton
                     aria-label="shuffle"
                     data-tip="Shuffle for more random projects"
@@ -47,9 +50,6 @@ const RandomProjects = () => {
                 >
                     <ShuffleIcon />
                 </IconButton>
-
-                <h1 css={SS.homePageHeading}>Random Projects</h1>
-                <hr css={SS.homePageHeadingBreak} />
             </div>
             <div css={SS.doubleGridContainer}>
                 {randomProjectsLoading
@@ -70,7 +70,7 @@ const RandomProjects = () => {
                           );
                       })}
             </div>
-        </>
+        </section>
     );
 };
 

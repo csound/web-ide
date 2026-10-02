@@ -17,7 +17,9 @@ import {
     ADD_POPULAR_PROJECTS,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
-    SET_POPULAR_PROJECTS_OFFSET,
+    SET_POPULAR_PROJECTS_LOADING,
+    SET_POPULAR_PROJECTS_ERROR,
+    SET_POPULAR_ARTISTS_ERROR,
     SET_POPULAR_ARTISTS_LOADING,
     SET_RANDOM_PROJECTS_LOADING,
     HomeActionTypes,
@@ -122,66 +124,69 @@ export const searchProjects =
         });
     };
 
-export const fetchPopularProjects = (offset = 0, pageSize = 8) => {
+/** Load missing author profiles once, even when several projects share an author. */
+const fetchRankingProfiles = async (
+    userIDs: string[],
+    dispatch: AppThunkDispatch,
+    getState: () => RootState
+) => {
+    const existing = getState().HomeReducer.profiles;
+    const missing = [...new Set(userIDs)].filter(
+        (uid) => uid && !existing[uid]
+    );
+    if (!missing.length) return;
+    const snapshot = await getDocs(
+        query(profiles, where(documentId(), "in", missing))
+    );
+    const payload: Record<string, IProfile> = {};
+    snapshot.forEach((document: DocumentData) => {
+        const profile = document.data();
+        payload[document.id] = {
+            ...profile,
+            ...(profile.userJoinDate
+                ? { userJoinDate: profile.userJoinDate.toMillis() }
+                : {})
+        };
+    });
+    dispatch({ type: ADD_USER_PROFILES, payload });
+};
+
+export const fetchPopularProjects = () => {
     return async (
         dispatch: AppThunkDispatch,
         getState: () => RootState
     ): Promise<void> => {
-        const nextOffset = Math.max(0, offset) + pageSize;
-
-        dispatch({
-            type: SET_POPULAR_PROJECTS_OFFSET,
-            newOffset: nextOffset
-        });
-        const state = getState().HomeReducer;
-
-        let popularProjects: PopularProjectResponse[] = [];
+        dispatch({ type: SET_POPULAR_PROJECTS_LOADING, isLoading: true });
         try {
-            // const starsRequest = await fetch(
-            //     `${searchURL}/list/stars/${pageSize}/${offset}/count/desc`
-            // );
-            // const starredProjects: IStarredProjectSearchResult =
-            //     await starsRequest.json();
-
-            const popularProjectsResponse = await getPopularProjects({
-                count: pageSize
-            });
-
-            popularProjects = []; // popularProjectsResponse.data;
+            const response = await getPopularProjects({ count: 8 });
+            const projects = response.data;
+            // The old endpoint returned IDs without project details or star counts.
+            if (
+                !Array.isArray(projects) ||
+                projects.some(
+                    (project) =>
+                        !project ||
+                        typeof project.projectUid !== "string" ||
+                        typeof project.starCount !== "number"
+                )
+            ) {
+                throw new Error("Invalid popular projects response");
+            }
+            dispatch({ type: ADD_POPULAR_PROJECTS, payload: projects });
+            await fetchRankingProfiles(
+                projects.map((project) => project.userUid),
+                dispatch,
+                getState
+            ).catch(console.error);
         } catch (error) {
             console.error(error);
-        }
-
-        const userIDs = popularProjects.map((project) => project.userUid);
-
-        const missingProfiles = difference(userIDs, keys(state.profiles));
-        if (!isEmpty(missingProfiles)) {
-            const projectProfiles: Record<string, IProfile> = {};
-
-            const profilesQuery = await getDocs(
-                query(profiles, where(documentId(), "in", missingProfiles))
-            );
-
-            profilesQuery.forEach((snapshot: DocumentData) => {
-                projectProfiles[snapshot.id] = snapshot.data();
-                if (projectProfiles[snapshot.id]?.userJoinDate) {
-                    projectProfiles[snapshot.id].userJoinDate = (
-                        projectProfiles[snapshot.id]
-                            .userJoinDate as unknown as Timestamp
-                    ).toMillis();
-                }
-            });
-
             dispatch({
-                type: ADD_USER_PROFILES,
-                payload: projectProfiles
+                type: SET_POPULAR_PROJECTS_ERROR,
+                error: "Could not load popular projects."
             });
+        } finally {
+            dispatch({ type: SET_POPULAR_PROJECTS_LOADING, isLoading: false });
         }
-
-        dispatch({
-            type: ADD_POPULAR_PROJECTS,
-            payload: popularProjects
-        });
     };
 };
 
@@ -240,55 +245,26 @@ export const fetchRandomProjects = () => {
     };
 };
 
-export const fetchPopularArtists = (count = 8) => {
+export const fetchPopularArtists = () => {
     return async (
-        dispatch: (action: HomeActionTypes) => Promise<void>,
+        dispatch: AppThunkDispatch,
         getState: () => RootState
     ): Promise<void> => {
         dispatch({ type: SET_POPULAR_ARTISTS_LOADING, isLoading: true });
-
         try {
-            const state = getState().HomeReducer;
-
-            let popularArtists: PopularArtistResponse[] = [];
-            try {
-                const popularArtistsResponse = await getPopularArtists({
-                    count
-                });
-                popularArtists = popularArtistsResponse.data || [];
-            } catch (error) {
-                console.error(error);
-            }
-
-            const userIDs = popularArtists.map((artist) => artist.userUid);
-            const missingProfiles = difference(userIDs, keys(state.profiles));
-
-            if (!isEmpty(missingProfiles)) {
-                const artistProfiles: Record<string, IProfile> = {};
-
-                const profilesQuery = await getDocs(
-                    query(profiles, where(documentId(), "in", missingProfiles))
-                );
-
-                profilesQuery.forEach((snapshot: DocumentData) => {
-                    artistProfiles[snapshot.id] = snapshot.data();
-                    if (artistProfiles[snapshot.id]?.userJoinDate) {
-                        artistProfiles[snapshot.id].userJoinDate = (
-                            artistProfiles[snapshot.id]
-                                .userJoinDate as unknown as Timestamp
-                        ).toMillis();
-                    }
-                });
-
-                dispatch({
-                    type: ADD_USER_PROFILES,
-                    payload: artistProfiles
-                });
-            }
-
+            const response = await getPopularArtists({ count: 8 });
+            const artists = response.data || [];
+            dispatch({ type: ADD_POPULAR_ARTISTS, payload: artists });
+            await fetchRankingProfiles(
+                artists.map((artist) => artist.userUid),
+                dispatch,
+                getState
+            ).catch(console.error);
+        } catch (error) {
+            console.error(error);
             dispatch({
-                type: ADD_POPULAR_ARTISTS,
-                payload: popularArtists
+                type: SET_POPULAR_ARTISTS_ERROR,
+                error: "Could not load popular artists."
             });
         } finally {
             dispatch({ type: SET_POPULAR_ARTISTS_LOADING, isLoading: false });

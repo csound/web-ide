@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "@root/store";
+import { useEffect } from "react";
+import { useDispatch } from "@root/store";
 import { Header } from "@comp/header/header";
 import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
@@ -9,64 +9,10 @@ import PopularProjects from "./popular-projects";
 import RandomProjects from "./random-projects";
 import PopularArtists from "./popular-artists";
 import { homeBackground } from "./background-style";
-import { homeActionBar, homeCreateButton } from "./styles";
-import { fetchPopularProjects } from "./actions";
-import {
-    selectPopularProjectsFetchOffset,
-    selectPopularProjectsSlice
-} from "./selectors";
+import { homeContent, homeCreateButton, communityColumns } from "./styles";
 
 const Home = () => {
     const dispatch = useDispatch();
-
-    const popularProjectsFetchOffset = useSelector(
-        selectPopularProjectsFetchOffset
-    );
-
-    const [currentPopularProjectsOffset, setCurrentPopularProjectsOffset] =
-        useState(0);
-
-    const popularProjectsSliceSelector = useMemo(
-        () =>
-            selectPopularProjectsSlice(
-                popularProjectsFetchOffset < 0
-                    ? 0
-                    : currentPopularProjectsOffset,
-                popularProjectsFetchOffset < 0
-                    ? -1
-                    : currentPopularProjectsOffset + 8
-            ),
-        [currentPopularProjectsOffset, popularProjectsFetchOffset]
-    );
-
-    const currentPopularProjectsPagination = useSelector(
-        popularProjectsSliceSelector
-    );
-
-    const handlePopularProjectsNextPage = useCallback(() => {
-        try {
-            dispatch(fetchPopularProjects(currentPopularProjectsOffset));
-        } catch (error) {
-            console.error(error);
-        }
-        // if (popularProjects) {
-        //     dispatch(popularProjects);
-        //     setCurrentPopularProjectsOffset(
-        //         currentPopularProjectsOffset + 8
-        //     );
-        // }
-    }, [dispatch, currentPopularProjectsOffset]);
-
-    const handlePopularProjectsPreviousPage = useCallback(() => {
-        dispatch(fetchPopularProjects(currentPopularProjectsOffset));
-        setCurrentPopularProjectsOffset(currentPopularProjectsOffset - 8);
-    }, [dispatch, currentPopularProjectsOffset]);
-
-    useEffect(() => {
-        if (popularProjectsFetchOffset < 0) {
-            dispatch(fetchPopularProjects());
-        }
-    }, [dispatch, popularProjectsFetchOffset]);
 
     useEffect(() => {
         // start at top on init
@@ -79,32 +25,27 @@ const Home = () => {
     return (
         <>
             <Header />
-            <div css={homeBackground}>
-                <div css={homeActionBar}>
-                    <Button
-                        css={homeCreateButton}
-                        color="inherit"
-                        onClick={() => dispatch(addProject())}
-                        startIcon={<AddIcon />}
-                    >
-                        New Project
-                    </Button>
+            <main css={homeBackground}>
+                <div css={homeContent}>
+                    <Search
+                        actions={
+                            <Button
+                                css={homeCreateButton}
+                                color="inherit"
+                                onClick={() => dispatch(addProject())}
+                                startIcon={<AddIcon />}
+                            >
+                                New Project
+                            </Button>
+                        }
+                    />
+                    <div css={communityColumns}>
+                        <PopularArtists />
+                        <PopularProjects />
+                    </div>
+                    <RandomProjects />
                 </div>
-                <Search />
-                {/* <p>Search is being fixed...</p> */}
-                {/* <PopularProjects
-                    projects={currentPopularProjectsPagination || []}
-                    handlePopularProjectsNextPage={
-                        handlePopularProjectsNextPage
-                    }
-                    handlePopularProjectsPreviousPage={
-                        handlePopularProjectsPreviousPage
-                    }
-                    hasPrevious={currentPopularProjectsOffset > 0}
-                /> */}
-                <PopularArtists />
-                <RandomProjects />
-            </div>
+            </main>
         </>
     );
 };

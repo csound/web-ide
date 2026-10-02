@@ -1,63 +1,77 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { topInnerShadow, bottomInnerShadow } from "@styles/_common";
+import { pageMaxWidth } from "@styles/constants";
 
-export const homeHeading = css`
-    position: relative;
-    left: 0;
-    top: 0;
-    height: 40px;
+export const homeContent = css`
+    max-width: ${pageMaxWidth}px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    @media (max-width: 767px) {
+        padding: 24px 16px 32px;
+        gap: 28px;
+    }
 `;
 
-export const homeActionBar = css`
+export const communityColumns = css`
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    align-items: start;
+    @media (max-width: 767px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+    }
+`;
+
+export const homeHeading = css`
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 18px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 40px;
+    margin-bottom: 16px;
+`;
+
+export const homeActions = css`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
 `;
 
 export const homeCreateButton = (theme: Theme): SerializedStyles => css`
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
+    padding: 8px 12px;
+    min-height: 40px;
     border: 1px solid ${theme.line};
-    background: linear-gradient(
-        180deg,
-        ${theme.highlightBackgroundAlt},
-        ${theme.highlightBackground}
-    );
-    color: ${theme.textColor};
+    border-radius: 6px;
+    background: ${theme.buttonBackground};
+    color: ${theme.buttonTextColor};
     font-weight: 600;
-
+    white-space: nowrap;
     &:hover {
-        background: ${theme.highlightBackgroundAlt};
+        background: ${theme.buttonBackgroundHover};
     }
 `;
 
 export const homePageHeading = (theme: Theme): SerializedStyles => css`
-    position: absolute;
-    bottom: -6px;
+    margin: 0;
     font-family: ${theme.font.regular};
-    font-size: 24px;
+    font-size: 22px;
     color: ${theme.textColor};
-    font-weight: 500;
-    line-height: 1.43;
-    letter-spacing: 0.01071em;
-`;
-
-export const homePageHeadingBreak = (theme: Theme): SerializedStyles => css`
-    position: absolute;
-    background-color: ${theme.textColor};
-    height: 2px;
-    width: 100%;
-    bottom: 0;
+    font-weight: 600;
+    line-height: 1.4;
+    @media (max-width: 767px) {
+        font-size: 20px;
+    }
 `;
 
 export const paginationButton =
     (isActive: boolean) =>
     (theme: Theme): SerializedStyles => css`
-        position: absolute;
-        right: 0;
-        bottom: 6px;
+        flex-shrink: 0;
         svg {
             fill: ${isActive ? theme.textColor : "inherit"}!important;
         }
@@ -73,29 +87,17 @@ export const cardBackground = css`
 `;
 
 export const doubleGridContainer = css`
-    margin-top: 12px;
     display: grid;
-    align-items: center;
-    min-height: 190px;
-    width: calc(100% + 12px);
-
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     & > div {
-        position: relative;
-        margin-right: 12px;
-        margin-bottom: 12px;
+        min-width: 0;
     }
-
-    @media (max-width: 1200px) {
-        grid-template-columns: 1fr 1fr 1fr;
+    @media (max-width: 1023px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    @media (max-width: 1000px) {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+    @media (max-width: 767px) {
+        grid-template-columns: minmax(0, 1fr);
     }
 `;
 
@@ -139,98 +141,107 @@ export const cardLoderSkeleton = css`
 `;
 
 export const searchField = (theme: Theme): SerializedStyles => css`
-    margin-top: 12px;
-    margin-bottom: 24px;
+    width: 100%;
     background-color: ${theme.textFieldBackground};
-    opacity: 0.7;
-
-    input:focus {
-        & .MuiFormControl-root {
-            opacity: 1 !important;
-        }
+    border-radius: 6px;
+    .MuiOutlinedInput-notchedOutline {
+        border-color: ${theme.lineNumber};
+    }
+    input::placeholder {
+        color: ${theme.altTextColor};
+        opacity: 1;
     }
 `;
 
-export const searchLoaderSpinner = css`
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+export const searchResults = css`
+    margin-top: 16px;
 `;
 
 export const shuffleButton = (theme: Theme): SerializedStyles => css`
-    position: absolute;
-    right: 0;
-    bottom: 6px;
-    svg {
-        fill: ${theme.textColor} !important;
-    }
+    color: ${theme.textColor};
+    flex-shrink: 0;
+`;
+
+export const rankingSection = css`
+    min-width: 0;
+`;
+
+export const rankingHeading = css`
+    min-height: 72px;
 `;
 
 export const artistBoardSubheading = (theme: Theme): SerializedStyles => css`
-    margin-top: 12px;
-    margin-bottom: 8px;
+    margin: 6px 0 16px;
     color: ${theme.altTextColor};
     font-size: 13px;
-    letter-spacing: 0.02em;
+    line-height: 1.5;
 `;
 
 export const artistBoard = (theme: Theme): SerializedStyles => css`
-    margin-bottom: 18px;
-    border: 1px solid ${theme.line};
-    background: linear-gradient(
-        180deg,
-        ${theme.highlightBackgroundAlt},
-        ${theme.highlightBackground}
-    );
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid ${theme.line};
 `;
 
 export const artistBoardRow = (theme: Theme): SerializedStyles => css`
     display: grid;
-    grid-template-columns: 66px minmax(0, 1fr) auto;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
-    padding: 10px 12px;
+    min-height: 72px;
+    padding: 12px 0;
     border-bottom: 1px solid ${theme.line};
-    background: rgb(0 0 0 / 4%);
-    &:last-of-type {
-        border-bottom: none;
+    @media (max-width: 1023px) {
+        gap: 8px;
+        grid-template-columns: 24px minmax(0, 1fr) auto;
     }
 `;
 
 export const artistBoardRowSkeleton = (theme: Theme): SerializedStyles => css`
-    height: 54px;
-    border-bottom: 1px solid ${theme.line};
-    background: linear-gradient(
-        90deg,
-        ${theme.highlightBackgroundAlt},
-        ${theme.highlightBackground},
-        ${theme.highlightBackgroundAlt}
-    );
-    &:last-of-type {
-        border-bottom: none;
+    ${artistBoardRow(theme)}
+    grid-template-columns: 28px minmax(0, 1fr) 40px;
+    span {
+        height: 16px;
+        border-radius: 4px;
+        background: ${theme.highlightBackgroundAlt};
+    }
+    span:nth-of-type(2) {
+        width: 70%;
+        height: 36px;
     }
 `;
 
 export const artistBoardEmptyState = (theme: Theme): SerializedStyles => css`
-    padding: 14px 12px;
+    margin: 0;
+    padding: 24px 0;
+    border-top: 1px solid ${theme.line};
     color: ${theme.altTextColor};
     font-size: 13px;
+    p {
+        margin: 0 0 8px;
+    }
 `;
 
-export const artistRankChip =
-    (accentColor?: string) =>
-    (theme: Theme): SerializedStyles => css`
-        width: 54px;
-        text-align: center;
-        padding: 8px 0;
-        font-size: 13px;
-        font-weight: 700;
-        color: ${theme.textColor};
-        border: 1px solid ${accentColor || theme.line};
-        background: ${theme.highlightBackground};
-    `;
+export const artistRank = (theme: Theme): SerializedStyles => css`
+    color: ${theme.altTextColor};
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+`;
+
+export const projectArtwork = (theme: Theme): SerializedStyles => css`
+    position: relative;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid ${theme.line};
+    svg {
+        width: 26px;
+        height: 26px;
+    }
+`;
 
 export const artistIdentity = (theme: Theme): SerializedStyles => css`
     display: flex;
@@ -290,6 +301,7 @@ export const artistNameGroup = css`
     display: flex;
     flex-direction: column;
     min-width: 0;
+    gap: 2px;
 `;
 
 export const artistDisplayName = (theme: Theme): SerializedStyles => css`
@@ -311,8 +323,10 @@ export const artistUsername = (theme: Theme): SerializedStyles => css`
 
 export const artistStats = css`
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    white-space: nowrap;
 `;
 
 export const artistStat = (theme: Theme): SerializedStyles => css`
@@ -335,5 +349,21 @@ export const artistStatMuted = (theme: Theme): SerializedStyles => css`
     font-size: 12px;
     svg {
         font-size: 15px;
+    }
+`;
+
+export const rankingLink = (theme: Theme): SerializedStyles => css`
+    ${artistDisplayName(theme)}
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+    }
+`;
+
+export const rankingAuthor = (theme: Theme): SerializedStyles => css`
+    ${artistUsername(theme)}
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
     }
 `;
