@@ -14,12 +14,13 @@ import {
 import { useNavigate } from "react-router";
 import PersonIcon from "@mui/icons-material/Person";
 import CachedAvatar from "../cached-avatar";
+import { IProfile } from "../types";
 
 export const FollowersList = ({
     filteredFollowers,
     isLoading = false
 }: {
-    filteredFollowers: Array<any>;
+    filteredFollowers: IProfile[];
     isLoading?: boolean;
 }): React.ReactElement => {
     const navigate = useNavigate();
@@ -70,13 +71,15 @@ export const FollowersList = ({
 
     return (
         <>
-            {filteredFollowers.map((p: any, index) => {
+            {filteredFollowers.map((p) => {
                 return (
                     <ListItemButton
                         alignItems="flex-start"
-                        key={index}
+                        key={p.userUid}
                         onClick={() => {
-                            navigate(`/profile/${p.username}`);
+                            navigate(
+                                `/profile/${encodeURIComponent(p.username)}`
+                            );
                         }}
                     >
                         <StyledUserListItemContainer>
@@ -88,7 +91,7 @@ export const FollowersList = ({
 
                             <StyledListItemTopRowText>
                                 <ListItemText
-                                    primary={p.displayName}
+                                    primary={p.displayName || p.username}
                                     secondary={p.bio}
                                 />
                             </StyledListItemTopRowText>

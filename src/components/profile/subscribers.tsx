@@ -44,7 +44,6 @@ import {
     filter,
     isEmpty,
     keys,
-    map,
     pathOr,
     pipe,
     prop,
@@ -72,119 +71,87 @@ export const subscribeToProfile = (
     return unsubscribe;
 };
 
+const subscribeToProfileConnections = (
+    profileUid: string,
+    dispatch: AppThunkDispatch,
+    relation: "following" | "followers"
+): (() => void) => {
+    const setLoading =
+        relation === "following" ? setFollowingLoading : setFollowersLoading;
+    const updateType =
+        relation === "following"
+            ? UPDATE_PROFILE_FOLLOWING
+            : UPDATE_PROFILE_FOLLOWERS;
+    let revision = 0;
+    dispatch(setLoading(profileUid, true));
+
+    const unsubscribe = onSnapshot(
+        doc(relation === "following" ? following : followers, profileUid),
+        async (snapshot) => {
+            const currentRevision = ++revision;
+            dispatch(setLoading(profileUid, true));
+            try {
+                const sorted = sort(
+                    descend(propOr(Number.NEGATIVE_INFINITY, "val")),
+                    listifyObject(snapshot.data() ?? {})
+                );
+                // Recheck cached profiles too: an account may have been deleted
+                // since the last visit. This only filters local display data.
+                const snapshots = await Promise.all(
+                    sorted.map(({ key }) => getDoc(doc(profiles, key)))
+                );
+                if (currentRevision !== revision) return;
+                const userProfiles = snapshots
+                    .filter((profile) => profile.exists())
+                    .map((profile) => {
+                        const data = profile.data()!;
+                        return {
+                            ...data,
+                            userUid: profile.id,
+                            username: data.username ?? "",
+                            ...(data.userJoinDate
+                                ? { userJoinDate: data.userJoinDate.toMillis() }
+                                : {})
+                        };
+                    });
+                dispatch({
+                    type: updateType,
+                    profileUid,
+                    userProfiles,
+                    userProfileUids: userProfiles.map(
+                        (profile) => profile.userUid
+                    )
+                });
+            } catch (error) {
+                console.error(error);
+            } finally {
+                if (currentRevision === revision)
+                    dispatch(setLoading(profileUid, false));
+            }
+        },
+        (error) => {
+            ++revision;
+            console.error(error);
+            dispatch(setLoading(profileUid, false));
+        }
+    );
+    return () => {
+        ++revision;
+        unsubscribe();
+    };
+};
+
 export const subscribeToFollowing = (
     profileUid: string,
     dispatch: AppThunkDispatch
-): (() => void) => {
-    // Set loading state
-    dispatch(setFollowingLoading(profileUid, true));
-
-    const unsubscribe: () => void = onSnapshot(
-        doc(following, profileUid),
-        async (followingReference) => {
-            const state = store.getState();
-            const userProfileData = followingReference.data();
-            const userProfileDataSorted = sort(
-                descend(propOr(Number.NEGATIVE_INFINITY, "val")),
-                listifyObject(userProfileData || {})
-            );
-            const userProfileUids = map(prop("key"), userProfileDataSorted);
-            const cachedProfileUids = keys(state.ProfileReducer.profiles);
-            const missingProfileUids = difference(
-                userProfileUids,
-                cachedProfileUids
-            ) as string[];
-
-            const missingProfiles = await Promise.all(
-                missingProfileUids.map(async (followingProfileUid: string) => {
-                    const profPromise = await getDoc(
-                        doc(profiles, followingProfileUid)
-                    );
-                    const profileData = profPromise.exists()
-                        ? profPromise.data()
-                        : { displayName: "Deleted user" };
-                    if (profileData.userJoinDate) {
-                        profileData.userJoinDate =
-                            profileData.userJoinDate.toMillis();
-                    }
-                    return profileData;
-                })
-            );
-            dispatch({
-                type: UPDATE_PROFILE_FOLLOWING,
-                profileUid,
-                userProfiles: missingProfiles,
-                userProfileUids
-            });
-            // Clear loading state
-            dispatch(setFollowingLoading(profileUid, false));
-        },
-        (error: any) => {
-            console.error(error);
-            // Clear loading state on error
-            dispatch(setFollowingLoading(profileUid, false));
-        }
-    );
-    return unsubscribe;
-};
+): (() => void) =>
+    subscribeToProfileConnections(profileUid, dispatch, "following");
 
 export const subscribeToFollowers = (
     profileUid: string,
     dispatch: AppThunkDispatch
-): (() => void) => {
-    // Set loading state
-    dispatch(setFollowersLoading(profileUid, true));
-
-    const unsubscribe: () => void = onSnapshot(
-        doc(followers, profileUid),
-        async (followersReference) => {
-            const state = store.getState();
-            const userProfileData = followersReference.data();
-            const userProfileDataSorted = sort(
-                descend(propOr(Number.NEGATIVE_INFINITY, "val")),
-                listifyObject(userProfileData || {})
-            );
-            const userProfileUids = map(prop("key"), userProfileDataSorted);
-            const cachedProfileUids = keys(state.ProfileReducer.profiles);
-            const missingProfileUids = difference(
-                userProfileUids,
-                cachedProfileUids
-            ) as string[];
-
-            const missingProfiles = await Promise.all(
-                missingProfileUids.map(async (followerProfileUid: string) => {
-                    const profPromise = await getDoc(
-                        doc(profiles, followerProfileUid)
-                    );
-
-                    const profileData = profPromise.exists()
-                        ? profPromise.data()
-                        : { displayName: "Deleted user" };
-
-                    if (profileData.userJoinDate) {
-                        profileData.userJoinDate =
-                            profileData.userJoinDate.toMillis();
-                    }
-                    return profileData;
-                })
-            );
-            dispatch({
-                type: UPDATE_PROFILE_FOLLOWERS,
-                profileUid,
-                userProfiles: missingProfiles,
-                userProfileUids
-            });
-            // Clear loading state
-            dispatch(setFollowersLoading(profileUid, false));
-        },
-        (error: any) => {
-            console.error(error);
-            // Clear loading state on error
-            dispatch(setFollowersLoading(profileUid, false));
-        }
-    );
-    return unsubscribe;
-};
+): (() => void) =>
+    subscribeToProfileConnections(profileUid, dispatch, "followers");
 
 export const subscribeToProjectsCount = (
     profileUid: string,
