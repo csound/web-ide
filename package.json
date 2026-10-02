@@ -15,8 +15,8 @@
         "lint": "eslint --max-warnings=0 src vite.config.ts vite-env.d.ts eslint.config.mjs",
         "lint:fix": "eslint --fix src vite.config.ts vite-env.d.ts eslint.config.mjs",
         "lint:check": "npm run lint",
-        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\" \"*.{json,mjs,ts}\" \"scripts/*.mjs\" \"scripts/dev-callable-access.json\" \".github/workflows/*.{yml,yaml}\"",
-        "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\" \"*.{json,mjs,ts}\" \"scripts/*.mjs\" \"scripts/dev-callable-access.json\" \".github/workflows/*.{yml,yaml}\"",
+        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\" \"*.{json,mjs,ts}\" \"scripts/*.mjs\" \"scripts/callable-access.json\" \".github/workflows/*.{yml,yaml}\"",
+        "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\" \"*.{json,mjs,ts}\" \"scripts/*.mjs\" \"scripts/callable-access.json\" \".github/workflows/*.{yml,yaml}\"",
         "electron:dev": "concurrently \"BROWSER=none npm run start\" \"npx wait-on http-get://127.0.0.1:3000 && ELECTRON_IS_DEV=1 npx electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
         "prepare:deploy:dev": "node scripts/prepare-dev-deploy.mjs",
@@ -25,8 +25,8 @@
         "precommit-hook:puppeteer": "cd puppeteer-tests && npm run lint && npm run format -- --check",
         "precommit-hook": "npm run lint && npm run typecheck && npm run format:check && npm run precommit-hook:puppeteer",
         "prepare": "husky",
-        "access:dev": "node scripts/dev-callable-access.mjs",
-        "test:access:dev": "node --test scripts/dev-callable-access.test.mjs"
+        "access": "node scripts/callable-access.mjs",
+        "test:access": "node --test scripts/callable-access.test.mjs"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.20.3",

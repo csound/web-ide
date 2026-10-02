@@ -36,6 +36,8 @@ jobs:
                   cd functions
                   npm ci
                   npm run build
+            - name: Test callable access
+              run: npm run test:access
             - name: Deploy to Firebase
               uses: docker://w9jds/firebase-action:v15.19.1
               with:
@@ -43,3 +45,9 @@ jobs:
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_PROD }}
                   REACT_APP_DATABASE: PROD
+            - name: Authenticate for production callable access
+              uses: google-github-actions/auth@v3
+              with:
+                  credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+            - name: Apply production callable access and check CORS
+              run: npm run access -- --env prod --apply

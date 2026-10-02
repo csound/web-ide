@@ -39,7 +39,7 @@ jobs:
             - name: Prepare dev deploy without Extensions
               run: |
                   npm run test:deploy:dev
-                  npm run test:access:dev
+                  npm run test:access
                   npm run prepare:deploy:dev
             - name: Deploy to Firebase
               uses: docker://w9jds/firebase-action:v15.19.1
@@ -53,4 +53,4 @@ jobs:
               with:
                   credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
             - name: Apply dev callable access and check CORS
-              run: npm run access:dev -- --apply
+              run: npm run access -- --env dev --apply

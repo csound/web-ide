@@ -2,10 +2,41 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
+import { parseArgs } from "node:util";
 
 export const access = JSON.parse(
-    await readFile(new URL("./dev-callable-access.json", import.meta.url))
+    await readFile(new URL("./callable-access.json", import.meta.url))
 );
+const { projects } = JSON.parse(
+    await readFile(new URL("../.firebaserc", import.meta.url))
+);
+
+export function deploymentTarget(environment) {
+    assert.ok(
+        Object.hasOwn(access.environments, environment),
+        "Choose --env dev or --env prod explicitly"
+    );
+    const target = access.environments[environment];
+    const project = projects[target.firebaseAlias];
+    assert.ok(typeof project === "string" && project.length > 0);
+    return { environment, project, origins: target.origins };
+}
+
+export function parseOptions(args) {
+    const { values } = parseArgs({
+        args,
+        options: {
+            env: { type: "string" },
+            check: { type: "boolean" },
+            apply: { type: "boolean" }
+        }
+    });
+    assert.ok(
+        Boolean(values.check) !== Boolean(values.apply),
+        "Choose exactly one of --check or --apply"
+    );
+    return { target: deploymentTarget(values.env), apply: !!values.apply };
+}
 
 // Callable handlers still enforce Firebase authentication. Cloud Run must let
 // browsers reach them, including preflight requests that carry no credentials.
@@ -25,30 +56,29 @@ export function desiredPolicy(current, declaration = access) {
     return policy;
 }
 
-export async function reconcileAccess(client, apply) {
-    assert.equal(access.project, "csound-ide-dev");
+export async function reconcileAccess(client, target, apply) {
     assert.equal(access.role, "roles/run.invoker");
     assert.equal(access.member, "allUsers");
     const deployed = await client.list();
     // Validate the entire list before writing any policy. Never expose event
-    // triggers or services outside this dev project.
+    // triggers or services outside the selected project.
     const endpoints = access.functions.map((id) => {
         const endpoint = deployed.find(
             (item) =>
                 item.id === id &&
-                item.project === access.project &&
+                item.project === target.project &&
                 item.region === access.region
         );
         assert.ok(
             endpoint?.platform === "gcfv2" &&
                 endpoint.callableTrigger &&
                 /^[a-z][a-z0-9-]*$/.test(endpoint.runServiceId ?? ""),
-            `${id}: expected a deployed dev callable function`
+            `${id}: expected a deployed callable function in ${target.project}`
         );
         return endpoint;
     });
     for (const endpoint of endpoints) {
-        const service = `projects/${access.project}/locations/${access.region}/services/${endpoint.runServiceId}`;
+        const service = `projects/${target.project}/locations/${access.region}/services/${endpoint.runServiceId}`;
         const current = await client.getPolicy(service);
         const desired = desiredPolicy(current);
         if (JSON.stringify(current) !== JSON.stringify(desired)) {
@@ -63,11 +93,11 @@ export async function reconcileAccess(client, apply) {
     }
 }
 
-export async function checkPreflights(request = fetch) {
+export async function checkPreflights(target, request = fetch) {
     for (const name of access.functions) {
-        for (const origin of access.origins) {
+        for (const origin of target.origins) {
             const response = await request(
-                `https://${access.region}-${access.project}.cloudfunctions.net/${name}`,
+                `https://${access.region}-${target.project}.cloudfunctions.net/${name}`,
                 {
                     method: "OPTIONS",
                     redirect: "error",
@@ -111,11 +141,7 @@ if (
     process.argv[1] &&
     import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-    const mode = process.argv.slice(2);
-    assert.ok(
-        mode.length === 1 && ["--check", "--apply"].includes(mode[0]),
-        "Usage: node scripts/dev-callable-access.mjs --check|--apply"
-    );
+    const { target, apply } = parseOptions(process.argv.slice(2));
     const require = createRequire(
         new URL("../functions/package.json", import.meta.url)
     );
@@ -132,7 +158,7 @@ if (
         {
             list: () =>
                 firebase.functions.list({
-                    project: access.project,
+                    project: target.project,
                     nonInteractive: true
                 }),
             getPolicy: async (service) =>
@@ -143,17 +169,20 @@ if (
                 ).body,
             setPolicy: run.setIamPolicy
         },
-        mode[0] === "--apply"
+        target,
+        apply
     );
     // Allow time for an IAM change to reach the serving layer.
     for (let attempt = 0; ; attempt += 1) {
         try {
-            await checkPreflights();
+            await checkPreflights(target);
             break;
         } catch (error) {
-            if (mode[0] !== "--apply" || attempt === 5) throw error;
+            if (!apply || attempt === 5) throw error;
             await new Promise((resolve) => setTimeout(resolve, 5000));
         }
     }
-    console.log("Dev callable access and CORS preflights passed.");
+    console.log(
+        `${target.project}: callable access and CORS preflights passed.`
+    );
 }
