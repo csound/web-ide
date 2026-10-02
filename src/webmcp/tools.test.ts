@@ -63,7 +63,7 @@ describe("WebMCP contract", () => {
         expect(await registerTools(tools, controller.signal, context)).toBe(
             tools.length
         );
-        expect(registered.size).toBe(16);
+        expect(registered.size).toBe(20);
         expect(
             tools.filter((t) => t.annotations.readOnlyHint).map((t) => t.name)
         ).toEqual([

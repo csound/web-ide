@@ -17,7 +17,11 @@ import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 export let csoundInstance: CsoundObj;
 
 type SetConsole = React.Dispatch<React.SetStateAction<string[]>>;
-type Run = { controller: AbortController; done: Promise<void> };
+type Run = {
+    controller: AbortController;
+    done: Promise<void>;
+    projectUid: string;
+};
 let activeRun: Run | undefined;
 
 export const setCsoundPlayState = (status: ICsoundStatus) => ({
@@ -25,6 +29,12 @@ export const setCsoundPlayState = (status: ICsoundStatus) => ({
     status
 });
 export const isCsoundBusy = () => !!activeRun;
+export const getLiveCsound = (projectUid: string): CsoundObj | undefined =>
+    activeRun?.projectUid === projectUid &&
+    !activeRun.controller.signal.aborted &&
+    store.getState().csound.status === "playing"
+        ? csoundInstance
+        : undefined;
 
 export function documentPath(
     document: IDocument,
@@ -122,6 +132,7 @@ export async function runPerformance({
     const controller = new AbortController();
     let resolveDone!: () => void;
     const run: Run = {
+        projectUid,
         controller,
         done: new Promise((resolve) => {
             resolveDone = resolve;
