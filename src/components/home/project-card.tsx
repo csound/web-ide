@@ -65,6 +65,7 @@ export const ProjectCard = ({
                 <ProjectCardContentMiddle>
                     <ListPlayButton
                         projectUid={project.projectUid}
+                        projectName={project.name}
                         iconName={project.iconName}
                         iconBackgroundColor={project.iconBackgroundColor}
                         iconForegroundColor={project.iconForegroundColor}

@@ -1,3 +1,4 @@
+import { ProfileDialog } from "./profile-dialog";
 import React, { useState } from "react";
 import { useDispatch } from "@root/store";
 import { closeModal } from "@comp/modal/actions";
@@ -110,12 +111,23 @@ export function DeleteAccountModal({ username }: { username: string }) {
 
     if (step === "reauth") {
         return (
-            <div>
-                <h2>Confirm your identity</h2>
-                <p>
+            <ProfileDialog
+                title="Confirm your identity"
+                width={440}
+                actions={
+                    <Button
+                        color="inherit"
+                        disabled={loading}
+                        onClick={() => dispatch(closeModal())}
+                    >
+                        Cancel
+                    </Button>
+                }
+            >
+                <Typography variant="body2">
                     For security, please verify it&apos;s you before deleting
                     your account.
-                </p>
+                </Typography>
                 {isEmailProvider && (
                     <>
                         <TextField
@@ -183,17 +195,41 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         {error}
                     </Typography>
                 )}
-            </div>
+            </ProfileDialog>
         );
     }
 
     return (
-        <div>
-            <h2>Delete Account</h2>
-            <p>
+        <ProfileDialog
+            title="Delete Account"
+            width={440}
+            actions={
+                <>
+                    <Button
+                        color="inherit"
+                        disabled={loading}
+                        onClick={() => dispatch(closeModal())}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={performDelete}
+                        disabled={nameInput !== username || loading}
+                        startIcon={
+                            loading ? <CircularProgress size={16} /> : undefined
+                        }
+                    >
+                        Delete Account
+                    </Button>
+                </>
+            }
+        >
+            <Typography variant="body2">
                 This will permanently delete your account and all associated
                 data. This cannot be undone.
-            </p>
+            </Typography>
             <TextField
                 label="Type your username to confirm"
                 value={nameInput}
@@ -210,18 +246,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
                     {error}
                 </Typography>
             )}
-            <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={performDelete}
-                style={{ marginTop: 12 }}
-                disabled={nameInput !== username || loading}
-                startIcon={loading ? <CircularProgress size={16} /> : undefined}
-            >
-                Delete Account
-            </Button>
-        </div>
+        </ProfileDialog>
     );
 }
 

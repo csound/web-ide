@@ -112,7 +112,7 @@ const getRouteSection = (tab?: string): Exclude<ProfileSection, "about"> =>
     PROFILE_ROUTE_SECTION_MAP[tab || ""] || "projects";
 
 const UserLink = ({ link }: { link: string | undefined }) => {
-    return typeof link === "string" ? (
+    return typeof link === "string" && link.trim() ? (
         <a href={link.includes("://") ? link : `https://${link}`}>
             <Typography variant="body1" component="div">
                 {link}
@@ -166,7 +166,9 @@ export const Profile = () => {
         ? loggedInUserFollowing.includes(profileUid)
         : false;
     const isRequestingLogin = useSelector(selectLoginRequesting);
-    const isProfileOwner = loggedInUserUid === profileUid;
+    const isProfileOwner = Boolean(
+        profileUid && loggedInUserUid === profileUid
+    );
     const uploadReference = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -327,7 +329,7 @@ export const Profile = () => {
                     </Button>
                     <Button
                         css={profileActionButton}
-                        variant="outlined"
+                        variant="text"
                         color="error"
                         size="medium"
                         startIcon={<DeleteIcon />}
@@ -368,7 +370,7 @@ export const Profile = () => {
     const desktopProfileDetails = (
         <>
             <DescriptionSection gridRow="2">
-                <Typography variant="h5" component="h4">
+                <Typography variant="subtitle1" component="h2">
                     Bio
                 </Typography>
                 <Typography
@@ -381,7 +383,7 @@ export const Profile = () => {
                 </Typography>
             </DescriptionSection>
             <DescriptionSection gridRow="3">
-                <Typography variant="h5" component="h4">
+                <Typography variant="subtitle1" component="h2">
                     Links
                 </Typography>
                 {profile && (
@@ -399,7 +401,7 @@ export const Profile = () => {
     const mobileAboutContent = (
         <MobileAboutSection>
             <div>
-                <Typography variant="h5" component="h4" gutterBottom>
+                <Typography variant="subtitle1" component="h2" gutterBottom>
                     Bio
                 </Typography>
                 <Typography variant="body2" component="p" color="textSecondary">
@@ -407,7 +409,7 @@ export const Profile = () => {
                 </Typography>
             </div>
             <div>
-                <Typography variant="h5" component="h4" gutterBottom>
+                <Typography variant="subtitle1" component="h2" gutterBottom>
                     Links
                 </Typography>
                 {profile ? (
@@ -425,79 +427,82 @@ export const Profile = () => {
     return (
         <Box>
             <Header />
-            <Box css={gradient(backgroundIndex)}>
+            <Box component="main" css={gradient(backgroundIndex)}>
                 <ProfileContainer>
-                    {!isMobileLayout && (
-                        <IDContainer>
-                            <ProfilePictureContainer
-                                onMouseEnter={() => setImageHover(true)}
-                                onMouseLeave={() => setImageHover(false)}
-                            >
-                                <ProfilePictureDiv>
-                                    {imageUrl && (
-                                        <CachedProfileImage
-                                            src={imageUrl}
-                                            width={"100%"}
-                                            height={"100%"}
-                                            alt="User Profile"
-                                        />
-                                    )}
-                                </ProfilePictureDiv>
-                                <input
-                                    type="file"
-                                    ref={uploadReference}
-                                    style={{ display: "none" }}
-                                    accept={"image/jpeg"}
-                                    onChange={(event) => {
-                                        const file: File | undefined = get(
-                                            event,
-                                            "target.files.0"
-                                        );
-                                        file &&
-                                            loggedInUserUid &&
-                                            dispatch(
-                                                uploadProfileImage(
-                                                    loggedInUserUid,
-                                                    file
-                                                )
-                                            );
-                                    }}
-                                />
-                                {isProfileOwner && (
-                                    <UploadProfilePicture
-                                        onClick={() => {
-                                            const input =
-                                                uploadReference.current;
-                                            input && input.click();
-                                        }}
-                                        imageHover={imageHover}
-                                    >
-                                        <UploadProfilePictureText>
-                                            Upload New Image
-                                        </UploadProfilePictureText>
-                                        <UploadProfilePictureIcon>
-                                            <CameraIcon />
-                                        </UploadProfilePictureIcon>
-                                    </UploadProfilePicture>
+                    <IDContainer>
+                        <ProfilePictureContainer
+                            onMouseEnter={() => setImageHover(true)}
+                            onMouseLeave={() => setImageHover(false)}
+                        >
+                            <ProfilePictureDiv>
+                                {!imageUrl && (
+                                    <PersonOutlineIcon aria-hidden="true" />
                                 )}
-                            </ProfilePictureContainer>
-                            {desktopProfileDetails}
-                        </IDContainer>
-                    )}
+                                {imageUrl && (
+                                    <CachedProfileImage
+                                        src={imageUrl}
+                                        width={"100%"}
+                                        height={"100%"}
+                                        alt="User Profile"
+                                    />
+                                )}
+                            </ProfilePictureDiv>
+                            <input
+                                type="file"
+                                ref={uploadReference}
+                                style={{ display: "none" }}
+                                accept={"image/jpeg"}
+                                onChange={(event) => {
+                                    const file: File | undefined = get(
+                                        event,
+                                        "target.files.0"
+                                    );
+                                    file &&
+                                        loggedInUserUid &&
+                                        dispatch(
+                                            uploadProfileImage(
+                                                loggedInUserUid,
+                                                file
+                                            )
+                                        );
+                                }}
+                            />
+                            {isProfileOwner && (
+                                <UploadProfilePicture
+                                    type="button"
+                                    aria-label="Upload new profile image"
+                                    onClick={() => {
+                                        const input = uploadReference.current;
+                                        input && input.click();
+                                    }}
+                                    imageHover={imageHover}
+                                >
+                                    <UploadProfilePictureText>
+                                        Upload New Image
+                                    </UploadProfilePictureText>
+                                    <UploadProfilePictureIcon>
+                                        <CameraIcon />
+                                    </UploadProfilePictureIcon>
+                                </UploadProfilePicture>
+                            )}
+                        </ProfilePictureContainer>
+                        {!isMobileLayout && desktopProfileDetails}
+                    </IDContainer>
                     <NameSectionWrapper>
                         <NameSection>
                             <Typography
-                                variant={isMobileLayout ? "h4" : "h3"}
-                                component="h3"
+                                variant="h4"
+                                component="h1"
+                                sx={{
+                                    fontSize: { xs: 24, sm: 32 },
+                                    lineHeight: 1.2
+                                }}
                             >
                                 {profile && displayName}
                             </Typography>
                         </NameSection>
                     </NameSectionWrapper>
-                    <ContentSection
-                        theme={theme}
-                        showSearch={isProjectsSection}
-                    >
+                    <ContentSection theme={theme}>
                         {!isMobileLayout && (
                             <ContentTabsContainer>
                                 <Tabs
@@ -514,6 +519,9 @@ export const Profile = () => {
                                         )
                                     }
                                     indicatorColor={"primary"}
+                                    variant="scrollable"
+                                    scrollButtons="auto"
+                                    aria-label="Profile sections"
                                 >
                                     <Tab label="Projects" />
                                     <Tab label="Following" />
@@ -539,7 +547,7 @@ export const Profile = () => {
                                         label="Search Projects"
                                         value={projectFilterString || ""}
                                         variant="outlined"
-                                        margin="dense"
+                                        size="small"
                                         InputProps={{
                                             endAdornment: (
                                                 <InputAdornment position="end">
@@ -561,7 +569,7 @@ export const Profile = () => {
                                     <Button
                                         css={fabButton}
                                         color="primary"
-                                        aria-label="Add"
+                                        aria-label="Create new project"
                                         size="medium"
                                         onClick={() => dispatch(addProject())}
                                         data-tip={"Create new project"}

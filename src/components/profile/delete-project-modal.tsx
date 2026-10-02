@@ -1,3 +1,4 @@
+import { ProfileDialog } from "./profile-dialog";
 import React, { useState } from "react";
 import { useDispatch } from "@root/store";
 import { closeModal } from "@comp/modal/actions";
@@ -14,27 +15,38 @@ export function DeleteProjectModal({
     const [name, setName] = useState("");
     const dispatch = useDispatch();
     return (
-        <div>
-            <h2>Confirm Project Delete</h2>
+        <ProfileDialog
+            title="Confirm Project Delete"
+            width={440}
+            actions={
+                <>
+                    <Button
+                        color="inherit"
+                        onClick={() => dispatch(closeModal())}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                            dispatch(deleteUserProject(projectUid));
+                            dispatch(closeModal());
+                        }}
+                        disabled={name !== projectName}
+                    >
+                        Delete
+                    </Button>
+                </>
+            }
+        >
             <TextField
-                label={"Project Name"}
+                label="Project Name"
                 value={name}
-                onChange={(event) => {
-                    setName(event.target.value);
-                }}
+                onChange={(event) => setName(event.target.value)}
+                fullWidth
+                helperText={<>Type “{projectName}” to confirm.</>}
             />
-            <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => {
-                    dispatch(deleteUserProject(projectUid));
-                    dispatch(closeModal());
-                }}
-                style={{ marginTop: 11, marginLeft: 12 }}
-                disabled={name !== projectName}
-            >
-                Delete
-            </Button>
-        </div>
+        </ProfileDialog>
     );
 }

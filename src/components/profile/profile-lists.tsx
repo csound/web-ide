@@ -2,8 +2,14 @@ import React, { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "@root/store";
 import { shallowEqual } from "react-redux";
-import { List, ListItem, ListItemText } from "@mui/material";
-import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+    Box,
+    Chip,
+    IconButton,
+    List,
+    ListItem,
+    Typography
+} from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
 import PublicIcon from "@mui/icons-material/Public";
 import {
@@ -24,19 +30,10 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import {
-    StyledListItemContainer,
-    StyledListItemTopRowText,
-    StyledListItemChipsRow,
-    StyledChip,
-    StyledListPlayButtonContainer,
-    StyledListButtonsContainer
-} from "./profile-ui";
 import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
 import { descend, sort, propOr } from "ramda";
-import * as SS from "./styles";
 
 const ProjectListItem = ({
     isProfileOwner,
@@ -47,7 +44,6 @@ const ProjectListItem = ({
 }) => {
     const dispatch = useDispatch();
     const { isPublic, projectUid, name, description, tags } = project;
-    const isMobileLayout = useMediaQuery("(max-width: 760px)");
     const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
     const closeMenu = () => {
@@ -82,99 +78,124 @@ const ProjectListItem = ({
     };
 
     return (
-        <div style={{ position: "relative" }}>
-            <Link to={"/editor/" + projectUid}>
-                <ListItem alignItems="flex-start">
-                    <StyledListItemContainer isProfileOwner={isProfileOwner}>
-                        <StyledListItemTopRowText>
-                            <ListItemText
-                                primary={
-                                    <span
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 8
-                                        }}
-                                    >
-                                        <span>{name}</span>
-                                        <span
-                                            style={{
-                                                display: "inline-flex",
-                                                alignItems: "center",
-                                                gap: 4,
-                                                fontSize: 12,
-                                                lineHeight: 1,
-                                                border: "1px solid currentColor",
-                                                borderRadius: 12,
-                                                padding: "3px 8px",
-                                                opacity: isPublic ? 0.75 : 1,
-                                                fontWeight: 600
-                                            }}
-                                            aria-label={
-                                                isPublic
-                                                    ? "Project is public"
-                                                    : "Project is private"
-                                            }
-                                            title={
-                                                isPublic
-                                                    ? "Project is public"
-                                                    : "Project is private"
-                                            }
-                                        >
-                                            {isPublic ? (
-                                                <PublicIcon fontSize="inherit" />
-                                            ) : (
-                                                <LockIcon fontSize="inherit" />
-                                            )}
-                                            {isPublic ? "Public" : "Private"}
-                                        </span>
-                                    </span>
-                                }
-                                secondary={description}
-                            />
-                        </StyledListItemTopRowText>
-                        <StyledListItemChipsRow>
-                            {Array.isArray(tags) &&
-                                tags.map(
-                                    (
-                                        t: React.ReactNode,
-                                        index: string | number | undefined
-                                    ) => {
-                                        return (
-                                            <StyledChip
-                                                color="primary"
-                                                key={index}
-                                                label={t}
-                                            />
-                                        );
-                                    }
-                                )}
-                        </StyledListItemChipsRow>
-                    </StyledListItemContainer>
-                </ListItem>
-                {isProfileOwner && !isMobileLayout && (
-                    <StyledListButtonsContainer />
+        <ListItem
+            sx={{
+                alignItems: "flex-start",
+                gap: 1.5,
+                px: 2,
+                py: 1.5,
+                borderTop: 1,
+                borderColor: "divider"
+            }}
+        >
+            <ListPlayButton
+                size={48}
+                projectUid={projectUid}
+                projectName={name}
+                iconName={project.iconName}
+                iconBackgroundColor={project.iconBackgroundColor}
+                iconForegroundColor={project.iconForegroundColor}
+            />
+            <Box
+                component={Link}
+                to={"/editor/" + projectUid}
+                sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    color: "text.primary",
+                    textDecoration: "none",
+                    borderRadius: 1,
+                    "&:hover h2": { textDecoration: "underline" },
+                    "&:focus-visible": {
+                        outline: "2px solid",
+                        outlineColor: "primary.main",
+                        outlineOffset: 4
+                    }
+                }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 1
+                    }}
+                >
+                    <Typography
+                        component="h2"
+                        variant="subtitle1"
+                        sx={{ overflowWrap: "anywhere", lineHeight: 1.4 }}
+                    >
+                        {name}
+                    </Typography>
+                    <Box
+                        component="span"
+                        sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            color: "text.secondary",
+                            fontSize: 12
+                        }}
+                    >
+                        {isPublic ? (
+                            <PublicIcon fontSize="inherit" />
+                        ) : (
+                            <LockIcon fontSize="inherit" />
+                        )}
+                        {isPublic ? "Public" : "Private"}
+                    </Box>
+                </Box>
+                {description && (
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                            mt: 0.5,
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflowWrap: "anywhere",
+                            whiteSpace: "pre-line"
+                        }}
+                    >
+                        {description}
+                    </Typography>
                 )}
-            </Link>
-            <StyledListPlayButtonContainer>
-                <ListPlayButton
-                    projectUid={projectUid}
-                    iconName={project.iconName}
-                    iconBackgroundColor={project.iconBackgroundColor}
-                    iconForegroundColor={project.iconForegroundColor}
-                />
-            </StyledListPlayButtonContainer>
-            {isProfileOwner && isMobileLayout && (
+                {Array.isArray(tags) && tags.length > 0 && (
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.5,
+                            mt: 1
+                        }}
+                    >
+                        {tags.map((tag, index) => (
+                            <Chip
+                                key={index}
+                                label={tag}
+                                size="small"
+                                variant="outlined"
+                                sx={{ maxWidth: "100%" }}
+                            />
+                        ))}
+                    </Box>
+                )}
+            </Box>
+            {isProfileOwner && (
                 <>
-                    <Tooltip title="Project actions" followCursor>
-                        <div css={SS.mobileActionsContainer}>
-                            <div
-                                css={SS.mobileActionsButton}
-                                onClick={openMenu}
-                            >
-                                <MoreVertIcon />
-                            </div>
-                        </div>
+                    <Tooltip title="Project actions">
+                        <IconButton
+                            aria-label={`Actions for ${name}`}
+                            aria-haspopup="menu"
+                            aria-expanded={Boolean(menuAnchor)}
+                            onClick={openMenu}
+                            sx={{ width: 40, height: 40, flexShrink: 0 }}
+                        >
+                            <MoreVertIcon />
+                        </IconButton>
                     </Tooltip>
                     <Menu
                         anchorEl={menuAnchor}
@@ -188,6 +209,22 @@ const ProjectListItem = ({
                             vertical: "top",
                             horizontal: "right"
                         }}
+                        slotProps={{
+                            paper: {
+                                sx: {
+                                    maxWidth: "calc(100vw - 32px)",
+                                    "& .MuiMenuItem-root": {
+                                        whiteSpace: "normal",
+                                        gap: 1.5,
+                                        minHeight: 44
+                                    },
+                                    "& .MuiMenuItem-root > span": {
+                                        overflowWrap: "anywhere",
+                                        minWidth: 0
+                                    }
+                                }
+                            }
+                        }}
                     >
                         <MenuItem onClick={onTogglePublic}>
                             {isPublic ? (
@@ -195,7 +232,7 @@ const ProjectListItem = ({
                             ) : (
                                 <VisibilityIcon />
                             )}
-                            <span style={{ marginLeft: 8 }}>
+                            <span>
                                 {isPublic
                                     ? "Make project private"
                                     : "Make project public"}
@@ -203,64 +240,19 @@ const ProjectListItem = ({
                         </MenuItem>
                         <MenuItem onClick={onEditProject}>
                             <SettingsIcon />
-                            <span style={{ marginLeft: 8 }}>
-                                Rename/Edit project
-                            </span>
+                            <span>Rename/Edit project</span>
                         </MenuItem>
-                        <MenuItem onClick={onDeleteProject}>
+                        <MenuItem
+                            onClick={onDeleteProject}
+                            sx={{ color: "error.main" }}
+                        >
                             <DeleteIcon />
-                            <span
-                                style={{ marginLeft: 8 }}
-                            >{`Delete ${name}`}</span>
+                            <span>{`Delete ${name}`}</span>
                         </MenuItem>
                     </Menu>
                 </>
             )}
-            {isProfileOwner && !isMobileLayout && (
-                <>
-                    <Tooltip title="Toggle project settings" followCursor>
-                        <div css={SS.settingsIconContainer}>
-                            <div
-                                css={SS.settingsIcon}
-                                key={projectUid}
-                                onClick={onEditProject}
-                            >
-                                <SettingsIcon />
-                            </div>
-                        </div>
-                    </Tooltip>
-                    <Tooltip title={`Delete ${name}`} followCursor>
-                        <div css={SS.deleteIconContainer}>
-                            <div css={SS.deleteIcon} onClick={onDeleteProject}>
-                                <DeleteIcon />
-                            </div>
-                        </div>
-                    </Tooltip>
-                    <Tooltip
-                        title={
-                            isPublic
-                                ? "Make the project private"
-                                : "Make the project public"
-                        }
-                        followCursor
-                    >
-                        <div css={SS.publicIconContainer}>
-                            <div
-                                css={SS.publicIcon}
-                                style={{ opacity: isPublic ? 1 : 0.6 }}
-                                onClick={onTogglePublic}
-                            >
-                                {isPublic ? (
-                                    <VisibilityIcon />
-                                ) : (
-                                    <VisibilityOffIcon />
-                                )}
-                            </div>
-                        </div>
-                    </Tooltip>
-                </>
-            )}
-        </div>
+        </ListItem>
     );
 };
 

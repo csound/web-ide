@@ -2,7 +2,6 @@ import React from "react";
 import Avatar from "@mui/material/Avatar";
 import styled from "@emotion/styled";
 import { css, SerializedStyles, Theme } from "@emotion/react";
-import { shadow } from "@styles/_common";
 
 export const createButtonAddIcon = css`
     margin-bottom: 2px;
@@ -252,56 +251,35 @@ export const showAvatarPlayButton = css`
     .listPlayIcon {
         opacity: 1;
     }
-    transform: rotate(90deg);
     cursor: pointer;
-    box-shadow: none;
 `;
 
 export const avatar = css`
-    align-self: center;
-    pointer-events: visible;
+    position: relative;
+    flex-shrink: 0;
     width: 64px;
     height: 64px;
-
+    padding: 0;
+    border: 0;
+    cursor: pointer;
     .listPlayIcon {
         opacity: 0;
-        transition: opacity 1s ease-out;
-        transform: translate(0px, -3px) rotate(-90deg);
-        &:hover {
-            z-index: 10;
-        }
     }
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.12),
-        0 1px 2px rgba(0, 0, 0, 0.24);
-    transition:
-        color 0.2s ease,
-        background-color 0.2s ease,
-        transform 0.3s ease;
-    &:after {
-        content: "";
-        width: 100%;
-        height: 100%;
-        transform: scale(0.8);
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-    }
-    &:hover:after {
-        transform: scale(2);
-        box-shadow:
-            10px 0 20px rgba(0, 0, 0, 0.19),
-            6px 0 6px rgba(0, 0, 0, 0.23);
-    }
-    &:hover {
+    &:hover,
+    &:focus-visible {
         ${showAvatarPlayButton}
-        background-color: black!important;
+    }
+    &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 3px;
+    }
+    @media (hover: none) {
+        ${showAvatarPlayButton}
     }
 `;
 
 type StyledAvatarType = {
+    size: number;
     isPlaying: boolean;
     hasError: boolean;
     isPaused: boolean;
@@ -314,11 +292,21 @@ type StyledAvatarType = {
 
 export const StyledAvatar = styled(Avatar as any, {
     shouldForwardProp: (property) =>
-        ["children", "onClick", "src"].includes(property.toString())
+        [
+            "children",
+            "onClick",
+            "src",
+            "component",
+            "type",
+            "aria-label",
+            "aria-busy"
+        ].includes(property.toString())
             ? true
             : false
 })`
     ${avatar}
+    width: ${(properties: StyledAvatarType) => properties.size}px;
+    height: ${(properties: StyledAvatarType) => properties.size}px;
     ${(properties: StyledAvatarType) =>
         ((properties.isPlaying &&
             !properties.hasError &&
@@ -332,7 +320,6 @@ export const StyledAvatar = styled(Avatar as any, {
             : properties.isPlaying || properties.isStartingUp
               ? "black"
               : properties.iconBackgroundColorProp};
-    ${shadow}
     .project-avatar {
         transition: all 400ms;
         display: ${(properties: StyledAvatarType) =>

@@ -524,6 +524,7 @@ export const editProject = (project: IProject) => {
     return openSimpleModal("new-project-prompt", {
         name: project.name,
         description: project.description,
+        tags: project.tags || [],
         label: "Apply changes",
         projectID: project.projectUid,
         starterTemplate: "single-csd",
