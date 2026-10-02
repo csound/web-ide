@@ -40,12 +40,14 @@ const SvgPlayIcon = ({
 
 export const ListPlayButton = ({
     projectUid,
+    projectName,
     size = 64,
     iconName,
     iconBackgroundColor,
     iconForegroundColor
 }: {
     projectUid: string;
+    projectName: string;
     size?: number;
     iconName?: string;
     iconBackgroundColor?: string;
@@ -100,10 +102,10 @@ export const ListPlayButton = ({
             type="button"
             aria-label={
                 isStartingUp
-                    ? "Starting project"
+                    ? `Starting ${projectName}`
                     : isPlaying && !isPaused && !hasError
-                      ? "Pause project"
-                      : "Play project"
+                      ? `Pause ${projectName}`
+                      : `Play ${projectName}`
             }
             aria-busy={isStartingUp}
             isPlaying={isPlaying}

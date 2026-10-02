@@ -91,6 +91,7 @@ const ProjectListItem = ({
             <ListPlayButton
                 size={48}
                 projectUid={projectUid}
+                projectName={name}
                 iconName={project.iconName}
                 iconBackgroundColor={project.iconBackgroundColor}
                 iconForegroundColor={project.iconForegroundColor}
