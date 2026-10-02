@@ -62,10 +62,12 @@ export const codeMirrorTheme = (theme: Theme) =>
                 color: theme.textColor
             },
             ".cm-panels-bottom": { borderTop: `1px solid ${theme.line}` },
-            ".cm-csound-synopsis:empty, .cm-panels-bottom:has(> .cm-csound-synopsis:only-child:empty)":
-                {
-                    display: "none"
-                },
+            ".cm-csound-synopsis:empty": { display: "none" },
+            // Keep the panel container in layout so CodeMirror can measure its
+            // scroll margins. display:none gives it a false top position of 0.
+            ".cm-panels-bottom:has(> .cm-csound-synopsis:only-child:empty)": {
+                borderTop: "none"
+            },
             ".cm-scroller::-webkit-scrollbar": {
                 width: "10px",
                 height: "10px"

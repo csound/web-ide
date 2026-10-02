@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "@root/store";
 import { shallowEqual } from "react-redux";
-import { createSelector } from "@reduxjs/toolkit";
 import {
     Box,
     Chip,
@@ -16,7 +15,8 @@ import PublicIcon from "@mui/icons-material/Public";
 import {
     selectFollowingLoading,
     selectFollowersLoading,
-    selectStarsLoading
+    selectStarsLoading,
+    selectProfileConnections
 } from "./selectors";
 import { FollowingList } from "./tabs/following-list";
 import { FollowersList } from "./tabs/followers-list";
@@ -31,12 +31,9 @@ import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { IProject } from "@comp/projects/types";
-import { IProfile } from "./types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
 import { descend, sort, propOr } from "ramda";
-
-const EMPTY_STRING_ARRAY: string[] = [];
 
 const ProjectListItem = ({
     isProfileOwner,
@@ -270,28 +267,12 @@ export const ProfileLists = ({
     filteredProjects: IProject[];
 }) => {
     const userFollowingSelector = useMemo(
-        () =>
-            createSelector(
-                [(state) => state.ProfileReducer.profiles],
-                (profiles): string[] =>
-                    profiles[profileUid]?.following ?? EMPTY_STRING_ARRAY
-            ),
+        () => selectProfileConnections(profileUid, "following"),
         [profileUid]
     );
 
     const userFollowersSelector = useMemo(
-        () =>
-            createSelector(
-                [(state) => state.ProfileReducer.profiles],
-                (profiles): Array<IProfile | undefined> => {
-                    const followerUids =
-                        profiles[profileUid]?.followers ?? EMPTY_STRING_ARRAY;
-
-                    return followerUids.map(
-                        (followerUid: string) => profiles[followerUid]
-                    );
-                }
-            ),
+        () => selectProfileConnections(profileUid, "followers"),
         [profileUid]
     );
 

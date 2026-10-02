@@ -223,38 +223,7 @@ offline-capable desktop app.
 
 ### Firebase Web Hosting
 
-Deployments are automated by GitHub Actions:
-
-- Pushes to `develop` → DEV Firebase project (`csound-ide-dev`)
-- Pushes to `master` → PROD Firebase project (`csound-ide`)
-
-Both pipelines run lint, type-check, and format checks before deploying. Builds and CI use
-Node 24. Cloud Functions use Node 22 because the auth triggers still use first-generation
-Functions, which [do not support Node 24](https://docs.cloud.google.com/functions/docs/runtime-support).
-
-Dev still deploys Functions and Hosting. Its deploy script asks the Functions SDK for a fresh
-manifest, removes the empty Extensions list, and copies the Functions source into `.firebase/`.
-This avoids a Firebase CLI billing check for Extensions that this app does not use. The script
-fails if it finds any actual Extension declarations. Production uses the original Functions
-source and its normal discovery process.
-
-Build the app and Functions before a manual dev deploy. Run `npm run test:deploy:dev` after
-installing the Functions dependencies and building them to check that dev keeps all function
-definitions and Hosting routes.
-
-To deploy manually, set `FIREBASE_TOKEN` (obtain via `firebase login:ci`) and run:
-
-```bash
-# Production
-npm run deploy
-
-# Staging / develop
-npm run deploy:dev
-```
-
-The build step copies `dist/index.html` into `functions/dist/` so the `host` Cloud Function
-can perform server-side Open Graph injection. This step runs automatically as part of the
-CI deploy workflows.
+GitHub Actions handles website deployment.
 
 ### Electron Desktop App
 
