@@ -10,6 +10,10 @@ import { saveDocumentValue } from "../components/projects/actions";
 import { getLiveCsound } from "../components/csound/actions";
 import { evalBlinkExtension } from "../components/editor/utils";
 import { csoundEditorLanguage } from "../components/editor/csound-language";
+import {
+    splitActivePanel,
+    toggleMaximizePanel
+} from "../components/project-editor/actions";
 
 vi.mock("@csound/browser", () => ({ Csound: vi.fn(), libcsound: vi.fn() }));
 vi.mock("../components/csound/actions", async (importOriginal) => ({
@@ -121,6 +125,35 @@ function interactiveEditor(source = "instr 1\nendin", fileType = "orc") {
 }
 
 describe("live editor tools", () => {
+    it.each(["open_document", "set_selection"])(
+        "%s focuses an existing tab in another panel without duplicating it when leaving focus mode",
+        async (tool) => {
+            const view = interactiveEditor();
+            store.dispatch(splitActivePanel("right"));
+            const splitLayout = store.getState().ProjectEditorReducer;
+            const targetPanelId = splitLayout.activePanelId;
+            store.dispatch(toggleMaximizePanel("panel-1"));
+            const before = await call("read_document", { document_id: "csd" });
+
+            const result = await call(tool, {
+                document_id: "csd",
+                ...(tool === "set_selection"
+                    ? { base_revision: before.revision, anchor: 7 }
+                    : {})
+            });
+
+            expect(result).toMatchObject({ ok: true });
+            const layout = store.getState().ProjectEditorReducer;
+            expect(layout.maximizedPanelId).toBeNull();
+            expect(layout.activePanelId).toBe(targetPanelId);
+            expect(layout.root).toEqual(splitLayout.root);
+            if (tool === "set_selection") {
+                expect(view.hasFocus).toBe(true);
+                expect(view.state.selection.main.anchor).toBe(7);
+            }
+        }
+    );
+
     it.each([false, true])(
         "waits for a closed editor to mount and rechecks its revision (changed=%s)",
         async (changed) => {
