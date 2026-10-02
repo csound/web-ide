@@ -90,6 +90,11 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
         assert.deepEqual(dev, original);
         assert.ok(Object.keys(dev.endpoints).length > 0);
         assert.deepEqual(config.hosting, production.hosting);
+        assert.deepEqual(config.firestore, production.firestore);
+        assert.equal(
+            firebaseConfig.path(config.firestore.indexes),
+            path.join(root, "firestore.indexes.json")
+        );
         assert.equal(
             firebaseConfig.path(config.hosting.public),
             path.join(root, "dist")

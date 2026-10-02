@@ -34,6 +34,8 @@ jobs:
               run: npm run test:ci
             - name: Test callable access
               run: npm run test:access
+            - name: Test Firestore indexes
+              run: npm run test:indexes
             - name: Check Functions Types
               working-directory: functions
               run: npx tsc --noEmit -p tsconfig.json
