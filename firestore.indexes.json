@@ -1,0 +1,23 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "projects",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "public", "order": "ASCENDING" },
+                { "fieldPath": "created", "order": "DESCENDING" },
+                { "fieldPath": "__name__", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "projects",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "public", "order": "ASCENDING" },
+                { "fieldPath": "starCount", "order": "DESCENDING" },
+                { "fieldPath": "__name__", "order": "ASCENDING" }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}
