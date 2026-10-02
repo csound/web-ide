@@ -1,6 +1,7 @@
 import { AppThunkDispatch, RootState } from "@root/store";
 import { saveProfile } from "./save-profile";
 import { getDownloadURL, uploadBytes } from "firebase/storage";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import {
     collection,
     doc,
@@ -19,9 +20,7 @@ import {
     getFirebaseTimestamp,
     projects,
     profiles,
-    profileStars,
     usernames,
-    stars,
     tags,
     targets,
     Timestamp,
@@ -701,37 +700,10 @@ export const starOrUnstarProject = (
         if (!projectUid || !loggedInUserUid) {
             return;
         }
-        const batch = writeBatch(database);
-        const currentProjectStarsReference = await getDoc(
-            doc(stars, projectUid)
-        );
-        const currentProjectStars = currentProjectStarsReference.exists()
-            ? currentProjectStarsReference.data()
-            : {};
-        const currentlyStarred = keys(currentProjectStars || []).includes(
-            loggedInUserUid
-        );
-
-        if (currentlyStarred) {
-            batch.update(doc(stars, projectUid), {
-                [loggedInUserUid]: fieldDelete()
-            });
-            batch.update(doc(profileStars, loggedInUserUid), {
-                [projectUid]: fieldDelete()
-            });
-        } else {
-            batch.set(
-                doc(stars, projectUid),
-                { [loggedInUserUid]: getFirebaseTimestamp() },
-                { merge: true }
-            );
-            batch.set(
-                doc(profileStars, loggedInUserUid),
-                { [projectUid]: getFirebaseTimestamp() },
-                { merge: true }
-            );
-        }
-        await batch.commit();
+        await httpsCallable(
+            getFunctions(),
+            "toggle_project_star"
+        )({ projectUid });
     };
 };
 

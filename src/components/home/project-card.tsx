@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 import { Bars as BarsSpinner } from "react-loader-spinner";
 import { Theme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
@@ -70,7 +71,11 @@ export const ProjectCard = ({
                         iconForegroundColor={project.iconForegroundColor}
                     />
                 </ProjectCardContentMiddle>
-                <ProjectCardContentBottom to={`profile/${profile.username}`}>
+                <ProjectCardContentBottom
+                    {...(profile.username
+                        ? { as: Link, to: `profile/${profile.username}` }
+                        : {})}
+                >
                     <ProjectCardContentBottomPhoto>
                         <ProfilePhotoFallback>
                             {fallbackInitial}

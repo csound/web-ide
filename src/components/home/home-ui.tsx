@@ -177,7 +177,7 @@ export const ProjectCardContentTopDescription = styled.div`
     font-size: 14px;
 `;
 
-export const ProjectCardContentBottom = styled(Link)`
+export const ProjectCardContentBottom = styled.div<{ to?: string }>`
     grid-row: 3;
     grid-column: 1;
     z-index: 4;
