@@ -30,6 +30,7 @@ import {
 import { IProject } from "@comp/projects/types";
 import { firestoreProjectToIProject } from "@comp/projects/utils";
 import { IProfile } from "../profile/types";
+import { resolveProfileUsernames } from "./profile-usernames";
 
 const functions = getFunctions();
 const getRandomProjects = httpsCallable<
@@ -113,7 +114,7 @@ export const searchProjects =
 
             dispatch({
                 type: ADD_USER_PROFILES,
-                payload: projectProfiles
+                payload: await resolveProfileUsernames(projectProfiles)
             });
         }
 
@@ -132,7 +133,7 @@ const fetchRankingProfiles = async (
 ) => {
     const existing = getState().HomeReducer.profiles;
     const missing = [...new Set(userIDs)].filter(
-        (uid) => uid && !existing[uid]
+        (uid) => uid && !existing[uid]?.username
     );
     if (!missing.length) return;
     const snapshot = await getDocs(
@@ -148,7 +149,10 @@ const fetchRankingProfiles = async (
                 : {})
         };
     });
-    dispatch({ type: ADD_USER_PROFILES, payload });
+    dispatch({
+        type: ADD_USER_PROFILES,
+        payload: await resolveProfileUsernames(payload)
+    });
 };
 
 export const fetchPopularProjects = () => {
@@ -232,7 +236,7 @@ export const fetchRandomProjects = () => {
 
             dispatch({
                 type: ADD_USER_PROFILES,
-                payload: projectProfiles
+                payload: await resolveProfileUsernames(projectProfiles)
             });
         }
 
