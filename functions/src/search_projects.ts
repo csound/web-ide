@@ -1,7 +1,12 @@
 import admin from "firebase-admin";
-import { onCall } from "firebase-functions/v2/https";
-import { log } from "firebase-functions/logger";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import Fuse, { IFuseOptions } from "fuse.js";
+import {
+    createReadCache,
+    createRequestLimiter,
+    publicCallableOptions
+} from "./public_requests.js";
+import { readPublicProjectSummaries } from "./public_project_summaries.js";
 
 // TypeScript interfaces for search functionality
 export interface SearchProjectsParams {
@@ -33,54 +38,6 @@ export interface SearchResponse {
     offset: number;
     limit: number;
     query: string;
-}
-
-// Cache configuration
-interface CacheEntry {
-    data: ProjectSearchResult[];
-    timestamp: number;
-    totalCount: number;
-}
-
-// In-memory cache with 5-minute TTL
-const searchCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
-const MAX_CACHE_SIZE = 100; // Maximum number of cached queries
-
-// Cache cleanup function
-function cleanupCache(): void {
-    const now = Date.now();
-    const expiredKeys: string[] = [];
-
-    for (const [key, entry] of searchCache.entries()) {
-        if (now - entry.timestamp > CACHE_TTL) {
-            expiredKeys.push(key);
-        }
-    }
-
-    expiredKeys.forEach((key) => searchCache.delete(key));
-
-    // If cache is still too large, remove oldest entries
-    if (searchCache.size > MAX_CACHE_SIZE) {
-        const entries = Array.from(searchCache.entries()).sort(
-            (a, b) => a[1].timestamp - b[1].timestamp
-        );
-
-        const toRemove = entries.slice(0, searchCache.size - MAX_CACHE_SIZE);
-        toRemove.forEach(([key]) => searchCache.delete(key));
-    }
-}
-
-// Generate cache key
-function getCacheKey(params: SearchProjectsParams): string {
-    const {
-        query,
-        offset = 0,
-        limit = 8,
-        sortBy = "name",
-        sortOrder = "desc"
-    } = params;
-    return `${query}:${offset}:${limit}:${sortBy}:${sortOrder}`;
 }
 
 // Fuse.js configuration for fuzzy search
@@ -126,171 +83,132 @@ function sortResults(
     });
 }
 
-// Main search function
-export const searchProjects = onCall(
-    { cors: true },
-    async ({
-        data
-    }: {
-        data: SearchProjectsParams;
-    }): Promise<SearchResponse> => {
-        try {
-            const {
-                query,
-                offset = 0,
-                limit = 8,
-                sortBy = "name",
-                sortOrder = "desc"
-            } = data;
-
-            // Validate input parameters
-            if (typeof query !== "string" || query.trim().length === 0) {
-                throw new Error(
-                    "Query parameter is required and must be a non-empty string"
-                );
-            }
-
-            if (offset < 0 || limit <= 0 || limit > 50) {
-                throw new Error("Invalid pagination parameters");
-            }
-
-            const trimmedQuery = query.trim();
-            const cacheKey = getCacheKey({
-                query: trimmedQuery,
-                offset,
-                limit,
-                sortBy,
-                sortOrder
-            });
-
-            // Check cache first
-            cleanupCache();
-            const cachedResult = searchCache.get(cacheKey);
-
-            if (
-                cachedResult &&
-                Date.now() - cachedResult.timestamp < CACHE_TTL
-            ) {
-                log(`Cache hit for query: ${trimmedQuery}`);
-                return {
-                    data: cachedResult.data,
-                    totalRecords: cachedResult.totalCount,
-                    offset,
-                    limit,
-                    query: trimmedQuery
-                };
-            }
-
-            log(`Performing search for query: ${trimmedQuery}`);
-
-            const db = admin.firestore();
-
-            // Fetch all public projects with user profiles
-            const projectsSnapshot = await db
-                .collection("projects")
-                .where("public", "==", true)
-                .get();
-
-            if (projectsSnapshot.empty) {
-                log("No public projects found");
-                return {
-                    data: [],
-                    totalRecords: 0,
-                    offset,
-                    limit,
-                    query: trimmedQuery
-                };
-            }
-
-            // Get unique user IDs from projects
-            const userIds = [
-                ...new Set(
-                    projectsSnapshot.docs.map((doc) => doc.data().userUid)
-                )
-            ];
-
-            // Fetch user profiles in batches (Firestore 'in' query limit is 10)
-            const profiles: Record<string, any> = {};
-            const batchSize = 10;
-
-            for (let i = 0; i < userIds.length; i += batchSize) {
-                const batch = userIds.slice(i, i + batchSize);
-                const profilesSnapshot = await db
-                    .collection("profiles")
-                    .where(admin.firestore.FieldPath.documentId(), "in", batch)
-                    .get();
-
-                profilesSnapshot.docs.forEach((doc) => {
-                    profiles[doc.id] = doc.data();
-                });
-            }
-
-            // Prepare search data with user information
-            const searchData: ProjectSearchResult[] = projectsSnapshot.docs.map(
-                (doc) => {
-                    const projectData = doc.data();
-                    const userProfile = profiles[projectData.userUid] || {};
-
-                    return {
-                        id: doc.id,
-                        name: projectData.name || "",
-                        description: projectData.description || "",
-                        userUid: projectData.userUid,
-                        username: userProfile.username || "",
-                        displayName: userProfile.displayName || "",
-                        created: projectData.created,
-                        public: projectData.public,
-                        iconName: projectData.iconName || "",
-                        iconBackgroundColor:
-                            projectData.iconBackgroundColor || "",
-                        iconForegroundColor:
-                            projectData.iconForegroundColor || "",
-                        stars: projectData.stars || 0
-                    };
-                }
-            );
-
-            // Perform fuzzy search using Fuse.js
-            const fuse = new Fuse(searchData, fuseOptions);
-            const fuseResults = fuse.search(trimmedQuery);
-
-            // Extract items from Fuse results and sort
-            let searchResults = fuseResults.map((result) => result.item);
-            searchResults = sortResults(searchResults, sortBy, sortOrder);
-
-            const totalRecords = searchResults.length;
-
-            // Apply pagination
-            const paginatedResults = searchResults.slice(
-                offset,
-                offset + limit
-            );
-
-            // Cache the full results (before pagination)
-            searchCache.set(cacheKey, {
-                data: paginatedResults,
-                timestamp: Date.now(),
-                totalCount: totalRecords
-            });
-
-            log(
-                `Search completed. Found ${totalRecords} results for query: ${trimmedQuery}`
-            );
-
-            return {
-                data: paginatedResults,
-                totalRecords,
-                offset,
-                limit,
-                query: trimmedQuery
-            };
-        } catch (error) {
-            log(`Error in searchProjects function: ${error}`);
-            throw error instanceof Error
-                ? error
-                : new Error(
-                      `Search failed: ${String(error ?? "Unknown error")}`
-                  );
+async function readProfiles(ids: string[]) {
+    const db = admin.firestore();
+    const profiles: Record<string, FirebaseFirestore.DocumentData> = {};
+    const userIds = [...new Set(ids)].filter(
+        (id) => typeof id === "string" && id && !id.includes("/")
+    );
+    for (let index = 0; index < userIds.length; index += 50) {
+        const batch = userIds.slice(index, index + 50);
+        const snapshots = await db.getAll(
+            ...batch.map((id) => db.collection("profiles").doc(id))
+        );
+        for (const snapshot of snapshots) {
+            if (snapshot.exists) profiles[snapshot.id] = snapshot.data()!;
         }
+    }
+    return profiles;
+}
+
+function searchResult(
+    id: string,
+    project: FirebaseFirestore.DocumentData,
+    profile: FirebaseFirestore.DocumentData = {}
+): ProjectSearchResult {
+    return {
+        id,
+        name: typeof project.name === "string" ? project.name : "",
+        description:
+            typeof project.description === "string" ? project.description : "",
+        userUid: project.userUid || "",
+        username: typeof profile.username === "string" ? profile.username : "",
+        displayName:
+            typeof profile.displayName === "string" ? profile.displayName : "",
+        created: project.created,
+        public: true,
+        iconName: project.iconName || "",
+        iconBackgroundColor: project.iconBackgroundColor || "",
+        iconForegroundColor: project.iconForegroundColor || "",
+        stars: project.starCount ?? project.stars ?? 0
+    };
+}
+
+const acceptRequest = createRequestLimiter();
+// All queries share one full catalogue, including requests during its refresh.
+// Cached fields are used only to find candidates, never as response data.
+const loadIndex = createReadCache(async () => {
+    const snapshot = await admin
+        .firestore()
+        .collection("projects")
+        .where("public", "==", true)
+        .get();
+    const profiles = await readProfiles(
+        snapshot.docs.map((doc) => doc.data().userUid)
+    );
+    return new Fuse(
+        snapshot.docs.map((doc) => {
+            const project = doc.data();
+            return searchResult(doc.id, project, profiles[project.userUid]);
+        }),
+        fuseOptions
+    );
+});
+
+export const searchProjects = onCall<SearchProjectsParams>(
+    publicCallableOptions,
+    async ({ data }): Promise<SearchResponse> => {
+        const {
+            query,
+            offset = 0,
+            limit = 8,
+            sortBy = "name",
+            sortOrder = "desc"
+        } = data ?? {};
+        if (
+            typeof query !== "string" ||
+            !query.trim() ||
+            query.length > 200 ||
+            !Number.isSafeInteger(offset) ||
+            offset < 0 ||
+            !Number.isInteger(limit) ||
+            limit < 1 ||
+            limit > 50 ||
+            !["name", "created", "stars"].includes(sortBy) ||
+            !["asc", "desc"].includes(sortOrder)
+        ) {
+            throw new HttpsError(
+                "invalid-argument",
+                "Choose a search query and valid pagination."
+            );
+        }
+        acceptRequest();
+        const trimmedQuery = query.trim();
+        const index = await loadIndex();
+        const matches = index.search(trimmedQuery).map((result) => result.item);
+        // Validate all matches before counting or paging: even an out-of-range
+        // offset must not disclose a hidden project's cached presence.
+        const projects = await readPublicProjectSummaries(
+            matches.map((project) => project.id)
+        );
+        const visibleIds = new Set(
+            projects.map((project) => project.projectUid)
+        );
+        const hiddenIds = new Set(
+            matches
+                .filter((project) => !visibleIds.has(project.id))
+                .map((project) => project.id)
+        );
+        // Stop future queries matching projects we now know are hidden or deleted.
+        index.remove((project) => hiddenIds.has(project.id));
+        const page = sortResults(
+            projects.map((project) =>
+                searchResult(project.projectUid, project)
+            ),
+            sortBy,
+            sortOrder
+        ).slice(offset, offset + limit);
+        const profiles = await readProfiles(
+            page.map((project) => project.userUid)
+        );
+        return {
+            data: page.map((project) =>
+                searchResult(project.id, project, profiles[project.userUid])
+            ),
+            totalRecords: projects.length,
+            offset,
+            limit,
+            query: trimmedQuery
+        };
     }
 );

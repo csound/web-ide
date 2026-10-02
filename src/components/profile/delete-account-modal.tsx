@@ -55,7 +55,18 @@ export function DeleteAccountModal({ username }: { username: string }) {
                     ? String(error.code)
                     : "";
 
-            if (errorCode === "auth/requires-recent-login") {
+            const details =
+                error instanceof Error && "details" in error
+                    ? error.details
+                    : undefined;
+            if (
+                errorCode === "auth/requires-recent-login" ||
+                (errorCode === "functions/failed-precondition" &&
+                    details &&
+                    typeof details === "object" &&
+                    "reason" in details &&
+                    details.reason === "requires-recent-login")
+            ) {
                 setStep("reauth");
             } else {
                 setError("Could not delete account. Please try again.");
@@ -86,6 +97,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
             );
 
             await reauthenticateWithCredential(user, credential);
+            await user.getIdToken(true);
             await performDelete();
         } catch {
             setError("Incorrect password. Please try again.");
@@ -103,6 +115,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
 
         try {
             await reauthenticateWithPopup(user, provider);
+            await user.getIdToken(true);
             await performDelete();
         } catch {
             setError("Re-authentication failed. Please try again.");

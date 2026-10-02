@@ -1,11 +1,19 @@
 import admin from "firebase-admin";
 import { FieldPath } from "firebase-admin/firestore";
 import { onCall } from "firebase-functions/v2/https";
+import {
+    createRequestLimiter,
+    publicCallableOptions
+} from "./public_requests.js";
+import { publicProjectSummary } from "./public_project_summaries.js";
+
+const acceptRequest = createRequestLimiter();
 
 /** Read only the requested public projects, ordered by maintained star totals. */
 export const popularProjects = onCall<{ count?: number }>(
-    { cors: true },
+    publicCallableOptions,
     async ({ data }) => {
+        acceptRequest();
         const count = data?.count;
         const requestedCount =
             typeof count === "number" && Number.isFinite(count)
@@ -21,20 +29,8 @@ export const popularProjects = onCall<{ count?: number }>(
             .limit(requestedCount)
             .get();
 
-        return projects.docs.map((doc) => {
-            const project = doc.data();
-            return {
-                projectUid: doc.id,
-                userUid: project.userUid || "",
-                name: project.name || "Untitled project",
-                description: project.description || "",
-                created: project.created ?? null,
-                public: true,
-                iconName: project.iconName || "fadwaveform",
-                iconBackgroundColor: project.iconBackgroundColor || "#212226",
-                iconForegroundColor: project.iconForegroundColor || "#f3f4f6",
-                starCount: project.starCount
-            };
-        });
+        return projects.docs.map((doc) =>
+            publicProjectSummary(doc.id, doc.data())
+        );
     }
 );
