@@ -154,7 +154,8 @@
         "uuid": "^14.0.0",
         "vite-plugin-checker": "^0.8.0",
         "vite-plugin-svgr": "^4.3.0",
-        "vitest": "^4.1.0"
+        "vitest": "^4.1.0",
+        "yaml": "^2.9.1"
     },
     "resolutions": {
         "react-iframe-comm/react": "*",

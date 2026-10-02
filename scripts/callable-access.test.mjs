@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFile } from "node:fs/promises";
-import { createRequire } from "node:module";
+import { parse } from "yaml";
 import {
     access,
     checkPreflights,
@@ -34,10 +34,6 @@ test("commands require an explicit known environment and exactly one mode", () =
 });
 
 test("both workflows apply the shared policy to the same project they deploy", async () => {
-    const require = createRequire(
-        new URL("../functions/package.json", import.meta.url)
-    );
-    const { parse } = require("yaml");
     for (const [env, file, job] of [
         ["dev", "develop.yaml", "deploy-dev"],
         ["prod", "production.yaml", "deploy-prod"]

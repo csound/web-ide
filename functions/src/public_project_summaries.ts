@@ -16,9 +16,13 @@ export function publicProjectSummary(
         iconBackgroundColor: project.iconBackgroundColor || "#212226",
         iconForegroundColor: project.iconForegroundColor || "#f3f4f6",
         starCount:
-            typeof project.starCount === "number"
+            typeof project.starCount === "number" &&
+            Number.isFinite(project.starCount)
                 ? project.starCount
-                : project.stars || 0
+                : typeof project.stars === "number" &&
+                    Number.isFinite(project.stars)
+                  ? project.stars
+                  : 0
     };
 }
 

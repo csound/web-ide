@@ -44,7 +44,20 @@ export const randomProjects = onCall(
             );
         }
         acceptRequest();
-        const ids = shuffle(await loadProjectIds()).slice(0, count);
-        return readPublicProjectSummaries(ids);
+        const ids = shuffle(await loadProjectIds());
+        const projects: Awaited<ReturnType<typeof readPublicProjectSummaries>> =
+            [];
+        for (
+            let offset = 0;
+            offset < ids.length && projects.length < count;
+            offset += count
+        ) {
+            projects.push(
+                ...(await readPublicProjectSummaries(
+                    ids.slice(offset, offset + count)
+                ))
+            );
+        }
+        return projects.slice(0, count);
     }
 );

@@ -80,7 +80,10 @@ beforeEach(() => {
         refs.map(fixture.snapshot)
     );
 });
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+});
 const request = (data: unknown) => ({ data }) as any;
 const projectQueries = () =>
     fixture.queries.mock.calls.filter(([name]) => name === "projects");
@@ -114,6 +117,61 @@ it("random listings return only public summary fields", async () => {
     const results = await randomProjects.run(request({ count: 1 }));
     expect(results[0]).not.toHaveProperty("internalField");
 });
+
+it.each([8, 50])(
+    "random listings refill from remaining public candidates for a count of %s",
+    async (count) => {
+        vi.spyOn(Math, "random").mockReturnValue(0.999);
+        const template = fixture.records.get("projects/fixture-project")!;
+        fixture.records.clear();
+        for (let index = 0; index < 12; index++) {
+            fixture.records.set(`projects/fixture-${index}`, { ...template });
+        }
+        const { randomProjects } = await import("../src/random_projects");
+        await randomProjects.run(request({ count }));
+        fixture.records.get("projects/fixture-0")!.public = false;
+        fixture.records.delete("projects/fixture-1");
+        fixture.records.get("projects/fixture-3")!.public = false;
+        fixture.records.delete("projects/fixture-4");
+        fixture.getAll.mockClear();
+        const result = await randomProjects.run(request({ count }));
+        expect(result.map((project) => project.projectUid)).toEqual(
+            [2, 5, 6, 7, 8, 9, 10, 11].map((index) => `fixture-${index}`)
+        );
+        const reads = fixture.getAll.mock.calls.flat().map((ref) => ref.path);
+        expect(reads).toHaveLength(new Set(reads).size);
+        expect(reads.length).toBeLessThanOrEqual(12);
+        expect(projectQueries()).toHaveLength(1);
+    }
+);
+
+it.each([
+    { starCount: undefined, stars: { "fixture-user": true }, expected: 0 },
+    { starCount: undefined, stars: "12", expected: 0 },
+    { starCount: undefined, stars: Number.NaN, expected: 0 },
+    { starCount: undefined, stars: Infinity, expected: 0 },
+    { starCount: Infinity, stars: 3, expected: 3 },
+    { starCount: Number.NaN, stars: 3, expected: 3 },
+    { starCount: undefined, stars: 3, expected: 3 },
+    { starCount: 0, stars: 3, expected: 0 },
+    { starCount: 2, stars: 3, expected: 2 }
+])(
+    "public listings return a finite star count for %j",
+    async ({ starCount, stars, expected }) => {
+        Object.assign(fixture.records.get("projects/fixture-project")!, {
+            starCount,
+            stars
+        });
+        const { randomProjects } = await import("../src/random_projects");
+        const random = await randomProjects.run(request({ count: 1 }));
+        expect(random[0].starCount).toBe(expected);
+        const { searchProjects } = await import("../src/search_projects");
+        const search = await searchProjects.run(
+            request({ query: "Fixture Melody", sortBy: "stars" })
+        );
+        expect(search.data[0].stars).toBe(expected);
+    }
+);
 
 it.each([false, undefined])(
     "search rechecks cached matches after public changes to %s",
