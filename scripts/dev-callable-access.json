@@ -1,0 +1,19 @@
+{
+    "project": "csound-ide-dev",
+    "region": "us-central1",
+    "functions": [
+        "delete_account",
+        "popular_artists",
+        "popular_projects",
+        "random_projects",
+        "search_projects",
+        "toggle_project_star"
+    ],
+    "role": "roles/run.invoker",
+    "member": "allUsers",
+    "origins": [
+        "https://csound-ide-dev.firebaseapp.com",
+        "https://csound-ide-dev.web.app",
+        "http://localhost:3000"
+    ]
+}
