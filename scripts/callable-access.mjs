@@ -56,6 +56,22 @@ export function desiredPolicy(current, declaration = access) {
     return policy;
 }
 
+export function iamPolicyClient(iam) {
+    return {
+        getPolicy: async (service) =>
+            (
+                await iam.get(`${service}:getIamPolicy`, {
+                    queryParams: { "options.requestedPolicyVersion": 3 }
+                })
+            ).body,
+        setPolicy: (service, policy) =>
+            iam.post(`${service}:setIamPolicy`, {
+                policy,
+                updateMask: "bindings,etag"
+            })
+    };
+}
+
 export async function reconcileAccess(client, target, apply) {
     assert.equal(access.role, "roles/run.invoker");
     assert.equal(access.member, "allUsers");
@@ -147,7 +163,6 @@ if (
     );
     // Use the same Firebase CLI login or CI service account as deployment.
     const firebase = require("firebase-tools");
-    const run = require("firebase-tools/lib/gcp/run.js");
     const { Client } = require("firebase-tools/lib/apiv2.js");
     const iam = new Client({
         urlPrefix: "https://run.googleapis.com",
@@ -161,13 +176,7 @@ if (
                     project: target.project,
                     nonInteractive: true
                 }),
-            getPolicy: async (service) =>
-                (
-                    await iam.get(`${service}:getIamPolicy`, {
-                        queryParams: { "options.requestedPolicyVersion": 3 }
-                    })
-                ).body,
-            setPolicy: run.setIamPolicy
+            ...iamPolicyClient(iam)
         },
         target,
         apply

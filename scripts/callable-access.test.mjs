@@ -7,6 +7,7 @@ import {
     checkPreflights,
     desiredPolicy,
     deploymentTarget,
+    iamPolicyClient,
     parseOptions,
     reconcileAccess
 } from "./callable-access.mjs";
@@ -111,12 +112,59 @@ for (const environment of Object.keys(access.environments)) {
                     callableTrigger: {},
                     runServiceId: id.replaceAll("_", "-")
                 })),
-            getPolicy: async (service) =>
-                policies.get(service) ?? { etag: "fixture-etag" },
-            setPolicy: async (service, policy) => {
-                writes.push(service);
-                policies.set(service, policy);
-            }
+            ...iamPolicyClient({
+                get: async (path, options) => {
+                    assert.ok(path.endsWith(":getIamPolicy"));
+                    assert.deepEqual(options, {
+                        queryParams: { "options.requestedPolicyVersion": 3 }
+                    });
+                    const service = path.slice(0, -":getIamPolicy".length);
+                    return {
+                        body: policies.get(service) ?? {
+                            version: 3,
+                            etag: "fixture-etag",
+                            bindings: [
+                                {
+                                    role: "roles/run.viewer",
+                                    members: ["user:fixture@example.com"],
+                                    condition: {
+                                        title: "Expired",
+                                        expression: "false"
+                                    }
+                                }
+                            ]
+                        }
+                    };
+                },
+                post: async (path, body) => {
+                    const id = access.functions[writes.length];
+                    const service = `projects/${target.project}/locations/${access.region}/services/${id.replaceAll("_", "-")}`;
+                    assert.equal(path, `${service}:setIamPolicy`);
+                    assert.deepEqual(body, {
+                        policy: {
+                            version: 3,
+                            etag: "fixture-etag",
+                            bindings: [
+                                {
+                                    role: "roles/run.viewer",
+                                    members: ["user:fixture@example.com"],
+                                    condition: {
+                                        title: "Expired",
+                                        expression: "false"
+                                    }
+                                },
+                                {
+                                    role: "roles/run.invoker",
+                                    members: ["allUsers"]
+                                }
+                            ]
+                        },
+                        updateMask: "bindings,etag"
+                    });
+                    writes.push(service);
+                    policies.set(service, body.policy);
+                }
+            })
         };
         await assert.rejects(
             reconcileAccess(client, target, false),
@@ -192,3 +240,16 @@ for (const environment of Object.keys(access.environments)) {
         );
     });
 }
+
+test("IAM write failures reach the caller", async () => {
+    const failure = new Error("Permission denied");
+    const client = iamPolicyClient({
+        post: async () => {
+            throw failure;
+        }
+    });
+    await assert.rejects(
+        client.setPolicy("fixture-service", {}),
+        (error) => error === failure
+    );
+});
