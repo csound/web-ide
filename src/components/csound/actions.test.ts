@@ -3,6 +3,7 @@ import { Csound } from "@csound/browser";
 import { store } from "../../store";
 import {
     isCsoundBusy,
+    getLiveCsound,
     outputNameFromCsd,
     runPerformance,
     stopCsound,
@@ -152,6 +153,7 @@ describe("shared Csound performance", () => {
             );
             expect(store.getState().csound.status).toBe("playing");
             expect(isCsoundBusy()).toBe(true);
+            expect(getLiveCsound("audio-test")).toBeUndefined();
             finishCleanup();
             await vi.waitFor(() =>
                 expect(engine.terminateInstance).toHaveBeenCalledOnce()
@@ -301,8 +303,11 @@ describe("shared Csound performance", () => {
             })
         ).toMatchObject({ status: "playing" });
         expect(isCsoundBusy()).toBe(true);
+        expect(getLiveCsound("audio-test")).toBe(engine);
+        expect(getLiveCsound("other-project")).toBeUndefined();
         await stopPerformance();
         expect(engine.stop).toHaveBeenCalledOnce();
         expect(isCsoundBusy()).toBe(false);
+        expect(getLiveCsound("audio-test")).toBeUndefined();
     });
 });

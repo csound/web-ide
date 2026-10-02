@@ -66,6 +66,33 @@ export function WebMcpGuide() {
                 leaving the project does not undo it. Wait for its result before
                 assuming the source was saved.
             </p>
+            <h3>Live coding and visible typing</h3>
+            <p>
+                Use <code>csound_set_selection</code> to move the cursor or
+                select text, <code>csound_scroll_to</code> to reveal code, and
+                <code>csound_type_text</code> to type in visible steps. Each
+                opens and focuses the document. Pass its current revision and
+                zero-based UTF-16 offsets from the returned source; range ends
+                are exclusive. The document response includes the selection and
+                visible ranges when its editor is open.
+            </p>
+            <p>
+                Typing defaults to 25 ms per character, accepts up to 4,096
+                characters and 120 seconds, and preserves undo. It stops if
+                cancelled or if the project, tab, source or cursor changes.
+                Partial text stays unsaved. Wait for typing to finish and use
+                its returned revision for the next call.
+            </p>
+            <p>
+                With realtime playback running for this project, call
+                <code> csound_evaluate_region</code> with <code>from</code> and
+                <code> to</code> to evaluate live code. It selects and flashes
+                the region like keyboard evaluation and waits for the result.
+                Select ORC/UDO code, SCO events, or statements within a CSD
+                section, without its wrapper tags. Evaluation may produce sound;
+                it does not save or start playback. Code already sent to Csound
+                cannot be recalled by cancelling the call.
+            </p>
             <h3>Available tools</h3>
             <p>
                 All tools take a JSON object and return a JSON object with{" "}

@@ -30,7 +30,7 @@ export const evalBlinkExtension = StateField.define({
         return Decoration.none;
     },
     update(value: DecorationSet, tr: Transaction) {
-        value = value.map(tr.changes);
+        value = tr.docChanged ? Decoration.none : value;
         for (const effect of tr.effects) {
             if (effect.is(addBlinkSuccessMarks)) {
                 value = value.update({ add: effect.value, sort: true } as any);
@@ -133,6 +133,44 @@ const evalSelection = async ({
     }
 };
 
+// Shared by keyboard evaluation and WebMCP. Only decorate the source that ran.
+export async function evaluateEditorRegion(
+    csound: CsoundObj,
+    documentType: string,
+    view: EditorView,
+    context: { from: number; to: number }
+): Promise<number> {
+    const source = view.state.doc;
+    const result = await evalSelection({
+        csound,
+        documentType,
+        evalString: view.state.sliceDoc(context.from, context.to)
+    });
+    if (!view.dom.isConnected || view.state.doc !== source) return result;
+    const success = result === 0;
+    view.dispatch({
+        effects: (success ? addBlinkSuccessMarks : addBlinkErrorMarks).of([
+            (success ? blinkSuccessMarks : blinkErrorMarks).range(
+                context.from,
+                context.to
+            )
+        ] as any)
+    });
+    setTimeout(() => {
+        if (!view.dom.isConnected || view.state.doc !== source) return;
+        view.dispatch({
+            effects: (success
+                ? removeBlinkSuccessMarks
+                : removeBlinkErrorMarks
+            ).of(
+                ((from: number, to: number) =>
+                    to <= context.from || from >= context.to) as any
+            )
+        });
+    }, 200);
+    return result;
+}
+
 export const editorEvalCode = curry(
     (
         csound,
@@ -179,45 +217,7 @@ export const editorEvalCode = curry(
         if (selection && context) {
             const evaluationType =
                 context.kind === "score-statement" ? "sco" : documentType;
-            evalSelection({
-                csound,
-                documentType: evaluationType,
-                evalString: selection
-            }).then((result: number) => {
-                if (result === 0) {
-                    view.dispatch({
-                        effects: addBlinkSuccessMarks.of([
-                            blinkSuccessMarks.range(context.from, context.to)
-                        ] as any)
-                    });
-                } else {
-                    view.dispatch({
-                        effects: addBlinkErrorMarks.of([
-                            blinkErrorMarks.range(context.from, context.to)
-                        ] as any)
-                    });
-                }
-
-                setTimeout(
-                    () =>
-                        result === 0
-                            ? view.dispatch({
-                                  effects: removeBlinkSuccessMarks.of(
-                                      ((from: number, to: number) =>
-                                          to <= context.from ||
-                                          from >= context.to) as any
-                                  )
-                              })
-                            : view.dispatch({
-                                  effects: removeBlinkErrorMarks.of(
-                                      ((from: number, to: number) =>
-                                          to <= context.from ||
-                                          from >= context.to) as any
-                                  )
-                              }),
-                    200
-                );
-            });
+            return evaluateEditorRegion(csound, evaluationType, view, context);
         }
     }
 );
