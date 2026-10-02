@@ -132,13 +132,13 @@ export function createEditorApi(
         const existing = panelsIn(layout.root).find((panel) =>
             panel.tabs.some((tab) => tab.type === "editor" && tab.uid === id)
         );
-        if (existing) store.dispatch(setActivePanel(existing.id));
         if (
             layout.maximizedPanelId &&
             existing &&
             layout.maximizedPanelId !== existing.id
         )
             store.dispatch(toggleMaximizePanel(layout.maximizedPanelId));
+        if (existing) store.dispatch(setActivePanel(existing.id));
         await store.dispatch(tabOpenByDocumentUid(id, projectUid));
     };
     const isActiveEditor = (id: string) => {
