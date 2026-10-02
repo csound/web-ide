@@ -1,6 +1,11 @@
 import admin from "firebase-admin";
-import { onCall } from "firebase-functions/v2/https";
-import { log } from "firebase-functions/logger";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
+import {
+    createReadCache,
+    createRequestLimiter,
+    publicCallableOptions
+} from "./public_requests.js";
+import { readPublicProjectSummaries } from "./public_project_summaries.js";
 
 const shuffle = <T>(items: T[]): T[] => {
     const shuffled = [...items];
@@ -16,31 +21,43 @@ const shuffle = <T>(items: T[]): T[] => {
     return shuffled;
 };
 
-let lastUpdate = Date.now();
-let projects: any[] = [];
+const acceptRequest = createRequestLimiter();
+const loadProjectIds = createReadCache(async () => {
+    const snapshot = await admin
+        .firestore()
+        .collection("projects")
+        .where("public", "==", true)
+        .orderBy("created", "desc")
+        .limit(100)
+        .get();
+    return snapshot.docs.map((doc) => doc.id);
+});
 
 export const randomProjects = onCall(
-    { cors: true },
+    publicCallableOptions,
     async ({ data }: { data: { count: number } }) => {
-        if (projects.length === 0 || Date.now() - lastUpdate > 1000 * 60 * 5) {
-            lastUpdate = Date.now();
-            const db = admin.firestore();
-            const projectsCollection = await db
-                .collection("projects")
-                .where("public", "==", true)
-                .orderBy("created", "desc")
-                .limit(100)
-                .get();
-            const nextProjects = projectsCollection.docs.map((doc) => ({
-                ...doc.data(),
-                projectUid: doc.id
-            }));
-            if (nextProjects.length > 0) {
-                projects = nextProjects;
-            }
-            log("projectsLength: " + projects.length);
+        const count = data?.count ?? 8;
+        if (!Number.isInteger(count) || count < 1 || count > 50) {
+            throw new HttpsError(
+                "invalid-argument",
+                "Choose between 1 and 50 projects."
+            );
         }
-
-        return shuffle(projects).slice(0, data.count);
+        acceptRequest();
+        const ids = shuffle(await loadProjectIds());
+        const projects: Awaited<ReturnType<typeof readPublicProjectSummaries>> =
+            [];
+        for (
+            let offset = 0;
+            offset < ids.length && projects.length < count;
+            offset += count
+        ) {
+            projects.push(
+                ...(await readPublicProjectSummaries(
+                    ids.slice(offset, offset + count)
+                ))
+            );
+        }
+        return projects.slice(0, count);
     }
 );

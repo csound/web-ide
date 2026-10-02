@@ -39,6 +39,7 @@ jobs:
             - name: Prepare dev deploy without Extensions
               run: |
                   npm run test:deploy:dev
+                  npm run test:access
                   npm run prepare:deploy:dev
             - name: Deploy to Firebase
               uses: docker://w9jds/firebase-action:v15.19.1
@@ -47,3 +48,9 @@ jobs:
                   args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive --force
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
+            - name: Authenticate for dev callable access
+              uses: google-github-actions/auth@v3
+              with:
+                  credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
+            - name: Apply dev callable access and check CORS
+              run: npm run access -- --env dev --apply

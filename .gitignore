@@ -4,6 +4,7 @@
 .firebase
 firebase-debug.log
 firebase.dev.generated.json
+gha-creds-*.json
 
 # dependencies
 **/node_modules
