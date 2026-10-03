@@ -12,9 +12,14 @@ they stay inside the manual. Embedded pages hide the IDE and source links.
 
 In the editor's manual, **Open example** opens a CSD in a temporary, editable tab.
 A book icon and accent mark manual examples. **Play manual example** runs the
-current text and loads sample files linked from that manual page. **Stop manual
-example** stops it; **Discard** or the tab's close button drops the buffer without
-a save prompt. Closing the playing example also stops its audio.
+current text and loads sample files linked from that manual page. It also scans
+quoted filenames in the edited CSD and loads matches from the bundled asset
+index, including samples, soundfonts, and analysis files that the page does not
+link. Comments are skipped and each matching file loads once per performance.
+The scan does not resolve names built at runtime or fetch files absent from the
+manual. **Stop manual example** stops playback; **Discard** or the tab's close
+button drops the buffer without a save prompt. Closing the playing example also
+stops its audio.
 
 Temporary tabs never enter the project's file list, Save, Save All, or the saved
 workspace layout. Reloading or leaving the project discards them. Playback keeps

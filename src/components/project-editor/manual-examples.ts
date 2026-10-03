@@ -51,13 +51,56 @@ export async function loadManualExample(
     };
 }
 
-/** Linked sample files stay in the Csound filesystem for this performance only. */
+/** Find literal filenames without treating commented examples as dependencies. */
+function referencedFiles(source: string): Set<string> {
+    const tokens = source.matchAll(
+        /"((?:\\.|[^"\\])*)"|;[^\r\n]*|\/\/[^\r\n]*|\/\*[\s\S]*?\*\//g
+    );
+    return new Set(
+        [...tokens].flatMap((match) =>
+            match[1] ? [match[1].replace(/^(?:\.\/)+/, "")] : []
+        )
+    );
+}
+
+/** Resolve edited source against the files shipped with the manual. */
+async function referencedAssets(source: string, signal: AbortSignal) {
+    const files = referencedFiles(source);
+    if (files.size === 0) return [];
+    const response = await fetch("/manual/example-assets.json", { signal });
+    if (!response.ok)
+        throw new Error("Could not load the manual sample index.");
+    const index: unknown = await response.json();
+    if (
+        !Array.isArray(index) ||
+        !index.every(
+            (name) =>
+                typeof name === "string" &&
+                name !== "." &&
+                name !== ".." &&
+                /^[^/\\\0]+$/.test(name)
+        )
+    )
+        throw new Error("Invalid manual sample index.");
+    return index
+        .filter((name) => files.has(name))
+        .map((name) => `/manual/examples/${encodeURIComponent(name)}`);
+}
+
+/** Sample files stay in the Csound filesystem for this performance only. */
 export async function loadManualExampleAssets(
     document: TemporaryDocument,
     signal: AbortSignal
 ) {
+    if (!document.source) return [];
+    const assets = new Set(
+        [
+            ...document.source.assets,
+            ...(await referencedAssets(document.value, signal))
+        ].map((asset) => manualExampleUrl(asset).href)
+    );
     return Promise.all(
-        (document.source?.assets ?? []).map(async (asset) => {
+        [...assets].map(async (asset) => {
             const url = manualExampleUrl(asset);
             const response = await fetch(url, { signal });
             if (!response.ok)

@@ -310,6 +310,14 @@ def main():
             shutil.copy(ROOT / "manual/licenses" / name, output / name)
         for folder in ("stylesheets", "javascripts"):
             shutil.rmtree(output / folder, ignore_errors=True)
+        # Example assets share one directory and retain their upstream filenames.
+        (output / "example-assets.json").write_text(
+            json.dumps(sorted(
+                file.name for file in (output / "examples").iterdir()
+                if file.is_file() and file.suffix.lower() != ".csd"
+            ), ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
         (output / "lookup.json").write_text(
             json.dumps(lookup, ensure_ascii=False, separators=(",", ":")),
             encoding="utf-8",

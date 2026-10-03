@@ -154,20 +154,33 @@ for (const width of [1440, 390]) {
                     false
                 );
 
-                // This example requires a linked WAV, so it also checks sample loading.
-                await openExample("diskin2");
-                await click("Play manual example");
-                await page.waitForFunction(
-                    () =>
-                        window.manualExampleFixture.state().csound.status ===
-                        "playing"
-                );
-                await click("Stop manual example");
-                await page.waitForFunction(
-                    () =>
-                        window.manualExampleFixture.state().csound.status ===
-                        "stopped"
-                );
+                // Play the unlinked sample first so an earlier run cannot supply it.
+                for (const opcode of ["lposcil3", "diskin2"]) {
+                    await openExample(opcode);
+                    if (opcode === "lposcil3") {
+                        const linked = await page.evaluate(() => {
+                            const dock =
+                                window.manualExampleFixture.state()
+                                    .ProjectEditorReducer.tabDock;
+                            return dock.openDocuments[dock.tabIndex].temporary
+                                .source.assets;
+                        });
+                        assert.deepEqual(linked, []);
+                    }
+                    await click("Play manual example");
+                    await page.waitForFunction(
+                        () =>
+                            window.manualExampleFixture.state().csound
+                                .status === "playing"
+                    );
+                    await click("Stop manual example");
+                    await page.waitForFunction(
+                        () =>
+                            window.manualExampleFixture.state().csound
+                                .status === "stopped"
+                    );
+                    if (opcode === "lposcil3") await click("Discard");
+                }
                 if (width >= 768) {
                     await click("Split editor right");
                     const focusButtons = await page.$$(
