@@ -329,6 +329,11 @@ const resolveNthEditorTabIndex = (
     return panel.tabIndex;
 };
 
+const hasEditorTab = (node: IWorkspaceLayoutNode): boolean =>
+    node.kind === "panel"
+        ? node.tabs.some((tab) => tab.type === "editor")
+        : hasEditorTab(node.first) || hasEditorTab(node.second);
+
 const deriveLegacyDock = (
     root: IWorkspaceLayoutNode,
     activePanelId: string
@@ -601,7 +606,7 @@ const ProjectEditorReducer = (
                         savedWorkspaceState.maximizedPanelId || null
                 });
 
-                if (restoredState.tabDock.openDocuments.length > 0) {
+                if (hasEditorTab(restoredState.root)) {
                     return restoredState;
                 }
 

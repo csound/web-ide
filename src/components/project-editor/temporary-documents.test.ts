@@ -7,7 +7,8 @@ import {
     splitActivePanel,
     tabClose,
     tabDockInit,
-    tabSwitch
+    tabSwitch,
+    toggleMaximizePanel
 } from "./actions";
 import {
     openTemporaryDocument,
@@ -103,18 +104,110 @@ it("retains edits when switching tabs and discards without a save prompt", () =>
     );
 });
 
-it("omits temporary buffers from restored layouts, including split panes", async () => {
+it("prunes temporary-only panes before saving and does not restore duplicate project tabs", async () => {
+    const savedPanel = state().root;
     const uid = open();
     store.dispatch(splitActivePanel("right"));
+    store.dispatch(toggleMaximizePanel(state().activePanelId));
     const layout = persistentWorkspace(state());
     expect(JSON.stringify(layout)).not.toContain(uid);
     expect(JSON.stringify(layout)).not.toContain("example source");
+    expect(layout.root).toEqual(savedPanel);
+    expect(layout.activePanelId).toBe(savedPanel.id);
+    expect(layout.maximizedPanelId).toBeNull();
     localStorage.setItem(
         `${project.projectUid}:workspaceLayout`,
         JSON.stringify(layout)
     );
+    store.dispatch({ type: "PROJECT_EDITOR.TAB_DOCK_CLOSE" });
     await store.dispatch(tabDockInit(project.projectUid, [file], undefined));
+    expect(state().root).toEqual(savedPanel);
+    expect(state().tabDock.openDocuments.map((tab) => tab.uid)).toEqual([
+        "saved"
+    ]);
     expect(temporaryDocumentUids(state().root)).toEqual([]);
+});
+
+it("prunes nested panes from old layouts while retaining pane focus and sidebars", async () => {
+    store.dispatch(splitActivePanel("right"));
+    const savedLayout = persistentWorkspace(state());
+    open();
+    store.dispatch(splitActivePanel("bottom"));
+    open();
+    store.dispatch(splitActivePanel("right"));
+    store.dispatch(toggleMaximizePanel(savedLayout.activePanelId));
+    const oldLayout = state();
+    const layout = persistentWorkspace(oldLayout);
+    expect(layout).toEqual({
+        ...savedLayout,
+        maximizedPanelId: savedLayout.activePanelId,
+        nextPanelNumber: oldLayout.nextPanelNumber,
+        nextSplitNumber: oldLayout.nextSplitNumber,
+        nextTabNumber: oldLayout.nextTabNumber
+    });
+    expect(persistentWorkspace(layout)).toEqual(layout);
+    localStorage.setItem(
+        `${project.projectUid}:workspaceLayout`,
+        JSON.stringify(oldLayout)
+    );
+    store.dispatch({ type: "PROJECT_EDITOR.TAB_DOCK_CLOSE" });
+    await store.dispatch(tabDockInit(project.projectUid, [file], undefined));
+    expect(persistentWorkspace(state())).toEqual(layout);
+});
+
+it("keeps one empty pane when no saved tabs remain", async () => {
+    const firstPanelId = state().root.id;
+    store.dispatch(tabClose(project.projectUid, "saved", false));
+    open();
+    store.dispatch(splitActivePanel("right"));
+    store.dispatch(splitActivePanel("bottom"));
+    store.dispatch(toggleMaximizePanel(state().activePanelId));
+    const layout = persistentWorkspace(state());
+    expect(layout.root).toEqual({
+        id: firstPanelId,
+        kind: "panel",
+        tabs: [],
+        tabIndex: -1
+    });
+    expect(layout.activePanelId).toBe(firstPanelId);
+    expect(layout.maximizedPanelId).toBeNull();
+    localStorage.setItem(
+        `${project.projectUid}:workspaceLayout`,
+        JSON.stringify(layout)
+    );
+    store.dispatch({ type: "PROJECT_EDITOR.TAB_DOCK_CLOSE" });
+    await store.dispatch(tabDockInit(project.projectUid, [file], undefined));
+    expect(state().root.kind).toBe("panel");
+    expect(state().tabDock.openDocuments.map((tab) => tab.uid)).toEqual([
+        "saved"
+    ]);
+});
+
+it("does not reopen a retained project tab in a utility pane after pruning", async () => {
+    open();
+    store.dispatch(splitActivePanel("right"));
+    const layout = persistentWorkspace({
+        ...state(),
+        root: {
+            id: "utility-split",
+            kind: "split",
+            direction: "horizontal",
+            first: {
+                id: "utility-panel",
+                kind: "panel",
+                tabs: [{ id: "manual-tab", type: "manual", uid: "manual" }],
+                tabIndex: 0
+            },
+            second: state().root
+        }
+    });
+    localStorage.setItem(
+        `${project.projectUid}:workspaceLayout`,
+        JSON.stringify(layout)
+    );
+    store.dispatch({ type: "PROJECT_EDITOR.TAB_DOCK_CLOSE" });
+    await store.dispatch(tabDockInit(project.projectUid, [file], undefined));
+    expect(state().root).toEqual(layout.root);
 });
 
 it("moves a sole temporary tab when splitting and drops its buffer when the pane closes", () => {

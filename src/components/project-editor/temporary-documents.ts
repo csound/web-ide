@@ -57,7 +57,7 @@ function persistentPanel(panel: IWorkspacePanelNode): IWorkspacePanelNode {
         tabIndex:
             activeIndex >= 0
                 ? activeIndex
-                : Math.min(panel.tabIndex, tabs.length - 1)
+                : Math.min(Math.max(panel.tabIndex, 0), tabs.length - 1)
     };
 }
 
@@ -65,18 +65,44 @@ function persistentPanel(panel: IWorkspacePanelNode): IWorkspacePanelNode {
 export function persistentWorkspace(
     layout: IPersistedWorkspaceLayout
 ): IPersistedWorkspaceLayout {
+    const panels: IWorkspacePanelNode[] = [];
+    const prune = (node: IWorkspaceLayoutNode): IWorkspaceLayoutNode | null => {
+        if (node.kind === "panel") {
+            const panel = persistentPanel(node);
+            panels.push(panel);
+            return panel.tabs.length > 0 ? panel : null;
+        }
+        const first = prune(node.first);
+        const second = prune(node.second);
+        if (!first) return second;
+        if (!second) return first;
+        return { ...node, first, second };
+    };
+    // Keep one empty pane when the whole workspace contained temporary tabs.
+    const root = prune(layout.root) ?? panels[0];
+    const retainedPanels = panels.filter(
+        (panel) => panel.tabs.length > 0 || panel === root
+    );
+    const hasPanel = (id: string | null | undefined) =>
+        retainedPanels.some((panel) => panel.id === id);
+    const sidebar = (panel: IWorkspacePanelNode | null) => {
+        const saved = panel && persistentPanel(panel);
+        return saved?.tabs.length ? saved : null;
+    };
     return {
-        activePanelId: layout.activePanelId,
-        maximizedPanelId: layout.maximizedPanelId,
+        activePanelId: hasPanel(layout.activePanelId)
+            ? layout.activePanelId
+            : retainedPanels[0].id,
+        maximizedPanelId: hasPanel(layout.maximizedPanelId)
+            ? layout.maximizedPanelId
+            : null,
         nextPanelNumber: layout.nextPanelNumber,
         nextSplitNumber: layout.nextSplitNumber,
         nextTabNumber: layout.nextTabNumber,
-        root: mapWorkspacePanels(layout.root, persistentPanel),
-        leftSidebar: layout.leftSidebar && persistentPanel(layout.leftSidebar),
-        rightSidebar:
-            layout.rightSidebar && persistentPanel(layout.rightSidebar),
-        bottomSidebar:
-            layout.bottomSidebar && persistentPanel(layout.bottomSidebar)
+        root,
+        leftSidebar: sidebar(layout.leftSidebar),
+        rightSidebar: sidebar(layout.rightSidebar),
+        bottomSidebar: sidebar(layout.bottomSidebar)
     };
 }
 

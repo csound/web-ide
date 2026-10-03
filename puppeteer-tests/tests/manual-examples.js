@@ -168,12 +168,47 @@ for (const width of [1440, 390]) {
                         window.manualExampleFixture.state().csound.status ===
                         "stopped"
                 );
+                if (width >= 768) {
+                    await click("Split editor right");
+                    const focusButtons = await page.$$(
+                        '::-p-aria(Toggle focus mode[role="button"])'
+                    );
+                    await focusButtons.at(-1).click();
+                    await page.waitForFunction(() => {
+                        const state =
+                            window.manualExampleFixture.state()
+                                .ProjectEditorReducer;
+                        const layout = JSON.parse(
+                            localStorage.getItem(
+                                "manual-example-fixture:workspaceLayout"
+                            )
+                        );
+                        return (
+                            state.root.kind === "split" &&
+                            state.maximizedPanelId === state.activePanelId &&
+                            layout.root.kind === "panel" &&
+                            layout.activePanelId === layout.root.id &&
+                            layout.maximizedPanelId === null
+                        );
+                    });
+                }
                 await page.reload();
                 await page.waitForSelector(".cm-editor");
                 assert.equal(
                     await page.$('[aria-label$=", temporary file"]'),
                     null
                 );
+                const restored = await page.evaluate(
+                    () =>
+                        window.manualExampleFixture.state().ProjectEditorReducer
+                );
+                assert.equal(restored.root.kind, "panel");
+                assert.deepEqual(
+                    restored.root.tabs.map((tab) => tab.uid),
+                    ["saved"]
+                );
+                assert.equal(restored.activePanelId, restored.root.id);
+                assert.equal(restored.maximizedPanelId, null);
                 assert.deepEqual(writes, []);
                 assert.deepEqual(errors, []);
             } finally {
