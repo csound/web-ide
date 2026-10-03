@@ -365,10 +365,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                     {
                         label: "Csound Manual (External)",
                         callback: () => {
-                            window.open(
-                                "https://csound.com/docs/manual",
-                                "_blank"
-                            );
+                            window.open("/manual/", "_blank");
                         }
                     },
                     {

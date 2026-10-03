@@ -215,9 +215,9 @@ export const SiteDocuments = () => {
 
                     <p>
                         The Web-IDE provides a built-in version of the Csound
-                        Manual that you can search through. Examples found in
-                        manual entries can also be auditioned directly in the
-                        manual panel.
+                        Manual that you can search through. You can copy code
+                        from its examples or download the example files to use
+                        in a project.
                     </p>
                 </section>
 

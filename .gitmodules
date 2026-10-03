@@ -1,0 +1,5 @@
+[submodule "csound-manual"]
+	path = csound-manual
+	url = https://github.com/csound/manual.git
+	branch = develop
+	shallow = true

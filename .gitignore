@@ -15,6 +15,11 @@ gha-creds-*.json
 # production
 /build
 dist
+/public/manual/
+/manual/.venv/
+/manual/__pycache__/
+/.manual-build-*/
+/.manual-prepare.lock/
 
 # misc
 .DS_Store

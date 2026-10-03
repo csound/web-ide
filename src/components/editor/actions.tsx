@@ -1,21 +1,16 @@
 import { EditorView } from "@codemirror/view";
+import { lookupManualString } from "@comp/project-editor/actions";
+import { AppDispatch } from "@root/store";
 
+/** Look up the word at the CodeMirror cursor in the manual dock. */
 export const manualEntryAtPoint = (editorReference: EditorView) => {
-    return async (): Promise<void> => {
-        console.log("FIXME", editorReference);
-        // if (!editorReference || !window.csoundSynopsis) {
-        //     return;
-        // }
-        // const cursor = editorReference.getCursor();
-        // const token = editorReference
-        //     .getTokenAt(cursor)
-        //     .string.replace(/:.*/, "");
-        // const manualEntry = window.csoundSynopsis.find(
-        //     (opc) => opc.opname === token
-        // );
-        // if (manualEntry) {
-        //     dispatch(lookupManualString());
-        //     setTimeout(() => dispatch(lookupManualString(manualEntry.id)), 10);
-        // }
+    return (dispatch: AppDispatch): void => {
+        const { state } = editorReference;
+        const word = state.wordAt(state.selection.main.head);
+        dispatch(
+            lookupManualString(
+                word ? state.sliceDoc(word.from, word.to) : undefined
+            )
+        );
     };
 };

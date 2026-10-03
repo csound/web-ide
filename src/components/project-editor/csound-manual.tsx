@@ -1,15 +1,17 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { RootState } from "@root/store";
 import DisabledByDefaultRoundedIcon from "@mui/icons-material/DisabledByDefaultRounded";
 import { windowHeader as windowHeaderStyle } from "@styles/_common";
+import { manualColors } from "@styles/manual-theme";
 import Tooltip from "@mui/material/Tooltip";
-import IframeComm from "react-iframe-comm";
 import { setManualPanelOpen } from "./actions";
 import { IProjectEditorReducer } from "./reducer";
+import { ManualBridge } from "./manual-bridge";
 import * as SS from "./styles";
 
+/** Host the static manual and share the editor's theme and lookup requests. */
 const ManualWindow = ({
     projectUid,
     isDragging = false,
@@ -20,17 +22,55 @@ const ManualWindow = ({
     showHeader?: boolean;
 }): React.ReactElement => {
     const dispatch = useDispatch();
-    const theme: any = useTheme();
+    const theme = useTheme();
+    const frame = useRef<HTMLIFrameElement>(null);
+    const [bridge] = useState(
+        () =>
+            new ManualBridge((message) =>
+                frame.current?.contentWindow?.postMessage(
+                    message,
+                    window.location.origin
+                )
+            )
+    );
 
     const manualLookupString = useSelector(
         (store: RootState) =>
             (store.ProjectEditorReducer as IProjectEditorReducer)
                 .manualLookupString
     );
+    const manualLookupVersion = useSelector(
+        (store: RootState) => store.ProjectEditorReducer.manualLookupVersion
+    );
 
-    // const onManualMessage = (event_) => {
-    //     console.log("ON MAN MSG", event_, theme);
-    // };
+    useEffect(() => {
+        /** Apply the current palette after each document's ready handshake. */
+        const sendTheme = () =>
+            frame.current?.contentWindow?.postMessage(
+                {
+                    type: "csound-manual:theme",
+                    mode: theme.mode,
+                    colors: manualColors(theme)
+                },
+                window.location.origin
+            );
+        /** Ignore messages from other origins and other frames. */
+        const onMessage = (event: MessageEvent) => {
+            if (
+                event.origin !== window.location.origin ||
+                event.source !== frame.current?.contentWindow
+            )
+                return;
+            if (bridge.receive(event.data)) sendTheme();
+        };
+        window.addEventListener("message", onMessage);
+        if (bridge.isReady) sendTheme();
+        return () => window.removeEventListener("message", onMessage);
+    }, [theme, bridge]);
+
+    useEffect(() => {
+        bridge.lookup(manualLookupString);
+    }, [manualLookupString, manualLookupVersion, bridge]);
 
     useEffect(() => {
         sessionStorage.setItem(projectUid + ":manualVisible", "true");
@@ -80,13 +120,14 @@ const ManualWindow = ({
                     height: showHeader ? "calc(100% - 35px)" : "100%"
                 }}
             >
-                <IframeComm
-                    attributes={{
-                        src: "/manual?cache=1002",
-                        width: "100%",
-                        height: "100%"
-                    }}
-                    postMessageData={manualLookupString || ""}
+                <iframe
+                    ref={frame}
+                    onLoad={() => bridge.connect()}
+                    src="/manual/"
+                    title="Csound reference manual"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0, display: "block" }}
                 />
             </div>
         </div>

@@ -4,6 +4,7 @@ import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import checker from "vite-plugin-checker";
 import { fileURLToPath } from "node:url";
+import { manualPages } from "./scripts/manual-vite";
 
 export default defineConfig({
     define: {
@@ -14,6 +15,7 @@ export default defineConfig({
     // depending on your application, base can also be "/"
     base: "/",
     plugins: [
+        manualPages(),
         checker({
             // e.g. use TypeScript check
             typescript: true

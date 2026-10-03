@@ -1,8 +1,22 @@
 import { describe, expect, it } from "vitest";
 import ProjectEditorReducer from "./reducer";
-import { TAB_DOCK_INIT } from "./types";
+import { TAB_DOCK_INIT, MANUAL_LOOKUP_STRING } from "./types";
 
 describe("ProjectEditorReducer", () => {
+    it("repeats an opcode lookup without adding another manual panel", () => {
+        const initial = ProjectEditorReducer(undefined, { type: "@@INIT" });
+        const action = {
+            type: MANUAL_LOOKUP_STRING,
+            manualLookupString: "oscili"
+        };
+        const first = ProjectEditorReducer(initial, action);
+        const second = ProjectEditorReducer(first, action);
+        expect(second.manualLookupVersion).toBe(first.manualLookupVersion + 1);
+        expect(second.manualLookupString).toBe("oscili");
+        expect(
+            second.rightSidebar?.tabs.filter((tab) => tab.type === "manual")
+        ).toHaveLength(1);
+    });
     it("opens the console in the bottom sidebar by default", () => {
         const state = ProjectEditorReducer(undefined, { type: "@@INIT" });
 
