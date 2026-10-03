@@ -5,43 +5,12 @@ const panel = document.querySelector("#search-panel");
 const results = document.querySelector("#search-results");
 const status = document.querySelector("#search-status");
 const more = document.querySelector("#search-more");
-const themeButton = document.querySelector("#theme-toggle");
+const searchOpen = document.querySelector("#search-open");
 let entries;
 let matches = [];
 let visible = 40;
 let searchTimer;
 
-/** Apply one color mode and label the switch with its next action. */
-function setTheme(dark) {
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    themeButton.textContent = dark ? "Light" : "Dark";
-    themeButton.setAttribute(
-        "aria-label",
-        `Switch to ${dark ? "light" : "dark"} theme`
-    );
-}
-try {
-    setTheme(
-        (localStorage.getItem("manual-theme") ||
-            (matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light")) === "dark"
-    );
-} catch {
-    setTheme(matchMedia("(prefers-color-scheme: dark)").matches);
-}
-themeButton.addEventListener("click", () => {
-    document.documentElement.removeAttribute("style");
-    setTheme(document.documentElement.dataset.theme !== "dark");
-    try {
-        localStorage.setItem(
-            "manual-theme",
-            document.documentElement.dataset.theme
-        );
-    } catch {
-        /* Storage can be disabled. */
-    }
-});
 const navigation = document.querySelector("#navigation");
 const wide = matchMedia("(min-width: 1000px)");
 navigation.open = wide.matches;
@@ -97,16 +66,16 @@ function renderResults() {
 /** Rank the current query and discard results from an older search. */
 async function runSearch() {
     const query = search.value.trim().toLowerCase();
+    results.replaceChildren();
+    more.hidden = true;
     if (!query) {
-        panel.hidden = true;
+        status.textContent = "Enter an opcode name or a phrase.";
         return;
     }
-    panel.hidden = false;
     status.textContent = "Searching…";
-    more.hidden = true;
     try {
         const documents = await getEntries();
-        if (query !== search.value.trim().toLowerCase() || panel.hidden) return;
+        if (query !== search.value.trim().toLowerCase() || !panel.open) return;
         const words = query.split(/\s+/);
         matches = documents
             .map((entry) => {
@@ -135,11 +104,20 @@ async function runSearch() {
         visible = 40;
         renderResults();
     } catch {
+        if (query !== search.value.trim().toLowerCase() || !panel.open) return;
         results.replaceChildren();
         status.textContent =
             "Could not load search. Submit the search again to retry.";
     }
 }
+/** Use the whole manual view while keeping focus inside search. */
+function openSearch(query) {
+    if (typeof query === "string") search.value = query;
+    if (!panel.open) panel.showModal();
+    search.focus();
+    runSearch();
+}
+searchOpen.addEventListener("click", () => openSearch());
 search.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(runSearch, 120);
@@ -152,19 +130,21 @@ document.querySelector("#manual-search").addEventListener("submit", (event) => {
 /** Dismiss results and return keyboard focus to the search field. */
 function closeSearch() {
     clearTimeout(searchTimer);
-    panel.hidden = true;
-    search.focus();
+    panel.close();
+    searchOpen.focus();
 }
 document.querySelector("#search-close").addEventListener("click", closeSearch);
+panel.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeSearch();
+});
 more.addEventListener("click", () => {
+    const next = visible;
     visible += 40;
     renderResults();
+    results.children[next]?.querySelector("a")?.focus();
 });
 document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !panel.hidden) {
-        event.preventDefault();
-        closeSearch();
-    }
     if (
         event.key === "/" &&
         !event.ctrlKey &&
@@ -172,12 +152,12 @@ document.addEventListener("keydown", (event) => {
         !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)
     ) {
         event.preventDefault();
-        search.focus();
+        openSearch();
     }
     if (
         event.key === "ArrowDown" &&
         document.activeElement === search &&
-        !panel.hidden
+        panel.open
     ) {
         event.preventDefault();
         results.querySelector("a")?.focus();
@@ -304,8 +284,7 @@ async function lookupEntry(token, requestId) {
         // Search still works if the opcode lookup table is unavailable.
     }
     if (leaving || lookupRequest !== requestId) return;
-    search.value = token;
-    runSearch();
+    openSearch(token);
     notifyParent("csound-manual:accepted", { requestId, navigating: false });
 }
 window.addEventListener("message", (event) => {
@@ -320,36 +299,10 @@ window.addEventListener("message", (event) => {
         notifyParent("csound-manual:ready");
     if (data?.type === "csound-manual:lookup" && data.documentId === documentId)
         lookupEntry(data.token, data.requestId);
-    if (data?.type === "csound-manual:theme") {
-        setTheme(data.mode === "dark");
-        for (const key of [
-            "background",
-            "surface",
-            "text",
-            "muted",
-            "line",
-            "accent",
-            "code-keyword",
-            "code-string",
-            "code-comment"
-        ]) {
-            if (
-                typeof data.colors?.[key] === "string" &&
-                CSS.supports("color", data.colors[key])
-            )
-                document.documentElement.style.setProperty(
-                    `--${key}`,
-                    data.colors[key]
-                );
-        }
-    }
 });
 notifyParent("csound-manual:ready");
 const query = new URLSearchParams(location.search).get("q");
-if (query) {
-    search.value = query;
-    runSearch();
-}
+if (query) openSearch(query);
 
 // MathJax stays local and only loads on pages that contain equations.
 if (document.querySelector(".arithmatex")) {

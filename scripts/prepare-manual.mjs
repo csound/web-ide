@@ -64,6 +64,16 @@ export function getBuildInputs(root) {
     collect(path.join(root, "manual"));
     for (const file of [
         "scripts/prepare-manual.mjs",
+        "scripts/build-manual-theme.mjs",
+        "package-lock.json",
+        "src/styles/manual-page-theme.ts",
+        "src/styles/manual-theme.ts",
+        "src/styles/themes.ts",
+        ...readdirSync(path.join(root, "src/styles"))
+            .filter(
+                (name) => name.startsWith("_theme-") && name.endsWith(".ts")
+            )
+            .map((name) => `src/styles/${name}`),
         "node_modules/mathjax/package.json",
         "node_modules/mathjax/es5/tex-svg-full.js",
         "node_modules/mathjax/es5/a11y/assistive-mml.js",

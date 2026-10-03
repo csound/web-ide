@@ -12,10 +12,13 @@ import subprocess
 import sys
 import tempfile
 from html.parser import HTMLParser
+from functools import lru_cache
 
+from markdown import markdown
 import yaml
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
+from mkdocs.plugins import BasePlugin
 from pymdownx.emoji import to_alt
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,6 +58,55 @@ class PageData(HTMLParser):
         """Keep visible article text for the search index."""
         if self.article and not self.skip:
             self.text.append(data)
+
+
+@lru_cache(maxsize=8192)
+def plain_title(value):
+    """Read heading text without leaking Markdown or HTML into labels."""
+    return "".join(PageData("<article>" + markdown(value) + "</article>").text).strip()
+
+
+class ManualThemePlugin(BasePlugin):
+    """Use the same clean titles in navigation, page titles, and search."""
+
+    def on_env(self, env, **kwargs):
+        """Expose heading text to the static page templates."""
+        env.filters["plain_title"] = plain_title
+        return env
+
+
+def opcode_index(docs):
+    """List every opcode once, in alphabetical groups that fit narrow views."""
+    groups = {}
+    for file in (docs / "opcodes").glob("*.md"):
+        heading = re.search(r"^#\s+(.+)$", file.read_text(encoding="utf-8"), re.M)
+        title = plain_title(heading.group(1)) if heading else file.stem
+        first = title[0].upper()
+        group = (
+            first
+            if "A" <= first <= "Z"
+            else "Numbers" if first.isdigit() else "Symbols"
+        )
+        groups.setdefault(group, []).append((title, file.name))
+    order = sorted(
+        groups,
+        key=lambda key: (key not in {"Symbols", "Numbers"}, key != "Symbols", key),
+    )
+    content = [
+        "# Opcode index",
+        '<nav class="opcode-jump" aria-label="Opcode initials">',
+    ]
+    for group in order:
+        content.append(f'<a href="#{group.lower()}">{group}</a>')
+    content.append("</nav>")
+    for group in order:
+        content.extend([f"\n## {group}\n", '<div class="opcode-list" markdown="1">\n'])
+        for title, name in sorted(
+            groups[group], key=lambda entry: (entry[0].casefold(), entry[0])
+        ):
+            content.append(f"- [`{title}`](opcodes/{name})")
+        content.append("\n</div>\n")
+    return "\n".join(content)
 
 
 def copy_source(checkout, destination):
@@ -111,11 +163,23 @@ def main():
             (source / "mkdocs.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
         )
         home = docs / "index.md"
-        home.write_text(
+        (docs / "about.md").write_text(
             home.read_text(encoding="utf-8")
             .replace("# GETTING STARTED", "## Getting started")
             .replace("# CONTRIBUTORS", "## Contributors"),
             encoding="utf-8",
+        )
+        home.write_text(opcode_index(docs), encoding="utf-8")
+        (docs / "opcodesIndex.md").write_text(
+            home.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        upstream["nav"][0] = {"Opcode index": "index.md"}
+        upstream["nav"].insert(1, {"About this manual": "about.md"})
+        theme_assets = work / "theme"
+        subprocess.run(
+            ["node", str(ROOT / "scripts/build-manual-theme.mjs"), str(theme_assets)],
+            cwd=ROOT,
+            check=True,
         )
         output = args.output.resolve()
         lookup = {}
@@ -125,7 +189,7 @@ def main():
             relative = file.relative_to(docs).as_posix()
             url = relative[:-3] + "/" if relative != "index.md" else ""
             heading = re.search(r"^#\s+(.+)$", text, re.M)
-            title = heading.group(1).strip() if heading else file.stem
+            title = plain_title(heading.group(1)) if heading else file.stem
             titles[url] = title
             if file.parent.name in {"opcodes", "scoregens"}:
                 entry_id = re.search(r"^id:\s*(.+)$", text, re.M)
@@ -169,6 +233,7 @@ def main():
             "extra": {
                 "source_commit": metadata["commit"],
                 "source_date": metadata["commitDate"],
+                "theme_version": digest(theme_assets / "manual-theme.js")[:10],
                 "asset_version": digest(ROOT / "manual/theme/manual.css")[:10]
                 + digest(ROOT / "manual/theme/manual.js")[:10],
             },
@@ -178,9 +243,11 @@ def main():
         config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
         loaded = load_config(str(config_path))
         loaded.mdx_configs["pymdownx.emoji"] = {"emoji_generator": to_alt}
+        loaded.plugins["manual-theme"] = ManualThemePlugin()
         build(loaded)
         assets = output / "assets"
         assets.mkdir(exist_ok=True)
+        shutil.copy(theme_assets / "manual-theme.js", assets / "manual-theme.js")
         for name in ("manual.css", "manual.js"):
             shutil.copy(ROOT / "manual/theme" / name, assets / name)
             (output / name).unlink(missing_ok=True)
@@ -260,7 +327,7 @@ def main():
             directory = output / key
             directory.mkdir(exist_ok=True)
             (directory / "index.html").write_text(
-                f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(key)} · Csound Manual</title><link rel="stylesheet" href="/manual/assets/manual.css"></head><body><main style="max-width:720px;padding:32px 24px;margin:auto"><h1>{html.escape(key)}</h1><p>This entry is not included in the Csound 7 develop manual.</p><p><a href="https://csound.com/docs/manual/{key}.html">Read the Csound 6 entry</a> or <a href="/manual/?q={key}">search the current manual</a>.</p></main></body></html>',
+                f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(key)} · Csound Manual</title><link rel="stylesheet" href="/manual/assets/manual.css"><script src="/manual/assets/manual-theme.js"></script></head><body><main style="max-width:720px;padding:32px 24px;margin:auto"><h1>{html.escape(key)}</h1><p>This entry is not included in the Csound 7 develop manual.</p><p><a href="https://csound.com/docs/manual/{key}.html">Read the Csound 6 entry</a> or <a href="/manual/?q={key}">search the current manual</a>.</p></main></body></html>',
                 encoding="utf-8",
             )
         outputs = {

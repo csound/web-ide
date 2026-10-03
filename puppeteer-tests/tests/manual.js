@@ -91,3 +91,185 @@ for (const scenario of ["document", "lookup table"]) {
         }
     );
 }
+
+const localOnly = { skip: targetName !== "local", timeout: 60000 };
+
+test(
+    "manual search fills the view and supports keyboard navigation",
+    localOnly,
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            const errors = [];
+            page.on("pageerror", (error) => errors.push(error.message));
+            for (const width of [320, 390, 768, 1440]) {
+                await page.setViewport({ width, height: 800 });
+                await page.goto(`${target.baseUrl}/manual/`);
+                assert.equal(
+                    await page.$eval("article h1", (node) => node.textContent),
+                    "Opcode index"
+                );
+                assert.ok(
+                    await page.$$eval(
+                        ".opcode-list a",
+                        (nodes) => nodes.length > 1000
+                    )
+                );
+                assert.equal(await page.$("#theme-toggle"), null);
+                assert.equal(
+                    await page.evaluate(
+                        () => document.documentElement.scrollWidth > innerWidth
+                    ),
+                    false
+                );
+                await page.click("#search-open");
+                assert.equal(
+                    await page.evaluate(() => document.activeElement.id),
+                    "search"
+                );
+                await page.type("#search", "oscili");
+                await page.waitForFunction(
+                    () =>
+                        document.querySelector("#search-results strong")
+                            ?.textContent === "oscili"
+                );
+                const layout = await page.evaluate(() => {
+                    const bounds = document
+                        .querySelector("#search-panel")
+                        .getBoundingClientRect();
+                    return {
+                        x: bounds.x,
+                        y: bounds.y,
+                        width: bounds.width,
+                        height: bounds.height,
+                        overflow:
+                            document.querySelector("#search-panel")
+                                .scrollWidth > innerWidth
+                    };
+                });
+                assert.deepEqual(layout, {
+                    x: 0,
+                    y: 0,
+                    width,
+                    height: 800,
+                    overflow: false
+                });
+                const titles = await page.$$eval(
+                    "#search-results strong",
+                    (nodes) => nodes.map((node) => node.textContent)
+                );
+                assert.ok(titles.includes("Basic Oscillators"));
+                assert.ok(titles.every((title) => !title.includes("**")));
+                await page.evaluate(() =>
+                    document.querySelector(".brand").focus()
+                );
+                assert.equal(
+                    await page.evaluate(() => document.activeElement.id),
+                    "search",
+                    "The page behind the modal must remain inert"
+                );
+                await page.keyboard.press("Tab");
+                assert.equal(
+                    await page.evaluate(() => document.activeElement.id),
+                    "search-close"
+                );
+                await page.keyboard.down("Shift");
+                await page.keyboard.press("Tab");
+                await page.keyboard.up("Shift");
+                assert.equal(
+                    await page.evaluate(() => document.activeElement.id),
+                    "search"
+                );
+                await page.keyboard.press("ArrowDown");
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.activeElement.textContent.startsWith("oscili")
+                    ),
+                    true
+                );
+                await page.evaluate(() => {
+                    document.querySelector(".search-body").scrollTop = 2000;
+                });
+                assert.ok(
+                    await page.$eval(
+                        "#search-close",
+                        (node) => node.getBoundingClientRect().top >= 0
+                    )
+                );
+                await page.keyboard.press("Escape");
+                assert.equal(
+                    await page.evaluate(
+                        () => document.querySelector("#search-panel").open
+                    ),
+                    false
+                );
+                assert.equal(
+                    await page.evaluate(() => document.activeElement.id),
+                    "search-open"
+                );
+                await page.keyboard.press("/");
+                await page.click("#search-close");
+                assert.equal(
+                    await page.evaluate(
+                        () => document.querySelector("#search-panel").open
+                    ),
+                    false
+                );
+            }
+            assert.deepEqual(errors, []);
+        } finally {
+            await browser.close();
+        }
+    }
+);
+
+test(
+    "standalone manual follows the saved IDE theme and global default",
+    localOnly,
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            await page.goto(`${target.baseUrl}/manual/`);
+            const getBackground = () =>
+                page.evaluate(
+                    () =>
+                        getComputedStyle(document.documentElement)
+                            .backgroundColor
+                );
+            assert.equal(await getBackground(), "rgb(34, 35, 38)");
+            const settings = await browser.newPage();
+            await settings.goto(`${target.baseUrl}/manual/`);
+            for (const [name, background] of Object.entries({
+                github: "rgb(13, 17, 23)",
+                "github-light": "rgb(255, 255, 255)",
+                dracula: "rgb(15, 17, 23)",
+                nord: "rgb(46, 52, 64)",
+                "solarized-dark": "rgb(0, 43, 54)",
+                monokai: "rgb(34, 35, 38)"
+            })) {
+                await settings.evaluate((name) => {
+                    localStorage.setItem("manual-theme", "light");
+                    localStorage.setItem("theme", name);
+                }, name);
+                await page.waitForFunction(
+                    (color) =>
+                        getComputedStyle(document.documentElement)
+                            .backgroundColor === color,
+                    {},
+                    background
+                );
+                await page.reload();
+                assert.equal(await getBackground(), background);
+            }
+            await settings.evaluate(() =>
+                localStorage.setItem("theme", "unknown")
+            );
+            await page.reload();
+            assert.equal(await getBackground(), "rgb(34, 35, 38)");
+        } finally {
+            await browser.close();
+        }
+    }
+);

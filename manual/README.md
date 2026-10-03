@@ -3,7 +3,9 @@
 The IDE serves a static Csound 7 manual at `/manual/`. It does not load React,
 Firebase, a CDN, or web fonts. Search loads its index when used. Only pages with
 equations load MathJax. The editor sends its theme and opcode lookups to the
-same-origin iframe.
+same-origin iframe. The first page lists all opcodes in alphabetical groups;
+the upstream introduction lives at `/manual/about/`. Search opens a dialog that
+fills the manual view, with an always-visible close button and keyboard access.
 
 Upstream scripts and rendered HTML have the same origin authority as the IDE.
 Review upstream changes as application code before updating the source pin.
@@ -19,8 +21,8 @@ stays unchanged. Commit or restore tracked source edits before building.
 
 MkDocs and PyMdown render the Markdown; `manual/theme/` supplies the HTML, CSS,
 and browser script. The build keeps upstream examples, audio, syntax tabs, code
-snippets, links, and copyright notices. The home page uses one main heading with
-sentence case section headings.
+snippets, links, and copyright notices. Titles use rendered heading text so
+Markdown markers do not appear in search results or navigation.
 
 The manual uses GNU FDL 1.3; its appendix generators use GPL 3 or later. Copies
 of both licenses live in `manual/licenses/` and ship with the site. MathJax is a
@@ -45,7 +47,11 @@ npm run manual:prepare
 
 The first build creates `manual/.venv/` and installs the pinned Python packages
 from `manual/requirements.txt`. Set `PYTHON` to a Python executable path if needed.
-CI uses Python 3.12 and initializes the submodule during checkout.
+CI uses Python 3.12 and initializes the submodule during checkout. Vite builds a
+small theme script from the same palette registry and color helpers as the IDE.
+The manual reads the shared `theme` preference and follows changes in other tabs;
+without a saved choice, it uses the IDE's global default. The editor dock also
+accepts theme updates directly from its parent.
 
 `npm start`, `npm run build`, and `npm run build:dev` run `manual:prepare` first.
 Preparation reuses `public/manual/` when the source commit, build inputs, and all

@@ -104,6 +104,34 @@ const build = JSON.parse(
     readFileSync(path.join(root, "public/manual/.build.json"), "utf8")
 );
 assert.equal(index.length, build.pages);
+assert.ok(
+    index.every((entry) => !/^\*\*.+\*\*$/.test(entry.title)),
+    "Search titles still contain Markdown emphasis"
+);
+const home = pages.get(path.join(manual, "index.html")).html;
+const opcodeLinks = [...home.matchAll(/<a href="opcodes\/([^"/]+)\/">/g)].map(
+    (match) => match[1]
+);
+const sourceOpcodes = readdirSync(path.join(root, "csound-manual/docs/opcodes"))
+    .filter((name) => name.endsWith(".md"))
+    .map((name) => name.slice(0, -3));
+assert.deepEqual(
+    opcodeLinks.sort(),
+    sourceOpcodes.sort(),
+    "The home page must list each opcode once"
+);
+for (const [, group] of home.matchAll(
+    /<div class="opcode-list">([\s\S]*?)<\/div>/g
+)) {
+    const names = [...group.matchAll(/<code>([^<]*)<\/code>/g)].map((match) =>
+        decode(match[1]).toLowerCase()
+    );
+    assert.deepEqual(
+        names,
+        [...names].sort(),
+        "Opcode groups must stay alphabetical"
+    );
+}
 for (const entry of index)
     assert.ok(pages.has(path.join(manual, entry.url, "index.html")), entry.url);
 const lookup = JSON.parse(
