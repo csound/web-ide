@@ -17,8 +17,13 @@ const {
     Delegate
 } = require("firebase-tools/lib/deploy/functions/runtimes/node/index.js");
 const { Config } = require("firebase-tools/lib/config.js");
+const { parse } = require("yaml");
+const backend = require("firebase-tools/lib/deploy/functions/backend.js");
+const {
+    promptForFailurePolicies
+} = require("firebase-tools/lib/deploy/functions/prompts.js");
 
-test("dev skips the empty Extensions deploy and preserves every function and hosting route", async () => {
+test("dev skips the empty Extensions deploy and preserves every function and hosting route", async (t) => {
     const originalDir = await mkdtemp(
         path.join(tmpdir(), "web-ide-functions-")
     );
@@ -85,6 +90,11 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
         assert.deepEqual(dev, original);
         assert.ok(Object.keys(dev.endpoints).length > 0);
         assert.deepEqual(config.hosting, production.hosting);
+        assert.deepEqual(config.firestore, production.firestore);
+        assert.equal(
+            firebaseConfig.path(config.firestore.indexes),
+            path.join(root, "firestore.indexes.json")
+        );
         assert.equal(
             firebaseConfig.path(config.hosting.public),
             path.join(root, "dist")
@@ -101,6 +111,49 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
         await assert.rejects(
             readFile(path.join(functionsDir, "functions.yaml")),
             { code: "ENOENT" }
+        );
+        await t.test(
+            "CI confirms new retry policies without a manual prompt",
+            async () => {
+                const workflow = parse(
+                    await readFile(
+                        path.join(root, ".github/workflows/develop.yaml"),
+                        "utf8"
+                    )
+                );
+                const deploy = workflow.jobs["deploy-dev"].steps.find(
+                    (step) => step.name === "Deploy to Firebase"
+                );
+                const args = deploy.with.args.split(/\s+/);
+                const options = {
+                    nonInteractive: args.includes("--non-interactive"),
+                    force: args.includes("--force")
+                };
+                assert.equal(options.nonInteractive, true);
+                assert.equal(options.force, true);
+                const endpoint = dev.endpoints.new_user_callback;
+                assert.equal(endpoint.eventTrigger.retry, true);
+                const deployedEndpoint = {
+                    ...endpoint,
+                    id: "new_user_callback",
+                    region: "us-central1"
+                };
+                const desired = backend.of(deployedEndpoint);
+                await promptForFailurePolicies(
+                    options,
+                    desired,
+                    backend.empty()
+                );
+                await promptForFailurePolicies(
+                    options,
+                    desired,
+                    backend.of({
+                        ...deployedEndpoint,
+                        eventTrigger: { ...endpoint.eventTrigger, retry: false }
+                    })
+                );
+                await promptForFailurePolicies(options, desired, desired);
+            }
         );
     } finally {
         await rm(originalDir, { recursive: true, force: true });

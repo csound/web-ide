@@ -1,12 +1,12 @@
 import { AppThunkDispatch, RootState } from "@root/store";
+import { saveProfile } from "./save-profile";
 import { getDownloadURL, uploadBytes } from "firebase/storage";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import {
     collection,
-    deleteDoc,
     doc,
     getDoc,
     getDocs,
-    setDoc,
     updateDoc,
     query,
     where,
@@ -20,9 +20,7 @@ import {
     getFirebaseTimestamp,
     projects,
     profiles,
-    profileStars,
     usernames,
-    stars,
     tags,
     targets,
     Timestamp,
@@ -453,7 +451,6 @@ export const unfollowUser =
 
 export const updateUserProfile =
     (
-        originalUsername: string,
         username: string,
         displayName: string,
         bio: string,
@@ -466,8 +463,7 @@ export const updateUserProfile =
         const currentState = getState();
         const loggedInUserUid = selectLoggedInUid(currentState);
         if (loggedInUserUid) {
-            await updateDoc(doc(profiles, loggedInUserUid), {
-                username,
+            await saveProfile(loggedInUserUid, username, {
                 displayName,
                 bio,
                 link1,
@@ -476,10 +472,6 @@ export const updateUserProfile =
                 backgroundIndex
             });
 
-            await deleteDoc(doc(usernames, originalUsername));
-            await setDoc(doc(usernames, username), {
-                userUid: loggedInUserUid
-            });
             dispatch({
                 type: REFRESH_USER_PROFILE,
                 payload: { username, displayName, bio, link1, link2, link3 }
@@ -531,6 +523,7 @@ export const editProject = (project: IProject) => {
     return openSimpleModal("new-project-prompt", {
         name: project.name,
         description: project.description,
+        tags: project.tags || [],
         label: "Apply changes",
         projectID: project.projectUid,
         starterTemplate: "single-csd",
@@ -708,37 +701,10 @@ export const starOrUnstarProject = (
         if (!projectUid || !loggedInUserUid) {
             return;
         }
-        const batch = writeBatch(database);
-        const currentProjectStarsReference = await getDoc(
-            doc(stars, projectUid)
-        );
-        const currentProjectStars = currentProjectStarsReference.exists()
-            ? currentProjectStarsReference.data()
-            : {};
-        const currentlyStarred = keys(currentProjectStars || []).includes(
-            loggedInUserUid
-        );
-
-        if (currentlyStarred) {
-            batch.update(doc(stars, projectUid), {
-                [loggedInUserUid]: fieldDelete()
-            });
-            batch.update(doc(profileStars, loggedInUserUid), {
-                [projectUid]: fieldDelete()
-            });
-        } else {
-            batch.set(
-                doc(stars, projectUid),
-                { [loggedInUserUid]: getFirebaseTimestamp() },
-                { merge: true }
-            );
-            batch.set(
-                doc(profileStars, loggedInUserUid),
-                { [projectUid]: getFirebaseTimestamp() },
-                { merge: true }
-            );
-        }
-        await batch.commit();
+        await httpsCallable(
+            getFunctions(),
+            "toggle_project_star"
+        )({ projectUid });
     };
 };
 

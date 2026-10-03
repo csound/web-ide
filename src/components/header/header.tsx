@@ -62,10 +62,6 @@ export const Header = () => {
     const projectControlsReady =
         !!editorProjectUid && activeProjectUid === editorProjectUid;
 
-    const routeIsProfile = currentRoute.pathname.startsWith("/profile");
-
-    const routeIsDocumentation = currentRoute.pathname === "/documentation";
-
     const isOwner = useSelector(selectIsOwnerForProject(editorProjectUid));
 
     const loggedInUid = useSelector(selectLoggedInUid);
@@ -137,7 +133,7 @@ export const Header = () => {
                 css={SS.menuPaper}
                 anchorEl={anchorElement.current}
                 anchorOrigin={{
-                    vertical: "top",
+                    vertical: "bottom",
                     horizontal: "right"
                 }}
                 transformOrigin={{
@@ -207,17 +203,6 @@ export const Header = () => {
     const utilityMenuAnchor = useRef<HTMLButtonElement>(null);
     const [isUtilityMenuOpen, setIsUtilityMenuOpen] = useState(false);
 
-    const leadingSlot =
-        routeIsEditor && mobileView ? (
-            <div css={SS.menuSlot}>
-                {editorProjectUid ? (
-                    <MenuBar projectUid={editorProjectUid} />
-                ) : null}
-            </div>
-        ) : (
-            <div css={SS.spacer} />
-        );
-
     const editorControlsPlaceholder = (
         <div css={SS.headerControlsPlaceholder}>
             <span css={SS.headerControlCircle} />
@@ -267,12 +252,12 @@ export const Header = () => {
         <>
             {isLoginDialogOpen && <Login />}
             <AppBar position={"fixed"} css={SS.headerRoot}>
-                <Toolbar disableGutters={true} css={SS.toolbar}>
-                    {leadingSlot}
+                <Toolbar disableGutters={true} css={SS.toolbar(routeIsHome)}>
+                    <div css={SS.logoSlot}>
+                        <CSLogo size={38} interactive={true} />
+                    </div>
 
-                    <CSLogo size={38} interactive={true} />
-
-                    {routeIsEditor && editorProjectUid && !mobileView && (
+                    {routeIsEditor && editorProjectUid && (
                         <MenuBar projectUid={editorProjectUid} />
                     )}
                     <div style={{ flexGrow: 1 }} />
@@ -294,10 +279,8 @@ export const Header = () => {
                                     />
                                 )}
                         </div>
-                    ) : (
-                        <div css={SS.defaultRightSideGroup} />
-                    )}
-                    {!mobileView && utilityNav}
+                    ) : null}
+                    {utilityNav}
                     <div css={SS.authSlot}>
                         {isAuthRequesting ? (
                             <div css={SS.authPlaceholder} />

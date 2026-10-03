@@ -13,7 +13,7 @@ catalog the browser uses.
    [Model Context Tool Inspector](https://developer.chrome.com/docs/ai/webmcp).
 4. Discover tools and call `csound_read_workspace` with `{}`.
 
-The footer link says **WebMCP ready** only after all 16 tools register. **WebMCP supported**
+The footer link says **WebMCP ready** only after all 20 tools register. **WebMCP supported**
 means the app includes the feature but no tools are ready in this tab. Check browser
 support and open a project. **WebMCP unavailable** means registration failed; check
 the browser console and reload. Other browsers can use the editor as usual.
@@ -64,6 +64,60 @@ Opening a tab does not change the run target. Call `csound_select_target` with a
 `document_id`, or `{}` to use the selected target. Both use current unsaved CSD/ORC
 source and project assets. Playback does not save the project. A CSD with a file
 output option must use render instead of play.
+
+## Live coding and paced typing
+
+Four tools let an agent show its work in the editor:
+
+- `csound_set_selection`: move the cursor with `anchor`, or select to `head`.
+- `csound_scroll_to`: center `position` without changing the selection.
+- `csound_type_text`: replace `[from, to)` with visible, paced `text`.
+- `csound_evaluate_region`: select and evaluate `[from, to)` in this project's
+  running realtime engine, with the same success/error flash as keyboard evaluation.
+
+Each takes `document_id` and `base_revision` from `csound_read_document`, opens
+and focuses the editor, and checks the revision again after the editor mounts.
+Positions are zero-based UTF-16 offsets in the returned source, not line numbers;
+`to` is exclusive. `read_document` also returns the mounted editor's `selection`
+and `visible_ranges`. Do not split a surrogate pair when choosing offsets.
+
+For example, reveal a document, type at its start, then use the returned revision
+and the inserted range to evaluate the new code:
+
+```js
+const before = await call("csound_read_document", { document_id });
+const typed = await call("csound_type_text", {
+    document_id,
+    base_revision: before.revision,
+    from: 0,
+    to: 0,
+    text: 'prints "hello from the agent\\n"\n',
+    delay_ms: 25
+});
+if (typed.ok) {
+    await call("csound_evaluate_region", {
+        document_id,
+        base_revision: typed.revision,
+        from: 0,
+        to: typed.selection.head
+    });
+}
+```
+
+Here `call` is your agent's WebMCP tool caller. This example needs an ORC document
+and realtime playback already running for this project. Evaluation accepts ORC,
+UDO and SCO files, plus orchestra or score statements inside a CSD; select the
+statements without the CSD section tags. It never starts playback or saves.
+Use `csound_read_console` after an evaluation error. Evaluation already sent to
+Csound cannot be undone by cancellation.
+
+Typing defaults to 25 ms per Unicode code point. It accepts up to 4,096 UTF-16
+characters, a delay of 0–200 ms, and a total duration of at most 120 seconds.
+Newlines normalize to LF. Typing preserves undo and stops on cancellation, editor
+closure, project/tab changes, other edits, or cursor movement. Text already typed
+stays unsaved; read the document again after an interruption. Calls never simulate
+OS keystrokes or type outside the editor. Wait for typing to finish before sending
+the next edit or evaluation.
 
 `csound_pause` and `csound_resume` control realtime audio. `csound_stop` stops audio
 or cancels a render, including engine loading. Stop is safe to repeat. Only one
@@ -129,6 +183,7 @@ WEBMCP_TEST_URL=http://127.0.0.1:3000/editor/ElPGLLOOc5qWNM4VmfVV npm run test:w
 ```
 
 The check verifies native discovery, editing and stale revisions, tab selection,
+cursor selection, long-document scrolling, paced typing, region evaluation,
 play/pause/resume/stop, a real RIFF/WAVE render, compile errors, cancellation,
 the guide link, mobile footer layout, and cleanup on navigation. It reads the audio
 preview to check the generated WAV bytes. Other browser tests skip this check

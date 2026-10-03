@@ -1,6 +1,20 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
 import { shadow, _scrollbars } from "@styles/_common";
 
+export const profileContent = css`
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+    && > div {
+        padding: 0;
+        overflow: hidden;
+        max-height: calc(100dvh - 32px);
+        border-radius: 8px;
+    }
+`;
+
 export const content = (theme: Theme): SerializedStyles => css`
     position: absolute;
     outline: none;

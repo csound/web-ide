@@ -80,7 +80,7 @@ test(
             const workspace = await call("read_workspace");
             assert.equal(workspace.ok, true);
             assert.equal(workspace.project.can_save, false);
-            assert.equal((await call("read_guide")).tools.length, 16);
+            assert.equal((await call("read_guide")).tools.length, 20);
             const file = workspace.files.find((file) =>
                 file.path.endsWith(".csd")
             );
@@ -166,6 +166,59 @@ test(
             }
             const playing = await call("play", { document_id });
             assert.equal(playing.ok, true, JSON.stringify(playing));
+            current = await call("read_document", { document_id });
+            current = await setSource(
+                current.source.replace(
+                    "instr 1",
+                    "; viewport test\n".repeat(60) + "instr 1"
+                )
+            );
+            const cursor = current.source.indexOf("a1 oscili");
+            assert.equal(
+                (
+                    await call("set_selection", {
+                        document_id,
+                        base_revision: current.revision,
+                        anchor: cursor
+                    })
+                ).ok,
+                true
+            );
+            assert.equal(
+                (
+                    await call("scroll_to", {
+                        document_id,
+                        base_revision: current.revision,
+                        position: cursor
+                    })
+                ).ok,
+                true
+            );
+            await page.waitForFunction(() =>
+                [...document.querySelectorAll(".cm-scroller")].some(
+                    (node) => node.scrollTop > 200
+                )
+            );
+            const note = "; typed by an agent\n";
+            const typed = await call("type_text", {
+                document_id,
+                base_revision: current.revision,
+                from: cursor,
+                to: cursor,
+                text: note,
+                delay_ms: 15
+            });
+            assert.equal(typed.ok, true, JSON.stringify(typed));
+            assert.equal(typed.selection.head, cursor + note.length);
+            const start = typed.source.indexOf("instr 1");
+            const end = typed.source.indexOf("endin") + "endin".length;
+            const evaluated = await call("evaluate_region", {
+                document_id,
+                base_revision: typed.revision,
+                from: start,
+                to: end
+            });
+            assert.equal(evaluated.ok, true, JSON.stringify(evaluated));
             assert.equal((await call("pause")).status, "paused");
             assert.equal((await call("resume")).status, "playing");
             assert.equal((await call("stop")).status, "stopped");
@@ -246,7 +299,7 @@ test(
             await docs.waitForSelector("#webmcp table");
             assert.equal(
                 await docs.$$eval("#webmcp tbody tr", (rows) => rows.length),
-                16
+                20
             );
             await page.bringToFront();
             await page.screenshot({ path: "/tmp/csound-webmcp-editor.png" });

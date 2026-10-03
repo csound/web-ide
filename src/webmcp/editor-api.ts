@@ -1,5 +1,10 @@
 import { store } from "@root/store";
 import { openEditors } from "@comp/editor/editor";
+import { EditorView } from "@codemirror/view";
+import {
+    evaluateEditorRegion,
+    findSurroundingContext
+} from "@comp/editor/utils";
 import { updateDocumentValue, saveDocumentValue } from "@comp/projects/actions";
 import { selectIsOwner } from "@comp/project-editor/selectors";
 import {
@@ -8,7 +13,8 @@ import {
     setActivePanel,
     setSidebarTabIndex,
     closePanelTab,
-    closeSidebarTab
+    closeSidebarTab,
+    toggleMaximizePanel
 } from "@comp/project-editor/actions";
 import {
     IWorkspaceLayoutNode,
@@ -20,12 +26,24 @@ import {
     stopPerformance,
     pauseCsound,
     resumePausedCsound,
-    isCsoundBusy
+    isCsoundBusy,
+    getLiveCsound
 } from "@comp/csound/actions";
 import { nonCloudFiles } from "@comp/file-tree/actions";
 import { SET_SELECTED_TARGET } from "@comp/target-controls/types";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
-import { guide, MAX_SOURCE_LENGTH, ToolError, ToolExecutor } from "./tools";
+import {
+    guide,
+    MAX_SOURCE_LENGTH,
+    MAX_TYPING_DURATION_MS,
+    ToolError,
+    ToolExecutor
+} from "./tools";
+import {
+    checkPosition,
+    typeIntoEditor,
+    waitForEditorStep
+} from "./interactions";
 
 const panelsIn = (node: IWorkspaceLayoutNode): IWorkspacePanelNode[] =>
     node.kind === "panel"
@@ -90,7 +108,11 @@ export function createEditorApi(
             document_id: id,
             filename: file.filename,
             ...current,
-            modified: file.isModifiedLocally
+            modified: file.isModifiedLocally,
+            selection: openEditors.get(id)?.state.selection.main.toJSON(),
+            visible_ranges: openEditors
+                .get(id)
+                ?.visibleRanges.map(({ from, to }) => ({ from, to }))
         };
     };
     const checkedRead = (id: string, baseRevision: string) => {
@@ -101,6 +123,59 @@ export function createEditorApi(
                 "The source changed. Read the document again before editing or saving."
             );
         return current;
+    };
+    const openDocument = async (id: string) => {
+        const file = document(id, false);
+        if (file.type === "folder")
+            throw new ToolError("not_file", "Choose a file, not a folder.");
+        const layout = store.getState().ProjectEditorReducer;
+        const existing = panelsIn(layout.root).find((panel) =>
+            panel.tabs.some((tab) => tab.type === "editor" && tab.uid === id)
+        );
+        if (
+            layout.maximizedPanelId &&
+            existing &&
+            layout.maximizedPanelId !== existing.id
+        )
+            store.dispatch(toggleMaximizePanel(layout.maximizedPanelId));
+        if (existing) store.dispatch(setActivePanel(existing.id));
+        await store.dispatch(tabOpenByDocumentUid(id, projectUid));
+    };
+    const isActiveEditor = (id: string) => {
+        const layout = store.getState().ProjectEditorReducer;
+        const panel = panelsIn(layout.root).find(
+            (item) => item.id === layout.activePanelId
+        );
+        const tab = panel?.tabs[panel.tabIndex];
+        return tab?.type === "editor" && tab.uid === id;
+    };
+    const revealEditor = async (
+        id: string,
+        revision: string,
+        signal: AbortSignal
+    ) => {
+        checkedRead(id, revision);
+        await openDocument(id);
+        for (let attempt = 0; attempt < 125; attempt++) {
+            project();
+            signal.throwIfAborted();
+            if (!isActiveEditor(id))
+                throw new ToolError(
+                    "editor_changed",
+                    "The active tab changed. Read workspace again."
+                );
+            const view = openEditors.get(id);
+            if (view && view.dom.isConnected) {
+                checkedRead(id, revision);
+                view.focus();
+                return view;
+            }
+            await waitForEditorStep(16, signal);
+        }
+        throw new ToolError(
+            "editor_unavailable",
+            "The text editor did not mount. Open the document and retry."
+        );
     };
     const workspace = () => {
         const currentProject = project();
@@ -175,6 +250,157 @@ export function createEditorApi(
                 return guide;
             case "csound_read_document":
                 return read(id);
+            case "csound_set_selection":
+            case "csound_scroll_to":
+            case "csound_type_text":
+            case "csound_evaluate_region": {
+                const before = checkedRead(id, input.base_revision as string);
+                const from = (input.from ??
+                    input.anchor ??
+                    input.position) as number;
+                const to = (input.to ?? input.head ?? from) as number;
+                checkPosition(before.source, from);
+                checkPosition(before.source, to);
+                const isRegion =
+                    name === "csound_type_text" ||
+                    name === "csound_evaluate_region";
+                if (isRegion && to < from)
+                    throw new ToolError(
+                        "invalid_range",
+                        "The range must have from <= to; to is exclusive."
+                    );
+                const text =
+                    (input.text as string | undefined)?.replace(
+                        /\r\n?/g,
+                        "\n"
+                    ) ?? "";
+                const delay = (input.delay_ms as number | undefined) ?? 25;
+                if (name === "csound_type_text") {
+                    if (
+                        before.source.length - (to - from) + text.length >
+                        MAX_SOURCE_LENGTH
+                    )
+                        throw new ToolError(
+                            "document_too_large",
+                            "Typing would exceed the source limit."
+                        );
+                    if (
+                        Array.from(text).length * delay >
+                        MAX_TYPING_DURATION_MS
+                    )
+                        throw new ToolError(
+                            "invalid_input",
+                            "Reduce text or delay_ms to keep typing within 120 seconds."
+                        );
+                }
+                let csound = getLiveCsound(projectUid);
+                const fileType = document(id)
+                    .filename.split(".")
+                    .pop()
+                    ?.toLowerCase();
+                if (name === "csound_evaluate_region") {
+                    if (!csound)
+                        throw new ToolError(
+                            "invalid_state",
+                            "Start realtime playback for this project before evaluating a region."
+                        );
+                    if (
+                        !fileType ||
+                        !["csd", "orc", "udo", "sco"].includes(fileType)
+                    )
+                        throw new ToolError(
+                            "invalid_target",
+                            "Choose a CSD, ORC, UDO or SCO text file."
+                        );
+                    if (!before.source.slice(from, to).trim())
+                        throw new ToolError(
+                            "invalid_range",
+                            "Select a nonempty code region."
+                        );
+                }
+                const combined = AbortSignal.any([
+                    lifetime,
+                    ...(signal ? [signal] : [])
+                ]);
+                const view = await revealEditor(id, before.revision, combined);
+                combined.throwIfAborted();
+                checkedRead(id, before.revision);
+                if (name === "csound_scroll_to") {
+                    view.dispatch({
+                        effects: EditorView.scrollIntoView(from, {
+                            y: "center"
+                        })
+                    });
+                } else if (name === "csound_type_text") {
+                    await typeIntoEditor(view, {
+                        from,
+                        to,
+                        text,
+                        delay,
+                        signal: combined,
+                        check: () => {
+                            project();
+                            if (
+                                openEditors.get(id) !== view ||
+                                !isActiveEditor(id)
+                            )
+                                throw new ToolError(
+                                    "editor_changed",
+                                    "The editor closed or the active tab changed. Partial typing stays unsaved."
+                                );
+                        },
+                        onChange: (source) =>
+                            store.dispatch(
+                                updateDocumentValue(source, projectUid, id)
+                            )
+                    });
+                } else {
+                    view.dispatch({
+                        selection: { anchor: from, head: to },
+                        scrollIntoView: true
+                    });
+                    if (name === "csound_evaluate_region") {
+                        csound = getLiveCsound(projectUid);
+                        if (!csound)
+                            throw new ToolError(
+                                "invalid_state",
+                                "Realtime playback stopped before evaluation."
+                            );
+                        combined.throwIfAborted();
+                        const firstCode =
+                            from + before.source.slice(from, to).search(/\S/);
+                        const kind = findSurroundingContext(
+                            view.state,
+                            firstCode
+                        )?.kind;
+                        const type =
+                            fileType === "csd" && kind === "score-statement"
+                                ? "sco"
+                                : fileType!;
+                        const result = await evaluateEditorRegion(
+                            csound,
+                            type,
+                            view,
+                            { from, to }
+                        );
+                        if (result !== 0)
+                            throw new ToolError(
+                                "evaluation_failed",
+                                "Csound rejected the region. Read the console for details."
+                            );
+                        project();
+                        combined.throwIfAborted();
+                        return {
+                            document_id: id,
+                            evaluated: true,
+                            from,
+                            to,
+                            result
+                        };
+                    }
+                }
+                return read(id);
+            }
             case "csound_update_document":
             case "csound_replace_text": {
                 const before = checkedRead(id, input.base_revision as string);
@@ -230,21 +456,7 @@ export function createEditorApi(
                 return { document_id: id, saved: true };
             }
             case "csound_open_document": {
-                const file = document(id, false);
-                if (file.type === "folder")
-                    throw new ToolError(
-                        "not_file",
-                        "Choose a file, not a folder."
-                    );
-                const existing = panelsIn(
-                    store.getState().ProjectEditorReducer.root
-                ).find((panel) =>
-                    panel.tabs.some(
-                        (tab) => tab.type === "editor" && tab.uid === id
-                    )
-                );
-                if (existing) store.dispatch(setActivePanel(existing.id));
-                await store.dispatch(tabOpenByDocumentUid(id, projectUid));
+                await openDocument(id);
                 return workspace();
             }
             case "csound_select_tab":

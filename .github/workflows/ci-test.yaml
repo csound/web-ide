@@ -32,6 +32,10 @@ jobs:
                   npm install --no-save @rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION
             - name: Run Tests
               run: npm run test:ci
+            - name: Test callable access
+              run: npm run test:access
+            - name: Test Firestore indexes
+              run: npm run test:indexes
             - name: Check Functions Types
               working-directory: functions
               run: npx tsc --noEmit -p tsconfig.json

@@ -40,11 +40,15 @@ const SvgPlayIcon = ({
 
 export const ListPlayButton = ({
     projectUid,
+    projectName,
+    size = 64,
     iconName,
     iconBackgroundColor,
     iconForegroundColor
 }: {
     projectUid: string;
+    projectName: string;
+    size?: number;
     iconName?: string;
     iconBackgroundColor?: string;
     iconForegroundColor?: string;
@@ -93,6 +97,17 @@ export const ListPlayButton = ({
 
     return (
         <SS.StyledAvatar
+            component="button"
+            size={size}
+            type="button"
+            aria-label={
+                isStartingUp
+                    ? `Starting ${projectName}`
+                    : isPlaying && !isPaused && !hasError
+                      ? `Pause ${projectName}`
+                      : `Play ${projectName}`
+            }
+            aria-busy={isStartingUp}
             isPlaying={isPlaying}
             isPaused={isPaused}
             isStop={isStop}

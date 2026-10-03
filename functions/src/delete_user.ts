@@ -126,6 +126,21 @@ export const deleteAccount = onCall({ cors: true }, async (request) => {
         throw new HttpsError("unauthenticated", "Authentication required.");
     }
 
+    const signedInAt = auth.token?.auth_time;
+    const now = Date.now() / 1000;
+    if (
+        typeof signedInAt !== "number" ||
+        !Number.isFinite(signedInAt) ||
+        signedInAt < now - 5 * 60 ||
+        signedInAt > now + 60
+    ) {
+        throw new HttpsError(
+            "failed-precondition",
+            "Sign in again before deleting your account.",
+            { reason: "requires-recent-login" }
+        );
+    }
+
     try {
         const user = await admin.auth().getUser(auth.uid);
         await cleanupDeletedUserData(user);
