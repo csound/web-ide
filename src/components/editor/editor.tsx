@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { csoundEditorLanguage } from "./csound-language";
+import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "codemirror";
 import {
     crosshairCursor,
@@ -21,8 +22,10 @@ import {
 } from "@codemirror/commands";
 import {
     bracketMatching,
+    defaultHighlightStyle,
     foldGutter,
-    indentOnInput
+    indentOnInput,
+    syntaxHighlighting
 } from "@codemirror/language";
 import { Compartment, EditorState, StateField } from "@codemirror/state";
 import { filenameToCsoundType } from "@comp/csound/utils";
@@ -74,6 +77,7 @@ const CodeEditor = ({
 }) => {
     const theme = useTheme();
     const themeCompartment = useMemo(() => new Compartment(), []);
+    const languageCompartment = useMemo(() => new Compartment(), []);
     const editorReference = useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = useState(false);
     const dispatch = useDispatch();
@@ -86,6 +90,14 @@ const CodeEditor = ({
     const document = project?.documents?.[documentUid] ?? ({} as IDocument);
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
+    const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
+    const languageExtension = useMemo(
+        () =>
+            isMarkdown
+                ? [markdown(), syntaxHighlighting(defaultHighlightStyle)]
+                : csoundEditorLanguage(csoundFileType),
+        [isMarkdown, csoundFileType]
+    );
 
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState<
         StateField<{ documentUid: string; documentType: string }> | undefined
@@ -150,7 +162,7 @@ const CodeEditor = ({
                     dropCursor(),
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
-                    csoundEditorLanguage(csoundFileType),
+                    languageCompartment.of(languageExtension),
                     keymap.of([
                         ...defaultKeymap.filter(
                             (keyb) =>
@@ -216,7 +228,8 @@ const CodeEditor = ({
     }, [
         editorReference,
         currentDocumentValue,
-        csoundFileType,
+        languageCompartment,
+        languageExtension,
         documentUid,
         onChange,
         onScroll,
@@ -229,6 +242,12 @@ const CodeEditor = ({
             effects: themeCompartment.reconfigure(codeMirrorTheme(theme))
         });
     }, [documentUid, theme, themeCompartment]);
+
+    useEffect(() => {
+        openEditors.get(documentUid)?.dispatch({
+            effects: languageCompartment.reconfigure(languageExtension)
+        });
+    }, [documentUid, languageCompartment, languageExtension]);
 
     useEffect(() => {
         if (isMounted && documentUid && !csoundDocumentStateField) {

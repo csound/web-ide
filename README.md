@@ -49,6 +49,7 @@ Firebase backend**.
 - Real-time Csound audio synthesis executed in-browser via a WebAssembly engine
 - Syntax-highlighted code editor (CodeMirror 6 with a dedicated Csound language plugin)
 - Multi-file project tree — CSD, ORC, SCO, UDO, and binary audio assets in one place
+- Write and preview Markdown notes alongside your Csound files
 - Cloud persistence — projects saved to Firestore and audio files to Firebase Storage
 - User profiles with followers, project discovery, and public/private project visibility
 - Shareable editor URLs with injected Open Graph metadata for social previews

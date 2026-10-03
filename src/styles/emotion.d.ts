@@ -91,6 +91,7 @@ declare module "@emotion/react" {
             midi: { panel: string; shadow: string };
             sample: { panel: string; shadow: string };
             media: { panel: string; shadow: string };
+            md: { panel: string; shadow: string };
         };
     }
 }

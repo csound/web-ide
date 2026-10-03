@@ -63,9 +63,6 @@ const ShareDialog = (): React.ReactElement => {
                     subject={"Csound: " + projectInfo}
                     body={projectInfo}
                     separator=" "
-                    onClick={(_, link: string) => {
-                        window.open(link, "_blank");
-                    }}
                 >
                     <EmailIcon />
                 </EmailShareButton>

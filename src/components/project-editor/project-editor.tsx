@@ -43,7 +43,7 @@ import {
     WorkspaceTabType
 } from "./types";
 import { IProjectEditorReducer } from "./reducer";
-import Editor from "../editor/editor";
+import TextEditor from "../editor/text-editor";
 import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 import CsoundManualWindow from "./csound-manual";
@@ -189,9 +189,11 @@ export function EditorForDocument({
 }: IEditorForDocumentProperties) {
     if ((doc as IDocument).type === "txt") {
         return (
-            <Editor
+            <TextEditor
+                key={`${projectUid}:${(doc as IDocument).documentUid}`}
                 documentUid={(doc as IDocument).documentUid}
                 projectUid={projectUid}
+                filename={(doc as IDocument).filename || ""}
             />
         );
     } else if (
