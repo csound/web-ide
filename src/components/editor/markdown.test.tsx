@@ -105,6 +105,22 @@ it("keeps Csound files using the current Csound language", () => {
     );
 });
 
+it.each(["voice.mal", "voice.clj", "voice.cljs", "voice.cljc"])(
+    "uses Clojure mode and rainbow parentheses for %s, then switches on rename",
+    (filename) => {
+        const { wrapper, store } = fixture(filename, "(def notes [60 64 67])");
+        render(<Editor documentUid="note" projectUid="project" />, { wrapper });
+        const view = openEditors.get("note")!;
+        expect(syntaxTree(view.state).topNode.name).toBe("Program");
+        expect(view.dom.querySelectorAll(".cm-rainbow-0")).toHaveLength(2);
+        expect(view.dom.querySelectorAll(".cm-rainbow-1")).toHaveLength(2);
+        act(() => store.dispatch({ type: "note/rename", value: "voice.orc" }));
+        expect(openEditors.get("note")).toBe(view);
+        expect(syntaxTree(view.state).topNode.name).toBe("OrchestraFile");
+        expect(view.dom.querySelector('[class*="cm-rainbow-"]')).toBeNull();
+    }
+);
+
 it("updates the language when an open file is renamed", () => {
     const { wrapper, store } = fixture("main.orc", "# Project notes");
     render(<Editor documentUid="note" projectUid="project" />, { wrapper });

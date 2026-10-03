@@ -31,7 +31,7 @@ import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { openEditors } from "@comp/editor";
-import { editorEvalCode } from "@comp/editor/utils";
+import { editorEvalCode, editorEvalFile } from "@comp/editor/utils";
 import * as EditorActions from "@comp/editor/actions";
 import { keyboardCallbacks } from "./index";
 import { UPDATE_COUNTER } from "./types";
@@ -240,6 +240,23 @@ export const storeEditorKeyboardCallbacks = (projectUid: string) => {
                     documentType,
                     editor,
                     false
+                );
+            }
+        })
+    );
+    keyboardCallbacks.set(
+        "eval_file",
+        withPreventDefault(() => {
+            const state = store.getState();
+            const editor = selectCurrentEditor(state);
+            const name = selectDocumentName(state, projectUid);
+            const type = name && filenameToCsoundType(name);
+            if (editor && csoundInstance && type) {
+                void editorEvalFile(
+                    csoundInstance,
+                    state.csound.status,
+                    type,
+                    editor
                 );
             }
         })

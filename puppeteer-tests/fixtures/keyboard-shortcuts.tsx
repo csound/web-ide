@@ -82,7 +82,7 @@ function Fixture() {
                 </button>
                 <div ref={editorElement} />
                 <div style={{ height: 300 }}>
-                    <Console />
+                    <Console projectUid={projectUid} />
                 </div>
             </>
         </HotKeys>

@@ -30,6 +30,7 @@ import {
     getLiveCsound
 } from "@comp/csound/actions";
 import { nonCloudFiles } from "@comp/file-tree/actions";
+import { filenameToCsoundType } from "@comp/csound/utils";
 import { SET_SELECTED_TARGET } from "@comp/target-controls/types";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import {
@@ -294,10 +295,7 @@ export function createEditorApi(
                         );
                 }
                 let csound = getLiveCsound(projectUid);
-                const fileType = document(id)
-                    .filename.split(".")
-                    .pop()
-                    ?.toLowerCase();
+                const fileType = filenameToCsoundType(document(id).filename);
                 if (name === "csound_evaluate_region") {
                     if (!csound)
                         throw new ToolError(
@@ -306,11 +304,11 @@ export function createEditorApi(
                         );
                     if (
                         !fileType ||
-                        !["csd", "orc", "udo", "sco"].includes(fileType)
+                        !["csd", "orc", "udo", "sco", "lisp"].includes(fileType)
                     )
                         throw new ToolError(
                             "invalid_target",
-                            "Choose a CSD, ORC, UDO or SCO text file."
+                            "Choose a Csound or Lisp text file."
                         );
                     if (!before.source.slice(from, to).trim())
                         throw new ToolError(
