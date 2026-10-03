@@ -7,14 +7,17 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     background-color: ${theme.background};
 
-    .cm-csound-define {
+    .cm-csound-define,
+    .cm-lisp-keyword,
+    .cm-lisp-atom {
         color: ${theme.keyword}!important;
     }
     .cm-csound-control-flow {
         color: ${theme.controlFlow}!important;
     }
 
-    .cm-csound-opcode {
+    .cm-csound-opcode,
+    .cm-lisp-definition {
         color: ${theme.opcode}!important;
     }
 
@@ -47,7 +50,8 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         color: ${theme.aRateVar}!important;
     }
 
-    .cm-csound-number {
+    .cm-csound-number,
+    .cm-lisp-number {
         color: ${theme.number}!important;
     }
 
@@ -55,7 +59,8 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         color: ${theme.iRateVar}!important;
     }
 
-    .cm-csound-comment {
+    .cm-csound-comment,
+    .cm-lisp-comment {
         color: ${theme.comment}!important;
     }
 
@@ -91,7 +96,8 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         color: ${theme.kRateVar}!important;
     }
 
-    .cm-csound-s-rate-var {
+    .cm-csound-s-rate-var,
+    .cm-lisp-string {
         color: ${theme.string}!important;
     }
     .cm-tooltip {

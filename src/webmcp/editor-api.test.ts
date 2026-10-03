@@ -10,6 +10,7 @@ import { saveDocumentValue } from "../components/projects/actions";
 import { getLiveCsound } from "../components/csound/actions";
 import { evalBlinkExtension } from "../components/editor/utils";
 import { csoundEditorLanguage } from "../components/editor/csound-language";
+import { clojureEditorLanguage } from "../components/editor/clojure-language";
 import {
     splitActivePanel,
     toggleMaximizePanel
@@ -115,7 +116,9 @@ function interactiveEditor(source = "instr 1\nendin", fileType = "orc") {
             extensions: [
                 history(),
                 evalBlinkExtension,
-                csoundEditorLanguage(fileType)
+                fileType === "lisp"
+                    ? clojureEditorLanguage()
+                    : csoundEditorLanguage(fileType)
             ]
         }),
         parent: document.body
@@ -125,6 +128,38 @@ function interactiveEditor(source = "instr 1\nendin", fileType = "orc") {
 }
 
 describe("live editor tools", () => {
+    it.each(["voice.mal", "voice.clj"])(
+        "evaluates and blinks a Lisp region in %s",
+        async (filename) => {
+            store.dispatch({
+                type: "PROJECTS.DOCUMENT_RENAME_LOCALLY",
+                projectUid: "test",
+                documentUid: "csd",
+                newFilename: filename
+            });
+            const source = "(def notes [60 64 67])";
+            const view = interactiveEditor(source, "lisp");
+            const engine = {
+                evalCode: vi.fn().mockResolvedValue(1),
+                setStringChannel: vi.fn().mockResolvedValue(undefined)
+            };
+            vi.mocked(getLiveCsound).mockReturnValue(engine as any);
+            const before = await call("read_document", { document_id: "csd" });
+            expect(
+                await call("evaluate_region", {
+                    document_id: "csd",
+                    base_revision: before.revision,
+                    from: 0,
+                    to: source.length
+                })
+            ).toMatchObject({ ok: true, evaluated: true });
+            expect(engine.setStringChannel).toHaveBeenCalledWith(
+                "__web_ide_lisp_source",
+                source
+            );
+            expect(view.state.field(evalBlinkExtension).size).toBe(1);
+        }
+    );
     it.each(["open_document", "set_selection"])(
         "%s focuses an existing tab in another panel without duplicating it when leaving focus mode",
         async (tool) => {
