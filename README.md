@@ -17,6 +17,7 @@
 
 - [Overview](#overview)
 - [Features](#features)
+- [Lisp editing and live evaluation](#lisp-editing-and-live-evaluation)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Available Scripts](#available-scripts)
@@ -50,11 +51,42 @@ Firebase backend**.
 - Syntax-highlighted code editor (CodeMirror 6 with a dedicated Csound language plugin)
 - Multi-file project tree — CSD, ORC, SCO, UDO, and binary audio assets in one place
 - Write and preview Markdown notes alongside your Csound files
+- Edit Lisp files with Clojure highlighting, rainbow parentheses, and live evaluation
 - Cloud persistence — projects saved to Firestore and audio files to Firebase Storage
 - User profiles with followers, project discovery, and public/private project visibility
 - Shareable editor URLs with injected Open Graph metadata for social previews
 - Built-in Csound manual viewer accessible directly from the IDE
 - Optional Electron desktop app for offline use without a browser
+
+---
+
+## Lisp editing and live evaluation
+
+Files ending in `.clj*` or `.mal` use CodeMirror's Clojure mode with rainbow
+parentheses. Brackets in strings and comments do not affect the colors.
+
+Start a CSD or ORC target that loads your Lisp runtime include. That include
+must define `LispEval(source:S):i`: return `0` for success and a nonzero value
+for failure.
+
+The runtime receives the exact selected text and owns its environment, reader,
+and evaluator. It must accept multiple forms for file or region evaluation.
+Use the existing Csound console to show results and errors.
+
+While the project plays, use the Edit menu or these keys (Cmd on macOS, Ctrl
+elsewhere):
+
+| Action | Shortcut | Lisp behavior |
+| --- | --- | --- |
+| Eval Selection / Form | Cmd/Ctrl+E | Evaluate the selection, or the form at the cursor. |
+| Eval Block | Cmd/Ctrl+Enter | Evaluate the enclosing top-level form. |
+| Eval File | Cmd/Ctrl+Shift+Enter | Evaluate the whole file. |
+
+The evaluated region flashes on success or turns red on failure, including a
+missing `LispEval` opcode. WebMCP's `csound_evaluate_region` uses the same path.
+The IDE passes source through a string channel, so quotes, newlines, Unicode,
+and Csound macro characters stay intact. It queues evaluations in each engine
+to preserve their order. The project's include supplies the Lisp runtime.
 
 ---
 

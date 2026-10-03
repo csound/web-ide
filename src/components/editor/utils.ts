@@ -10,6 +10,8 @@ import {
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import type { SyntaxNode } from "@lezer/common";
 import type { CsoundObj } from "@comp/csound/types";
+import { evaluateLisp } from "@comp/csound/lisp";
+import { findClojureForm } from "./clojure-language";
 
 const addBlinkSuccessMarks = StateEffect.define();
 const removeBlinkSuccessMarks = StateEffect.define();
@@ -116,6 +118,9 @@ const evalSelection = async ({
     evalString: string;
 }): Promise<number> => {
     switch (documentType) {
+        case "lisp": {
+            return evaluateLisp(csound, evalString);
+        }
         case "orc":
         case "udo": {
             return await csound.evalCode(evalString);
@@ -141,11 +146,18 @@ export async function evaluateEditorRegion(
     context: { from: number; to: number }
 ): Promise<number> {
     const source = view.state.doc;
-    const result = await evalSelection({
-        csound,
-        documentType,
-        evalString: view.state.sliceDoc(context.from, context.to)
-    });
+    if (context.from === context.to) return 0;
+    let result: number;
+    try {
+        result = await evalSelection({
+            csound,
+            documentType,
+            evalString: view.state.sliceDoc(context.from, context.to)
+        });
+    } catch (error) {
+        console.error(error);
+        result = -1;
+    }
     if (!view.dom.isConnected || view.state.doc !== source) return result;
     const success = result === 0;
     view.dispatch({
@@ -196,6 +208,10 @@ export const editorEvalCode = curry(
                 to: view.state.selection.main.to
             };
             selection = view.state.sliceDoc(context.from, context.to);
+        } else if (documentType === "lisp") {
+            context = findClojureForm(view.state, undefined, blockEval);
+            if (!context) return;
+            selection = view.state.sliceDoc(context.from, context.to);
         } else if (blockEval) {
             context = findSurroundingContext(view.state);
 
@@ -221,6 +237,19 @@ export const editorEvalCode = curry(
         }
     }
 );
+
+export function editorEvalFile(
+    csound: CsoundObj,
+    csoundStatus: string,
+    documentType: string,
+    view: EditorView
+): Promise<number> | undefined {
+    if (csoundStatus !== "playing" || !view.state.doc.length) return;
+    return evaluateEditorRegion(csound, documentType, view, {
+        from: 0,
+        to: view.state.doc.length
+    });
+}
 
 export const uncommentLine = (line: string): string => {
     let uncommentedLine: any = line.split(";");

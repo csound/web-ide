@@ -30,7 +30,7 @@ export type ICsoundStatus =
 // ACTION TYPES
 export const SET_CSOUND_PLAY_STATE = PREFIX + "SET_CSOUND_PLAY_STATE";
 
-export type ICsoundFileType = "csd" | "orc" | "sco" | "udo";
+export type ICsoundFileType = "csd" | "orc" | "sco" | "udo" | "lisp";
 
 // JUST A MOCK (WIP)
 export interface ICsoundOptions {

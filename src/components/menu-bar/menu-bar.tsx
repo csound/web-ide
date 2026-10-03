@@ -176,6 +176,21 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                     { label: "Redo", hotKey: "redo" },
                     { label: "Search", hotKey: "find_simple" },
                     {
+                        label: "Eval Selection / Form",
+                        hotKey: "eval",
+                        disabled: csoundStatus !== "playing"
+                    },
+                    {
+                        label: "Eval Block",
+                        hotKey: "eval_block",
+                        disabled: csoundStatus !== "playing"
+                    },
+                    {
+                        label: "Eval File",
+                        hotKey: "eval_file",
+                        disabled: csoundStatus !== "playing"
+                    },
+                    {
                         label: "Theme",
                         submenu: [
                             {
