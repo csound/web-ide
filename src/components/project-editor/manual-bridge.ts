@@ -14,6 +14,10 @@ export class ManualBridge {
         return this.documentId !== undefined;
     }
 
+    isCurrentDocument(documentId: unknown) {
+        return typeof documentId === "string" && documentId === this.documentId;
+    }
+
     /** Reconnect after a load, including pages restored from browser history. */
     connect() {
         this.documentId = undefined;

@@ -154,6 +154,11 @@ The `local` target connects to the **dev** Firebase backend
 (`REACT_APP_DATABASE=DEV`) and uses a real project ID
 (`ElPGLLOOc5qWNM4VmfVV`) — the same one used by the `dev` target.
 
+The `manual-examples` suite uses a local fixture with cloud listeners replaced.
+It opens and edits manual examples, checks Save and Save All, plays a linked WAV
+sample, discards a playing tab, and checks that reload drops temporary content.
+It covers desktop and mobile widths and runs in the local CI matrix.
+
 ```bash
 # Terminal 1 — start dev server
 npm run start

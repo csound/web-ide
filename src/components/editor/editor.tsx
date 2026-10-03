@@ -71,10 +71,14 @@ const getHistory = (documentUid: string): any => {
 
 const CodeEditor = ({
     documentUid,
-    projectUid
+    projectUid,
+    buffer,
+    onBufferChange
 }: {
     documentUid: string;
     projectUid: string;
+    buffer?: { filename: string; value: string };
+    onBufferChange?: (value: string) => void;
 }) => {
     const theme = useTheme();
     const themeCompartment = useMemo(() => new Compartment(), []);
@@ -88,7 +92,9 @@ const CodeEditor = ({
             state?.ProjectsReducer?.projects?.[projectUid] ?? ({} as IProject)
     );
 
-    const document = project?.documents?.[documentUid] ?? ({} as IDocument);
+    const document = buffer
+        ? { filename: buffer.filename, currentValue: buffer.value }
+        : (project?.documents?.[documentUid] ?? ({} as IDocument));
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
     const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
@@ -111,6 +117,10 @@ const CodeEditor = ({
     const onChange = useCallback(
         (event: any) => {
             if (event.docChanged) {
+                if (onBufferChange) {
+                    onBufferChange(event.state.doc.toString());
+                    return;
+                }
                 dispatch(
                     projectActions.updateDocumentValue(
                         event.state.doc.toString(),
@@ -120,7 +130,7 @@ const CodeEditor = ({
                 );
             }
         },
-        [dispatch, projectUid, documentUid]
+        [dispatch, projectUid, documentUid, onBufferChange]
     );
 
     const onScroll = useCallback(
@@ -145,9 +155,15 @@ const CodeEditor = ({
                 );
                 editorStateInstance.destroy();
                 openEditors.delete(documentUid);
+                if (buffer) {
+                    delete scrollPos[documentUid];
+                    delete stateFields[documentUid];
+                    delete stateFields[`${documentUid}:serialized`];
+                    delete histories[documentUid];
+                }
             }
         };
-    }, [isMounted, documentUid, onScroll]);
+    }, [isMounted, documentUid, onScroll, Boolean(buffer)]);
 
     useEffect(() => {
         if (editorReference.current && !openEditors.has(documentUid)) {

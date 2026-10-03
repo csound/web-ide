@@ -24,6 +24,13 @@ const MobileTabs = ({
     currentDocument: IDocument | IOpenDocument | undefined;
 }): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
+    const temporaryUid = (currentDocument as IOpenDocument | undefined)
+        ?.temporary
+        ? (currentDocument as IOpenDocument).uid
+        : undefined;
+    useEffect(() => {
+        if (temporaryUid) setMobileTabIndex(0);
+    }, [temporaryUid]);
     const readlineRequest = useReadlineRequest();
     useEffect(() => {
         if (readlineRequest?.projectUid === projectUid) setMobileTabIndex(2);

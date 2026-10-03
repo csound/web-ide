@@ -307,6 +307,7 @@ export const saveFile = (): ((dispatch: any) => Promise<void>) => {
         const state = store.getState() as RootState;
         const dock = state.ProjectEditorReducer.tabDock;
         const activeTab = dock.openDocuments[dock.tabIndex];
+        if (!activeTab || activeTab.temporary) return;
         const documentUid = activeTab.uid;
         const activeProjectUid = pathOr(
             "",

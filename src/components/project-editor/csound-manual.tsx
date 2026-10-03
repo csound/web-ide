@@ -10,6 +10,8 @@ import { setManualPanelOpen } from "./actions";
 import { IProjectEditorReducer } from "./reducer";
 import { ManualBridge } from "./manual-bridge";
 import * as SS from "./styles";
+import { loadManualExample } from "./manual-examples";
+import { openTemporaryDocument } from "./temporary-documents";
 
 /** Host the static manual and share the editor's theme and lookup requests. */
 const ManualWindow = ({
@@ -71,6 +73,56 @@ const ManualWindow = ({
     useEffect(() => {
         bridge.lookup(manualLookupString);
     }, [manualLookupString, manualLookupVersion, bridge]);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const onMessage = async (event: MessageEvent) => {
+            const sender = frame.current?.contentWindow;
+            const data = event.data;
+            if (
+                event.origin !== window.location.origin ||
+                event.source !== sender ||
+                data?.type !== "csound-manual:open-example" ||
+                !bridge.isCurrentDocument(data.documentId) ||
+                !Number.isSafeInteger(data.requestId)
+            )
+                return;
+            let error: string | undefined;
+            try {
+                const document = await loadManualExample(
+                    data.url,
+                    data.assets,
+                    controller.signal
+                );
+                if (
+                    controller.signal.aborted ||
+                    !bridge.isCurrentDocument(data.documentId)
+                )
+                    return;
+                dispatch(openTemporaryDocument(document));
+            } catch (cause) {
+                if (controller.signal.aborted) return;
+                error =
+                    cause instanceof Error
+                        ? cause.message
+                        : "Could not open the example.";
+            }
+            sender?.postMessage(
+                {
+                    type: "csound-manual:example-opened",
+                    documentId: data.documentId,
+                    requestId: data.requestId,
+                    error
+                },
+                window.location.origin
+            );
+        };
+        window.addEventListener("message", onMessage);
+        return () => {
+            controller.abort();
+            window.removeEventListener("message", onMessage);
+        };
+    }, [bridge, dispatch, projectUid]);
 
     useEffect(() => {
         sessionStorage.setItem(projectUid + ":manualVisible", "true");

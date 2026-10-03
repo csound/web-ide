@@ -32,6 +32,12 @@ import {
 } from "./types";
 import { nonCloudFiles } from "../file-tree/actions";
 import { createDefaultBottomSidebar } from "./defaults";
+import {
+    OPEN_TEMPORARY_DOCUMENT,
+    UPDATE_TEMPORARY_DOCUMENT,
+    mapWorkspacePanels,
+    persistentWorkspace
+} from "./temporary-documents";
 
 export interface IProjectEditorReducer {
     root: IWorkspaceLayoutNode;
@@ -108,13 +114,18 @@ const storeTabDockState = (
     tabIndex: number | undefined
 ): void => {
     try {
-        const tabOrder: string[] = openDocuments.map((doc) => doc.uid);
+        const savedDocuments = openDocuments.filter((doc) => !doc.temporary);
+        const tabOrder = savedDocuments.map((doc) => doc.uid);
         localStorage.setItem(
             `${projectUid}:tabOrder`,
             JSON.stringify(tabOrder)
         );
         if (tabIndex !== undefined) {
-            localStorage.setItem(`${projectUid}:tabIndex`, `${tabIndex}`);
+            const activeUid = openDocuments[tabIndex]?.uid;
+            localStorage.setItem(
+                `${projectUid}:tabIndex`,
+                `${savedDocuments.findIndex((doc) => doc.uid === activeUid)}`
+            );
         }
     } catch (error) {
         console.error(error);
@@ -333,6 +344,7 @@ const deriveLegacyDock = (
         .filter((tab) => tab.type === "editor")
         .map((tab) => ({
             uid: tab.uid,
+            temporary: tab.temporary,
             isNonCloudDocument: tab.isNonCloudDocument,
             nonCloudFileAudioUrl: tab.nonCloudFileAudioUrl,
             nonCloudFileData: tab.nonCloudFileData,
@@ -522,6 +534,42 @@ const ProjectEditorReducer = (
     }
 
     switch (action.type) {
+        case OPEN_TEMPORARY_DOCUMENT: {
+            const panelId = state.activePanelId;
+            const [root] = mapPanel(state.root, panelId, (panel) => ({
+                ...panel,
+                tabs: [
+                    ...panel.tabs,
+                    createEditorTab(`tab-${state.nextTabNumber}`, {
+                        uid: action.documentUid,
+                        temporary: action.document
+                    })
+                ],
+                tabIndex: panel.tabs.length
+            }));
+            return syncLegacyState({
+                ...state,
+                root,
+                nextTabNumber: state.nextTabNumber + 1
+            });
+        }
+        case UPDATE_TEMPORARY_DOCUMENT: {
+            const root = mapWorkspacePanels(state.root, (panel) => ({
+                ...panel,
+                tabs: panel.tabs.map((tab) =>
+                    tab.uid === action.documentUid && tab.temporary
+                        ? {
+                              ...tab,
+                              temporary: {
+                                  ...tab.temporary,
+                                  value: action.value
+                              }
+                          }
+                        : tab
+                )
+            }));
+            return syncLegacyState({ ...state, root });
+        }
         case MANUAL_LOOKUP_STRING: {
             return syncLegacyState({
                 ...state,
@@ -541,8 +589,9 @@ const ProjectEditorReducer = (
         }
         case TAB_DOCK_INIT: {
             if (action.savedWorkspaceState?.root) {
-                const savedWorkspaceState =
-                    action.savedWorkspaceState as IPersistedWorkspaceLayout;
+                const savedWorkspaceState = persistentWorkspace(
+                    action.savedWorkspaceState as IPersistedWorkspaceLayout
+                );
 
                 const restoredState = syncLegacyState({
                     ...initialLayoutState(),
@@ -827,15 +876,15 @@ const ProjectEditorReducer = (
                 return state;
             }
 
-            const movedTab =
-                activePanel.tabs.length > 1
-                    ? currentTab
-                    : { ...currentTab, id: `tab-${state.nextTabNumber}` };
+            const moveCurrentTab =
+                activePanel.tabs.length > 1 || !!currentTab.temporary;
+            const movedTab = moveCurrentTab
+                ? currentTab
+                : { ...currentTab, id: `tab-${state.nextTabNumber}` };
 
-            const sourceTabs =
-                activePanel.tabs.length > 1
-                    ? activePanel.tabs.filter((tab) => tab.id !== currentTab.id)
-                    : activePanel.tabs;
+            const sourceTabs = moveCurrentTab
+                ? activePanel.tabs.filter((tab) => tab.id !== currentTab.id)
+                : activePanel.tabs;
 
             const [intermediateRoot] = mapPanel(
                 state.root,
@@ -843,10 +892,9 @@ const ProjectEditorReducer = (
                 (panel) => ({
                     ...panel,
                     tabs: sourceTabs,
-                    tabIndex:
-                        activePanel.tabs.length > 1
-                            ? Math.min(panel.tabIndex, sourceTabs.length - 1)
-                            : panel.tabIndex
+                    tabIndex: moveCurrentTab
+                        ? Math.min(panel.tabIndex, sourceTabs.length - 1)
+                        : panel.tabIndex
                 })
             );
 
@@ -870,10 +918,9 @@ const ProjectEditorReducer = (
                 activePanelId: newPanelId,
                 nextPanelNumber: state.nextPanelNumber + 1,
                 nextSplitNumber: state.nextSplitNumber + 1,
-                nextTabNumber:
-                    activePanel.tabs.length > 1
-                        ? state.nextTabNumber
-                        : state.nextTabNumber + 1
+                nextTabNumber: moveCurrentTab
+                    ? state.nextTabNumber
+                    : state.nextTabNumber + 1
             });
         }
         case MOVE_PANEL: {

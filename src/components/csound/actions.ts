@@ -87,6 +87,11 @@ export type PerformanceResult = {
 type PerformanceOptions = {
     projectUid: string;
     csdPath?: string;
+    // Audition an in-memory CSD without adding it or its output to the project.
+    csdText?: string;
+    inputFiles?: { name: string; data: Uint8Array }[];
+    collectFiles?: boolean;
+    onEnded?: () => void;
     orc?: string;
     mode?: "auto" | "play" | "render";
     // Embeds must work without cross-origin isolation or stored preferences.
@@ -99,6 +104,10 @@ type PerformanceOptions = {
 export async function runPerformance({
     projectUid,
     csdPath,
+    csdText,
+    inputFiles = [],
+    collectFiles = true,
+    onEnded,
     orc,
     mode = "auto",
     useSAB,
@@ -162,6 +171,7 @@ export async function runPerformance({
                     await csound.cleanup?.();
                     if (
                         collect &&
+                        collectFiles &&
                         !failed &&
                         !controller.signal.aborted &&
                         store.getState().ProjectsReducer.activeProjectUid ===
@@ -211,6 +221,7 @@ export async function runPerformance({
                         );
                     }
                     resolveDone();
+                    onEnded?.();
                 }
             }
             return files;
@@ -251,11 +262,18 @@ export async function runPerformance({
         });
         await syncFs(csound, projectUid, snapshot);
         check();
+        for (const file of inputFiles) {
+            await csound.fs.writeFile(file.name, file.data);
+            check();
+        }
         before = await csound.fs.readdir("/");
         await csound.setOption(render ? `-o${outputName}` : "-odac");
-        const compiled = csdPath
-            ? await compileCSD(csound, csdPath)
-            : await csound.compileOrc(orc ?? "");
+        const compiled =
+            csdText !== undefined
+                ? await compileCSD(csound, csdText, true)
+                : csdPath
+                  ? await compileCSD(csound, csdPath)
+                  : await csound.compileOrc(orc ?? "");
         check();
         if (compiled !== 0)
             throw new Error(

@@ -1,3 +1,5 @@
+import type { TemporaryDocument } from "./temporary-documents";
+
 const PREFIX = "PROJECT_EDITOR.";
 
 // ACTION TYPES
@@ -29,6 +31,7 @@ export const TOGGLE_MANUAL_PANEL = PREFIX + "TOGGLE_MANUAL_PANEL";
 // DATA TYPES
 export interface IOpenDocument {
     uid: string;
+    temporary?: TemporaryDocument;
     isNonCloudDocument?: boolean;
     nonCloudFileAudioUrl?: string | undefined;
     nonCloudFileData?: string | undefined;

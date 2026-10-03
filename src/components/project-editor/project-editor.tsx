@@ -88,6 +88,12 @@ import {
 import Tooltip from "@mui/material/Tooltip";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { WebMcpLink } from "@root/webmcp/provider";
+import { TemporaryEditor } from "./temporary-editor";
+import {
+    persistentWorkspace,
+    temporaryDocumentUids
+} from "./temporary-documents";
+import { retainTemporaryPlayback } from "./temporary-playback";
 
 const TabStyles = tabStyles(false);
 
@@ -195,7 +201,14 @@ export function EditorForDocument({
     doc,
     markdownMode
 }: IEditorForDocumentProperties) {
-    if ((doc as IDocument).type === "txt") {
+    if ((doc as IOpenDocument).temporary) {
+        return (
+            <TemporaryEditor
+                tab={doc as IOpenDocument}
+                projectUid={projectUid}
+            />
+        );
+    } else if ((doc as IDocument).type === "txt") {
         return (
             <TextEditor
                 key={`${projectUid}:${(doc as IDocument).documentUid}`}
@@ -272,7 +285,7 @@ const getDocumentForTab = (
         return undefined;
     }
 
-    if (tab.isNonCloudDocument) {
+    if (tab.isNonCloudDocument || tab.temporary) {
         return tab;
     }
 
@@ -300,6 +313,7 @@ const getWorkspaceTabTitle = (
 
     const document = getDocumentForTab(tab, activeProject);
     const label =
+        tab.temporary?.filename ||
         (document as IDocument | undefined)?.filename ||
         (document as NonCloudFile | undefined)?.name ||
         tab.uid;
@@ -408,6 +422,7 @@ const WorkspacePanelHeader = ({
                 >
                     {panel.tabs.map((tab, index) => (
                         <DragTab
+                            role="tab"
                             id={`workspace-tab-${tab.id}`}
                             closable={tab.type !== "fileTree"}
                             key={tab.id}
@@ -415,11 +430,29 @@ const WorkspacePanelHeader = ({
                             currentIndex={activeIndex}
                             thisIndex={index}
                             CustomTabStyle={TabStyles.Tab}
+                            data-temporary={tab.temporary ? "true" : undefined}
+                            title={
+                                tab.temporary
+                                    ? `${tab.temporary.filename} · Temporary, not saved to project`
+                                    : undefined
+                            }
                             handleTabChange={changeTab}
                             index={index}
                             active={index === activeIndex}
                         >
                             <p style={{ margin: 0 }}>
+                                {tab.temporary?.source?.kind ===
+                                    "manual-example" && (
+                                    <AutoStoriesRoundedIcon
+                                        aria-hidden="true"
+                                        css={{
+                                            width: 14,
+                                            height: 14,
+                                            marginRight: 6,
+                                            verticalAlign: "middle"
+                                        }}
+                                    />
+                                )}
                                 {getWorkspaceTabTitle(
                                     tab,
                                     activeProject,
@@ -1018,6 +1051,14 @@ const ProjectEditor = ({
     const currentMobileTab = useSelector(selectCurrentTab);
 
     useEffect(() => {
+        retainTemporaryPlayback(projectUid, temporaryDocumentUids(root));
+    }, [projectUid, root]);
+    useEffect(
+        () => () => retainTemporaryPlayback(projectUid, []),
+        [projectUid]
+    );
+
+    useEffect(() => {
         if (document.title !== projectName) {
             document.title = projectName;
         }
@@ -1103,17 +1144,19 @@ const ProjectEditor = ({
 
         localStorage.setItem(
             `${projectUid}:workspaceLayout`,
-            JSON.stringify({
-                root,
-                activePanelId,
-                leftSidebar,
-                rightSidebar,
-                bottomSidebar,
-                maximizedPanelId,
-                nextPanelNumber,
-                nextSplitNumber,
-                nextTabNumber
-            })
+            JSON.stringify(
+                persistentWorkspace({
+                    root,
+                    activePanelId,
+                    leftSidebar,
+                    rightSidebar,
+                    bottomSidebar,
+                    maximizedPanelId,
+                    nextPanelNumber,
+                    nextSplitNumber,
+                    nextTabNumber
+                })
+            )
         );
 
         const consoleIsOpen = Boolean(
@@ -1145,7 +1188,8 @@ const ProjectEditor = ({
     const mobileOpenDocuments: AnyTab[] = tabDockDocuments.reduce(
         (accumulator: AnyTab[], tabDocument: IOpenDocument) => {
             const maybeDocument = activeProject.documents[tabDocument.uid];
-            const isNonCloudFile = tabDocument.isNonCloudDocument || false;
+            const isNonCloudFile =
+                tabDocument.isNonCloudDocument || !!tabDocument.temporary;
 
             return isNonCloudFile
                 ? [...accumulator, tabDocument]
