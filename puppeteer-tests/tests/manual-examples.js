@@ -230,3 +230,76 @@ for (const width of [1440, 390]) {
         }
     );
 }
+
+test(
+    "manual scrolls after repeated resizing without clicking its contents",
+    { skip: targetName !== "local", timeout: 60000 },
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            await page.setViewport({ width: 1440, height: 900 });
+            await page.setRequestInterception(true);
+            page.on("request", (request) => {
+                const url = new URL(request.url());
+                if (mocks[url.pathname])
+                    void request.respond({
+                        status: 200,
+                        contentType: "application/javascript",
+                        body: mocks[url.pathname]
+                    });
+                else if (
+                    url.origin === new URL(target.baseUrl).origin ||
+                    ["blob:", "data:"].includes(url.protocol)
+                )
+                    void request.continue();
+                else void request.abort();
+            });
+            await page.goto(
+                `${target.baseUrl}/puppeteer-tests/fixtures/manual-examples.html`
+            );
+            const iframe = await page.waitForSelector(
+                'iframe[title="Csound reference manual"]'
+            );
+            const frame = await iframe.contentFrame();
+            await frame.waitForSelector("article");
+            // A long page avoids reaching the end during successive wheel gestures.
+            await frame.goto(`${target.baseUrl}/manual/`);
+            await frame.waitForSelector(".opcode-list");
+            const scrollWithoutClicking = async () => {
+                const bounds = await iframe.boundingBox();
+                await page.mouse.move(
+                    bounds.x + bounds.width / 2,
+                    bounds.y + 250
+                );
+                const before = await frame.evaluate(() => window.scrollY);
+                await page.mouse.wheel({ deltaY: 350 });
+                await frame.waitForFunction(
+                    (before) => window.scrollY > before + 100,
+                    { timeout: 3000 },
+                    before
+                );
+            };
+            await scrollWithoutClicking();
+            for (const offset of [-160, 160, -80, 80]) {
+                const handles = await page.$$(".ProjectEditorResizer.vertical");
+                const divider = await handles.at(-1).boundingBox();
+                const oldWidth = (await iframe.boundingBox()).width;
+                const x = divider.x + divider.width / 2;
+                const y = divider.y + divider.height / 2;
+                await page.mouse.move(x, y);
+                await page.mouse.down();
+                await page.mouse.move(x + offset, y, { steps: 6 });
+                await page.mouse.up();
+                assert.ok(
+                    Math.abs((await iframe.boundingBox()).width - oldWidth) >
+                        50,
+                    "The drag must actually resize the manual pane"
+                );
+                await scrollWithoutClicking();
+            }
+        } finally {
+            await browser.close();
+        }
+    }
+);
