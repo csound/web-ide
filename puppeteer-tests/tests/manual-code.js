@@ -106,6 +106,16 @@ test(
                     assert.equal(layout.overflow, false);
                     assert.equal(layout.editable, "false");
                     assert.equal(layout.highlighted, true);
+                    await frame.waitForFunction(() => {
+                        const code = document.querySelector(
+                            '[data-example="oscili.csd"] .cm-scroller'
+                        );
+                        return (
+                            code.clientHeight > 600 &&
+                            code.scrollHeight <= code.clientHeight + 1 &&
+                            code.scrollWidth <= code.clientWidth + 1
+                        );
+                    });
                     if (process.env.MANUAL_CODE_SCREENSHOTS) {
                         await frame.$eval(block, (node) => {
                             const header = document
@@ -168,12 +178,23 @@ test(
                             node.querySelectorAll('span[id^="__span"]')
                         ).at(-1).id;
                     });
-                    await frame.waitForFunction(
-                        () =>
-                            document.querySelector(
-                                '[data-example="oscili.csd"] .cm-scroller'
-                            ).scrollTop > 0
-                    );
+                    await frame.waitForFunction(() => {
+                        const code = document.querySelector(
+                            '[data-example="oscili.csd"] .cm-scroller'
+                        );
+                        const lastLine = [
+                            ...code.querySelectorAll(".cm-line")
+                        ].find((line) =>
+                            line.textContent.includes("</CsoundSynthesizer>")
+                        );
+                        if (!lastLine) return false;
+                        const bounds = lastLine.getBoundingClientRect();
+                        return (
+                            code.scrollTop === 0 &&
+                            bounds.top >= 0 &&
+                            bounds.bottom <= innerHeight
+                        );
+                    });
                     assert.ok(
                         await frame.$eval(`${block} .cm-content`, (node) =>
                             node.textContent.includes("</CsoundSynthesizer>")

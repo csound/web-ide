@@ -27,8 +27,7 @@ const previewTheme = EditorView.theme({
         fontFamily:
             'ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace',
         lineHeight: "1.65",
-        maxHeight: "34rem",
-        overflow: "auto"
+        overflow: "visible"
     },
     ".cm-content": { padding: "12px 0" },
     ".cm-line": { padding: "0 12px" },
