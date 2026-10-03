@@ -62,7 +62,7 @@ export const mapIndexed = addIndex(map);
 export const notEmpty = compose(not, isEmpty);
 
 export function isMacintosh(): boolean {
-    return navigator.platform.includes("Mac");
+    return /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 }
 
 export const isMac: boolean = isMacintosh();

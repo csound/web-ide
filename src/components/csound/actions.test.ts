@@ -10,6 +10,8 @@ import {
     stopPerformance
 } from "./actions";
 import { nonCloudFiles } from "../file-tree/actions";
+import { storeProjectEditorKeyboardCallbacks } from "../hot-keys/actions";
+import { keyboardCallbacks } from "../hot-keys";
 
 vi.mock("@csound/browser", () => ({ Csound: vi.fn(), libcsound: vi.fn() }));
 
@@ -84,6 +86,12 @@ beforeEach(() => {
         cleanup: vi.fn(async () => undefined),
         terminateInstance: vi.fn(async () => undefined),
         stop: vi.fn(async () => undefined),
+        pause: vi.fn(async () =>
+            listeners.get("realtimePerformancePaused")?.()
+        ),
+        resume: vi.fn(async () =>
+            listeners.get("realtimePerformanceResumed")?.()
+        ),
         on: vi.fn((name, callback) => listeners.set(name, callback)),
         once: vi.fn((name, callback) => listeners.set(name, callback))
     };
@@ -97,6 +105,50 @@ afterEach(async () => {
 });
 
 describe("shared Csound performance", () => {
+    it("pauses and resumes the same performance through the keyboard callback", async () => {
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        storeProjectEditorKeyboardCallbacks("audio-test", setConsole);
+        const pause = keyboardCallbacks.get("pause_playback");
+        await pause(new KeyboardEvent("keydown", { key: "p" }));
+        expect(engine.pause).toHaveBeenCalledOnce();
+        expect(store.getState().csound.status).toBe("paused");
+        await pause(new KeyboardEvent("keydown", { key: "p" }));
+        expect(engine.resume).toHaveBeenCalledOnce();
+        expect(store.getState().csound.status).toBe("playing");
+        expect(Csound).toHaveBeenCalledOnce();
+    });
+
+    it("runs from the keyboard with the console writer and resumes without restarting", async () => {
+        storeProjectEditorKeyboardCallbacks("audio-test", setConsole);
+        const run = keyboardCallbacks.get("run_project");
+        await run(new KeyboardEvent("keydown", { key: "r" }));
+        await vi.waitFor(() => expect(engine.start).toHaveBeenCalledOnce());
+        expect(setConsole).toHaveBeenCalledWith([""]);
+        await run(new KeyboardEvent("keydown", { key: "r" }));
+        expect(Csound).toHaveBeenCalledOnce();
+        expect(setConsole).toHaveBeenCalledTimes(1);
+        store.dispatch({
+            type: "CSOUND.SET_CSOUND_PLAY_STATE",
+            status: "paused"
+        });
+        await run(new KeyboardEvent("keydown", { key: "r" }));
+        expect(engine.resume).toHaveBeenCalledOnce();
+        expect(Csound).toHaveBeenCalledOnce();
+    });
+
+    it.each(["stopped", "initialized", "loading", "rendering", "error"])(
+        "ignores the pause shortcut while %s",
+        (status) => {
+            store.dispatch({ type: "CSOUND.SET_CSOUND_PLAY_STATE", status });
+            storeProjectEditorKeyboardCallbacks("audio-test", setConsole);
+            keyboardCallbacks.get("pause_playback")(
+                new KeyboardEvent("keydown", { key: "p" })
+            );
+            expect(store.getState().csound.status).toBe(status);
+            expect(engine.pause).not.toHaveBeenCalled();
+        }
+    );
+
     it.each([false, true])(
         "prepares requested microphone input before starting (worker: %s)",
         async (useWorker) => {

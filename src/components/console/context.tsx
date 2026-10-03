@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { setClearConsoleCallback } from "./actions";
 
 type IConsoleContextProperties = string[];
-type SetConsole = React.Dispatch<React.SetStateAction<string[]>>;
+export type SetConsole = React.Dispatch<React.SetStateAction<string[]>>;
 
 export const ConsoleContext = createContext([] as IConsoleContextProperties);
 

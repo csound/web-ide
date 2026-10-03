@@ -970,9 +970,7 @@ const ProjectEditor = ({
 }): React.ReactElement => {
     const compactLayout = useMediaQuery("(max-width: 767px)");
     const dispatch = useDispatch();
-    const setConsole = useSetConsole() as
-        | ((value: string[] | ((logs: string[]) => string[])) => void)
-        | undefined;
+    const setConsole = useSetConsole();
     const [isDragging, setIsDragging] = useState(false);
     const [markdownModes, setMarkdownModes] = useState<
         Record<string, MarkdownMode>
@@ -1081,10 +1079,10 @@ const ProjectEditor = ({
 
     useEffect(() => {
         if (projectUid) {
-            storeProjectEditorKeyboardCallbacks(projectUid);
+            storeProjectEditorKeyboardCallbacks(projectUid, setConsole);
             storeEditorKeyboardCallbacks(projectUid);
         }
-    }, [dispatch, projectUid]);
+    }, [dispatch, projectUid, setConsole]);
 
     useEffect(() => {
         if (!projectUid) {
