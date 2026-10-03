@@ -13,6 +13,7 @@ import {
 } from "./types";
 import { addDocumentToCsoundFS, getUniqueFilename } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
+import { consoleReadline } from "../console/readline";
 
 export let csoundInstance: CsoundObj;
 
@@ -145,8 +146,10 @@ export async function runPerformance({
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
+    let disconnectReadline = () => {};
     const finish = (collect: boolean): Promise<string[]> => {
         if (finishPromise) return finishPromise;
+        disconnectReadline();
         finishPromise = (async () => {
             const files: string[] = [];
             try {
@@ -223,6 +226,16 @@ export async function runPerformance({
         check();
         if (!csound) throw new Error("Csound failed to start.");
         csoundInstance = csound;
+        disconnectReadline = consoleReadline.connect(
+            csound,
+            projectUid,
+            (text) => {
+                setConsole((lines) => [...lines, text]);
+            }
+        );
+        controller.signal.addEventListener("abort", disconnectReadline, {
+            once: true
+        });
         csound.on("message", (message: string) => {
             if (
                 /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
