@@ -34,7 +34,14 @@ import {
 } from "@comp/project-editor/actions";
 import { renderToDisk, listAvailableOpcodes } from "@comp/csound/actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
-import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
+import {
+    selectCurrentTab,
+    selectIsOwnerForProject
+} from "@comp/project-editor/selectors";
+import {
+    filenameToCsoundType,
+    supportsFileEvaluation
+} from "@comp/csound/utils";
 import { changeTheme } from "@comp/themes/action";
 import { equals, isEmpty } from "ramda";
 import { showKeyboardShortcuts } from "@comp/site-documents/actions";
@@ -75,6 +82,15 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
     const dispatch = useDispatch();
     const isOwner = useSelector(selectIsOwnerForProject(resolvedProjectUid));
     const csoundStatus = useSelector(selectCsoundStatus);
+    const fileEvaluationSupported = useSelector((store: RootState) => {
+        const currentTab = selectCurrentTab(store);
+        const filename =
+            currentTab?.uid &&
+            store.ProjectsReducer.projects[resolvedProjectUid]?.documents[
+                currentTab.uid
+            ]?.filename;
+        return supportsFileEvaluation(filenameToCsoundType(filename || ""));
+    });
     const projectEditorState = useSelector(
         (store: RootState) =>
             store.ProjectEditorReducer as IProjectEditorReducer
@@ -188,7 +204,9 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                     {
                         label: "Eval File",
                         hotKey: "eval_file",
-                        disabled: csoundStatus !== "playing"
+                        disabled:
+                            csoundStatus !== "playing" ||
+                            !fileEvaluationSupported
                     },
                     {
                         label: "Theme",
@@ -420,6 +438,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
         ],
         [
             csoundStatus,
+            fileEvaluationSupported,
             dispatch,
             isConsoleVisible,
             isFileTreeVisible,

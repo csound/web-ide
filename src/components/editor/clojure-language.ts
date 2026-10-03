@@ -66,6 +66,7 @@ export function findClojureForm(
         form?.parent &&
         [
             "Quote",
+            "Deref",
             "SyntaxQuote",
             "Unquote",
             "UnquoteSplicing",

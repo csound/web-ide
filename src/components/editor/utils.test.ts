@@ -4,9 +4,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { csoundEditorLanguage } from "./csound-language";
 import {
     editorEvalCode,
+    editorEvalFile,
     evalBlinkExtension,
     findSurroundingContext
 } from "./utils";
+import type { CsoundObj } from "../csound/types";
 
 const contextAt = (
     source: string,
@@ -217,5 +219,41 @@ describe("editorEvalCode", () => {
         editorEvalCode(csound, "stopped", "orc", view, true);
         expect(csound.evalCode).not.toHaveBeenCalled();
         expect(csound.readScore).not.toHaveBeenCalled();
+    });
+
+    it("does not send a whole CSD to the orchestra compiler", async () => {
+        const doc =
+            "<CsoundSynthesizer>\n<CsInstruments>\ninstr 1\nout 0\nendin\n</CsInstruments>\n<CsScore>\ni 1 0 1\n</CsScore>\n</CsoundSynthesizer>";
+        const { view, csound } = setup(doc, "csd", "out");
+        expect(
+            await editorEvalFile(
+                csound as unknown as CsoundObj,
+                "playing",
+                "csd",
+                view
+            )
+        ).toBeUndefined();
+        expect(csound.evalCode).not.toHaveBeenCalled();
+        expect(csound.readScore).not.toHaveBeenCalled();
+        expect(view.state.field(evalBlinkExtension).size).toBe(0);
+    });
+
+    it.each([
+        ["orc", "instr 1\nout 0\nendin\n", "evalCode"],
+        ["udo", "opcode Pass, a, a\nain xin\nxout ain\nendop\n", "evalCode"],
+        ["sco", "f 1 0 1024 10 1\ni 1 0 1\n", "readScore"]
+    ] as const)("evaluates a whole %s file", async (mode, doc, method) => {
+        const { view, csound } = setup(doc, mode, doc.slice(0, 1));
+        expect(
+            await editorEvalFile(
+                csound as unknown as CsoundObj,
+                "playing",
+                mode,
+                view
+            )
+        ).toBe(0);
+        expect(csound[method]).toHaveBeenCalledWith(doc);
+        const range = view.state.field(evalBlinkExtension).iter();
+        expect(view.state.sliceDoc(range.from, range.to)).toBe(doc);
     });
 });

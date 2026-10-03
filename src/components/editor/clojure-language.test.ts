@@ -1,13 +1,16 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditorState } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { EditorView, ViewUpdate } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { clojureEditorLanguage, findClojureForm } from "./clojure-language";
 import { filenameToCsoundType } from "../csound/utils";
 import { textOrBinary } from "../projects/utils";
 
 const views: EditorView[] = [];
-afterEach(() => views.splice(0).forEach((view) => view.destroy()));
+afterEach(() => {
+    views.splice(0).forEach((view) => view.destroy());
+    vi.restoreAllMocks();
+});
 
 describe("Lisp files", () => {
     it.each([
@@ -59,17 +62,22 @@ describe("Lisp files", () => {
             to: outer.length
         });
     });
-    it.each(["'(1 2)", "`(a ~b)", "#(+ % 1)", "#{1 2}", "^:meta [1 2]"])(
-        "keeps reader prefixes when selecting %s",
-        (doc) => {
-            const state = EditorState.create({
-                doc,
-                extensions: clojureEditorLanguage()
-            });
-            const form = findClojureForm(state, doc.length - 1)!;
-            expect(state.sliceDoc(form.from, form.to)).toBe(doc);
-        }
-    );
+    it.each([
+        "'(1 2)",
+        "`(a ~b)",
+        "#(+ % 1)",
+        "#{1 2}",
+        "^:meta [1 2]",
+        "@(lookup)",
+        "'@(lookup)"
+    ])("keeps reader prefixes when selecting %s", (doc) => {
+        const state = EditorState.create({
+            doc,
+            extensions: clojureEditorLanguage()
+        });
+        const form = findClojureForm(state, doc.length - 1)!;
+        expect(state.sliceDoc(form.from, form.to)).toBe(doc);
+    });
     it.each(["; (voice 440)", "#_(voice 440)"])(
         "skips comments and discarded forms: %s",
         (doc) => {
@@ -113,5 +121,24 @@ describe("Lisp files", () => {
         });
         expect(view.dom.querySelectorAll(".cm-rainbow-0")).toHaveLength(2);
         expect(view.dom.querySelector(".cm-rainbow-1")).toBeNull();
+    });
+    it("reuses bracket colors when only the viewport changes", () => {
+        const view = new EditorView({
+            doc: "(map [1 {:x 2}])\n".repeat(100),
+            extensions: clojureEditorLanguage(),
+            parent: document.body
+        });
+        views.push(view);
+        const tree = syntaxTree(view.state);
+        const walk = vi.spyOn(tree, "iterate");
+        // JSDOM has no layout, so report a viewport change on this update.
+        vi.spyOn(
+            ViewUpdate.prototype,
+            "viewportChanged",
+            "get"
+        ).mockReturnValue(true);
+        view.dispatch({ selection: { anchor: 1 } });
+        expect(syntaxTree(view.state)).toBe(tree);
+        expect(walk).not.toHaveBeenCalled();
     });
 });

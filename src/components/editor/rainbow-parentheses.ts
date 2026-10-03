@@ -8,7 +8,7 @@ import {
 import type { Range } from "@codemirror/state";
 
 // Use parser tokens so brackets in strings, characters and comments do not
-// change the nesting depth.
+// change the nesting depth. Cache all marks; CodeMirror draws only visible ones.
 function bracketDecorations(view: EditorView) {
     const marks: Range<Decoration>[] = [];
     let depth = 0;
@@ -18,18 +18,12 @@ function bracketDecorations(view: EditorView) {
             const closing = [")", "]", "}"].includes(node.name);
             if (!opening && !closing) return;
             if (closing) depth = Math.max(0, depth - 1);
-            if (
-                view.visibleRanges.some(
-                    ({ from, to }) => node.to > from && node.from < to
+            marks.push(
+                Decoration.mark({ class: `cm-rainbow-${depth % 6}` }).range(
+                    node.from,
+                    node.to
                 )
-            ) {
-                marks.push(
-                    Decoration.mark({ class: `cm-rainbow-${depth % 6}` }).range(
-                        node.from,
-                        node.to
-                    )
-                );
-            }
+            );
             if (opening) depth += 1;
         }
     });
@@ -45,7 +39,6 @@ const plugin = ViewPlugin.fromClass(
         update(update: ViewUpdate) {
             if (
                 update.docChanged ||
-                update.viewportChanged ||
                 syntaxTree(update.state) !== syntaxTree(update.startState)
             ) {
                 this.decorations = bracketDecorations(update.view);

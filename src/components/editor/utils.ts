@@ -11,6 +11,7 @@ import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import type { SyntaxNode } from "@lezer/common";
 import type { CsoundObj } from "@comp/csound/types";
 import { evaluateLisp } from "@comp/csound/lisp";
+import { supportsFileEvaluation } from "@comp/csound/utils";
 import { findClojureForm } from "./clojure-language";
 
 const addBlinkSuccessMarks = StateEffect.define();
@@ -244,7 +245,12 @@ export function editorEvalFile(
     documentType: string,
     view: EditorView
 ): Promise<number> | undefined {
-    if (csoundStatus !== "playing" || !view.state.doc.length) return;
+    if (
+        csoundStatus !== "playing" ||
+        !view.state.doc.length ||
+        !supportsFileEvaluation(documentType)
+    )
+        return;
     return evaluateEditorRegion(csound, documentType, view, {
         from: 0,
         to: view.state.doc.length

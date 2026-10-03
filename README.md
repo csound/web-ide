@@ -82,6 +82,9 @@ elsewhere):
 | Eval Block | Cmd/Ctrl+Enter | Evaluate the enclosing top-level form. |
 | Eval File | Cmd/Ctrl+Shift+Enter | Evaluate the whole file. |
 
+Eval File also supports `.orc`, `.udo`, and `.sco` files. In a `.csd` file,
+use Eval Block to evaluate an instrument or score statement.
+
 The evaluated region flashes on success or turns red on failure, including a
 missing `LispEval` opcode. WebMCP's `csound_evaluate_region` uses the same path.
 The IDE passes source through a string channel, so quotes, newlines, Unicode,
