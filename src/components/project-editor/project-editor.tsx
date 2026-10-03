@@ -359,9 +359,7 @@ const WorkspacePanelHeader = ({
     panel,
     activeProject,
     isOwner,
-    title,
     actions,
-    hideTabBar,
     onTabChange,
     onCloseTab,
     handleTabChange,
@@ -371,9 +369,7 @@ const WorkspacePanelHeader = ({
     panel: IWorkspacePanelNode;
     activeProject: IProject;
     isOwner: boolean;
-    title: string;
     actions?: React.ReactNode;
-    hideTabBar?: boolean;
     onTabChange: (index: number) => void;
     onCloseTab: (tab: IWorkspaceTab) => void;
     handleTabChange?: (index: number) => void;
@@ -390,40 +386,36 @@ const WorkspacePanelHeader = ({
 
     return (
         <div css={SS.panelTopBar}>
-            {hideTabBar ? (
-                <span css={SS.panelTopBarTitle}>{title}</span>
-            ) : (
-                <div css={SS.panelHeaderTabs}>
-                    <DragTabList
-                        id={`workspace-panel-${panel.id}`}
-                        handleTabSequence={handleTabSequence}
-                        handleTabChange={changeTab}
-                    >
-                        {panel.tabs.map((tab, index) => (
-                            <DragTab
-                                id={`workspace-tab-${tab.id}`}
-                                closable={tab.type !== "fileTree"}
-                                key={tab.id}
-                                closeCallback={() => onCloseTab(tab)}
-                                currentIndex={activeIndex}
-                                thisIndex={index}
-                                CustomTabStyle={TabStyles.Tab}
-                                handleTabChange={changeTab}
-                                index={index}
-                                active={index === activeIndex}
-                            >
-                                <p style={{ margin: 0 }}>
-                                    {getWorkspaceTabTitle(
-                                        tab,
-                                        activeProject,
-                                        isOwner
-                                    )}
-                                </p>
-                            </DragTab>
-                        ))}
-                    </DragTabList>
-                </div>
-            )}
+            <div css={SS.panelHeaderTabs}>
+                <DragTabList
+                    id={`workspace-panel-${panel.id}`}
+                    handleTabSequence={handleTabSequence}
+                    handleTabChange={changeTab}
+                >
+                    {panel.tabs.map((tab, index) => (
+                        <DragTab
+                            id={`workspace-tab-${tab.id}`}
+                            closable={tab.type !== "fileTree"}
+                            key={tab.id}
+                            closeCallback={() => onCloseTab(tab)}
+                            currentIndex={activeIndex}
+                            thisIndex={index}
+                            CustomTabStyle={TabStyles.Tab}
+                            handleTabChange={changeTab}
+                            index={index}
+                            active={index === activeIndex}
+                        >
+                            <p style={{ margin: 0 }}>
+                                {getWorkspaceTabTitle(
+                                    tab,
+                                    activeProject,
+                                    isOwner
+                                )}
+                            </p>
+                        </DragTab>
+                    ))}
+                </DragTabList>
+            </div>
             {actions && <div css={SS.panelActionGroup}>{actions}</div>}
         </div>
     );
@@ -434,27 +426,23 @@ const WorkspacePanelTabs = ({
     activeProject,
     projectUserUid,
     isOwner,
-    title,
     isActive,
     onTabChange,
     onTabSequenceChange,
     onCloseTab,
     renderTabContent,
-    actions,
-    hideTabBar
+    actions
 }: {
     panel: IWorkspacePanelNode;
     activeProject: IProject;
     projectUserUid: string;
     isOwner: boolean;
-    title: string;
     isActive: boolean;
     onTabChange: (index: number) => void;
     onTabSequenceChange?: (oldIndex: number, newIndex: number) => void;
     onCloseTab: (tab: IWorkspaceTab) => void;
     renderTabContent: (tab: IWorkspaceTab) => React.ReactNode;
     actions?: React.ReactNode;
-    hideTabBar?: boolean;
 }) => {
     if (isEmpty(panel.tabs)) {
         return <div style={{ position: "relative", height: "100%" }} />;
@@ -488,9 +476,7 @@ const WorkspacePanelTabs = ({
                         panel={panel}
                         activeProject={activeProject}
                         isOwner={isOwner}
-                        title={title}
                         actions={actions}
-                        hideTabBar={hideTabBar}
                         onTabChange={onTabChange}
                         onCloseTab={onCloseTab}
                     />
@@ -529,54 +515,65 @@ const SidebarPanelView = ({
     const dispatch = useDispatch();
     const activeTab =
         sidebar.tabs[Math.min(sidebar.tabIndex, sidebar.tabs.length - 1)];
-    const isSingleFileTreeTab =
-        sidebar.tabs.length === 1 && sidebar.tabs[0]?.type === "fileTree";
+    if (!activeTab) return null;
+    const title = getWorkspaceTabTitle(activeTab, activeProject, isOwner);
+    const closeLabel = `Close ${activeTab.type === "fileTree" ? "File Tree" : title}`;
 
     return (
-        <WorkspacePanelTabs
-            panel={sidebar}
-            activeProject={activeProject}
-            projectUserUid={projectUserUid}
-            isOwner={isOwner}
-            title={
-                activeTab
-                    ? getWorkspaceTabTitle(activeTab, activeProject, isOwner)
-                    : `${position} sidebar`
-            }
-            isActive={false}
-            onTabChange={(index) =>
-                dispatch(setSidebarTabIndex(position, index))
-            }
-            onCloseTab={(tab) => dispatch(closeSidebarTab(position, tab.id))}
-            hideTabBar={isSingleFileTreeTab}
-            actions={
-                activeTab?.type === "fileTree" && isOwner ? (
-                    <Tooltip title="Create New Directory">
+        <section
+            css={SS.panelShell(false)}
+            aria-label={title}
+            data-testid={`sidebar-${position}-panel`}
+        >
+            <header css={SS.panelTopBar}>
+                <h2 css={SS.panelTopBarTitle} title={title}>
+                    {title}
+                </h2>
+                <div css={SS.sectionHeaderActions}>
+                    {activeTab.type === "fileTree" && isOwner && (
+                        <Tooltip title="Create New Directory">
+                            <button
+                                type="button"
+                                css={SS.panelActionButton}
+                                onClick={() => dispatch(newFolder(projectUid))}
+                                aria-label="Create new directory"
+                            >
+                                <CreateNewFolderIcon />
+                            </button>
+                        </Tooltip>
+                    )}
+                    <Tooltip title={closeLabel}>
                         <button
                             type="button"
                             css={SS.panelActionButton}
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                dispatch(newFolder(projectUid));
+                            onClick={() => {
+                                dispatch(
+                                    closeSidebarTab(position, activeTab.id)
+                                );
+                                document
+                                    .getElementById(
+                                        `sidebar-${position}-${activeTab.type}`
+                                    )
+                                    ?.focus();
                             }}
-                            aria-label="Create new directory"
+                            aria-label={closeLabel}
                         >
-                            <CreateNewFolderIcon />
+                            <CloseIcon />
                         </button>
                     </Tooltip>
-                ) : null
-            }
-            renderTabContent={(tab) =>
-                renderWorkspaceTabContent({
-                    tab,
+                </div>
+            </header>
+            <div css={SS.panelBody} key={activeTab.id}>
+                {renderWorkspaceTabContent({
+                    tab: activeTab,
                     activeProject,
                     projectUid,
                     projectUserUid,
                     isOwner,
                     isDragging
-                })
-            }
-        />
+                })}
+            </div>
+        </section>
     );
 };
 
@@ -652,15 +649,6 @@ const WorkspaceNodeView = ({
                 activeProject={activeProject}
                 projectUserUid={projectUserUid}
                 isOwner={isOwner}
-                title={
-                    activeTab
-                        ? getWorkspaceTabTitle(
-                              activeTab,
-                              activeProject,
-                              isOwner
-                          )
-                        : "Workspace"
-                }
                 isActive={node.id === activePanelId}
                 onTabChange={(index) =>
                     dispatch(switchPanelTab(node.id, index))
@@ -903,6 +891,7 @@ const SidebarLaunchers = ({
             <Tooltip key={`${sidebar}-${item.type}`} title={item.label}>
                 <button
                     type="button"
+                    id={`sidebar-${sidebar}-${item.type}`}
                     css={SS.activityButton({ active: isActive, compact })}
                     onClick={() => handleLauncherClick(sidebar, item.type)}
                     aria-label={item.label}

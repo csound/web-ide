@@ -79,6 +79,83 @@ describe(`Editor [${targetName}]`, () => {
         await waitForConsoleOutput(page);
     });
 
+    it(
+        "closes utility sections and reopens them from their icons",
+        { skip: targetName !== "local" },
+        async () => {
+            await openFileFromTree(page, "project.csd");
+            for (const [position, type, title] of [
+                ["left", "fileTree", "File Tree"],
+                ["bottom", "console", "Console"],
+                ["bottom", "spectralAnalyzer", "Spectral Analyzer"],
+                ["bottom", "piano", "Virtual Midi Keyboard"],
+                ["right", "manual", "Csound Manual"]
+            ]) {
+                const launcher = `[data-testid="sidebar-${position}-${type}"]`;
+                const section = `[data-testid="sidebar-${position}-panel"]`;
+                if (
+                    !(await page.$eval(
+                        launcher,
+                        (node) => node.getAttribute("aria-pressed") === "true"
+                    ))
+                )
+                    await page.click(launcher);
+                await page.waitForSelector(section);
+                assert.ok(
+                    (
+                        await page.$eval(
+                            `${section} h2`,
+                            (node) => node.textContent
+                        )
+                    ).startsWith(title)
+                );
+                assert.equal(
+                    await page.$(
+                        `${section} .tablist, ${section} [role="tab"], ${section} [role="tabpanel"]`
+                    ),
+                    null
+                );
+                const close = `${section} button[aria-label="Close ${title}"]`;
+                await page.click(close);
+                await page.waitForSelector(section, { hidden: true });
+                assert.equal(
+                    await page.$eval(launcher, (node) =>
+                        node.getAttribute("aria-pressed")
+                    ),
+                    "false"
+                );
+                assert.equal(
+                    await page.evaluate(() => document.activeElement.id),
+                    `sidebar-${position}-${type}`
+                );
+                await page.keyboard.press("Enter");
+                await page.waitForSelector(section);
+                assert.ok(
+                    (
+                        await page.$eval(
+                            `${section} h2`,
+                            (node) => node.textContent
+                        )
+                    ).startsWith(title)
+                );
+                assert.equal(
+                    await page.$eval(launcher, (node) =>
+                        node.getAttribute("aria-pressed")
+                    ),
+                    "true"
+                );
+            }
+            assert.ok(
+                await page.$(".tablist .tab"),
+                "Editor tabs must remain available"
+            );
+            await page.click(
+                '[data-testid="sidebar-right-panel"] button[aria-label="Close Csound Manual"]'
+            );
+            await openConsolePanel(page);
+        }
+    );
+
     for (const { line, input, opcode } of [
         { line: "; scroll test ", input: "typing", opcode: "" },
         { line: "aTest oscili 0.2, 440", input: "0", opcode: "oscili" },
