@@ -6,10 +6,12 @@ const defaultBindings: BindingsMap = {
     add_file: isMac ? "ctrl+command+u" : "ctrl+alt+u",
     new_document: isMac ? "ctrl+command+n" : "ctrl+alt+n",
     open_target_config_dialog: isMac ? "command+alt+t" : "ctrl+alt+t",
-    pause_playback: isMac ? "command+p" : "ctrl+p",
-    run_project: isMac ? "command+r" : "ctrl+r",
-    save_document: isMac ? "command+s" : "ctrl+s",
-    save_all_documents: isMac ? "opt+command+s" : "ctrl+shift+s",
+    pause_playback: isMac ? ["command+p", "ctrl+p"] : "ctrl+p",
+    run_project: isMac ? ["command+r", "ctrl+r"] : "ctrl+r",
+    save_document: isMac ? ["command+s", "ctrl+s"] : "ctrl+s",
+    save_all_documents: isMac
+        ? ["command+shift+s", "opt+command+s", "ctrl+shift+s"]
+        : "ctrl+shift+s",
     save_and_close: isMac ? "opt+command+q" : "ctrl+shift+q",
     stop_playback: isMac ? "opt+command+p" : "ctrl+shift+p",
     // editor

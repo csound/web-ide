@@ -19,7 +19,16 @@ import {
     getPlayActionFromProject,
     getPlayActionFromTarget
 } from "@comp/target-controls/utils";
-import { csoundInstance, pauseCsound, stopCsound } from "@comp/csound/actions";
+import {
+    csoundInstance,
+    isCsoundBusy,
+    pauseCsound,
+    resumePausedCsound,
+    stopCsound
+} from "@comp/csound/actions";
+import type { SetConsole } from "@comp/console/context";
+import { openSnackbar } from "@comp/snackbar/actions";
+import { SnackbarType } from "@comp/snackbar/types";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import { openEditors } from "@comp/editor";
 import { editorEvalCode, editorEvalFile } from "@comp/editor/utils";
@@ -28,13 +37,16 @@ import { keyboardCallbacks } from "./index";
 import { UPDATE_COUNTER } from "./types";
 
 const withPreventDefault =
-    (callback: any) =>
-    (event: KeyboardEvent): void => {
-        event && event.preventDefault();
-        callback();
+    <T>(callback: () => T) =>
+    (event?: KeyboardEvent): T => {
+        event?.preventDefault();
+        return callback();
     };
 
-export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
+export const storeProjectEditorKeyboardCallbacks = (
+    projectUid: string,
+    setConsole: SetConsole
+) => {
     keyboardCallbacks.set(
         "add_file",
         withPreventDefault(() => store.dispatch(addDocument(projectUid)))
@@ -49,11 +61,20 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
     );
     keyboardCallbacks.set(
         "pause_playback",
-        withPreventDefault(() => store.dispatch(pauseCsound()))
+        withPreventDefault(() => {
+            const status = store.getState().csound.status;
+            if (status === "playing") store.dispatch(pauseCsound());
+            else if (status === "paused") store.dispatch(resumePausedCsound());
+        })
     );
     keyboardCallbacks.set(
         "run_project",
-        withPreventDefault(() => {
+        withPreventDefault(async () => {
+            if (store.getState().csound.status === "paused") {
+                store.dispatch(resumePausedCsound());
+                return;
+            }
+            if (isCsoundBusy()) return;
             const playActionDefault = getPlayActionFromTarget(projectUid)(
                 store.getState()
             );
@@ -63,13 +84,22 @@ export const storeProjectEditorKeyboardCallbacks = (projectUid: string) => {
             const playAction = playActionDefault || playActionFallback;
 
             if (playAction) {
-                const isOwner = projectUid
-                    ? selectIsOwner(store.getState())
-                    : false;
-                if (isOwner) {
-                    store.dispatch(saveAllFiles());
+                try {
+                    const isOwner = projectUid
+                        ? selectIsOwner(store.getState())
+                        : false;
+                    if (isOwner) await store.dispatch(saveAllFiles());
+                    await playAction(store.dispatch, setConsole);
+                } catch (error) {
+                    store.dispatch(
+                        openSnackbar(
+                            error instanceof Error
+                                ? error.message
+                                : "Error playing project.",
+                            SnackbarType.Error
+                        )
+                    );
                 }
-                store.dispatch(playAction as any);
             }
         })
     );
