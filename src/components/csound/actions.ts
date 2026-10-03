@@ -264,7 +264,6 @@ export async function runPerformance({
                 void finish(true).catch(console.error);
             });
         }
-        store.dispatch(setCsoundPlayState(render ? "rendering" : "playing"));
         const aborted = new Promise<never>((_resolve, reject) => {
             controller.signal.addEventListener(
                 "abort",
@@ -278,6 +277,23 @@ export async function runPerformance({
                 { once: true }
             );
         });
+        if (
+            !render &&
+            (await Promise.race([csound.isRequestingRtAudioInput(), aborted]))
+        ) {
+            check();
+            try {
+                await Promise.race([csound.enableAudioInput(), aborted]);
+            } catch (error) {
+                check();
+                throw new Error(
+                    "Could not start microphone input. Check microphone access in your browser and system settings.",
+                    { cause: error }
+                );
+            }
+        }
+        check();
+        store.dispatch(setCsoundPlayState(render ? "rendering" : "playing"));
         const started = await Promise.race([csound.start(), aborted]);
         check();
         if (started !== 0)
