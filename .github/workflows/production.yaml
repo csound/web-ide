@@ -61,9 +61,9 @@ jobs:
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_PROD }}
                   REACT_APP_DATABASE: PROD
-            - name: Authenticate for production callable access
+            - name: Authenticate for production browser access
               uses: google-github-actions/auth@v3
               with:
                   credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
-            - name: Apply production callable access and check CORS
+            - name: Apply production browser access and check page loads
               run: npm run access -- --env prod --apply

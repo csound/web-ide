@@ -10,6 +10,9 @@ export const access = JSON.parse(
 const { projects } = JSON.parse(
     await readFile(new URL("../.firebaserc", import.meta.url))
 );
+const { hosting } = JSON.parse(
+    await readFile(new URL("../firebase.json", import.meta.url))
+);
 
 export function deploymentTarget(environment) {
     assert.ok(
@@ -38,8 +41,8 @@ export function parseOptions(args) {
     return { target: deploymentTarget(values.env), apply: !!values.apply };
 }
 
-// Callable handlers still enforce Firebase authentication. Cloud Run must let
-// browsers reach them, including preflight requests that carry no credentials.
+// Cloud Run must admit browser requests to the app shell and callable handlers.
+// The handlers and Firestore rules still enforce project access and user auth.
 export function desiredPolicy(current, declaration = access) {
     const policy = structuredClone(current);
     policy.bindings ??= [];
@@ -78,7 +81,14 @@ export async function reconcileAccess(client, target, apply) {
     const deployed = await client.list();
     // Validate the entire list before writing any policy. Never expose event
     // triggers or services outside the selected project.
-    const endpoints = access.functions.map((id) => {
+    const declarations = [
+        ...access.functions.map((id) => ({ id, trigger: "callableTrigger" })),
+        ...access.hostingFunctions.map((id) => ({
+            id,
+            trigger: "httpsTrigger"
+        }))
+    ];
+    const endpoints = declarations.map(({ id, trigger }) => {
         const endpoint = deployed.find(
             (item) =>
                 item.id === id &&
@@ -87,9 +97,10 @@ export async function reconcileAccess(client, target, apply) {
         );
         assert.ok(
             endpoint?.platform === "gcfv2" &&
-                endpoint.callableTrigger &&
+                endpoint[trigger] &&
+                !endpoint.eventTrigger &&
                 /^[a-z][a-z0-9-]*$/.test(endpoint.runServiceId ?? ""),
-            `${id}: expected a deployed callable function in ${target.project}`
+            `${id}: expected a deployed ${trigger} function in ${target.project}`
         );
         return endpoint;
     });
@@ -153,6 +164,45 @@ export async function checkPreflights(target, request = fetch) {
     }
 }
 
+// Use a browser user agent so synthetic URLs check the app shell without asking
+// the metadata handler to read project or profile records.
+export async function checkHosting(target, request = fetch) {
+    const paths = hosting.rewrites
+        .filter((rewrite) => access.hostingFunctions.includes(rewrite.function))
+        .map((rewrite) =>
+            rewrite.source.replace("/**", "/__hosting_access_check__")
+        );
+    for (const origin of target.origins) {
+        if (new URL(origin).hostname === "localhost") continue;
+        for (const path of paths) {
+            const url = new URL(path, origin).href;
+            const response = await request(url, {
+                method: "GET",
+                redirect: "error",
+                headers: {
+                    "User-Agent":
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+                },
+                signal: AbortSignal.timeout(10000)
+            });
+            assert.equal(
+                response.status,
+                200,
+                `${url}: hosting must allow browser page loads`
+            );
+            assert.match(
+                response.headers.get("content-type") ?? "",
+                /text\/html/i
+            );
+            assert.match(
+                await response.text(),
+                /id=["']root["']/,
+                `${url}: expected the app shell`
+            );
+        }
+    }
+}
+
 if (
     process.argv[1] &&
     import.meta.url === pathToFileURL(process.argv[1]).href
@@ -185,6 +235,7 @@ if (
     for (let attempt = 0; ; attempt += 1) {
         try {
             await checkPreflights(target);
+            await checkHosting(target);
             break;
         } catch (error) {
             if (!apply || attempt === 5) throw error;
@@ -192,6 +243,6 @@ if (
         }
     }
     console.log(
-        `${target.project}: callable access and CORS preflights passed.`
+        `${target.project}: browser access, CORS preflights, and hosting page loads passed.`
     );
 }

@@ -44,6 +44,10 @@ import {
 } from "./types";
 import { IProjectEditorReducer } from "./reducer";
 import TextEditor from "../editor/text-editor";
+import {
+    MarkdownModeToggle,
+    type MarkdownMode
+} from "../editor/markdown-mode-toggle";
 import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 import CsoundManualWindow from "./csound-manual";
@@ -92,6 +96,7 @@ type IEditorForDocumentProperties = {
     doc: AnyTab;
     projectUid: string;
     isOwner: boolean;
+    markdownMode?: MarkdownMode;
 };
 
 const utilityTabDefinitions: Record<
@@ -185,7 +190,8 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
 export function EditorForDocument({
     uid,
     projectUid,
-    doc
+    doc,
+    markdownMode
 }: IEditorForDocumentProperties) {
     if ((doc as IDocument).type === "txt") {
         return (
@@ -194,6 +200,7 @@ export function EditorForDocument({
                 documentUid={(doc as IDocument).documentUid}
                 projectUid={projectUid}
                 filename={(doc as IDocument).filename || ""}
+                mode={markdownMode}
             />
         );
     } else if (
@@ -307,7 +314,8 @@ const renderWorkspaceTabContent = ({
     projectUid,
     projectUserUid,
     isOwner,
-    isDragging
+    isDragging,
+    markdownMode
 }: {
     tab: IWorkspaceTab;
     activeProject: IProject;
@@ -315,6 +323,7 @@ const renderWorkspaceTabContent = ({
     projectUserUid: string;
     isOwner: boolean;
     isDragging: boolean;
+    markdownMode?: MarkdownMode;
 }) => {
     if (tab.type === "editor") {
         const document = getDocumentForTab(tab, activeProject);
@@ -324,6 +333,7 @@ const renderWorkspaceTabContent = ({
                 projectUid={projectUid}
                 isOwner={isOwner}
                 doc={document}
+                markdownMode={markdownMode}
             />
         ) : null;
     }
@@ -599,6 +609,9 @@ const WorkspaceNodeView = ({
     panelCount: number;
 }) => {
     const dispatch = useDispatch();
+    const [markdownModes, setMarkdownModes] = useState<
+        Record<string, MarkdownMode>
+    >({});
 
     if (node.kind === "split") {
         return (
@@ -640,6 +653,11 @@ const WorkspaceNodeView = ({
 
     const panelTabIds = node.tabs.map((tab) => tab.id);
     const activeTab = node.tabs[Math.min(node.tabIndex, node.tabs.length - 1)];
+    const activeDocument =
+        activeTab && getDocumentForTab(activeTab, activeProject);
+    const isMarkdown = /\.(md|markdown)$/i.test(
+        (activeDocument as IDocument | undefined)?.filename ?? ""
+    );
 
     return (
         <div
@@ -691,11 +709,23 @@ const WorkspaceNodeView = ({
                         projectUid,
                         projectUserUid,
                         isOwner,
-                        isDragging
+                        isDragging,
+                        markdownMode: markdownModes[tab.id] ?? "preview"
                     })
                 }
                 actions={
                     <>
+                        {isMarkdown && activeTab && (
+                            <MarkdownModeToggle
+                                mode={markdownModes[activeTab.id] ?? "preview"}
+                                onChange={(mode) =>
+                                    setMarkdownModes((modes) => ({
+                                        ...modes,
+                                        [activeTab.id]: mode
+                                    }))
+                                }
+                            />
+                        )}
                         {activeTab?.type === "fileTree" && isOwner && (
                             <Tooltip title="Create New Directory">
                                 <button

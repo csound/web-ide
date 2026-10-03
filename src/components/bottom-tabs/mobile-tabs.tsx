@@ -7,6 +7,10 @@ import { EditorForDocument } from "@comp/project-editor/project-editor";
 import { IOpenDocument } from "@comp/project-editor/types";
 import { DnDProvider } from "@comp/file-tree/context";
 import { IDocument, IProject } from "@comp/projects/types";
+import {
+    MarkdownModeToggle,
+    type MarkdownMode
+} from "@comp/editor/markdown-mode-toggle";
 import * as SS from "./styles";
 
 const MobileTabs = ({
@@ -19,6 +23,14 @@ const MobileTabs = ({
     currentDocument: IDocument | IOpenDocument | undefined;
 }): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
+    const [markdownModes, setMarkdownModes] = useState<
+        Record<string, MarkdownMode>
+    >({});
+    const documentKey =
+        (currentDocument as IDocument | undefined)?.documentUid ?? "";
+    const isMarkdown = /\.(md|markdown)$/i.test(
+        (currentDocument as IDocument | undefined)?.filename ?? ""
+    );
 
     const mobileFileTree = (
         <div css={SS.mobileFileTree}>
@@ -50,6 +62,9 @@ const MobileTabs = ({
                                     projectUid={projectUid}
                                     doc={currentDocument}
                                     isOwner={false}
+                                    markdownMode={
+                                        markdownModes[documentKey] ?? "preview"
+                                    }
                                 />
                             )}
                         </div>
@@ -64,6 +79,19 @@ const MobileTabs = ({
                 <MobileNavigation
                     mobileTabIndex={mobileTabIndex}
                     setMobileTabIndex={setMobileTabIndex}
+                    editorControl={
+                        mobileTabIndex === 0 && isMarkdown ? (
+                            <MarkdownModeToggle
+                                mode={markdownModes[documentKey] ?? "preview"}
+                                onChange={(mode) =>
+                                    setMarkdownModes((modes) => ({
+                                        ...modes,
+                                        [documentKey]: mode
+                                    }))
+                                }
+                            />
+                        ) : undefined
+                    }
                 />
             </div>
         </DnDProvider>

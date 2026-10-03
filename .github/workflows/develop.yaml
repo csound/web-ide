@@ -63,9 +63,9 @@ jobs:
                   args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive --force
               env:
                   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
-            - name: Authenticate for dev callable access
+            - name: Authenticate for dev browser access
               uses: google-github-actions/auth@v3
               with:
                   credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
-            - name: Apply dev callable access and check CORS
+            - name: Apply dev browser access and check page loads
               run: npm run access -- --env dev --apply

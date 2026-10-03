@@ -8,6 +8,7 @@
         "search_projects",
         "toggle_project_star"
     ],
+    "hostingFunctions": ["host"],
     "role": "roles/run.invoker",
     "member": "allUsers",
     "environments": {

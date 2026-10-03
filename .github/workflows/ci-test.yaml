@@ -41,7 +41,7 @@ jobs:
               run: npm run test:ci
             - name: Check manual
               run: npm run test:manual && npm run manual:check
-            - name: Test callable access
+            - name: Test browser access
               run: npm run test:access
             - name: Test Firestore indexes
               run: npm run test:indexes

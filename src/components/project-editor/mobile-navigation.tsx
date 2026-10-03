@@ -15,30 +15,47 @@ const tabs = [
 
 const MobileNavigation = ({
     mobileTabIndex,
-    setMobileTabIndex
+    setMobileTabIndex,
+    editorControl
 }: {
     mobileTabIndex: number;
     setMobileTabIndex: (index: number) => void;
+    editorControl?: React.ReactNode;
 }): React.ReactElement => {
     return (
         <footer css={SS.mobileNavContainer} aria-label="Editor footer">
             <div css={SS.mobileNavTabGroup}>
-                {tabs.map(({ label, Icon, index }) => (
-                    <button
-                        key={index}
-                        type="button"
-                        data-testid={
-                            label === "Console" ? "console-tab" : undefined
-                        }
-                        css={SS.mobileNavTabButton(mobileTabIndex === index)}
-                        onClick={() => setMobileTabIndex(index)}
-                        aria-label={label}
-                        aria-selected={mobileTabIndex === index}
-                    >
-                        <Icon />
-                        <span>{label}</span>
-                    </button>
-                ))}
+                {tabs.map(({ label, Icon, index }) =>
+                    index === 0 && editorControl ? (
+                        <div
+                            key={index}
+                            css={{
+                                display: "flex",
+                                alignItems: "center",
+                                padding: "0 4px"
+                            }}
+                        >
+                            {editorControl}
+                        </div>
+                    ) : (
+                        <button
+                            key={index}
+                            type="button"
+                            data-testid={
+                                label === "Console" ? "console-tab" : undefined
+                            }
+                            css={SS.mobileNavTabButton(
+                                mobileTabIndex === index
+                            )}
+                            onClick={() => setMobileTabIndex(index)}
+                            aria-label={label}
+                            aria-selected={mobileTabIndex === index}
+                        >
+                            <Icon />
+                            <span>{label}</span>
+                        </button>
+                    )
+                )}
             </div>
             <WebMcpLink />
         </footer>

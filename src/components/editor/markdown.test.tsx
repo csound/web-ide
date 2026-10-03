@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
+import { useState } from "react";
 import {
     act,
     cleanup,
@@ -8,7 +9,7 @@ import {
 } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { legacy_createStore } from "redux";
-import { ThemeProvider } from "@emotion/react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { syntaxTree } from "@codemirror/language";
 import { isolateHistory, redo, undo, undoDepth } from "@codemirror/commands";
 import theme from "../../styles/_theme-dracula";
@@ -16,6 +17,10 @@ import { getFileTypeIconDetails } from "../../elements/filetype-icons";
 import Editor, { openEditors } from "./editor";
 import { MarkdownPreview } from "./markdown-preview";
 import TextEditor from "./text-editor";
+import { MarkdownModeToggle, type MarkdownMode } from "./markdown-mode-toggle";
+import MobileNavigation from "../project-editor/mobile-navigation";
+
+vi.mock("../../webmcp/provider", () => ({ WebMcpLink: () => null }));
 
 vi.mock("../../store", async () => {
     const { useSelector, useDispatch } = await import("react-redux");
@@ -65,10 +70,10 @@ function fixture(filename: string, currentValue: string) {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
         <Provider store={store}>
             <ThemeProvider
-                theme={{
+                theme={createTheme({
                     ...theme,
                     font: { regular: "sans-serif", monospace: "monospace" }
-                }}
+                })}
             >
                 {children}
             </ThemeProvider>
@@ -118,17 +123,77 @@ it("updates the language when an open file is renamed", () => {
     expect(syntaxTree(view.state).topNode.name).toBe("OrchestraFile");
 });
 
-it("keeps selection and undo/redo history while toggling preview", () => {
-    const original = "# Project notes";
-    const { wrapper } = fixture("README.md", original);
-    const { container } = render(
-        <TextEditor
-            documentUid="note"
-            projectUid="project"
-            filename="README.md"
+function EditorWithHeaderControl() {
+    const [mode, setMode] = useState<MarkdownMode>("preview");
+    return (
+        <>
+            <header>
+                <MarkdownModeToggle mode={mode} onChange={setMode} />
+            </header>
+            <TextEditor
+                documentUid="note"
+                projectUid="project"
+                filename="README.md"
+                mode={mode}
+            />
+        </>
+    );
+}
+
+it.each(["README.md", "notes.markdown"])(
+    "opens %s in preview without adding a toolbar to the document",
+    (filename) => {
+        const { wrapper } = fixture(filename, "# Project notes");
+        const { container } = render(
+            <TextEditor
+                documentUid="note"
+                projectUid="project"
+                filename={filename}
+            />,
+            { wrapper }
+        );
+        expect(
+            screen.getByRole("heading", { name: "Project notes" })
+        ).toBeTruthy();
+        expect(screen.queryByRole("textbox")).toBeNull();
+        expect(container.querySelector("button")).toBeNull();
+    }
+);
+
+it("fits the Markdown control into the existing mobile navigation row", () => {
+    const { wrapper } = fixture("README.md", "# Project notes");
+    render(
+        <MobileNavigation
+            mobileTabIndex={0}
+            setMobileTabIndex={vi.fn()}
+            editorControl={
+                <MarkdownModeToggle mode="preview" onChange={vi.fn()} />
+            }
         />,
         { wrapper }
     );
+    const control = screen.getByRole("group", { name: "Markdown view" });
+    expect(control.closest("footer")?.getAttribute("aria-label")).toBe(
+        "Editor footer"
+    );
+    expect(screen.getByRole("button", { name: "Files" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Manual" })).toBeTruthy();
+});
+
+it("keeps selection and undo/redo history while toggling preview", () => {
+    const original = "# Project notes";
+    const { wrapper } = fixture("README.md", original);
+    const { container } = render(<EditorWithHeaderControl />, { wrapper });
+    const preview = screen.getByRole("button", { name: "Preview Markdown" });
+    expect(preview.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(preview);
+    expect(preview.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Edit Markdown" }));
+    expect(
+        screen
+            .getByRole("button", { name: "Edit Markdown" })
+            .getAttribute("aria-pressed")
+    ).toBe("true");
     const view = openEditors.get("note")!;
     act(() =>
         view.dispatch({
@@ -179,7 +244,7 @@ it("returns to editing when a previewed file is renamed away from Markdown", () 
         { wrapper }
     );
     const view = openEditors.get("note");
-    fireEvent.click(screen.getByRole("button", { name: "Preview Markdown" }));
+    expect(screen.getByRole("heading", { name: "Project notes" })).toBeTruthy();
     act(() => store.dispatch({ type: "note/rename", value: "main.orc" }));
     rerender(
         <TextEditor

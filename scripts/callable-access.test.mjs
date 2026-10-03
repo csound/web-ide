@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { parse } from "yaml";
 import {
     access,
+    checkHosting,
     checkPreflights,
     desiredPolicy,
     deploymentTarget,
@@ -11,6 +12,20 @@ import {
     parseOptions,
     reconcileAccess
 } from "./callable-access.mjs";
+
+const declaredFunctions = [...access.functions, ...access.hostingFunctions];
+
+test("every hosting rewrite function has a public access declaration", async () => {
+    const { hosting } = JSON.parse(
+        await readFile(new URL("../firebase.json", import.meta.url))
+    );
+    const functions = [
+        ...new Set(
+            hosting.rewrites.map(({ function: id }) => id).filter(Boolean)
+        )
+    ];
+    assert.deepEqual([...access.hostingFunctions].sort(), functions.sort());
+});
 
 test("commands require an explicit known environment and exactly one mode", () => {
     for (const args of [
@@ -100,12 +115,14 @@ for (const environment of Object.keys(access.environments)) {
         const writes = [];
         const client = {
             list: async () =>
-                access.functions.map((id) => ({
+                declaredFunctions.map((id) => ({
                     id,
                     project: target.project,
                     region: access.region,
                     platform: "gcfv2",
-                    callableTrigger: {},
+                    ...(access.hostingFunctions.includes(id)
+                        ? { httpsTrigger: {} }
+                        : { callableTrigger: {} }),
                     runServiceId: id.replaceAll("_", "-")
                 })),
             ...iamPolicyClient({
@@ -133,7 +150,7 @@ for (const environment of Object.keys(access.environments)) {
                     };
                 },
                 post: async (path, body) => {
-                    const id = access.functions[writes.length];
+                    const id = declaredFunctions[writes.length];
                     const service = `projects/${target.project}/locations/${access.region}/services/${id.replaceAll("_", "-")}`;
                     assert.equal(path, `${service}:setIamPolicy`);
                     assert.deepEqual(body, {
@@ -168,13 +185,14 @@ for (const environment of Object.keys(access.environments)) {
         );
         assert.equal(writes.length, 0);
         await reconcileAccess(client, target, true);
-        assert.equal(writes.length, access.functions.length);
+        assert.equal(writes.length, declaredFunctions.length);
         await reconcileAccess(client, target, true);
         await reconcileAccess(client, target, false);
-        assert.equal(writes.length, access.functions.length);
+        assert.equal(writes.length, declaredFunctions.length);
 
         for (const invalid of [
-            { callableTrigger: undefined },
+            { httpsTrigger: undefined },
+            { eventTrigger: {} },
             { project: "unrelated-project" },
             { runServiceId: "../../production" }
         ]) {
@@ -186,10 +204,50 @@ for (const environment of Object.keys(access.environments)) {
                     target,
                     true
                 ),
-                /expected a deployed callable/
+                /expected a deployed httpsTrigger/
             );
-            assert.equal(writes.length, access.functions.length);
+            assert.equal(writes.length, declaredFunctions.length);
         }
+    });
+
+    test(`${environment}: direct hosting loads catch forbidden responses and missing app shells`, async () => {
+        const urls = [];
+        await checkHosting(target, async (url, options) => {
+            urls.push(url);
+            assert.equal(options.method, "GET");
+            assert.equal(options.redirect, "error");
+            assert.match(options.headers["User-Agent"], /Mozilla/);
+            return new Response('<div id="root"></div>', {
+                headers: { "Content-Type": "text/html" }
+            });
+        });
+        assert.deepEqual(
+            urls,
+            target.origins
+                .filter((origin) => new URL(origin).hostname !== "localhost")
+                .flatMap((origin) => [
+                    `${origin}/`,
+                    `${origin}/editor/__hosting_access_check__`,
+                    `${origin}/profile/__hosting_access_check__`
+                ])
+        );
+        await assert.rejects(
+            checkHosting(
+                target,
+                async () => new Response("Error: Forbidden", { status: 403 })
+            ),
+            /hosting must allow/
+        );
+        await assert.rejects(
+            checkHosting(
+                target,
+                async () =>
+                    new Response("error", {
+                        headers: { "Content-Type": "text/html" }
+                    })
+            ),
+            /expected the app shell/
+        );
     });
 
     test(`${environment}: preflight checks cover every declared function and origin without invoking a handler`, async () => {
@@ -248,4 +306,47 @@ test("IAM write failures reach the caller", async () => {
         client.setPolicy("fixture-service", {}),
         (error) => error === failure
     );
+});
+
+test("a private hosting function fails the access check and gets repaired", async () => {
+    const target = deploymentTarget("dev");
+    const publicPolicy = desiredPolicy({ etag: "callable-etag" });
+    let hostPolicy = { etag: "host-etag" };
+    const writes = [];
+    const client = {
+        list: async () => [
+            ...access.functions.map((id) => ({
+                id,
+                project: target.project,
+                region: access.region,
+                platform: "gcfv2",
+                callableTrigger: {},
+                runServiceId: id.replaceAll("_", "-")
+            })),
+            {
+                id: "host",
+                project: target.project,
+                region: access.region,
+                platform: "gcfv2",
+                httpsTrigger: {},
+                runServiceId: "host"
+            }
+        ],
+        getPolicy: async (service) =>
+            service.endsWith("/host") ? hostPolicy : publicPolicy,
+        setPolicy: async (service, policy) => {
+            writes.push(service);
+            hostPolicy = policy;
+        }
+    };
+    await assert.rejects(
+        reconcileAccess(client, target, false),
+        /host: missing browser/
+    );
+    assert.equal(writes.length, 0);
+    await reconcileAccess(client, target, true);
+    assert.deepEqual(writes, [
+        `projects/${target.project}/locations/${access.region}/services/host`
+    ]);
+    await reconcileAccess(client, target, false);
 });
