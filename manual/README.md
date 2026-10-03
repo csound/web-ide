@@ -10,6 +10,27 @@ Entry headers link to the previous and next opcode in index order. Back and
 forward buttons retain manual visits and reading positions for each dock or tab;
 they stay inside the manual. Embedded pages hide the IDE and source links.
 
+In the editor's manual, **Open example** opens a CSD in a temporary, editable tab.
+A book icon and accent mark manual examples. **Play manual example** runs the
+current text and loads sample files linked from that manual page. It also scans
+quoted filenames in the edited CSD and loads matches from the bundled asset
+index, including samples, soundfonts, and analysis files that the page does not
+link. Comments are skipped and each matching file loads once per performance.
+The scan does not resolve names built at runtime or fetch files absent from the
+manual. **Stop manual example** stops playback; **Discard** or the tab's close
+button drops the buffer without a save prompt. Closing the playing example also
+stops its audio.
+
+Temporary tabs never enter the project's file list, Save, Save All, or the saved
+workspace layout. Reloading or leaving the project discards them. Playback keeps
+example files and generated output out of the project. Standalone manual pages
+keep their normal download links.
+
+`openTemporaryDocument` in `src/components/project-editor/temporary-documents.ts`
+also opens plain temporary buffers. Manual examples add source metadata and their
+own playback control. Keep new temporary sources behind the same workspace
+storage filter so their contents cannot enter a saved layout.
+
 Upstream scripts and rendered HTML have the same origin authority as the IDE.
 Review upstream changes as application code before updating the source pin.
 The iframe tags messages with a document ID and acknowledges each lookup;

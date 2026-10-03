@@ -304,6 +304,57 @@ const documentId = Array.from(crypto.getRandomValues(new Uint32Array(4))).join(
 let leaving = false;
 let lookup;
 let lookupRequest;
+let exampleRequest = 0;
+const exampleButtons = new Map();
+
+// The download links remain useful when the manual is open outside the IDE.
+if (parent !== window) {
+    const links = [...document.querySelectorAll("article a[href]")].filter(
+        (link) => {
+            const url = new URL(link.href);
+            return (
+                url.origin === location.origin &&
+                url.pathname.startsWith(new URL("examples/", root).pathname)
+            );
+        }
+    );
+    const assets = links
+        .filter((link) => !/\.csd$/i.test(new URL(link.href).pathname))
+        .map((link) => link.href);
+    for (const link of links.filter((link) =>
+        /\.csd$/i.test(new URL(link.href).pathname)
+    )) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "open-example";
+        button.textContent = "Open example";
+        button.setAttribute(
+            "aria-label",
+            `Open ${link.textContent.trim()} in temporary tab`
+        );
+        button.title =
+            "Open an editable temporary tab. Nothing is saved to the project.";
+        const feedback = document.createElement("span");
+        feedback.className = "example-feedback";
+        feedback.setAttribute("role", "status");
+        button.addEventListener("click", () => {
+            const requestId = ++exampleRequest;
+            exampleButtons.set(requestId, { button, feedback });
+            button.disabled = true;
+            button.textContent = "Opening…";
+            feedback.textContent = "";
+            notifyParent("csound-manual:open-example", {
+                url: link.href,
+                assets,
+                requestId
+            });
+        });
+        const controls = document.createElement("div");
+        controls.className = "example-controls";
+        controls.append(button, feedback);
+        (link.closest("p") || link).after(controls);
+    }
+}
 
 /** Identify the document that accepted work, even across iframe navigation. */
 function notifyParent(type, details = {}) {
@@ -405,6 +456,21 @@ window.addEventListener("message", (event) => {
     )
         return;
     const data = event.data;
+    if (
+        data?.type === "csound-manual:example-opened" &&
+        data.documentId === documentId
+    ) {
+        const pending = exampleButtons.get(data.requestId);
+        if (pending) {
+            pending.button.disabled = false;
+            pending.button.textContent = "Open example";
+            pending.feedback.textContent =
+                typeof data.error === "string"
+                    ? data.error
+                    : "Opened in a temporary tab.";
+            exampleButtons.delete(data.requestId);
+        }
+    }
     if (data?.type === "csound-manual:connect" && !leaving)
         notifyParent("csound-manual:ready");
     if (data?.type === "csound-manual:lookup" && data.documentId === documentId)

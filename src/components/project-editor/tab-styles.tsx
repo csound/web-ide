@@ -146,6 +146,11 @@ const TabStyleCustom = styled(TabStyle)`
     &::after {
         content: none;
     }
+    &[data-temporary="true"] {
+        border-bottom: 2px solid ${(properties) => properties.theme.attribute};
+        color: ${(properties) => properties.theme.attribute};
+        font-style: italic;
+    }
 
     p {
         user-select: none;

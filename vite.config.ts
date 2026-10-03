@@ -14,6 +14,8 @@ export default defineConfig({
     },
     // depending on your application, base can also be "/"
     base: "/",
+    // Emotion's Babel transform adds this import after Vite scans dependencies.
+    optimizeDeps: { include: ["@emotion/styled/base"] },
     plugins: [
         manualPages(),
         checker({

@@ -193,6 +193,17 @@ assert.match(
     /0dbfs\s*=\s*1/
 );
 const themeScript = readFileSync(path.join(manual, "assets/manual.js"), "utf8");
+const exampleAssets = JSON.parse(
+    readFileSync(path.join(manual, "example-assets.json"), "utf8")
+);
+assert.deepEqual(
+    exampleAssets,
+    readdirSync(path.join(manual, "examples"), { withFileTypes: true })
+        .filter((entry) => entry.isFile() && !/\.csd$/i.test(entry.name))
+        .map((entry) => entry.name)
+        .sort()
+);
+assert.ok(exampleAssets.includes("drumsMlp.wav"));
 assert.ok(
     themeScript.includes("event.origin !== location.origin") &&
         themeScript.includes("event.source !== parent")

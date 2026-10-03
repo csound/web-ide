@@ -108,6 +108,32 @@ afterEach(async () => {
 });
 
 describe("shared Csound performance", () => {
+    it("plays an in-memory example and sample without changing project files or collecting output", async () => {
+        const onEnded = vi.fn();
+        engine.compileCSD.mockResolvedValue(0);
+        const documents =
+            store.getState().ProjectsReducer.projects["audio-test"].documents;
+        await runPerformance({
+            projectUid: "audio-test",
+            csdText: source,
+            mode: "play",
+            collectFiles: false,
+            inputFiles: [
+                { name: "sample.wav", data: new Uint8Array([1, 2, 3]) }
+            ],
+            setConsole,
+            onEnded
+        });
+        expect(engine.compileCSD).toHaveBeenCalledWith(source, 1);
+        expect(writes.get("sample.wav")).toEqual(new Uint8Array([1, 2, 3]));
+        writes.set("generated.wav", new Uint8Array([1, 2, 3]));
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(onEnded).toHaveBeenCalledOnce());
+        expect(nonCloudFiles.size).toBe(0);
+        expect(
+            store.getState().ProjectsReducer.projects["audio-test"].documents
+        ).toBe(documents);
+    });
     it.each(["auto", "render"] as const)(
         "runs an embed in %s mode without storage or SAB",
         async (mode) => {
