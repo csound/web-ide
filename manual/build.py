@@ -69,14 +69,39 @@ def plain_title(value):
 class ManualThemePlugin(BasePlugin):
     """Use the same clean titles in navigation, page titles, and search."""
 
+    def __init__(self, groups):
+        """Pair opcode pages in exactly the same order as the index."""
+        super().__init__()
+        entries = [
+            {
+                "title": title,
+                "url": f"opcodes/{Path(name).stem}/",
+                "source": f"opcodes/{name}",
+            }
+            for _, items in groups
+            for title, name in items
+        ]
+        self.neighbors = {
+            entry["source"]: {
+                "previous": entries[index - 1] if index > 0 else None,
+                "next": entries[index + 1] if index + 1 < len(entries) else None,
+            }
+            for index, entry in enumerate(entries)
+        }
+
     def on_env(self, env, **kwargs):
         """Expose heading text to the static page templates."""
         env.filters["plain_title"] = plain_title
         return env
 
+    def on_page_context(self, context, page, **kwargs):
+        """Render opcode links without a browser-side index download."""
+        context["opcode_neighbors"] = self.neighbors.get(page.file.src_uri)
+        return context
 
-def opcode_index(docs):
-    """List every opcode once, in alphabetical groups that fit narrow views."""
+
+def opcode_groups(docs):
+    """Sort opcodes once for both the index and entry navigation."""
     groups = {}
     for file in (docs / "opcodes").glob("*.md"):
         heading = re.search(r"^#\s+(.+)$", file.read_text(encoding="utf-8"), re.M)
@@ -92,18 +117,27 @@ def opcode_index(docs):
         groups,
         key=lambda key: (key not in {"Symbols", "Numbers"}, key != "Symbols", key),
     )
+    return [
+        (
+            group,
+            sorted(groups[group], key=lambda entry: (entry[0].casefold(), entry[0])),
+        )
+        for group in order
+    ]
+
+
+def opcode_index(groups):
+    """List every opcode once, in alphabetical groups that fit narrow views."""
     content = [
         "# Opcode index",
         '<nav class="opcode-jump" aria-label="Opcode initials">',
     ]
-    for group in order:
+    for group, _ in groups:
         content.append(f'<a href="#{group.lower()}">{group}</a>')
     content.append("</nav>")
-    for group in order:
+    for group, entries in groups:
         content.extend([f"\n## {group}\n", '<div class="opcode-list" markdown="1">\n'])
-        for title, name in sorted(
-            groups[group], key=lambda entry: (entry[0].casefold(), entry[0])
-        ):
+        for title, name in entries:
             content.append(f"- [`{title}`](opcodes/{name})")
         content.append("\n</div>\n")
     return "\n".join(content)
@@ -169,7 +203,8 @@ def main():
             .replace("# CONTRIBUTORS", "## Contributors"),
             encoding="utf-8",
         )
-        home.write_text(opcode_index(docs), encoding="utf-8")
+        groups = opcode_groups(docs)
+        home.write_text(opcode_index(groups), encoding="utf-8")
         (docs / "opcodesIndex.md").write_text(
             home.read_text(encoding="utf-8"), encoding="utf-8"
         )
@@ -243,7 +278,7 @@ def main():
         config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
         loaded = load_config(str(config_path))
         loaded.mdx_configs["pymdownx.emoji"] = {"emoji_generator": to_alt}
-        loaded.plugins["manual-theme"] = ManualThemePlugin()
+        loaded.plugins["manual-theme"] = ManualThemePlugin(groups)
         build(loaded)
         assets = output / "assets"
         assets.mkdir(exist_ok=True)

@@ -2,6 +2,7 @@ import { manualColors } from "./manual-theme";
 import { DEFAULT_THEME, normalizeThemeName, themes } from "./themes";
 
 type ManualColors = ReturnType<typeof manualColors>;
+if (parent !== window) document.documentElement.dataset.embedded = "true";
 const colorKeys = Object.keys(
     manualColors(themes[DEFAULT_THEME])
 ) as (keyof ManualColors)[];

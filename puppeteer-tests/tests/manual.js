@@ -273,3 +273,233 @@ test(
         }
     }
 );
+
+/** Follow a document link or button and wait for its new page. */
+async function followManual(view, selector) {
+    const previous = view.url();
+    await Promise.all([view.waitForNavigation(), view.click(selector)]);
+    await view.waitForFunction(
+        (previous) =>
+            location.href !== previous &&
+            document.readyState === "complete" &&
+            Boolean(history.state?.csoundManualVisit),
+        {},
+        previous
+    );
+}
+
+test(
+    "manual opcode navigation matches the index and retains visit history",
+    localOnly,
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            const errors = [];
+            page.on("pageerror", (error) => errors.push(error.message));
+            await page.goto(`${target.baseUrl}/manual/`);
+            assert.equal(
+                await page.$eval("#manual-back", (node) => node.disabled),
+                true
+            );
+            assert.equal(
+                await page.$eval("#manual-forward", (node) => node.disabled),
+                true
+            );
+            const opcodes = await page.$$eval(".opcode-list a", (nodes) =>
+                nodes.map((node) => ({
+                    href: node.href,
+                    title: node.textContent
+                }))
+            );
+            const selected = opcodes.findIndex(
+                (entry) => entry.title === "oscili"
+            );
+            const selector = `.opcode-list a[href="opcodes/oscili/"]`;
+            await page.$eval(selector, (node) =>
+                node.scrollIntoView({ block: "center" })
+            );
+            const indexScroll = await page.evaluate(() => scrollY);
+            await followManual(page, selector);
+            assert.equal(
+                await page.$eval('[rel="prev"]', (node) => node.href),
+                opcodes[selected - 1].href
+            );
+            assert.equal(
+                await page.$eval('[rel="next"]', (node) => node.href),
+                opcodes[selected + 1].href
+            );
+            await followManual(page, '[rel="next"]');
+            assert.equal(page.url(), opcodes[selected + 1].href);
+            await followManual(page, '[rel="prev"]');
+            assert.equal(page.url(), opcodes[selected].href);
+            await followManual(page, "#manual-back");
+            assert.equal(page.url(), opcodes[selected + 1].href);
+            await followManual(page, "#manual-back");
+            assert.equal(page.url(), opcodes[selected].href);
+            await followManual(page, "#manual-back");
+            assert.equal(new URL(page.url()).pathname, "/manual/");
+            assert.equal(
+                await page.$eval("#manual-back", (node) => node.disabled),
+                true
+            );
+            assert.ok(
+                Math.abs((await page.evaluate(() => scrollY)) - indexScroll) <
+                    2,
+                "Back must retain the reading position in the index"
+            );
+            await page.reload();
+            assert.equal(
+                await page.$eval("#manual-forward", (node) => node.disabled),
+                false
+            );
+            await followManual(page, "#manual-forward");
+            assert.equal(page.url(), opcodes[selected].href);
+            await followManual(page, ".brand");
+            assert.equal(
+                await page.$eval("#manual-forward", (node) => node.disabled),
+                true,
+                "A new visit clears the forward list"
+            );
+            await page.goBack();
+            assert.equal(page.url(), opcodes[selected].href);
+            assert.equal(
+                await page.$eval("#manual-forward", (node) => node.disabled),
+                false,
+                "Native browser history must update the manual controls"
+            );
+            for (const opcode of [opcodes[0], opcodes.at(-1)]) {
+                await page.goto(opcode.href);
+                assert.equal(
+                    await page.$eval("article h1", (node) => node.textContent),
+                    opcode.title
+                );
+                assert.equal(
+                    (
+                        await page.$$(
+                            '[aria-label="Alphabetical opcodes"] [aria-disabled="true"]'
+                        )
+                    ).length,
+                    1
+                );
+            }
+            assert.deepEqual(errors, []);
+        } finally {
+            await browser.close();
+        }
+    }
+);
+
+test(
+    "manual dock history stays local and the header fits narrow widths",
+    localOnly,
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            await page.setRequestInterception(true);
+            page.on("request", (request) => {
+                if (new URL(request.url()).pathname === "/manual-delivery-test")
+                    void request.respond({
+                        status: 200,
+                        contentType: "text/html",
+                        body: harness
+                    });
+                else void request.continue();
+            });
+            await page.goto(`${target.baseUrl}/manual-delivery-test`);
+            await page.waitForFunction(() => window.bridge?.isReady);
+            await page.$eval("#manual", (node) => {
+                node.style.width = "390px";
+                node.style.height = "800px";
+            });
+            const frame = await (await page.$("#manual")).contentFrame();
+            assert.equal(
+                await frame.$eval("#manual-back", (node) => node.disabled),
+                true
+            );
+            assert.ok(
+                await frame.$$eval(".standalone-link", (nodes) =>
+                    nodes.every(
+                        (node) => getComputedStyle(node).display === "none"
+                    )
+                )
+            );
+            await followManual(frame, '.opcode-list a[href="opcodes/oscili/"]');
+            await followManual(frame, "#manual-back");
+            assert.equal(new URL(frame.url()).pathname, "/manual/");
+            assert.equal(new URL(page.url()).pathname, "/manual-delivery-test");
+            await followManual(frame, "#manual-forward");
+            assert.equal(
+                new URL(frame.url()).pathname,
+                "/manual/opcodes/oscili/"
+            );
+            await page.evaluate(() => {
+                const other = document.createElement("iframe");
+                other.id = "other-manual";
+                other.src = "/manual/";
+                document.body.append(other);
+            });
+            const other = await (await page.$("#other-manual")).contentFrame();
+            await other.waitForSelector("#manual-back");
+            assert.equal(
+                await other.$eval("#manual-back", (node) => node.disabled),
+                true,
+                "Another dock must start with its own history"
+            );
+            for (const width of [200, 280, 390, 768]) {
+                await page.$eval(
+                    "#manual",
+                    (node, width) => {
+                        node.style.width = `${width}px`;
+                        node.style.height = "800px";
+                    },
+                    width
+                );
+                const geometry = await frame.evaluate(() => {
+                    const hint = document.querySelector("#search-open > span");
+                    const style = getComputedStyle(hint);
+                    window.scrollTo(0, 400);
+                    return {
+                        wraps: style.whiteSpace !== "nowrap",
+                        ellipsis: style.textOverflow === "ellipsis",
+                        headerTop: document
+                            .querySelector(".site-header")
+                            .getBoundingClientRect().top,
+                        shadow:
+                            getComputedStyle(
+                                document.querySelector(".site-header")
+                            ).boxShadow !== "none",
+                        controlsFit: [
+                            ...document.querySelectorAll(
+                                ".site-header a, .site-header button"
+                            )
+                        ].every((node) => {
+                            const bounds = node.getBoundingClientRect();
+                            return (
+                                bounds.left >= 0 && bounds.right <= innerWidth
+                            );
+                        })
+                    };
+                });
+                assert.deepEqual(geometry, {
+                    wraps: false,
+                    ellipsis: true,
+                    headerTop: 0,
+                    shadow: true,
+                    controlsFit: true
+                });
+            }
+            await page.goto(`${target.baseUrl}/manual/opcodes/oscili/`);
+            assert.ok(
+                await page.$$eval(".standalone-link", (nodes) =>
+                    nodes.every(
+                        (node) => getComputedStyle(node).display !== "none"
+                    )
+                )
+            );
+        } finally {
+            await browser.close();
+        }
+    }
+);

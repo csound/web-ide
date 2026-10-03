@@ -6,6 +6,9 @@ equations load MathJax. The editor sends its theme and opcode lookups to the
 same-origin iframe. The first page lists all opcodes in alphabetical groups;
 the upstream introduction lives at `/manual/about/`. Search opens a dialog that
 fills the manual view, with an always-visible close button and keyboard access.
+Entry headers link to the previous and next opcode in index order. Back and
+forward buttons retain manual visits and reading positions for each dock or tab;
+they stay inside the manual. Embedded pages hide the IDE and source links.
 
 Upstream scripts and rendered HTML have the same origin authority as the IDE.
 Review upstream changes as application code before updating the source pin.

@@ -14,8 +14,28 @@
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="{{ '.' | url }}">Csound <span>7 Manual</span></a>
-      <button id="search-open" type="button" aria-haspopup="dialog" aria-controls="search-panel">Search opcodes and chapters <kbd>/</kbd></button>
+      <div class="header-heading">
+        <a class="brand" href="{{ '.' | url }}" title="Opcode index">Csound <span>7 Manual</span></a>
+        <nav class="history-navigation" aria-label="Manual history">
+          <button id="manual-back" type="button" aria-label="Back in manual" title="Back in manual" disabled><span aria-hidden="true">←</span></button>
+          <button id="manual-forward" type="button" aria-label="Forward in manual" title="Forward in manual" disabled><span aria-hidden="true">→</span></button>
+        </nav>
+      </div>
+      {% if opcode_neighbors %}
+      <nav class="opcode-navigation" aria-label="Alphabetical opcodes">
+        {% for direction, label in [('previous', 'Previous'), ('next', 'Next')] %}
+        {% set entry = opcode_neighbors[direction] %}
+        {% if entry %}
+        <a class="opcode-step" rel="{{ 'prev' if direction == 'previous' else 'next' }}" href="{{ entry.url | url }}" title="{{ label }} {{ entry.title | e }}">
+          <span class="opcode-direction">{{ label }}</span><span class="opcode-name">{{ entry.title | e }}</span>
+        </a>
+        {% else %}
+        <span class="opcode-step" aria-disabled="true">{{ label }}</span>
+        {% endif %}
+        {% endfor %}
+      </nav>
+      {% endif %}
+      <button id="search-open" type="button" aria-haspopup="dialog" aria-controls="search-panel" title="Search opcodes and chapters"><span>Search opcodes and chapters</span><kbd>/</kbd></button>
     </div>
   </header>
   <dialog id="search-panel" aria-label="Search the manual">
@@ -68,11 +88,11 @@
         <a href="{{ 'intro/copyright-notice/' | url }}">Copyright and credits</a>
         <a href="{{ 'COPYING.GFDL-1.3' | url }}">GNU FDL 1.3</a>
         {% if page.is_homepage or page.file.src_uri == 'opcodesIndex.md' %}
-        <a href="https://github.com/csound/manual/tree/{{ config.extra.source_commit }}/docs/opcodes">View source</a>
+        <a class="standalone-link" href="https://github.com/csound/manual/tree/{{ config.extra.source_commit }}/docs/opcodes">View source</a>
         {% else %}
-        <a href="https://github.com/csound/manual/blob/{{ config.extra.source_commit }}/docs/{{ 'index.md' if page.file.src_uri == 'about.md' else page.file.src_uri }}">View source</a>
+        <a class="standalone-link" href="https://github.com/csound/manual/blob/{{ config.extra.source_commit }}/docs/{{ 'index.md' if page.file.src_uri == 'about.md' else page.file.src_uri }}">View source</a>
         {% endif %}
-        <a href="/">Csound Web IDE</a>
+        <a class="standalone-link" href="/">Csound Web IDE</a>
         <span>Manual source: develop · {{ config.extra.source_date }}</span>
       </footer>
     </main>

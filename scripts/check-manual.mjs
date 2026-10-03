@@ -116,10 +116,31 @@ const sourceOpcodes = readdirSync(path.join(root, "csound-manual/docs/opcodes"))
     .filter((name) => name.endsWith(".md"))
     .map((name) => name.slice(0, -3));
 assert.deepEqual(
-    opcodeLinks.sort(),
+    [...opcodeLinks].sort(),
     sourceOpcodes.sort(),
     "The home page must list each opcode once"
 );
+for (const [index, name] of opcodeLinks.entries()) {
+    const pagePath = path.join(manual, "opcodes", name, "index.html");
+    const { html } = pages.get(pagePath);
+    for (const [rel, offset] of [
+        ["prev", -1],
+        ["next", 1]
+    ]) {
+        const href = html.match(new RegExp(`rel="${rel}" href="([^"]+)"`))?.[1];
+        const neighbor = opcodeLinks[index + offset];
+        assert.equal(
+            href
+                ? new URL(
+                      decode(href),
+                      `https://manual.test/manual/opcodes/${name}/`
+                  ).pathname
+                : undefined,
+            neighbor ? `/manual/opcodes/${neighbor}/` : undefined,
+            `${name}: ${rel} must follow the opcode index`
+        );
+    }
+}
 for (const [, group] of home.matchAll(
     /<div class="opcode-list">([\s\S]*?)<\/div>/g
 )) {

@@ -18,6 +18,116 @@ wide.addEventListener("change", () => {
     navigation.open = wide.matches;
 });
 
+// Keep anchor targets and chapter navigation below the actual sticky header.
+new ResizeObserver(([entry]) => {
+    document.documentElement.style.setProperty(
+        "--header-height",
+        `${entry.target.getBoundingClientRect().height}px`
+    );
+}).observe(document.querySelector(".site-header"));
+
+const back = document.querySelector("#manual-back");
+const forward = document.querySelector("#manual-forward");
+// Each dock has its own trail; standalone tabs have separate session storage.
+const historyKey =
+    "csound-manual:history" +
+    (window.frameElement
+        ? ":" +
+          (window.frameElement.dataset.manualHistory ||= crypto.randomUUID())
+        : "");
+let visitId;
+let trail;
+
+/** Only restore visits inside this manual, never an IDE or external page. */
+function readTrail() {
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(historyKey));
+        if (
+            Array.isArray(saved?.entries) &&
+            Number.isInteger(saved.index) &&
+            saved.index >= 0 &&
+            saved.index < saved.entries.length &&
+            saved.entries.every((entry) => {
+                const url = new URL(entry.url);
+                return (
+                    typeof entry.id === "string" &&
+                    url.origin === root.origin &&
+                    url.pathname.startsWith(root.pathname)
+                );
+            })
+        )
+            return saved;
+    } catch {
+        // A fresh trail also handles unavailable or cleared storage.
+    }
+    return { entries: [], index: -1 };
+}
+
+/** Disable history controls if the browser cannot retain visits. */
+function saveTrail() {
+    try {
+        sessionStorage.setItem(historyKey, JSON.stringify(trail));
+        back.disabled = trail.index <= 0;
+        forward.disabled = trail.index >= trail.entries.length - 1;
+        return true;
+    } catch {
+        back.disabled = true;
+        forward.disabled = true;
+        return false;
+    }
+}
+
+/** Record page loads and restore the cursor after native back/forward. */
+function syncTrail() {
+    trail = readTrail();
+    const restored = trail.entries.findIndex(
+        (entry) => entry.id === history.state?.csoundManualVisit
+    );
+    let restoreScroll = false;
+    if (restored >= 0) {
+        trail.index = restored;
+    } else if (trail.entries[trail.index]?.url === location.href) {
+        restoreScroll = true;
+    } else {
+        trail.entries.splice(trail.index + 1);
+        trail.entries.push({
+            id: crypto.randomUUID(),
+            url: location.href,
+            y: 0
+        });
+        trail.index = trail.entries.length - 1;
+    }
+    const visit = trail.entries[trail.index];
+    visit.url = location.href;
+    visitId = visit.id;
+    history.replaceState({ ...history.state, csoundManualVisit: visitId }, "");
+    saveTrail();
+    if (restoreScroll) window.scrollTo(0, visit.y || 0);
+}
+
+/** Save the reading position without changing the chosen destination. */
+function saveReadingPosition() {
+    trail = readTrail();
+    const visit = trail.entries.find((entry) => entry.id === visitId);
+    if (visit) {
+        visit.y = window.scrollY;
+        saveTrail();
+    }
+}
+
+/** Traverse manual visits without moving the containing editor's history. */
+function moveThroughManual(delta) {
+    saveReadingPosition();
+    const index = trail.index + delta;
+    if (!trail.entries[index]) return;
+    trail.index = index;
+    if (saveTrail()) location.replace(trail.entries[index].url);
+}
+back.addEventListener("click", () => moveThroughManual(-1));
+forward.addEventListener("click", () => moveThroughManual(1));
+window.addEventListener("pagehide", saveReadingPosition);
+window.addEventListener("pageshow", syncTrail);
+
 // External references need their own tab when the manual sits in the IDE dock.
 if (parent !== window) {
     for (const link of document.querySelectorAll("a[href]")) {
