@@ -61,12 +61,12 @@
           {%- for item in items -%}
             <li>
             {%- if item.children -%}
-              <details {%- if item.active -%}open{%- endif -%}>
+              <details{% if item.active %} open{% endif %}>
                 <summary>{{ item.title | plain_title | e }}</summary>
                 {{ navigation(item.children) }}
               </details>
             {%- else -%}
-              <a href="{{ item.url | url }}" {%- if item.active -%}aria-current="page"{%- endif -%}>{{ item.title | plain_title | e }}</a>
+              <a href="{{ item.url | url }}"{% if item.active %} aria-current="page"{% endif %}>{{ item.title | plain_title | e }}</a>
             {%- endif -%}
             </li>
           {%- endfor -%}

@@ -10,6 +10,15 @@ execFileSync(
     [path.join(root, "scripts/prepare-manual.mjs")],
     { stdio: "inherit" }
 );
+execFileSync(
+    path.join(
+        root,
+        "manual/.venv",
+        process.platform === "win32" ? "Scripts/python.exe" : "bin/python"
+    ),
+    ["-m", "unittest", "discover", "-s", "manual", "-p", "test_build.py"],
+    { cwd: root, stdio: "inherit" }
+);
 const manual = path.join(root, "public/manual");
 /** List local assets recursively for link and fragment checks. */
 const walk = (directory) =>

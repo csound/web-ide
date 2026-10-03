@@ -5,7 +5,7 @@ import hashlib
 import html
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
@@ -66,6 +66,17 @@ def plain_title(value):
     return "".join(PageData("<article>" + markdown(value) + "</article>").text).strip()
 
 
+def page_url(source):
+    """Match MkDocs directory URLs, including index.md and README.md pages."""
+    source = PurePosixPath(source)
+    destination = (
+        source.parent
+        if source.name in {"index.md", "README.md"}
+        else source.with_suffix("")
+    )
+    return "" if destination == PurePosixPath(".") else f"{destination}/"
+
+
 class ManualThemePlugin(BasePlugin):
     """Use the same clean titles in navigation, page titles, and search."""
 
@@ -75,7 +86,7 @@ class ManualThemePlugin(BasePlugin):
         entries = [
             {
                 "title": title,
-                "url": f"opcodes/{Path(name).stem}/",
+                "url": page_url(f"opcodes/{name}"),
                 "source": f"opcodes/{name}",
             }
             for _, items in groups
@@ -222,7 +233,7 @@ def main():
         for file in sorted(docs.rglob("*.md")):
             text = file.read_text(encoding="utf-8")
             relative = file.relative_to(docs).as_posix()
-            url = relative[:-3] + "/" if relative != "index.md" else ""
+            url = page_url(relative)
             heading = re.search(r"^#\s+(.+)$", text, re.M)
             title = plain_title(heading.group(1)) if heading else file.stem
             titles[url] = title
