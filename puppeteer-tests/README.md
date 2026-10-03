@@ -157,7 +157,11 @@ The `local` target connects to the **dev** Firebase backend
 The `manual-examples` suite uses a local fixture with cloud listeners replaced.
 It opens and edits manual examples, checks Save and Save All, plays a linked WAV
 sample, discards a playing tab, and checks that reload drops temporary content.
-It covers desktop and mobile widths and runs in the local CI matrix.
+It covers desktop and mobile widths, checks scrolling after repeated pane
+resizes without clicking the manual, and runs in the local CI matrix.
+The `manual-code` suite checks readonly Csound previews, paired controls in both
+themes and at narrow widths, complete copying, syntax variants, printing, and
+fallback code when the preview bundle fails.
 
 ```bash
 # Terminal 1 — start dev server

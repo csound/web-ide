@@ -9,6 +9,15 @@
     --code-keyword: #a1efe4;
     --code-string: #e6db74;
     --code-comment: #969ba6;
+    --code-opcode: #a1efe4;
+    --code-control: #a1efe4;
+    --code-a-rate: #a1efe4;
+    --code-i-rate: #e6db74;
+    --code-k-rate: #e6db74;
+    --code-f-rate: #a1efe4;
+    --code-number: #e6db74;
+    --code-p-field: #e6db74;
+    --code-macro: #a1efe4;
     --header-height: 116px;
     font:
         16px/1.6 system-ui,
@@ -350,10 +359,9 @@ pre code {
     position: relative;
     margin: 16px 0;
     min-width: 0;
-}
-.highlight pre {
     border: 1px solid var(--line);
     border-radius: 4px;
+    overflow: hidden;
 }
 .highlight .filename {
     display: block;
@@ -389,12 +397,110 @@ pre code {
 .highlight .sd {
     color: var(--code-string);
 }
+.code-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 8px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+.code-toolbar .filename {
+    flex: 1 1 12ch;
+    min-width: 0;
+    padding: 0 4px;
+    overflow-wrap: anywhere;
+}
+.code-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+    margin-left: auto;
+}
+.code-actions button {
+    padding: 6px 10px;
+    min-height: 36px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
 .copy-code {
+    min-width: 90px;
+}
+.open-example {
+    min-width: 114px;
+    background: var(--text);
+    color: var(--background);
+    border-color: var(--text);
+}
+.code-actions button:hover:not(:disabled) {
+    box-shadow: inset 0 0 0 1px var(--text);
+}
+.code-actions button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+.open-example:disabled {
+    cursor: wait;
+}
+.example-feedback {
     display: block;
-    margin: 6px 0 0 auto;
-    padding: 4px 10px;
-    font-size: 12px;
-    min-height: 32px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--muted);
+}
+.example-feedback:empty {
+    display: none;
+}
+.manual-code .cm-csound-define,
+.manual-code .cm-csound-global-constant,
+.manual-code .cm-csound-xml-tag,
+.manual-code .cm-csound-boolean,
+.manual-code .cm-csound-goto-token {
+    color: var(--code-keyword);
+}
+.manual-code .cm-csound-control-flow {
+    color: var(--code-control);
+}
+.manual-code .cm-csound-opcode {
+    color: var(--code-opcode);
+}
+.manual-code .cm-csound-a-rate-var {
+    color: var(--code-a-rate);
+}
+.manual-code .cm-csound-i-rate-var {
+    color: var(--code-i-rate);
+}
+.manual-code .cm-csound-k-rate-var {
+    color: var(--code-k-rate);
+}
+.manual-code .cm-csound-f-rate-var {
+    color: var(--code-f-rate);
+}
+.manual-code .cm-csound-s-rate-var {
+    color: var(--code-string);
+}
+.manual-code .cm-csound-number {
+    color: var(--code-number);
+}
+.manual-code .cm-csound-p-field-var {
+    color: var(--code-p-field);
+}
+.manual-code .cm-csound-macro-token {
+    color: var(--code-macro);
+}
+.manual-code .cm-csound-global-var {
+    font-weight: 600;
+}
+.manual-code .cm-csound-comment {
+    color: var(--code-comment);
+    font-style: italic;
+}
+@media (pointer: coarse) {
+    .code-actions button {
+        min-height: 44px;
+    }
 }
 table {
     border-collapse: collapse;
@@ -702,7 +808,9 @@ th {
     .navigation,
     .contents,
     .quick-links,
-    .copy-code,
+    .code-toolbar,
+    .code-preview,
+    .example-feedback,
     #search-panel {
         display: none;
     }
@@ -710,36 +818,14 @@ th {
         display: block;
         padding: 0;
     }
-    pre {
+    .highlight pre[hidden] {
+        display: block !important;
+    }
+    pre,
+    pre code {
         white-space: pre-wrap;
     }
     .tabbed-content > .tabbed-block {
         display: block;
     }
-}
-.open-example {
-    margin: 0;
-    padding: 5px 9px;
-    border: 1px solid var(--accent);
-    border-radius: 4px;
-    background: var(--surface);
-    color: var(--text);
-    font: inherit;
-    font-size: 0.85em;
-    cursor: pointer;
-}
-.open-example:disabled {
-    opacity: 0.6;
-    cursor: wait;
-}
-.example-feedback {
-    font-size: 0.85em;
-    color: var(--muted);
-}
-.example-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin: 8px 0 16px;
 }

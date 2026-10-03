@@ -12,6 +12,15 @@ type ManualPalette = Pick<
     | "keyword"
     | "string"
     | "comment"
+    | "opcode"
+    | "controlFlow"
+    | "aRateVar"
+    | "iRateVar"
+    | "kRateVar"
+    | "fRateVar"
+    | "number"
+    | "pField"
+    | "macro"
 >;
 
 /** Keep the IDE's hues readable on the manual's code and navigation surfaces. */
@@ -41,6 +50,15 @@ export function manualColors(theme: ManualPalette) {
         accent: theme.textColor,
         "code-keyword": readable(theme.keyword),
         "code-string": readable(theme.string),
-        "code-comment": readable(theme.comment)
+        "code-comment": readable(theme.comment),
+        "code-opcode": readable(theme.opcode),
+        "code-control": readable(theme.controlFlow),
+        "code-a-rate": readable(theme.aRateVar),
+        "code-i-rate": readable(theme.iRateVar),
+        "code-k-rate": readable(theme.kRateVar),
+        "code-f-rate": readable(theme.fRateVar),
+        "code-number": readable(theme.number),
+        "code-p-field": readable(theme.pField),
+        "code-macro": readable(theme.macro)
     };
 }

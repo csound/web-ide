@@ -10,6 +10,13 @@ Entry headers link to the previous and next opcode in index order. Back and
 forward buttons retain manual visits and reading positions for each dock or tab;
 they stay inside the manual. Embedded pages hide the IDE and source links.
 
+Csound blocks use readonly CodeMirror with the IDE's Csound parser and syntax
+colors. The code bundle loads only on pages with Csound blocks. Readers can
+focus, select, and copy code; previews cannot change it. Examples expand to fit
+their full content, wrap long lines, and scroll with the page. Static code
+remains available if the bundle fails and supplies the full text for printing.
+**Copy code** and **Open example** share a header above each full example.
+
 In the editor's manual, **Open example** opens a CSD in a temporary, editable tab.
 A book icon and accent mark manual examples. **Play manual example** runs the
 current text and loads sample files linked from that manual page. It also scans

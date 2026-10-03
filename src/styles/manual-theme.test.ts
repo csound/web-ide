@@ -24,7 +24,16 @@ for (const [name, palette] of Object.entries({
             "accent",
             "code-keyword",
             "code-string",
-            "code-comment"
+            "code-comment",
+            "code-opcode",
+            "code-control",
+            "code-a-rate",
+            "code-i-rate",
+            "code-k-rate",
+            "code-f-rate",
+            "code-number",
+            "code-p-field",
+            "code-macro"
         ] as const) {
             for (const background of [colors.background, colors.surface]) {
                 expect(

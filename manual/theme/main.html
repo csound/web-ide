@@ -10,7 +10,7 @@
   <script src="{{ 'assets/manual-theme.js' | url }}?v={{ config.extra.theme_version }}"></script>
   <script defer src="{{ 'assets/manual.js' | url }}?v={{ config.extra.asset_version }}"></script>
 </head>
-<body data-manual-root="{{ '.' | url }}"{% if page.is_homepage %} class="manual-home"{% endif %}>
+<body data-manual-root="{{ '.' | url }}" data-code-source="{{ 'assets/manual-code.js' | url }}?v={{ config.extra.code_version }}"{% if page.is_homepage %} class="manual-home"{% endif %}>
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
     <div class="header-inner">

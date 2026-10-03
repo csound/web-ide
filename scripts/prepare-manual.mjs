@@ -62,6 +62,7 @@ export function getBuildInputs(root) {
         }
     };
     collect(path.join(root, "manual"));
+    collect(path.join(root, "src/manual"));
     for (const file of [
         "scripts/prepare-manual.mjs",
         "scripts/build-manual-theme.mjs",
@@ -69,6 +70,7 @@ export function getBuildInputs(root) {
         "src/styles/manual-page-theme.ts",
         "src/styles/manual-theme.ts",
         "src/styles/themes.ts",
+        "src/components/editor/csound-highlighting.ts",
         ...readdirSync(path.join(root, "src/styles"))
             .filter(
                 (name) => name.startsWith("_theme-") && name.endsWith(".ts")
