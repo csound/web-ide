@@ -11,8 +11,15 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import { consoleReadline } from "./readline";
 import * as SS from "./styles";
 
-export default function ConsolePrompt() {
-    const { request, draft, queued, submitting, error } = useSyncExternalStore(
+export default function ConsolePrompt({ projectUid }: { projectUid: string }) {
+    const {
+        projectUid: runningProjectUid,
+        request,
+        draft,
+        queued,
+        submitting,
+        error
+    } = useSyncExternalStore(
         consoleReadline.subscribe,
         consoleReadline.getSnapshot
     );
@@ -20,10 +27,12 @@ export default function ConsolePrompt() {
     const caret = useRef<number | null>(null);
     const id = useId();
     const busy = submitting || queued > 0;
+    const belongsToProject = runningProjectUid === projectUid;
 
     useEffect(() => {
-        if (request && !busy) input.current?.focus({ preventScroll: true });
-    }, [request, busy]);
+        if (belongsToProject && request && !busy)
+            input.current?.focus({ preventScroll: true });
+    }, [belongsToProject, request, busy]);
     useLayoutEffect(() => {
         if (caret.current !== null) {
             input.current?.setSelectionRange(caret.current, caret.current);
@@ -31,7 +40,7 @@ export default function ConsolePrompt() {
         }
     }, [draft]);
 
-    if (!request && !busy && !error) return null;
+    if (!belongsToProject || (!request && !busy && !error)) return null;
 
     return (
         <form

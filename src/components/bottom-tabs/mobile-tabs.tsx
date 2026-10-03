@@ -45,7 +45,7 @@ const MobileTabs = ({
 
     const mobileConsole = (
         <div css={SS.mobileConsole}>
-            <Console />
+            <Console projectUid={projectUid} />
         </div>
     );
 

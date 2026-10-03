@@ -84,7 +84,7 @@ function Fixture() {
             {error && <div role="alert">{error}</div>}
             <main style={{ height: "calc(100dvh - 48px)", minHeight: 0 }}>
                 <ConsoleContext.Provider value={logs}>
-                    <Console />
+                    <Console projectUid="readline-fixture" />
                 </ConsoleContext.Provider>
             </main>
         </ThemeProvider>

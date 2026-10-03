@@ -16,6 +16,7 @@ export interface ReadlineEngine extends Pick<CsoundObj, "readlineSubmit"> {
 
 type Request = { requestId: number; prompt: string; projectUid: string };
 type Snapshot = {
+    projectUid: string | null;
     request: Request | null;
     draft: string;
     queued: number;
@@ -23,6 +24,7 @@ type Snapshot = {
     error: string;
 };
 const empty: Snapshot = {
+    projectUid: null,
     request: null,
     draft: "",
     queued: 0,
@@ -58,6 +60,7 @@ export function createReadlineConsole() {
             echo: (text: string) => void
         ) {
             disconnect();
+            update({ projectUid });
             let disposed = false;
             let sending = false;
             let queue: string[] = [];

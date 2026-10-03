@@ -3,7 +3,11 @@ import { useConsole } from "./context";
 import * as SS from "./styles";
 import ConsolePrompt from "./prompt";
 
-const Console = (): React.ReactElement => {
+const Console = ({
+    projectUid
+}: {
+    projectUid: string;
+}): React.ReactElement => {
     const logs = useConsole();
     const consoleReference = useRef<HTMLDivElement | null>(null);
 
@@ -43,7 +47,7 @@ const Console = (): React.ReactElement => {
                     {((logs || []) as string[]).join("")}
                 </code>
             </div>
-            <ConsolePrompt />
+            <ConsolePrompt projectUid={projectUid} />
         </div>
     );
 };

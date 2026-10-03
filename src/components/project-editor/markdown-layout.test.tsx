@@ -20,7 +20,12 @@ import {
 import ProjectEditor from "./project-editor";
 import ProjectEditorReducer from "./reducer";
 import { TAB_DOCK_INIT } from "./types";
-import { closePanel, movePanel, toggleMaximizePanel } from "./actions";
+import {
+    closePanel,
+    movePanel,
+    openSidebarTab,
+    toggleMaximizePanel
+} from "./actions";
 import { consoleReadline, type ReadlineEvent } from "../console/readline";
 
 // Keep the real workspace, tabs, controls, and reducer; replace cloud listeners
@@ -108,7 +113,7 @@ function renderWorkspace() {
         }
     });
     store.dispatch({ type: STORE_PROJECT_LOCALLY, projects: [project] });
-    render(
+    const workspace = (activeProject: IProject) => (
         <Provider store={store}>
             <MemoryRouter>
                 <ThemeProvider
@@ -117,17 +122,30 @@ function renderWorkspace() {
                         font: { regular: "sans-serif", monospace: "monospace" }
                     })}
                 >
-                    <ProjectEditor activeProject={project} />
+                    <ProjectEditor activeProject={activeProject} />
                 </ThemeProvider>
             </MemoryRouter>
         </Provider>
     );
+    const { rerender } = render(workspace(project));
 
-    return store;
+    return {
+        store,
+        navigate: (projectUid: string) => {
+            const next = { ...project, projectUid };
+            act(() => {
+                store.dispatch({
+                    type: STORE_PROJECT_LOCALLY,
+                    projects: [next]
+                });
+            });
+            rerender(workspace(next));
+        }
+    };
 }
 
 it("keeps each Markdown tab's mode when panels split, move, maximize, and close", () => {
-    const store = renderWorkspace();
+    const { store } = renderWorkspace();
     const mode = (id: string) =>
         screen.getByTestId(id).getAttribute("data-mode");
     expect(mode("notes")).toBe("preview");
@@ -165,8 +183,8 @@ it("keeps each Markdown tab's mode when panels split, move, maximize, and close"
     expect(mode("notes")).toBe("edit");
 });
 
-it("opens a hidden console when the current project requests input", () => {
-    const store = renderWorkspace();
+it("opens the requesting project's console and hides its input after navigation", () => {
+    const { store, navigate } = renderWorkspace();
     let listener!: (event: ReadlineEvent) => void;
     const disconnect = consoleReadline.connect(
         {
@@ -188,6 +206,21 @@ it("opens a hidden console when the current project requests input", () => {
         expect(screen.getByRole("textbox", { name: "Name>" })).toBe(
             document.activeElement
         );
+        fireEvent.change(screen.getByRole("textbox", { name: "Name>" }), {
+            target: { value: "My answer" }
+        });
+        navigate("other-project");
+        act(() => store.dispatch(openSidebarTab("bottom", "console")));
+        expect(screen.getByTestId("sidebar-bottom-panel")).toBeDefined();
+        expect(screen.queryByRole("textbox", { name: "Name>" })).toBeNull();
+        navigate("fixture-project");
+        expect(
+            (
+                screen.getByRole("textbox", {
+                    name: "Name>"
+                }) as HTMLTextAreaElement
+            ).value
+        ).toBe("My answer");
     } finally {
         act(() => disconnect());
     }

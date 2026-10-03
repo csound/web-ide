@@ -364,7 +364,7 @@ const renderWorkspaceTabContent = ({
 
     return (
         <React.Suspense fallback={<></>}>
-            <Component />
+            <Component projectUid={projectUid} />
         </React.Suspense>
     );
 };
