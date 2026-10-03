@@ -39,7 +39,7 @@ export const consoleOutput = (theme: Theme): SerializedStyles => css`
 export const promptContainer = (theme: Theme): SerializedStyles => css`
     flex: 0 0 auto;
     margin: 0 8px 8px;
-    padding: 6px 8px 4px;
+    padding: 6px 8px;
     border: 1px solid ${theme.line};
     border-radius: 6px;
     background: ${theme.headerBackground};
@@ -120,7 +120,7 @@ export const promptSend = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const promptHint = (theme: Theme): SerializedStyles => css`
+export const promptStatus = (theme: Theme): SerializedStyles => css`
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -129,9 +129,6 @@ export const promptHint = (theme: Theme): SerializedStyles => css`
     color: ${theme.altTextColor};
     font-family: ${theme.font.regular};
     font-size: 10px;
-    kbd {
-        font: inherit;
-    }
     button {
         padding: 0 2px;
         border: 0;

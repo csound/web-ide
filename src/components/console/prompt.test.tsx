@@ -63,11 +63,11 @@ it("opens below the logs, focuses the input and submits on Enter", async () => {
     );
 });
 
-it("inserts a newline at the selection on Ctrl+Enter and queues lines on Enter", async () => {
+it("inserts a newline at the selection on Shift+Enter and queues lines on Enter", async () => {
     const { engine, input, listener } = setup("");
     fireEvent.change(input, { target: { value: "first replace second" } });
     input.setSelectionRange(5, 14);
-    fireEvent.keyDown(input, { key: "Enter", ctrlKey: true });
+    fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
     expect(input.value).toBe("first\nsecond");
     expect(input.selectionStart).toBe(6);
     expect(engine.readlineSubmit).not.toHaveBeenCalled();

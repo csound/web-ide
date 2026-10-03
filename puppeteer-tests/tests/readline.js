@@ -89,9 +89,9 @@ test(
                     "TEXTAREA"
                 );
                 await page.type(input, "héllo");
-                await page.keyboard.down("Control");
+                await page.keyboard.down("Shift");
                 await page.keyboard.press("Enter");
-                await page.keyboard.up("Control");
+                await page.keyboard.up("Shift");
                 await page.type(input, "second");
                 assert.equal(
                     await page.$eval(input, (node) => node.value),

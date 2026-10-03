@@ -54,7 +54,7 @@ export default function ConsolePrompt() {
                     ref={input}
                     css={SS.promptInput}
                     aria-label={request?.prompt || "Console input"}
-                    aria-describedby={`${id}-hint${error ? ` ${id}-error` : ""}`}
+                    aria-describedby={error ? `${id}-error` : undefined}
                     aria-invalid={Boolean(error)}
                     value={draft}
                     disabled={!request || busy}
@@ -76,7 +76,7 @@ export default function ConsolePrompt() {
                         )
                             return;
                         event.preventDefault();
-                        if (event.ctrlKey) {
+                        if (event.shiftKey) {
                             const { selectionStart, selectionEnd } =
                                 event.currentTarget;
                             caret.current = selectionStart + 1;
@@ -98,30 +98,23 @@ export default function ConsolePrompt() {
                     <ArrowUpwardRoundedIcon fontSize="small" />
                 </button>
             </div>
-            <div css={SS.promptHint} id={`${id}-hint`}>
-                {busy ? (
-                    <>
-                        <span role="status">
-                            {queued > 0
-                                ? `${queued} ${queued === 1 ? "line" : "lines"} queued`
-                                : "Sending…"}
-                        </span>
-                        {queued > 0 && (
-                            <button
-                                type="button"
-                                onClick={consoleReadline.clearQueue}
-                            >
-                                Clear queue
-                            </button>
-                        )}
-                    </>
-                ) : (
-                    <span>
-                        <kbd>Enter</kbd> send <span aria-hidden="true">·</span>{" "}
-                        <kbd>Ctrl+Enter</kbd> new line
+            {busy && (
+                <div css={SS.promptStatus}>
+                    <span role="status">
+                        {queued > 0
+                            ? `${queued} ${queued === 1 ? "line" : "lines"} queued`
+                            : "Sending…"}
                     </span>
-                )}
-            </div>
+                    {queued > 0 && (
+                        <button
+                            type="button"
+                            onClick={consoleReadline.clearQueue}
+                        >
+                            Clear queue
+                        </button>
+                    )}
+                </div>
+            )}
             {error && (
                 <div css={SS.promptError} role="alert" id={`${id}-error`}>
                     {error}
