@@ -77,6 +77,32 @@ def page_url(source):
     return "" if destination == PurePosixPath(".") else f"{destination}/"
 
 
+def annotate_examples(source):
+    """Keep each included CSD's filename attached to its rendered code block."""
+    def annotate(match):
+        snippet = re.fullmatch(
+            r'\s*--8<--\s+"examples/([^"\n]+\.csd)"\s*', match["body"]
+        )
+        if not snippet:
+            return match[0]
+        filename = snippet[1]
+        path = PurePosixPath(filename)
+        if path.is_absolute() or ".." in path.parts or "\\" in filename:
+            return match[0]
+        return (
+            f'{match["indent"]}{match["fence"]} {{ .{match["language"]}'
+            f'{match["options"]} data-example="{html.escape(filename, quote=True)}" }}\n'
+            f'{match["body"]}{match["indent"]}{match["fence"]}'
+        )
+
+    return re.sub(
+        r'^(?P<indent>[ \t]*)(?P<fence>`{3,}|~{3,})[ \t]*'
+        r'(?P<language>csound(?:-(?:csd|orc|sco))?)(?P<options>[^\n]*)\n'
+        r'(?P<body>[\s\S]*?)^(?P=indent)(?P=fence)[ \t]*$',
+        annotate, source, flags=re.M,
+    )
+
+
 class ManualThemePlugin(BasePlugin):
     """Use the same clean titles in navigation, page titles, and search."""
 
@@ -104,6 +130,10 @@ class ManualThemePlugin(BasePlugin):
         """Expose heading text to the static page templates."""
         env.filters["plain_title"] = plain_title
         return env
+
+    def on_page_markdown(self, markdown, **kwargs):
+        """Record snippet links before Markdown expands their file contents."""
+        return annotate_examples(markdown)
 
     def on_page_context(self, context, page, **kwargs):
         """Render opcode links without a browser-side index download."""
@@ -280,6 +310,7 @@ def main():
                 "source_commit": metadata["commit"],
                 "source_date": metadata["commitDate"],
                 "theme_version": digest(theme_assets / "manual-theme.js")[:10],
+                "code_version": digest(theme_assets / "manual-code.js")[:10],
                 "asset_version": digest(ROOT / "manual/theme/manual.css")[:10]
                 + digest(ROOT / "manual/theme/manual.js")[:10],
             },
@@ -294,6 +325,7 @@ def main():
         assets = output / "assets"
         assets.mkdir(exist_ok=True)
         shutil.copy(theme_assets / "manual-theme.js", assets / "manual-theme.js")
+        shutil.copy(theme_assets / "manual-code.js", assets / "manual-code.js")
         for name in ("manual.css", "manual.js"):
             shutil.copy(ROOT / "manual/theme" / name, assets / name)
             (output / name).unlink(missing_ok=True)

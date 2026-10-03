@@ -8,7 +8,9 @@ import unittest
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
 
-from build import ManualThemePlugin, ROOT, page_url
+from markdown import markdown
+
+from build import ManualThemePlugin, ROOT, annotate_examples, page_url
 
 
 class NavigationMarkup(HTMLParser):
@@ -25,6 +27,43 @@ class NavigationMarkup(HTMLParser):
 
 class ManualBuildTests(unittest.TestCase):
     """Exercise the directory-index rules and active chapter markup."""
+
+    def test_example_metadata_survives_snippets_and_syntax_tabs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            examples = Path(tmp) / "examples"
+            examples.mkdir()
+            for filename in ("modern.csd", "classic.csd"):
+                (examples / filename).write_text("instr 1\nendin\n", encoding="utf-8")
+            source = '\n'.join(
+                f'=== "{name}"\n\n    ``` csound-csd title="Example" linenums="7"\n'
+                f'    --8<-- "examples/{name}.csd"\n    ```\n'
+                for name in ("modern", "classic")
+            )
+            rendered = markdown(annotate_examples(source), extensions=[
+                "attr_list", "pymdownx.superfences", "pymdownx.tabbed",
+                "pymdownx.highlight", "pymdownx.snippets",
+            ], extension_configs={
+                "pymdownx.highlight": {"pygments_lang_class": True, "linenums_style": "inline"},
+                "pymdownx.snippets": {"base_path": [tmp], "check_paths": True},
+            })
+            elements = NavigationMarkup(rendered).elements
+            blocks = [attrs for tag, attrs in elements if "data-example" in attrs]
+            self.assertEqual([block["data-example"] for block in blocks], ["modern.csd", "classic.csd"])
+            self.assertTrue(all("language-csound-csd" in block["class"] for block in blocks))
+            self.assertEqual(rendered.count('class="filename">Example'), 2)
+            self.assertRegex(rendered, r'class="linenos">\s*7')
+            self.assertNotIn("--8&lt;--", rendered)
+
+    def test_musical_examples_keep_their_subfolder(self):
+        source = '\n'.join(['``` csound-csd', '--8<-- "examples/musical/Reinit_Giordani.csd"', '```'])
+        self.assertIn('data-example="musical/Reinit_Giordani.csd"', annotate_examples(source))
+
+    def test_only_full_local_csd_includes_get_an_open_button(self):
+        for body in ('a1 oscili 0.5, 440', '--8<-- "examples/../secret.csd"',
+                     '--8<-- "examples/sample.wav"', '--8<-- "examples/test.csd"\n; extra code'):
+            with self.subTest(body=body):
+                source = f"``` csound-orc\n{body}\n```"
+                self.assertEqual(annotate_examples(source), source)
 
     def test_directory_indexes_and_active_navigation(self):
         for root_index in ("index.md", "README.md"):

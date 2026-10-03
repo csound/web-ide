@@ -27,3 +27,23 @@ await build({
         }
     }
 });
+
+await build({
+    root,
+    configFile: false,
+    publicDir: false,
+    logLevel: "warn",
+    build: {
+        outDir: path.resolve(process.argv[2]),
+        emptyOutDir: false,
+        rollupOptions: {
+            input: path.join(root, "src/manual/code-preview.ts"),
+            preserveEntrySignatures: "strict",
+            output: {
+                format: "es",
+                entryFileNames: "manual-code.js",
+                inlineDynamicImports: true
+            }
+        }
+    }
+});

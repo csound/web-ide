@@ -188,6 +188,19 @@ const oscillator = readFileSync(
 assert.ok(oscillator.includes("Modern") && oscillator.includes("Classic"));
 assert.ok(!oscillator.includes("--8&lt;--"), "Unexpanded example snippet");
 assert.ok(oscillator.includes("0dbfs"), "Missing included example");
+assert.ok(
+    oscillator.includes('data-example="oscili.csd"'),
+    "Missing example controls metadata"
+);
+assert.match(
+    oscillator,
+    /data-code-source="[^"]*assets\/manual-code\.js\?v=[a-f0-9]+"/
+);
+assert.ok(
+    readFileSync(path.join(manual, "assets/manual-code.js"), "utf8").includes(
+        "createCodePreview"
+    )
+);
 assert.match(
     readFileSync(path.join(manual, "examples/oscili.csd"), "utf8"),
     /0dbfs\s*=\s*1/

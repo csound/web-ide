@@ -274,30 +274,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-for (const block of document.querySelectorAll(".highlight")) {
-    const code = block.querySelector("code");
-    if (!code) continue;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "copy-code";
-    button.textContent = "Copy code";
-    button.addEventListener("click", async () => {
-        const content = code.cloneNode(true);
-        content
-            .querySelectorAll(".linenos")
-            .forEach((element) => element.remove());
-        try {
-            await navigator.clipboard.writeText(content.textContent);
-            button.textContent = "Copied";
-        } catch {
-            button.textContent = "Select code to copy";
-        }
-        setTimeout(() => {
-            button.textContent = "Copy code";
-        }, 2000);
-    });
-    block.append(button);
-}
 const documentId = Array.from(crypto.getRandomValues(new Uint32Array(4))).join(
     "-"
 );
@@ -307,36 +283,62 @@ let lookupRequest;
 let exampleRequest = 0;
 const exampleButtons = new Map();
 
-// The download links remain useful when the manual is open outside the IDE.
-if (parent !== window) {
-    const links = [...document.querySelectorAll("article a[href]")].filter(
-        (link) => {
-            const url = new URL(link.href);
-            return (
-                url.origin === location.origin &&
-                url.pathname.startsWith(new URL("examples/", root).pathname)
-            );
+// Keep the downloaded CSD tied to the block that includes it, including syntax tabs.
+const assets = [...document.querySelectorAll("article a[href]")]
+    .map((link) => new URL(link.href))
+    .filter(
+        (url) =>
+            url.origin === location.origin &&
+            url.pathname.startsWith(new URL("examples/", root).pathname) &&
+            !/\.csd$/i.test(url.pathname)
+    )
+    .map((url) => url.href);
+const previews = [];
+for (const block of document.querySelectorAll("article .highlight")) {
+    const pre = block.querySelector("pre");
+    const code = pre?.querySelector("code");
+    if (!code) continue;
+    const content = code.cloneNode(true);
+    content.querySelectorAll(".linenos").forEach((element) => element.remove());
+    const source = content.textContent;
+    const toolbar = document.createElement("div");
+    toolbar.className = "code-toolbar";
+    const title = block.querySelector(".filename");
+    if (title) toolbar.append(title);
+    const actions = document.createElement("div");
+    actions.className = "code-actions";
+    const feedback = document.createElement("span");
+    feedback.className = "example-feedback";
+    feedback.setAttribute("role", "status");
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "copy-code";
+    copy.textContent = "Copy code";
+    copy.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(source);
+            copy.textContent = "Copied";
+            feedback.textContent = "";
+        } catch {
+            feedback.textContent = "Copy failed. Select the code and copy it.";
         }
-    );
-    const assets = links
-        .filter((link) => !/\.csd$/i.test(new URL(link.href).pathname))
-        .map((link) => link.href);
-    for (const link of links.filter((link) =>
-        /\.csd$/i.test(new URL(link.href).pathname)
-    )) {
+        setTimeout(() => {
+            copy.textContent = "Copy code";
+        }, 2000);
+    });
+    actions.append(copy);
+    if (parent !== window && block.dataset.example) {
+        const filename = block.dataset.example;
         const button = document.createElement("button");
         button.type = "button";
         button.className = "open-example";
         button.textContent = "Open example";
         button.setAttribute(
             "aria-label",
-            `Open ${link.textContent.trim()} in temporary tab`
+            `Open ${filename.split("/").at(-1)} in temporary tab`
         );
         button.title =
             "Open an editable temporary tab. Nothing is saved to the project.";
-        const feedback = document.createElement("span");
-        feedback.className = "example-feedback";
-        feedback.setAttribute("role", "status");
         button.addEventListener("click", () => {
             const requestId = ++exampleRequest;
             exampleButtons.set(requestId, { button, feedback });
@@ -344,16 +346,94 @@ if (parent !== window) {
             button.textContent = "Opening…";
             feedback.textContent = "";
             notifyParent("csound-manual:open-example", {
-                url: link.href,
+                url: new URL(
+                    `examples/${filename.split("/").map(encodeURIComponent).join("/")}`,
+                    root
+                ).href,
                 assets,
                 requestId
             });
         });
-        const controls = document.createElement("div");
-        controls.className = "example-controls";
-        controls.append(button, feedback);
-        (link.closest("p") || link).after(controls);
+        actions.append(button);
     }
+    toolbar.append(actions);
+    block.prepend(toolbar);
+    block.append(feedback);
+    const language = [...block.classList].find((name) =>
+        name.startsWith("language-csound")
+    );
+    if (language)
+        previews.push({
+            block,
+            pre,
+            source,
+            feedback,
+            language: language.slice("language-".length),
+            label: block.dataset.example || title?.textContent || "Csound code",
+            firstLine:
+                Number(code.querySelector(".linenos")?.textContent.trim()) || 1
+        });
+}
+
+// Pages without Csound code do not load CodeMirror. Static code remains the fallback.
+if (previews.length) {
+    import(new URL(document.body.dataset.codeSource, location.href).href)
+        .then(({ createCodePreview }) => {
+            for (const preview of previews) {
+                const host = document.createElement("div");
+                host.className = "code-preview";
+                preview.pre.after(host);
+                preview.view = createCodePreview(
+                    host,
+                    preview.source,
+                    preview.language,
+                    preview.label,
+                    preview.firstLine
+                );
+                preview.pre.hidden = true;
+                preview.block.classList.add("manual-code");
+            }
+            const revealAnchor = () => {
+                let id;
+                try {
+                    id = decodeURIComponent(location.hash.slice(1));
+                } catch {
+                    return;
+                }
+                const anchor = document.getElementById(id);
+                const preview = previews.find(
+                    ({ pre }) => anchor && pre.contains(anchor)
+                );
+                const line = Number(anchor?.id.match(/-(\d+)$/)?.[1]);
+                if (
+                    preview &&
+                    line >= preview.firstLine &&
+                    line < preview.firstLine + preview.view.state.doc.lines
+                ) {
+                    preview.view.dom.scrollIntoView({ block: "center" });
+                    preview.view.dispatch({
+                        selection: {
+                            anchor: preview.view.state.doc.line(
+                                line - preview.firstLine + 1
+                            ).from
+                        },
+                        scrollIntoView: true
+                    });
+                }
+            };
+            window.addEventListener("hashchange", revealAnchor);
+            revealAnchor();
+            window.addEventListener("pagehide", (event) => {
+                if (!event.persisted)
+                    previews.forEach(({ view }) => view.destroy());
+            });
+        })
+        .catch(() => {
+            previews.forEach(({ feedback }) => {
+                feedback.textContent =
+                    "Code preview unavailable. The code below is still available.";
+            });
+        });
 }
 
 /** Identify the document that accepted work, even across iframe navigation. */
