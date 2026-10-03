@@ -77,6 +77,7 @@ const CodeEditor = ({
 }) => {
     const theme = useTheme();
     const themeCompartment = useMemo(() => new Compartment(), []);
+    const languageCompartment = useMemo(() => new Compartment(), []);
     const editorReference = useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = useState(false);
     const dispatch = useDispatch();
@@ -90,6 +91,13 @@ const CodeEditor = ({
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
     const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
+    const languageExtension = useMemo(
+        () =>
+            isMarkdown
+                ? [markdown(), syntaxHighlighting(defaultHighlightStyle)]
+                : csoundEditorLanguage(csoundFileType),
+        [isMarkdown, csoundFileType]
+    );
 
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState<
         StateField<{ documentUid: string; documentType: string }> | undefined
@@ -154,12 +162,7 @@ const CodeEditor = ({
                     dropCursor(),
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
-                    ...(isMarkdown
-                        ? [
-                              markdown(),
-                              syntaxHighlighting(defaultHighlightStyle)
-                          ]
-                        : [csoundEditorLanguage(csoundFileType)]),
+                    languageCompartment.of(languageExtension),
                     keymap.of([
                         ...defaultKeymap.filter(
                             (keyb) =>
@@ -225,8 +228,8 @@ const CodeEditor = ({
     }, [
         editorReference,
         currentDocumentValue,
-        csoundFileType,
-        isMarkdown,
+        languageCompartment,
+        languageExtension,
         documentUid,
         onChange,
         onScroll,
@@ -239,6 +242,12 @@ const CodeEditor = ({
             effects: themeCompartment.reconfigure(codeMirrorTheme(theme))
         });
     }, [documentUid, theme, themeCompartment]);
+
+    useEffect(() => {
+        openEditors.get(documentUid)?.dispatch({
+            effects: languageCompartment.reconfigure(languageExtension)
+        });
+    }, [documentUid, languageCompartment, languageExtension]);
 
     useEffect(() => {
         if (isMounted && documentUid && !csoundDocumentStateField) {
