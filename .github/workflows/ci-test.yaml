@@ -17,6 +17,13 @@ jobs:
         steps:
             - name: Checkout Repo
               uses: actions/checkout@v7
+              with:
+                  submodules: recursive
+            - uses: actions/setup-python@v7
+              with:
+                  python-version: "3.12"
+                  cache: pip
+                  cache-dependency-path: manual/requirements.txt
             - uses: actions/setup-node@v7
               with:
                   node-version-file: .nvmrc
@@ -32,6 +39,8 @@ jobs:
                   npm install --no-save @rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION
             - name: Run Tests
               run: npm run test:ci
+            - name: Check manual
+              run: npm run test:manual && npm run manual:check
             - name: Test callable access
               run: npm run test:access
             - name: Test Firestore indexes

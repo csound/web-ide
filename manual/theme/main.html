@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{ page.title | plain_title | e }} · Csound 7 Manual</title>
+  <meta name="description" content="{{ page.meta.description | default('The Canonical Csound Reference Manual for Csound 7.') | e }}">
+  <link rel="stylesheet" href="{{ 'assets/manual.css' | url }}?v={{ config.extra.asset_version }}">
+  <script src="{{ 'assets/manual-theme.js' | url }}?v={{ config.extra.theme_version }}"></script>
+  <script defer src="{{ 'assets/manual.js' | url }}?v={{ config.extra.asset_version }}"></script>
+</head>
+<body data-manual-root="{{ '.' | url }}"{% if page.is_homepage %} class="manual-home"{% endif %}>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-heading">
+        <a class="brand" href="{{ '.' | url }}" title="Opcode index">Csound <span>7 Manual</span></a>
+        <nav class="history-navigation" aria-label="Manual history">
+          <button id="manual-back" type="button" aria-label="Back in manual" title="Back in manual" disabled><span aria-hidden="true">←</span></button>
+          <button id="manual-forward" type="button" aria-label="Forward in manual" title="Forward in manual" disabled><span aria-hidden="true">→</span></button>
+        </nav>
+      </div>
+      {% if opcode_neighbors %}
+      <nav class="opcode-navigation" aria-label="Alphabetical opcodes">
+        {% for direction, label in [('previous', 'Previous'), ('next', 'Next')] %}
+        {% set entry = opcode_neighbors[direction] %}
+        {% if entry %}
+        <a class="opcode-step" rel="{{ 'prev' if direction == 'previous' else 'next' }}" href="{{ entry.url | url }}" title="{{ label }} {{ entry.title | e }}">
+          <span class="opcode-direction">{{ label }}</span><span class="opcode-name">{{ entry.title | e }}</span>
+        </a>
+        {% else %}
+        <span class="opcode-step" aria-disabled="true">{{ label }}</span>
+        {% endif %}
+        {% endfor %}
+      </nav>
+      {% endif %}
+      <button id="search-open" type="button" aria-haspopup="dialog" aria-controls="search-panel" title="Search opcodes and chapters"><span>Search opcodes and chapters</span><kbd>/</kbd></button>
+    </div>
+  </header>
+  <dialog id="search-panel" aria-label="Search the manual">
+    <div class="search-heading">
+      <form role="search" id="manual-search" autocomplete="off">
+        <label class="visually-hidden" for="search">Search the manual</label>
+        <input id="search" name="q" type="search" placeholder="Search opcodes and chapters" aria-controls="search-results" autofocus>
+      </form>
+      <button id="search-close" type="button" aria-label="Close search" title="Close search"><span aria-hidden="true">×</span></button>
+      <p id="search-status" role="status"></p>
+    </div>
+    <div class="search-body">
+      <ol id="search-results"></ol>
+      <button id="search-more" type="button" hidden>Show more results</button>
+    </div>
+  </dialog>
+  <div class="page-layout">
+    <details class="navigation" id="navigation">
+      <summary>Browse manual</summary>
+      <nav aria-label="Manual chapters">
+        {%- macro navigation(items) -%}
+          <ul>
+          {%- for item in items -%}
+            <li>
+            {%- if item.children -%}
+              <details{% if item.active %} open{% endif %}>
+                <summary>{{ item.title | plain_title | e }}</summary>
+                {{ navigation(item.children) }}
+              </details>
+            {%- else -%}
+              <a href="{{ item.url | url }}"{% if item.active %} aria-current="page"{% endif %}>{{ item.title | plain_title | e }}</a>
+            {%- endif -%}
+            </li>
+          {%- endfor -%}
+          </ul>
+        {%- endmacro -%}
+        {{ navigation(nav) }}
+      </nav>
+    </details>
+    <main id="content" tabindex="-1">
+      {% if page.is_homepage %}
+      <nav class="quick-links" aria-label="Quick reference">
+        <a href="{{ 'about/' | url }}">About this manual</a>
+        <a href="{{ 'genIndex/' | url }}">GEN routines</a>
+        <a href="{{ 'intro/whats-new-in-csound-7/' | url }}">What’s new in Csound 7</a>
+      </nav>
+      {% endif %}
+      <article>{{ page.content }}</article>
+      <footer class="page-footer">
+        <a href="{{ 'intro/copyright-notice/' | url }}">Copyright and credits</a>
+        <a href="{{ 'COPYING.GFDL-1.3' | url }}">GNU FDL 1.3</a>
+        {% if page.is_homepage or page.file.src_uri == 'opcodesIndex.md' %}
+        <a class="standalone-link" href="https://github.com/csound/manual/tree/{{ config.extra.source_commit }}/docs/opcodes">View source</a>
+        {% else %}
+        <a class="standalone-link" href="https://github.com/csound/manual/blob/{{ config.extra.source_commit }}/docs/{{ 'index.md' if page.file.src_uri == 'about.md' else page.file.src_uri }}">View source</a>
+        {% endif %}
+        <a class="standalone-link" href="/">Csound Web IDE</a>
+        <span>Manual source: develop · {{ config.extra.source_date }}</span>
+      </footer>
+    </main>
+    <aside class="contents" aria-label="On this page">
+      <details open><summary>On this page</summary>
+        <ul>{% for heading in page.toc %}{% for child in heading.children %}<li><a href="{{ child.url }}">{{ child.title | plain_title | e }}</a>{% if child.children %}<ul>{% for section in child.children %}<li><a href="{{ section.url }}">{{ section.title | plain_title | e }}</a></li>{% endfor %}</ul>{% endif %}</li>{% endfor %}{% endfor %}</ul>
+      </details>
+    </aside>
+  </div>
+</body>
+</html>

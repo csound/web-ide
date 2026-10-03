@@ -3,7 +3,6 @@ declare module "react-piano";
 declare module "d3-scale";
 declare module "file-saver";
 declare module "react-beforeunload";
-declare module "react-iframe-comm";
 
 declare module "history" {
     export * from "history";

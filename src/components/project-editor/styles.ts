@@ -197,13 +197,17 @@ export const panelTopBar = (theme: Theme): SerializedStyles => css`
 `;
 
 export const panelTopBarTitle = (theme: Theme): SerializedStyles => css`
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin: 0;
     font-size: 12px;
-    color: ${theme.altTextColor};
-    padding-left: 8px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: ${theme.headerTextColor};
+    padding-left: 12px;
 `;
 
 export const panelHeaderTabs = css`
@@ -226,6 +230,12 @@ export const panelActionGroup = css`
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: thin;
+`;
+
+export const sectionHeaderActions = css`
+    ${panelActionGroup};
+    flex-shrink: 0;
+    overflow: visible;
 `;
 
 export const panelActionButton = (theme: Theme): SerializedStyles => css`
@@ -253,11 +263,17 @@ export const panelActionButton = (theme: Theme): SerializedStyles => css`
         background: ${theme.highlightBackground};
         color: ${theme.textColor};
     }
+
+    &:focus-visible {
+        outline: 2px solid ${theme.textColor};
+        outline-offset: -2px;
+    }
 `;
 
-export const panelTabsBody = css`
+export const panelBody = css`
     flex: 1 1 auto;
     min-height: 0;
+    min-width: 0;
     width: 100%;
     overflow: hidden;
 `;

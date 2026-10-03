@@ -1,10 +1,5 @@
 import { Theme } from "@emotion/react";
-import MonokaiTheme from "@styles/_theme-monokai";
-import GitHubTheme from "@styles/_theme-github";
-import GitHubLightTheme from "@styles/_theme-github-light";
-import DraculaTheme from "@styles/_theme-dracula";
-import NordTheme from "@styles/_theme-nord";
-import SolarizedDarkTheme from "@styles/_theme-solarized-dark";
+import { DEFAULT_THEME, normalizeThemeName, themes } from "@styles/themes";
 import { UPDATE_USER_PROFILE } from "@comp/login/types";
 import { CsoundTheme, THEMES_CHANGE_THEME } from "./types";
 
@@ -13,52 +8,12 @@ export interface IThemeReducer {
     selectedThemeName: CsoundTheme;
 }
 
-const LEGACY_THEME_MAP: Record<string, CsoundTheme> = {
-    monokai: "default",
-    github: "github",
-    "github-light": "github-light",
-    default: "default",
-    dracula: "dracula",
-    nord: "nord",
-    "solarized-dark": "solarized-dark"
-};
-
-const normalizeThemeName = (
-    themeName: string | undefined | null
-): CsoundTheme | undefined => {
-    if (!themeName) {
-        return undefined;
-    }
-    return LEGACY_THEME_MAP[themeName];
-};
-
-const getThemeFromName = (themeName: CsoundTheme): Theme => {
-    switch (themeName) {
-        case "github": {
-            return GitHubTheme as unknown as Theme;
-        }
-        case "github-light": {
-            return GitHubLightTheme as unknown as Theme;
-        }
-        case "dracula": {
-            return DraculaTheme as unknown as Theme;
-        }
-        case "nord": {
-            return NordTheme as unknown as Theme;
-        }
-        case "solarized-dark": {
-            return SolarizedDarkTheme as unknown as Theme;
-        }
-        case "default":
-        default: {
-            return MonokaiTheme as unknown as Theme;
-        }
-    }
-};
+const getThemeFromName = (themeName: CsoundTheme): Theme =>
+    themes[themeName] as unknown as Theme;
 
 function getInitialTheme(): IThemeReducer {
     const storedThemeName = normalizeThemeName(localStorage.getItem("theme"));
-    const selectedThemeName: CsoundTheme = storedThemeName || "default";
+    const selectedThemeName: CsoundTheme = storedThemeName || DEFAULT_THEME;
     return {
         selectedTheme: getThemeFromName(selectedThemeName),
         selectedThemeName
@@ -98,7 +53,7 @@ const ThemeReducer = (
         }
         case THEMES_CHANGE_THEME: {
             const normalizedThemeName =
-                normalizeThemeName(action.newTheme) || "default";
+                normalizeThemeName(action.newTheme) || DEFAULT_THEME;
             localStorage.setItem("theme", normalizedThemeName);
             return {
                 selectedTheme: getThemeFromName(normalizedThemeName),

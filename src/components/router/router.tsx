@@ -1,5 +1,4 @@
 import Home from "../home/home";
-import CsoundManual from "@comp/manual/manual";
 import { Profile } from "../profile/profile";
 import { Page404 } from "../page-404/page-404";
 import { ProjectContext } from "../projects/project-context";
@@ -15,10 +14,6 @@ export const WebIdeRouter = () => {
                 <Route path="editor" element={<ProjectContext />}>
                     <Route path=":id" element={<ProjectContext />} />
                 </Route>
-                <Route path="manual" element={<CsoundManual />}>
-                    <Route path=":id" element={<CsoundManual />} />
-                </Route>
-
                 <Route path="documentation" element={<SiteDocuments />} />
                 <Route path="404" element={<Page404 />} />
                 <Route path="*" element={<Page404 />} />

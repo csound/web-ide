@@ -44,6 +44,7 @@ export interface IProjectEditorReducer {
     fileTreeVisible: boolean;
     manualVisible: boolean;
     manualLookupString: string;
+    manualLookupVersion: number;
     nextPanelNumber: number;
     nextSplitNumber: number;
     nextTabNumber: number;
@@ -95,6 +96,7 @@ const initialLayoutState = (): IProjectEditorReducer => ({
     fileTreeVisible: true,
     manualVisible: false,
     manualLookupString: "",
+    manualLookupVersion: 0,
     nextPanelNumber: 2,
     nextSplitNumber: 1,
     nextTabNumber: 1
@@ -524,6 +526,7 @@ const ProjectEditorReducer = (
             return syncLegacyState({
                 ...state,
                 manualLookupString: action.manualLookupString,
+                manualLookupVersion: (state.manualLookupVersion || 0) + 1,
                 rightSidebar: ensureUtilityTab(state.rightSidebar, {
                     id: `sidebar-right-manual-${state.nextTabNumber}`,
                     type: "manual",

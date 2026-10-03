@@ -11,8 +11,8 @@
         "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
         "rewrites": [
             {
-                "source": "/manual_main.js",
-                "destination": "/manual/main.js"
+                "source": "/manual/**",
+                "destination": "/manual/404.html"
             },
             {
                 "source": "/",
@@ -27,11 +27,11 @@
                 "function": "host"
             },
             {
-                "source": "/@(manual|documentation)",
+                "source": "/documentation",
                 "destination": "/index.html"
             },
             {
-                "source": "/@(manual|documentation)/**",
+                "source": "/documentation/**",
                 "destination": "/index.html"
             }
         ],
@@ -55,6 +55,23 @@
                     {
                         "key": "Cache-Control",
                         "value": "max-age=2592000,public,immutable"
+                    }
+                ]
+            },
+            {
+                "source": "/manual/**",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "public,max-age=0,must-revalidate"
+                    },
+                    {
+                        "key": "Cross-Origin-Resource-Policy",
+                        "value": "same-origin"
+                    },
+                    {
+                        "key": "Cross-Origin-Embedder-Policy",
+                        "value": "require-corp"
                     }
                 ]
             }
