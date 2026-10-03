@@ -597,7 +597,9 @@ const WorkspaceNodeView = ({
     isOwner,
     activePanelId,
     isDragging,
-    panelCount
+    panelCount,
+    markdownModes,
+    setMarkdownMode
 }: {
     node: IWorkspaceLayoutNode;
     activeProject: IProject;
@@ -607,11 +609,10 @@ const WorkspaceNodeView = ({
     activePanelId: string;
     isDragging: boolean;
     panelCount: number;
+    markdownModes: Record<string, MarkdownMode>;
+    setMarkdownMode: (tabId: string, mode: MarkdownMode) => void;
 }) => {
     const dispatch = useDispatch();
-    const [markdownModes, setMarkdownModes] = useState<
-        Record<string, MarkdownMode>
-    >({});
 
     if (node.kind === "split") {
         return (
@@ -630,6 +631,8 @@ const WorkspaceNodeView = ({
                         activePanelId={activePanelId}
                         isDragging={isDragging}
                         panelCount={panelCount}
+                        markdownModes={markdownModes}
+                        setMarkdownMode={setMarkdownMode}
                     />
                 </ResizablePanel>
                 <PanelResizeHandle
@@ -645,6 +648,8 @@ const WorkspaceNodeView = ({
                         activePanelId={activePanelId}
                         isDragging={isDragging}
                         panelCount={panelCount}
+                        markdownModes={markdownModes}
+                        setMarkdownMode={setMarkdownMode}
                     />
                 </ResizablePanel>
             </PanelGroup>
@@ -719,10 +724,7 @@ const WorkspaceNodeView = ({
                             <MarkdownModeToggle
                                 mode={markdownModes[activeTab.id] ?? "preview"}
                                 onChange={(mode) =>
-                                    setMarkdownModes((modes) => ({
-                                        ...modes,
-                                        [activeTab.id]: mode
-                                    }))
+                                    setMarkdownMode(activeTab.id, mode)
                                 }
                             />
                         )}
@@ -972,6 +974,12 @@ const ProjectEditor = ({
         | ((value: string[] | ((logs: string[]) => string[])) => void)
         | undefined;
     const [isDragging, setIsDragging] = useState(false);
+    const [markdownModes, setMarkdownModes] = useState<
+        Record<string, MarkdownMode>
+    >({});
+    const setMarkdownMode = (tabId: string, mode: MarkdownMode) => {
+        setMarkdownModes((modes) => ({ ...modes, [tabId]: mode }));
+    };
 
     const projectUid: string = activeProject?.projectUid ?? "";
     const projectOwnerUid: string = activeProject?.userUid ?? "";
@@ -1159,6 +1167,8 @@ const ProjectEditor = ({
                     activePanelId={activePanelId}
                     isDragging={isDragging}
                     panelCount={panelCount}
+                    markdownModes={markdownModes}
+                    setMarkdownMode={setMarkdownMode}
                 />
             </ResizablePanel>
             <PanelResizeHandle
@@ -1187,6 +1197,8 @@ const ProjectEditor = ({
             activePanelId={activePanelId}
             isDragging={isDragging}
             panelCount={panelCount}
+            markdownModes={markdownModes}
+            setMarkdownMode={setMarkdownMode}
         />
     );
 
@@ -1230,6 +1242,8 @@ const ProjectEditor = ({
                                     activePanelId={maximizedPanel.id}
                                     isDragging={isDragging}
                                     panelCount={panelCount}
+                                    markdownModes={markdownModes}
+                                    setMarkdownMode={setMarkdownMode}
                                 />
                             ) : (
                                 <PanelGroup direction="horizontal">
