@@ -44,6 +44,10 @@ import {
 } from "./types";
 import { IProjectEditorReducer } from "./reducer";
 import TextEditor from "../editor/text-editor";
+import {
+    MarkdownModeToggle,
+    type MarkdownMode
+} from "../editor/markdown-mode-toggle";
 import { AudioEditor } from "../audio-editor/audio-editor";
 import { subscribeToProjectChanges } from "@comp/projects/subscribers";
 import CsoundManualWindow from "./csound-manual";
@@ -92,6 +96,7 @@ type IEditorForDocumentProperties = {
     doc: AnyTab;
     projectUid: string;
     isOwner: boolean;
+    markdownMode?: MarkdownMode;
 };
 
 const utilityTabDefinitions: Record<
@@ -185,7 +190,8 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
 export function EditorForDocument({
     uid,
     projectUid,
-    doc
+    doc,
+    markdownMode
 }: IEditorForDocumentProperties) {
     if ((doc as IDocument).type === "txt") {
         return (
@@ -194,6 +200,7 @@ export function EditorForDocument({
                 documentUid={(doc as IDocument).documentUid}
                 projectUid={projectUid}
                 filename={(doc as IDocument).filename || ""}
+                mode={markdownMode}
             />
         );
     } else if (
@@ -307,7 +314,8 @@ const renderWorkspaceTabContent = ({
     projectUid,
     projectUserUid,
     isOwner,
-    isDragging
+    isDragging,
+    markdownMode
 }: {
     tab: IWorkspaceTab;
     activeProject: IProject;
@@ -315,6 +323,7 @@ const renderWorkspaceTabContent = ({
     projectUserUid: string;
     isOwner: boolean;
     isDragging: boolean;
+    markdownMode?: MarkdownMode;
 }) => {
     if (tab.type === "editor") {
         const document = getDocumentForTab(tab, activeProject);
@@ -324,6 +333,7 @@ const renderWorkspaceTabContent = ({
                 projectUid={projectUid}
                 isOwner={isOwner}
                 doc={document}
+                markdownMode={markdownMode}
             />
         ) : null;
     }
@@ -587,7 +597,9 @@ const WorkspaceNodeView = ({
     isOwner,
     activePanelId,
     isDragging,
-    panelCount
+    panelCount,
+    markdownModes,
+    setMarkdownMode
 }: {
     node: IWorkspaceLayoutNode;
     activeProject: IProject;
@@ -597,6 +609,8 @@ const WorkspaceNodeView = ({
     activePanelId: string;
     isDragging: boolean;
     panelCount: number;
+    markdownModes: Record<string, MarkdownMode>;
+    setMarkdownMode: (tabId: string, mode: MarkdownMode) => void;
 }) => {
     const dispatch = useDispatch();
 
@@ -617,6 +631,8 @@ const WorkspaceNodeView = ({
                         activePanelId={activePanelId}
                         isDragging={isDragging}
                         panelCount={panelCount}
+                        markdownModes={markdownModes}
+                        setMarkdownMode={setMarkdownMode}
                     />
                 </ResizablePanel>
                 <PanelResizeHandle
@@ -632,6 +648,8 @@ const WorkspaceNodeView = ({
                         activePanelId={activePanelId}
                         isDragging={isDragging}
                         panelCount={panelCount}
+                        markdownModes={markdownModes}
+                        setMarkdownMode={setMarkdownMode}
                     />
                 </ResizablePanel>
             </PanelGroup>
@@ -640,6 +658,11 @@ const WorkspaceNodeView = ({
 
     const panelTabIds = node.tabs.map((tab) => tab.id);
     const activeTab = node.tabs[Math.min(node.tabIndex, node.tabs.length - 1)];
+    const activeDocument =
+        activeTab && getDocumentForTab(activeTab, activeProject);
+    const isMarkdown = /\.(md|markdown)$/i.test(
+        (activeDocument as IDocument | undefined)?.filename ?? ""
+    );
 
     return (
         <div
@@ -691,11 +714,20 @@ const WorkspaceNodeView = ({
                         projectUid,
                         projectUserUid,
                         isOwner,
-                        isDragging
+                        isDragging,
+                        markdownMode: markdownModes[tab.id] ?? "preview"
                     })
                 }
                 actions={
                     <>
+                        {isMarkdown && activeTab && (
+                            <MarkdownModeToggle
+                                mode={markdownModes[activeTab.id] ?? "preview"}
+                                onChange={(mode) =>
+                                    setMarkdownMode(activeTab.id, mode)
+                                }
+                            />
+                        )}
                         {activeTab?.type === "fileTree" && isOwner && (
                             <Tooltip title="Create New Directory">
                                 <button
@@ -942,6 +974,12 @@ const ProjectEditor = ({
         | ((value: string[] | ((logs: string[]) => string[])) => void)
         | undefined;
     const [isDragging, setIsDragging] = useState(false);
+    const [markdownModes, setMarkdownModes] = useState<
+        Record<string, MarkdownMode>
+    >({});
+    const setMarkdownMode = (tabId: string, mode: MarkdownMode) => {
+        setMarkdownModes((modes) => ({ ...modes, [tabId]: mode }));
+    };
 
     const projectUid: string = activeProject?.projectUid ?? "";
     const projectOwnerUid: string = activeProject?.userUid ?? "";
@@ -1129,6 +1167,8 @@ const ProjectEditor = ({
                     activePanelId={activePanelId}
                     isDragging={isDragging}
                     panelCount={panelCount}
+                    markdownModes={markdownModes}
+                    setMarkdownMode={setMarkdownMode}
                 />
             </ResizablePanel>
             <PanelResizeHandle
@@ -1157,6 +1197,8 @@ const ProjectEditor = ({
             activePanelId={activePanelId}
             isDragging={isDragging}
             panelCount={panelCount}
+            markdownModes={markdownModes}
+            setMarkdownMode={setMarkdownMode}
         />
     );
 
@@ -1200,6 +1242,8 @@ const ProjectEditor = ({
                                     activePanelId={maximizedPanel.id}
                                     isDragging={isDragging}
                                     panelCount={panelCount}
+                                    markdownModes={markdownModes}
+                                    setMarkdownMode={setMarkdownMode}
                                 />
                             ) : (
                                 <PanelGroup direction="horizontal">
