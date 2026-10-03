@@ -37,16 +37,16 @@ const shortcutRows: ShortcutRow[] = [
         action: "Save current document"
     },
     {
-        shortcut: isMac ? "opt-command-s" : "ctrl-shift-s",
+        shortcut: isMac ? "command-shift-s / opt-command-s" : "ctrl-shift-s",
         action: "Save all documents"
     },
     {
         shortcut: isMac ? "command-r" : "ctrl-r",
-        action: "Run/Restart realtime rendering"
+        action: "Run or resume playback"
     },
     {
         shortcut: isMac ? "command-p" : "ctrl-p",
-        action: "Pause realtime rendering"
+        action: "Pause or resume playback"
     }
 ];
 
@@ -241,10 +241,12 @@ export const KeyboardShortcuts = () => (
                 <p css={descriptionCss}>
                     Common editing, evaluation, and playback shortcuts for the
                     code editor.
+                    {isMac &&
+                        " On Mac and iPad, Control also works for Save, Save All, Run, and Pause."}
                 </p>
             </div>
             <div css={platformBadgeCss}>
-                {isMac ? "macOS" : "Windows / Linux"}
+                {isMac ? "macOS / iPadOS" : "Windows / Linux"}
             </div>
         </div>
 

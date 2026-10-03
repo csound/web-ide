@@ -620,9 +620,12 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                 const hotKeySequence = item.hotKey
                     ? keyBindings?.[item.hotKey]
                     : undefined;
+                const primarySequence = Array.isArray(hotKeySequence)
+                    ? hotKeySequence[0]
+                    : hotKeySequence;
                 const hotKeyLabel =
-                    typeof hotKeySequence === "string"
-                        ? humanizeKeySequence(hotKeySequence)
+                    typeof primarySequence === "string"
+                        ? humanizeKeySequence(primarySequence)
                         : "";
 
                 return (
