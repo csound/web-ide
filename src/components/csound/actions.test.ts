@@ -108,6 +108,36 @@ afterEach(async () => {
 });
 
 describe("shared Csound performance", () => {
+    it.each(["auto", "render"] as const)(
+        "runs an embed in %s mode without storage or SAB",
+        async (mode) => {
+            const storage = vi
+                .spyOn(Storage.prototype, "getItem")
+                .mockImplementation(() => {
+                    throw new DOMException(
+                        "Third-party storage blocked",
+                        "SecurityError"
+                    );
+                });
+            try {
+                await runPerformance({
+                    projectUid: "audio-test",
+                    csdPath: "scores/piece.csd",
+                    mode,
+                    useSAB: false,
+                    setConsole
+                });
+                expect(Csound).toHaveBeenCalledWith({
+                    useWorker: mode === "render",
+                    useSAB: false
+                });
+                expect(storage).not.toHaveBeenCalled();
+            } finally {
+                storage.mockRestore();
+            }
+        }
+    );
+
     it("pauses and resumes the same performance through the keyboard callback", async () => {
         await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
         storeProjectEditorKeyboardCallbacks("audio-test", setConsole);

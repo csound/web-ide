@@ -89,6 +89,8 @@ type PerformanceOptions = {
     csdPath?: string;
     orc?: string;
     mode?: "auto" | "play" | "render";
+    // Embeds must work without cross-origin isolation or stored preferences.
+    useSAB?: boolean;
     signal?: AbortSignal;
     setConsole: SetConsole;
 };
@@ -99,6 +101,7 @@ export async function runPerformance({
     csdPath,
     orc,
     mode = "auto",
+    useSAB,
     signal,
     setConsole
 }: PerformanceOptions): Promise<PerformanceResult> {
@@ -220,8 +223,9 @@ export async function runPerformance({
     setConsole([""]);
     try {
         csound = (await Csound({
-            useWorker: render || localStorage.getItem("sab") === "true",
-            ...(render ? { useSAB: false } : {})
+            useWorker:
+                render || (useSAB ?? localStorage.getItem("sab") === "true"),
+            ...(render || useSAB === false ? { useSAB: false } : {})
         })) as CsoundObj | undefined;
         check();
         if (!csound) throw new Error("Csound failed to start.");

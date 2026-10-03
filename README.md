@@ -55,6 +55,7 @@ Firebase backend**.
 - Cloud persistence — projects saved to Firestore and audio files to Firebase Storage
 - User profiles with followers, project discovery, and public/private project visibility
 - Shareable editor URLs with injected Open Graph metadata for social previews
+- Embeddable player for public projects, with playback and audio downloads
 - Built-in Csound manual viewer accessible directly from the IDE
 - Optional Electron desktop app for offline use without a browser
 
@@ -324,3 +325,44 @@ decades.
 Browser agents can read and edit Csound source, switch tabs, choose targets, play,
 stop, render, and read the console through 16 WebMCP tools. Click **WebMCP ready**
 in an open project for setup and the tool guide, or read [WebMCP usage](docs/webmcp.md).
+
+## Embed a project
+
+Make the project public, then open **Share Project** and copy **HTML embed code**.
+Paste it into a page that allows iframes:
+
+```html
+<iframe
+    src="https://ide.csound.com/embed/PROJECT_ID"
+    title="Csound project"
+    width="100%"
+    height="360"
+    style="border: 0;"
+    loading="lazy"
+    allow="autoplay"
+></iframe>
+```
+
+The `/embed/:projectId` player loads the latest saved files without requiring a
+login. It starts with the saved default target (the first file for a playlist),
+or falls back to `project.csd`, `default.csd`, another CSD, then an ORC. Listeners
+can choose a file, play, pause, stop, or render audio and download it. Projects
+with file output in `CsOptions` offer **Render audio** and an audio player for the
+result. Nothing plays until the listener clicks a control.
+
+Private, missing, and empty projects show a message in the player. Links to the
+IDE open in a new tab. The embed route needs no cross-origin isolation headers
+or SharedArrayBuffer. Serve the parent page over HTTPS. For projects that use
+live input, add `microphone` to the iframe's `allow` attribute; the listener must
+still grant microphone access. A parent site's Permissions Policy can further
+restrict these features.
+
+To test playback and a WAV download in a cross-origin iframe against the local
+DEV server:
+
+```bash
+cd puppeteer-tests
+RUN_EMBED=1 TARGET=local node --test tests/embed.js
+```
+
+Set `EMBED_BASE_URL` when the server runs on a port other than 3000.

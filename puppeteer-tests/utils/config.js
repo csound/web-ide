@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 
+const localBaseUrl = process.env.LOCAL_BASE_URL || "http://localhost:3000";
+
 /**
  * Target environment configurations.
  * Each entry maps a target name to its base URL and a project editor URL
@@ -8,8 +10,8 @@ import { existsSync, readFileSync } from "node:fs";
  */
 const TARGETS = {
     local: {
-        baseUrl: "http://localhost:3000",
-        projectUrl: "http://localhost:3000/editor/ElPGLLOOc5qWNM4VmfVV"
+        baseUrl: localBaseUrl,
+        projectUrl: `${localBaseUrl}/editor/ElPGLLOOc5qWNM4VmfVV`
     },
     dev: {
         baseUrl: "https://csound-ide-dev.web.app",
