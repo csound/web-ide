@@ -167,12 +167,4 @@ describe("console readline", () => {
         expect(engine.readlineSubmit).toHaveBeenCalledTimes(1);
         expect(echo).not.toHaveBeenCalled();
     });
-
-    it("leaves older Csound packages usable without the optional API", () => {
-        const console = createReadlineConsole();
-        const engine = { on: vi.fn(), off: vi.fn() };
-        const disconnect = console.connect(engine, "fixture", vi.fn());
-        expect(engine.on).not.toHaveBeenCalled();
-        disconnect();
-    });
 });

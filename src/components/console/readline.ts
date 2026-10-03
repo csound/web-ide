@@ -1,10 +1,9 @@
 import { useSyncExternalStore } from "react";
+import type { CsoundObj, ReadlineEvent } from "@csound/browser";
 
-export type ReadlineEvent = { requestId: number; prompt: string | null };
+export type { ReadlineEvent } from "@csound/browser";
 
-// Optional until the browser package with host readline support is published.
-export interface ReadlineEngine {
-    readlineSubmit?: (requestId: number, text: string) => Promise<number>;
+export interface ReadlineEngine extends Pick<CsoundObj, "readlineSubmit"> {
     on: (
         event: "readline",
         listener: (event: ReadlineEvent) => void
@@ -59,7 +58,6 @@ export function createReadlineConsole() {
             echo: (text: string) => void
         ) {
             disconnect();
-            if (!engine.readlineSubmit) return () => {};
             let disposed = false;
             let sending = false;
             let queue: string[] = [];

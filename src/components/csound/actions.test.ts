@@ -85,6 +85,8 @@ beforeEach(() => {
         cleanup: vi.fn(async () => undefined),
         terminateInstance: vi.fn(async () => undefined),
         stop: vi.fn(async () => undefined),
+        readlineSubmit: vi.fn(async () => 0),
+        off: vi.fn((name) => listeners.delete(name)),
         on: vi.fn((name, callback) => listeners.set(name, callback)),
         once: vi.fn((name, callback) => listeners.set(name, callback))
     };
@@ -99,8 +101,6 @@ afterEach(async () => {
 
 describe("shared Csound performance", () => {
     it("listens for readline before startup and clears pending input immediately on stop", async () => {
-        engine.readlineSubmit = vi.fn(async () => 0);
-        engine.off = vi.fn((name) => listeners.delete(name));
         engine.start.mockImplementation(async () => {
             listeners.get("readline")?.({ requestId: 1, prompt: "" });
             return 0;
