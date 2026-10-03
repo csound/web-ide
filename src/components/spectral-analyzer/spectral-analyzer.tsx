@@ -1,180 +1,317 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { assoc, path } from "ramda";
-import { CsoundObj } from "@comp/csound/types";
-import { ICsoundStatus } from "@comp/csound/types";
+import { useEffect, useRef, useState } from "react";
+import { useTheme } from "@emotion/react";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Button from "@mui/material/Button";
+import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import { useSelector } from "@root/store";
 import { csoundInstance } from "../csound";
-import { scaleLinear } from "d3-scale";
+import { observeAudio } from "./audio";
+import { BANDS, createBandSampler } from "./analysis";
+import {
+    createSpectralRenderer,
+    spectralPalette,
+    type ViewMode
+} from "./renderer";
 
-// resize code used from https://webglfundamentals.org/webgl/lessons/webgl-resizing-the-canvas.html
-function resize(canvas: HTMLCanvasElement) {
-    // Lookup the size the browser is displaying the canvas.
-    const displayWidth = canvas.clientWidth;
-    const displayHeight = canvas.clientHeight;
+type Display = ReturnType<typeof createSpectralRenderer>;
 
-    // Check if the canvas is not the same size.
-    if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-        // Make the canvas the same size
-        canvas.width = displayWidth;
-        canvas.height = displayHeight;
-    }
-}
-
-type CanvasReference = {
-    current: HTMLCanvasElement | null;
-};
-
-const connectVisualizer = async (
-    csound: CsoundObj,
-    canvasReference: CanvasReference
-) => {
-    if (!canvasReference || !canvasReference.current) {
-        return;
-    } else {
-        const canvas: HTMLCanvasElement = canvasReference.current;
-
-        const context_ = canvas.getContext("2d");
-
-        if (!context_) {
-            return;
-        }
-
-        //console.log("Connect Visualizer!");
-        const node = await csound.getNode();
-        if (node === undefined) {
-            return;
-        }
-
-        const context = node.context;
-        const scopeNode = context.createAnalyser();
-
-        scopeNode.fftSize = 2048;
-        node.connect(scopeNode);
-
-        let isConnected = true;
-
-        const mags = () => {
-            resize(canvas);
-
-            const width = canvas.width;
-            const height = canvas.height;
-
-            if (!isConnected) {
-                context_.clearRect(0, 0, width, height);
-                return;
-            }
-
-            const freqData = new Uint8Array(scopeNode.frequencyBinCount);
-
-            const scaleY = scaleLinear().domain([0, 256]).range([height, 0]);
-
-            scopeNode.getByteFrequencyData(freqData);
-
-            context_.clearRect(0, 0, width, height);
-
-            context_.fillStyle = "rgba(0, 20, 0, 0.1)";
-            context_.fillRect(0, 0, width, height);
-            context_.lineWidth = 2;
-            context_.strokeStyle = "rgba(0,255,0,1)";
-            context_.beginPath();
-
-            for (let x = 0; x < width; x++) {
-                const indx = Math.floor(
-                    (x / width) * scopeNode.frequencyBinCount
-                );
-                context_.lineTo(x, scaleY(freqData[indx]));
-            }
-
-            context_.stroke();
-            requestAnimationFrame(mags);
-        };
-
-        mags();
-
-        const disconnectionCallback = () => {
-            if (isConnected) {
-                isConnected = false;
-                node.disconnect(scopeNode);
-            }
-        };
-
-        return disconnectionCallback;
-    }
-};
-
-const SpectralAnalyzer = (): React.ReactElement => {
-    const [scopeNodeState, setScopeNodeState]: [
-        {
-            status: "init" | "running";
-            scopeNodeDisconnector: (() => void) | undefined;
-        },
-        any
-    ] = useState({
-        status: "init",
-        scopeNodeDisconnector: undefined
-    });
-
-    const canvasReference = useRef(null) as CanvasReference;
-
-    const csoundStatus: ICsoundStatus =
-        useSelector(path(["csound", "status"])) || "initialized";
+export default function SpectralAnalyzer() {
+    const theme = useTheme();
+    const initialTheme = useRef(theme);
+    const status = useSelector((state) => state.csound.status);
+    const engine =
+        status === "playing" || status === "paused"
+            ? csoundInstance
+            : undefined;
+    const [mode, setMode] = useState<ViewMode>("spectrogram");
+    const [frozen, setFrozen] = useState(
+        () =>
+            window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ??
+            false
+    );
+    const [analyser, setAnalyser] = useState<AnalyserNode>();
+    const [error, setError] = useState(false);
+    const [hasAudio, setHasAudio] = useState(false);
+    const heatmap = useRef<HTMLDivElement>(null);
+    const overlay = useRef<HTMLCanvasElement>(null);
+    const display = useRef<Display>();
 
     useEffect(() => {
-        if (
-            ["stopped", "error"].includes(csoundStatus) &&
-            scopeNodeState.status === "running"
-        ) {
-            if (csoundInstance && scopeNodeState.scopeNodeDisconnector) {
-                scopeNodeState.scopeNodeDisconnector();
-            }
-            setScopeNodeState({
-                status: "init",
-                scopeNodeDisconnector: undefined
-            });
-        }
-        if (
-            csoundInstance &&
-            csoundStatus === "playing" &&
-            scopeNodeState.status !== "running"
-        ) {
-            setScopeNodeState(assoc("status", "running", scopeNodeState));
-            connectVisualizer(csoundInstance, canvasReference).then(
-                (scopeNodeDisconnector) =>
-                    setScopeNodeState({
-                        status: "running",
-                        scopeNodeDisconnector
-                    })
-            );
-        }
-    }, [csoundStatus, scopeNodeState]);
-
-    useEffect(() => {
+        if (!heatmap.current || !overlay.current) return;
+        const renderer = createSpectralRenderer(
+            heatmap.current,
+            overlay.current,
+            initialTheme.current
+        );
+        display.current = renderer;
+        const observer = new ResizeObserver(renderer.resize);
+        observer.observe(overlay.current);
+        renderer.resize();
         return () => {
-            scopeNodeState.scopeNodeDisconnector &&
-                scopeNodeState.scopeNodeDisconnector();
+            observer.disconnect();
+            renderer.dispose();
+            display.current = undefined;
         };
-    }, [canvasReference, scopeNodeState]);
+    }, []);
 
+    useEffect(() => {
+        display.current?.configure(mode, theme);
+    }, [mode, theme]);
+
+    useEffect(() => {
+        setAnalyser(undefined);
+        setError(false);
+        if (!engine) return;
+        setHasAudio(false);
+        return observeAudio(
+            engine,
+            (node) => {
+                display.current?.start(node.context.sampleRate);
+                setAnalyser(node);
+                setHasAudio(true);
+            },
+            () => setError(true)
+        );
+    }, [engine]);
+
+    useEffect(() => {
+        if (!analyser || frozen || status !== "playing") return;
+        const renderer = display.current;
+        if (!renderer) return;
+        const fft = new Float32Array(analyser.frequencyBinCount);
+        const bands = new Uint8Array(BANDS);
+        const sample = createBandSampler(analyser.context.sampleRate);
+        let frame = 0;
+        renderer.history.resetClock();
+        const draw = () => {
+            if (
+                !document.hidden &&
+                renderer.history.isDue(analyser.context.currentTime)
+            ) {
+                analyser.getFloatFrequencyData(fft);
+                sample(fft, bands);
+                if (
+                    renderer.history.append(bands, analyser.context.currentTime)
+                )
+                    renderer.draw();
+            }
+            frame = requestAnimationFrame(draw);
+        };
+        frame = requestAnimationFrame(draw);
+        return () => cancelAnimationFrame(frame);
+    }, [analyser, frozen, status]);
+
+    const message = error
+        ? "Audio analysis is unavailable. Stop and run the project to try again."
+        : status === "rendering"
+          ? "The analyzer is available during live playback."
+          : status === "loading" || (engine && !analyser)
+            ? "Waiting for audio…"
+            : !hasAudio
+              ? "Run a project to see its sound."
+              : undefined;
+    const stateLabel = error
+        ? "Unavailable"
+        : frozen
+          ? "Frozen"
+          : status === "paused"
+            ? "Paused"
+            : status === "playing"
+              ? "Live"
+              : hasAudio
+                ? "Stopped"
+                : "Ready";
+    const palette = spectralPalette(theme);
     return (
-        <div
-            style={{
-                width: "100%",
+        <section
+            aria-label="Spectral analyzer"
+            css={{
+                display: "flex",
+                flexDirection: "column",
                 height: "100%",
+                width: "100%",
                 minHeight: 0,
-                overflow: "hidden"
+                minWidth: 0,
+                overflow: "hidden",
+                background: theme.background,
+                color: theme.textColor,
+                fontFamily: theme.font.regular
             }}
         >
-            <canvas
-                ref={canvasReference}
-                style={{
-                    width: "100%",
-                    height: "100%",
-                    maxHeight: "100%",
-                    display: "block"
+            <div
+                css={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: "4px 8px",
+                    padding: "6px 8px",
+                    borderBottom: `1px solid ${theme.line}`,
+                    flexShrink: 0,
+                    "& button": {
+                        fontFamily: theme.font.regular,
+                        fontSize: 11,
+                        textTransform: "none",
+                        whiteSpace: "nowrap"
+                    },
+                    "& button:focus-visible": {
+                        outline: `2px solid ${theme.textColor}`,
+                        outlineOffset: -2
+                    },
+                    "& button:active": { transform: "scale(0.98)" }
                 }}
-            ></canvas>
-        </div>
+            >
+                <ToggleButtonGroup
+                    exclusive
+                    value={mode}
+                    aria-label="Analyzer view"
+                    onChange={(_, next: ViewMode | null) => {
+                        if (next) setMode(next);
+                    }}
+                    css={{
+                        "&& button": {
+                            border: 0,
+                            padding: "4px 8px",
+                            minHeight: 28,
+                            borderRadius: 4,
+                            color: theme.altTextColor,
+                            lineHeight: 1.2,
+                            "&.Mui-selected": {
+                                background: theme.highlightBackground,
+                                color: theme.textColor
+                            },
+                            "&:hover": {
+                                background: theme.buttonBackgroundHover
+                            },
+                            "@media (pointer: coarse)": { minHeight: 36 }
+                        }
+                    }}
+                >
+                    <ToggleButton disableRipple value="spectrogram">
+                        Spectrogram
+                    </ToggleButton>
+                    <ToggleButton disableRipple value="spectrum">
+                        Spectrum
+                    </ToggleButton>
+                </ToggleButtonGroup>
+                <Button
+                    disableRipple
+                    aria-pressed={frozen}
+                    aria-label={
+                        frozen ? "Unfreeze analyzer" : "Freeze analyzer"
+                    }
+                    title="Freeze the display without pausing audio"
+                    onClick={() => setFrozen((value) => !value)}
+                    startIcon={
+                        frozen ? <PlayArrowRoundedIcon /> : <PauseRoundedIcon />
+                    }
+                    css={{
+                        "&&": {
+                            minWidth: 0,
+                            padding: "4px 6px",
+                            color: theme.textColor,
+                            lineHeight: 1.2
+                        },
+                        "& .MuiButton-startIcon": {
+                            marginRight: 3,
+                            marginLeft: 0
+                        }
+                    }}
+                >
+                    {frozen ? "Unfreeze" : "Freeze"}
+                </Button>
+                <div
+                    aria-label="Level: -100 to 0 decibels"
+                    css={{
+                        marginLeft: "auto",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        fontFamily: theme.font.monospace,
+                        fontSize: 10,
+                        color: theme.altTextColor
+                    }}
+                >
+                    <span>-100</span>
+                    <span
+                        aria-hidden="true"
+                        css={{
+                            width: 56,
+                            height: 5,
+                            borderRadius: 2,
+                            background: palette.css
+                        }}
+                    />
+                    <span>0 dB</span>
+                </div>
+            </div>
+            <div
+                css={{
+                    position: "relative",
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: "hidden"
+                }}
+            >
+                <div
+                    ref={heatmap}
+                    data-testid="spectrogram-heatmap"
+                    css={{
+                        position: "absolute",
+                        left: 48,
+                        right: 12,
+                        top: 12,
+                        bottom: 24
+                    }}
+                />
+                <canvas
+                    ref={overlay}
+                    role="img"
+                    aria-label={
+                        mode === "spectrogram"
+                            ? "Spectrogram: logarithmic frequency from 20 Hz to 20 kHz or Nyquist, across 10 seconds of playback. Color shows level from -100 to 0 dB."
+                            : "Spectrum: logarithmic frequency from 20 Hz to 20 kHz or Nyquist, with level from -100 to 0 dB."
+                    }
+                    css={{
+                        display: "block",
+                        position: "absolute",
+                        width: "100%",
+                        height: "100%"
+                    }}
+                />
+                {message && (
+                    <div
+                        role="status"
+                        css={{
+                            position: "absolute",
+                            inset: "12px 12px 24px 48px",
+                            display: "grid",
+                            placeItems: "center",
+                            textAlign: "center",
+                            fontSize: 12,
+                            padding: 12,
+                            background: theme.background + "e8",
+                            color: theme.altTextColor
+                        }}
+                    >
+                        {message}
+                    </div>
+                )}
+            </div>
+            <div
+                css={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "0 12px 5px 48px",
+                    fontSize: 10,
+                    color: theme.altTextColor,
+                    flexShrink: 0
+                }}
+            >
+                <span>Log frequency</span>
+                <span role="status">{stateLabel}</span>
+            </div>
+        </section>
     );
-};
-
-export default SpectralAnalyzer;
+}
