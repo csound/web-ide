@@ -32,7 +32,8 @@ export const findFallbackPlayTarget = (
     // 1. Look for project.csd or default.csd
     const priorityFiles = documentsArray.find(
         (doc) =>
-            doc.filename === "project.csd" || doc.filename === "default.csd"
+            doc.filename.toLowerCase() === "project.csd" ||
+            doc.filename.toLowerCase() === "default.csd"
     );
     if (priorityFiles) {
         return priorityFiles;
@@ -40,15 +41,15 @@ export const findFallbackPlayTarget = (
 
     // 2. Look for any .csd file
     const csdFiles = documentsArray.filter((doc) =>
-        doc.filename.endsWith(".csd")
+        /\.csd$/i.test(doc.filename)
     );
     if (csdFiles.length > 0) {
         return csdFiles[0];
     }
 
     // 3. Fallback to any .csd or .orc file
-    const csoundFiles = documentsArray.filter(
-        (doc) => doc.filename.endsWith(".csd") || doc.filename.endsWith(".orc")
+    const csoundFiles = documentsArray.filter((doc) =>
+        /\.(csd|orc)$/i.test(doc.filename)
     );
     if (csoundFiles.length > 0) {
         return csoundFiles[0];

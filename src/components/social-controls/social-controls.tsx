@@ -105,10 +105,11 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
                     </div>
                 </Tooltip>
             )}
-            {isPublic && (
+            {(isPublic || isOwner) && (
                 <Tooltip title={`Share this project`} placement="bottom-end">
                     <div css={SS.buttonContainer}>
                         <StyledIconButton
+                            aria-label="Share this project"
                             size="medium"
                             onClick={() => {
                                 dispatch(openSimpleModal("share-dialog", {}));

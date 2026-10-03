@@ -54,6 +54,21 @@ it("loads saved source and uses project.csd without saved targets", async () => 
 });
 
 it.each([
+    ["voice.orc", "PIECE.CSD"],
+    ["voice.ORC", "piece.CsD"],
+    ["other.csd", "PROJECT.CSD"],
+    ["other.csd", "Default.CsD"]
+])("prefers %s less than %s regardless of case", async (first, preferred) => {
+    vi.mocked(getDocs).mockResolvedValue({
+        docs: [
+            snapshot({ ...csd, name: first }, "first"),
+            snapshot({ ...csd, name: preferred }, "preferred")
+        ]
+    } as any);
+    expect((await loadEmbedProject("piece")).documentUid).toBe("preferred");
+});
+
+it.each([
     { targetType: "main", targetDocumentUid: "alternate" },
     { targetType: "playlist", playlistDocumentsUid: ["alternate", "main"] }
 ])("honors the saved default target (%j)", async (target) => {

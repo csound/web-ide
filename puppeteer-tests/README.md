@@ -162,6 +162,11 @@ npm run start
 cd puppeteer-tests && npm run test:local
 ```
 
+Set `LOCAL_BASE_URL` when the dev server uses another port, for example
+`LOCAL_BASE_URL=http://localhost:3012 npm run test:local`.
+The home suite also holds back the app module to check that it waits for the
+visible home controls after a slow load.
+
 See [`.github/workflows/e2e-dev.yml`](../.github/workflows/e2e-dev.yml), [`.github/workflows/e2e-prod.yml`](../.github/workflows/e2e-prod.yml), and [`.github/workflows/e2e-local.yml`](../.github/workflows/e2e-local.yml).
 
 ## Debugging

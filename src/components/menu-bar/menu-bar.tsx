@@ -282,10 +282,10 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         seperator: true
                     },
                     {
-                        label: isPublic ? "Share Project" : "Share Project",
+                        label: "Share Project",
                         callback: () =>
                             dispatch(openSimpleModal("share-dialog", {})),
-                        disabled: !isPublic
+                        disabled: !isPublic && !isOwner
                     },
                     {
                         label: starred ? "Unstar Project" : "Star Project",
@@ -445,11 +445,15 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
             isManualOpen,
             isMidiPianoVisible,
             isOwner,
+            isPublic,
             isSabEnabled,
             isSpectralAnalyzerVisible,
+            loggedInUid,
+            resolvedProjectUid,
             selectedThemeName,
             setConsole,
-            setIsSabEnabled
+            setIsSabEnabled,
+            starred
         ]
     );
 
