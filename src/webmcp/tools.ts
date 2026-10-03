@@ -137,7 +137,7 @@ export const toolCatalog = [
     ),
     tool(
         "evaluate_region",
-        "Select, reveal and evaluate source in [from, to) in the active realtime Csound engine for this project. Offsets are UTF-16; to is exclusive. Requires the current revision and playing audio; does not start playback, save, or run a full CSD. Accepts ORC/UDO code, SCO events, or statements inside a CSD section. May produce sound. Waits for the engine result and flashes the region like keyboard evaluation; read_console gives errors. Evaluation already sent cannot be undone by cancellation.",
+        "Select, reveal and evaluate source in [from, to) in the active realtime Csound engine for this project. Offsets are UTF-16; to is exclusive. Requires the current revision and playing audio; does not start playback, save, or run a full CSD. Accepts ORC/UDO code, SCO events, statements inside a CSD section, or Lisp forms in .mal and .clj* files through the project's LispEval opcode. May produce sound. Waits for the engine result and flashes the region like keyboard evaluation; read_console gives errors. Evaluation already sent cannot be undone by cancellation.",
         {
             document_id: id,
             base_revision: revision,

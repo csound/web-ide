@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { csoundEditorLanguage } from "./csound-language";
+import { clojureEditorLanguage } from "./clojure-language";
 import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "codemirror";
 import {
@@ -95,7 +96,9 @@ const CodeEditor = ({
         () =>
             isMarkdown
                 ? [markdown(), syntaxHighlighting(defaultHighlightStyle)]
-                : csoundEditorLanguage(csoundFileType),
+                : csoundFileType === "lisp"
+                  ? clojureEditorLanguage()
+                  : csoundEditorLanguage(csoundFileType),
         [isMarkdown, csoundFileType]
     );
 

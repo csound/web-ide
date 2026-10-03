@@ -1,8 +1,16 @@
 import { ICsoundFileType } from "./types";
 
+export const isClojureFilename = (filename: string): boolean =>
+    /\.(?:mal|clj[^./]*)$/i.test(filename);
+
+export const supportsFileEvaluation = (fileType?: string): boolean =>
+    ["orc", "udo", "sco", "lisp"].includes(fileType ?? "");
+
 export function filenameToCsoundType(
     filename: string
 ): ICsoundFileType | undefined {
+    if (isClojureFilename(filename)) return "lisp";
+    filename = filename.toLowerCase();
     if (filename.endsWith(".csd")) {
         return "csd";
     } else if (filename.endsWith(".sco")) {

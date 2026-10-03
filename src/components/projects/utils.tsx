@@ -12,6 +12,7 @@ import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@comp/csound/types";
 import { dropLast, isNil, prop, propOr, reject } from "ramda";
+import { isClojureFilename } from "@comp/csound/utils";
 
 const BINARY_FILE_CACHE_NAME = "csound-project-binary-files-v1";
 const BINARY_FILE_CACHE_NAMESPACE = "/__csound_project_binary_cache__";
@@ -20,7 +21,10 @@ export function textOrBinary(filename: string): IDocumentFileType {
     const textFiles = [".csd", ".sco", ".orc", ".udo", ".txt", ".md", ".inc"];
     const lowerName = filename.toLowerCase();
 
-    if (textFiles.some((extension) => lowerName.endsWith(extension))) {
+    if (
+        isClojureFilename(filename) ||
+        textFiles.some((extension) => lowerName.endsWith(extension))
+    ) {
         return "txt";
     }
     return "bin";

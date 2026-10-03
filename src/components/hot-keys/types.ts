@@ -44,6 +44,7 @@ export interface IEditorCallbacks {
     doc_at_point?: CallbackOrUnbound;
     eval?: CallbackOrUnbound;
     eval_block?: CallbackOrUnbound;
+    eval_file?: CallbackOrUnbound;
     find_simple?: CallbackOrUnbound;
     redo?: CallbackOrUnbound;
     toggle_comment?: CallbackOrUnbound;

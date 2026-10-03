@@ -31,6 +31,45 @@ import {
     WorkspaceTabType
 } from "./types";
 import { createDefaultBottomSidebar } from "./defaults";
+import type { AppThunkDispatch, RootState } from "@root/store";
+import type { IWorkspaceLayoutNode } from "./types";
+
+export const revealConsole =
+    () => (dispatch: AppThunkDispatch, getState: () => RootState) => {
+        const state = getState().ProjectEditorReducer;
+        const revealSidebars = () => {
+            if (state.maximizedPanelId)
+                dispatch(toggleMaximizePanel(state.maximizedPanelId));
+        };
+        for (const side of ["bottom", "left", "right"] as const) {
+            const sidebar = state[`${side}Sidebar`];
+            const index =
+                sidebar?.tabs.findIndex((tab) => tab.type === "console") ?? -1;
+            if (index >= 0) {
+                revealSidebars();
+                dispatch(setSidebarTabIndex(side, index));
+                return;
+            }
+        }
+        const panels: IWorkspaceLayoutNode[] = [state.root];
+        while (panels.length) {
+            const node = panels.pop()!;
+            if (node.kind === "split") {
+                panels.push(node.second, node.first);
+            } else {
+                const index = node.tabs.findIndex(
+                    (tab) => tab.type === "console"
+                );
+                if (index >= 0) {
+                    if (state.maximizedPanelId !== node.id) revealSidebars();
+                    dispatch(switchPanelTab(node.id, index));
+                    return;
+                }
+            }
+        }
+        revealSidebars();
+        dispatch(openSidebarTab("bottom", "console"));
+    };
 
 const WORKSPACE_LAYOUT_STORAGE_KEY = (projectUid: string) =>
     `${projectUid}:workspaceLayout`;

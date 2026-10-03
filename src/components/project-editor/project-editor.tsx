@@ -78,6 +78,8 @@ import * as SS from "./styles";
 import MobileTabs from "@comp/bottom-tabs/mobile-tabs";
 import { useSetConsole } from "@comp/console/context";
 import Console from "@comp/console/console";
+import { useReadlineRequest } from "@comp/console/readline";
+import { revealConsole } from "./actions";
 import {
     Panel as ResizablePanel,
     PanelGroup,
@@ -362,7 +364,7 @@ const renderWorkspaceTabContent = ({
 
     return (
         <React.Suspense fallback={<></>}>
-            <Component />
+            <Component projectUid={projectUid} />
         </React.Suspense>
     );
 };
@@ -982,6 +984,16 @@ const ProjectEditor = ({
     };
 
     const projectUid: string = activeProject?.projectUid ?? "";
+    const readlineRequest = useReadlineRequest();
+    useEffect(() => {
+        if (
+            readlineRequest?.projectUid === projectUid &&
+            !compactLayout &&
+            !isMobile()
+        ) {
+            dispatch(revealConsole());
+        }
+    }, [readlineRequest, projectUid, compactLayout, dispatch]);
     const projectOwnerUid: string = activeProject?.userUid ?? "";
     const projectName: string = activeProject?.name ?? "Undefined Project";
     const isOwner: boolean = useSelector(selectIsOwner);
