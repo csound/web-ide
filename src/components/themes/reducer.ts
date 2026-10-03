@@ -12,7 +12,12 @@ const getThemeFromName = (themeName: CsoundTheme): Theme =>
     themes[themeName] as unknown as Theme;
 
 function getInitialTheme(): IThemeReducer {
-    const storedThemeName = normalizeThemeName(localStorage.getItem("theme"));
+    let storedThemeName;
+    try {
+        storedThemeName = normalizeThemeName(localStorage.getItem("theme"));
+    } catch {
+        // Some browsers block storage in third-party frames.
+    }
     const selectedThemeName: CsoundTheme = storedThemeName || DEFAULT_THEME;
     return {
         selectedTheme: getThemeFromName(selectedThemeName),
