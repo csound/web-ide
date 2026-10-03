@@ -10,6 +10,7 @@ import {
     stopPerformance
 } from "./actions";
 import { nonCloudFiles } from "../file-tree/actions";
+import { consoleReadline } from "../console/readline";
 
 vi.mock("@csound/browser", () => ({ Csound: vi.fn(), libcsound: vi.fn() }));
 
@@ -97,6 +98,44 @@ afterEach(async () => {
 });
 
 describe("shared Csound performance", () => {
+    it("listens for readline before startup and clears pending input immediately on stop", async () => {
+        engine.readlineSubmit = vi.fn(async () => 0);
+        engine.off = vi.fn((name) => listeners.delete(name));
+        engine.start.mockImplementation(async () => {
+            listeners.get("readline")?.({ requestId: 1, prompt: "" });
+            return 0;
+        });
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        expect(consoleReadline.getSnapshot().request).toMatchObject({
+            requestId: 1,
+            prompt: ""
+        });
+        consoleReadline.setDraft("first\nsecond");
+        consoleReadline.submit();
+        await vi.waitFor(() =>
+            expect(consoleReadline.getSnapshot().queued).toBe(1)
+        );
+        let finishStop!: () => void;
+        engine.stop.mockImplementation(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishStop = resolve;
+                })
+        );
+        const stopping = stopPerformance();
+        expect(consoleReadline.getSnapshot()).toMatchObject({
+            request: null,
+            queued: 0,
+            draft: ""
+        });
+        finishStop();
+        await stopping;
+        expect(engine.readlineSubmit).toHaveBeenCalledExactlyOnceWith(
+            1,
+            "first"
+        );
+    });
+
     it.each([false, true])(
         "prepares requested microphone input before starting (worker: %s)",
         async (useWorker) => {

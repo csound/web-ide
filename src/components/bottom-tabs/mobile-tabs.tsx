@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FileTree } from "@comp/file-tree";
 import Console from "@comp/console/console";
 import MobileNavigation from "@comp/project-editor/mobile-navigation";
@@ -12,6 +12,7 @@ import {
     type MarkdownMode
 } from "@comp/editor/markdown-mode-toggle";
 import * as SS from "./styles";
+import { useReadlineRequest } from "@comp/console/readline";
 
 const MobileTabs = ({
     activeProject,
@@ -23,6 +24,10 @@ const MobileTabs = ({
     currentDocument: IDocument | IOpenDocument | undefined;
 }): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
+    const readlineRequest = useReadlineRequest();
+    useEffect(() => {
+        if (readlineRequest?.projectUid === projectUid) setMobileTabIndex(2);
+    }, [readlineRequest, projectUid]);
     const [markdownModes, setMarkdownModes] = useState<
         Record<string, MarkdownMode>
     >({});

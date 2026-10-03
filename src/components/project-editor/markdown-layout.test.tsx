@@ -21,6 +21,7 @@ import ProjectEditor from "./project-editor";
 import ProjectEditorReducer from "./reducer";
 import { TAB_DOCK_INIT } from "./types";
 import { closePanel, movePanel, toggleMaximizePanel } from "./actions";
+import { consoleReadline, type ReadlineEvent } from "../console/readline";
 
 // Keep the real workspace, tabs, controls, and reducer; replace cloud listeners
 // and the text editor so this test isolates mode selection across remounts.
@@ -43,7 +44,10 @@ vi.mock("../hot-keys/actions", () => ({
     storeEditorKeyboardCallbacks: () => {},
     storeProjectEditorKeyboardCallbacks: () => {}
 }));
-vi.mock("../console/context", () => ({ useSetConsole: () => undefined }));
+vi.mock("../console/context", () => ({
+    useSetConsole: () => undefined,
+    useConsole: () => []
+}));
 vi.mock("../editor/text-editor", () => ({
     default: ({ documentUid, mode }: { documentUid: string; mode: string }) => (
         <div data-testid={documentUid} data-mode={mode} />
@@ -56,7 +60,7 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-it("keeps each Markdown tab's mode when panels split, move, maximize, and close", () => {
+function renderWorkspace() {
     vi.stubGlobal(
         "ResizeObserver",
         class {
@@ -119,6 +123,11 @@ it("keeps each Markdown tab's mode when panels split, move, maximize, and close"
         </Provider>
     );
 
+    return store;
+}
+
+it("keeps each Markdown tab's mode when panels split, move, maximize, and close", () => {
+    const store = renderWorkspace();
     const mode = (id: string) =>
         screen.getByTestId(id).getAttribute("data-mode");
     expect(mode("notes")).toBe("preview");
@@ -154,4 +163,32 @@ it("keeps each Markdown tab's mode when panels split, move, maximize, and close"
     });
     expect(store.getState().ProjectEditorReducer.root.kind).toBe("panel");
     expect(mode("notes")).toBe("edit");
+});
+
+it("opens a hidden console when the current project requests input", () => {
+    const store = renderWorkspace();
+    let listener!: (event: ReadlineEvent) => void;
+    const disconnect = consoleReadline.connect(
+        {
+            on: (_name, cb) => {
+                listener = cb;
+            },
+            off: vi.fn(),
+            readlineSubmit: vi.fn(async () => 0)
+        },
+        "fixture-project",
+        vi.fn()
+    );
+    try {
+        expect(store.getState().ProjectEditorReducer.bottomSidebar).toBeNull();
+        act(() => listener({ requestId: 1, prompt: "Name> " }));
+        expect(
+            store.getState().ProjectEditorReducer.bottomSidebar?.tabs
+        ).toEqual([expect.objectContaining({ type: "console" })]);
+        expect(screen.getByRole("textbox", { name: "Name>" })).toBe(
+            document.activeElement
+        );
+    } finally {
+        act(() => disconnect());
+    }
 });

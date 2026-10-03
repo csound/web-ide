@@ -1,12 +1,12 @@
 import type { Csound as BrowserCsoundFactory } from "@csound/browser";
+import type { ReadlineEngine } from "../console/readline";
 
-export type CsoundObj = NonNullable<
-    Awaited<ReturnType<BrowserCsoundFactory>>
-> & {
-    getAudioContext: any;
-    // Exported by @csound/browser, but missing from its CsoundObj declaration.
-    isRequestingRtAudioInput: () => Promise<number>;
-};
+export type CsoundObj = NonNullable<Awaited<ReturnType<BrowserCsoundFactory>>> &
+    ReadlineEngine & {
+        getAudioContext: any;
+        // Exported by @csound/browser, but missing from its CsoundObj declaration.
+        isRequestingRtAudioInput: () => Promise<number>;
+    };
 
 export async function compileCSD(
     csound: CsoundObj,
