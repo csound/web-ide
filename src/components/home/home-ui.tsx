@@ -137,7 +137,11 @@ export const ProjectCardContentTop = styled.div`
     grid-column: 1;
     display: grid;
     grid-template-rows: auto auto auto;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
+    row-gap: 2px;
+    align-content: start;
+    min-height: 60px;
     background-color: rgba(0, 0, 0, 0);
     color: white;
     padding: 6px 10px;
@@ -176,8 +180,8 @@ export const ProjectCardContentTopHeader = styled(Link)`
 export const ProjectCardContentTopDescription = styled(Link)`
     color: inherit;
     text-decoration: none;
-    grid-row: 3;
-    grid-column: 1;
+    grid-row: 2;
+    grid-column: 1 / -1;
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 14px;

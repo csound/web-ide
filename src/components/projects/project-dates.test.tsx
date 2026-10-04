@@ -108,3 +108,17 @@ it.each([true, false])(
         expect(vi.getTimerCount()).toBe(0);
     }
 );
+
+it("shows only month and year on cards while keeping full date details", async () => {
+    const created = new Date(2026, 9, 1, 12).getTime();
+    vi.spyOn(Date, "now").mockReturnValue(new Date(2026, 9, 4, 12).getTime());
+    render(<ProjectDates project={{ created }} onCard />);
+    const badge = screen.getByRole("button", {
+        name: /Created 1 October 2026/
+    });
+    expect(badge.textContent).toBe("Oct 2026");
+    fireEvent.click(badge);
+    expect((await screen.findByRole("tooltip")).textContent).toContain(
+        "Created: 1 October 2026"
+    );
+});
