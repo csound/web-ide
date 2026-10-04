@@ -155,6 +155,72 @@ test("an ACTIVE function with an older ready revision is still unhealthy", async
         /Forbidden/
     );
 });
+test("readiness shares its retry allowance across polls", async () => {
+    let reads = 0;
+    const waits = [];
+    await assert.rejects(
+        waitUntilReady(
+            {
+                list: async () => {
+                    reads++;
+                    if (reads % 2 === 0) throw new Error("HTTP Error: 503");
+                    return [];
+                }
+            },
+            ["host"],
+            async (ms) => waits.push(ms)
+        ),
+        /HTTP Error: 503/
+    );
+    assert.equal(reads, 8);
+    assert.deepEqual(
+        waits.filter((ms) => ms > 10000),
+        [60000, 120000, 240000]
+    );
+});
+
+test("the job timeout covers all recovery waits with time left for deployment", async () => {
+    let deploymentWait = 0;
+    let deployAttempts = 0;
+    await withRetry(
+        async () => {
+            if (deployAttempts++ < 3) throw new Error("Quota exceeded");
+        },
+        async (ms) => (deploymentWait += ms)
+    );
+    let readinessWait = 0;
+    let reads = 0;
+    await waitUntilReady(
+        {
+            list: async () => {
+                reads++;
+                // Interleave transient errors with all twelve not-ready polls.
+                if ([4, 8, 12].includes(reads))
+                    throw new Error("HTTP Error: 503");
+                return reads === 16 ? [endpoint] : [];
+            },
+            service: async () => service
+        },
+        ["host"],
+        async (ms) => (readinessWait += ms)
+    );
+    assert.equal(readinessWait, 9 * 60000);
+    const batches = Math.ceil(16 / batchSize);
+    const totalWait =
+        batches * (deploymentWait + readinessWait) + readinessWait;
+    const workflow = parse(
+        await readFile(
+            new URL("../.github/workflows/develop.yaml", import.meta.url),
+            "utf8"
+        )
+    );
+    assert.ok(
+        workflow.jobs["deploy-dev"]["timeout-minutes"] * 60000 >=
+            totalWait + 60 * 60000,
+        "Allow at least an hour for installs, builds, API calls, and Hosting beyond recovery waits"
+    );
+});
+
 test("named batches are sequential, bounded, and checked before the next deployment", async () => {
     assert.equal(batchSize, 2);
     const steps = [];
@@ -209,7 +275,11 @@ test("dev serializes deploys, uses one ADC login and CLI, and checks access befo
         steps.some((s) => s.uses?.startsWith("docker://w9jds")),
         false
     );
-    const position = (text) => steps.findIndex((s) => s.run?.includes(text));
+    const position = (text) => {
+        const index = steps.findIndex((s) => s.run?.includes(text));
+        assert.ok(index >= 0, `Missing required workflow step: ${text}`);
+        return index;
+    };
     assert.ok(position("--preflight") < position("npm run build:dev"));
     assert.ok(position("--functions") < position("--only hosting"));
     assert.ok(position("--env dev --apply") < position("--only hosting"));

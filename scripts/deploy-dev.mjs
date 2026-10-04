@@ -143,19 +143,22 @@ export async function waitUntilReady(
     ids,
     wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 ) {
-    for (let attempt = 0; ; attempt++) {
-        const unhealthy = await withRetry(
-            () => unhealthyFunctions(client, ids),
-            wait
-        );
-        if (!unhealthy.length) return;
-        assert.ok(
-            attempt < 12,
-            `Functions are not ready on their latest revision: ${unhealthy.join(", ")}. Hosting was not published.`
-        );
-        console.log(`Waiting for latest revisions: ${unhealthy.join(", ")}`);
-        await wait(10_000);
-    }
+    // Share the poll and transient retry limits across this entire check.
+    let attempt = 0;
+    return withRetry(async () => {
+        for (; ; attempt++) {
+            const unhealthy = await unhealthyFunctions(client, ids);
+            if (!unhealthy.length) return;
+            assert.ok(
+                attempt < 12,
+                `Functions are not ready on their latest revision: ${unhealthy.join(", ")}. Hosting was not published.`
+            );
+            console.log(
+                `Waiting for latest revisions: ${unhealthy.join(", ")}`
+            );
+            await wait(10_000);
+        }
+    }, wait);
 }
 
 export async function deployBatches(ids, deploy, check) {

@@ -15,7 +15,8 @@ jobs:
         name: deploy-develop
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/develop'
-        timeout-minutes: 60
+        # Allow recovery backoffs plus builds, API calls, and Hosting publication.
+        timeout-minutes: 240
         env:
             REACT_APP_DATABASE: DEV
         steps:

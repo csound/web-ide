@@ -209,7 +209,11 @@ An `ACTIVE` function alone does not prove that its latest Cloud Run revision
 started. The readiness check requires Cloud Run's `Ready` condition and matching
 latest-created/latest-ready revisions. Hosting publishes only after every declared
 function is ready and browser-access checks pass. Browser checks run again after
-publication.
+publication. Each readiness check shares one three-retry allowance across all
+polls, with at most two minutes of polling and seven minutes of retry delays.
+For the current 16 functions, all eight batches and the final readiness check
+can wait at most 137 minutes in total. The job allows 240 minutes, leaving time
+for installs, builds, API calls, and Hosting publication.
 
 To repair failed revisions locally, first build the frontend and functions and
 run `npm run prepare:deploy:dev`. With valid Firebase/Google credentials, run:
