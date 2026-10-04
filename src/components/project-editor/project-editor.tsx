@@ -1,3 +1,4 @@
+import { ProjectFileDrop } from "./project-file-drop";
 import React, { useEffect, useMemo, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import AccountTree from "@mui/icons-material/AccountTree";
@@ -1259,6 +1260,12 @@ const ProjectEditor = ({
     return isMobile() || compactLayout ? (
         <>
             {unsavedDataExitPrompt}
+            <ProjectFileDrop
+                key={projectUid}
+                projectUid={projectUid}
+                projectName={activeProject.name}
+                isOwner={isOwner}
+            />
             <MobileTabs
                 activeProject={activeProject}
                 projectUid={projectUid}
@@ -1276,6 +1283,12 @@ const ProjectEditor = ({
     ) : (
         <>
             {unsavedDataExitPrompt}
+            <ProjectFileDrop
+                key={projectUid}
+                projectUid={projectUid}
+                projectName={activeProject.name}
+                isOwner={isOwner}
+            />
             <DnDProvider project={activeProject}>
                 <div css={SS.splitterRoot}>
                     <div css={SS.workbenchShell}>

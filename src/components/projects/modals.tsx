@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
-import { uploadBytesResumable } from "firebase/storage";
 import { useSelector } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { pathOr, isEmpty, values } from "ramda";
@@ -17,12 +15,7 @@ import {
     updateDoc,
     writeBatch
 } from "firebase/firestore";
-import {
-    database,
-    getFirebaseTimestamp,
-    projects,
-    storageReference
-} from "@config/firestore";
+import { database, getFirebaseTimestamp, projects } from "@config/firestore";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { tabOpenByDocumentUid } from "@comp/project-editor/actions";
@@ -30,7 +23,7 @@ import { closeModal } from "../modal/actions";
 import { newEmptyDocumentAction, renameDocumentLocally } from "./actions";
 import * as SS from "./styles";
 import { IProject, IDocument } from "./types";
-import { textOrBinary } from "./utils";
+import { uploadProjectFiles, MAX_PROJECT_FILE_BYTES } from "./upload-files";
 import { useDispatch } from "@root/store";
 
 export function DeleteDocumentPrompt({
@@ -311,169 +304,27 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
         pathOr({} as IProject, ["ProjectsReducer", "projects", projectUid])
     );
 
-    const uploadFilePromise = (
-        file: File,
-        uid: string,
-        filename: string,
-        fileType: string,
-        project: IProject
-    ): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            if (fileType === "txt") {
-                const reader = new FileReader();
-                reader.addEventListener("load", async () => {
-                    try {
-                        const txt = reader.result;
-                        const document_ = {
-                            type: fileType,
-                            name: filename,
-                            value: txt,
-                            userUid: uid,
-                            lastModified: getFirebaseTimestamp(),
-                            created: getFirebaseTimestamp()
-                        };
-
-                        const result = await addDoc(
-                            collection(
-                                doc(projects, project.projectUid),
-                                "files"
-                            ),
-                            document_
-                        );
-
-                        const documentUid = result.id;
-                        dispatch(tabOpenByDocumentUid(documentUid, projectUid));
-                        dispatch(
-                            newEmptyDocumentAction(
-                                projectUid,
-                                documentUid,
-                                filename
-                            )
-                        );
-                        updateProjectLastModified(project.projectUid);
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-                reader.addEventListener("error", () => {
-                    reject(new Error(`Failed to read file: ${filename}`));
-                });
-                reader.readAsText(file);
-            } else if (fileType === "bin") {
-                // generate UUID
-                const documentId = uuidv4();
-
-                const metadata = {
-                    cacheControl: "public,max-age=31536000,immutable",
-                    customMetadata: {
-                        filename,
-                        projectUid,
-                        userUid: uid,
-                        docUid: documentId
-                    }
-                };
-
-                storageReference(`${uid}/${project.projectUid}/${documentId}`)
-                    .then((ref) => {
-                        const uploadTask = uploadBytesResumable(
-                            ref,
-                            file,
-                            metadata
-                        );
-
-                        uploadTask.on(
-                            "state_changed",
-                            (snapshot) => {
-                                const progress =
-                                    (snapshot.bytesTransferred /
-                                        snapshot.totalBytes) *
-                                    100;
-                                console.log(
-                                    `Upload ${filename} is ${progress}% done`
-                                );
-                                switch (snapshot.state) {
-                                    case "paused": {
-                                        console.log(
-                                            `Upload ${filename} is paused`
-                                        );
-                                        break;
-                                    }
-                                    case "running": {
-                                        console.log(
-                                            `Upload ${filename} is running`
-                                        );
-                                        break;
-                                    }
-                                }
-                            },
-                            function (error: any) {
-                                dispatch(
-                                    openSnackbar(
-                                        `Error uploading ${filename}: ${error.message}`,
-                                        SnackbarType.Error
-                                    )
-                                );
-                                reject(error);
-                            },
-                            function () {
-                                // Upload completed successfully
-                                console.log(
-                                    `${filename} uploaded successfully`
-                                );
-                                resolve();
-                            }
-                        );
-                    })
-                    .catch(reject);
-            }
-        });
-    };
-
     const addDocumentSuccessCallback = useCallback(async () => {
-        if (!isEmpty(project) && filesToUpload.length > 0) {
-            const currentUser = getAuth().currentUser;
-            const uid = currentUser ? currentUser.uid : "";
-
-            try {
-                // Upload files sequentially
-                for (let i = 0; i < filesToUpload.length; i++) {
-                    setUploadingIndex(i);
-                    const file = filesToUpload[i];
-                    const filename = file.name;
-                    const fileType = textOrBinary(file.name);
-
-                    console.log(
-                        `Uploading file ${i + 1}/${filesToUpload.length}: ${filename} (type: ${fileType})`
-                    );
-
-                    await uploadFilePromise(
-                        file,
-                        uid,
-                        filename,
-                        fileType,
-                        project
-                    );
-                }
-
-                dispatch(
-                    openSnackbar(
-                        `Successfully uploaded ${filesToUpload.length} file(s)`,
-                        SnackbarType.Info
-                    )
-                );
-                updateProjectLastModified(project.projectUid);
-            } catch (error: any) {
-                dispatch(
-                    openSnackbar(
-                        `Upload failed: ${error.message || "Unknown error"}`,
-                        SnackbarType.Error
-                    )
-                );
-            }
+        setUploadingIndex(0);
+        try {
+            await dispatch(
+                uploadProjectFiles(
+                    projectUid,
+                    filesToUpload,
+                    (progress) => setUploadingIndex(progress?.index ?? -1),
+                    (documentUid, type) => {
+                        if (type === "txt")
+                            dispatch(
+                                tabOpenByDocumentUid(documentUid, projectUid)
+                            );
+                    }
+                )
+            );
+            dispatch(closeModal());
+        } finally {
+            setUploadingIndex(-1);
         }
-        dispatch(closeModal());
-    }, [dispatch, filesToUpload, projectUid, project]);
+    }, [dispatch, filesToUpload, projectUid]);
 
     const reservedFilenames = (values(project.documents) as IDocument[]).map(
         (document_) => document_.filename
@@ -508,11 +359,11 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
         setNameCollides(checkFileNameCollisions(updated));
     };
 
-    const megabyte_limit = Math.pow(10, 6) * 2;
     const shouldDisable =
         filesToUpload.length === 0 ||
-        filesToUpload.some((file) => file.size > megabyte_limit) ||
-        nameCollides;
+        filesToUpload.some((file) => file.size > MAX_PROJECT_FILE_BYTES) ||
+        nameCollides ||
+        uploadingIndex !== -1;
 
     const filesInfo =
         filesToUpload.length > 0
@@ -526,6 +377,7 @@ export function AddDocumentPrompt({ projectUid }: { projectUid: string }) {
             <Button variant="contained" color="primary" component="label">
                 {filesInfo}
                 <input
+                    disabled={uploadingIndex !== -1}
                     id="fileSelector"
                     type="file"
                     multiple
