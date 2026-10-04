@@ -32,12 +32,6 @@ body {
     min-height: 100vh;
 }
 
-@media (max-width: 900px) {
-  body.mobile-left-menu-docked main {
-    box-sizing: border-box;
-    padding-left: 104px;
-  }
-}
 
 #root {
     position: relative;

@@ -25,7 +25,7 @@ export default function TargetDropdown({
     activeProjectUid: string;
 }) {
     const dispatch = useDispatch();
-    const narrow = useMediaQuery("(max-width:380px)");
+    const narrow = useMediaQuery("(max-width:600px)");
     const isOwner = useSelector(selectIsOwnerForProject(activeProjectUid));
     const mode = useSelector((state) =>
         selectPlaybackMode(state, activeProjectUid)

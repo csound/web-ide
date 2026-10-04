@@ -314,33 +314,15 @@ export const headIconsContainer = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const mobileNavigationContainer = (
-    theme: Theme
-): SerializedStyles => css`
-    background-color: ${theme.headerBackground};
-    position: relative;
-    width: 100%;
-    z-index: 2;
-    min-height: 56px;
-    padding-bottom: env(safe-area-inset-bottom);
-    box-sizing: border-box;
-    ${shadow};
-    border-top: 1px solid;
-`;
-
-export const mobileNavigationButton = (theme: Theme): SerializedStyles => css`
-    color: ${theme.headerTextColor};
-`;
-
-// ── New custom mobile bottom navigation ──────────────────────────────────────
-
 export const mobileNavContainer = (theme: Theme): SerializedStyles => css`
     background-color: ${theme.headerBackground};
-    position: fixed;
+    position: relative;
+    flex: 0 0 auto;
     width: 100%;
-    bottom: 0;
-    z-index: 100;
-    height: 56px;
+    min-height: 56px;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
+    box-sizing: border-box;
     display: flex;
     align-items: stretch;
     ${shadow};
@@ -363,16 +345,21 @@ export const mobileNavTabButton =
         gap: 2px;
         flex: 1;
         border: 0;
-        border-left: 1px solid ${theme.line};
         border-top: 2px solid
             ${isActive ? theme.headerTextColor : "transparent"};
         background: transparent;
         color: ${theme.headerTextColor};
-        opacity: ${isActive ? 1 : 0.6};
+        font-weight: ${isActive ? 600 : 400};
         cursor: pointer;
-        font-size: 10px;
-        padding: 4px 2px;
-        transition: opacity 0.15s;
+        font-size: 11px;
+        min-height: 55px;
+        min-width: 0;
+        padding: 6px 2px;
+
+        &:focus-visible {
+            outline: 2px solid ${theme.headerTextColor};
+            outline-offset: -4px;
+        }
 
         &:hover {
             opacity: 1;
