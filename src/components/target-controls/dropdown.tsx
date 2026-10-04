@@ -53,11 +53,12 @@ export default function TargetDropdown({
     const index = currentIndex >= 0 ? currentIndex : selectedIndex;
     const status = useSelector((state) => state.csound.status);
     const busy = ["loading", "playing", "paused", "rendering"].includes(status);
+    if (mode === "main" && !isOwner) return null;
     return (
         <div
             css={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}
         >
-            {mode === "playlist" ? (
+            {mode === "playlist" && (
                 <Select
                     size="small"
                     value={documents.length ? index : ""}
@@ -149,20 +150,6 @@ export default function TargetDropdown({
                         </MenuItem>
                     ))}
                 </Select>
-            ) : (
-                <span
-                    css={(theme) => ({
-                        fontSize: 13,
-                        color: theme.altTextColor,
-                        maxWidth: 180,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        "@media(max-width:900px)": { display: "none" }
-                    })}
-                >
-                    {documents[0]?.filename ?? "Choose a main file"}
-                </span>
             )}
             {isOwner && !(mode === "playlist" && narrow) && (
                 <Tooltip title="Playback settings">

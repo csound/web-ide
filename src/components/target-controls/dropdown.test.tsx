@@ -8,7 +8,7 @@ import TargetDropdown from "./dropdown";
 import TargetControlsReducer from "./reducer";
 
 afterEach(cleanup);
-function setup(owner: boolean, playing = false) {
+function setup(owner: boolean, playing = false, mode = "playlist") {
     const controls = {
         project: {
             defaultTarget: "Playlist",
@@ -17,7 +17,8 @@ function setup(owner: boolean, playing = false) {
             targets: {
                 Playlist: {
                     targetName: "Playlist",
-                    targetType: "playlist",
+                    targetType: mode,
+                    targetDocumentUid: "first",
                     playlistDocumentsUid: ["first", "second"],
                     csoundOptions: {}
                 }
@@ -101,3 +102,15 @@ it("shows the current entry during playback and settings for owners", () => {
         screen.getByRole("button", { name: "Playback settings" })
     ).toBeTruthy();
 });
+
+it.each([true, false])(
+    "hides filenames and track selection in main mode (owner: %s)",
+    (owner) => {
+        setup(owner, false, "main");
+        expect(screen.queryByText("first.csd")).toBeNull();
+        expect(screen.queryByRole("combobox")).toBeNull();
+        expect(
+            !!screen.queryByRole("button", { name: "Playback settings" })
+        ).toBe(owner);
+    }
+);
