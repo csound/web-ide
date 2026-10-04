@@ -7,7 +7,7 @@ import {
     publicCallableOptions
 } from "./public_requests.js";
 import {
-    addProjectEditDates,
+    addProjectCardDetails,
     readPublicProjectSummaries
 } from "./public_project_summaries.js";
 
@@ -214,7 +214,7 @@ export const searchProjects = onCall<SearchProjectsParams>(
             page.map((project) => project.userUid)
         );
         return {
-            data: await addProjectEditDates(
+            data: await addProjectCardDetails(
                 page.map((project) =>
                     searchResult(project.id, project, profiles[project.userUid])
                 ),

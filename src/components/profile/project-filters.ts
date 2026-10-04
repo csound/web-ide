@@ -1,24 +1,15 @@
 import type { IProject } from "@comp/projects/types";
+import { projectTags } from "@comp/projects/tags";
 
-const normalize = (value: string) =>
+export const normalizeProjectText = (value: string) =>
     value.trim().normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
-export const projectTags = (project: Pick<IProject, "tags">): string[] =>
-    Array.isArray(project.tags)
-        ? [
-              ...new Set(
-                  project.tags
-                      .filter((tag) => typeof tag === "string")
-                      .map((tag) => tag.trim())
-                      .filter(Boolean)
-              )
-          ]
-        : [];
 
 export function availableProjectTags(projects: IProject[]) {
     const tags = new Map<string, string>();
     for (const project of projects)
         for (const tag of projectTags(project)) {
-            if (!tags.has(normalize(tag))) tags.set(normalize(tag), tag);
+            if (!tags.has(normalizeProjectText(tag)))
+                tags.set(normalizeProjectText(tag), tag);
         }
     return [...tags.values()].sort((a, b) => a.localeCompare(b));
 }
@@ -28,14 +19,16 @@ export function filterProfileProjects(
     query: string,
     selectedTags: string[]
 ) {
-    const search = normalize(query);
+    const search = normalizeProjectText(query);
     return projects.filter((project) => {
-        const tags = projectTags(project).map(normalize);
+        const tags = projectTags(project).map(normalizeProjectText);
         return (
-            selectedTags.every((tag) => tags.includes(normalize(tag))) &&
+            selectedTags.every((tag) =>
+                tags.includes(normalizeProjectText(tag))
+            ) &&
             (!search ||
                 [project.name, project.description, ...tags].some((value) =>
-                    normalize(value || "").includes(search)
+                    normalizeProjectText(value || "").includes(search)
                 ))
         );
     });

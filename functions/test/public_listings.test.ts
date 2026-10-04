@@ -383,3 +383,30 @@ it("keeps missing edit dates unknown and reads dates only for the returned searc
         result.data.map((project) => `projectLastModified/${project.id}`).sort()
     );
 });
+
+it("returns tags only for visible random projects and the current search page", async () => {
+    const { randomProjects } = await import("../src/random_projects");
+    const { searchProjects } = await import("../src/search_projects");
+    fixture.records.set("tags/ambient", { "fixture-project": "fixture-user" });
+    fixture.records.set("tags/wrong-owner", {
+        "fixture-project": "another-user"
+    });
+    fixture.records.set("tags/private-tag", { hidden: "fixture-user" });
+    expect((await randomProjects.run(request({ count: 1 })))[0].tags).toEqual([
+        "ambient"
+    ]);
+    const results = await searchProjects.run(
+        request({ query: "Fixture Melody" })
+    );
+    expect(results.data[0].tags).toEqual(["ambient"]);
+    fixture.queries.mockClear();
+    await searchProjects.run(request({ query: "Fixture Melody", offset: 100 }));
+    expect(
+        fixture.queries.mock.calls.filter(([name]) => name === "tags")
+    ).toHaveLength(0);
+    fixture.records.get("projects/fixture-project")!.public = false;
+    expect(await randomProjects.run(request({ count: 1 }))).toEqual([]);
+    expect(
+        fixture.queries.mock.calls.filter(([name]) => name === "tags")
+    ).toHaveLength(0);
+});

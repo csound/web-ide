@@ -15,7 +15,11 @@ import { addProject, setProjectFilterString } from "./actions";
 import { selectProjectFilterString } from "./selectors";
 import { ProfileLists } from "./profile-lists";
 import { ListContainer, contentActionsStyle } from "./profile-ui";
-import { availableProjectTags, filterProfileProjects } from "./project-filters";
+import {
+    availableProjectTags,
+    filterProfileProjects,
+    normalizeProjectText
+} from "./project-filters";
 
 export function ProfileProjects({
     profileUid,
@@ -150,6 +154,22 @@ export function ProfileProjects({
                         isProfileOwner={isProfileOwner}
                         selectedSection={0}
                         filteredProjects={filtered}
+                        selectedTags={selectedTags}
+                        onTagClick={(tag) => {
+                            const canonical =
+                                options.find(
+                                    (option) =>
+                                        normalizeProjectText(option) ===
+                                        normalizeProjectText(tag)
+                                ) || tag;
+                            setSelectedTags((current) =>
+                                current.includes(canonical)
+                                    ? current.filter(
+                                          (selected) => selected !== canonical
+                                      )
+                                    : [...current, canonical]
+                            );
+                        }}
                     />
                 </ListContainer>
             )}

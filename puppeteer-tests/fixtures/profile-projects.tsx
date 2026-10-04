@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router";
 import { Tabs, Tab, Typography } from "@mui/material";
 import { store } from "../../src/store";
 import ThemeProvider from "../../src/styles/theme-provider";
+import { ProjectCard } from "../../src/components/home/project-card";
 import { ProfileProjects } from "../../src/components/profile/profile-projects";
 import {
     ProfileContainer,
@@ -54,26 +55,67 @@ createRoot(document.getElementById("root")!).render(
     <Provider store={store}>
         <MemoryRouter>
             <ThemeProvider>
-                <ProfileContainer>
-                    <NameSectionWrapper>
-                        <Typography variant="h4">Marta Nowak</Typography>
-                        <Typography>Sound studies and instruments</Typography>
-                    </NameSectionWrapper>
-                    <ContentSection>
-                        <ContentTabsContainer>
-                            <Tabs value={0}>
-                                <Tab label="Projects" />
-                                <Tab label="Stars" />
-                                <Tab label="Following" />
-                            </Tabs>
-                        </ContentTabsContainer>
-                        <ProfileProjects
-                            profileUid="fixture-author"
-                            projects={projects}
-                            isProfileOwner={owner}
-                        />
-                    </ContentSection>
-                </ProfileContainer>
+                {new URLSearchParams(location.search).has("cards") ? (
+                    <main
+                        style={{
+                            maxWidth: 340,
+                            margin: "16px auto",
+                            padding: "0 12px",
+                            display: "grid",
+                            gap: 16
+                        }}
+                    >
+                        {[
+                            projects[0],
+                            {
+                                ...projects[1],
+                                tags: [
+                                    "a-very-long-tag-for-granular-synthesis",
+                                    ...Array.from(
+                                        { length: 30 },
+                                        (_, i) => `tag-${i + 1}`
+                                    )
+                                ]
+                            },
+                            { ...projects[2], tags: [] }
+                        ].map((project, projectIndex) => (
+                            <ProjectCard
+                                key={project.projectUid}
+                                project={project}
+                                projectIndex={projectIndex}
+                                profile={{
+                                    userUid: "fixture-author",
+                                    username: "fixture-author",
+                                    displayName: "Marta Nowak",
+                                    bio: "Sound studies"
+                                }}
+                            />
+                        ))}
+                    </main>
+                ) : (
+                    <ProfileContainer>
+                        <NameSectionWrapper>
+                            <Typography variant="h4">Marta Nowak</Typography>
+                            <Typography>
+                                Sound studies and instruments
+                            </Typography>
+                        </NameSectionWrapper>
+                        <ContentSection>
+                            <ContentTabsContainer>
+                                <Tabs value={0}>
+                                    <Tab label="Projects" />
+                                    <Tab label="Stars" />
+                                    <Tab label="Following" />
+                                </Tabs>
+                            </ContentTabsContainer>
+                            <ProfileProjects
+                                profileUid="fixture-author"
+                                projects={projects}
+                                isProfileOwner={owner}
+                            />
+                        </ContentSection>
+                    </ProfileContainer>
+                )}
             </ThemeProvider>
         </MemoryRouter>
     </Provider>

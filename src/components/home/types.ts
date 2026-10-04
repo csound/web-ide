@@ -23,6 +23,7 @@ export const SET_RANDOM_PROJECTS_LOADING = "HOME.SET_RANDOM_PROJECTS_LOADING";
 export const SET_POPULAR_ARTISTS_LOADING = "HOME.SET_POPULAR_ARTISTS_LOADING";
 
 export interface RandomProjectResponse {
+    tags?: string[];
     forkedFrom?: string;
     forkedAt?: RandomProjectResponse["created"];
     created?:

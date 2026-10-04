@@ -137,3 +137,25 @@ it.each([false, true])(
         ).toBe(owner);
     }
 );
+
+it("toggles a tag filter from a project chip without opening its editor", () => {
+    setup();
+    const row = screen
+        .getByRole("heading", { name: "Glass bells" })
+        .closest("li")!;
+    const tag = within(row).getByRole("button", {
+        name: "Filter by tag ambient"
+    });
+    expect(tag.tagName).toBe("BUTTON");
+    expect(tag.closest("a")).toBeNull();
+    fireEvent.click(tag);
+    expect(names()).toEqual(["Glass bells", "Étude"]);
+    expect(tag.getAttribute("aria-pressed")).toBe("true");
+    expect(
+        within(
+            screen.getByRole("combobox").closest(".MuiAutocomplete-root")!
+        ).getByText("ambient")
+    ).toBeDefined();
+    fireEvent.click(tag);
+    expect(names()).toEqual(["Glass bells", "Granular study", "Étude"]);
+});

@@ -31,7 +31,8 @@ import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { ForkAttribution } from "@comp/projects/fork-attribution";
-import { projectTags } from "./project-filters";
+import { projectTags } from "@comp/projects/tags";
+import { normalizeProjectText } from "./project-filters";
 import { ProjectDates } from "@comp/projects/project-dates";
 import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
@@ -40,10 +41,14 @@ import { descend, sort, propOr } from "ramda";
 
 const ProjectListItem = ({
     isProfileOwner,
-    project
+    project,
+    onTagClick,
+    selectedTags = []
 }: {
     isProfileOwner: boolean;
     project: IProject;
+    onTagClick?: (tag: string) => void;
+    selectedTags?: string[];
 }) => {
     const dispatch = useDispatch();
     const { isPublic, projectUid, name, description } = project;
@@ -180,8 +185,6 @@ const ProjectListItem = ({
                 </Box>
                 {(description || tags?.length > 0) && (
                     <Box
-                        component={Link}
-                        to={"/editor/" + projectUid}
                         sx={{
                             display: "block",
                             textDecoration: "none",
@@ -190,10 +193,13 @@ const ProjectListItem = ({
                     >
                         {description && (
                             <Typography
+                                component={Link}
+                                to={"/editor/" + projectUid}
                                 variant="body2"
                                 color="text.secondary"
                                 sx={{
                                     mt: 0.5,
+                                    textDecoration: "none",
                                     overflow: "hidden",
                                     display: "-webkit-box",
                                     WebkitLineClamp: 2,
@@ -220,7 +226,31 @@ const ProjectListItem = ({
                                         label={tag}
                                         size="small"
                                         variant="outlined"
-                                        sx={{ maxWidth: "100%" }}
+                                        {...(onTagClick
+                                            ? {
+                                                  component: "button",
+                                                  type: "button",
+                                                  onClick: () =>
+                                                      onTagClick(tag),
+                                                  "aria-label": `Filter by tag ${tag}`,
+                                                  "aria-pressed":
+                                                      selectedTags.some(
+                                                          (selected) =>
+                                                              normalizeProjectText(
+                                                                  selected
+                                                              ) ===
+                                                              normalizeProjectText(
+                                                                  tag
+                                                              )
+                                                      )
+                                              }
+                                            : {})}
+                                        sx={{
+                                            maxWidth: "100%",
+                                            "&[aria-pressed=true]": {
+                                                bgcolor: "action.selected"
+                                            }
+                                        }}
                                     />
                                 ))}
                             </Box>
@@ -304,12 +334,16 @@ export const ProfileLists = ({
     profileUid,
     selectedSection,
     isProfileOwner,
-    filteredProjects
+    filteredProjects,
+    onTagClick,
+    selectedTags
 }: {
     profileUid: string;
     selectedSection: number;
     isProfileOwner: boolean;
     filteredProjects: IProject[];
+    onTagClick?: (tag: string) => void;
+    selectedTags?: string[];
 }) => {
     const userFollowingSelector = useMemo(
         () => selectProfileConnections(profileUid, "following"),
@@ -342,6 +376,8 @@ export const ProfileLists = ({
                             key={project.projectUid}
                             isProfileOwner={isProfileOwner}
                             project={project}
+                            onTagClick={onTagClick}
+                            selectedTags={selectedTags}
                         />
                     );
                 })}

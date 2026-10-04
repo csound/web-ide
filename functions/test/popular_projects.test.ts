@@ -9,6 +9,7 @@ const { records, database, reads, deleteValue } = vi.hoisted(() => {
     const records = {
         projects: new Map<string, Record<string, unknown>>(),
         projectLastModified: new Map<string, Record<string, unknown>>(),
+        tags: new Map<string, Record<string, unknown>>(),
         stars: new Map<string, Record<string, unknown>>(),
         profileStars: new Map<string, Record<string, unknown>>()
     };
@@ -185,7 +186,11 @@ describe("popular projects", () => {
         for (let i = 0; i < 250; i++) addProject("project" + i, 1);
         addProject("winner", 10);
         expect((await fetchPopular(2))[0].projectUid).toBe("winner");
-        expect(reads.mock.calls).toEqual([["projects", 2]]);
+        expect(reads.mock.calls).toEqual([
+            ["projects", 2],
+            ["tags", 0],
+            ["tags", 0]
+        ]);
         expect(database.collection).not.toHaveBeenCalledWith("stars");
         expect(await fetchPopular()).toHaveLength(8);
         expect(await fetchPopular(100)).toHaveLength(50);
@@ -331,4 +336,15 @@ it("includes saved edit dates on popular cards", async () => {
         timestamp: { toMillis: () => 987654321 }
     });
     expect((await fetchPopular())[0].lastModified).toBe(987654321);
+});
+
+it("includes tags belonging to each popular project", async () => {
+    records.projects.set("tagged", {
+        public: true,
+        userUid: "author",
+        starCount: 2
+    });
+    records.tags.set("ambient", { tagged: "author" });
+    records.tags.set("other", { elsewhere: "author" });
+    expect((await fetchPopular(1))[0].tags).toEqual(["ambient"]);
 });

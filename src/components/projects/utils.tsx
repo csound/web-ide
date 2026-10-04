@@ -1,3 +1,4 @@
+import { projectTags } from "./tags";
 import {
     doc,
     DocumentChange,
@@ -310,7 +311,7 @@ export const firestoreProjectToIProject = (
         iconBackgroundColor: prop("iconBackgroundColor", project),
         iconForegroundColor: prop("iconForegroundColor", project),
         iconName: prop("iconName", project),
-        tags: [],
+        tags: projectTags(project),
         stars: {}
     };
 };

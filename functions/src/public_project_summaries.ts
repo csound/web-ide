@@ -53,8 +53,8 @@ export async function readPublicProjectSummaries(ids: string[]) {
     return projects;
 }
 
-/** Read edit dates only for the visible page, after checking project visibility. */
-export async function addProjectEditDates<T>(
+/** Read dates and tags only for the visible page, after checking project visibility. */
+export async function addProjectCardDetails<T extends { userUid: string }>(
     projects: T[],
     projectId: (project: T) => string
 ) {
@@ -74,8 +74,19 @@ export async function addProjectEditDates<T>(
                 dates.set(snapshot.id, millis);
         }
     }
-    return projects.map((project) => ({
-        ...project,
-        lastModified: dates.get(projectId(project)) ?? null
-    }));
+    return Promise.all(
+        projects.map(async (project) => {
+            const tags = project.userUid
+                ? await db
+                      .collection("tags")
+                      .where(projectId(project), "==", project.userUid)
+                      .get()
+                : undefined;
+            return {
+                ...project,
+                lastModified: dates.get(projectId(project)) ?? null,
+                tags: tags?.docs.map((tag) => tag.id) ?? []
+            };
+        })
+    );
 }
