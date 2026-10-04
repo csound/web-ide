@@ -138,7 +138,10 @@ export const listContainer = css`
 `;
 
 export const listItem = css`
-    padding-left: 32px;
+    /* Override the app-wide MUI list padding, including its !important rule. */
+    && {
+        padding: 0 12px 0 var(--file-tree-indent, 6px) !important;
+    }
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -155,66 +158,27 @@ export const draggingOver = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const listItemIcon = css`
-    position: absolute;
-    min-width: 18px;
-`;
-
-export const listItemIconMui = css`
-    ${listItemIcon}
-    left: 12px;
-    top: 2px;
-`;
-
-export const muiIcon = (theme: Theme): SerializedStyles => css`
-    fill: ${theme.textColor} !important;
+// Keep every glyph centered in the same slot, including taller transient rows.
+export const listItemIcon = (theme: Theme): SerializedStyles => css`
+    flex: 0 0 36px;
+    min-width: 36px;
     width: 36px;
-    height: 32px;
-    margin-left: 1px;
-`;
-
-export const csoundFileIcon = css`
-    display: inline-flex;
+    height: 36px;
+    display: flex;
     align-items: center;
     justify-content: center;
+    color: ${theme.textColor};
 
-    svg {
+    > svg {
+        display: block;
         width: 36px;
         height: 36px;
-        display: block;
     }
-`;
 
-export const newFolderIcon = css`
-    margin-right: 12px;
-`;
-
-const musicIconBase = css`
-    position: relative;
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-`;
-
-export const directoryCloseIcon = (theme: Theme): SerializedStyles => css`
-    ${musicIconBase}
-    width: 36px;
-    height: 32px;
-    margin-left: 2px;
-    & > g > path:first-of-type {
-        fill: ${theme.textColor};
+    > svg.MuiSvgIcon-root {
+        width: 28px;
+        height: 28px;
     }
-    & > g > path:last-of-type {
-        fill: ${theme.highlightBackground};
-    }
-`;
-
-export const directoryOpenIcon = css`
-    ${musicIconBase}
-    width: 36px;
-    height: 32px;
 `;
 
 export const filenameStyle = (theme: Theme): SerializedStyles => css`
@@ -224,7 +188,7 @@ export const filenameStyle = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     padding: 0;
     margin: 0;
-    margin-left: 12px;
+    margin-left: 10px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

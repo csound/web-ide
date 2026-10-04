@@ -19,8 +19,7 @@ import { Theme, useTheme } from "@emotion/react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import { FileTypeIcon, getFileTypeIconDetails } from "@elem/filetype-icons";
+import { FileTypeIcon } from "@elem/filetype-icons";
 import EditIcon from "@mui/icons-material/EditTwoTone";
 import DeleteIcon from "@mui/icons-material/DeleteTwoTone";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -29,8 +28,8 @@ import Tooltip from "@mui/material/Tooltip";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import DirectoryClose from "@root/svgs/fad-close.svg?react";
-import DirectoryOpen from "@root/svgs/fad-open.svg?react";
+import DirectoryClose from "@mui/icons-material/FolderOutlined";
+import DirectoryOpen from "@mui/icons-material/FolderOpenOutlined";
 import { IDocument } from "../projects/types";
 import { deleteFile, renameDocument } from "../projects/actions";
 import { textOrBinary } from "@comp/projects/utils";
@@ -350,57 +349,15 @@ function DeleteNonCloudFileIcon({
 }
 
 function FileExtIcon({
-    isBinary,
     filename,
-    mimeType,
-    nestingDepth = 0
+    mimeType
 }: {
-    isBinary: boolean;
     filename: string;
     mimeType?: string;
-    nestingDepth?: number;
 }) {
-    const iconDetails = getFileTypeIconDetails(filename, mimeType);
-
-    if (iconDetails) {
-        return (
-            <ListItemIcon
-                css={SS.listItemIconMui}
-                style={{
-                    left: 6,
-                    marginLeft: 24 * nestingDepth
-                }}
-            >
-                <span css={SS.csoundFileIcon}>
-                    <FileTypeIcon filename={filename} mimeType={mimeType} />
-                </span>
-            </ListItemIcon>
-        );
-    }
-
-    if (isBinary) {
-        return (
-            <ListItemIcon
-                css={SS.listItemIconMui}
-                style={{
-                    left: 0,
-                    marginLeft: 24 * nestingDepth
-                }}
-            >
-                <InsertDriveFileIcon css={SS.muiIcon} />
-            </ListItemIcon>
-        );
-    }
-
     return (
-        <ListItemIcon
-            css={SS.listItemIconMui}
-            style={{
-                left: 0,
-                marginLeft: 24 * nestingDepth
-            }}
-        >
-            <InsertDriveFileIcon css={SS.muiIcon} />
+        <ListItemIcon css={SS.listItemIcon}>
+            <FileTypeIcon filename={filename} mimeType={mimeType} />
         </ListItemIcon>
     );
 }
@@ -515,16 +472,11 @@ const makeTree = (
                     <ListItemIcon
                         key={`${document_.documentUid}-folder`}
                         css={SS.listItemIcon}
-                        style={{ left: 1 + 24 * (path.length - 1) }}
                     >
                         {collapseState[document_.documentUid] ? (
-                            <span css={SS.directoryOpenIcon}>
-                                <DirectoryOpen />
-                            </span>
+                            <DirectoryOpen />
                         ) : (
-                            <span css={SS.directoryCloseIcon}>
-                                <DirectoryClose />
-                            </span>
+                            <DirectoryClose />
                         )}
                     </ListItemIcon>
                 );
@@ -578,17 +530,19 @@ const makeTree = (
                                             className={`folder-${document_.documentUid}`}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
+                                            sx={{
+                                                "--file-tree-indent": `${6 + 24 * path.length}px`
+                                            }}
                                             style={{
                                                 ...provided.draggableProps
                                                     .style,
-                                                paddingLeft: 40,
                                                 height: 36
                                             }}
                                         >
                                             {FolderIcon}
-                                            <Box marginLeft="24px" padding="0">
+                                            <p css={SS.filenameStyle}>
                                                 {document_.filename}
-                                            </Box>
+                                            </p>
                                             <div css={SS.delEditContainer}>
                                                 {deleteIcon(document_)}
                                                 {editIcon(document_)}
@@ -643,6 +597,9 @@ const makeTree = (
                                             data-testid={`file-tree-item-${document_.filename}`}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
+                                            sx={{
+                                                "--file-tree-indent": `${6 + 24 * path.length}px`
+                                            }}
                                             onClick={() =>
                                                 dispatch(
                                                     tabOpenByDocumentUid(
@@ -651,9 +608,6 @@ const makeTree = (
                                                     )
                                                 )
                                             }
-                                            sx={{
-                                                paddingLeft: `${40 + 24 * path.length}px !important`
-                                            }}
                                             style={{
                                                 ...provided.draggableProps
                                                     .style,
@@ -666,10 +620,6 @@ const makeTree = (
                                             }}
                                         >
                                             <FileExtIcon
-                                                nestingDepth={path.length}
-                                                isBinary={
-                                                    document_.type === "bin"
-                                                }
                                                 filename={document_.filename}
                                             />
                                             <p css={SS.filenameStyle}>
@@ -761,10 +711,7 @@ export const FileTree = ({
                             return (
                                 <div
                                     key={file.name + index}
-                                    style={{
-                                        paddingLeft: "6px",
-                                        cursor: "pointer"
-                                    }}
+                                    style={{ cursor: "pointer" }}
                                 >
                                     <ListItem
                                         onClick={() =>
@@ -783,11 +730,7 @@ export const FileTree = ({
                                     >
                                         <FileExtIcon
                                             filename={file.name}
-                                            isBinary={mimeType.startsWith(
-                                                "audio"
-                                            )}
                                             mimeType={mimeType}
-                                            nestingDepth={0}
                                         />
                                         <Tooltip
                                             placement="top"
@@ -808,7 +751,6 @@ export const FileTree = ({
                                             <p
                                                 css={SS.filenameStyle}
                                                 style={{
-                                                    marginLeft: "16px",
                                                     marginRight: "8px"
                                                 }}
                                             >
