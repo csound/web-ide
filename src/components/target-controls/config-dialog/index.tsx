@@ -17,7 +17,7 @@ export const TargetControlsConfigDialog = () => {
         handleSelectTargetDocument,
         handleMarkAsDefaultTarget,
         handleSave,
-        hasModifiedTargets,
+        shouldDisallowSave,
         newTargets,
         targets,
         theme
@@ -38,7 +38,7 @@ export const TargetControlsConfigDialog = () => {
             )}
             {(newTargets || []).map(
                 (props, index) =>
-                    props.targetDocumentUid && (
+                    props.targetType === "main" && (
                         <TargetControlsConfigDialogSingleTarget
                             key={index}
                             targetIndex={index}
@@ -52,7 +52,7 @@ export const TargetControlsConfigDialog = () => {
                                 handleMarkAsDefaultTarget
                             }
                             newTargets={newTargets}
-                            targetDocumentUid={props.targetDocumentUid}
+                            targetDocumentUid={props.targetDocumentUid ?? ""}
                             targetName={props.targetName}
                             isDefaultTarget={props.isDefaultTarget}
                             oldTargetName={props.oldTargetName}
@@ -64,7 +64,7 @@ export const TargetControlsConfigDialog = () => {
                 handleCloseModal={handleCloseModal}
                 handleCreateNewTarget={handleCreateNewTarget}
                 handleSave={handleSave}
-                hasModifiedTargets={hasModifiedTargets}
+                shouldDisallowSave={shouldDisallowSave}
             />
         </div>
     );

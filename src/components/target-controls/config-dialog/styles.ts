@@ -4,7 +4,7 @@ import { shadow } from "@styles/_common";
 export const closeIcon = (theme: Theme): SerializedStyles => css`
     position: absolute;
     background-color: ${theme.highlightBackground}!important;
-    right: 50px;
+    right: 12px;
     width: 24px;
     height: 24px;
     min-height: 24px;
@@ -20,6 +20,7 @@ export const targetsDialog = css`
 
 export const targetsDialogMain = (theme: Theme): SerializedStyles => css`
     ${shadow}
+    position: relative;
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
     margin-bottom: 12px;
     border: 2px solid ${theme.line};
@@ -39,10 +40,9 @@ export const targetsDialogFooter = css`
 
 export const targetLabel = (theme: Theme): SerializedStyles => css`
     color: ${theme.altTextColor};
-    position: absolute;
+    display: block;
     font-size: 12px;
     font-weight: 400;
-    line-height: 1;
-    margin: 0;
-    margin-top: -4px;
+    line-height: 1.5;
+    margin: 0 0 6px;
 `;

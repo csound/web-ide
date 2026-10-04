@@ -4,13 +4,19 @@ export const firestoreNewTargets = (
     newTargets: ITargetFromInput[]
 ): ITargetMap => {
     return newTargets.reduce((accumulator: ITargetMap, target) => {
-        const { targetName, targetType, targetDocumentUid, csoundOptions } =
-            target;
+        const {
+            targetName,
+            targetType,
+            targetDocumentUid,
+            playlistDocumentsUid,
+            csoundOptions
+        } = target;
 
         const firebaseTarget = {
             targetName,
             targetType,
-            targetDocumentUid,
+            ...(targetDocumentUid ? { targetDocumentUid } : {}),
+            ...(playlistDocumentsUid ? { playlistDocumentsUid } : {}),
             csoundOptions: csoundOptions || {}
         };
 
@@ -21,24 +27,18 @@ export const firestoreNewTargets = (
 
 export const validateTargetName = ({
     targetName,
-    oldTargetName,
+    targetIndex,
     newTargets
 }: {
     targetName: string;
-    oldTargetName: string;
+    targetIndex: number;
     newTargets: ITargetFromInput[];
 }): boolean => {
-    if (!targetName.trim()) {
-        return false;
-    }
-
-    if (oldTargetName === targetName) {
-        return true;
-    }
-
-    const filteredTargets = newTargets.filter(
-        (target) => target.oldTargetName !== oldTargetName
+    return (
+        Boolean(targetName.trim()) &&
+        !newTargets.some(
+            (target, index) =>
+                index !== targetIndex && target.targetName === targetName
+        )
     );
-
-    return !filteredTargets.some((target) => target.targetName === targetName);
 };
