@@ -39,6 +39,7 @@ export const ProjectDates = ({
         <ClickAwayListener onClickAway={() => setOpen(false)}>
             <Tooltip
                 describeChild
+                disableTouchListener
                 arrow
                 placement="top"
                 open={open}

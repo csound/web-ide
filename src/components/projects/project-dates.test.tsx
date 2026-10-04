@@ -11,6 +11,7 @@ import { ProjectDates } from "./project-dates";
 
 afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.restoreAllMocks();
 });
 it("shows only creation age until hovering the badge", async () => {
@@ -36,17 +37,30 @@ it("shows only creation age until hovering the badge", async () => {
         new Date(edited).toISOString()
     ]);
 });
-it("opens dates on tap and keeps missing creation history unknown", async () => {
+it("keeps dates open after a touch tap until tapping outside", () => {
+    vi.useFakeTimers();
     render(<ProjectDates project={{ cachedProjectLastModified: 123000 }} />);
-    fireEvent.click(
-        screen.getByRole("button", { name: /creation date unknown/ })
-    );
-    const tooltip = await screen.findByRole("tooltip");
+    act(() => vi.advanceTimersByTime(1));
+    const badge = screen.getByRole("button", {
+        name: /creation date unknown/
+    });
+    fireEvent.touchStart(badge);
+    fireEvent.touchEnd(badge);
+    fireEvent.click(badge);
+    expect(screen.getByRole("tooltip")).toBeDefined();
+    act(() => vi.advanceTimersByTime(2000));
+    act(() => vi.advanceTimersByTime(500));
+    const tooltip = screen.getByRole("tooltip");
     expect(screen.getByText("Age unknown")).toBeDefined();
     expect(within(tooltip).getByText("Created: Unknown")).toBeDefined();
     expect(tooltip.querySelector("time")?.dateTime).toBe(
         new Date(123000).toISOString()
     );
+    fireEvent.touchStart(document.body);
+    fireEvent.touchEnd(document.body);
+    fireEvent.click(document.body);
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.queryByRole("tooltip")).toBeNull();
 });
 it("reveals dates on keyboard focus", async () => {
     render(<ProjectDates project={{ created: 123000 }} />);
