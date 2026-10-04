@@ -40,6 +40,7 @@ import {
 } from "./temporary-documents";
 
 export interface IProjectEditorReducer {
+    initializedProjectUid?: string;
     root: IWorkspaceLayoutNode;
     activePanelId: string;
     maximizedPanelId: string | null;
@@ -601,6 +602,7 @@ const ProjectEditorReducer = (
                 const restoredState = syncLegacyState({
                     ...initialLayoutState(),
                     ...savedWorkspaceState,
+                    initializedProjectUid: action.projectUid,
                     manualLookupString: "",
                     maximizedPanelId:
                         savedWorkspaceState.maximizedPanelId || null
@@ -624,6 +626,7 @@ const ProjectEditorReducer = (
 
             return syncLegacyState({
                 ...initialLayoutState(),
+                initializedProjectUid: action.projectUid,
                 root: createPanel("panel-1", tabs, action.initialIndex),
                 nextTabNumber: tabs.length + 1
             });

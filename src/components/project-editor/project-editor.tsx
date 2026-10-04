@@ -1,4 +1,5 @@
 import { ProjectFileDrop } from "./project-file-drop";
+import { useGuestReadme } from "./use-guest-readme";
 import React, { useEffect, useMemo, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import AccountTree from "@mui/icons-material/AccountTree";
@@ -1004,6 +1005,7 @@ const ProjectEditor = ({
 }: {
     activeProject: IProject;
 }): React.ReactElement => {
+    useGuestReadme(activeProject);
     const compactLayout = useMediaQuery("(max-width: 767px)");
     const dispatch = useDispatch();
     const setConsole = useSetConsole();

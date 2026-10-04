@@ -193,6 +193,7 @@ export const tabDockInit = (
     return async (dispatch: any) => {
         dispatch({
             type: TAB_DOCK_INIT,
+            projectUid,
             initialOpenDocuments,
             initialIndex,
             savedWorkspaceState

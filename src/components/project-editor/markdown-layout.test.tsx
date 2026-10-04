@@ -65,7 +65,7 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-function renderWorkspace() {
+function renderWorkspace({ readme = false, owner = false } = {}) {
     vi.stubGlobal(
         "ResizeObserver",
         class {
@@ -77,7 +77,10 @@ function renderWorkspace() {
     vi.spyOn(window, "scrollTo").mockImplementation(() => {});
     const document = (documentUid: string): IDocument => ({
         documentUid,
-        filename: `${documentUid}.md`,
+        filename:
+            readme && documentUid === "notes"
+                ? "README.md"
+                : `${documentUid}.md`,
         type: "txt",
         currentValue: "# Notes",
         savedValue: "# Notes",
@@ -99,8 +102,9 @@ function renderWorkspace() {
     };
     const layout = ProjectEditorReducer(ProjectEditorReducer(undefined, {}), {
         type: TAB_DOCK_INIT,
+        projectUid: project.projectUid,
         initialOpenDocuments: [{ uid: "notes" }, { uid: "other" }],
-        initialIndex: 0
+        initialIndex: readme ? 1 : 0
     });
     const store = configureStore({
         reducer,
@@ -113,6 +117,18 @@ function renderWorkspace() {
         }
     });
     store.dispatch({ type: STORE_PROJECT_LOCALLY, projects: [project] });
+    if (readme) {
+        store.dispatch({
+            type: "PROJECTS.ACTIVATE_PROJECT",
+            projectUid: project.projectUid
+        });
+        store.dispatch({ type: "LOGIN.SET_REQUESTING_STATUS", status: false });
+        if (owner)
+            store.dispatch({
+                type: "LOGIN.SIGNIN_SUCCESS",
+                user: { uid: project.userUid }
+            });
+    }
     const workspace = (activeProject: IProject) => (
         <Provider store={store}>
             <MemoryRouter>
@@ -225,3 +241,20 @@ it("opens the requesting project's console and hides its input after navigation"
         act(() => disconnect());
     }
 });
+
+it.each([false, true])(
+    "applies the README landing rule in the editor (owner: %s)",
+    (owner) => {
+        const { store } = renderWorkspace({ readme: true, owner });
+        const dock = store.getState().ProjectEditorReducer.tabDock;
+        const uid = owner ? "other" : "notes";
+        expect(dock.openDocuments[dock.tabIndex].uid).toBe(uid);
+        expect(dock.openDocuments.map((tab) => tab.uid)).toEqual([
+            "notes",
+            "other"
+        ]);
+        expect(screen.getByTestId(uid).getAttribute("data-mode")).toBe(
+            "preview"
+        );
+    }
+);
