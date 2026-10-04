@@ -1,3 +1,7 @@
+import {
+    selectPlaybackDocuments,
+    selectPlaybackMode
+} from "@comp/target-controls/selectors";
 import React, { useState, useCallback } from "react";
 import { AppThunkDispatch, useDispatch, useSelector } from "@root/store";
 import { getAuth } from "firebase/auth";
@@ -372,7 +376,8 @@ const makeTree = (
     theme: Theme,
     path: string[],
     [documentIndex]: [Record<string, any>, any],
-    filelist: IDocument[]
+    filelist: IDocument[],
+    playlistUids: string[]
 ): any[] => {
     // Getting all directories (where type is "folder")
     const allDirectories = filelist.filter((file) => file.type === "folder");
@@ -491,7 +496,8 @@ const makeTree = (
                     theme,
                     folderPath,
                     [documentIndex_, [] as any],
-                    newFileList
+                    newFileList,
+                    playlistUids
                 );
 
                 const folderElement = (
@@ -595,6 +601,18 @@ const makeTree = (
                                             css={SS.listItem}
                                             className={folderClassName}
                                             data-testid={`file-tree-item-${document_.filename}`}
+                                            data-playlist-entry={
+                                                playlistUids.includes(
+                                                    document_.documentUid
+                                                ) || undefined
+                                            }
+                                            title={
+                                                playlistUids.includes(
+                                                    document_.documentUid
+                                                )
+                                                    ? `Playlist track ${playlistUids.indexOf(document_.documentUid) + 1}`
+                                                    : undefined
+                                            }
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
                                             sx={{
@@ -625,6 +643,28 @@ const makeTree = (
                                             <p css={SS.filenameStyle}>
                                                 {document_.filename}
                                             </p>
+                                            {playlistUids.includes(
+                                                document_.documentUid
+                                            ) && (
+                                                <span
+                                                    aria-label={`Playlist track ${playlistUids.indexOf(document_.documentUid) + 1}`}
+                                                    css={(theme) => ({
+                                                        fontFamily:
+                                                            theme.font
+                                                                .monospace,
+                                                        fontSize: 11,
+                                                        color: theme.tabHighlightActive,
+                                                        padding: "0 8px",
+                                                        marginLeft: "auto",
+                                                        fontVariantNumeric:
+                                                            "tabular-nums"
+                                                    })}
+                                                >
+                                                    {playlistUids.indexOf(
+                                                        document_.documentUid
+                                                    ) + 1}
+                                                </span>
+                                            )}
                                             <Box css={SS.delEditContainer}>
                                                 {deleteIcon(document_)}
                                                 {editIcon(document_)}
@@ -671,6 +711,16 @@ export const FileTree = ({
         (state) => state.ProjectsReducer.projects?.[activeProjectUid]
     );
     const documents = project?.documents || {};
+    const playbackFiles = useSelector((state) =>
+        selectPlaybackDocuments(state, activeProjectUid)
+    );
+    const playbackMode = useSelector((state) =>
+        selectPlaybackMode(state, activeProjectUid)
+    );
+    const playlistUids =
+        playbackMode === "playlist"
+            ? playbackFiles.map((file) => file.documentUid)
+            : [];
 
     // Extract file list and map non-cloud files
     const filelist = Object.values(documents);
@@ -692,7 +742,8 @@ export const FileTree = ({
               theme,
               [],
               [stateDnD!.docIdx, []],
-              filelist
+              filelist,
+              playlistUids
           )
         : [{}, []];
 
@@ -700,7 +751,18 @@ export const FileTree = ({
         <React.Fragment>
             {shouldDisplayTree && (
                 <div css={SS.container}>
-                    <List css={SS.listContainer} dense data-testid="file-tree">
+                    <List
+                        css={[
+                            SS.listContainer,
+                            (theme) => ({
+                                '[data-playlist-entry="true"]': {
+                                    boxShadow: `inset 2px 0 ${theme.tabHighlightActive}`
+                                }
+                            })
+                        ]}
+                        dense
+                        data-testid="file-tree"
+                    >
                         {treeElements}
                         {nonCloudFileSources.length > 0 && <hr />}
                         {nonCloudFileSources.map((file, index) => {

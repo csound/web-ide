@@ -193,11 +193,24 @@ export const SiteDocuments = () => {
 
                     <p>
                         The Play controls include a Play/Pause button, Stop
-                        button, and target selection. Each Web-IDE supports
-                        using different CSDs as Run targets. This allows you to
-                        create a project with multiple CSDs that share code. Use
-                        the &quot;Configure&quot; command in the target dropdown
-                        to manage targets for your project.
+                        button, and playback settings. Choose one main CSD or
+                        ORC file, or switch the project to a playlist. Add
+                        tracks and use the up and down controls to set their
+                        order.
+                    </p>
+                    <p>
+                        In playlist mode, choose a starting track in the
+                        dropdown, then press Play to hear it and the remaining
+                        tracks. The dropdown follows playback. Stop to choose a
+                        new starting point. Each playlist tab also has a play
+                        button for that file alone; numbers in the file tree
+                        show the track order.
+                    </p>
+                    <p>
+                        A playlist advances when Csound ends the current
+                        performance. Files that run indefinitely, including
+                        orchestras without an end event, keep playing until you
+                        stop them. A playback error stops the playlist.
                     </p>
 
                     <h3>Social Controls</h3>

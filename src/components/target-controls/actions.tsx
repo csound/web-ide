@@ -7,6 +7,7 @@ import { database, targets as targetsCollReference } from "@config/firestore";
 import {
     ITargetMap,
     SET_SELECTED_TARGET,
+    SET_PLAYLIST_INDEX,
     UPDATE_ALL_TARGETS_LOCALLY
 } from "./types";
 
@@ -73,7 +74,7 @@ export const saveChangesToTarget = (
     return async (dispatch: any) => {
         const targetsReference = doc(targetsCollReference, projectUid);
         const batch = writeBatch(database);
-        console.log({ targets, defaultTarget });
+
         try {
             batch.set(
                 targetsReference,
@@ -88,6 +89,12 @@ export const saveChangesToTarget = (
                 { merge: true }
             );
             await batch.commit();
+            updateAllTargetsLocally(
+                dispatch,
+                defaultTarget ?? "",
+                projectUid,
+                targets
+            );
             updateProjectLastModified(projectUid);
             onSuccessCallback && onSuccessCallback();
         } catch (error: any) {
@@ -95,3 +102,9 @@ export const saveChangesToTarget = (
         }
     };
 };
+
+export const setPlaylistIndex = (projectUid: string, index: number) => ({
+    type: SET_PLAYLIST_INDEX,
+    projectUid,
+    index
+});

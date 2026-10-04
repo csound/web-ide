@@ -1,154 +1,90 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { RootState, useDispatch, useSelector } from "@root/store";
-import { useTheme } from "@emotion/react";
-import { TailSpin } from "react-loader-spinner";
-import * as SS from "./styles";
-import Tooltip from "@mui/material/Tooltip";
-import { pathOr } from "ramda";
-import { getPlayActionFromProject, getPlayActionFromTarget } from "./utils";
-import { selectSelectedTarget, selectDefaultTargetDocument } from "./selectors";
+import { useState } from "react";
+import { useDispatch, useSelector } from "@root/store";
+import { CircularProgress, IconButton, Tooltip } from "@mui/material";
+import PlayArrow from "@mui/icons-material/PlayArrow";
+import Pause from "@mui/icons-material/Pause";
 import { useSetConsole } from "@comp/console/context";
 import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { saveAllFiles } from "@comp/projects/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
+import {
+    selectPlaybackDocuments,
+    selectPlaybackMode,
+    selectPlaylistIndex
+} from "./selectors";
+import { playProject } from "./playback";
+import * as SS from "./styles";
 
-const TailSpinAny = TailSpin as any;
-
-const PlayButton = ({
+export default function PlayButton({
     activeProjectUid,
     isOwner
 }: {
     activeProjectUid: string;
     isOwner: boolean;
-}) => {
-    const setConsole = useSetConsole();
-    const [isLoading, setIsLoading] = useState(false);
-
-    const theme = useTheme();
-
-    const playActionDefaultSelector = useMemo(
-        () => getPlayActionFromTarget(activeProjectUid),
-        [activeProjectUid]
-    );
-    const playActionDefault = useSelector(playActionDefaultSelector);
-
-    const playActionFallbackSelector = useMemo(
-        () => getPlayActionFromProject(activeProjectUid),
-        [activeProjectUid]
-    );
-    const playActionFallback = useSelector(playActionFallbackSelector);
-
-    const csoundPlayState: string = useSelector((store: RootState) => {
-        return store.csound.status;
-    });
-
-    useEffect(() => {
-        if (csoundPlayState === "stopped" && isLoading) {
-            setIsLoading(false);
-        }
-    }, [csoundPlayState]);
-
-    const selectedTargetName: string | null = useSelector(
-        selectSelectedTarget(activeProjectUid)
-    );
-
-    const fallbackTargetDocument: any = useSelector((state: RootState) =>
-        selectDefaultTargetDocument(state, activeProjectUid)
-    );
-
+}) {
     const dispatch = useDispatch();
-
-    const tooltipText =
-        !selectedTargetName && !fallbackTargetDocument
-            ? ""
-            : csoundPlayState === "playing"
-              ? "pause playback"
-              : csoundPlayState === "paused"
-                ? "resume playback"
-                : `run ${selectedTargetName || fallbackTargetDocument.filename}`;
-
-    const playAction = playActionDefault || playActionFallback;
-
-    return ["rendering", "loading"].includes(csoundPlayState) ? (
-        <></>
-    ) : (
-        <Tooltip title={isLoading ? "loading..." : tooltipText}>
-            <div
-                css={SS.playButtonContainer}
-                data-testid="run-button"
-                onClick={async () => {
-                    if (isLoading) {
-                        return;
-                    }
-                    setIsLoading(true);
-
-                    if (!playAction) {
-                        console.error("Don't know how to play this project");
-                        dispatch(
-                            openSnackbar(
-                                "No playable files found in this project. Please add a .csd or .orc file.",
-                                SnackbarType.Error
-                            )
-                        );
-                        setIsLoading(false);
-                        return;
-                    }
-
-                    try {
-                        switch (csoundPlayState) {
-                            case "playing": {
-                                dispatch(pauseCsound());
-                                break;
-                            }
-                            case "paused": {
+    const setConsole = useSetConsole();
+    const [pending, setPending] = useState(false);
+    const status = useSelector((state) => state.csound.status);
+    const documents = useSelector((state) =>
+        selectPlaybackDocuments(state, activeProjectUid)
+    );
+    const mode = useSelector((state) =>
+        selectPlaybackMode(state, activeProjectUid)
+    );
+    const index = useSelector((state) =>
+        selectPlaylistIndex(state, activeProjectUid)
+    );
+    const busy = pending || status === "loading" || status === "rendering";
+    const label =
+        status === "playing"
+            ? "Pause playback"
+            : status === "paused"
+              ? "Resume playback"
+              : mode === "playlist"
+                ? `Play playlist from ${index + 1}: ${documents[index]?.filename ?? "no track selected"}`
+                : `Play ${documents[0]?.filename ?? "project"}`;
+    return (
+        <Tooltip title={busy ? "Loading playback" : label}>
+            <span css={SS.buttonContainer} data-testid="run-button">
+                <IconButton
+                    aria-label={label}
+                    data-testid="run-button-native"
+                    disabled={busy || !documents.length}
+                    onClick={async () => {
+                        setPending(true);
+                        try {
+                            if (status === "playing") dispatch(pauseCsound());
+                            else if (status === "paused")
                                 dispatch(resumePausedCsound());
-                                break;
+                            else {
+                                if (isOwner) await dispatch(saveAllFiles());
+                                await playProject(activeProjectUid, setConsole);
                             }
-                            case "stopped":
-                            case "error":
-                            case "initialized": {
-                                if (isOwner) {
-                                    dispatch(saveAllFiles());
-                                }
-                                playAction &&
-                                    (await (playAction as any)(
-                                        dispatch,
-                                        setConsole
-                                    ));
-                            }
+                        } catch (error) {
+                            dispatch(
+                                openSnackbar(
+                                    error instanceof Error
+                                        ? error.message
+                                        : "Could not play this project.",
+                                    SnackbarType.Error
+                                )
+                            );
+                        } finally {
+                            setPending(false);
                         }
-                    } catch (error) {
-                        console.error("Error playing project:", error);
-                        dispatch(
-                            openSnackbar(
-                                "Error playing project.",
-                                SnackbarType.Error
-                            )
-                        );
-                    } finally {
-                        setIsLoading(false);
-                    }
-                }}
-            >
-                {isLoading ? (
-                    <TailSpinAny
-                        css={SS.playButtonLoadingSpinner}
-                        color={theme.buttonIcon}
-                        height={25}
-                        width={25}
-                    />
-                ) : (
-                    <button
-                        data-testid="run-button-native"
-                        css={SS.playButtonStyle(
-                            ["playing", "rendering"].includes(csoundPlayState)
-                        )}
-                    />
-                )}
-            </div>
+                    }}
+                >
+                    {busy ? (
+                        <CircularProgress size={20} color="inherit" />
+                    ) : status === "playing" ? (
+                        <Pause />
+                    ) : (
+                        <PlayArrow />
+                    )}
+                </IconButton>
+            </span>
         </Tooltip>
     );
-};
-
-export default PlayButton;
+}

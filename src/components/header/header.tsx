@@ -272,6 +272,7 @@ export const Header = () => {
                             flex: 1,
                             minWidth: 0,
                             marginInline: 8,
+                            "@media(max-width:600px)": { marginInline: 0 },
                             display: "flex",
                             color: "inherit"
                         }}
