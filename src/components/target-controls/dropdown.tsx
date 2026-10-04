@@ -62,7 +62,9 @@ export default function TargetDropdown({
                 <Select
                     size="small"
                     value={documents.length ? index : ""}
-                    disabled={busy || !documents.length}
+                    disabled={
+                        busy || (!documents.length && !(isOwner && narrow))
+                    }
                     displayEmpty
                     inputProps={{
                         "aria-label": busy

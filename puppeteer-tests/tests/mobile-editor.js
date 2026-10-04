@@ -52,6 +52,7 @@ for (const [theme, width, height, variant = ""] of [
     ["default", 320, 640],
     ["default", 320, 640, "?guest"],
     ["default", 390, 844, "?playlist"],
+    ["default", 390, 844, "?playlist&empty"],
     ["default", 390, 844],
     ["github-light", 390, 844],
     ["default", 768, 1024],
@@ -336,10 +337,38 @@ for (const [theme, width, height, variant = ""] of [
                     ),
                     "Eval Selection / Form"
                 );
-                await page.locator("::-p-text(Theme)").click();
-                await page.waitForSelector('button[aria-label="Go back"]');
-                await page.locator('button[aria-label="Go back"]').click();
-                await page.locator("::-p-text(Theme)").click();
+                // Reach Theme through Tab, skipping disabled evaluation actions.
+                for (let i = 0; i < 8; i++) await page.keyboard.press("Tab");
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.activeElement.textContent.trim()
+                    ),
+                    "Theme"
+                );
+                await page.keyboard.press("Enter");
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.activeElement.textContent.trim()
+                    ),
+                    "Default"
+                );
+                await page.keyboard.down("Shift");
+                await page.keyboard.press("Tab");
+                await page.keyboard.up("Shift");
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.activeElement.getAttribute("aria-label")
+                    ),
+                    "Go back"
+                );
+                await page.keyboard.press("Enter");
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.activeElement.textContent.trim()
+                    ),
+                    "Theme"
+                );
+                await page.keyboard.press("Enter");
                 await page.locator("::-p-text(Dracula)").click();
                 await page.waitForSelector('[role="dialog"]', { hidden: true });
                 assert.equal(
@@ -369,6 +398,34 @@ for (const [theme, width, height, variant = ""] of [
                     ),
                     "Open editor menu"
                 );
+                if (variant.includes("empty")) {
+                    await page
+                        .locator(
+                            '[role="combobox"][aria-label="Start playlist from"]'
+                        )
+                        .click();
+                    await page
+                        .locator('[role="option"][data-value="configure"]')
+                        .click();
+                    await page.waitForSelector('[role="listbox"]', {
+                        hidden: true
+                    });
+                    await page.waitForFunction(
+                        () =>
+                            getComputedStyle(
+                                document.querySelector("#modal-window")
+                            ).opacity === "1"
+                    );
+                    await page.waitForSelector(
+                        'button[aria-label="Close playback settings"]'
+                    );
+                    await page
+                        .locator('button[aria-label="Close playback settings"]')
+                        .click();
+                    await page.waitForSelector('[role="dialog"]', {
+                        hidden: true
+                    });
+                }
                 await noOverflow();
                 assert.deepEqual(errors, []);
             } finally {

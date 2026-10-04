@@ -1,6 +1,7 @@
 import React, {
     useCallback,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState
@@ -76,6 +77,8 @@ import { IWorkspaceTab } from "@comp/project-editor/types";
 export function MenuBar({ projectUid }: { projectUid?: string }) {
     const setConsole = useSetConsole();
     const menuRootRef = useRef<HTMLDivElement | null>(null);
+    const mobileActionsRef = useRef<HTMLUListElement | null>(null);
+    const pendingMobileFocus = useRef<number | "first" | null>(null);
 
     const activeProjectUid = useSelector(
         (store: RootState) => store.ProjectsReducer.activeProjectUid || ""
@@ -540,6 +543,19 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
         if (!mobileView) dispatch(closeMobileDock());
     }, [dispatch, mobileView]);
 
+    useLayoutEffect(() => {
+        const target = pendingMobileFocus.current;
+        pendingMobileFocus.current = null;
+        if (!isMobileDockVisible || target === null) return;
+        const selector =
+            target === "first"
+                ? "button:not(:disabled)"
+                : `button[data-menu-action-index="${target}"]:not(:disabled)`;
+        mobileActionsRef.current
+            ?.querySelector<HTMLButtonElement>(selector)
+            ?.focus();
+    }, [mobilePath, isMobileDockVisible]);
+
     // Close dock and panel state when component unmounts (e.g. navigating away)
     useEffect(() => {
         return () => {
@@ -798,7 +814,11 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                             <button
                                 type="button"
                                 css={SS.mobileBackButton}
-                                onClick={() => dispatch(popMobileTopMenuPath())}
+                                onClick={() => {
+                                    pendingMobileFocus.current =
+                                        activePath[activePath.length - 1];
+                                    dispatch(popMobileTopMenuPath());
+                                }}
                                 aria-label="Go back"
                             >
                                 <ArrowBackIcon />
@@ -809,6 +829,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         )}
                     </div>
                     <ul
+                        ref={mobileActionsRef}
                         id="mobile-top-menu"
                         css={SS.mobilePanelList}
                         aria-label={currentLabel}
@@ -823,6 +844,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                                     <button
                                         type="button"
                                         css={SS.mobileMenuAction}
+                                        data-menu-action-index={index}
                                         disabled={item.disabled}
                                         aria-pressed={
                                             typeof item.checked === "boolean"
@@ -830,11 +852,13 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                                                 : undefined
                                         }
                                         onClick={(event) => {
-                                            if (item.submenu)
+                                            if (item.submenu) {
+                                                pendingMobileFocus.current =
+                                                    "first";
                                                 dispatch(
                                                     pushMobileTopMenuPath(index)
                                                 );
-                                            else runMenuItem(item, event);
+                                            } else runMenuItem(item, event);
                                         }}
                                     >
                                         <span css={SS.mobileCheck}>

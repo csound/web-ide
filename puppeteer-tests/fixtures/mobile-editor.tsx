@@ -72,7 +72,7 @@ if (options.has("playlist"))
             Playlist: {
                 targetName: "Playlist",
                 targetType: "playlist",
-                playlistDocumentsUid: ["code"],
+                playlistDocumentsUid: options.has("empty") ? [] : ["code"],
                 csoundOptions: {}
             }
         }
