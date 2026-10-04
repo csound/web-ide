@@ -1,4 +1,5 @@
 import { css, SerializedStyles, Theme } from "@emotion/react";
+import type { StylesConfig } from "react-select";
 
 const controlButtonShadow = "0 1px 2px rgba(0, 0, 0, 0.12)";
 
@@ -313,16 +314,37 @@ export const menuForDialog = (theme: Theme): SerializedStyles => css`
     margin: 0;
 `;
 
-export const reactSelectDropdownStyle = (theme: Theme) => ({
-    control: () => control(theme),
-    container: () => dropdownContainerForDialog(theme),
-    valueContainer: () => valueContainer,
-    groupHeading: () => groupHeading,
-    placeholder: () => placeholder,
-    menu: () => menuForDialog(theme),
-    menuList: () => menuList(theme),
-    option: (_: unknown, { isDisabled }: { isDisabled: boolean }) =>
-        isDisabled ? menuOptionDisabled(theme) : menuOption(theme),
-    indicatorsContainer: () => indicatorContainer(theme),
-    indicatorSeparator: () => indicatorSeparator
+export const reactSelectDropdownStyle = (
+    theme: Theme
+): StylesConfig<{ label: string; value: string }, false> => ({
+    // Keep react-select's layout and scroll bounds; only override theme colors.
+    control: (base, state) => ({
+        ...base,
+        minWidth: 240,
+        backgroundColor: theme.headerBackground,
+        borderColor: state.isFocused ? theme.textColor : theme.line,
+        boxShadow: "none",
+        ":hover": { borderColor: theme.textColor }
+    }),
+    menu: (base) => ({
+        ...base,
+        backgroundColor: theme.headerBackground,
+        border: `1px solid ${theme.line}`,
+        zIndex: 10
+    }),
+    option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isSelected
+            ? theme.highlightBackgroundAlt
+            : state.isFocused
+              ? theme.buttonBackgroundHover
+              : "transparent",
+        color: theme.textColor,
+        ":active": { backgroundColor: theme.highlightBackgroundAlt }
+    }),
+    singleValue: (base) => ({ ...base, color: theme.textColor }),
+    placeholder: (base) => ({ ...base, color: theme.altTextColor }),
+    input: (base) => ({ ...base, color: theme.textColor }),
+    dropdownIndicator: (base) => ({ ...base, color: theme.altTextColor }),
+    indicatorSeparator: (base) => ({ ...base, backgroundColor: theme.line })
 });

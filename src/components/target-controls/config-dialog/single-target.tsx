@@ -23,7 +23,7 @@ interface TargetControlsConfigDialogSingleTargetProperties {
     oldTargetName: string;
     targetDocumentUid: string;
     isDefaultTarget: boolean;
-    handleTargetDelete: (targetName: string) => void;
+    handleTargetDelete: (targetIndex: number) => void;
     handleTargetNameChange: (props: {
         nextValue: string;
         oldTargetName: string;
@@ -33,7 +33,7 @@ interface TargetControlsConfigDialogSingleTargetProperties {
         nextTargetDocumentUid: string;
         targetIndex: number;
     }) => void;
-    handleMarkAsDefaultTarget: (nextTarget: string) => void;
+    handleMarkAsDefaultTarget: (targetIndex: number) => void;
     newTargets: ITargetFromInput[];
 }
 
@@ -51,15 +51,23 @@ export const TargetControlsConfigDialogSingleTarget = ({
     allDocuments
 }: TargetControlsConfigDialogSingleTargetProperties) => {
     const theme = useTheme();
+    const documentInputId = React.useId();
     const targetNameIsValid = validateTargetName({
         targetName,
-        oldTargetName,
+        targetIndex,
         newTargets
     });
 
-    const targetDocument = allDocuments.find(
-        (doc: IDocument) => doc.documentUid === targetDocumentUid
-    );
+    const options = allDocuments
+        .filter((document) => {
+            const type = filenameToCsoundType(document.filename);
+            return type === "csd" || type === "orc";
+        })
+        .sort((a, b) => a.filename.localeCompare(b.filename))
+        .map((document) => ({
+            label: document.filename,
+            value: document.documentUid
+        }));
 
     return (
         <div
@@ -82,7 +90,7 @@ export const TargetControlsConfigDialogSingleTarget = ({
                                 checked={isDefaultTarget}
                                 onChange={() =>
                                     !isDefaultTarget &&
-                                    handleMarkAsDefaultTarget(targetName)
+                                    handleMarkAsDefaultTarget(targetIndex)
                                 }
                             />
                         }
@@ -92,7 +100,8 @@ export const TargetControlsConfigDialogSingleTarget = ({
                 <Tooltip title={"delete target"} placement="right-end">
                     <span>
                         <Fab
-                            onClick={() => handleTargetDelete(targetName)}
+                            aria-label="Delete target"
+                            onClick={() => handleTargetDelete(targetIndex)}
                             css={SS.closeIcon}
                             color="secondary"
                             variant="circular"
@@ -127,47 +136,28 @@ export const TargetControlsConfigDialogSingleTarget = ({
             </FormGroup>
             <FormGroup style={{ marginTop: 24 }} row>
                 <div>
-                    <p css={SS.targetLabel}>
-                        {"selected csound document to play"}
-                    </p>
+                    <label css={SS.targetLabel} htmlFor={documentInputId}>
+                        Csound document to play
+                    </label>
                     <Select
-                        value={targetDocumentUid || ""}
-                        onChange={(selectedOption) => {
-                            if (typeof selectedOption === "string") {
+                        inputId={documentInputId}
+                        value={
+                            options.find(
+                                (option) => option.value === targetDocumentUid
+                            ) ?? null
+                        }
+                        onChange={(option) => {
+                            if (option)
                                 handleSelectTargetDocument({
                                     targetIndex,
-                                    nextTargetDocumentUid: selectedOption
+                                    nextTargetDocumentUid: option.value
                                 });
-                            } else {
-                                console.error(
-                                    "Unexpected type",
-                                    selectedOption
-                                );
-                            }
                         }}
-                        options={allDocuments
-                            .filter((document) => {
-                                const type = filenameToCsoundType(
-                                    document.filename
-                                );
-                                return type === "csd" || type === "orc";
-                            })
-                            .sort((a, b) =>
-                                a.filename.localeCompare(b.filename)
-                            )
-                            .map((document) => ({
-                                label: document.filename,
-                                value: document.documentUid,
-                                options: []
-                            }))}
+                        options={options}
                         isSearchable={false}
                         closeMenuOnSelect={true}
-                        placeholder={
-                            targetDocument
-                                ? targetDocument.filename
-                                : "Select main document"
-                        }
-                        styles={reactSelectDropdownStyle(theme) as any}
+                        placeholder="Select main document"
+                        styles={reactSelectDropdownStyle(theme)}
                     />
                 </div>
             </FormGroup>

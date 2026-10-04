@@ -8,14 +8,14 @@ interface TargetControlsConfigDialogFooterProps {
     handleCreateNewTarget: () => void;
     handleCloseModal: () => void;
     handleSave: () => void;
-    hasModifiedTargets: boolean;
+    shouldDisallowSave: boolean;
 }
 
 export const TargetControlsConfigDialogFooter = ({
     handleCreateNewTarget,
     handleCloseModal,
     handleSave,
-    hasModifiedTargets
+    shouldDisallowSave
 }: TargetControlsConfigDialogFooterProps) => {
     return (
         <div css={SS.targetsDialogFooter}>
@@ -36,7 +36,7 @@ export const TargetControlsConfigDialogFooter = ({
                 variant="extended"
                 aria-label="Save"
                 size="small"
-                disabled={!hasModifiedTargets}
+                disabled={shouldDisallowSave}
                 onClick={() => handleSave()}
                 style={{ marginLeft: 12 }}
             >

@@ -20,6 +20,7 @@ export interface ITarget {
 export type ITargetMap = { [targetName: string]: ITarget };
 
 export interface ITargetFromInput {
+    playlistDocumentsUid?: string[];
     targetName: string;
     oldTargetName: string;
     targetType: string;

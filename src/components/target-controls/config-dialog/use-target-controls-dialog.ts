@@ -4,13 +4,12 @@ import { useTheme } from "@emotion/react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { IDocument } from "@comp/projects/types";
 import { ICsoundOptions } from "@comp/csound/types";
+import { filenameToCsoundType } from "@comp/csound/utils";
 import {
     append,
-    assoc,
     assocPath,
     equals,
     find,
-    map,
     pathOr,
     pipe,
     prop,
@@ -82,13 +81,24 @@ export const useTargetControlsDialog = () => {
         return () => setStoredTargets(targetsToLocalState());
     }, [targetsToLocalState]);
 
-    const someErrorPresent: boolean =
-        newTargets.some((target) => target.isNameValid === false) ||
-        newTargets.some((target) => target.isTypeValid === false) ||
-        newTargets.some((target) => target.isOtherwiseValid === false);
-
-    const someChangesMade = !equals(storedTargets, newTargets);
-    const shouldDisallowSave = someErrorPresent || !someChangesMade;
+    const someErrorPresent = newTargets.some((target, targetIndex) => {
+        const document = allDocuments.find(
+            (doc) => doc.documentUid === target.targetDocumentUid
+        );
+        const type = document && filenameToCsoundType(document.filename);
+        return (
+            !validateTargetName({
+                targetName: target.targetName,
+                targetIndex,
+                newTargets
+            }) ||
+            (target.targetType === "main" && type !== "csd" && type !== "orc")
+        );
+    });
+    const shouldDisallowSave =
+        someErrorPresent ||
+        !hasModifiedTargets ||
+        !newTargets.some((target) => target.isDefaultTarget);
 
     const handleCreateNewTarget = useCallback(() => {
         setNewTargets(
@@ -98,10 +108,11 @@ export const useTargetControlsDialog = () => {
                     isNameValid: false,
                     isTypeValid: false,
                     isOtherwiseValid: false,
-                    isDefaultTarget: false,
+                    isDefaultTarget: newTargets.length === 0,
+                    oldTargetName: "",
                     targetDocumentUid: "",
                     targetName: "",
-                    targetType: ""
+                    targetType: "main"
                 } as ITargetFromInput,
                 newTargets
             )
@@ -113,6 +124,7 @@ export const useTargetControlsDialog = () => {
     }, [dispatch]);
 
     const handleSave = useCallback(() => {
+        if (shouldDisallowSave) return;
         const maybeDefaultTarget = find(prop("isDefaultTarget"), newTargets);
         if (maybeDefaultTarget) {
             dispatch(
@@ -124,12 +136,18 @@ export const useTargetControlsDialog = () => {
                 )
             );
         }
-    }, [activeProjectUid, dispatch, newTargets, setStoredTargets]);
+    }, [
+        activeProjectUid,
+        dispatch,
+        newTargets,
+        setStoredTargets,
+        shouldDisallowSave
+    ]);
 
     const handleTargetDelete = useCallback(
-        (targetName: string) => {
+        (targetIndex: number) => {
             setNewTargets(
-                newTargets.filter((target) => target.targetName !== targetName)
+                newTargets.filter((_, index) => index !== targetIndex)
             );
         },
         [setNewTargets, newTargets]
@@ -138,7 +156,6 @@ export const useTargetControlsDialog = () => {
     const handleTargetNameChange = useCallback(
         ({
             nextValue,
-            oldTargetName,
             targetIndex
         }: {
             nextValue: string;
@@ -147,7 +164,7 @@ export const useTargetControlsDialog = () => {
         }) => {
             const isNameValid = validateTargetName({
                 targetName: nextValue,
-                oldTargetName,
+                targetIndex,
                 newTargets
             });
             (pipe as any)(
@@ -178,26 +195,14 @@ export const useTargetControlsDialog = () => {
         [setNewTargets, newTargets]
     );
 
-    const handleMarkAsDefaultTarget = useCallback(
-        (nextDefaultTargetName: string) => {
-            setNewTargets(
-                map(
-                    (target: ITargetFromInput) =>
-                        (console.log(
-                            target.targetName,
-                            nextDefaultTargetName
-                        ) as any) ||
-                        assoc(
-                            "isDefaultTarget",
-                            target.targetName === nextDefaultTargetName,
-                            target
-                        ),
-                    newTargets
-                )
-            );
-        },
-        [setNewTargets, newTargets]
-    );
+    const handleMarkAsDefaultTarget = useCallback((targetIndex: number) => {
+        setNewTargets((targets) =>
+            targets.map((target, index) => ({
+                ...target,
+                isDefaultTarget: index === targetIndex
+            }))
+        );
+    }, []);
 
     return {
         allDocuments,
