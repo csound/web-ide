@@ -1,5 +1,7 @@
 import {
     HomeActionTypes,
+    SET_SEARCH_CONTROLS,
+    SetSearchControls,
     ADD_USER_PROFILES,
     SEARCH_PROJECTS_REQUEST,
     SEARCH_PROJECTS_SUCCESS,
@@ -43,6 +45,8 @@ export interface IHomeReducer {
     searchResultTotalRecords: number;
     searchPaginationOffset: number;
     searchQuery: string;
+    searchInput: string;
+    searchMode: "projects" | "users";
     randomProjects: RandomProjectResponse[];
     randomProjectsLoading: boolean;
 }
@@ -60,6 +64,8 @@ const INITIAL_STATE: IHomeReducer = {
     searchResultTotalRecords: -1,
     searchPaginationOffset: -1,
     searchQuery: "",
+    searchInput: "",
+    searchMode: "projects",
     randomProjects: [],
     randomProjectsLoading: true
 };
@@ -73,6 +79,14 @@ const HomeReducer = (
     }
 
     switch (unknownAction.type) {
+        case SET_SEARCH_CONTROLS: {
+            const action = unknownAction as SetSearchControls;
+            return {
+                ...state,
+                searchInput: action.input,
+                searchMode: action.mode
+            };
+        }
         case SEARCH_PROJECTS_REQUEST: {
             const newState: IHomeReducer = { ...state };
             const action = unknownAction as SearchProjectsRequest;

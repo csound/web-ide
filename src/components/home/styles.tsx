@@ -157,6 +157,144 @@ export const searchResults = css`
     margin-top: 16px;
 `;
 
+export const searchControls = css`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    @media (max-width: 600px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+`;
+
+export const searchMode = (theme: Theme) => css`
+    width: fit-content;
+    .MuiToggleButton-root {
+        padding: 10px 16px;
+        font-family: ${theme.font.regular};
+        text-transform: none;
+        font-weight: 600;
+        color: ${theme.altTextColor};
+        border-color: ${theme.line};
+        &:hover {
+            background: ${theme.buttonBackgroundHover};
+        }
+        &.Mui-selected,
+        &.Mui-selected:hover {
+            color: ${theme.textColor};
+            background: ${theme.highlightBackgroundAlt};
+        }
+        &:focus-visible {
+            outline: 2px solid ${theme.textColor};
+            outline-offset: 2px;
+        }
+    }
+`;
+
+export const searchHint = (theme: Theme) => css`
+    margin: 12px 0;
+    color: ${theme.altTextColor};
+    font-size: 13px;
+    line-height: 1.5;
+`;
+
+export const searchEmpty = (theme: Theme) => css`
+    padding: 24px 0;
+    color: ${theme.altTextColor};
+    h2 {
+        margin: 0 0 8px;
+        color: ${theme.textColor};
+        font-size: 16px;
+    }
+    p {
+        margin: 0 0 8px;
+        font-size: 14px;
+    }
+`;
+
+export const userSearchGrid = css`
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 32px;
+    @media (max-width: 767px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+`;
+
+export const userSearchRow = (theme: Theme) => css`
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    min-height: 120px;
+    padding: 20px 4px;
+    border-bottom: 1px solid ${theme.line};
+`;
+
+export const userSearchLink = (theme: Theme) => css`
+    ${userSearchRow(theme)}
+    color: ${theme.textColor};
+    text-decoration: none;
+    border-radius: 6px;
+    &:hover {
+        background: ${theme.highlightBackground};
+    }
+    &:active {
+        background: ${theme.highlightBackgroundAlt};
+    }
+    &:focus-visible {
+        outline: 2px solid ${theme.textColor};
+        outline-offset: 2px;
+    }
+`;
+
+export const userSearchText = css`
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow-wrap: anywhere;
+`;
+
+export const userSearchName = css`
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+`;
+
+export const userSearchUsername = (theme: Theme) => css`
+    color: ${theme.altTextColor};
+    font-size: 12px;
+    line-height: 1.5;
+`;
+
+export const userSearchBio = (theme: Theme) => css`
+    margin: 8px 0 0;
+    color: ${theme.altTextColor};
+    font-size: 13px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+`;
+
+export const userSearchWebsite = (theme: Theme) => css`
+    margin-top: 6px;
+    color: ${theme.altTextColor};
+    font-size: 12px;
+`;
+
+export const userSearchArrow = (theme: Theme) => css`
+    margin-top: 4px;
+    font-size: 16px;
+    color: ${theme.altTextColor};
+`;
+
 export const shuffleButton = (theme: Theme): SerializedStyles => css`
     color: ${theme.textColor};
     flex-shrink: 0;
