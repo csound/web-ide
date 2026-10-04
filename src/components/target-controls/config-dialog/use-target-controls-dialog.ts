@@ -7,11 +7,9 @@ import { ICsoundOptions } from "@comp/csound/types";
 import { filenameToCsoundType } from "@comp/csound/utils";
 import {
     append,
-    assoc,
     assocPath,
     equals,
     find,
-    map,
     pathOr,
     pipe,
     prop,
@@ -197,26 +195,14 @@ export const useTargetControlsDialog = () => {
         [setNewTargets, newTargets]
     );
 
-    const handleMarkAsDefaultTarget = useCallback(
-        (nextDefaultTargetName: string) => {
-            setNewTargets(
-                map(
-                    (target: ITargetFromInput) =>
-                        (console.log(
-                            target.targetName,
-                            nextDefaultTargetName
-                        ) as any) ||
-                        assoc(
-                            "isDefaultTarget",
-                            target.targetName === nextDefaultTargetName,
-                            target
-                        ),
-                    newTargets
-                )
-            );
-        },
-        [setNewTargets, newTargets]
-    );
+    const handleMarkAsDefaultTarget = useCallback((targetIndex: number) => {
+        setNewTargets((targets) =>
+            targets.map((target, index) => ({
+                ...target,
+                isDefaultTarget: index === targetIndex
+            }))
+        );
+    }, []);
 
     return {
         allDocuments,

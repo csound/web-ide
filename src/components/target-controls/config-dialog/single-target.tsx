@@ -33,7 +33,7 @@ interface TargetControlsConfigDialogSingleTargetProperties {
         nextTargetDocumentUid: string;
         targetIndex: number;
     }) => void;
-    handleMarkAsDefaultTarget: (nextTarget: string) => void;
+    handleMarkAsDefaultTarget: (targetIndex: number) => void;
     newTargets: ITargetFromInput[];
 }
 
@@ -90,7 +90,7 @@ export const TargetControlsConfigDialogSingleTarget = ({
                                 checked={isDefaultTarget}
                                 onChange={() =>
                                     !isDefaultTarget &&
-                                    handleMarkAsDefaultTarget(targetName)
+                                    handleMarkAsDefaultTarget(targetIndex)
                                 }
                             />
                         }

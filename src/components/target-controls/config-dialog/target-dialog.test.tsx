@@ -172,3 +172,30 @@ it("deletes only the chosen new target when two names are still blank", () => {
     );
     expect(screen.getAllByRole("combobox")).toHaveLength(2);
 });
+
+it("keeps the chosen default when two blank targets later get names", () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    fireEvent.click(screen.getAllByRole("radio")[2]);
+    expect(
+        screen
+            .getAllByRole("radio")
+            .map((radio) => (radio as HTMLInputElement).checked)
+    ).toEqual([false, false, true]);
+    fireEvent.change(screen.getAllByLabelText("target name")[1], {
+        target: { value: "First added" }
+    });
+    fireEvent.change(screen.getAllByLabelText("target name")[2], {
+        target: { value: "Second added" }
+    });
+    selectDocument(screen.getAllByRole("combobox")[1], "example-099.csd");
+    selectDocument(screen.getAllByRole("combobox")[2], "example-100.csd");
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(saveChangesToTarget).toHaveBeenCalledWith(
+        "fixture",
+        expect.any(Object),
+        "Second added",
+        expect.any(Function)
+    );
+});
