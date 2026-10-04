@@ -2,8 +2,7 @@ import {
     doc,
     DocumentChange,
     getDoc,
-    QueryDocumentSnapshot,
-    Timestamp
+    QueryDocumentSnapshot
 } from "firebase/firestore";
 import { getDownloadURL } from "firebase/storage";
 import mime from "mime";
@@ -12,6 +11,7 @@ import { IFirestoreDocument, IFirestoreProject } from "@db/types";
 import { IDocument, IDocumentFileType, IProject } from "./types";
 import { CsoundObj } from "@comp/csound/types";
 import { dropLast, isNil, prop, propOr, reject } from "ramda";
+import { projectDateMillis } from "./dates";
 import { isClojureFilename } from "@comp/csound/utils";
 
 const BINARY_FILE_CACHE_NAME = "csound-project-binary-files-v1";
@@ -291,19 +291,24 @@ export const convertDocumentSnapToDocumentsMap = (
 
 export const firestoreProjectToIProject = (
     project: IFirestoreProject
-): IProject => ({
-    projectUid: project.id || "",
-    description: propOr("", "description", project),
-    documents: {},
-    isPublic: propOr(false, "public", project),
-    name: propOr("", "name", project),
-    userUid: propOr("", "userUid", project),
-    iconBackgroundColor: prop("iconBackgroundColor", project),
-    iconForegroundColor: prop("iconForegroundColor", project),
-    iconName: prop("iconName", project),
-    tags: [],
-    stars: {}
-});
+): IProject => {
+    const created = projectDateMillis(project.created);
+    return {
+        created,
+        cachedProjectLastModified: projectDateMillis(project.lastModified),
+        projectUid: project.id || "",
+        description: propOr("", "description", project),
+        documents: {},
+        isPublic: propOr(false, "public", project),
+        name: propOr("", "name", project),
+        userUid: propOr("", "userUid", project),
+        iconBackgroundColor: prop("iconBackgroundColor", project),
+        iconForegroundColor: prop("iconForegroundColor", project),
+        iconName: prop("iconName", project),
+        tags: [],
+        stars: {}
+    };
+};
 
 export const convertProjectSnapToProject = async (
     projSnap: QueryDocumentSnapshot
@@ -315,13 +320,9 @@ export const convertProjectSnapToProject = async (
     const project = firestoreProjectToIProject(projData as IFirestoreProject);
     project["projectUid"] = projSnap.id;
 
-    if (lastModifiedData && lastModifiedData.target) {
-        project["cachedProjectLastModified"] =
-            lastModifiedData.target.toMillis();
-    }
-    if (projData.created) {
-        project.created = Timestamp.fromMillis(
-            (projData.created as Timestamp).toMillis()
+    if (lastModifiedData) {
+        project.cachedProjectLastModified = projectDateMillis(
+            lastModifiedData.timestamp
         );
     }
 

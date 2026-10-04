@@ -30,6 +30,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import { ProjectDates } from "@comp/projects/project-dates";
 import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
 import { markProjectPublic } from "@comp/projects/actions";
@@ -163,6 +164,9 @@ const ProjectListItem = ({
                         {description}
                     </Typography>
                 )}
+                <Box sx={{ color: "text.secondary", mt: 0.75 }}>
+                    <ProjectDates project={project} />
+                </Box>
                 {Array.isArray(tags) && tags.length > 0 && (
                     <Box
                         sx={{

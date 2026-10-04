@@ -46,3 +46,30 @@ export async function readPublicProjectSummaries(ids: string[]) {
     }
     return projects;
 }
+
+/** Read edit dates only for the visible page, after checking project visibility. */
+export async function addProjectEditDates<T>(
+    projects: T[],
+    projectId: (project: T) => string
+) {
+    const db = admin.firestore();
+    const dates = new Map<string, number>();
+    const ids = [...new Set(projects.map(projectId))];
+    for (let index = 0; index < ids.length; index += 50) {
+        const snapshots = await db.getAll(
+            ...ids
+                .slice(index, index + 50)
+                .map((id) => db.collection("projectLastModified").doc(id))
+        );
+        for (const snapshot of snapshots) {
+            const timestamp = snapshot.data()?.timestamp;
+            const millis = timestamp?.toMillis?.();
+            if (typeof millis === "number" && Number.isFinite(millis))
+                dates.set(snapshot.id, millis);
+        }
+    }
+    return projects.map((project) => ({
+        ...project,
+        lastModified: dates.get(projectId(project)) ?? null
+    }));
+}

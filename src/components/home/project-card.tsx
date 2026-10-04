@@ -4,6 +4,7 @@ import { Bars as BarsSpinner } from "react-loader-spinner";
 import { Theme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
 import { ListPlayButton } from "@comp/profile/list-play-button";
+import { ProjectDates } from "@comp/projects/project-dates";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
 import {
@@ -98,6 +99,15 @@ export const ProjectCard = ({
                         </ProjectCardContentBottomDescription>
                     </ProjectCardContentBottomID>
                 </ProjectCardContentBottom>
+                <ProjectDates
+                    project={project}
+                    css={{
+                        gridRow: 4,
+                        color: "white",
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                        padding: "6px 10px"
+                    }}
+                />
             </ProjectCardContentContainer>
         </ProjectCardContainer>
     );

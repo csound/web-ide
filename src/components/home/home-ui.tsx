@@ -35,7 +35,7 @@ interface IProjectCard {
 }
 
 export const ProjectCardContainer = styled.div<IProjectCard>`
-    height: 182px;
+    min-height: 182px;
     z-index: 1;
     position: relative;
     background-color: black;
@@ -108,13 +108,12 @@ interface IProjectCardContentContainer {
 }
 
 export const ProjectCardContentContainer = styled.div<IProjectCardContentContainer>`
-    position: absolute;
-    height: 100%;
+    position: relative;
     width: 100%;
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-template-rows: 60px auto 60px;
+    grid-template-rows: 60px 62px 60px auto;
     grid-template-columns: 1fr;
     z-index: 3;
     text-overflow: ellipsis;

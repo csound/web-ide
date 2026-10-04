@@ -1,4 +1,3 @@
-import { Timestamp } from "firebase/firestore";
 import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "../project-last-modified/types";
 export { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "../project-last-modified/types";
 
@@ -147,7 +146,7 @@ export interface IDocument {
 export type Star = { [userUid: string]: number };
 
 export interface IProject {
-    created?: Timestamp;
+    created?: number;
     description: string;
     userUid: string;
     projectUid: string;

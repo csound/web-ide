@@ -6,7 +6,10 @@ import {
     createRequestLimiter,
     publicCallableOptions
 } from "./public_requests.js";
-import { readPublicProjectSummaries } from "./public_project_summaries.js";
+import {
+    addProjectEditDates,
+    readPublicProjectSummaries
+} from "./public_project_summaries.js";
 
 // TypeScript interfaces for search functionality
 export interface SearchProjectsParams {
@@ -25,6 +28,7 @@ export interface ProjectSearchResult {
     username?: string;
     displayName?: string;
     created: FirebaseFirestore.Timestamp;
+    lastModified?: number | null;
     public: boolean;
     iconName: string;
     iconBackgroundColor: string;
@@ -202,8 +206,11 @@ export const searchProjects = onCall<SearchProjectsParams>(
             page.map((project) => project.userUid)
         );
         return {
-            data: page.map((project) =>
-                searchResult(project.id, project, profiles[project.userUid])
+            data: await addProjectEditDates(
+                page.map((project) =>
+                    searchResult(project.id, project, profiles[project.userUid])
+                ),
+                (project) => project.id
             ),
             totalRecords: projects.length,
             offset,
