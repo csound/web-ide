@@ -33,3 +33,20 @@ export function projectDateMillis(value: unknown): number | undefined {
         ? millis
         : undefined;
 }
+
+/** Use a single unit so the project age stays short even for old projects. */
+export function projectAge(created: number, now = Date.now()): string {
+    const seconds = Math.max(0, (now - created) / 1000);
+    if (seconds < 60) return "Just created";
+    const units = [
+        [365.25 * 86400, "year"],
+        [30.44 * 86400, "month"],
+        [7 * 86400, "week"],
+        [86400, "day"],
+        [3600, "hour"],
+        [60, "minute"]
+    ] as const;
+    const [length, unit] = units.find(([length]) => seconds >= length)!;
+    const count = Math.floor(seconds / length);
+    return `${count} ${unit}${count === 1 ? "" : "s"} ago`;
+}

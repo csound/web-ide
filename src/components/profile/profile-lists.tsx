@@ -97,25 +97,19 @@ const ProjectListItem = ({
                 iconBackgroundColor={project.iconBackgroundColor}
                 iconForegroundColor={project.iconForegroundColor}
             />
-            <Box
-                component={Link}
-                to={"/editor/" + projectUid}
-                sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    color: "text.primary",
-                    textDecoration: "none",
-                    borderRadius: 1,
-                    "&:hover h2": { textDecoration: "underline" },
-                    "&:focus-visible": {
-                        outline: "2px solid",
-                        outlineColor: "primary.main",
-                        outlineOffset: 4
-                    }
-                }}
-            >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box
+                    component={Link}
+                    to={"/editor/" + projectUid}
                     sx={{
+                        textDecoration: "none",
+                        borderRadius: 1,
+                        "&:hover h2": { textDecoration: "underline" },
+                        "&:focus-visible": {
+                            outline: "2px solid",
+                            outlineColor: "primary.main",
+                            outlineOffset: 4
+                        },
                         display: "flex",
                         alignItems: "baseline",
                         flexWrap: "wrap",
@@ -150,43 +144,55 @@ const ProjectListItem = ({
                             {isPublic ? "Public" : "Private"}
                         </Box>
                     )}
-                    <ProjectDates project={project} />
                 </Box>
-                {description && (
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                            mt: 0.5,
-                            overflow: "hidden",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflowWrap: "anywhere",
-                            whiteSpace: "pre-line"
-                        }}
-                    >
-                        {description}
-                    </Typography>
-                )}
-                {Array.isArray(tags) && tags.length > 0 && (
+                <ProjectDates project={project} />
+                {(description || tags?.length > 0) && (
                     <Box
+                        component={Link}
+                        to={"/editor/" + projectUid}
                         sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 0.5,
-                            mt: 1
+                            display: "block",
+                            textDecoration: "none",
+                            color: "text.secondary"
                         }}
                     >
-                        {tags.map((tag, index) => (
-                            <Chip
-                                key={index}
-                                label={tag}
-                                size="small"
-                                variant="outlined"
-                                sx={{ maxWidth: "100%" }}
-                            />
-                        ))}
+                        {description && (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                    mt: 0.5,
+                                    overflow: "hidden",
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflowWrap: "anywhere",
+                                    whiteSpace: "pre-line"
+                                }}
+                            >
+                                {description}
+                            </Typography>
+                        )}
+                        {Array.isArray(tags) && tags.length > 0 && (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: 0.5,
+                                    mt: 1
+                                }}
+                            >
+                                {tags.map((tag, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={tag}
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ maxWidth: "100%" }}
+                                    />
+                                ))}
+                            </Box>
+                        )}
                     </Box>
                 )}
             </Box>

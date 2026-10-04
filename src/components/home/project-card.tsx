@@ -56,13 +56,20 @@ export const ProjectCard = ({
                 />
             </div>
             <ProjectCardContentContainer duration={200}>
-                <ProjectCardContentTop to={`editor/${project.projectUid}`}>
-                    <ProjectCardContentTopHeader>
+                <ProjectCardContentTop>
+                    <ProjectCardContentTopHeader
+                        to={`editor/${project.projectUid}`}
+                    >
                         {project.name}
                     </ProjectCardContentTopHeader>
-                    <ProjectCardContentTopDescription>
-                        {project.description}
-                    </ProjectCardContentTopDescription>
+                    <ProjectDates project={project} onCard />
+                    {project.description && (
+                        <ProjectCardContentTopDescription
+                            to={`editor/${project.projectUid}`}
+                        >
+                            {project.description}
+                        </ProjectCardContentTopDescription>
+                    )}
                 </ProjectCardContentTop>
                 <ProjectCardContentMiddle>
                     <ListPlayButton
@@ -99,15 +106,6 @@ export const ProjectCard = ({
                         </ProjectCardContentBottomDescription>
                     </ProjectCardContentBottomID>
                 </ProjectCardContentBottom>
-                <ProjectDates
-                    project={project}
-                    css={{
-                        gridRow: 4,
-                        color: "white",
-                        backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        padding: "6px 10px"
-                    }}
-                />
             </ProjectCardContentContainer>
         </ProjectCardContainer>
     );
