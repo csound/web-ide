@@ -63,27 +63,16 @@ export const ProjectCard = ({
                     >
                         {project.name}
                     </ProjectCardContentTopHeader>
-                    <div
+                    <ProjectDates
+                        project={project}
+                        onCard
                         css={{
-                            display: "flex",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: 8,
-                            minWidth: 0
+                            gridRow: 1,
+                            gridColumn: 2,
+                            justifySelf: "end",
+                            alignSelf: "start"
                         }}
-                    >
-                        <ProjectDates project={project} onCard />
-                        <ForkAttribution
-                            forkedFrom={project.forkedFrom}
-                            forkedAt={project.forkedAt}
-                            css={{
-                                color: "#f3f4f6",
-                                backgroundColor: "rgba(12,16,20,0.65)",
-                                padding: "2px 6px",
-                                borderRadius: 4
-                            }}
-                        />
-                    </div>
+                    />
                     {project.description && (
                         <ProjectCardContentTopDescription
                             to={`editor/${project.projectUid}`}
@@ -91,6 +80,19 @@ export const ProjectCard = ({
                             {project.description}
                         </ProjectCardContentTopDescription>
                     )}
+                    <ForkAttribution
+                        forkedFrom={project.forkedFrom}
+                        forkedAt={project.forkedAt}
+                        css={{
+                            gridRow: 3,
+                            gridColumn: "1 / -1",
+                            justifySelf: "start",
+                            color: "#f3f4f6",
+                            backgroundColor: "rgba(12,16,20,0.65)",
+                            padding: "2px 6px",
+                            borderRadius: 4
+                        }}
+                    />
                 </ProjectCardContentTop>
                 <ProjectCardContentMiddle>
                     <ListPlayButton

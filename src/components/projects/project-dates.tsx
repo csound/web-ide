@@ -6,6 +6,11 @@ import {
     projectLastEdited
 } from "./dates";
 
+const cardDateFormat = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric"
+});
+
 /** Show the creation date and reveal the last edit on hover, focus, or tap. */
 export const ProjectDates = ({
     project,
@@ -36,6 +41,10 @@ export const ProjectDates = ({
         created === undefined
             ? "Date unknown"
             : projectCreatedDate(created, now);
+    const visibleDate =
+        onCard && created !== undefined
+            ? cardDateFormat.format(created)
+            : creationDate;
     const dates = [
         ["Created", created, creationDate],
         [
@@ -93,7 +102,8 @@ export const ProjectDates = ({
                         minWidth: 0,
                         px: 0.75,
                         py: 0.25,
-                        my: 0.5,
+                        my: onCard ? 0 : 0.5,
+                        whiteSpace: onCard ? "nowrap" : undefined,
                         border: 1,
                         borderColor: onCard
                             ? "rgba(255,255,255,0.24)"
@@ -121,7 +131,7 @@ export const ProjectDates = ({
                         creationDate
                     ) : (
                         <time dateTime={new Date(created).toISOString()}>
-                            {creationDate}
+                            {visibleDate}
                         </time>
                     )}
                 </Box>
