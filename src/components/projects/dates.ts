@@ -1,3 +1,10 @@
+import {
+    differenceInCalendarDays,
+    differenceInMonths,
+    differenceInYears,
+    startOfDay
+} from "date-fns";
+
 /** Read Firestore timestamps, callable JSON timestamps, or epoch milliseconds. */
 export function projectDateMillis(value: unknown): number | undefined {
     let millis: unknown = value;
@@ -34,19 +41,32 @@ export function projectDateMillis(value: unknown): number | undefined {
         : undefined;
 }
 
-/** Use a single unit so the project age stays short even for old projects. */
-export function projectAge(created: number, now = Date.now()): string {
-    const seconds = Math.max(0, (now - created) / 1000);
-    if (seconds < 60) return "Just created";
-    const units = [
-        [365.25 * 86400, "year"],
-        [30.44 * 86400, "month"],
-        [7 * 86400, "week"],
-        [86400, "day"],
-        [3600, "hour"],
-        [60, "minute"]
-    ] as const;
-    const [length, unit] = units.find(([length]) => seconds >= length)!;
-    const count = Math.floor(seconds / length);
-    return `${count} ${unit}${count === 1 ? "" : "s"} ago`;
+const creationDateFormat = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+});
+
+export function projectCreatedDate(created: number, now = Date.now()): string {
+    return differenceInCalendarDays(now, created) === 0
+        ? "today"
+        : creationDateFormat.format(created);
+}
+
+/** Count local calendar days so midnight and daylight saving changes agree. */
+export function projectLastEdited(edited: number, now = Date.now()): string {
+    const today = startOfDay(now);
+    const editDay = startOfDay(edited);
+    const days = differenceInCalendarDays(today, editDay);
+    // Treat clock skew as today rather than showing a negative age.
+    if (days <= 0) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 7) return `${days} days ago`;
+    const years = differenceInYears(today, editDay);
+    if (years >= 1) return years === 1 ? "last year" : `${years} years ago`;
+    const months = differenceInMonths(today, editDay);
+    if (months >= 1)
+        return months === 1 ? "last month" : `${months} months ago`;
+    const weeks = Math.floor(days / 7);
+    return weeks === 1 ? "last week" : `${weeks} weeks ago`;
 }
