@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { functionDeployArgs } from "./deploy-dev.mjs";
 import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -124,7 +125,11 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
                 const deploy = workflow.jobs["deploy-dev"].steps.find(
                     (step) => step.name === "Deploy to Firebase"
                 );
-                const args = deploy.with.args.split(/\s+/);
+                assert.equal(
+                    deploy.run,
+                    "node scripts/deploy-dev.mjs --functions"
+                );
+                const args = functionDeployArgs(["new_user_callback"]);
                 const options = {
                     nonInteractive: args.includes("--non-interactive"),
                     force: args.includes("--force")

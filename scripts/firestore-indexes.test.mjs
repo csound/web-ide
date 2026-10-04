@@ -66,23 +66,43 @@ for (const [file, job, alias] of [
             (step) => step.name === "Deploy to Firebase"
         );
         assert.ok(indexStep >= 0 && indexStep < appStep);
-        const args = steps[indexStep].with.args.split(/\s+/);
+        const args = (
+            steps[indexStep].with?.args ||
+            steps[indexStep].run.split("firebase ")[1]
+        ).split(/\s+/);
         const argument = (flag) => args[args.indexOf(flag) + 1];
         assert.equal(argument("--only"), "firestore:indexes");
         assert.equal(argument("--config"), "firebase.json");
         assert.equal(argument("-P"), alias);
         assert.equal(args.includes("--non-interactive"), true);
         assert.equal(args.includes("--force"), false);
-        assert.equal(steps[indexStep].uses, steps[appStep].uses);
-        assert.equal(
-            steps[indexStep].env.GCP_SA_KEY,
-            steps[appStep].env.GCP_SA_KEY
-        );
-        const appArgs = steps[appStep].with.args.split(/\s+/);
-        assert.equal(
-            appArgs[appArgs.indexOf("--only") + 1],
-            "functions,hosting"
-        );
+        if (alias === "develop") {
+            assert.ok(
+                steps[indexStep].run.startsWith(
+                    "./functions/node_modules/.bin/firebase "
+                )
+            );
+            assert.equal(
+                steps[appStep].run,
+                "node scripts/deploy-dev.mjs --functions"
+            );
+            assert.ok(
+                steps.some((step) =>
+                    step.run?.includes("--only hosting --non-interactive")
+                )
+            );
+        } else {
+            assert.equal(steps[indexStep].uses, steps[appStep].uses);
+            assert.equal(
+                steps[indexStep].env.GCP_SA_KEY,
+                steps[appStep].env.GCP_SA_KEY
+            );
+            const appArgs = steps[appStep].with.args.split(/\s+/);
+            assert.equal(
+                appArgs[appArgs.indexOf("--only") + 1],
+                "functions,hosting"
+            );
+        }
         assert.ok(
             steps.some((step) => step.run?.includes("npm run test:indexes"))
         );

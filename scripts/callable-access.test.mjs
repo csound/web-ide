@@ -67,15 +67,30 @@ test("both workflows apply the shared policy to the same project they deploy", a
             (step) => step.run === `npm run access -- --env ${env} --apply`
         );
         assert.ok(applyIndex > deployIndex);
-        const deployArgs = steps[deployIndex].with.args.split(/\s+/);
-        assert.equal(
-            deployArgs[deployArgs.indexOf("-P") + 1],
-            access.environments[env].firebaseAlias
-        );
-        assert.equal(
-            steps[applyIndex - 1].with.credentials_json,
-            steps[deployIndex].env.GCP_SA_KEY
-        );
+        if (env === "dev") {
+            assert.equal(
+                steps[deployIndex].run,
+                "node scripts/deploy-dev.mjs --functions"
+            );
+            const authIndex = steps.findIndex((step) =>
+                step.uses?.startsWith("google-github-actions/auth@")
+            );
+            assert.ok(authIndex >= 0 && authIndex < deployIndex);
+            assert.equal(
+                steps[authIndex].with.credentials_json,
+                "${{ secrets.GCP_SA_KEY_DEV }}"
+            );
+        } else {
+            const deployArgs = steps[deployIndex].with.args.split(/\s+/);
+            assert.equal(
+                deployArgs[deployArgs.indexOf("-P") + 1],
+                access.environments[env].firebaseAlias
+            );
+            assert.equal(
+                steps[applyIndex - 1].with.credentials_json,
+                steps[deployIndex].env.GCP_SA_KEY
+            );
+        }
         assert.ok(
             steps.some((step) => step.run?.includes("npm run test:access"))
         );

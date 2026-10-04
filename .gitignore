@@ -50,3 +50,6 @@ prod-database.json
 database.json
 service-key-dev.json
 service-key-prod.json
+
+# Short-lived Google Actions credentials
+gha-creds-*.json

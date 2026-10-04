@@ -3,10 +3,19 @@ on:
     push:
         branches:
             - develop
+    workflow_dispatch:
+permissions:
+    contents: read
+    actions: read
+concurrency:
+    group: deploy-csound-ide-dev
+    cancel-in-progress: false
 jobs:
     deploy-dev:
         name: deploy-develop
         runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/develop'
+        timeout-minutes: 60
         env:
             REACT_APP_DATABASE: DEV
         steps:
@@ -14,6 +23,7 @@ jobs:
               uses: actions/checkout@v7
               with:
                   submodules: recursive
+                  fetch-depth: 0
             - uses: actions/setup-python@v7
               with:
                   python-version: "3.12"
@@ -24,7 +34,9 @@ jobs:
                   node-version-file: .nvmrc
                   cache: npm
             - name: Install Dependencies
-              run: npm install
+              run: |
+                  npm ci
+                  npm ci --prefix functions
             - name: Install Rollup Linux Native Binary
               if: runner.os == 'Linux'
               run: |
@@ -35,13 +47,18 @@ jobs:
                   npm run lint
                   npm run typecheck
                   npm run format:check
+            - name: Authenticate dev deployment
+              uses: google-github-actions/auth@v3
+              with:
+                  credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
+            - name: Check dev deployment permissions
+              run: node scripts/deploy-dev.mjs --preflight
             - name: Build
               run: |
                   echo "STORAGE_BUCKET_URL=gs://csound-ide-dev.appspot.com" >> functions/.env.dev
                   PUBLIC_URL="https://csound-ide-dev.web.app" npm run build:dev
                   cp dist/index.html functions
                   cd functions
-                  npm ci
                   npm run build
             - name: Prepare dev deploy without Extensions
               run: |
@@ -50,22 +67,15 @@ jobs:
                   npm run test:indexes
                   npm run prepare:deploy:dev
             - name: Deploy Firestore indexes
-              uses: docker://w9jds/firebase-action:v15.19.1
-              with:
-                  # Keep unrelated indexes and field settings during deployment.
-                  args: deploy -P develop --config firebase.json --only firestore:indexes --non-interactive
-              env:
-                  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
+              # Preserve unrelated indexes and field settings; do not use --force.
+              run: ./functions/node_modules/.bin/firebase deploy -P develop --config firebase.json --only firestore:indexes --non-interactive
             - name: Deploy to Firebase
-              uses: docker://w9jds/firebase-action:v15.19.1
-              with:
-                  # Confirm retry policies during unattended deployment.
-                  args: deploy -P develop --config firebase.dev.generated.json --only functions,hosting --non-interactive --force
+              run: node scripts/deploy-dev.mjs --functions
               env:
-                  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_DEV }}
-            - name: Authenticate for dev browser access
-              uses: google-github-actions/auth@v3
-              with:
-                  credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
+                  GH_TOKEN: ${{ github.token }}
             - name: Apply dev browser access and check page loads
               run: npm run access -- --env dev --apply
+            - name: Publish Hosting after functions are ready
+              run: ./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.generated.json --only hosting --non-interactive
+            - name: Check published dev browser access
+              run: npm run access -- --env dev --check
