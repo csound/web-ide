@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Box, ClickAwayListener, Tooltip } from "@mui/material";
-import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
-import { projectAge, projectDateMillis } from "./dates";
+import {
+    projectCreatedDate,
+    projectDateMillis,
+    projectLastEdited
+} from "./dates";
 
-/** Keep the age visible and reveal exact dates on hover, focus, or tap. */
+/** Show the creation date and reveal the last edit on hover, focus, or tap. */
 export const ProjectDates = ({
     project,
     className,
@@ -24,16 +27,22 @@ export const ProjectDates = ({
         project.lastModified ?? project.cachedProjectLastModified
     );
     useEffect(() => {
-        if (created === undefined) return;
+        if (created === undefined && edited === undefined) return;
         const timer = window.setInterval(() => setNow(Date.now()), 60_000);
         return () => window.clearInterval(timer);
-    }, [created]);
+    }, [created, edited]);
     if (created === undefined && edited === undefined) return null;
-    const age =
-        created === undefined ? "Age unknown" : projectAge(created, now);
+    const creationDate =
+        created === undefined
+            ? "Date unknown"
+            : projectCreatedDate(created, now);
     const dates = [
-        ["Created", created],
-        ["Last edited", edited]
+        ["Created", created, creationDate],
+        [
+            "Last edited",
+            edited,
+            edited === undefined ? "Unknown" : projectLastEdited(edited, now)
+        ]
     ] as const;
     return (
         <ClickAwayListener onClickAway={() => setOpen(false)}>
@@ -47,7 +56,7 @@ export const ProjectDates = ({
                 onClose={() => setOpen(false)}
                 title={
                     <Box sx={{ display: "grid", gap: 0.5 }}>
-                        {dates.map(([label, value]) => (
+                        {dates.map(([label, value, text]) => (
                             <div key={label}>
                                 {label}:{" "}
                                 {value === undefined ? (
@@ -56,7 +65,7 @@ export const ProjectDates = ({
                                     <time
                                         dateTime={new Date(value).toISOString()}
                                     >
-                                        {new Date(value).toLocaleString()}
+                                        {text}
                                     </time>
                                 )}
                             </div>
@@ -71,7 +80,7 @@ export const ProjectDates = ({
                     aria-label={
                         created === undefined
                             ? "Project creation date unknown. Show project dates"
-                            : `Created ${age === "Just created" ? "just now" : age}. Show project dates`
+                            : `Created ${creationDate}. Show project dates`
                     }
                     onClick={() => setOpen(true)}
                     onFocus={() => setOpen(true)}
@@ -79,7 +88,6 @@ export const ProjectDates = ({
                     sx={{
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: 0.5,
                         width: "fit-content",
                         maxWidth: "100%",
                         minWidth: 0,
@@ -106,19 +114,14 @@ export const ProjectDates = ({
                         "&:focus-visible": {
                             outline: "2px solid currentColor",
                             outlineOffset: 2
-                        },
-                        "@media (prefers-reduced-motion: no-preference)": {
-                            "& svg": { transition: "transform 140ms ease" },
-                            "&:hover svg": { transform: "rotate(-15deg)" }
                         }
                     }}
                 >
-                    <HistoryRoundedIcon sx={{ fontSize: 14 }} />
                     {created === undefined ? (
-                        age
+                        creationDate
                     ) : (
                         <time dateTime={new Date(created).toISOString()}>
-                            {age}
+                            {creationDate}
                         </time>
                     )}
                 </Box>

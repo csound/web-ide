@@ -14,22 +14,27 @@ afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
 });
-it("shows only creation age until hovering the badge", async () => {
-    const created = Date.UTC(2026, 9, 1, 12);
-    const edited = Date.UTC(2026, 9, 3, 10);
-    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 4, 12));
+it("shows the creation date and reveals the relative last edit on hover", async () => {
+    const created = new Date(2026, 9, 1, 12).getTime();
+    const edited = new Date(2026, 9, 3, 10).getTime();
+    vi.spyOn(Date, "now").mockReturnValue(new Date(2026, 9, 4, 12).getTime());
     const { container } = render(
         <ProjectDates project={{ created, lastModified: edited }} />
     );
-    const badge = screen.getByRole("button", { name: /Created 3 days ago/ });
-    expect(badge.textContent).toBe("3 days ago");
+    const badge = screen.getByRole("button", {
+        name: /Created 1 October 2026/
+    });
+    expect(badge.textContent).toBe("1 October 2026");
+    expect(badge.querySelector("svg")).toBeNull();
     expect(screen.queryByText(/Last edited/)).toBeNull();
     expect(container.querySelector("time")?.dateTime).toBe(
         new Date(created).toISOString()
     );
     fireEvent.mouseOver(badge);
     const tooltip = await screen.findByRole("tooltip");
-    expect(within(tooltip).getByText(/Last edited/)).toBeDefined();
+    expect(tooltip.textContent).toBe(
+        "Created: 1 October 2026Last edited: yesterday"
+    );
     expect(
         [...tooltip.querySelectorAll("time")].map((node) => node.dateTime)
     ).toEqual([
@@ -51,7 +56,7 @@ it("keeps dates open after a touch tap until tapping outside", () => {
     act(() => vi.advanceTimersByTime(2000));
     act(() => vi.advanceTimersByTime(500));
     const tooltip = screen.getByRole("tooltip");
-    expect(screen.getByText("Age unknown")).toBeDefined();
+    expect(screen.getByText("Date unknown")).toBeDefined();
     expect(within(tooltip).getByText("Created: Unknown")).toBeDefined();
     expect(tooltip.querySelector("time")?.dateTime).toBe(
         new Date(123000).toISOString()
@@ -73,3 +78,33 @@ it("renders no badge when neither date is known", () => {
     expect(container.textContent).toBe("");
     expect(screen.queryByRole("button")).toBeNull();
 });
+
+it.each([true, false])(
+    "refreshes relative dates after midnight (creation known: %s)",
+    (hasCreated) => {
+        vi.useFakeTimers();
+        const saved = new Date(2026, 9, 4, 12).getTime();
+        vi.setSystemTime(new Date(2026, 9, 4, 23, 59, 30));
+        const { unmount } = render(
+            <ProjectDates
+                project={{
+                    created: hasCreated ? saved : undefined,
+                    cachedProjectLastModified: saved
+                }}
+            />
+        );
+        const badge = screen.getByRole("button");
+        fireEvent.click(badge);
+        expect(screen.getByRole("tooltip").textContent).toContain(
+            "Last edited: today"
+        );
+        if (hasCreated) expect(badge.textContent).toBe("today");
+        act(() => vi.advanceTimersByTime(60_000));
+        expect(screen.getByRole("tooltip").textContent).toContain(
+            "Last edited: yesterday"
+        );
+        if (hasCreated) expect(badge.textContent).toBe("4 October 2026");
+        unmount();
+        expect(vi.getTimerCount()).toBe(0);
+    }
+);
