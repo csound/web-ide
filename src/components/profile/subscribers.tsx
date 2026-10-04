@@ -9,11 +9,7 @@ import {
     profileStars,
     tags
 } from "@config/firestore";
-import {
-    downloadProjectOnce,
-    storeProjectLocally,
-    unsetProject
-} from "@comp/projects/actions";
+import { storeProjectLocally, unsetProject } from "@comp/projects/actions";
 import { convertProjectSnapToProject } from "@comp/projects/utils";
 import {
     storeUserProfile,
@@ -29,7 +25,7 @@ import {
     UPDATE_PROFILE_FOLLOWERS
 } from "./types";
 import { listifyObject } from "@root/utils";
-import { descend, difference, propOr, sort } from "ramda";
+import { descend, propOr, sort } from "ramda";
 import { STORE_PROJECT_TAGS } from "../projects/types";
 
 export const subscribeToProfile = (
@@ -168,6 +164,7 @@ export const subscribeToProfileStars = (
         (starsReference) => {
             const starsData = starsReference.data();
             if (!starsData) {
+                dispatch(storeProfileStars({}, profileUid));
                 // Clear loading state when no data is found
                 dispatch(setStarsLoading(profileUid, false));
                 return;
@@ -177,38 +174,23 @@ export const subscribeToProfileStars = (
             const serializedStarsData: Record<string, any> = {};
             for (const projectUid in starsData) {
                 const timestamp = starsData[projectUid];
-                if (timestamp && typeof timestamp.toDate === "function") {
-                    // Convert Firestore Timestamp to milliseconds
-                    serializedStarsData[projectUid] = {
-                        toDate: timestamp.toDate().getTime()
-                    };
-                } else {
-                    // Handle case where it's already serialized or different format
-                    serializedStarsData[projectUid] = timestamp;
-                }
+                serializedStarsData[projectUid] = {
+                    toDate:
+                        typeof timestamp?.toMillis === "function"
+                            ? timestamp.toMillis()
+                            : typeof timestamp === "number"
+                              ? timestamp
+                              : 0
+                };
             }
 
-            const state = store.getState();
-            const starredProjects = Object.keys(starsData);
-            const cachedProjects = Object.keys(state.ProjectsReducer.projects);
-            const missingProjects = difference(starredProjects, cachedProjects);
-            missingProjects.forEach(async (projectUid) => {
-                try {
-                    await dispatch(downloadProjectOnce(projectUid));
-                } catch (error) {
-                    console.error(
-                        "Error downloading project:",
-                        projectUid,
-                        error
-                    );
-                }
-            });
             dispatch(storeProfileStars(serializedStarsData, profileUid));
             // Clear loading state
             dispatch(setStarsLoading(profileUid, false));
         },
         (error: any) => {
             console.error(error);
+            dispatch(storeProfileStars({}, profileUid));
             // Clear loading state on error
             dispatch(setStarsLoading(profileUid, false));
         }
