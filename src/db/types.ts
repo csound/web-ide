@@ -16,6 +16,8 @@ export interface IFirestoreDocument extends DocumentData {
 }
 
 export interface IFirestoreProject extends DocumentData {
+    forkedFrom?: string;
+    forkedAt?: firestore.Timestamp;
     created: firestore.Timestamp;
     description: string;
     iconBackgroundColor: string;

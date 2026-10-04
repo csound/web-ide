@@ -4,6 +4,7 @@ import { Bars as BarsSpinner } from "react-loader-spinner";
 import { Theme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
 import { ListPlayButton } from "@comp/profile/list-play-button";
+import { ForkAttribution } from "@comp/projects/fork-attribution";
 import { ProjectDates } from "@comp/projects/project-dates";
 import { IProject } from "@comp/projects/types";
 import { IProfile } from "@comp/profile/types";
@@ -99,15 +100,22 @@ export const ProjectCard = ({
                         </ProjectCardContentBottomDescription>
                     </ProjectCardContentBottomID>
                 </ProjectCardContentBottom>
-                <ProjectDates
-                    project={project}
+                <div
                     css={{
                         gridRow: 4,
                         color: "white",
                         backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        padding: "6px 10px"
+                        padding: "6px 10px",
+                        display: "grid",
+                        minWidth: 0
                     }}
-                />
+                >
+                    <ProjectDates project={project} />
+                    <ForkAttribution
+                        forkedFrom={project.forkedFrom}
+                        forkedAt={project.forkedAt}
+                    />
+                </div>
             </ProjectCardContentContainer>
         </ProjectCardContainer>
     );

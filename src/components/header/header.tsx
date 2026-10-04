@@ -32,6 +32,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import * as SS from "./styles";
 import { isEmpty } from "ramda";
 import { MenuBar } from "@comp/menu-bar/menu-bar";
+import { ForkAttribution } from "@comp/projects/fork-attribution";
 import ProjectProfileMeta from "./project-profile-meta";
 import { TargetControls } from "@comp/target-controls";
 import SocialControls from "@comp/social-controls/social-controls";
@@ -203,6 +204,12 @@ export const Header = () => {
     const utilityMenuAnchor = useRef<HTMLButtonElement>(null);
     const [isUtilityMenuOpen, setIsUtilityMenuOpen] = useState(false);
 
+    const forkProject = useSelector((state: RootState) =>
+        editorProjectUid
+            ? state.ProjectsReducer.projects[editorProjectUid]
+            : undefined
+    );
+
     const editorControlsPlaceholder = (
         <div css={SS.headerControlsPlaceholder}>
             <span css={SS.headerControlCircle} />
@@ -260,7 +267,23 @@ export const Header = () => {
                     {routeIsEditor && editorProjectUid && (
                         <MenuBar projectUid={editorProjectUid} />
                     )}
-                    <div style={{ flexGrow: 1 }} />
+                    <div
+                        css={{
+                            flex: 1,
+                            minWidth: 0,
+                            marginInline: 8,
+                            display: "flex",
+                            color: "inherit"
+                        }}
+                    >
+                        {routeIsEditor && (
+                            <ForkAttribution
+                                compact={mobileView}
+                                forkedFrom={forkProject?.forkedFrom}
+                                forkedAt={forkProject?.forkedAt}
+                            />
+                        )}
+                    </div>
                     {routeIsEditor ? (
                         <div css={SS.headerRightSideGroup}>
                             {editorProjectUid && projectControlsReady && (

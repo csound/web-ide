@@ -12,6 +12,12 @@ export function publicProjectSummary(
         description: project.description || "",
         created: project.created ?? null,
         public: true,
+        ...(typeof project.forkedFrom === "string"
+            ? {
+                  forkedFrom: project.forkedFrom,
+                  forkedAt: project.forkedAt ?? null
+              }
+            : {}),
         iconName: project.iconName || "fadwaveform",
         iconBackgroundColor: project.iconBackgroundColor || "#212226",
         iconForegroundColor: project.iconForegroundColor || "#f3f4f6",
