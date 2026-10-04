@@ -6,6 +6,7 @@ import {
     isCsoundBusy,
     runPerformance
 } from "@comp/csound/actions";
+import { SET_CURRENTLY_PLAYING_PROJECT } from "@comp/profile/types";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import {
@@ -50,9 +51,8 @@ export async function playProject(
         throw new Error("Stop playback before playing another file.");
     const state = store.getState();
     const documents = selectPlaybackDocuments(state, projectUid);
-    const playlist =
-        !onlyDocumentUid &&
-        selectPlaybackMode(state, projectUid) === "playlist";
+    const playlistMode = selectPlaybackMode(state, projectUid) === "playlist";
+    const playlist = !onlyDocumentUid && playlistMode;
     const start = onlyDocumentUid
         ? documents.findIndex(
               (document) => document.documentUid === onlyDocumentUid
@@ -114,12 +114,12 @@ export async function playProject(
         if (playlist)
             store.dispatch(setPlaylistIndex(projectUid, start + index));
         notify();
-        await runPerformance({
+        const result = await runPerformance({
             projectUid,
             ...(/\.csd$/i.test(document.filename)
                 ? { csdPath: documentPath(document, allDocuments) }
                 : { orc: document.currentValue }),
-            mode: playlist ? "play" : "auto",
+            mode: playlistMode ? "play" : "auto",
             signal: run.controller.signal,
             setConsole,
             onEnded: (reason) => {
@@ -137,6 +137,18 @@ export async function playProject(
                 }
             }
         });
+        // Each engine's cleanup clears the profile's playing project. Restore
+        // it when the next track starts, but never after a finished/cancelled run.
+        if (
+            result.status === "playing" &&
+            current === run &&
+            run.documentUid === document.documentUid &&
+            !run.controller.signal.aborted
+        )
+            store.dispatch({
+                type: SET_CURRENTLY_PLAYING_PROJECT,
+                projectUid
+            });
     };
     try {
         await play(0);

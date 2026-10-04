@@ -695,6 +695,82 @@ describe("project playlists", () => {
                 .selectedTargetPlaylistIndex
         ).toBe(2);
     });
+    it("rejects file output when auditioning a playlist tab", async () => {
+        configurePlaylist(2);
+        store.dispatch({
+            type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
+            projectUid: "audio-test",
+            documentUid: "csd",
+            val: source.replace("-odac", "-opiece.wav")
+        });
+        await expect(
+            playProject("audio-test", setConsole, "csd")
+        ).rejects.toThrow("This CSD requests file output");
+        expect(Csound).not.toHaveBeenCalled();
+        expect(nonCloudFiles.size).toBe(0);
+        expect(projectPlayback()).toBeUndefined();
+        expect(
+            store.getState().ProfileReducer.currentlyPlayingProject
+        ).toBeUndefined();
+        expect(
+            store.getState().TargetControlsReducer["audio-test"]
+                .selectedTargetPlaylistIndex
+        ).toBe(2);
+    });
+    it("still renders file output for a main-mode project", async () => {
+        updateAllTargetsLocally(store.dispatch, "Main", "audio-test", {
+            Main: {
+                targetName: "Main",
+                targetType: "main",
+                targetDocumentUid: "csd",
+                csoundOptions: {}
+            }
+        });
+        store.dispatch({
+            type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
+            projectUid: "audio-test",
+            documentUid: "csd",
+            val: source.replace("-odac", "-opiece.wav")
+        });
+        await playProject("audio-test", setConsole);
+        expect(nonCloudFiles.has("piece.wav")).toBe(true);
+        expect(projectPlayback()).toBeUndefined();
+        expect(
+            store.getState().ProfileReducer.currentlyPlayingProject
+        ).toBeUndefined();
+    });
+    it.each(["completed", "stopped"])(
+        "keeps profile controls on later tracks until %s",
+        async (ending) => {
+            configurePlaylist(1);
+            await playProject("audio-test", setConsole);
+            store.dispatch({
+                type: "PROFILE.SET_CURRENTLY_PLAYING_PROJECT",
+                projectUid: "audio-test"
+            });
+            listeners.get("realtimePerformanceEnded")?.();
+            await vi.waitFor(() =>
+                expect(engine.start).toHaveBeenCalledTimes(2)
+            );
+            expect(
+                store.getState().ProfileReducer.currentlyPlayingProject
+            ).toBe("audio-test");
+            store.dispatch(pauseCsound());
+            expect(store.getState().csound.status).toBe("paused");
+            expect(
+                store.getState().ProfileReducer.currentlyPlayingProject
+            ).toBe("audio-test");
+            store.dispatch(resumePausedCsound());
+            expect(store.getState().csound.status).toBe("playing");
+            if (ending === "completed")
+                listeners.get("realtimePerformanceEnded")?.();
+            else await stopPerformance();
+            await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+            expect(
+                store.getState().ProfileReducer.currentlyPlayingProject
+            ).toBeUndefined();
+        }
+    );
     it("pause and resume keep the current entry", async () => {
         configurePlaylist();
         await playProject("audio-test", setConsole);
