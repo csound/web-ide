@@ -5,7 +5,7 @@ import { UPDATE_PROJECT_LAST_MODIFIED_LOCALLY } from "./types";
 export const updateProjectLastModified = async (
     projectUid: string
 ): Promise<void> => {
-    setDoc(
+    await setDoc(
         doc(projectLastModified, projectUid),
         { timestamp: getFirebaseTimestamp() },
         { merge: true }
