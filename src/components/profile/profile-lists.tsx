@@ -103,9 +103,6 @@ const ProjectListItem = ({
                     component={Link}
                     to={"/editor/" + projectUid}
                     sx={{
-                        display: "block",
-                        minWidth: 0,
-                        color: "text.primary",
                         textDecoration: "none",
                         borderRadius: 1,
                         "&:hover h2": { textDecoration: "underline" },
@@ -113,90 +110,106 @@ const ProjectListItem = ({
                             outline: "2px solid",
                             outlineColor: "primary.main",
                             outlineOffset: 4
-                        }
+                        },
+                        display: "flex",
+                        alignItems: "baseline",
+                        flexWrap: "wrap",
+                        columnGap: 1.5,
+                        rowGap: 0.5,
+                        color: "text.secondary"
                     }}
                 >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "baseline",
-                            flexWrap: "wrap",
-                            columnGap: 1.5,
-                            rowGap: 0.5,
-                            color: "text.secondary"
-                        }}
+                    <Typography
+                        component="h2"
+                        variant="subtitle1"
+                        color="text.primary"
+                        sx={{ overflowWrap: "anywhere", lineHeight: 1.4 }}
                     >
-                        <Typography
-                            component="h2"
-                            variant="subtitle1"
-                            color="text.primary"
-                            sx={{ overflowWrap: "anywhere", lineHeight: 1.4 }}
-                        >
-                            {name}
-                        </Typography>
-                        {isProfileOwner && (
-                            <Box
-                                component="span"
-                                sx={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                    fontSize: 12
-                                }}
-                            >
-                                {isPublic ? (
-                                    <PublicIcon fontSize="inherit" />
-                                ) : (
-                                    <LockIcon fontSize="inherit" />
-                                )}
-                                {isPublic ? "Public" : "Private"}
-                            </Box>
-                        )}
-                        <ProjectDates project={project} />
-                    </Box>
-                    {description && (
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                                mt: 0.5,
-                                overflow: "hidden",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflowWrap: "anywhere",
-                                whiteSpace: "pre-line"
-                            }}
-                        >
-                            {description}
-                        </Typography>
-                    )}
-                    {Array.isArray(tags) && tags.length > 0 && (
+                        {name}
+                    </Typography>
+                    {isProfileOwner && (
                         <Box
+                            component="span"
                             sx={{
-                                display: "flex",
-                                flexWrap: "wrap",
+                                display: "inline-flex",
+                                alignItems: "center",
                                 gap: 0.5,
-                                mt: 1
+                                fontSize: 12
                             }}
                         >
-                            {tags.map((tag, index) => (
-                                <Chip
-                                    key={index}
-                                    label={tag}
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ maxWidth: "100%" }}
-                                />
-                            ))}
+                            {isPublic ? (
+                                <PublicIcon fontSize="inherit" />
+                            ) : (
+                                <LockIcon fontSize="inherit" />
+                            )}
+                            {isPublic ? "Public" : "Private"}
                         </Box>
                     )}
                 </Box>
-                <ForkAttribution
-                    forkedFrom={project.forkedFrom}
-                    forkedAt={project.forkedAt}
-                    css={{ marginTop: 4 }}
-                />
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 1,
+                        color: "text.secondary"
+                    }}
+                >
+                    <ProjectDates project={project} />
+                    <ForkAttribution
+                        forkedFrom={project.forkedFrom}
+                        forkedAt={project.forkedAt}
+                    />
+                </Box>
+                {(description || tags?.length > 0) && (
+                    <Box
+                        component={Link}
+                        to={"/editor/" + projectUid}
+                        sx={{
+                            display: "block",
+                            textDecoration: "none",
+                            color: "text.secondary"
+                        }}
+                    >
+                        {description && (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{
+                                    mt: 0.5,
+                                    overflow: "hidden",
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflowWrap: "anywhere",
+                                    whiteSpace: "pre-line"
+                                }}
+                            >
+                                {description}
+                            </Typography>
+                        )}
+                        {Array.isArray(tags) && tags.length > 0 && (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: 0.5,
+                                    mt: 1
+                                }}
+                            >
+                                {tags.map((tag, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={tag}
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ maxWidth: "100%" }}
+                                    />
+                                ))}
+                            </Box>
+                        )}
+                    </Box>
+                )}
             </Box>
             {isProfileOwner && (
                 <>

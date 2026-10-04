@@ -113,7 +113,7 @@ export const ProjectCardContentContainer = styled.div<IProjectCardContentContain
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-template-rows: 60px 62px 60px auto;
+    grid-template-rows: auto 62px 60px;
     grid-template-columns: 1fr;
     z-index: 3;
     text-overflow: ellipsis;
@@ -132,11 +132,11 @@ export const ProjectCardContentContainer = styled.div<IProjectCardContentContain
     }
 `;
 
-export const ProjectCardContentTop = styled(Link)`
+export const ProjectCardContentTop = styled.div`
     grid-row: 1;
     grid-column: 1;
     display: grid;
-    grid-template-rows: 1.1fr 0.9fr;
+    grid-template-rows: auto auto auto;
     grid-template-columns: 1fr;
     background-color: rgba(0, 0, 0, 0);
     color: white;
@@ -158,7 +158,12 @@ export const ProjectCardContentMiddle = styled.div`
     align-items: center;
 `;
 
-export const ProjectCardContentTopHeader = styled.div`
+export const ProjectCardContentTopHeader = styled(Link)`
+    color: inherit;
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+    }
     grid-row: 1;
     grid-column: 1;
     text-overflow: ellipsis;
@@ -168,8 +173,10 @@ export const ProjectCardContentTopHeader = styled.div`
     cursor: pointer;
 `;
 
-export const ProjectCardContentTopDescription = styled.div`
-    grid-row: 2;
+export const ProjectCardContentTopDescription = styled(Link)`
+    color: inherit;
+    text-decoration: none;
+    grid-row: 3;
     grid-column: 1;
     text-overflow: ellipsis;
     overflow: hidden;

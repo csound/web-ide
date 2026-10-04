@@ -182,7 +182,16 @@ for (const [theme, width] of [
                 await page
                     .locator('button[aria-label="Choose project icon"]')
                     .click();
-                await page.waitForSelector('button[aria-label^="Select "]');
+                await page
+                    .waitForSelector('button[aria-label^="Select "]')
+                    .catch(async (error) => {
+                        await page.screenshot({
+                            path: `screenshots/fork-icon-error-${theme}-${width}.png`
+                        });
+                        throw new Error(
+                            `${error.message}; browser errors: ${JSON.stringify(errors)}; icon expanded: ${await page.$eval('button[aria-label="Choose project icon"]', (button) => button.getAttribute("aria-expanded"))}`
+                        );
+                    });
                 await page.locator('button[aria-label^="Select "]').click();
                 await page.waitForSelector('button[aria-label^="Select "]', {
                     hidden: true
@@ -227,6 +236,40 @@ for (const [theme, width] of [
                 assert.equal(requests[1].iconForegroundColor, "#ffcc66");
                 assert.equal(requests[1].iconName, "fadADR");
                 assert.equal(requests[1].sourceProjectUid, "fork-fixture");
+                await page.goto(
+                    `${target.baseUrl}/puppeteer-tests/fixtures/project-forks.html?cards`
+                );
+                await page.waitForSelector('a[href="/editor/source-fixture"]');
+                assert.equal(
+                    (await page.$$('a[href="/editor/source-fixture"]')).length,
+                    2
+                );
+                assert.equal(
+                    (await page.$$('button[aria-label$="Show project dates"]'))
+                        .length,
+                    2
+                );
+                assert.equal((await page.$$("a a, a button")).length, 0);
+                assert.equal(
+                    await page.evaluate(
+                        () => document.documentElement.scrollWidth > innerWidth
+                    ),
+                    false
+                );
+                await page.screenshot({
+                    path: `screenshots/fork-project-lists-${theme}-${width}.png`
+                });
+                await page
+                    .locator('button[aria-label$="Show project dates"]')
+                    .click();
+                await page.waitForSelector('[role="tooltip"]');
+                await page.evaluate(() => window.forkFixture.hide());
+                await page.waitForFunction(
+                    () =>
+                        document.querySelectorAll(
+                            'a[href="/editor/source-fixture"]'
+                        ).length === 0
+                );
                 assert.deepEqual(errors, []);
             } finally {
                 await browser.close();

@@ -50,9 +50,11 @@ it.each([
         expect(
             screen.queryByText(/^(Public|Private)$/)?.textContent ?? null
         ).toBe(visibility);
-        expect(screen.getByText(/Created/)).toBeDefined();
-        expect(screen.getByText(/Last edited/)).toBeDefined();
-        expect(container.querySelectorAll("time")).toHaveLength(2);
+        expect(
+            screen.getByRole("button", { name: /Created .*Show project dates/ })
+        ).toBeDefined();
+        expect(screen.queryByText(/Last edited/)).toBeNull();
+        expect(container.querySelectorAll("time")).toHaveLength(1);
     }
 );
 

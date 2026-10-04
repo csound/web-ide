@@ -11,6 +11,9 @@ import { ConsoleProvider } from "../../src/components/console/context";
 import { tabDockInit } from "../../src/components/project-editor/actions";
 import { SIGNIN_SUCCESS } from "../../src/components/login/types";
 import type { IProject } from "../../src/components/projects/types";
+import { ProjectCard } from "../../src/components/home/project-card";
+import { ProfileLists } from "../../src/components/profile/profile-lists";
+import type { IProfile } from "../../src/components/profile/types";
 
 const project: IProject = {
     projectUid: "fork-fixture",
@@ -22,6 +25,7 @@ const project: IProject = {
     iconForegroundColor: "#ffffff",
     iconBackgroundColor: "#276b64",
     forkedFrom: "source-fixture",
+    created: 1700000000000,
     forkedAt: 1700000000000,
     tags: [],
     stars: {},
@@ -56,17 +60,52 @@ createRoot(document.getElementById("root")!).render(
         <MemoryRouter initialEntries={[`/editor/${project.projectUid}`]}>
             <ThemeProvider>
                 <ConsoleProvider>
-                    <Header />
-                    <div
-                        style={{
-                            paddingTop: 56,
-                            height: "100%",
-                            boxSizing: "border-box"
-                        }}
-                    >
-                        <ProjectEditor activeProject={project} />
-                    </div>
-                    <GlobalModal />
+                    {new URLSearchParams(location.search).has("cards") ? (
+                        <main
+                            style={{
+                                padding: 16,
+                                maxWidth: 800,
+                                margin: "auto",
+                                display: "grid",
+                                gap: 24
+                            }}
+                        >
+                            <div style={{ maxWidth: 340, width: "100%" }}>
+                                <ProjectCard
+                                    projectIndex={0}
+                                    project={project}
+                                    profile={
+                                        {
+                                            userUid: "fixture-author",
+                                            username: "fixture-author",
+                                            displayName: "Fixture musician",
+                                            bio: ""
+                                        } as IProfile
+                                    }
+                                />
+                            </div>
+                            <ProfileLists
+                                profileUid="fixture-author"
+                                isProfileOwner={true}
+                                selectedSection={0}
+                                filteredProjects={[project]}
+                            />
+                        </main>
+                    ) : (
+                        <>
+                            <Header />
+                            <div
+                                style={{
+                                    paddingTop: 56,
+                                    height: "100%",
+                                    boxSizing: "border-box"
+                                }}
+                            >
+                                <ProjectEditor activeProject={project} />
+                            </div>
+                            <GlobalModal />
+                        </>
+                    )}
                 </ConsoleProvider>
             </ThemeProvider>
         </MemoryRouter>

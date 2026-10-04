@@ -57,13 +57,40 @@ export const ProjectCard = ({
                 />
             </div>
             <ProjectCardContentContainer duration={200}>
-                <ProjectCardContentTop to={`editor/${project.projectUid}`}>
-                    <ProjectCardContentTopHeader>
+                <ProjectCardContentTop>
+                    <ProjectCardContentTopHeader
+                        to={`editor/${project.projectUid}`}
+                    >
                         {project.name}
                     </ProjectCardContentTopHeader>
-                    <ProjectCardContentTopDescription>
-                        {project.description}
-                    </ProjectCardContentTopDescription>
+                    <div
+                        css={{
+                            display: "flex",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: 8,
+                            minWidth: 0
+                        }}
+                    >
+                        <ProjectDates project={project} onCard />
+                        <ForkAttribution
+                            forkedFrom={project.forkedFrom}
+                            forkedAt={project.forkedAt}
+                            css={{
+                                color: "#f3f4f6",
+                                backgroundColor: "rgba(12,16,20,0.65)",
+                                padding: "2px 6px",
+                                borderRadius: 4
+                            }}
+                        />
+                    </div>
+                    {project.description && (
+                        <ProjectCardContentTopDescription
+                            to={`editor/${project.projectUid}`}
+                        >
+                            {project.description}
+                        </ProjectCardContentTopDescription>
+                    )}
                 </ProjectCardContentTop>
                 <ProjectCardContentMiddle>
                     <ListPlayButton
@@ -100,22 +127,6 @@ export const ProjectCard = ({
                         </ProjectCardContentBottomDescription>
                     </ProjectCardContentBottomID>
                 </ProjectCardContentBottom>
-                <div
-                    css={{
-                        gridRow: 4,
-                        color: "white",
-                        backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        padding: "6px 10px",
-                        display: "grid",
-                        minWidth: 0
-                    }}
-                >
-                    <ProjectDates project={project} />
-                    <ForkAttribution
-                        forkedFrom={project.forkedFrom}
-                        forkedAt={project.forkedAt}
-                    />
-                </div>
             </ProjectCardContentContainer>
         </ProjectCardContainer>
     );
