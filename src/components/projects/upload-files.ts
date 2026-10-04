@@ -1,5 +1,5 @@
 import { getAuth } from "firebase/auth";
-import { addDoc, collection, doc } from "firebase/firestore";
+import { addDoc, collection, doc, onSnapshot } from "firebase/firestore";
 import { uploadBytesResumable } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -7,12 +7,21 @@ import {
     projects,
     storageReference
 } from "@config/firestore";
+import type { IFirestoreDocument } from "@root/db/types";
 import type { AppThunkDispatch, RootState } from "@root/store";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { updateProjectLastModified } from "@comp/project-last-modified/actions";
-import { ADD_PROJECT_DOCUMENTS, type IDocumentFileType } from "./types";
-import { getUniqueFilename, textOrBinary } from "./utils";
+import {
+    ADD_PROJECT_DOCUMENTS,
+    type IDocument,
+    type IDocumentFileType
+} from "./types";
+import {
+    fileDocumentDataToDocumentType,
+    getUniqueFilename,
+    textOrBinary
+} from "./utils";
 
 // Keep the existing upload limit, in decimal bytes.
 export const MAX_PROJECT_FILE_BYTES = 2_000_000;
@@ -26,6 +35,44 @@ export interface FileUploadProgress {
 }
 
 const uploadingProjects = new Set<string>();
+
+async function waitForUploadedDocument(
+    projectUid: string,
+    documentUid: string
+) {
+    let unsubscribe: (() => void) | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+        return await new Promise<IDocument>((resolve, reject) => {
+            timeout = setTimeout(
+                () => reject(new Error("Check the file tree again shortly.")),
+                60_000
+            );
+            unsubscribe = onSnapshot(
+                doc(projects, projectUid, "files", documentUid),
+                { includeMetadataChanges: true },
+                (snapshot) => {
+                    if (
+                        snapshot.exists() &&
+                        !snapshot.metadata.fromCache &&
+                        !snapshot.metadata.hasPendingWrites
+                    ) {
+                        resolve(
+                            fileDocumentDataToDocumentType(
+                                snapshot.data() as IFirestoreDocument,
+                                snapshot.id
+                            )
+                        );
+                    }
+                },
+                reject
+            );
+        });
+    } finally {
+        clearTimeout(timeout);
+        unsubscribe?.();
+    }
+}
 
 /** Both file picking and dropping go through this size and ownership check. */
 export const uploadProjectFiles =
@@ -57,11 +104,10 @@ export const uploadProjectFiles =
             return;
         }
         uploadingProjects.add(projectUid);
-        const names = Object.values(project.documents)
-            .filter((document) => !document.path?.length)
-            .map((document) => document.filename);
+        const names: string[] = [];
         let uploaded = 0;
         const failures: string[] = [];
+        const warnings: string[] = [];
         try {
             for (const [index, file] of files.entries()) {
                 if (file.size > MAX_PROJECT_FILE_BYTES) {
@@ -70,7 +116,16 @@ export const uploadProjectFiles =
                     );
                     continue;
                 }
-                const filename = getUniqueFilename(file.name, names);
+                const currentNames = Object.values(
+                    getState().ProjectsReducer.projects[projectUid]
+                        ?.documents ?? {}
+                )
+                    .filter((document) => !document.path?.length)
+                    .map((document) => document.filename);
+                const filename = getUniqueFilename(file.name, [
+                    ...names,
+                    ...currentNames
+                ]);
                 const type = textOrBinary(filename);
                 const progress = (percent: number) =>
                     onProgress?.({
@@ -131,7 +186,23 @@ export const uploadProjectFiles =
                         });
                     }
                     names.push(filename);
-                    // Show completed uploads immediately; the Firestore listener supplies server timestamps.
+                    uploaded++;
+                    let confirmedDocument: IDocument | undefined;
+                    if (type === "bin") {
+                        try {
+                            // Storage completion does not mean the finalize trigger has created the file yet.
+                            confirmedDocument = await waitForUploadedDocument(
+                                projectUid,
+                                documentUid
+                            );
+                        } catch (error) {
+                            warnings.push(
+                                `${filename}: uploaded, but not ready to use. ${error instanceof Error ? error.message : "It may appear shortly."}`
+                            );
+                            continue;
+                        }
+                    }
+                    // Only expose editable rows after their Firestore records exist.
                     if (
                         !getState().ProjectsReducer.projects[projectUid]
                             ?.documents[documentUid]
@@ -140,7 +211,7 @@ export const uploadProjectFiles =
                             type: ADD_PROJECT_DOCUMENTS,
                             projectUid,
                             documents: {
-                                [documentUid]: {
+                                [documentUid]: confirmedDocument ?? {
                                     documentUid,
                                     filename,
                                     type,
@@ -154,7 +225,6 @@ export const uploadProjectFiles =
                                 }
                             }
                         });
-                    uploaded++;
                     progress(100);
                     onUploaded?.(documentUid, type);
                 } catch (error) {
@@ -167,22 +237,24 @@ export const uploadProjectFiles =
                 try {
                     await updateProjectLastModified(projectUid);
                 } catch {
-                    dispatch(
-                        openSnackbar(
-                            `${uploaded} files uploaded, but the last-edited date could not be saved.`,
-                            SnackbarType.Error
-                        )
-                    );
-                    return;
+                    warnings.push("The last-edited date could not be saved.");
                 }
             }
             const summary = `${uploaded} ${uploaded === 1 ? "file" : "files"} uploaded.`;
             dispatch(
                 openSnackbar(
-                    failures.length
-                        ? `${summary} ${failures.length} skipped. ${failures.join(" ")}`
-                        : summary,
-                    failures.length ? SnackbarType.Error : SnackbarType.Info
+                    [
+                        summary,
+                        ...(failures.length
+                            ? [
+                                  `${failures.length} skipped. ${failures.join(" ")}`
+                              ]
+                            : []),
+                        ...warnings
+                    ].join(" "),
+                    failures.length || warnings.length
+                        ? SnackbarType.Error
+                        : SnackbarType.Info
                 )
             );
         } finally {
