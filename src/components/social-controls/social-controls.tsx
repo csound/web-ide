@@ -5,7 +5,7 @@ import { subscribeToProjectStars } from "./subscribers";
 import Tooltip from "@mui/material/Tooltip";
 import CallSplitIcon from "@mui/icons-material/CallSplit";
 import { openForkProject } from "@comp/projects/fork-project";
-import { Button, IconButton } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
 import { exportProject, markProjectPublic } from "@comp/projects/actions";
 import StarIcon from "@mui/icons-material/Star";
 import OutlinedStarIcon from "@mui/icons-material/StarBorderOutlined";
@@ -34,6 +34,11 @@ const StyledIconButton = styled(IconButton)`
         align-items: center;
         justify-content: center;
         line-height: 1;
+    }
+`;
+const StyledForkIcon = styled(CallSplitIcon)`
+    && {
+        fill: ${(properties) => properties.theme.altTextColor};
     }
 `;
 const StyledDownloadIcon = styled(CloudDownloadIcon)`
@@ -94,15 +99,19 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
     return (
         <>
             {(isPublic || isOwner) && (
-                <Button
-                    color="inherit"
-                    aria-label="Fork project"
-                    size="small"
-                    startIcon={<CallSplitIcon fontSize="small" />}
-                    onClick={() => dispatch(openForkProject(activeProjectUid))}
-                >
-                    Fork
-                </Button>
+                <Tooltip title="Fork project" placement="bottom-end">
+                    <div css={SS.buttonContainer}>
+                        <StyledIconButton
+                            aria-label="Fork project"
+                            size="medium"
+                            onClick={() =>
+                                dispatch(openForkProject(activeProjectUid))
+                            }
+                        >
+                            <StyledForkIcon fontSize="small" />
+                        </StyledIconButton>
+                    </div>
+                </Tooltip>
             )}
             {!isOwner && isPublic && (
                 <Tooltip title="Download project as Zip" placement="bottom-end">
