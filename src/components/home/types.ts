@@ -2,6 +2,13 @@ import { IProject } from "@comp/projects/types";
 import { Timestamp } from "firebase/firestore";
 import { UnknownAction } from "redux";
 
+export const SET_SEARCH_CONTROLS = "HOME.SET_SEARCH_CONTROLS";
+export interface SetSearchControls {
+    type: typeof SET_SEARCH_CONTROLS;
+    mode: "projects" | "users";
+    input: string;
+}
+
 export const SEARCH_PROJECTS_REQUEST = "HOME.SEARCH_PROJECTS_REQUEST";
 export const SEARCH_PROJECTS_SUCCESS = "HOME.SEARCH_PROJECTS_SUCCESS";
 
@@ -99,6 +106,7 @@ export interface SetPopularArtistsLoading {
 
 export type HomeActionTypes =
     | UnknownAction
+    | SetSearchControls
     | SearchProjectsRequest
     | SearchProjectsSuccess
     | AddUserProfiles

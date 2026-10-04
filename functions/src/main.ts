@@ -16,5 +16,6 @@ export { toggleProjectStar as toggle_project_star } from "./toggle_project_star.
 export { projectStarsCounter as project_stars_counter } from "./project_stars_counter.js";
 export { popularArtists as popular_artists } from "./popular_artists.js";
 export { searchProjects as search_projects } from "./search_projects.js";
+export { searchUsers as search_users } from "./search_users.js";
 
 export { forkProject as fork_project } from "./fork_project.js";

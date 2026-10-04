@@ -12,7 +12,7 @@ async function assertHomeContent(page) {
     });
     assert.equal(
         await heading.evaluate((element) => element.textContent),
-        "Search Projects"
+        "Search"
     );
     await page.waitForSelector('main input[name="search-field"]', {
         visible: true,
