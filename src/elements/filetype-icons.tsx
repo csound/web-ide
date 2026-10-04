@@ -1,8 +1,22 @@
 import React from "react";
 import { useTheme } from "@emotion/react";
 import mime from "mime";
+import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 
-export type MediaFileCategory = "audio" | "midi" | "sample" | "media" | "md";
+export type MediaFileCategory =
+    | "audio"
+    | "midi"
+    | "sample"
+    | "media"
+    | "md"
+    | "code"
+    | "text"
+    | "data"
+    | "analysis"
+    | "tuning"
+    | "image"
+    | "archive"
+    | "document";
 
 type MediaFileIconProps = {
     label: string;
@@ -12,15 +26,8 @@ type MediaFileIconProps = {
 type CsoundFileCategory = "csd" | "orc" | "sco" | "udo";
 
 export type FileTypeIconDetails =
-    | {
-          kind: "csound";
-          category: CsoundFileCategory;
-      }
-    | {
-          kind: "media";
-          category: MediaFileCategory;
-          label: string;
-      };
+    | { kind: "csound"; category: CsoundFileCategory }
+    | { kind: "media"; category: MediaFileCategory; label: string };
 
 const csoundExtensions = new Set<CsoundFileCategory>([
     "csd",
@@ -28,101 +35,191 @@ const csoundExtensions = new Set<CsoundFileCategory>([
     "sco",
     "udo"
 ]);
-const mediaMimePrefixes = ["audio/", "video/"];
-const mediaMimeTypes = new Set([
-    "application/ogg",
-    "application/x-midi",
-    "audio/midi",
-    "audio/sp-midi",
-    "audio/x-aiff",
-    "audio/x-midi",
-    "audio/x-wav"
-]);
-const audioExtensions = new Set([
-    ".aif",
-    ".aiff",
-    ".flac",
-    ".m4a",
-    ".mp3",
-    ".ogg",
-    ".wav"
-]);
-const midiExtensions = new Set([".kar", ".mid", ".midi"]);
-const sampleExtensions = new Set([".sf2", ".sfz"]);
-const otherMediaExtensions = new Set([".mp4", ".mov", ".webm"]);
 
-const getFileExtension = (filename: string): string => {
-    const lastDotIndex = filename.lastIndexOf(".");
-
-    if (lastDotIndex < 0) {
-        return "";
-    }
-
-    return filename.slice(lastDotIndex).toLowerCase();
+// Explicit extensions win over browser MIME guesses (notably MIDI and SF2).
+const extensionGroups: [MediaFileCategory, string[]][] = [
+    ["md", ["md", "markdown"]],
+    [
+        "audio",
+        [
+            "wav",
+            "wave",
+            "aif",
+            "aiff",
+            "aifc",
+            "flac",
+            "m4a",
+            "mp3",
+            "mp2",
+            "ogg",
+            "oga",
+            "opus",
+            "au",
+            "snd",
+            "caf",
+            "w64"
+        ]
+    ],
+    ["midi", ["mid", "midi", "kar", "smf"]],
+    ["sample", ["sf2", "sf3", "sfz", "dls"]],
+    ["analysis", ["pv", "pvx", "ats", "het", "lpc", "sdif"]],
+    [
+        "data",
+        [
+            "mat",
+            "matrix",
+            "matrx",
+            "matrxb",
+            "matrxt",
+            "csv",
+            "tsv",
+            "dat",
+            "ft",
+            "ftable",
+            "json",
+            "xml",
+            "yaml",
+            "yml",
+            "toml",
+            "ini",
+            "cfg"
+        ]
+    ],
+    ["tuning", ["scl", "kbm"]],
+    [
+        "code",
+        [
+            "h",
+            "hpp",
+            "inc",
+            "c",
+            "cpp",
+            "py",
+            "lua",
+            "js",
+            "mjs",
+            "ts",
+            "tsx",
+            "jsx",
+            "clj",
+            "cljs",
+            "html",
+            "htm",
+            "css",
+            "sh"
+        ]
+    ],
+    ["text", ["txt", "text", "log", "rst"]],
+    [
+        "image",
+        [
+            "png",
+            "jpg",
+            "jpeg",
+            "gif",
+            "svg",
+            "webp",
+            "bmp",
+            "tif",
+            "tiff",
+            "avif"
+        ]
+    ],
+    ["media", ["mp4", "mov", "webm", "mkv", "avi", "mpeg", "mpg", "ogv"]],
+    ["archive", ["zip", "gz", "tgz", "tar", "bz2", "xz", "7z", "rar"]],
+    ["document", ["pdf"]]
+];
+const extensionCategories = new Map(
+    extensionGroups.flatMap(([category, extensions]) =>
+        extensions.map((extension) => [extension, category] as const)
+    )
+);
+const shortLabels: Record<string, string> = {
+    markdown: "MD",
+    midi: "MID",
+    wave: "WAV",
+    aiff: "AIF",
+    aifc: "AIF",
+    matrix: "MTX",
+    matrx: "MTX",
+    matrxb: "MTX",
+    matrxt: "MTX",
+    ftable: "FT",
+    jpeg: "JPG",
+    tiff: "TIF",
+    text: "TXT",
+    mpeg: "MPG"
 };
+const mimeCategories = new Map<string, [MediaFileCategory, string]>([
+    ["application/x-midi", ["midi", "MID"]],
+    ["audio/midi", ["midi", "MID"]],
+    ["audio/x-midi", ["midi", "MID"]],
+    ["audio/sp-midi", ["midi", "MID"]],
+    ["application/ogg", ["audio", "OGG"]],
+    ["application/json", ["data", "JSON"]],
+    ["application/xml", ["data", "XML"]],
+    ["text/xml", ["data", "XML"]],
+    ["text/csv", ["data", "CSV"]],
+    ["text/markdown", ["md", "MD"]],
+    ["application/javascript", ["code", "JS"]],
+    ["text/javascript", ["code", "JS"]],
+    ["text/html", ["code", "HTML"]],
+    ["text/css", ["code", "CSS"]],
+    ["application/pdf", ["document", "PDF"]],
+    ["application/zip", ["archive", "ZIP"]],
+    ["application/gzip", ["archive", "GZ"]],
+    ["application/x-tar", ["archive", "TAR"]],
+    ["application/x-7z-compressed", ["archive", "7Z"]]
+]);
 
 export function getFileTypeIconDetails(
     filename: string,
     mimeType?: string
 ): FileTypeIconDetails | null {
-    const extension = getFileExtension(filename);
-    const extensionWithoutDot = extension.slice(1);
+    const basename = filename.split(/[\\/]/).pop()!.toLowerCase();
+    const lastDot = basename.lastIndexOf(".");
+    const extension = lastDot > 0 ? basename.slice(lastDot + 1) : "";
 
-    if (csoundExtensions.has(extensionWithoutDot as CsoundFileCategory)) {
-        return {
-            kind: "csound",
-            category: extensionWithoutDot as CsoundFileCategory
-        };
+    if (csoundExtensions.has(extension as CsoundFileCategory)) {
+        return { kind: "csound", category: extension as CsoundFileCategory };
     }
-
-    if (extension === ".md" || extension === ".markdown") {
-        return { kind: "media", category: "md", label: "MD" };
-    }
-
-    const normalizedMimeType =
-        mimeType?.toLowerCase() || mime.getType(filename) || "";
-
-    if (sampleExtensions.has(extension)) {
+    const category = extensionCategories.get(extension);
+    if (category) {
         return {
             kind: "media",
-            category: "sample",
-            label: extension === ".sf2" ? "SF2" : "SFZ"
+            category,
+            label: shortLabels[extension] || extension.toUpperCase()
         };
     }
-
-    if (midiExtensions.has(extension) || normalizedMimeType.includes("midi")) {
-        return {
-            kind: "media",
-            category: "midi",
-            label:
-                extension === ".midi"
-                    ? "MID"
-                    : extension.slice(1).toUpperCase() || "MID"
-        };
-    }
-
-    if (audioExtensions.has(extension)) {
-        return {
-            kind: "media",
-            category: "audio",
-            label: extension.slice(1).toUpperCase()
-        };
-    }
-
     if (
-        otherMediaExtensions.has(extension) ||
-        mediaMimePrefixes.some((prefix) =>
-            normalizedMimeType.startsWith(prefix)
-        ) ||
-        mediaMimeTypes.has(normalizedMimeType)
+        ["readme", "license", "licence", "changelog", "authors"].includes(
+            basename
+        )
     ) {
-        return {
-            kind: "media",
-            category: "media",
-            label: extension.slice(1).toUpperCase() || "MED"
-        };
+        return { kind: "media", category: "text", label: "TXT" };
+    }
+    if (basename === ".csoundrc") {
+        return { kind: "media", category: "data", label: "CFG" };
     }
 
+    const normalizedMimeType = (mimeType || mime.getType(basename) || "")
+        .split(";")[0]
+        .trim()
+        .toLowerCase();
+    const match = mimeCategories.get(normalizedMimeType);
+    if (match) {
+        return { kind: "media", category: match[0], label: match[1] };
+    }
+    for (const [prefix, category, label] of [
+        ["audio/", "audio", "AUD"],
+        ["video/", "media", "VID"],
+        ["image/", "image", "IMG"],
+        ["text/", "text", "TXT"]
+    ] as const) {
+        if (normalizedMimeType.startsWith(prefix)) {
+            return { kind: "media", category, label };
+        }
+    }
     return null;
 }
 
@@ -136,7 +233,7 @@ export function FileTypeIcon({
     const iconDetails = getFileTypeIconDetails(filename, mimeType);
 
     if (!iconDetails) {
-        return null;
+        return <InsertDriveFileOutlinedIcon />;
     }
 
     if (iconDetails.kind === "media") {
@@ -172,7 +269,7 @@ function FileIconBadge({
     shadow: string;
 }): React.ReactElement {
     const theme = useTheme();
-    const normalizedLabel = label.trim().slice(0, 3).toUpperCase() || "???";
+    const normalizedLabel = label.trim().slice(0, 4).toUpperCase() || "???";
 
     return (
         <svg
@@ -181,6 +278,8 @@ function FileIconBadge({
             height="512"
             viewBox="0 0 512 512"
             xmlSpace="preserve"
+            aria-hidden="true"
+            focusable="false"
         >
             {/* Paper body — theme-aware so it fits dark & light themes */}
             <path
@@ -224,7 +323,7 @@ function FileIconBadge({
             <text
                 fill="#FFFFFF"
                 fontFamily={theme.font.monospace || theme.font.regular}
-                fontSize="120"
+                fontSize={normalizedLabel.length > 3 ? 96 : 120}
                 fontWeight="800"
                 textAnchor="middle"
                 dominantBaseline="central"
@@ -242,8 +341,24 @@ export function MediaFileIcon({
     category
 }: MediaFileIconProps): React.ReactElement {
     const theme = useTheme();
-    const { panel, shadow } = theme.fileIcons[category];
-    const normalizedLabel = label.trim().slice(0, 3).toUpperCase() || "MED";
+    // Extend the existing theme palette without adding a competing icon style.
+    const palette = {
+        audio: "audio",
+        midi: "midi",
+        sample: "sample",
+        media: "media",
+        md: "md",
+        code: "udo",
+        text: "md",
+        data: "midi",
+        analysis: "audio",
+        tuning: "sco",
+        image: "media",
+        archive: "sample",
+        document: "media"
+    } as const;
+    const { panel, shadow } = theme.fileIcons[palette[category]];
+    const normalizedLabel = label.trim().slice(0, 4).toUpperCase() || "MED";
     return (
         <FileIconBadge label={normalizedLabel} panel={panel} shadow={shadow} />
     );
