@@ -44,6 +44,19 @@ export const ProjectsReducer = (
     unknownAction: ProjectsTypes.ProjectsActionTypes
 ): ProjectsTypes.IProjectsReducer => {
     switch (unknownAction.type) {
+        case ProjectsTypes.STORE_PROJECT_TAGS: {
+            const action =
+                unknownAction as ProjectsTypes.StoreProjectTagsAction;
+            const project = state.projects[action.projectUid];
+            if (!project) return state;
+            return {
+                ...state,
+                projects: {
+                    ...state.projects,
+                    [action.projectUid]: { ...project, tags: action.tags }
+                }
+            };
+        }
         case ProjectsTypes.STORE_PROJECT_LOCALLY: {
             const action =
                 unknownAction as ProjectsTypes.StoreProjectLocallyAction;

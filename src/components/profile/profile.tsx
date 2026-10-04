@@ -1,6 +1,7 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useDispatch, useSelector } from "@root/store";
 import { ProfileLists } from "./profile-lists";
+import { ProfileProjects } from "./profile-projects";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -8,7 +9,6 @@ import { updateBodyScroller } from "@root/utils";
 import { gradient } from "./gradient";
 import { usernames } from "@config/firestore";
 import { useParams, useNavigate } from "react-router";
-import { createButtonAddIcon } from "./styles";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Tabs from "@mui/material/Tabs";
@@ -16,7 +16,6 @@ import Tab from "@mui/material/Tab";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import CameraIcon from "@mui/icons-material/CameraAltOutlined";
-import AddIcon from "@mui/icons-material/Add";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -25,9 +24,6 @@ import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Box from "@mui/material/Box";
-import SearchIcon from "@mui/icons-material/Search";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
 import { Header } from "../header/header";
 import CachedProfileImage from "./cached-profile-image";
 import {
@@ -44,19 +40,16 @@ import {
 } from "@comp/login/selectors";
 import {
     uploadProfileImage,
-    addProject,
     editProfile,
     followUser,
     unfollowUser,
-    deleteAccountPrompt,
-    setProjectFilterString
+    deleteAccountPrompt
 } from "./actions";
 import {
     selectUserFollowing,
     selectUserProfile,
     selectUserImageURL,
-    selectUserProjects,
-    selectProjectFilterString
+    selectUserProjects
 } from "./selectors";
 import { get } from "lodash";
 import { stopCsound } from "../csound/actions";
@@ -73,7 +66,6 @@ import {
     NameSection,
     ContentSection,
     ContentTabsContainer,
-    contentActionsStyle,
     ListContainer,
     EditProfileButtonSection,
     fabButton,
@@ -150,9 +142,7 @@ export const Profile = () => {
 
     const profile = useSelector(profileSelector);
     const imageUrl = useSelector(imageUrlSelector);
-    const filteredProjects = useSelector(projectsSelector);
-    // const followingFilterString = useSelector(selectFollowingFilterString);
-    const projectFilterString = useSelector(selectProjectFilterString);
+    const profileProjects = useSelector(projectsSelector);
     const [imageHover, setImageHover] = useState(false);
     const [isAboutSelected, setIsAboutSelected] = useState(false);
     const loggedInUserFollowing: string[] = useSelector(followingSelector);
@@ -531,65 +521,26 @@ export const Profile = () => {
                             </ContentTabsContainer>
                         )}
 
-                        {!isAboutSection && (
-                            <Box
-                                css={contentActionsStyle}
-                                style={{
-                                    display: isProjectsSection ? "flex" : "none"
-                                }}
-                                component="form"
-                                noValidate
-                                autoComplete="off"
-                            >
-                                {isProjectsSection && (
-                                    <TextField
-                                        id="input-with-icon-adornment"
-                                        label="Search Projects"
-                                        value={projectFilterString || ""}
-                                        variant="outlined"
-                                        size="small"
-                                        InputProps={{
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    <SearchIcon />
-                                                </InputAdornment>
-                                            )
-                                        }}
-                                        onChange={(event) => {
-                                            dispatch(
-                                                setProjectFilterString(
-                                                    event.target.value
-                                                )
-                                            );
-                                        }}
-                                    />
-                                )}
-
-                                {isProfileOwner && isProjectsSection && (
-                                    <Button
-                                        css={fabButton}
-                                        color="primary"
-                                        aria-label="Create new project"
-                                        size="medium"
-                                        onClick={() => dispatch(addProject())}
-                                        data-tip={"Create new project"}
-                                    >
-                                        Create
-                                        <AddIcon css={createButtonAddIcon} />
-                                    </Button>
-                                )}
-                            </Box>
-                        )}
-                        {profileUid && username && !isAboutSection && (
-                            <ListContainer>
-                                <ProfileLists
+                        {profileUid &&
+                            username &&
+                            !isAboutSection &&
+                            (isProjectsSection ? (
+                                <ProfileProjects
+                                    key={profileUid}
                                     profileUid={profileUid}
                                     isProfileOwner={isProfileOwner}
-                                    selectedSection={selectedSectionValue}
-                                    filteredProjects={filteredProjects}
+                                    projects={profileProjects}
                                 />
-                            </ListContainer>
-                        )}
+                            ) : (
+                                <ListContainer>
+                                    <ProfileLists
+                                        profileUid={profileUid}
+                                        isProfileOwner={isProfileOwner}
+                                        selectedSection={selectedSectionValue}
+                                        filteredProjects={profileProjects}
+                                    />
+                                </ListContainer>
+                            ))}
                         {isMobileLayout && isAboutSection && mobileAboutContent}
                     </ContentSection>
                     {isMobileLayout && <div css={profileMobileBottomSpacer} />}

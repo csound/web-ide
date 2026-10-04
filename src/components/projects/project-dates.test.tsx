@@ -122,3 +122,10 @@ it("shows only month and year on cards while keeping full date details", async (
         "Created: 1 October 2026"
     );
 });
+
+it("keeps today in compact profile badges", () => {
+    const created = new Date(2026, 9, 4, 12).getTime();
+    vi.spyOn(Date, "now").mockReturnValue(created);
+    render(<ProjectDates project={{ created }} compact />);
+    expect(screen.getByRole("button").textContent).toBe("today");
+});

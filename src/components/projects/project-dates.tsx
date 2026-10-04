@@ -15,7 +15,8 @@ const cardDateFormat = new Intl.DateTimeFormat("en-US", {
 export const ProjectDates = ({
     project,
     className,
-    onCard = false
+    onCard = false,
+    compact = false
 }: {
     project: {
         created?: unknown;
@@ -24,6 +25,7 @@ export const ProjectDates = ({
     };
     className?: string;
     onCard?: boolean;
+    compact?: boolean;
 }) => {
     const [open, setOpen] = useState(false);
     const [now, setNow] = useState(Date.now);
@@ -42,7 +44,8 @@ export const ProjectDates = ({
             ? "Date unknown"
             : projectCreatedDate(created, now);
     const visibleDate =
-        onCard && created !== undefined
+        (onCard || (compact && creationDate !== "today")) &&
+        created !== undefined
             ? cardDateFormat.format(created)
             : creationDate;
     const dates = [
@@ -103,7 +106,7 @@ export const ProjectDates = ({
                         px: 0.75,
                         py: 0.25,
                         my: onCard ? 0 : 0.5,
-                        whiteSpace: onCard ? "nowrap" : undefined,
+                        whiteSpace: onCard || compact ? "nowrap" : undefined,
                         border: 1,
                         borderColor: onCard
                             ? "rgba(255,255,255,0.24)"
