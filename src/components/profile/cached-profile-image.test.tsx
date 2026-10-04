@@ -6,6 +6,7 @@ import CachedAvatar from "./cached-avatar";
 afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
 });
 
 it("loads remote profile photos without requiring canvas or CORS access", () => {
@@ -112,3 +113,63 @@ it("uses CORS for images in the isolated editor", () => {
         vi.unstubAllGlobals();
     }
 });
+
+it.each([
+    { isolated: true, callback: false },
+    { isolated: true, callback: true },
+    { isolated: false, callback: false },
+    { isolated: false, callback: true }
+])(
+    "matches Avatar preload and visible image settings (isolated: $isolated, callback: $callback)",
+    ({ isolated, callback }) => {
+        vi.stubGlobal("crossOriginIsolated", isolated);
+        const requests: {
+            image: HTMLImageElement;
+            crossOrigin: string | null;
+            referrerPolicy: string;
+        }[] = [];
+        // Keep the real MUI Avatar and capture settings when its preload starts.
+        vi.stubGlobal("Image", function ImageProbe() {
+            const image = document.createElement("img");
+            Object.defineProperty(image, "src", {
+                get: () => image.getAttribute("src") || "",
+                set: (src: string) => {
+                    image.setAttribute("src", src);
+                    requests.push({
+                        image,
+                        crossOrigin: image.crossOrigin,
+                        referrerPolicy: image.referrerPolicy
+                    });
+                }
+            });
+            return image;
+        });
+        const imageProps = {
+            referrerPolicy: "no-referrer"
+        } satisfies React.ImgHTMLAttributes<HTMLImageElement>;
+        render(
+            <CachedAvatar
+                src="https://photos.example/avatar.png"
+                alt="Avatar"
+                slotProps={{ img: callback ? () => imageProps : imageProps }}
+            >
+                RW
+            </CachedAvatar>
+        );
+        expect(requests).toHaveLength(1);
+        const request = requests[0];
+        expect(request.crossOrigin).toBe(isolated ? "anonymous" : null);
+        expect(request.referrerPolicy).toBe("no-referrer");
+        const image = screen.getByAltText("Avatar");
+        expect(image.getAttribute("crossorigin")).toBe(request.crossOrigin);
+        expect(image.getAttribute("referrerpolicy")).toBe(
+            request.referrerPolicy
+        );
+        fireEvent.load(request.image);
+        expect(screen.getByAltText("Avatar")).toBe(image);
+        expect(screen.queryByText("RW")).toBeNull();
+        fireEvent.error(request.image);
+        expect(screen.queryByAltText("Avatar")).toBeNull();
+        expect(screen.getByText("RW")).toBeDefined();
+    }
+);
