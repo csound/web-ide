@@ -94,6 +94,9 @@ export const toolbar = (contained: boolean) => css`
         padding: 0 ${contained ? 16 : 8}px;
         gap: 4px;
     }
+    @media (max-width: 380px) {
+        gap: 3px;
+    }
 `;
 
 export const logoSlot = css`
@@ -141,6 +144,16 @@ export const authSlot = css`
     justify-content: flex-end;
     flex-shrink: 0;
     min-width: 64px;
+    @media (max-width: 600px) {
+        min-width: 0;
+    }
+    @media (max-width: 380px) {
+        button {
+            width: 36px;
+            min-width: 36px;
+            padding: 4px;
+        }
+    }
 `;
 
 export const authPlaceholder = (theme: Theme): SerializedStyles => css`
@@ -170,6 +183,9 @@ export const headerRightSideGroup = css`
     flex-shrink: 0;
     gap: 4px;
     line-height: 1;
+    @media (max-width: 600px) {
+        gap: 2px;
+    }
 
     & > div {
         height: 42px;

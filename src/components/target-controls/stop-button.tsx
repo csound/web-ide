@@ -22,6 +22,7 @@ const StopButton = (): React.ReactElement => {
             <div css={SS.buttonContainer}>
                 <IconButton
                     css={SS.iconButton}
+                    aria-label="Stop playback"
                     size="medium"
                     onClick={() => {
                         switch (csoundPlayState) {
@@ -35,8 +36,9 @@ const StopButton = (): React.ReactElement => {
                         }
                     }}
                     disabled={
-                        csoundPlayState === "stopped" ||
-                        csoundPlayState === "error"
+                        !["loading", "playing", "paused", "rendering"].includes(
+                            csoundPlayState
+                        )
                     }
                 >
                     <StopIcon css={SS.stopIcon} fontSize="large" />

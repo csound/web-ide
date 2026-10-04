@@ -1,198 +1,179 @@
-import React, { useState } from "react";
-import Select from "react-select";
-import { useDispatch, useSelector } from "@root/store";
-import { useTheme } from "@emotion/react";
-import Tooltip from "@mui/material/Tooltip";
-import { setSelectedTarget, showTargetsConfigDialog } from "./actions";
-import { ITarget, ITargetMap } from "./types";
-import { IDocument } from "@comp/projects/types";
+import { useSyncExternalStore } from "react";
+import { projectPlayback, subscribeProjectPlayback } from "./playback";
 import {
-    selectProjectDocuments,
-    selectProjectTargets,
-    selectSelectedTarget
+    IconButton,
+    MenuItem,
+    Select,
+    Tooltip,
+    useMediaQuery
+} from "@mui/material";
+import TuneRounded from "@mui/icons-material/TuneRounded";
+import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
+import { useDispatch, useSelector } from "@root/store";
+import { setPlaylistIndex, showTargetsConfigDialog } from "./actions";
+import {
+    selectPlaybackDocuments,
+    selectPlaybackMode,
+    selectPlaylistIndex
 } from "./selectors";
-import { selectIsOwner } from "@comp/project-editor/selectors";
-import { append, allPass, concat, filter, isNil, has, values } from "ramda";
-import { isEmpty, reduce } from "lodash";
-import * as SS from "./styles";
+import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
+import { documentPath } from "@comp/csound/actions";
 
-interface IDropdownOption {
-    label: string;
-    value: string;
-}
-
-const paranoidNotNullChecker = (item: any): boolean =>
-    allPass([
-        (item_) => item_ !== undefined,
-        (item_) => `${item_}` !== "undefined",
-        (item_) => !isNil(item_),
-        (item_) => item_ !== null
-    ])(item);
-
-const titleTooltip = ({
-    documents,
-    selectedTarget
-}: {
-    documents: Record<string, IDocument>;
-    selectedTarget: ITarget;
-}) => {
-    const mainDocument: IDocument | undefined =
-        typeof selectedTarget === "object" && selectedTarget.targetDocumentUid
-            ? documents[selectedTarget.targetDocumentUid]
-            : undefined;
-
-    return mainDocument && selectedTarget.targetType === "main"
-        ? `main: ${mainDocument.filename}`
-        : `No document found for selected target: ${selectedTarget.targetName}`;
-};
-
-const TargetDropdown = ({
+export default function TargetDropdown({
     activeProjectUid
 }: {
     activeProjectUid: string;
-}): React.ReactElement => {
+}) {
     const dispatch = useDispatch();
-    const theme = useTheme();
-    const targets: ITargetMap =
-        useSelector(selectProjectTargets(activeProjectUid)) || {};
-
-    const documents: Record<string, IDocument> | undefined = useSelector(
-        selectProjectDocuments(activeProjectUid)
+    const narrow = useMediaQuery("(max-width:380px)");
+    const isOwner = useSelector(selectIsOwnerForProject(activeProjectUid));
+    const mode = useSelector((state) =>
+        selectPlaybackMode(state, activeProjectUid)
     );
-
-    const selectedTargetName: string | undefined = useSelector(
-        selectSelectedTarget(activeProjectUid)
+    const documents = useSelector((state) =>
+        selectPlaybackDocuments(state, activeProjectUid)
     );
-
-    let selectedTarget: ITarget | undefined;
-    if (targets && selectedTargetName && targets[selectedTargetName]) {
-        selectedTarget = targets[selectedTargetName];
-    }
-
-    const isOwner = useSelector(selectIsOwner);
-
-    const mainTargets: ITarget[] = Object.values(targets).filter(
-        (target) => target.targetDocumentUid
+    const allDocuments = useSelector(
+        (state) =>
+            state.ProjectsReducer.projects[activeProjectUid]?.documents ?? {}
     );
-
-    const playlistTargets: ITarget[] = Object.values(targets).filter(
-        (target) => target.playlistDocumentsUid
+    const selectedIndex = useSelector((state) =>
+        selectPlaylistIndex(state, activeProjectUid)
     );
-
-    const mainDropdownOptions = isEmpty(mainTargets)
-        ? []
-        : reduce(
-              mainTargets,
-              (accumulator: IDropdownOption[], target) => {
-                  return append(
-                      {
-                          value: target.targetName,
-                          label: target.targetName
-                      },
-                      accumulator
-                  );
-              },
-              [] as IDropdownOption[]
-          );
-
-    const playlistDropdownOptions = isEmpty(playlistTargets)
-        ? []
-        : reduce(
-              playlistTargets,
-              (accumulator, target) => {
-                  return append(
-                      {
-                          value: target.targetName,
-                          label: target.targetName
-                      },
-                      accumulator
-                  );
-              },
-              [] as IDropdownOption[]
-          );
-
-    const options = concat(
-        [
-            { label: "Playlist", options: playlistDropdownOptions },
-            {
-                label: "Targets",
-                options: mainDropdownOptions
-            }
-        ],
-        isOwner
-            ? [{ label: "Configure", value: "___toggle-configure" } as any]
-            : []
+    const current = useSyncExternalStore(
+        subscribeProjectPlayback,
+        projectPlayback
     );
-
-    const [menuIsOpen, setMenuIsOpen] = useState(false);
-    const [tooltipIsOpen, setTooltipIsOpen] = useState(false);
-
-    if (!activeProjectUid) {
-        return <></>;
-    }
-
-    const tooltipText =
-        documents && selectedTarget && paranoidNotNullChecker(selectedTarget)
-            ? titleTooltip({ documents, selectedTarget })
-            : "No target selected";
-
+    const currentIndex =
+        current?.projectUid === activeProjectUid
+            ? documents.findIndex(
+                  (document) => document.documentUid === current.documentUid
+              )
+            : -1;
+    const index = currentIndex >= 0 ? currentIndex : selectedIndex;
+    const status = useSelector((state) => state.csound.status);
+    const busy = ["loading", "playing", "paused", "rendering"].includes(status);
     return (
-        <Tooltip
-            open={tooltipIsOpen}
-            onOpen={() => !menuIsOpen && setTooltipIsOpen(true)}
-            onClose={() => setTooltipIsOpen(false)}
-            title={tooltipText}
-            placement="bottom-end"
+        <div
+            css={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}
         >
-            <div>
+            {mode === "playlist" ? (
                 <Select
-                    value={selectedTargetName}
-                    closeMenuOnSelect={true}
-                    placeholder={
-                        values(targets || []).length > 0
-                            ? selectedTargetName &&
-                              selectedTargetName.length > 0
-                                ? selectedTargetName
-                                : "Select target"
-                            : "No targets found"
-                    }
-                    // menuIsOpen={true}
-                    onMenuOpen={() => {
-                        setTooltipIsOpen(false);
-                        setMenuIsOpen(true);
+                    size="small"
+                    value={documents.length ? index : ""}
+                    disabled={busy || !documents.length}
+                    displayEmpty
+                    inputProps={{
+                        "aria-label": busy
+                            ? "Current playlist track"
+                            : "Start playlist from"
                     }}
-                    onMenuClose={() => setMenuIsOpen(false)}
-                    onChange={(event: any) => {
-                        event.value === "___toggle-configure"
-                            ? dispatch(showTargetsConfigDialog())
-                            : dispatch(
-                                  setSelectedTarget(
-                                      activeProjectUid,
-                                      event.value
-                                  )
-                              );
+                    onChange={(event) => {
+                        if (event.target.value === "configure")
+                            dispatch(showTargetsConfigDialog());
+                        else
+                            dispatch(
+                                setPlaylistIndex(
+                                    activeProjectUid,
+                                    Number(event.target.value)
+                                )
+                            );
                     }}
-                    isSearchable={false}
-                    options={options}
-                    styles={
-                        {
-                            control: () => SS.control,
-                            container: () => SS.dropdownContainer(theme),
-                            valueContainer: () => SS.valueContainer,
-                            groupHeading: () => SS.groupHeading(theme),
-                            placeholder: () => SS.placeholder(theme),
-                            menu: () => SS.menu(theme),
-                            menuList: () => SS.menuList(theme),
-                            option: () => SS.menuOption(theme),
-                            indicatorsContainer: () =>
-                                SS.indicatorContainer(theme),
-                            indicatorSeparator: () => SS.indicatorSeparator
-                        } as any
-                    }
-                />
-            </div>
-        </Tooltip>
+                    renderValue={() => (
+                        <span
+                            css={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                minWidth: 0
+                            }}
+                        >
+                            <QueueMusicRounded
+                                fontSize="small"
+                                css={{
+                                    "@media(max-width:600px)": {
+                                        display: "none"
+                                    }
+                                }}
+                            />
+                            <span
+                                css={{
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis"
+                                }}
+                            >
+                                {documents.length ? (
+                                    <>
+                                        {index + 1}/{documents.length}
+                                        <span
+                                            css={{
+                                                "@media(max-width:600px)": {
+                                                    display: "none"
+                                                }
+                                            }}
+                                        >
+                                            {" "}
+                                            · {documents[index].filename}
+                                        </span>
+                                    </>
+                                ) : (
+                                    "Empty playlist"
+                                )}
+                            </span>
+                        </span>
+                    )}
+                    css={(theme) => ({
+                        width: "clamp(120px, 24vw, 280px)",
+                        "@media(max-width:600px)": { width: 72 },
+                        "@media(max-width:380px)": {
+                            width: 64,
+                            height: 36,
+                            ".MuiSelect-select": { paddingLeft: 8 }
+                        },
+                        height: 42,
+                        color: theme.textColor,
+                        fontSize: 13,
+                        ".MuiSelect-select.Mui-disabled": {
+                            WebkitTextFillColor: theme.textColor,
+                            opacity: 0.8
+                        }
+                    })}
+                >
+                    {isOwner && narrow && (
+                        <MenuItem value="configure">Playback settings</MenuItem>
+                    )}
+                    {documents.map((document, position) => (
+                        <MenuItem key={document.documentUid} value={position}>
+                            {position + 1}.{" "}
+                            {documentPath(document, allDocuments)}
+                        </MenuItem>
+                    ))}
+                </Select>
+            ) : (
+                <span
+                    css={(theme) => ({
+                        fontSize: 13,
+                        color: theme.altTextColor,
+                        maxWidth: 180,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        "@media(max-width:900px)": { display: "none" }
+                    })}
+                >
+                    {documents[0]?.filename ?? "Choose a main file"}
+                </span>
+            )}
+            {isOwner && !(mode === "playlist" && narrow) && (
+                <Tooltip title="Playback settings">
+                    <IconButton
+                        aria-label="Playback settings"
+                        onClick={() => dispatch(showTargetsConfigDialog())}
+                    >
+                        <TuneRounded fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            )}
+        </div>
     );
-};
-
-export default TargetDropdown;
+}

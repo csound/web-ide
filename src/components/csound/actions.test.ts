@@ -1,3 +1,13 @@
+import {
+    playProject,
+    projectPlayback,
+    stopProjectPlayback
+} from "../target-controls/playback";
+import {
+    setPlaylistIndex,
+    updateAllTargetsLocally
+} from "../target-controls/actions";
+import { pauseCsound, resumePausedCsound } from "./actions";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Csound } from "@csound/browser";
 import { store } from "../../store";
@@ -590,5 +600,188 @@ describe("shared Csound performance", () => {
         expect(engine.stop).toHaveBeenCalledOnce();
         expect(isCsoundBusy()).toBe(false);
         expect(getLiveCsound("audio-test")).toBeUndefined();
+    });
+});
+
+describe("project playlists", () => {
+    const configurePlaylist = (index = 0) => {
+        const project = store.getState().ProjectsReducer.projects["audio-test"];
+        store.dispatch({
+            type: "PROJECTS.UNSET_PROJECT",
+            projectUid: "audio-test"
+        });
+        store.dispatch({
+            type: "PROJECTS.STORE_PROJECT_LOCALLY",
+            projects: [
+                {
+                    ...project,
+                    documents: {
+                        ...project.documents,
+                        second: {
+                            documentUid: "second",
+                            type: "txt",
+                            filename: "second.orc",
+                            path: [],
+                            currentValue: "instr 1\nendin"
+                        },
+                        third: {
+                            documentUid: "third",
+                            type: "txt",
+                            filename: "last.csd",
+                            path: [],
+                            currentValue: source
+                        }
+                    }
+                }
+            ]
+        });
+        updateAllTargetsLocally(store.dispatch, "Playlist", "audio-test", {
+            Playlist: {
+                targetName: "Playlist",
+                targetType: "playlist",
+                playlistDocumentsUid: ["csd", "second", "third"],
+                csoundOptions: {}
+            }
+        });
+        store.dispatch(setPlaylistIndex("audio-test", index));
+    };
+    it("plays in order after cleanup, follows the current track, and resets after the last", async () => {
+        configurePlaylist();
+        await playProject("audio-test", setConsole);
+        expect(engine.compileCSD).toHaveBeenLastCalledWith(
+            "scores/piece.csd",
+            0
+        );
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() =>
+            expect(engine.compileOrc).toHaveBeenCalledOnce()
+        );
+        expect(engine.terminateInstance).toHaveBeenCalledOnce();
+        expect(projectPlayback()?.documentUid).toBe("second");
+        expect(
+            store.getState().TargetControlsReducer["audio-test"]
+                .selectedTargetPlaylistIndex
+        ).toBe(1);
+        await vi.waitFor(() => expect(engine.start).toHaveBeenCalledTimes(2));
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(engine.start).toHaveBeenCalledTimes(3));
+        expect(engine.compileCSD).toHaveBeenLastCalledWith("last.csd", 0);
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+        expect(
+            store.getState().TargetControlsReducer["audio-test"]
+                .selectedTargetPlaylistIndex
+        ).toBe(0);
+    });
+    it("starts from the guest's chosen entry and stops without advancing", async () => {
+        configurePlaylist(1);
+        await playProject("audio-test", setConsole);
+        expect(engine.compileCSD).not.toHaveBeenCalled();
+        expect(engine.compileOrc).toHaveBeenCalledOnce();
+        await stopPerformance();
+        listeners.get("realtimePerformanceEnded")?.();
+        expect(projectPlayback()).toBeUndefined();
+        expect(engine.start).toHaveBeenCalledOnce();
+    });
+    it("auditions one tab without changing the selected starting point or continuing", async () => {
+        configurePlaylist(2);
+        await playProject("audio-test", setConsole, "csd");
+        expect(projectPlayback()?.playlist).toBe(false);
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+        expect(engine.start).toHaveBeenCalledOnce();
+        expect(
+            store.getState().TargetControlsReducer["audio-test"]
+                .selectedTargetPlaylistIndex
+        ).toBe(2);
+    });
+    it("pause and resume keep the current entry", async () => {
+        configurePlaylist();
+        await playProject("audio-test", setConsole);
+        store.dispatch(pauseCsound());
+        expect(store.getState().csound.status).toBe("paused");
+        expect(engine.start).toHaveBeenCalledOnce();
+        store.dispatch(resumePausedCsound());
+        expect(projectPlayback()?.documentUid).toBe("csd");
+    });
+    it("does not advance on a performance error", async () => {
+        configurePlaylist();
+        await playProject("audio-test", setConsole);
+        listeners.get("message")?.("PERF ERROR: failed");
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+        expect(engine.start).toHaveBeenCalledOnce();
+        expect(store.getState().csound.status).toBe("error");
+    });
+    it("stops if a later file fails to compile", async () => {
+        configurePlaylist();
+        await playProject("audio-test", setConsole);
+        engine.compileOrc.mockResolvedValue(-1);
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+        expect(engine.start).toHaveBeenCalledOnce();
+        expect(store.getState().csound.status).toBe("error");
+    });
+    it("keeps the current track when Firestore repeats the same settings", async () => {
+        configurePlaylist(1);
+        await playProject("audio-test", setConsole);
+        const controls = store.getState().TargetControlsReducer["audio-test"];
+        updateAllTargetsLocally(
+            store.dispatch,
+            "Playlist",
+            "audio-test",
+            structuredClone(controls.targets)
+        );
+        expect(
+            store.getState().TargetControlsReducer["audio-test"]
+                .selectedTargetPlaylistIndex
+        ).toBe(1);
+        expect(projectPlayback()?.documentUid).toBe("second");
+        expect(engine.stop).not.toHaveBeenCalled();
+    });
+    it("cancels an active playlist when its saved settings change", async () => {
+        configurePlaylist();
+        await playProject("audio-test", setConsole);
+        updateAllTargetsLocally(store.dispatch, "Main", "audio-test", {
+            Main: {
+                targetName: "Main",
+                targetType: "main",
+                targetDocumentUid: "third",
+                csoundOptions: {}
+            }
+        });
+        await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+        expect(engine.stop).toHaveBeenCalledOnce();
+        expect(engine.start).toHaveBeenCalledOnce();
+    });
+    it("does not advance if engine cleanup fails", async () => {
+        configurePlaylist();
+        await playProject("audio-test", setConsole);
+        const log = vi.spyOn(console, "error").mockImplementation(() => {});
+        try {
+            engine.cleanup.mockRejectedValue(new Error("cleanup failed"));
+            listeners.get("realtimePerformanceEnded")?.();
+            await vi.waitFor(() => expect(projectPlayback()).toBeUndefined());
+            expect(engine.start).toHaveBeenCalledOnce();
+            expect(store.getState().csound.status).toBe("error");
+        } finally {
+            log.mockRestore();
+        }
+    });
+    it("cancels while loading when leaving the project", async () => {
+        configurePlaylist();
+        let resolveFactory!: (value: any) => void;
+        vi.mocked(Csound).mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveFactory = resolve;
+                })
+        );
+        const pending = playProject("audio-test", setConsole);
+        stopProjectPlayback("audio-test");
+        resolveFactory(engine);
+        await pending;
+        expect(engine.start).not.toHaveBeenCalled();
+        expect(projectPlayback()).toBeUndefined();
     });
 });

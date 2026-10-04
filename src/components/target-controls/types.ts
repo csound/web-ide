@@ -2,6 +2,8 @@ import { ICsoundOptions } from "@comp/csound/types";
 
 const PREFIX = "TARGET_CONTROL.";
 
+export const SET_PLAYLIST_INDEX = PREFIX + "SET_PLAYLIST_INDEX";
+
 // ACTION TYPES
 export const SET_SELECTED_TARGET = PREFIX + "SET_SELECTED_TARGET";
 export const UPDATE_ALL_TARGETS_LOCALLY = PREFIX + "UPDATE_ALL_TARGETS_LOCALLY";
@@ -18,16 +20,3 @@ export interface ITarget {
 }
 
 export type ITargetMap = { [targetName: string]: ITarget };
-
-export interface ITargetFromInput {
-    playlistDocumentsUid?: string[];
-    targetName: string;
-    oldTargetName: string;
-    targetType: string;
-    isDefaultTarget: boolean;
-    isNameValid: boolean;
-    isTypeValid: boolean;
-    isOtherwiseValid: boolean;
-    csoundOptions?: ICsoundOptions;
-    targetDocumentUid?: string;
-}

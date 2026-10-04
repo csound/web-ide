@@ -1,3 +1,4 @@
+import { FilePlayButton } from "@comp/target-controls/file-play-button";
 import { ProjectFileDrop } from "./project-file-drop";
 import { useGuestReadme } from "./use-guest-readme";
 import React, { useEffect, useMemo, useState } from "react";
@@ -203,6 +204,7 @@ export function EditorForDocument({
     doc,
     markdownMode
 }: IEditorForDocumentProperties) {
+    const compact = useMediaQuery("(max-width:900px)") || isMobile();
     if ((doc as IOpenDocument).temporary) {
         return (
             <TemporaryEditor
@@ -212,13 +214,31 @@ export function EditorForDocument({
         );
     } else if ((doc as IDocument).type === "txt") {
         return (
-            <TextEditor
-                key={`${projectUid}:${(doc as IDocument).documentUid}`}
-                documentUid={(doc as IDocument).documentUid}
-                projectUid={projectUid}
-                filename={(doc as IDocument).filename || ""}
-                mode={markdownMode}
-            />
+            <div
+                css={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: 0
+                }}
+            >
+                {compact && (
+                    <FilePlayButton
+                        projectUid={projectUid}
+                        documentUid={(doc as IDocument).documentUid}
+                        compact={false}
+                    />
+                )}
+                <div css={{ flex: 1, minHeight: 0 }}>
+                    <TextEditor
+                        key={`${projectUid}:${(doc as IDocument).documentUid}`}
+                        documentUid={(doc as IDocument).documentUid}
+                        projectUid={projectUid}
+                        filename={(doc as IDocument).filename || ""}
+                        mode={markdownMode}
+                    />
+                </div>
+            </div>
         );
     } else if (
         (doc as IDocument).type === "bin" &&
@@ -442,6 +462,14 @@ const WorkspacePanelHeader = ({
                             index={index}
                             active={index === activeIndex}
                         >
+                            {tab.type === "editor" &&
+                                !tab.temporary &&
+                                !tab.isNonCloudDocument && (
+                                    <FilePlayButton
+                                        projectUid={activeProject.projectUid}
+                                        documentUid={tab.uid}
+                                    />
+                                )}
                             <p style={{ margin: 0 }}>
                                 {tab.temporary?.source?.kind ===
                                     "manual-example" && (

@@ -1,8 +1,10 @@
+import { equals } from "ramda";
 import { UnknownAction } from "redux";
 import {
     ITarget,
     ITargetMap,
     SET_SELECTED_TARGET,
+    SET_PLAYLIST_INDEX,
     UPDATE_ALL_TARGETS_LOCALLY,
     UPDATE_DEFAULT_TARGET_LOCALLY,
     UPDATE_TARGET_LOCALLY
@@ -26,7 +28,8 @@ const TargetControlsReducer = (
               target?: ITarget;
               targetName?: string;
               targets?: ITargetMap;
-              selectedTarget?: ITargetControl;
+              selectedTarget?: string | null;
+              index?: number;
               defaultTarget?: string;
           }
         | UnknownAction
@@ -34,15 +37,38 @@ const TargetControlsReducer = (
     switch (action.type) {
         case SET_SELECTED_TARGET: {
             if (
-                action.selectedTarget &&
-                typeof action.projectUid === "string"
-            ) {
-                return {
-                    ...state,
-                    [action.projectUid]: action.selectedTarget
-                } as ITargetControlsReducer;
-            }
-            return state;
+                typeof action.projectUid !== "string" ||
+                !state[action.projectUid]
+            )
+                return state;
+            return {
+                ...state,
+                [action.projectUid]: {
+                    ...state[action.projectUid],
+                    selectedTarget:
+                        typeof action.selectedTarget === "string"
+                            ? action.selectedTarget
+                            : null,
+                    selectedTargetPlaylistIndex: 0
+                }
+            };
+        }
+        case SET_PLAYLIST_INDEX: {
+            if (
+                typeof action.projectUid !== "string" ||
+                !state[action.projectUid] ||
+                typeof action.index !== "number" ||
+                !Number.isInteger(action.index) ||
+                action.index < 0
+            )
+                return state;
+            return {
+                ...state,
+                [action.projectUid]: {
+                    ...state[action.projectUid],
+                    selectedTargetPlaylistIndex: action.index
+                }
+            };
         }
 
         case UPDATE_ALL_TARGETS_LOCALLY: {
@@ -51,12 +77,17 @@ const TargetControlsReducer = (
                     ...state[action.projectUid],
                     targets: action.targets ? action.targets : ({} as any),
                     defaultTarget: (action.defaultTarget as string) || null,
-                    selectedTarget:
-                        (typeof action.defaultTarget === "string" &&
-                        typeof state[action.projectUid]?.selectedTarget !==
-                            "string"
-                            ? action.defaultTarget
-                            : state[action.projectUid]?.selectedTarget) || null
+                    selectedTarget: (action.defaultTarget as string) || null,
+                    selectedTargetPlaylistIndex:
+                        state[action.projectUid]?.defaultTarget ===
+                            action.defaultTarget &&
+                        equals(
+                            state[action.projectUid]?.targets,
+                            action.targets
+                        )
+                            ? (state[action.projectUid]
+                                  ?.selectedTargetPlaylistIndex ?? 0)
+                            : 0
                 };
 
                 return {

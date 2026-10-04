@@ -31,8 +31,16 @@ import {
 } from "@comp/csound/actions";
 import { nonCloudFiles } from "@comp/file-tree/actions";
 import { filenameToCsoundType } from "@comp/csound/utils";
-import { SET_SELECTED_TARGET } from "@comp/target-controls/types";
-import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
+import {
+    SET_SELECTED_TARGET,
+    SET_PLAYLIST_INDEX
+} from "@comp/target-controls/types";
+import {
+    getSelectedTargetDocumentUid,
+    selectPlaybackDocuments,
+    selectPlaylistIndex
+} from "@comp/target-controls/selectors";
+import { projectTarget } from "@comp/target-controls/model";
 import {
     guide,
     MAX_SOURCE_LENGTH,
@@ -183,6 +191,7 @@ export function createEditorApi(
         const state = store.getState();
         const layout = state.ProjectEditorReducer;
         const targets = state.TargetControlsReducer[projectUid];
+        const target = projectTarget(targets);
         return {
             project: {
                 id: projectUid,
@@ -213,9 +222,26 @@ export function createEditorApi(
                     active: index === panel.tabIndex
                 }))
             })),
-            targets: Object.values(targets?.targets ?? {}),
-            selected_target: targets?.selectedTarget ?? null,
-            selected_playlist_index: targets?.selectedTargetPlaylistIndex ?? 0,
+            targets: target
+                ? [
+                      {
+                          ...target,
+                          ...(target.targetType === "playlist"
+                              ? {
+                                    playlistDocumentsUid:
+                                        selectPlaybackDocuments(
+                                            state,
+                                            projectUid
+                                        ).map(
+                                            (document) => document.documentUid
+                                        )
+                                }
+                              : {})
+                      }
+                  ]
+                : [],
+            selected_target: target?.targetName ?? null,
+            selected_playlist_index: selectPlaylistIndex(state, projectUid),
             audio: { status: state.csound.status, busy: isCsoundBusy() },
             rendered_files: [...nonCloudFiles.values()].map((file) => ({
                 name: file.name,
@@ -501,18 +527,26 @@ export function createEditorApi(
                 return workspace();
             }
             case "csound_select_target": {
+                if (isCsoundBusy())
+                    throw new ToolError(
+                        "busy",
+                        "Stop playback before choosing a starting track."
+                    );
                 const targets =
                     store.getState().TargetControlsReducer[projectUid];
-                const target = targets?.targets[input.target_name as string];
-                if (!target)
+                const target = projectTarget(targets);
+                if (!target || target.targetName !== input.target_name)
                     throw new ToolError(
                         "target_not_found",
                         "Read workspace for valid target names."
                     );
                 const index = (input.playlist_index ?? 0) as number;
                 if (
-                    target.playlistDocumentsUid
-                        ? !target.playlistDocumentsUid[index]
+                    target.targetType === "playlist"
+                        ? !selectPlaybackDocuments(
+                              store.getState(),
+                              projectUid
+                          )[index]
                         : input.playlist_index !== undefined
                 )
                     throw new ToolError(
@@ -522,12 +556,9 @@ export function createEditorApi(
                 store.dispatch({
                     type: SET_SELECTED_TARGET,
                     projectUid,
-                    selectedTarget: {
-                        ...targets,
-                        selectedTarget: input.target_name,
-                        selectedTargetPlaylistIndex: index
-                    }
+                    selectedTarget: input.target_name
                 });
+                store.dispatch({ type: SET_PLAYLIST_INDEX, projectUid, index });
                 return workspace();
             }
             case "csound_play":

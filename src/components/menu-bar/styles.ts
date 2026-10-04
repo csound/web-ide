@@ -19,6 +19,9 @@ export const root = (theme: Theme): SerializedStyles => css`
     @media (max-width: 900px) {
         margin-left: 6px;
     }
+    @media (max-width: 600px) {
+        margin-left: 0;
+    }
 `;
 
 export const mobileTopTriggerButton =
@@ -30,6 +33,9 @@ export const mobileTopTriggerButton =
         width: 36px;
         height: 36px;
         margin: 0 8px 0 0;
+        @media (max-width: 600px) {
+            margin-right: 0;
+        }
         border: 1px solid ${theme.line};
         border-radius: 6px;
         color: ${theme.headerTextColor};

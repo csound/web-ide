@@ -91,7 +91,7 @@ type PerformanceOptions = {
     csdText?: string;
     inputFiles?: { name: string; data: Uint8Array }[];
     collectFiles?: boolean;
-    onEnded?: () => void;
+    onEnded?: (reason: "completed" | "stopped" | "error") => void;
     orc?: string;
     mode?: "auto" | "play" | "render";
     // Embeds must work without cross-origin isolation or stored preferences.
@@ -209,9 +209,15 @@ export async function runPerformance({
                         }
                     }
                 }
+            } catch (error) {
+                failed = true;
+                throw error;
             } finally {
                 try {
                     await csound?.terminateInstance();
+                } catch (error) {
+                    failed = true;
+                    console.error(error);
                 } finally {
                     signal?.removeEventListener("abort", cancel);
                     if (activeRun === run) {
@@ -221,7 +227,13 @@ export async function runPerformance({
                         );
                     }
                     resolveDone();
-                    onEnded?.();
+                    onEnded?.(
+                        controller.signal.aborted
+                            ? "stopped"
+                            : failed || !collect
+                              ? "error"
+                              : "completed"
+                    );
                 }
             }
             return files;

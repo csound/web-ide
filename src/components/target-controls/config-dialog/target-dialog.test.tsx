@@ -14,14 +14,23 @@ afterEach(() => {
     cleanup();
     vi.clearAllMocks();
 });
-function setup({ empty = false, playlist = false } = {}) {
+function setup({
+    empty = false,
+    playlist = false,
+    busy = false,
+    legacy = false
+} = {}) {
     const documents = Object.fromEntries(
-        Array.from({ length: 100 }, (_, index) => {
+        Array.from({ length: empty ? 0 : 100 }, (_, index) => {
             const name = `example-${String(index + 1).padStart(3, "0")}.csd`;
-            return [name, { documentUid: name, filename: name }];
+            return [
+                name,
+                { documentUid: name, filename: name, type: "txt", path: [] }
+            ];
         })
     );
     const state = {
+        csound: { status: busy ? "playing" : "stopped" },
         ProjectsReducer: {
             activeProjectUid: "fixture",
             projects: { fixture: { documents } }
@@ -29,28 +38,26 @@ function setup({ empty = false, playlist = false } = {}) {
         TargetControlsReducer: {
             fixture: {
                 defaultTarget: "Main",
-                targets: empty
-                    ? {}
-                    : {
-                          ...(playlist
-                              ? {
-                                    Sequence: {
-                                        targetName: "Sequence",
-                                        targetType: "playlist",
-                                        playlistDocumentsUid: [
-                                            "example-002.csd",
-                                            "example-003.csd"
-                                        ],
-                                        csoundOptions: {}
-                                    }
-                                }
-                              : {}),
-                          Main: {
-                              targetName: "Main",
-                              targetType: "main",
-                              targetDocumentUid: "example-001.csd"
+                targets: {
+                    Main: {
+                        targetName: "Main",
+                        targetType: playlist ? "playlist" : "main",
+                        targetDocumentUid: "example-001.csd",
+                        playlistDocumentsUid: playlist
+                            ? ["example-002.csd", "example-003.csd"]
+                            : [],
+                        csoundOptions: {}
+                    },
+                    ...(legacy
+                        ? {
+                              old: {
+                                  targetName: "old",
+                                  targetType: "main",
+                                  targetDocumentUid: "example-004.csd"
+                              }
                           }
-                      }
+                        : {})
+                }
             }
         }
     };
@@ -67,135 +74,106 @@ function setup({ empty = false, playlist = false } = {}) {
         </Provider>
     );
 }
-function selectDocument(combobox: HTMLElement, name: string) {
-    fireEvent.keyDown(combobox, { key: "ArrowDown", code: "ArrowDown" });
+function choose(label: string, name: string) {
+    fireEvent.keyDown(screen.getByRole("combobox", { name: label }), {
+        key: "ArrowDown",
+        code: "ArrowDown"
+    });
     fireEvent.click(screen.getByRole("option", { name }));
 }
-it("saves the last file in a long list as the existing target", () => {
-    setup();
-    selectDocument(screen.getByRole("combobox"), "example-100.csd");
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+it("replaces legacy targets with exactly one main file selected from a long list", () => {
+    setup({ legacy: true });
+    choose("Main file", "example-100.csd");
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     expect(saveChangesToTarget).toHaveBeenCalledWith(
         "fixture",
         {
-            Main: expect.objectContaining({
+            Main: {
+                targetName: "Main",
+                targetType: "main",
                 targetDocumentUid: "example-100.csd",
-                targetType: "main"
-            })
+                csoundOptions: {}
+            }
         },
         "Main",
         expect.any(Function)
     );
 });
-it("lets an owner name and choose a file for a new target before saving", () => {
+it("adds, reorders, removes and saves a playlist without duplicate entries", () => {
     setup();
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
-    const save = screen.getByRole("button", { name: "Save" });
-    expect(save.hasAttribute("disabled")).toBe(true);
-    fireEvent.change(screen.getAllByLabelText("target name")[1], {
-        target: { value: "Last example" }
-    });
-    expect(save.hasAttribute("disabled")).toBe(true);
-    selectDocument(screen.getAllByRole("combobox")[1], "example-100.csd");
-    expect(save.hasAttribute("disabled")).toBe(false);
-    fireEvent.click(save);
-    expect(saveChangesToTarget).toHaveBeenCalledWith(
-        "fixture",
-        expect.objectContaining({
-            "Last example": expect.objectContaining({
-                targetDocumentUid: "example-100.csd",
-                targetType: "main"
-            })
-        }),
-        "Main",
-        expect.any(Function)
-    );
-});
-
-it("creates the first target with a default and blocks duplicate new names", () => {
-    setup({ empty: true });
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    fireEvent.change(screen.getByLabelText("target name"), {
-        target: { value: "First" }
-    });
-    selectDocument(screen.getByRole("combobox"), "example-100.csd");
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(saveChangesToTarget).toHaveBeenCalledWith(
-        "fixture",
-        expect.any(Object),
-        "First",
-        expect.any(Function)
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    fireEvent.change(screen.getAllByLabelText("target name")[1], {
-        target: { value: "First" }
-    });
-    selectDocument(screen.getAllByRole("combobox")[1], "example-099.csd");
-    expect(
-        screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")
-    ).toBe(true);
-    fireEvent.change(screen.getAllByLabelText("target name")[1], {
-        target: { value: "Second" }
-    });
-    expect(
-        screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")
-    ).toBe(false);
-});
-
-it("preserves existing playlists when saving a main target", () => {
-    setup({ playlist: true });
-    selectDocument(screen.getByRole("combobox"), "example-100.csd");
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(saveChangesToTarget).toHaveBeenCalledWith(
-        "fixture",
-        expect.objectContaining({
-            Sequence: {
-                targetName: "Sequence",
-                targetType: "playlist",
-                playlistDocumentsUid: ["example-002.csd", "example-003.csd"],
-                csoundOptions: {}
-            }
-        }),
-        "Main",
-        expect.any(Function)
-    );
-});
-
-it("deletes only the chosen new target when two names are still blank", () => {
-    setup();
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    expect(screen.getAllByRole("combobox")).toHaveLength(3);
     fireEvent.click(
-        screen.getAllByRole("button", { name: "Delete target" })[1]
+        screen.getByRole("button", { name: "Playlist", exact: true })
     );
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
-});
-
-it("keeps the chosen default when two blank targets later get names", () => {
-    setup();
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    fireEvent.click(screen.getAllByRole("radio")[2]);
     expect(
         screen
-            .getAllByRole("radio")
-            .map((radio) => (radio as HTMLInputElement).checked)
-    ).toEqual([false, false, true]);
-    fireEvent.change(screen.getAllByLabelText("target name")[1], {
-        target: { value: "First added" }
+            .getByRole("button", { name: "Save changes" })
+            .hasAttribute("disabled")
+    ).toBe(true);
+    choose("Add a track", "example-001.csd");
+    choose("Add a track", "example-002.csd");
+    choose("Add a track", "example-003.csd");
+    fireEvent.click(
+        screen.getByRole("button", { name: "Move example-003.csd up" })
+    );
+    fireEvent.click(
+        screen.getByRole("button", {
+            name: "Remove example-001.csd from playlist"
+        })
+    );
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Add a track" }), {
+        key: "ArrowDown",
+        code: "ArrowDown"
     });
-    fireEvent.change(screen.getAllByLabelText("target name")[2], {
-        target: { value: "Second added" }
+    expect(
+        screen.queryByRole("option", { name: "example-002.csd" })
+    ).toBeNull();
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Add a track" }), {
+        key: "Escape"
     });
-    selectDocument(screen.getAllByRole("combobox")[1], "example-099.csd");
-    selectDocument(screen.getAllByRole("combobox")[2], "example-100.csd");
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     expect(saveChangesToTarget).toHaveBeenCalledWith(
         "fixture",
-        expect.any(Object),
-        "Second added",
+        {
+            Playlist: {
+                targetName: "Playlist",
+                targetType: "playlist",
+                playlistDocumentsUid: ["example-003.csd", "example-002.csd"],
+                csoundOptions: {}
+            }
+        },
+        "Playlist",
         expect.any(Function)
     );
 });
+it("switches back to one main file without saving stale playlist fields", () => {
+    setup({ playlist: true });
+    fireEvent.click(
+        screen.getByRole("button", { name: "Main file", exact: true })
+    );
+    choose("Main file", "example-099.csd");
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    expect(saveChangesToTarget).toHaveBeenCalledWith(
+        "fixture",
+        {
+            Main: {
+                targetName: "Main",
+                targetType: "main",
+                targetDocumentUid: "example-099.csd",
+                csoundOptions: {}
+            }
+        },
+        "Main",
+        expect.any(Function)
+    );
+});
+it.each([{ empty: true }, { busy: true }])(
+    "prevents unusable config changes: %j",
+    (options) => {
+        setup(options);
+        expect(
+            screen
+                .getByRole("button", { name: "Save changes" })
+                .hasAttribute("disabled")
+        ).toBe(true);
+    }
+);
