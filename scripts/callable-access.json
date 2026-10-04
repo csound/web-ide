@@ -2,6 +2,7 @@
     "region": "us-central1",
     "functions": [
         "delete_account",
+        "fork_project",
         "popular_artists",
         "popular_projects",
         "random_projects",

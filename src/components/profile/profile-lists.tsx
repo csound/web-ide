@@ -30,6 +30,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import { ForkAttribution } from "@comp/projects/fork-attribution";
 import { ProjectDates } from "@comp/projects/project-dates";
 import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
@@ -145,7 +146,21 @@ const ProjectListItem = ({
                         </Box>
                     )}
                 </Box>
-                <ProjectDates project={project} />
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 1,
+                        color: "text.secondary"
+                    }}
+                >
+                    <ProjectDates project={project} />
+                    <ForkAttribution
+                        forkedFrom={project.forkedFrom}
+                        forkedAt={project.forkedAt}
+                    />
+                </Box>
                 {(description || tags?.length > 0) && (
                     <Box
                         component={Link}

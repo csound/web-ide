@@ -29,6 +29,8 @@ export interface ProjectSearchResult {
     displayName?: string;
     created: FirebaseFirestore.Timestamp;
     lastModified?: number | null;
+    forkedFrom?: string;
+    forkedAt?: FirebaseFirestore.Timestamp;
     public: boolean;
     iconName: string;
     iconBackgroundColor: string;
@@ -121,6 +123,12 @@ function searchResult(
             typeof profile.displayName === "string" ? profile.displayName : "",
         created: project.created,
         public: true,
+        ...(typeof project.forkedFrom === "string"
+            ? {
+                  forkedFrom: project.forkedFrom,
+                  forkedAt: project.forkedAt ?? null
+              }
+            : {}),
         iconName: project.iconName || "",
         iconBackgroundColor: project.iconBackgroundColor || "",
         iconForegroundColor: project.iconForegroundColor || "",

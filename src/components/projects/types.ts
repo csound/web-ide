@@ -146,6 +146,8 @@ export interface IDocument {
 export type Star = { [userUid: string]: number };
 
 export interface IProject {
+    forkedFrom?: string;
+    forkedAt?: number;
     created?: number;
     description: string;
     userUid: string;

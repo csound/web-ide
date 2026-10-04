@@ -45,6 +45,7 @@ function getModalStyle(width: number, height: number) {
 export default function GlobalModal() {
     const modalReference = useRef<HTMLDivElement>(null);
     const [[width, height], setDimensions] = useState([0, 0]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const dispatch = useDispatch();
     const isOpen: boolean = useSelector(
         (store: RootState) => store.ModalReducer.isOpen
@@ -57,7 +58,9 @@ export default function GlobalModal() {
     const modalProperties =
         useSelector((store: RootState) => store.ModalReducer.properties) || {};
 
-    const onClose = () => dispatch(closeModal());
+    const onClose = () => {
+        if (!isSubmitting) dispatch(closeModal());
+    };
 
     const updateDimensions = (focus: boolean) => {
         const element = document.querySelector("#modal-window");
@@ -157,7 +160,10 @@ export default function GlobalModal() {
                         <CloseUnsavedFilePrompt {...(modalProperties as any)} />
                     )}
                     {modalComponentName === "new-project-prompt" && (
-                        <ProjectModal {...(modalProperties as any)} />
+                        <ProjectModal
+                            {...(modalProperties as any)}
+                            onSubmittingChange={setIsSubmitting}
+                        />
                     )}
                     {modalComponentName === "profile-edit-dialog" && (
                         <ProfileModal {...(modalProperties as any)} />

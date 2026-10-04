@@ -25,6 +25,7 @@ import { useSetConsole } from "@comp/console/context";
 import { invokeHotKeyCallback } from "@comp/hot-keys/actions";
 import { humanizeKeySequence } from "@comp/hot-keys/utils";
 import { showTargetsConfigDialog } from "@comp/target-controls/actions";
+import { openForkProject } from "@comp/projects/fork-project";
 import { exportProject, markProjectPublic } from "@comp/projects/actions";
 import {
     openSidebarTab,
@@ -280,6 +281,12 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                     },
                     {
                         seperator: true
+                    },
+                    {
+                        label: "Fork Project",
+                        callback: () =>
+                            dispatch(openForkProject(resolvedProjectUid)),
+                        disabled: !isPublic && !isOwner
                     },
                     {
                         label: "Share Project",

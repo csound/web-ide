@@ -295,6 +295,11 @@ export const firestoreProjectToIProject = (
     const created = projectDateMillis(project.created);
     return {
         created,
+        forkedFrom:
+            typeof project.forkedFrom === "string"
+                ? project.forkedFrom
+                : undefined,
+        forkedAt: projectDateMillis(project.forkedAt),
         cachedProjectLastModified: projectDateMillis(project.lastModified),
         projectUid: project.id || "",
         description: propOr("", "description", project),

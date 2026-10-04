@@ -47,3 +47,13 @@ it("keeps both dates when converting a callable search result", () => {
     expect(project.created).toBe(1700000000000);
     expect(project.cachedProjectLastModified).toBe(1800000000000);
 });
+
+it("keeps fork ancestry and converts its date without copying the source name", () => {
+    const project = firestoreProjectToIProject({
+        ...data,
+        forkedFrom: "source",
+        forkedAt: Timestamp.fromMillis(1800000000000)
+    });
+    expect(project.forkedFrom).toBe("source");
+    expect(project.forkedAt).toBe(1800000000000);
+});

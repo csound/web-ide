@@ -13,4 +13,7 @@ export const CREATE_CLEAR_ERROR = PREFIX + "CREATE_USER_CLEAR_ERROR";
 export const SET_POST_AUTH_FLOW = PREFIX + "SET_POST_AUTH_FLOW";
 
 export type LoginDialogMode = "login" | "create" | "reset";
-export type PostAuthFlow = "create-project" | undefined;
+export type PostAuthFlow =
+    | "create-project"
+    | { forkProjectUid: string }
+    | undefined;

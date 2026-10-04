@@ -3,7 +3,9 @@ import { useDispatch, useSelector } from "@root/store";
 import * as SS from "./styles";
 import { subscribeToProjectStars } from "./subscribers";
 import Tooltip from "@mui/material/Tooltip";
-import { IconButton } from "@mui/material";
+import CallSplitIcon from "@mui/icons-material/CallSplit";
+import { openForkProject } from "@comp/projects/fork-project";
+import { Button, IconButton } from "@mui/material";
 import { exportProject, markProjectPublic } from "@comp/projects/actions";
 import StarIcon from "@mui/icons-material/Star";
 import OutlinedStarIcon from "@mui/icons-material/StarBorderOutlined";
@@ -91,6 +93,17 @@ const SocialControls = ({ activeProjectUid }: { activeProjectUid: string }) => {
 
     return (
         <>
+            {(isPublic || isOwner) && (
+                <Button
+                    color="inherit"
+                    aria-label="Fork project"
+                    size="small"
+                    startIcon={<CallSplitIcon fontSize="small" />}
+                    onClick={() => dispatch(openForkProject(activeProjectUid))}
+                >
+                    Fork
+                </Button>
+            )}
             {!isOwner && isPublic && (
                 <Tooltip title="Download project as Zip" placement="bottom-end">
                     <div css={SS.buttonContainer}>

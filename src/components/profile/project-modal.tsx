@@ -1,5 +1,5 @@
 import { ProfileDialog } from "./profile-dialog";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "@root/store";
 import Tooltip from "@mui/material/Tooltip";
 import SVGPaths from "@elem/svg-icons";
@@ -8,7 +8,9 @@ import { SliderPicker } from "react-color";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import { TextField, Button, Popover, Grid } from "@mui/material";
+import { TextField, Button, Popover, Grid, Switch, Alert } from "@mui/material";
+import { createProjectFork } from "@comp/projects/fork-api";
+import { navigateTo } from "@comp/router/navigate";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import IconButton from "@mui/material/IconButton";
@@ -252,6 +254,9 @@ interface IProjectModal {
     newProject: boolean;
     tags?: string[];
     starterTemplate?: ProjectStarterTemplate;
+    forkSourceUid?: string;
+    forkSourceName?: string;
+    onSubmittingChange?: (submitting: boolean) => void;
 }
 
 const templateGuides: Record<
@@ -284,6 +289,13 @@ const templateGuides: Record<
     }
 };
 
+const forkColor = (color: string | undefined, fallback: string) => {
+    if (color && /^#[\da-f]{6}$/i.test(color)) return color;
+    if (color && /^#[\da-f]{3}$/i.test(color))
+        return "#" + [...color.slice(1)].map((digit) => digit + digit).join("");
+    return fallback;
+};
+
 export const ProjectModal = (properties: IProjectModal) => {
     const dispatch = useDispatch();
     const [name, setName] = useState(properties.name);
@@ -291,10 +303,14 @@ export const ProjectModal = (properties: IProjectModal) => {
     const [iconName, setIconName] = useState(properties.iconName);
     const [foregroundColor, setIsForegroundColor] = useState(false);
     const [iconForegroundColor, setIconForegroundColor] = useState(
-        properties.iconForegroundColor || "#fff"
+        properties.forkSourceUid
+            ? forkColor(properties.iconForegroundColor, "#ffffff")
+            : properties.iconForegroundColor || "#fff"
     );
     const [iconBackgroundColor, setIconBackgroundColor] = useState(
-        properties.iconBackgroundColor || "#000"
+        properties.forkSourceUid
+            ? forkColor(properties.iconBackgroundColor, "#000000")
+            : properties.iconBackgroundColor || "#000"
     );
     const [starterTemplate, setStarterTemplate] =
         useState<ProjectStarterTemplate>(
@@ -308,10 +324,25 @@ export const ProjectModal = (properties: IProjectModal) => {
         properties.tags || []
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { onSubmittingChange } = properties;
+    useEffect(() => {
+        onSubmittingChange?.(isSubmitting);
+        return () => onSubmittingChange?.(false);
+    }, [isSubmitting, onSubmittingChange]);
+    const [isPublic, setIsPublic] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const isFork = Boolean(properties.forkSourceUid);
     const [step, setStep] = useState<WizardStep>(0);
 
     const shouldDisable = isEmpty(name.trim()) || isSubmitting;
     const isWizard = properties.newProject;
+    const submitLabel = isSubmitting
+        ? isFork
+            ? "Copying project..."
+            : properties.newProject
+              ? "Creating..."
+              : "Saving..."
+        : properties.label;
 
     const activeTemplateGuide = useMemo(
         () => templateGuides[starterTemplate],
@@ -324,9 +355,24 @@ export const ProjectModal = (properties: IProjectModal) => {
         }
 
         setIsSubmitting(true);
+        setSubmitError("");
 
         try {
-            if (properties.newProject) {
+            if (properties.forkSourceUid) {
+                const projectUid = await createProjectFork({
+                    sourceProjectUid: properties.forkSourceUid,
+                    name: name.trim(),
+                    description,
+                    tags: modifiedTags,
+                    iconName: iconName || "default",
+                    iconForegroundColor,
+                    iconBackgroundColor,
+                    public: isPublic
+                });
+                dispatch(closeModal());
+                navigateTo(`/editor/${projectUid}`);
+                dispatch(openSnackbar("Fork created", SnackbarType.Success));
+            } else if (properties.newProject) {
                 await dispatch(
                     addUserProject(
                         name.trim(),
@@ -354,6 +400,14 @@ export const ProjectModal = (properties: IProjectModal) => {
                 dispatch(closeModal());
             }
         } catch (error) {
+            if (isFork) {
+                setSubmitError(
+                    error instanceof Error
+                        ? error.message
+                        : "Could not create the fork. Please try again."
+                );
+                return;
+            }
             dispatch(
                 openSnackbar(
                     "Could not create project: " + error,
@@ -396,6 +450,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                 <Button
                     variant="text"
                     color="inherit"
+                    disabled={isSubmitting}
                     onClick={() => dispatch(closeModal())}
                 >
                     Cancel
@@ -424,13 +479,10 @@ export const ProjectModal = (properties: IProjectModal) => {
                     variant="contained"
                     color="primary"
                     disabled={shouldDisable}
+                    aria-label={submitLabel}
                     onClick={handleOnSubmit}
                 >
-                    {isSubmitting
-                        ? properties.newProject
-                            ? "Creating..."
-                            : "Saving..."
-                        : properties.label}
+                    {submitLabel}
                 </Button>
             )}
         </>
@@ -438,14 +490,23 @@ export const ProjectModal = (properties: IProjectModal) => {
 
     return (
         <ProfileDialog
-            title={properties.newProject ? "Create a project" : "Edit project"}
+            title={
+                isFork
+                    ? "Fork project"
+                    : properties.newProject
+                      ? "Create a project"
+                      : "Edit project"
+            }
             actions={footerActions}
         >
             <HeaderBody>
-                {properties.newProject
-                    ? "Set up the project in three short steps, then jump into the editor."
-                    : "Update the name, description, tags, and icon for this project."}
+                {isFork
+                    ? `Make your own copy of “${properties.forkSourceName}”. Saved files and run targets will carry over.`
+                    : properties.newProject
+                      ? "Set up the project in three short steps, then jump into the editor."
+                      : "Update the name, description, tags, and icon for this project."}
             </HeaderBody>
+            {submitError && <Alert severity="error">{submitError}</Alert>}
 
             {isWizard && (
                 <StepRail>
@@ -466,11 +527,18 @@ export const ProjectModal = (properties: IProjectModal) => {
 
             {(!isWizard || step === 0) && (
                 <Section>
-                    <SectionTitle>Project details</SectionTitle>
-                    <SectionCaption>Start with the basics.</SectionCaption>
+                    {!isFork && (
+                        <>
+                            <SectionTitle>Project details</SectionTitle>
+                            <SectionCaption>
+                                Start with the basics.
+                            </SectionCaption>
+                        </>
+                    )}
                     <FieldStack>
                         <TextField
                             label="Project name"
+                            inputProps={isFork ? { maxLength: 200 } : undefined}
                             error={isEmpty(name.trim())}
                             helperText={
                                 isEmpty(name.trim())
@@ -486,6 +554,9 @@ export const ProjectModal = (properties: IProjectModal) => {
                         />
                         <TextField
                             label="Description"
+                            inputProps={
+                                isFork ? { maxLength: 5000 } : undefined
+                            }
                             value={description}
                             multiline
                             minRows={3}
@@ -500,6 +571,30 @@ export const ProjectModal = (properties: IProjectModal) => {
                             setModifiedTags={setModifiedTags}
                         />
                     </FieldStack>
+                    {isFork && (
+                        <>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={isPublic}
+                                        onChange={(_, checked) =>
+                                            setIsPublic(checked)
+                                        }
+                                    />
+                                }
+                                label={
+                                    isPublic
+                                        ? "Public project"
+                                        : "Private project"
+                                }
+                            />
+                            <SectionCaption>
+                                {isPublic
+                                    ? "Anyone can view, play, and fork your copy."
+                                    : "Only you can see your copy. You can make it public later."}
+                            </SectionCaption>
+                        </>
+                    )}
                 </Section>
             )}
 
@@ -556,10 +651,15 @@ export const ProjectModal = (properties: IProjectModal) => {
 
             {(!isWizard || step === 2) && (
                 <Section>
-                    <SectionTitle>Visual identity</SectionTitle>
-                    <SectionCaption>
-                        Choose an icon and colors that are easy to recognize.
-                    </SectionCaption>
+                    <SectionTitle>
+                        {isFork ? "Icon and colors" : "Visual identity"}
+                    </SectionTitle>
+                    {!isFork && (
+                        <SectionCaption>
+                            Choose an icon and colors that are easy to
+                            recognize.
+                        </SectionCaption>
+                    )}
                     <IconPickerContainer>
                         <AvatarPreviewCard>
                             <Tooltip title="Choose an icon for your project">
@@ -581,7 +681,9 @@ export const ProjectModal = (properties: IProjectModal) => {
                                 </IconButton>
                             </Tooltip>
                             <AvatarPreviewHint>
-                                Tap the avatar to browse icons.
+                                {isFork
+                                    ? "Change icon"
+                                    : "Tap the avatar to browse icons."}
                             </AvatarPreviewHint>
                         </AvatarPreviewCard>
 
@@ -637,47 +739,81 @@ export const ProjectModal = (properties: IProjectModal) => {
                             </PopoverContainer>
                         </Popover>
 
-                        <StyledSketchPicker
-                            color={
-                                foregroundColor
-                                    ? iconForegroundColor
-                                    : iconBackgroundColor
-                            }
-                            onChangeComplete={(event: { hex: string }) => {
-                                if (foregroundColor) {
-                                    setIconForegroundColor(event.hex);
-                                } else {
-                                    setIconBackgroundColor(event.hex);
-                                }
-                            }}
-                        />
+                        {isFork ? (
+                            <FieldStack>
+                                <TextField
+                                    label="Icon color"
+                                    type="color"
+                                    value={iconForegroundColor}
+                                    onChange={(event) =>
+                                        setIconForegroundColor(
+                                            event.target.value
+                                        )
+                                    }
+                                    size="small"
+                                    fullWidth
+                                />
+                                <TextField
+                                    label="Background color"
+                                    type="color"
+                                    value={iconBackgroundColor}
+                                    onChange={(event) =>
+                                        setIconBackgroundColor(
+                                            event.target.value
+                                        )
+                                    }
+                                    size="small"
+                                    fullWidth
+                                />
+                            </FieldStack>
+                        ) : (
+                            <>
+                                <StyledSketchPicker
+                                    color={
+                                        foregroundColor
+                                            ? iconForegroundColor
+                                            : iconBackgroundColor
+                                    }
+                                    onChangeComplete={(event: {
+                                        hex: string;
+                                    }) => {
+                                        if (foregroundColor) {
+                                            setIconForegroundColor(event.hex);
+                                        } else {
+                                            setIconBackgroundColor(event.hex);
+                                        }
+                                    }}
+                                />
 
-                        <RadioGroupContainer>
-                            <RadioGroup
-                                name="project-icon-color-channel"
-                                value={
-                                    foregroundColor
-                                        ? "foreground"
-                                        : "background"
-                                }
-                                onChange={(event) => {
-                                    setIsForegroundColor(
-                                        event.target.value === "foreground"
-                                    );
-                                }}
-                            >
-                                <FormControlLabel
-                                    value="foreground"
-                                    control={<Radio />}
-                                    label="Edit foreground"
-                                />
-                                <FormControlLabel
-                                    value="background"
-                                    control={<Radio />}
-                                    label="Edit background"
-                                />
-                            </RadioGroup>
-                        </RadioGroupContainer>
+                                <RadioGroupContainer>
+                                    <RadioGroup
+                                        name="project-icon-color-channel"
+                                        value={
+                                            foregroundColor
+                                                ? "foreground"
+                                                : "background"
+                                        }
+                                        onChange={(event) => {
+                                            setIsForegroundColor(
+                                                event.target.value ===
+                                                    "foreground"
+                                            );
+                                        }}
+                                    >
+                                        <FormControlLabel
+                                            value="foreground"
+                                            control={<Radio />}
+                                            label="Edit foreground"
+                                        />
+                                        <FormControlLabel
+                                            value="background"
+                                            control={<Radio />}
+                                            label="Edit background"
+                                        />
+                                    </RadioGroup>
+                                </RadioGroupContainer>
+                            </>
+                        )}
                     </IconPickerContainer>
                 </Section>
             )}

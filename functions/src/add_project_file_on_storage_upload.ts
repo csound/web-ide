@@ -8,6 +8,9 @@ export const addProjectFileOnStorageUploadCallback = onObjectFinalized(
     async (event) => {
         const obj = event.data;
 
+        // Forks publish all file records together after copying their storage objects.
+        if (obj.metadata?.forkCopy === "true") return true;
+
         if (obj.metadata) {
             const { userUid, projectUid, docUid, filename } = obj.metadata;
 

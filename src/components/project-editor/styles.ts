@@ -339,7 +339,7 @@ export const mobileNavContainer = (theme: Theme): SerializedStyles => css`
     position: fixed;
     width: 100%;
     bottom: 0;
-    z-index: 9999;
+    z-index: 100;
     height: 56px;
     display: flex;
     align-items: stretch;

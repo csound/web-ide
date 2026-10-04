@@ -39,6 +39,7 @@ import { navigateTo } from "@comp/router/navigate";
 import { isElectron } from "@root/utils";
 import { selectPostAuthFlow } from "./selectors";
 import { isValidUsername, saveProfile } from "../profile/save-profile";
+import { openForkProject } from "../projects/fork-project";
 
 type AuthUserPayload = {
     uid: string;
@@ -172,7 +173,10 @@ export function ProfileFinalize({
                     user
                 });
 
-                if (postAuthFlow === "create-project") {
+                if (postAuthFlow && typeof postAuthFlow === "object") {
+                    dispatch(setPostAuthFlow(undefined));
+                    dispatch(openForkProject(postAuthFlow.forkProjectUid));
+                } else if (postAuthFlow === "create-project") {
                     dispatch(setPostAuthFlow(undefined));
                     dispatch(openProjectCreationModal());
                 } else {
@@ -326,6 +330,12 @@ export const thirdPartyAuthSuccess = (
                 type: SIGNIN_SUCCESS,
                 user
             });
+
+            if (postAuthFlow && typeof postAuthFlow === "object") {
+                dispatch(setPostAuthFlow(undefined));
+                dispatch(openForkProject(postAuthFlow.forkProjectUid));
+                return;
+            }
 
             if (!fromAutoLogin && postAuthFlow === "create-project") {
                 dispatch(setPostAuthFlow(undefined));
