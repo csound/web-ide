@@ -193,6 +193,7 @@ export const forkProject = onCall(
                     .file(sourceFile.name, { generation: metadata.generation })
                     .copy(bucket.file(destinationPath), {
                         // The fork transaction writes file records, not the upload handler.
+                        // File.copy sends these options as the Storage object resource.
                         metadata: {
                             userUid: auth.uid,
                             projectUid: destination.id,
@@ -252,15 +253,17 @@ export const forkProject = onCall(
                 // Keep its files if we cannot confirm the outcome.
                 const result = await destination.get().catch(() => undefined);
                 if (result?.exists) return { projectUid: destination.id };
-                logError(
-                    "Could not confirm fork commit",
-                    destination.id,
-                    error
-                );
-                throw new HttpsError(
-                    "unavailable",
-                    "Could not confirm the fork. Check your profile before trying again."
-                );
+                if (result === undefined) {
+                    logError(
+                        "Could not confirm fork commit",
+                        destination.id,
+                        error
+                    );
+                    throw new HttpsError(
+                        "unavailable",
+                        "Could not confirm the fork. Check your profile before trying again."
+                    );
+                }
             }
             // No project is visible until every file has been copied successfully.
             await Promise.all(

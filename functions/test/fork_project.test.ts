@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Storage } from "@google-cloud/storage";
 import { forkProject } from "../src/fork_project";
 import { publicProjectSummary } from "../src/public_project_summaries";
 import { addProjectFileOnStorageUploadCallback } from "../src/add_project_file_on_storage_upload";
@@ -17,7 +18,7 @@ const fixture = vi.hoisted(() => {
     const reference = (path: string): any => ({
         path,
         id: path.split("/").at(-1),
-        get: async () => read(reference(path)),
+        get: () => get(path),
         collection: (name: string) => collection(`${path}/${name}`)
     });
     const collection = (path: string, limit = Infinity): any => ({
@@ -42,6 +43,7 @@ const fixture = vi.hoisted(() => {
             data: () => data && { ...data }
         };
     };
+    const get = vi.fn(async (path: string) => read(reference(path)));
     const db = {
         collection,
         runTransaction: vi.fn(async (fn: any) => {
@@ -78,7 +80,7 @@ const fixture = vi.hoisted(() => {
             objects.delete(path);
         }
     });
-    return { records, objects, db, file, copy, deleted, timestamp };
+    return { records, objects, db, file, copy, deleted, get, timestamp };
 });
 vi.mock("firebase-admin", () => ({
     default: {
@@ -119,6 +121,7 @@ const fork = (data: any = details, uid: string | undefined = "reader") =>
 beforeEach(() => {
     vi.clearAllMocks();
     fixture.copy.mockReset();
+    fixture.get.mockReset();
     fixture.records.clear();
     fixture.objects.clear();
     fixture.records.set("projects/source", {
@@ -239,12 +242,42 @@ describe("fork project", () => {
         });
         expect(fixture.copy).not.toHaveBeenCalled();
     });
-    it("leaves fork file records to the transaction when the storage event arrives", async () => {
-        await fork();
+    it("sends custom metadata through the real Storage SDK and skips the upload handler", async () => {
+        const { projectUid } = await fork();
+        const [sourcePath, destinationPath, options, sourceOptions] =
+            fixture.copy.mock.calls[0];
+        const sourceFile = new Storage({ projectId: "fork-fixture" })
+            .bucket("fork-fixture")
+            .file(sourcePath, sourceOptions);
+        // Exercise File.copy's request formatting without credentials or network calls.
+        const request = vi
+            .spyOn(sourceFile, "request")
+            .mockImplementation((_options, callback) => {
+                callback(null, { done: true });
+            });
+        await sourceFile.copy(destinationPath, options);
+        const { json: objectResource, qs } = request.mock.calls[0][0];
+        expect(objectResource).toEqual({
+            metadata: {
+                userUid: "reader",
+                projectUid,
+                docUid: "audio",
+                filename: "tone.wav",
+                forkCopy: "true",
+                firebaseStorageDownloadTokens: expect.any(String)
+            }
+        });
+        expect(qs).toMatchObject({
+            sourceGeneration: 7,
+            ifGenerationMatch: 0
+        });
         await (addProjectFileOnStorageUploadCallback as any)({
-            data: { metadata: fixture.copy.mock.calls[0][2].metadata }
+            data: objectResource
         });
         expect(fixture.db.runTransaction).toHaveBeenCalledTimes(2);
+        expect(
+            fixture.records.get(`projects/${projectUid}/files/audio`)?.path
+        ).toEqual(["folder"]);
     });
     it("keeps a completed copy when the commit succeeds but its response is lost", async () => {
         const transaction = fixture.db.runTransaction.getMockImplementation()!;
@@ -257,6 +290,41 @@ describe("fork project", () => {
         const { projectUid } = await fork();
         expect(fixture.records.has(`projects/${projectUid}`)).toBe(true);
         expect(fixture.objects.has(`reader/${projectUid}/audio`)).toBe(true);
+        expect(fixture.deleted).not.toHaveBeenCalled();
+    });
+    it("removes every copied binary when a read confirms the commit failed", async () => {
+        fixture.records.set("projects/source/files/second-audio", {
+            name: "second.wav",
+            type: "bin"
+        });
+        fixture.objects.set("author/source/second-audio", {
+            size: 12,
+            generation: "8",
+            bytes: "second sound"
+        });
+        const transaction = fixture.db.runTransaction.getMockImplementation()!;
+        fixture.db.runTransaction
+            .mockImplementationOnce(transaction)
+            .mockRejectedValueOnce(new Error("Commit failed"));
+        await expect(fork()).rejects.toMatchObject({ code: "internal" });
+        const projectUid = fixture.copy.mock.calls[0][1].split("/")[1];
+        expect(fixture.get).toHaveBeenCalledWith(`projects/${projectUid}`);
+        expect(fixture.records.has(`projects/${projectUid}`)).toBe(false);
+        expect(fixture.deleted).toHaveBeenCalledTimes(2);
+        expect([...fixture.objects.keys()]).toEqual([
+            "author/source/audio",
+            "author/source/second-audio"
+        ]);
+    });
+    it("keeps copied binaries when the commit outcome cannot be read", async () => {
+        const transaction = fixture.db.runTransaction.getMockImplementation()!;
+        fixture.db.runTransaction
+            .mockImplementationOnce(transaction)
+            .mockRejectedValueOnce(new Error("Commit response lost"));
+        fixture.get.mockRejectedValueOnce(new Error("Read unavailable"));
+        await expect(fork()).rejects.toMatchObject({ code: "unavailable" });
+        const destinationPath = fixture.copy.mock.calls[0][1];
+        expect(fixture.objects.has(destinationPath)).toBe(true);
         expect(fixture.deleted).not.toHaveBeenCalled();
     });
     it("lets owners fork a private project with their chosen visibility", async () => {
