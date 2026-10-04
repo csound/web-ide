@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, ClickAwayListener, Tooltip } from "@mui/material";
 import {
     projectCreatedDate,
+    projectFullCreatedDate,
     projectDateMillis,
     projectLastEdited
 } from "./dates";
@@ -49,7 +50,11 @@ export const ProjectDates = ({
             ? cardDateFormat.format(created)
             : creationDate;
     const dates = [
-        ["Created", created, creationDate],
+        [
+            "Created",
+            created,
+            created === undefined ? "Unknown" : projectFullCreatedDate(created)
+        ],
         [
             "Last edited",
             edited,

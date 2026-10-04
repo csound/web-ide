@@ -129,3 +129,26 @@ it("keeps today in compact profile badges", () => {
     render(<ProjectDates project={{ created }} compact />);
     expect(screen.getByRole("button").textContent).toBe("today");
 });
+
+it.each(["compact", "onCard", "default"])(
+    "reveals the full creation date for today (%s)",
+    async (mode) => {
+        const created = new Date(2026, 9, 4, 12).getTime();
+        vi.spyOn(Date, "now").mockReturnValue(created);
+        render(
+            <ProjectDates
+                project={{ created }}
+                compact={mode === "compact"}
+                onCard={mode === "onCard"}
+            />
+        );
+        const badge = screen.getByRole("button");
+        expect(badge.textContent).toBe(
+            mode === "onCard" ? "Oct 2026" : "today"
+        );
+        fireEvent.click(badge);
+        expect((await screen.findByRole("tooltip")).textContent).toContain(
+            "Created: 4 October 2026"
+        );
+    }
+);

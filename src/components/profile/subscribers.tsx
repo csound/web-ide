@@ -234,14 +234,27 @@ export const subscribeToProfileProjects = (
                     dispatch(unsetProject(project.projectUid));
             }
             try {
-                const localProjects = await Promise.all(
+                const results = await Promise.allSettled(
                     projectSnaps.docs.map(convertProjectSnapToProject)
                 );
                 if (!active || request !== generation) return;
+                const localProjects = results.flatMap((result, index) => {
+                    if (result.status === "fulfilled") return [result.value];
+                    console.error(
+                        "Could not load profile project",
+                        projectSnaps.docs[index].id,
+                        result.reason
+                    );
+                    return [];
+                });
                 if (localProjects.length)
                     dispatch(storeProjectLocally(localProjects));
                 for (const projectUid of ids) {
-                    if (tagSubscriptions.has(projectUid)) continue;
+                    if (
+                        tagSubscriptions.has(projectUid) ||
+                        !store.getState().ProjectsReducer.projects[projectUid]
+                    )
+                        continue;
                     // Keep tags current without re-reading them on every metadata update.
                     const subscription = { stop: () => {} };
                     tagSubscriptions.set(projectUid, subscription);
@@ -260,8 +273,18 @@ export const subscribeToProfileProjects = (
                                 tags: snapshot.docs.map((tag) => tag.id)
                             });
                         },
-                        (error) =>
-                            console.error("Could not load project tags", error)
+                        (error) => {
+                            if (
+                                !active ||
+                                tagSubscriptions.get(projectUid) !==
+                                    subscription
+                            )
+                                return;
+                            // Firestore stops failed listeners. Retry on the next project snapshot.
+                            tagSubscriptions.delete(projectUid);
+                            subscription.stop();
+                            console.error("Could not load project tags", error);
+                        }
                     );
                 }
             } catch (error) {

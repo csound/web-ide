@@ -1,4 +1,4 @@
-import { beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
 import ProjectsReducer from "../projects/reducer";
 import { subscribeToProfileProjects } from "./subscribers";
@@ -43,6 +43,7 @@ beforeEach(() => {
     mocks.convert.mockResolvedValue({ ...project, documents: {} });
     mocks.onSnapshot.mockImplementation(() => vi.fn());
 });
+afterEach(() => vi.restoreAllMocks());
 function setup() {
     const store = configureStore({ reducer: { ProjectsReducer } });
     mocks.getState.mockImplementation(store.getState);
@@ -128,4 +129,51 @@ it("ignores callbacks from a replaced listener and after unmount", async () => {
     expect(store.getState().ProjectsReducer.projects.cached.tags).toEqual([
         "current"
     ]);
+});
+
+it("loads successful projects and watches cached tags when another conversion fails", async () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { store, projects } = setup();
+    const failure = new Error("Last-modified read failed");
+    mocks.convert.mockImplementation(async ({ id }) => {
+        if (id !== "new") throw failure;
+        return { ...project, projectUid: id, documents: {} };
+    });
+    await projects({
+        docs: [{ id: "cached" }, { id: "new" }, { id: "failed" }]
+    });
+    expect(store.getState().ProjectsReducer.projects.new).toBeDefined();
+    expect(store.getState().ProjectsReducer.projects.failed).toBeUndefined();
+    expect(mocks.onSnapshot).toHaveBeenCalledTimes(3);
+    mocks.onSnapshot.mock.calls[1][1]({ docs: [{ id: "ambient" }] });
+    mocks.onSnapshot.mock.calls[2][1]({ docs: [{ id: "synthesis" }] });
+    expect(store.getState().ProjectsReducer.projects.cached.tags).toEqual([
+        "ambient"
+    ]);
+    expect(store.getState().ProjectsReducer.projects.new.tags).toEqual([
+        "synthesis"
+    ]);
+    expect(logged).toHaveBeenCalledTimes(2);
+});
+it("retries failed tag listeners on the next project snapshot and ignores old errors", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { store, projects, stop } = setup();
+    await projects({ docs: [{ id: "cached" }] });
+    const old = mocks.onSnapshot.mock.calls[1];
+    old[2](new Error("Listener failed"));
+    await projects({ docs: [{ id: "cached" }] });
+    expect(mocks.onSnapshot).toHaveBeenCalledTimes(3);
+    const next = mocks.onSnapshot.mock.calls[2];
+    next[1]({ docs: [{ id: "current" }] });
+    old[2](new Error("Late error"));
+    old[1]({ docs: [] });
+    await projects({ docs: [{ id: "cached" }] });
+    expect(mocks.onSnapshot).toHaveBeenCalledTimes(3);
+    expect(store.getState().ProjectsReducer.projects.cached.tags).toEqual([
+        "current"
+    ]);
+    stop();
+    next[2](new Error("After unmount"));
+    await projects({ docs: [{ id: "cached" }] });
+    expect(mocks.onSnapshot).toHaveBeenCalledTimes(3);
 });
