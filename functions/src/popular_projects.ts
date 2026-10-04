@@ -6,7 +6,7 @@ import {
     publicCallableOptions
 } from "./public_requests.js";
 import {
-    addProjectEditDates,
+    addProjectCardDetails,
     publicProjectSummary
 } from "./public_project_summaries.js";
 
@@ -32,7 +32,7 @@ export const popularProjects = onCall<{ count?: number }>(
             .limit(requestedCount)
             .get();
 
-        return addProjectEditDates(
+        return addProjectCardDetails(
             projects.docs.map((doc) =>
                 publicProjectSummary(doc.id, doc.data())
             ),

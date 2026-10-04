@@ -4,7 +4,7 @@ import {
     StyledUserListItemContainer
 } from "../profile-ui";
 import ProjectAvatar from "@elem/project-avatar";
-import { IProject } from "@comp/projects/types";
+import { useStarredProjects } from "./use-starred-projects";
 import {
     ListItemButton,
     ListItemText,
@@ -13,8 +13,7 @@ import {
     CircularProgress
 } from "@mui/material";
 import { useSelector, shallowEqual } from "react-redux";
-import { useNavigate } from "react-router";
-import { isEmpty } from "ramda";
+import { Link } from "react-router";
 import StarIcon from "@mui/icons-material/Star";
 import * as SS from "./styles";
 
@@ -27,18 +26,16 @@ export const StarsList = ({
     profileUid: string;
     isLoading?: boolean;
 }) => {
-    const navigate = useNavigate();
     const profileStars = useSelector(
         (store: RootState): string[] =>
             store.ProfileReducer?.profiles?.[profileUid]?.stars ??
             EMPTY_STRING_ARRAY,
         shallowEqual
     );
-    const cachedProjects = useSelector(
-        (store: RootState) => store.ProjectsReducer.projects
-    );
+    const { projects, isLoading: projectsLoading } =
+        useStarredProjects(profileStars);
 
-    if (isLoading) {
+    if (isLoading || projectsLoading) {
         return (
             <Box
                 display="flex"
@@ -51,7 +48,7 @@ export const StarsList = ({
         );
     }
 
-    if (isEmpty(profileStars)) {
+    if (projects.length === 0) {
         return (
             <Box
                 display="flex"
@@ -69,14 +66,14 @@ export const StarsList = ({
                     }}
                 />
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                    No Starred Projects
+                    No public starred projects
                 </Typography>
                 <Typography
                     variant="body2"
                     color="text.secondary"
                     textAlign="center"
                 >
-                    This user hasn't starred any projects yet.
+                    Public projects starred by this user will appear here.
                 </Typography>
             </Box>
         );
@@ -84,38 +81,31 @@ export const StarsList = ({
 
     return (
         <>
-            {profileStars.map((projectUid, index) => {
-                const project: IProject = cachedProjects[projectUid]!;
-
+            {projects.map((project) => {
                 return (
                     <ListItemButton
                         alignItems="flex-start"
                         css={SS.starItemContainer}
-                        key={index}
-                        onClick={() => {
-                            navigate(`/editor/${projectUid}`);
-                        }}
+                        key={project.projectUid}
+                        component={Link}
+                        to={`/editor/${encodeURIComponent(project.projectUid)}`}
                     >
                         <StyledUserListItemContainer>
                             <div css={SS.starItemIcon}>
-                                {project && (
-                                    <ProjectAvatar
-                                        iconName={project.iconName}
-                                        iconBackgroundColor={
-                                            project.iconBackgroundColor
-                                        }
-                                        iconForegroundColor={
-                                            project.iconForegroundColor
-                                        }
-                                    />
-                                )}
+                                <ProjectAvatar
+                                    iconName={project.iconName}
+                                    iconBackgroundColor={
+                                        project.iconBackgroundColor
+                                    }
+                                    iconForegroundColor={
+                                        project.iconForegroundColor
+                                    }
+                                />
                             </div>
                             <StyledListItemTopRowText>
                                 <ListItemText
-                                    primary={project ? project.name : ""}
-                                    secondary={
-                                        project ? project.description : ""
-                                    }
+                                    primary={project.name}
+                                    secondary={project.description}
                                 />
                             </StyledListItemTopRowText>
                         </StyledUserListItemContainer>

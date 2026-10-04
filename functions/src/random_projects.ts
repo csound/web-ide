@@ -6,7 +6,7 @@ import {
     publicCallableOptions
 } from "./public_requests.js";
 import {
-    addProjectEditDates,
+    addProjectCardDetails,
     readPublicProjectSummaries
 } from "./public_project_summaries.js";
 
@@ -61,7 +61,7 @@ export const randomProjects = onCall(
                 ))
             );
         }
-        return addProjectEditDates(
+        return addProjectCardDetails(
             projects.slice(0, count),
             (project) => project.projectUid
         );

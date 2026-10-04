@@ -132,12 +132,13 @@ export const ProjectCardContentContainer = styled.div<IProjectCardContentContain
     }
 `;
 
-export const ProjectCardContentTop = styled.div`
+export const ProjectCardContentTop = styled.div<{ hasTags?: boolean }>`
     grid-row: 1;
     grid-column: 1;
     display: grid;
     grid-template-rows: auto auto auto;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) ${(properties) =>
+            properties.hasTags ? "fit-content(42%)" : "auto"};
     column-gap: 8px;
     row-gap: 2px;
     align-content: start;

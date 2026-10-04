@@ -47,10 +47,13 @@ const creationDateFormat = new Intl.DateTimeFormat("en-GB", {
     year: "numeric"
 });
 
+export const projectFullCreatedDate = (created: number): string =>
+    creationDateFormat.format(created);
+
 export function projectCreatedDate(created: number, now = Date.now()): string {
     return differenceInCalendarDays(now, created) === 0
         ? "today"
-        : creationDateFormat.format(created);
+        : projectFullCreatedDate(created);
 }
 
 /** Count local calendar days so midnight and daylight saving changes agree. */

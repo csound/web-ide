@@ -31,6 +31,8 @@ import Tooltip from "@mui/material/Tooltip";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { ForkAttribution } from "@comp/projects/fork-attribution";
+import { projectTags } from "@comp/projects/tags";
+import { normalizeProjectText } from "./project-filters";
 import { ProjectDates } from "@comp/projects/project-dates";
 import { IProject } from "@comp/projects/types";
 import { editProject, deleteProject } from "./actions";
@@ -39,13 +41,18 @@ import { descend, sort, propOr } from "ramda";
 
 const ProjectListItem = ({
     isProfileOwner,
-    project
+    project,
+    onTagClick,
+    selectedTags = []
 }: {
     isProfileOwner: boolean;
     project: IProject;
+    onTagClick?: (tag: string) => void;
+    selectedTags?: string[];
 }) => {
     const dispatch = useDispatch();
-    const { isPublic, projectUid, name, description, tags } = project;
+    const { isPublic, projectUid, name, description } = project;
+    const tags = projectTags(project);
     const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
     const closeMenu = () => {
@@ -87,7 +94,18 @@ const ProjectListItem = ({
                 px: 2,
                 py: 1.5,
                 borderTop: 1,
-                borderColor: "divider"
+                borderColor: "divider",
+                "@media (max-width: 600px)": {
+                    display: "grid",
+                    gridTemplateColumns: "48px minmax(0, 1fr)",
+                    columnGap: 1.5,
+                    rowGap: 0.5,
+                    "& > .project-details": {
+                        gridColumn: 2,
+                        gridRow: "1 / span 2"
+                    },
+                    "& > button": { gridColumn: 1, justifySelf: "center" }
+                }
             }}
         >
             <ListPlayButton
@@ -98,64 +116,68 @@ const ProjectListItem = ({
                 iconBackgroundColor={project.iconBackgroundColor}
                 iconForegroundColor={project.iconForegroundColor}
             />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box className="project-details" sx={{ flex: 1, minWidth: 0 }}>
                 <Box
-                    component={Link}
-                    to={"/editor/" + projectUid}
+                    data-testid="project-title-row"
                     sx={{
-                        textDecoration: "none",
-                        borderRadius: 1,
-                        "&:hover h2": { textDecoration: "underline" },
-                        "&:focus-visible": {
-                            outline: "2px solid",
-                            outlineColor: "primary.main",
-                            outlineOffset: 4
-                        },
                         display: "flex",
                         alignItems: "baseline",
-                        flexWrap: "wrap",
-                        columnGap: 1.5,
-                        rowGap: 0.5,
-                        color: "text.secondary"
+                        gap: 1.5,
+                        justifyContent: "space-between",
+                        "& > button": { flexShrink: 0, my: 0 }
                     }}
                 >
-                    <Typography
-                        component="h2"
-                        variant="subtitle1"
-                        color="text.primary"
-                        sx={{ overflowWrap: "anywhere", lineHeight: 1.4 }}
+                    <Box
+                        component={Link}
+                        to={"/editor/" + projectUid}
+                        sx={{
+                            textDecoration: "none",
+                            borderRadius: 1,
+                            "&:hover h2": { textDecoration: "underline" },
+                            "&:focus-visible": {
+                                outline: "2px solid",
+                                outlineColor: "primary.main",
+                                outlineOffset: 4
+                            },
+                            display: "flex",
+                            minWidth: 0,
+                            alignItems: "baseline",
+                            flexWrap: "wrap",
+                            columnGap: 1.5,
+                            rowGap: 0.5,
+                            color: "text.secondary"
+                        }}
                     >
-                        {name}
-                    </Typography>
-                    {isProfileOwner && (
-                        <Box
-                            component="span"
-                            sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 0.5,
-                                fontSize: 12
-                            }}
+                        <Typography
+                            component="h2"
+                            variant="subtitle1"
+                            color="text.primary"
+                            sx={{ overflowWrap: "anywhere", lineHeight: 1.4 }}
                         >
-                            {isPublic ? (
-                                <PublicIcon fontSize="inherit" />
-                            ) : (
-                                <LockIcon fontSize="inherit" />
-                            )}
-                            {isPublic ? "Public" : "Private"}
-                        </Box>
-                    )}
+                            {name}
+                        </Typography>
+                        {isProfileOwner && (
+                            <Box
+                                component="span"
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    fontSize: 12
+                                }}
+                            >
+                                {isPublic ? (
+                                    <PublicIcon fontSize="inherit" />
+                                ) : (
+                                    <LockIcon fontSize="inherit" />
+                                )}
+                                {isPublic ? "Public" : "Private"}
+                            </Box>
+                        )}
+                    </Box>
+                    <ProjectDates project={project} compact />
                 </Box>
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        gap: 1,
-                        color: "text.secondary"
-                    }}
-                >
-                    <ProjectDates project={project} />
+                <Box sx={{ color: "text.secondary" }}>
                     <ForkAttribution
                         forkedFrom={project.forkedFrom}
                         forkedAt={project.forkedAt}
@@ -163,8 +185,6 @@ const ProjectListItem = ({
                 </Box>
                 {(description || tags?.length > 0) && (
                     <Box
-                        component={Link}
-                        to={"/editor/" + projectUid}
                         sx={{
                             display: "block",
                             textDecoration: "none",
@@ -173,10 +193,13 @@ const ProjectListItem = ({
                     >
                         {description && (
                             <Typography
+                                component={Link}
+                                to={"/editor/" + projectUid}
                                 variant="body2"
                                 color="text.secondary"
                                 sx={{
                                     mt: 0.5,
+                                    textDecoration: "none",
                                     overflow: "hidden",
                                     display: "-webkit-box",
                                     WebkitLineClamp: 2,
@@ -203,7 +226,31 @@ const ProjectListItem = ({
                                         label={tag}
                                         size="small"
                                         variant="outlined"
-                                        sx={{ maxWidth: "100%" }}
+                                        {...(onTagClick
+                                            ? {
+                                                  component: "button",
+                                                  type: "button",
+                                                  onClick: () =>
+                                                      onTagClick(tag),
+                                                  "aria-label": `Filter by tag ${tag}`,
+                                                  "aria-pressed":
+                                                      selectedTags.some(
+                                                          (selected) =>
+                                                              normalizeProjectText(
+                                                                  selected
+                                                              ) ===
+                                                              normalizeProjectText(
+                                                                  tag
+                                                              )
+                                                      )
+                                              }
+                                            : {})}
+                                        sx={{
+                                            maxWidth: "100%",
+                                            "&[aria-pressed=true]": {
+                                                bgcolor: "action.selected"
+                                            }
+                                        }}
                                     />
                                 ))}
                             </Box>
@@ -287,12 +334,16 @@ export const ProfileLists = ({
     profileUid,
     selectedSection,
     isProfileOwner,
-    filteredProjects
+    filteredProjects,
+    onTagClick,
+    selectedTags
 }: {
     profileUid: string;
     selectedSection: number;
     isProfileOwner: boolean;
     filteredProjects: IProject[];
+    onTagClick?: (tag: string) => void;
+    selectedTags?: string[];
 }) => {
     const userFollowingSelector = useMemo(
         () => selectProfileConnections(profileUid, "following"),
@@ -325,6 +376,8 @@ export const ProfileLists = ({
                             key={project.projectUid}
                             isProfileOwner={isProfileOwner}
                             project={project}
+                            onTagClick={onTagClick}
+                            selectedTags={selectedTags}
                         />
                     );
                 })}

@@ -9,6 +9,7 @@ export const ADD_PROJECT_DOCUMENTS = PREFIX + "ADD_PROJECT_DOCUMENTS";
 export const CLOSE_PROJECT = PREFIX + "CLOSE_PROJECT";
 export const STORE_PROJECT_LOCALLY = PREFIX + "STORE_PROJECT_LOCALLY";
 export const SET_PROJECT_PUBLIC = PREFIX + "SET_PROJECT_PUBLIC";
+export const STORE_PROJECT_TAGS = PREFIX + "STORE_PROJECT_TAGS";
 export const STORE_PROJECT_STARS = PREFIX + "STORE_PROJECT_STARS";
 export const UNSET_PROJECT = PREFIX + "UNSET_PROJECT";
 export const DOCUMENT_INITIALIZE = PREFIX + "DOCUMENT_INITIALIZE";
@@ -86,6 +87,12 @@ export interface StoreProjectLocallyAction {
     projects: IProject[];
 }
 
+export interface StoreProjectTagsAction {
+    type: typeof STORE_PROJECT_TAGS;
+    projectUid: string;
+    tags: string[];
+}
+
 export interface StoreProjectStarsAction {
     type: typeof STORE_PROJECT_STARS;
     projectUid: string;
@@ -119,6 +126,7 @@ export type ProjectsActionTypes =
     | DocumentSaveAction
     | DocumentUpdateValueAction
     | StoreProjectStarsAction
+    | StoreProjectTagsAction
     | CloseProjectAction
     | UnsetProjectAction
     | StoreProjectLocallyAction

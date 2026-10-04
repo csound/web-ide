@@ -196,10 +196,10 @@ export const contentActionsStyle = css`
     gap: 12px;
     align-items: center;
     padding: 20px 16px 12px;
+    flex-wrap: wrap;
     & > .MuiTextField-root {
-        flex: 1;
+        flex: 1 1 180px;
         min-width: 0;
-        max-width: 420px;
     }
     & > button {
         flex-shrink: 0;

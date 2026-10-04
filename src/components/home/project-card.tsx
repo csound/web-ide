@@ -25,6 +25,8 @@ import {
 } from "./home-ui";
 import { RandomProjectResponse, PopularProjectResponse } from "./types";
 import * as SS from "./styles";
+import { ProjectCardTags } from "./project-card-tags";
+import { projectTags } from "@comp/projects/tags";
 
 export const ProjectCardSkeleton = ({ theme }: { theme: Theme }) => (
     <div css={SS.cardLoderSkeleton}>
@@ -44,6 +46,7 @@ export const ProjectCard = ({
     profile: IProfile;
     project: IProject | RandomProjectResponse | PopularProjectResponse;
 }) => {
+    const hasTags = projectTags(project).length > 0;
     const displayName = profile.displayName || profile.username;
     const fallbackInitial = displayName?.trim().charAt(0).toUpperCase() || "?";
 
@@ -57,7 +60,7 @@ export const ProjectCard = ({
                 />
             </div>
             <ProjectCardContentContainer duration={200}>
-                <ProjectCardContentTop>
+                <ProjectCardContentTop hasTags={hasTags}>
                     <ProjectCardContentTopHeader
                         to={`editor/${project.projectUid}`}
                     >
@@ -75,11 +78,13 @@ export const ProjectCard = ({
                     />
                     {project.description && (
                         <ProjectCardContentTopDescription
+                            css={{ gridColumn: hasTags ? "1" : "1 / -1" }}
                             to={`editor/${project.projectUid}`}
                         >
                             {project.description}
                         </ProjectCardContentTopDescription>
                     )}
+                    <ProjectCardTags tags={project.tags} />
                     <ForkAttribution
                         forkedFrom={project.forkedFrom}
                         forkedAt={project.forkedAt}

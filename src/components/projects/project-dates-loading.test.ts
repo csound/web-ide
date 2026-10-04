@@ -57,3 +57,10 @@ it("keeps fork ancestry and converts its date without copying the source name", 
     expect(project.forkedFrom).toBe("source");
     expect(project.forkedAt).toBe(1800000000000);
 });
+
+it("keeps tags when converting search results", () => {
+    expect(
+        firestoreProjectToIProject({ ...data, tags: ["ambient", "synthesis"] })
+            .tags
+    ).toEqual(["ambient", "synthesis"]);
+});

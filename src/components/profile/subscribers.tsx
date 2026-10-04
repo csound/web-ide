@@ -1,14 +1,6 @@
-import { AppThunkDispatch, RootState, store } from "@root/store";
+import { AppThunkDispatch, store } from "@root/store";
+import { doc, getDoc, onSnapshot, query, where } from "firebase/firestore";
 import {
-    doc,
-    getDoc,
-    getDocs,
-    onSnapshot,
-    query,
-    where
-} from "firebase/firestore";
-import {
-    database,
     following,
     followers,
     profiles,
@@ -17,11 +9,7 @@ import {
     profileStars,
     tags
 } from "@config/firestore";
-import {
-    downloadProjectOnce,
-    storeProjectLocally,
-    unsetProject
-} from "@comp/projects/actions";
+import { storeProjectLocally, unsetProject } from "@comp/projects/actions";
 import { convertProjectSnapToProject } from "@comp/projects/utils";
 import {
     storeUserProfile,
@@ -37,21 +25,8 @@ import {
     UPDATE_PROFILE_FOLLOWERS
 } from "./types";
 import { listifyObject } from "@root/utils";
-import {
-    assoc,
-    descend,
-    difference,
-    filter,
-    isEmpty,
-    keys,
-    pathOr,
-    pipe,
-    prop,
-    propEq,
-    propOr,
-    sort
-} from "ramda";
-import { IProject } from "../projects/types";
+import { descend, propOr, sort } from "ramda";
+import { STORE_PROJECT_TAGS } from "../projects/types";
 
 export const subscribeToProfile = (
     profileUid: string,
@@ -189,6 +164,7 @@ export const subscribeToProfileStars = (
         (starsReference) => {
             const starsData = starsReference.data();
             if (!starsData) {
+                dispatch(storeProfileStars({}, profileUid));
                 // Clear loading state when no data is found
                 dispatch(setStarsLoading(profileUid, false));
                 return;
@@ -198,38 +174,23 @@ export const subscribeToProfileStars = (
             const serializedStarsData: Record<string, any> = {};
             for (const projectUid in starsData) {
                 const timestamp = starsData[projectUid];
-                if (timestamp && typeof timestamp.toDate === "function") {
-                    // Convert Firestore Timestamp to milliseconds
-                    serializedStarsData[projectUid] = {
-                        toDate: timestamp.toDate().getTime()
-                    };
-                } else {
-                    // Handle case where it's already serialized or different format
-                    serializedStarsData[projectUid] = timestamp;
-                }
+                serializedStarsData[projectUid] = {
+                    toDate:
+                        typeof timestamp?.toMillis === "function"
+                            ? timestamp.toMillis()
+                            : typeof timestamp === "number"
+                              ? timestamp
+                              : 0
+                };
             }
 
-            const state = store.getState();
-            const starredProjects = Object.keys(starsData);
-            const cachedProjects = Object.keys(state.ProjectsReducer.projects);
-            const missingProjects = difference(starredProjects, cachedProjects);
-            missingProjects.forEach(async (projectUid) => {
-                try {
-                    await dispatch(downloadProjectOnce(projectUid));
-                } catch (error) {
-                    console.error(
-                        "Error downloading project:",
-                        projectUid,
-                        error
-                    );
-                }
-            });
             dispatch(storeProfileStars(serializedStarsData, profileUid));
             // Clear loading state
             dispatch(setStarsLoading(profileUid, false));
         },
         (error: any) => {
             console.error(error);
+            dispatch(storeProfileStars({}, profileUid));
             // Clear loading state on error
             dispatch(setStarsLoading(profileUid, false));
         }
@@ -242,6 +203,9 @@ export const subscribeToProfileProjects = (
     isProfileOwner: boolean,
     dispatch: AppThunkDispatch
 ): (() => void) => {
+    let active = true;
+    let generation = 0;
+    const tagSubscriptions = new Map<string, { stop: () => void }>();
     const unsubscribe = onSnapshot(
         isProfileOwner
             ? query(projects, where("userUid", "==", profileUid))
@@ -251,35 +215,91 @@ export const subscribeToProfileProjects = (
                   where("public", "==", true)
               ),
         async (projectSnaps) => {
-            const currentProfileProjects = pipe(
-                pathOr([], ["ProjectsReducer", "projects"]),
-                filter(propEq("userUid", profileUid))
-            )(store.getState());
-            const projectsDeleted = difference(
-                keys(currentProfileProjects).sort(),
-                (projectSnaps.docs as any[]).map((snapDoc) => snapDoc.id).sort()
-            );
-            if (!projectSnaps.empty) {
-                Promise.all(
-                    projectSnaps.docs.map(async (projSnap) => {
-                        const projTags = await getDocs(
-                            query(tags, where(projSnap.id, "==", profileUid))
-                        ).then((d) => d.docs.map(prop("id")));
-                        const proj =
-                            await convertProjectSnapToProject(projSnap);
-                        return assoc("tags", projTags, proj) as IProject;
-                    })
-                ).then((localProjects) => {
+            if (!active) return;
+            const request = ++generation;
+            const ids = new Set(projectSnaps.docs.map((snap) => snap.id));
+            // Remove listeners and cached rows as soon as a project leaves this view.
+            for (const [id, subscription] of tagSubscriptions)
+                if (!ids.has(id)) {
+                    subscription.stop();
+                    tagSubscriptions.delete(id);
+                }
+            for (const project of Object.values(
+                store.getState().ProjectsReducer.projects
+            )) {
+                if (
+                    project.userUid === profileUid &&
+                    !ids.has(project.projectUid)
+                )
+                    dispatch(unsetProject(project.projectUid));
+            }
+            try {
+                const results = await Promise.allSettled(
+                    projectSnaps.docs.map(convertProjectSnapToProject)
+                );
+                if (!active || request !== generation) return;
+                const localProjects = results.flatMap((result, index) => {
+                    if (result.status === "fulfilled") return [result.value];
+                    console.error(
+                        "Could not load profile project",
+                        projectSnaps.docs[index].id,
+                        result.reason
+                    );
+                    return [];
+                });
+                if (localProjects.length)
                     dispatch(storeProjectLocally(localProjects));
-                });
+                for (const projectUid of ids) {
+                    if (
+                        tagSubscriptions.has(projectUid) ||
+                        !store.getState().ProjectsReducer.projects[projectUid]
+                    )
+                        continue;
+                    // Keep tags current without re-reading them on every metadata update.
+                    const subscription = { stop: () => {} };
+                    tagSubscriptions.set(projectUid, subscription);
+                    subscription.stop = onSnapshot(
+                        query(tags, where(projectUid, "==", profileUid)),
+                        (snapshot) => {
+                            if (
+                                !active ||
+                                tagSubscriptions.get(projectUid) !==
+                                    subscription
+                            )
+                                return;
+                            dispatch({
+                                type: STORE_PROJECT_TAGS,
+                                projectUid,
+                                tags: snapshot.docs.map((tag) => tag.id)
+                            });
+                        },
+                        (error) => {
+                            if (
+                                !active ||
+                                tagSubscriptions.get(projectUid) !==
+                                    subscription
+                            )
+                                return;
+                            // Firestore stops failed listeners. Retry on the next project snapshot.
+                            tagSubscriptions.delete(projectUid);
+                            subscription.stop();
+                            console.error("Could not load project tags", error);
+                        }
+                    );
+                }
+            } catch (error) {
+                if (active && request === generation)
+                    console.error("Could not load profile projects", error);
             }
-
-            if (!isEmpty(projectsDeleted)) {
-                projectsDeleted.forEach(async (projectUid) => {
-                    await dispatch(unsetProject(projectUid));
-                });
-            }
-        }
+        },
+        (error) => console.error("Could not load profile projects", error)
     );
-    return unsubscribe;
+    return () => {
+        active = false;
+        generation++;
+        unsubscribe();
+        for (const subscription of tagSubscriptions.values())
+            subscription.stop();
+        tagSubscriptions.clear();
+    };
 };

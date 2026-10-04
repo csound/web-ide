@@ -1,7 +1,11 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
 import { getDoc } from "firebase/firestore";
-import { subscribeToFollowers, subscribeToFollowing } from "./subscribers";
+import {
+    subscribeToFollowers,
+    subscribeToFollowing,
+    subscribeToProfileStars
+} from "./subscribers";
 import ProfileReducer from "./reducer";
 import { STORE_USER_PROFILE } from "./types";
 
@@ -18,7 +22,8 @@ vi.mock("firebase/firestore", () => ({
 vi.mock("../../config/firestore", () => ({
     following: "following",
     followers: "followers",
-    profiles: "profiles"
+    profiles: "profiles",
+    profileStars: "profileStars"
 }));
 vi.mock("../../store", () => ({
     store: { getState: mocks.getState }
@@ -26,6 +31,16 @@ vi.mock("../../store", () => ({
 vi.mock("../projects/actions", () => ({}));
 vi.mock("../projects/utils", () => ({}));
 vi.mock("./actions", () => ({
+    storeProfileStars: (stars: unknown, profileUid: string) => ({
+        type: "PROFILE.STORE_PROFILE_STARS",
+        stars,
+        profileUid
+    }),
+    setStarsLoading: (profileUid: string, isLoading: boolean) => ({
+        type: "PROFILE.SET_STARS_LOADING",
+        profileUid,
+        isLoading
+    }),
     setFollowingLoading: (profileUid: string, isLoading: boolean) => ({
         type: "PROFILE.SET_FOLLOWING_LOADING",
         profileUid,
@@ -149,4 +164,22 @@ it("clears loading after a failed read without treating it as a deletion", async
     } finally {
         logged.mockRestore();
     }
+});
+
+it("clears cached stars when the star record disappears", () => {
+    const store = configureStore({ reducer: { ProfileReducer } });
+    const stop = subscribeToProfileStars("fixture", store.dispatch);
+    const receive = mocks.onSnapshot.mock.calls[0][1];
+    receive(
+        snapshot("fixture", { public: { toMillis: () => 123 }, missing: null })
+    );
+    expect(store.getState().ProfileReducer.profiles.fixture.stars).toEqual([
+        "missing",
+        "public"
+    ]);
+    expect(store.getState().ProfileReducer.starsLoading.fixture).toBe(false);
+    receive(snapshot("fixture"));
+    expect(store.getState().ProfileReducer.profiles.fixture.stars).toEqual([]);
+    stop();
+    expect(mocks.unsubscribe).toHaveBeenCalledOnce();
 });
