@@ -16,7 +16,13 @@ export const SET_RANDOM_PROJECTS_LOADING = "HOME.SET_RANDOM_PROJECTS_LOADING";
 export const SET_POPULAR_ARTISTS_LOADING = "HOME.SET_POPULAR_ARTISTS_LOADING";
 
 export interface RandomProjectResponse {
-    created: Timestamp;
+    created?:
+        | Timestamp
+        | { _seconds: number; _nanoseconds: number }
+        | { seconds: number; nanoseconds: number }
+        | number
+        | null;
+    lastModified?: number | null;
     description: string;
     iconBackgroundColor: string | undefined;
     iconForegroundColor: string | undefined;

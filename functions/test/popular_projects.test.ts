@@ -8,6 +8,7 @@ import { syncProjectStarCount } from "../src/project_stars";
 const { records, database, reads, deleteValue } = vi.hoisted(() => {
     const records = {
         projects: new Map<string, Record<string, unknown>>(),
+        projectLastModified: new Map<string, Record<string, unknown>>(),
         stars: new Map<string, Record<string, unknown>>(),
         profileStars: new Map<string, Record<string, unknown>>()
     };
@@ -70,6 +71,7 @@ const { records, database, reads, deleteValue } = vi.hoisted(() => {
         }
     });
     const database = {
+        getAll: vi.fn(async (...refs: Reference[]) => refs.map(snapshot)),
         collection: vi.fn((name: Collection) => query(name)),
         runTransaction: async (
             callback: (transaction: any) => Promise<unknown>
@@ -321,4 +323,12 @@ describe("legacy writes and backfill", () => {
         expect(records.stars.get("project")).toEqual({ a: 1, b: 2 });
         expect(await sync("project")).toMatchObject({ changed: false });
     });
+});
+
+it("includes saved edit dates on popular cards", async () => {
+    addProject("dated", 3);
+    records.projectLastModified.set("dated", {
+        timestamp: { toMillis: () => 987654321 }
+    });
+    expect((await fetchPopular())[0].lastModified).toBe(987654321);
 });

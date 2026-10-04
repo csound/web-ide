@@ -5,7 +5,10 @@ import {
     createRequestLimiter,
     publicCallableOptions
 } from "./public_requests.js";
-import { publicProjectSummary } from "./public_project_summaries.js";
+import {
+    addProjectEditDates,
+    publicProjectSummary
+} from "./public_project_summaries.js";
 
 const acceptRequest = createRequestLimiter();
 
@@ -29,8 +32,11 @@ export const popularProjects = onCall<{ count?: number }>(
             .limit(requestedCount)
             .get();
 
-        return projects.docs.map((doc) =>
-            publicProjectSummary(doc.id, doc.data())
+        return addProjectEditDates(
+            projects.docs.map((doc) =>
+                publicProjectSummary(doc.id, doc.data())
+            ),
+            (project) => project.projectUid
         );
     }
 );

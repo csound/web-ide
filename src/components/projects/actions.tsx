@@ -1,3 +1,4 @@
+import { projectDateMillis } from "./dates";
 import { AppThunkDispatch, RootState, store } from "@root/store";
 import { getDownloadURL } from "firebase/storage";
 import {
@@ -251,7 +252,7 @@ export const activateProject = (projectUid: string) => {
 export const storeProjectLocally = (projects: Array<IProject>) => {
     const projectsWithoutTimestamps = projects.map((project) => ({
         ...project,
-        created: project.created?.toMillis() || undefined
+        created: projectDateMillis(project.created)
     }));
     return {
         type: STORE_PROJECT_LOCALLY,

@@ -5,7 +5,10 @@ import {
     createRequestLimiter,
     publicCallableOptions
 } from "./public_requests.js";
-import { readPublicProjectSummaries } from "./public_project_summaries.js";
+import {
+    addProjectEditDates,
+    readPublicProjectSummaries
+} from "./public_project_summaries.js";
 
 const shuffle = <T>(items: T[]): T[] => {
     const shuffled = [...items];
@@ -58,6 +61,9 @@ export const randomProjects = onCall(
                 ))
             );
         }
-        return projects.slice(0, count);
+        return addProjectEditDates(
+            projects.slice(0, count),
+            (project) => project.projectUid
+        );
     }
 );

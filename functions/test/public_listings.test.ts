@@ -138,7 +138,10 @@ it.each([8, 50])(
         expect(result.map((project) => project.projectUid)).toEqual(
             [2, 5, 6, 7, 8, 9, 10, 11].map((index) => `fixture-${index}`)
         );
-        const reads = fixture.getAll.mock.calls.flat().map((ref) => ref.path);
+        const reads = fixture.getAll.mock.calls
+            .flat()
+            .map((ref) => ref.path)
+            .filter((path) => path.startsWith("projects/"));
         expect(reads).toHaveLength(new Set(reads).size);
         expect(reads.length).toBeLessThanOrEqual(12);
         expect(projectQueries()).toHaveLength(1);
@@ -339,4 +342,44 @@ it("artist requests share a scan and cache an empty catalogue", async () => {
     expect(
         fixture.queries.mock.calls.filter(([name]) => name === "stars")
     ).toHaveLength(1);
+});
+
+it("returns fresh saved edit dates for public cards and search results", async () => {
+    fixture.records.set("projectLastModified/fixture-project", {
+        timestamp: { toMillis: () => 456 }
+    });
+    const { randomProjects } = await import("../src/random_projects");
+    expect((await randomProjects.run(request({ count: 1 })))[0]).toMatchObject({
+        created: { toMillis: expect.any(Function) },
+        lastModified: 456
+    });
+    fixture.records.set("projectLastModified/fixture-project", {
+        timestamp: { toMillis: () => 789 }
+    });
+    const { searchProjects } = await import("../src/search_projects");
+    expect(
+        (await searchProjects.run(request({ query: "Fixture Melody" }))).data[0]
+            .lastModified
+    ).toBe(789);
+});
+it("keeps missing edit dates unknown and reads dates only for the returned search page", async () => {
+    const template = fixture.records.get("projects/fixture-project")!;
+    for (let i = 0; i < 20; i++)
+        fixture.records.set(`projects/example-${i}`, { ...template });
+    const { searchProjects } = await import("../src/search_projects");
+    const result = await searchProjects.run(
+        request({ query: "Fixture Melody", limit: 2 })
+    );
+    expect(result.data.map((project) => project.lastModified)).toEqual([
+        null,
+        null
+    ]);
+    const ids = fixture.getAll.mock.calls
+        .flat()
+        .map((ref) => ref.path)
+        .filter((path) => path.startsWith("projectLastModified/"));
+    expect(ids).toHaveLength(2);
+    expect(ids.sort()).toEqual(
+        result.data.map((project) => `projectLastModified/${project.id}`).sort()
+    );
 });
