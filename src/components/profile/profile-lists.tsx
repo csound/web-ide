@@ -117,35 +117,40 @@ const ProjectListItem = ({
                 <Box
                     sx={{
                         display: "flex",
-                        alignItems: "center",
+                        alignItems: "baseline",
                         flexWrap: "wrap",
-                        gap: 1
+                        columnGap: 1.5,
+                        rowGap: 0.5,
+                        color: "text.secondary"
                     }}
                 >
                     <Typography
                         component="h2"
                         variant="subtitle1"
+                        color="text.primary"
                         sx={{ overflowWrap: "anywhere", lineHeight: 1.4 }}
                     >
                         {name}
                     </Typography>
-                    <Box
-                        component="span"
-                        sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                            color: "text.secondary",
-                            fontSize: 12
-                        }}
-                    >
-                        {isPublic ? (
-                            <PublicIcon fontSize="inherit" />
-                        ) : (
-                            <LockIcon fontSize="inherit" />
-                        )}
-                        {isPublic ? "Public" : "Private"}
-                    </Box>
+                    {isProfileOwner && (
+                        <Box
+                            component="span"
+                            sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                                fontSize: 12
+                            }}
+                        >
+                            {isPublic ? (
+                                <PublicIcon fontSize="inherit" />
+                            ) : (
+                                <LockIcon fontSize="inherit" />
+                            )}
+                            {isPublic ? "Public" : "Private"}
+                        </Box>
+                    )}
+                    <ProjectDates project={project} />
                 </Box>
                 {description && (
                     <Typography
@@ -164,9 +169,6 @@ const ProjectListItem = ({
                         {description}
                     </Typography>
                 )}
-                <Box sx={{ color: "text.secondary", mt: 0.75 }}>
-                    <ProjectDates project={project} />
-                </Box>
                 {Array.isArray(tags) && tags.length > 0 && (
                     <Box
                         sx={{

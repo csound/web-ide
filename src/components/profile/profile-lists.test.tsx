@@ -14,6 +14,48 @@ vi.mock("./tabs/stars-list", () => ({ StarsList: () => null }));
 
 afterEach(cleanup);
 
+it.each([
+    [true, true, "Public"],
+    [true, false, "Private"],
+    [false, true, null]
+] as const)(
+    "shows visibility only to the owner and dates to everyone (owner %s, public %s)",
+    (isProfileOwner, isPublic, visibility) => {
+        const store = configureStore({ reducer: { ProfileReducer } });
+        const { container } = render(
+            <Provider store={store}>
+                <MemoryRouter>
+                    <ProfileLists
+                        profileUid="owner"
+                        selectedSection={0}
+                        isProfileOwner={isProfileOwner}
+                        filteredProjects={[
+                            {
+                                projectUid: "study",
+                                userUid: "owner",
+                                name: "Sound study",
+                                description: "An orchestral sketch",
+                                isPublic,
+                                created: 1700000000000,
+                                cachedProjectLastModified: 1800000000000,
+                                documents: {},
+                                stars: {},
+                                tags: []
+                            }
+                        ]}
+                    />
+                </MemoryRouter>
+            </Provider>
+        );
+        expect(
+            screen.queryByText(/^(Public|Private)$/)?.textContent ?? null
+        ).toBe(visibility);
+        expect(screen.getByText(/Created/)).toBeDefined();
+        expect(screen.getByText(/Last edited/)).toBeDefined();
+        expect(container.querySelectorAll("time")).toHaveLength(2);
+    }
+);
+
 /** Exposes the in-memory route to check profile links without network access. */
 function Location() {
     return <output>{useLocation().pathname}</output>;
