@@ -20,7 +20,7 @@
         "electron:dev": "concurrently \"BROWSER=none npm run start\" \"npx wait-on http-get://127.0.0.1:3000 && ELECTRON_IS_DEV=1 npx electron .\"",
         "deploy": "./node_modules/.bin/firebase deploy -P default --token=$FIREBASE_TOKEN",
         "prepare:deploy:dev": "node scripts/prepare-dev-deploy.mjs",
-        "test:deploy:dev": "node --test scripts/prepare-dev-deploy.test.mjs",
+        "test:deploy:dev": "node --test scripts/prepare-dev-deploy.test.mjs scripts/deploy-dev.test.mjs",
         "deploy:dev": "npm run prepare:deploy:dev && ./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.generated.json --only firestore:indexes,functions,hosting --token=$FIREBASE_TOKEN",
         "precommit-hook:puppeteer": "cd puppeteer-tests && npm run lint && npm run format -- --check",
         "precommit-hook": "npm run lint && npm run typecheck && npm run format:check && npm run precommit-hook:puppeteer",

@@ -41,6 +41,8 @@ jobs:
               run: npm run test:ci
             - name: Check manual
               run: npm run test:manual && npm run manual:check
+            - name: Test dev deployment safeguards
+              run: node --test scripts/deploy-dev.test.mjs
             - name: Test browser access
               run: npm run test:access
             - name: Test Firestore indexes

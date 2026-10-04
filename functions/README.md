@@ -171,3 +171,63 @@ Firebase is pretty strict on the directory structure. All cloud functions must b
 
 - https://github.com/firebase/functions-samples
 - https://firebase.google.com/docs/functions/firestore-events
+
+## Dev deploy recovery
+
+The `Deploy Develop` workflow uses the Firebase CLI pinned in this directory and
+one `GCP_SA_KEY_DEV` login for deployment and access checks. A concurrency group
+allows only one dev deploy at a time and lets an active deploy finish.
+
+Before building, `node scripts/deploy-dev.mjs --preflight` checks the deployment
+identity's function deployment, Cloud Run read, and Cloud Run IAM permissions.
+The dev CI account is `csound-ide-dev@appspot.gserviceaccount.com`. In addition to
+its existing roles, it has the dev-only custom role
+`projects/csound-ide-dev/roles/csoundBrowserAccessManager`, which contains:
+
+- `run.services.getIamPolicy`
+- `run.services.setIamPolicy`
+
+These permissions let the shared access script maintain `roles/run.invoker` for
+`allUsers` only on the browser endpoints listed in `scripts/callable-access.json`.
+The script validates function types before writing IAM and preserves other grants.
+IAM permissions belong to the service account; replacing its key does not add them.
+
+The deploy script compares the checkout with the latest successful dev workflow
+run that is its Git ancestor. Backend or deployment-config changes select all
+functions because they share one source bundle. Other changes select `host`,
+which serves the built app shell. Missing or unhealthy functions are always
+included. Without a usable baseline, it deploys all declared functions.
+
+It deploys named functions in batches of two, then checks each batch before
+starting the next. Named targets also bypass the CLI's unchanged-function skip.
+Quota and transient failures get three retries after 60, 120, and 240 seconds.
+Permission errors and ordinary startup errors fail without retries. Removed
+exports require a separate, explicit function deletion; batches do not delete
+unrelated functions.
+
+An `ACTIVE` function alone does not prove that its latest Cloud Run revision
+started. The readiness check requires Cloud Run's `Ready` condition and matching
+latest-created/latest-ready revisions. Hosting publishes only after every declared
+function is ready and browser-access checks pass. Browser checks run again after
+publication. Each readiness check shares one three-retry allowance across all
+polls, with at most two minutes of polling and seven minutes of retry delays.
+For the current 16 functions, all eight batches and the final readiness check
+can wait at most 137 minutes in total. The job allows 240 minutes, leaving time
+for installs, builds, API calls, and Hosting publication.
+
+To repair failed revisions locally, first build the frontend and functions and
+run `npm run prepare:deploy:dev`. With valid Firebase/Google credentials, run:
+
+```bash
+node scripts/deploy-dev.mjs --preflight
+node scripts/deploy-dev.mjs --repair
+npm run access -- --env dev --apply
+./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.generated.json --only hosting --non-interactive
+npm run access -- --env dev --check
+```
+
+`--repair` selects only missing or unhealthy functions. `--check` checks readiness
+without deploying. Publish the matching Hosting build when repairing `host`, so
+its app shell references assets present on Hosting. A saved account in
+`gcloud auth list` does not guarantee a valid login; refresh it with
+`gcloud auth login` if API calls report `invalid_grant`.
