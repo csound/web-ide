@@ -43,7 +43,8 @@ const ProjectProfileMeta = (): React.ReactElement => {
     const profile = useSelector(selectUserProfile(projectOwnerUid));
 
     const profileUserName = profile?.username ?? "";
-    const profileDisplayName = profile?.displayName ?? "unknown user";
+    const profileDisplayName =
+        profile?.displayName?.trim() || profileUserName || "unknown user";
     const profileBio = profile?.bio ?? "";
     const profileLinks = [profile?.link1, profile?.link2, profile?.link3]
         .map((url, i) => ({ url, i }))
