@@ -35,6 +35,7 @@ afterEach(() => {
     vi.clearAllMocks();
     vi.unstubAllGlobals();
 });
+/** Render a themed tool with a local audio source and observable result retention. */
 function mount(mode: "sample" | "analysis" = "sample") {
     const save = vi.fn((_file: { data: Uint8Array }) => "kept.wav");
     render(
@@ -55,6 +56,7 @@ function mount(mode: "sample" | "analysis" = "sample") {
     );
     return save;
 }
+/** Choose the test source and wait until the editing controls are ready. */
 async function load() {
     fireEvent.change(screen.getByLabelText("Project audio file"), {
         target: { value: "test" }

@@ -25,6 +25,7 @@ const AudioAnalysis = React.lazy(() =>
     }))
 );
 
+/** Show the selected mobile workspace view, loading audio tools only when selected. */
 const MobileTabs = ({
     activeProject,
     projectUid,

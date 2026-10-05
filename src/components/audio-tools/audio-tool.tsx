@@ -21,6 +21,7 @@ import {
 } from "./operations";
 import { analysisPlot, binPlot, inspectFrame } from "./plots";
 import { runTool } from "./runner";
+import { checkAudioBytes, readAudioStream } from "./limits";
 import { AnalysisGraph, Waveform } from "./visuals";
 import type { AudioData, Plot, ToolFile } from "./types";
 
@@ -38,6 +39,7 @@ type Result = ToolFile & {
     log: string;
 };
 
+/** Own a preview URL and revoke it when audio changes or the window closes. */
 function useAudioUrl(data?: Uint8Array) {
     const [url, setUrl] = useState<string>();
     useEffect(() => {
@@ -54,6 +56,7 @@ function useAudioUrl(data?: Uint8Array) {
     return url;
 }
 
+/** Provide visual editing or analysis with cancellable loading, previews, and explicit result retention. */
 export default function AudioTool({
     mode,
     sources = [],
@@ -96,21 +99,25 @@ export default function AudioTool({
         []
     );
 
+    /** Abort the active load or worker and restore the controls. */
     const cancel = () => {
         job.current?.abort();
         setBusy("");
         setLoading(false);
     };
+    /** Clear output and feedback when the source or settings change. */
     const resetResult = () => {
         setResult(undefined);
         setSaved("");
         setBins(undefined);
         setError("");
     };
+    /** Update one setting and discard results produced with the old value. */
     const changeSetting = (key: keyof Settings, value: number) => {
         setSettings((current) => ({ ...current, [key]: value }));
         resetResult();
     };
+    /** Read and decode one source within tool limits, ignoring cancelled or superseded loads. */
     const load = async (
         name: string,
         read: (signal: AbortSignal) => Promise<Uint8Array>
@@ -123,18 +130,10 @@ export default function AudioTool({
         resetResult();
         try {
             const bytes = await read(controller.signal);
-            if (bytes.length > 64 * 1024 * 1024)
-                throw new Error("Choose an audio file smaller than 64 MB.");
-            const audio = await decodeAudio(bytes);
+            controller.signal.throwIfAborted();
+            checkAudioBytes(bytes.length);
+            const audio = await decodeAudio(bytes, controller.signal);
             if (controller.signal.aborted) return;
-            if (
-                !audio.channels[0]?.length ||
-                audio.channels.length > 8 ||
-                audio.channels[0].length * audio.channels.length > 16_000_000
-            )
-                throw new Error(
-                    "This file is too large to edit here. Choose a shorter recording with up to 8 channels."
-                );
             const data = encodeAudio(audio);
             setSource({ name, audio, data });
             setRange([0, durationOf(audio)]);
@@ -151,6 +150,7 @@ export default function AudioTool({
             if (!controller.signal.aborted) setLoading(false);
         }
     };
+    /** Apply a local trim or run the selected WASM command, then prepare its visual result. */
     const run = async () => {
         if (!source || active) return;
         const controller = new AbortController();
@@ -212,6 +212,7 @@ export default function AudioTool({
             if (!controller.signal.aborted) setBusy("");
         }
     };
+    /** Load pvlook only when the user requests frequency bins for a spectrum frame. */
     const inspect = async () => {
         if (!result || active) return;
         const controller = new AbortController();
@@ -237,6 +238,7 @@ export default function AudioTool({
             if (!controller.signal.aborted) setBusy("");
         }
     };
+    /** Download the current result and release its temporary URL. */
     const download = () => {
         if (!result) return;
         const url = URL.createObjectURL(new Blob([result.data.slice()]));
@@ -246,6 +248,7 @@ export default function AudioTool({
         anchor.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
+    /** Render a labelled numeric setting with operation-specific bounds. */
     const number = (
         label: string,
         key: keyof Settings,
@@ -268,6 +271,7 @@ export default function AudioTool({
             />
         </label>
     );
+    /** Render a slider that commits changes after dragging to keep interaction smooth. */
     const slider = (
         label: string,
         key: keyof Settings,
@@ -441,12 +445,13 @@ export default function AudioTool({
                         const file = event.target.files?.[0];
                         event.target.value = "";
                         if (file)
-                            void load(file.name, async () => {
-                                if (file.size > 64 * 1024 * 1024)
-                                    throw new Error(
-                                        "Choose an audio file smaller than 64 MB."
-                                    );
-                                return new Uint8Array(await file.arrayBuffer());
+                            void load(file.name, async (signal) => {
+                                checkAudioBytes(file.size);
+                                return readAudioStream(
+                                    file.stream(),
+                                    signal,
+                                    file.size
+                                );
                             });
                     }}
                 />

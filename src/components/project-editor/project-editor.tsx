@@ -957,6 +957,7 @@ const WorkspaceNodeView = ({
     );
 };
 
+/** Show workspace tool launchers and open or focus the selected sidebar tab. */
 const SidebarLaunchers = ({
     maximized,
     leftSidebar,
@@ -1069,6 +1070,7 @@ const SidebarLaunchers = ({
     );
 };
 
+/** Render the responsive project workspace and give visual audio tools enough dock space. */
 const ProjectEditor = ({
     activeProject
 }: {

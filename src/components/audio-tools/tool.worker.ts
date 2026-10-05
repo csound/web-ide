@@ -22,6 +22,7 @@ const urls: Record<ToolName, string> = {
     lpanal,
     envext
 };
+/** Send progress or a final result to the caller without exposing worker state. */
 const send = (message: ToolMessage) => self.postMessage(message);
 self.onmessage = async ({ data }: MessageEvent<ToolRequest>) => {
     try {

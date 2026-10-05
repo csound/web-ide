@@ -109,6 +109,7 @@ const definitions: Record<
     envelope: { tool: "envext", extension: "txt" }
 };
 
+/** Validate active controls and build a Csound request with fixed in-memory filenames. */
 export function makeRequest(
     operation: WasmOperation,
     settings: Settings,
@@ -222,6 +223,7 @@ export function makeRequest(
     };
 }
 
+/** Name a new result after its source, operation, and output format. */
 export function resultFilename(source: string, operation: Operation): string {
     return `${source.replace(/\.[^.]+$/, "")}-${operation}.${operation === "trim" ? "wav" : definitions[operation].extension}`;
 }

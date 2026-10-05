@@ -9,6 +9,7 @@ const request: ToolRequest = {
     output: "out.txt"
 };
 afterEach(() => vi.unstubAllGlobals());
+/** Capture worker creation, messages, and termination without running WASM. */
 function setup() {
     const worker = {
         terminate: vi.fn(),

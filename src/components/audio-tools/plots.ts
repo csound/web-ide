@@ -1,6 +1,7 @@
 import type { AnalysisOperation } from "./operations";
 import type { Plot, ToolRequest } from "./types";
 
+/** Read PVOC-EX frame dimensions and reject missing or truncated chunks. */
 function pvxLayout(bytes: Uint8Array) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     const text = new TextDecoder();
@@ -31,6 +32,7 @@ function pvxLayout(bytes: Uint8Array) {
     return { view, bins, rate, channels, sampleRate, frames, data };
 }
 
+/** Select one PVOC-EX frame for the optional, separately loaded bin inspector. */
 export function inspectFrame(bytes: Uint8Array, seconds: number): ToolRequest {
     const { rate, frames } = pvxLayout(bytes);
     const frame = Math.max(1, Math.min(frames, Math.round(seconds * rate) + 1));
@@ -42,6 +44,7 @@ export function inspectFrame(bytes: Uint8Array, seconds: number): ToolRequest {
     };
 }
 
+/** Convert pvlook frequency/amplitude pairs into a sorted spectrum plot. */
 export function binPlot(bytes: Uint8Array, sampleRate: number): Plot {
     const text = new TextDecoder().decode(bytes);
     const points: [number, number][] = [];
@@ -66,6 +69,7 @@ export function binPlot(bytes: Uint8Array, sampleRate: number): Plot {
     };
 }
 
+/** Read Csound analysis output into bounded plot data; throw for unsupported or incomplete files. */
 export function analysisPlot(
     operation: AnalysisOperation,
     bytes: Uint8Array,
@@ -134,7 +138,14 @@ export function analysisPlot(
         const partials = view.getFloat64(32, true),
             frames = view.getFloat64(40, true);
         const type = view.getFloat64(72, true);
-        if (type !== 1 || 80 + frames * (1 + partials * 2) * 8 > bytes.length)
+        if (
+            type !== 1 ||
+            !Number.isInteger(partials) ||
+            partials < 1 ||
+            !Number.isInteger(frames) ||
+            frames < 1 ||
+            80 + frames * (1 + partials * 2) * 8 > bytes.length
+        )
             throw new Error("Incomplete ATS file.");
         series = Array.from({ length: Math.min(32, partials) }, () => []);
         for (

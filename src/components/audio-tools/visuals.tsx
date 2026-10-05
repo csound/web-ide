@@ -4,6 +4,7 @@ import type { AudioData, Plot } from "./types";
 import { durationOf, waveformPeaks } from "./audio";
 import { spectralPalette } from "../spectral-analyzer/renderer";
 
+/** Redraw a canvas at device resolution when its size or drawing callback changes. */
 function useCanvas(
     draw: (
         context: CanvasRenderingContext2D,
@@ -33,6 +34,7 @@ function useCanvas(
     return { ref, paint };
 }
 
+/** Draw channel peaks and let pointer drags select a time range; numeric fields provide keyboard input. */
 export function Waveform({
     audio,
     range,
@@ -172,6 +174,7 @@ export function Waveform({
     );
 }
 
+/** Draw labelled Csound analysis curves or spectral energy using the current theme. */
 export function AnalysisGraph({ plot }: { plot: Plot }) {
     const theme = useTheme();
     const draw = useCallback(

@@ -16,6 +16,7 @@ const tabs = [
     { label: "Analysis", Icon: StackedLineChart, index: 5 }
 ] as const;
 
+/** Switch between mobile workspace views with labelled, keyboard-accessible buttons. */
 const MobileNavigation = ({
     mobileTabIndex,
     setMobileTabIndex

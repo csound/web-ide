@@ -7,6 +7,7 @@ import {
 } from "@bjorn3/browser_wasi_shim";
 import type { ToolRequest, ToolResult } from "./types";
 
+/** Run one WASI command in an isolated memory filesystem and return its output and bounded log. */
 // The worker owns this filesystem. Tools cannot reach project files or the host.
 export async function executeTool(
     module: WebAssembly.Module,

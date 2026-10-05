@@ -14,6 +14,7 @@ const signal = Float32Array.from(
 );
 const input = encodeAudio({ sampleRate, channels: [signal] });
 const modules = new Map<ToolName, WebAssembly.Module>();
+/** Run the installed WASM binary against the production memory filesystem. */
 async function run(request: ToolRequest) {
     if (!modules.has(request.tool))
         modules.set(
@@ -26,6 +27,7 @@ async function run(request: ToolRequest) {
         );
     return executeTool(modules.get(request.tool)!, request);
 }
+/** Build a repeatable tone-processing request for binary integration checks. */
 const request = (operation: WasmOperation) =>
     makeRequest(
         operation,

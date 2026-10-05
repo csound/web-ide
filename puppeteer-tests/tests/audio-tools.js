@@ -18,6 +18,7 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
     const wasm = [];
     const sample = 'section[aria-label="Sample Editor"]:not([data-testid])';
     const analysis = 'section[aria-label="Audio Analysis"]:not([data-testid])';
+    /** Click the exact labelled button inside one tool window. */
     async function click(section, text) {
         for (const button of await page.$$(`${section} button`)) {
             if (
@@ -30,6 +31,7 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         }
         throw new Error(`Missing button: ${text}`);
     }
+    /** Save an optional screenshot for visual checks. */
     async function snapshot(name) {
         if (!process.env.AUDIO_TOOLS_SCREENSHOTS) return;
         mkdirSync(process.env.AUDIO_TOOLS_SCREENSHOTS, { recursive: true });
@@ -37,11 +39,13 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             path: join(process.env.AUDIO_TOOLS_SCREENSHOTS, `${name}.png`)
         });
     }
+    /** Choose the local tone fixture and wait for its audio preview. */
     async function upload(section) {
         const input = await page.$(`${section} input[type=file]`);
         await input.uploadFile(fixture);
         await page.waitForSelector(`${section} audio[src]`);
     }
+    /** Wait for a named result and fail if the tool reports an error. */
     async function result(section, filename) {
         await page.waitForFunction(
             (selector, name) =>
@@ -98,6 +102,40 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         await page?.close();
         await closeSession();
         if (directory) rmSync(directory, { recursive: true, force: true });
+    });
+    it("keeps View toggles current after opening and closing each audio tool", async () => {
+        for (const [label, section] of [
+            ["Sample Editor", sample],
+            ["Audio Analysis", analysis]
+        ]) {
+            for (const wasOpen of [false, true, false, true]) {
+                await page.locator("span ::-p-text(View)").click();
+                let item;
+                for (const option of await page.$$("[role=menuitem]")) {
+                    if (
+                        await option.evaluate(
+                            (element, name) =>
+                                element.textContent.trim() === name,
+                            label
+                        )
+                    ) {
+                        item = option;
+                        break;
+                    }
+                }
+                assert.ok(item, `Missing View item: ${label}`);
+                const checked = await item.evaluate((element) =>
+                    Boolean(element.querySelector("svg"))
+                );
+                assert.equal(checked, wasOpen);
+                await item.asLocator().click();
+                await page.waitForSelector(
+                    section,
+                    wasOpen ? { hidden: true } : { visible: true }
+                );
+            }
+        }
+        assert.equal(wasm.length, 0);
     });
     it("opens and loads audio without downloading WASM, then fetches only the chosen tool", async () => {
         try {

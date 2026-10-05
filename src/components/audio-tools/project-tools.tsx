@@ -3,11 +3,14 @@ import { storageReference } from "@config/firestore";
 import { useDispatch, useSelector } from "@root/store";
 import { addNonCloudFile, nonCloudFiles } from "../file-tree/actions";
 import { getUniqueFilename } from "../projects/utils";
+import { checkAudioBytes, readAudioStream } from "./limits";
 import AudioTool, { type AudioSource } from "./audio-tool";
 
+/** Identify project files the browser audio loader can accept. */
 const isAudio = (name: string) =>
     /\.(wav|wave|aif|aiff|flac|mp3|ogg|opus|m4a|aac|webm)$/i.test(name);
 
+/** Connect audio sources and explicit result retention to the current project file tree. */
 function ProjectAudioTool({
     projectUid,
     mode
@@ -47,7 +50,15 @@ function ProjectAudioTool({
                         throw new Error(
                             "Could not read the project audio file."
                         );
-                    return new Uint8Array(await response.arrayBuffer());
+                    if (!response.body)
+                        throw new Error(
+                            "Could not read the project audio file."
+                        );
+                    return readAudioStream(
+                        response.body,
+                        signal,
+                        Number(response.headers.get("content-length"))
+                    );
                 }
             })),
         ...generated.filter(isAudio).map((name) => ({
@@ -59,6 +70,7 @@ function ProjectAudioTool({
                     throw new Error(
                         "This generated file is no longer available."
                     );
+                checkAudioBytes(file.buffer.length);
                 return file.buffer.slice();
             }
         }))
@@ -89,9 +101,11 @@ function ProjectAudioTool({
     );
 }
 
+/** Open the sample editor with project audio sources and a separate result file. */
 export function SampleEditor({ projectUid }: { projectUid: string }) {
     return <ProjectAudioTool projectUid={projectUid} mode="sample" />;
 }
+/** Open file analysis with project audio sources and downloadable Csound data. */
 export function AudioAnalysis({ projectUid }: { projectUid: string }) {
     return <ProjectAudioTool projectUid={projectUid} mode="analysis" />;
 }

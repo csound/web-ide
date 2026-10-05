@@ -1,11 +1,18 @@
 import { rawToWave, readWave } from "../csound/wave-files";
 import type { AudioData } from "./types";
+import { checkAudioBytes, checkAudioLayout } from "./limits";
 
+/** Return the shared channel duration in seconds. */
 export const durationOf = (audio: AudioData) =>
     audio.channels[0].length / audio.sampleRate;
 
-export function decodeWave(bytes: Uint8Array): AudioData {
+/** Validate WAV metadata, then convert in blocks so file loading can yield and cancel. */
+function* waveDecoder(bytes: Uint8Array): Generator<void, AudioData> {
+    checkAudioBytes(bytes.length);
     const wave = readWave(bytes);
+    checkAudioLayout(wave.frames, wave.channels);
+    if (wave.format === 3 && ![32, 64].includes(wave.bits))
+        throw new Error("Unsupported WAV sample format.");
     const view = new DataView(
         wave.data.buffer,
         wave.data.byteOffset,
@@ -17,6 +24,7 @@ export function decodeWave(bytes: Uint8Array): AudioData {
     );
     const step = wave.bits / 8;
     for (let frame = 0; frame < wave.frames; frame++) {
+        if (frame % 65536 === 0) yield;
         for (let channel = 0; channel < wave.channels; channel++) {
             const offset = (frame * wave.channels + channel) * step;
             let sample: number;
@@ -44,27 +52,69 @@ export function decodeWave(bytes: Uint8Array): AudioData {
     return { channels, sampleRate: wave.sampleRate };
 }
 
-export async function decodeAudio(bytes: Uint8Array): Promise<AudioData> {
-    try {
-        // Preserve the native rate for WAV, regardless of the audio device's rate.
-        return decodeWave(bytes);
-    } catch {
-        const context = new AudioContext();
-        try {
-            const buffer = await context.decodeAudioData(bytes.slice().buffer);
-            return {
-                sampleRate: buffer.sampleRate,
-                channels: Array.from(
-                    { length: buffer.numberOfChannels },
-                    (_, index) => buffer.getChannelData(index).slice()
-                )
-            };
-        } finally {
-            await context.close();
+/** Decode a bounded PCM WAV without changing its sample rate. */
+export function decodeWave(bytes: Uint8Array): AudioData {
+    const decoder = waveDecoder(bytes);
+    let step = decoder.next();
+    while (!step.done) step = decoder.next();
+    return step.value;
+}
+
+/** Load WAV in cancellable blocks; use the browser decoder for other audio formats.
+ * Browser decoding cannot impose a PCM allocation cap. Check its output before
+ * copying channels, and close its context on cancellation to release resources.
+ */
+export async function decodeAudio(
+    bytes: Uint8Array,
+    signal: AbortSignal = new AbortController().signal
+): Promise<AudioData> {
+    signal.throwIfAborted();
+    checkAudioBytes(bytes.length);
+    const signature = new TextDecoder().decode(bytes.subarray(0, 12));
+    if (signature.startsWith("RIFF") && signature.endsWith("WAVE")) {
+        // Do not send invalid or oversized WAV to the browser decoder as a fallback.
+        const decoder = waveDecoder(bytes);
+        let step = decoder.next();
+        while (!step.done) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+            signal.throwIfAborted();
+            step = decoder.next();
         }
+        return step.value;
+    }
+    const context = new AudioContext();
+    let closed: Promise<void> | undefined;
+    const close = () => (closed ??= context.close());
+    let abort: () => void = () => {};
+    try {
+        const cancelled = new Promise<never>((_, reject) => {
+            abort = () => {
+                void close().catch(() => {});
+                reject(signal.reason);
+            };
+            signal.addEventListener("abort", abort, { once: true });
+        });
+        const buffer = await Promise.race([
+            context.decodeAudioData(bytes.slice().buffer),
+            cancelled
+        ]);
+        signal.throwIfAborted();
+        checkAudioLayout(buffer.length, buffer.numberOfChannels);
+        return {
+            sampleRate: buffer.sampleRate,
+            channels: Array.from(
+                { length: buffer.numberOfChannels },
+                (_, index) => buffer.getChannelData(index).slice()
+            )
+        };
+    } finally {
+        signal.removeEventListener("abort", abort);
+        // Do not hold cancellation hostage to a browser's native decoder shutdown.
+        void close().catch(() => {});
     }
 }
 
+/** Write float WAV frames for a selected interval and optional single channel. */
 export function encodeAudio(
     audio: AudioData,
     range: [number, number] = [0, durationOf(audio)],
@@ -99,6 +149,7 @@ export function encodeAudio(
     return rawToWave(bytes, audio.sampleRate, channels.length, "float", 1);
 }
 
+/** Reduce every channel to min/max pairs for a bounded waveform preview. */
 export function waveformPeaks(
     audio: AudioData,
     columns = 800
