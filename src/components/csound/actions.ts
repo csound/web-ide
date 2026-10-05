@@ -20,8 +20,7 @@ import {
     renderFilename,
     renderOptions,
     validateRenderSettings,
-    withPerformanceOptions,
-    withRenderScore
+    withPerformanceOptions
 } from "./render-settings";
 
 export let csoundInstance: CsoundObj;
@@ -375,13 +374,7 @@ export async function runPerformance({
             await csound.fs.writeFile(
                 csdPath,
                 new TextEncoder().encode(
-                    withPerformanceOptions(
-                        withRenderScore(
-                            document.currentValue,
-                            renderSettings.score
-                        ),
-                        overrides
-                    )
+                    withPerformanceOptions(document.currentValue, overrides)
                 )
             );
         }
@@ -390,10 +383,7 @@ export async function runPerformance({
                 ? await compileCSD(
                       csound,
                       renderSettings
-                          ? withPerformanceOptions(
-                                withRenderScore(csdText, renderSettings.score),
-                                overrides
-                            )
+                          ? withPerformanceOptions(csdText, overrides)
                           : csdText,
                       true
                   )

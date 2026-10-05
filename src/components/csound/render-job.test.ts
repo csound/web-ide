@@ -59,7 +59,6 @@ beforeEach(() => {
             bitDepth: "24",
             quality: 0.6
         },
-        scores: {},
         combine: false,
         splitChannels: false,
         signal: new AbortController().signal,
@@ -89,8 +88,7 @@ describe("render job", () => {
         await renderJob({
             ...job,
             combine: true,
-            settings: { ...job.settings, bitDepth: "16", dither: true },
-            scores: { first: "i1 0 1\ne" }
+            settings: { ...job.settings, bitDepth: "16", dither: true }
         });
         const calls = vi
             .mocked(runPerformance)
@@ -98,14 +96,12 @@ describe("render job", () => {
         expect(calls).toHaveLength(3);
         expect(calls[0].renderSettings).toMatchObject({
             bitDepth: "double",
-            dither: false,
-            score: "i1 0 1\ne"
+            dither: false
         });
         expect(readWave(calls[2].inputFiles![0].data).frames).toBe(8);
         expect(calls[2].renderSettings).toMatchObject({
             bitDepth: "16",
             dither: true,
-            score: undefined,
             orchestraMacros: undefined,
             scoreMacros: undefined
         });

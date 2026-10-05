@@ -10,7 +10,6 @@ export type RenderJob = {
     projectUid: string;
     documents: IDocument[];
     settings: RenderSettings;
-    scores: Record<string, string>;
     combine: boolean;
     splitChannels: boolean;
     signal: AbortSignal;
@@ -62,7 +61,6 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
                     channels: wave.channels,
                     sampleRate: wave.sampleRate,
                     ksmps: 1,
-                    score: undefined,
                     orchestraMacros: undefined,
                     scoreMacros: undefined
                 }
@@ -91,15 +89,10 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
                 `Rendering ${index + 1} of ${job.documents.length}: ${doc.filename}`
             );
             const intermediate = job.combine || job.splitChannels;
-            const score = job.scores[doc.documentUid];
             const csd = /\.csd$/i.test(doc.filename);
             const result = await perform({
                 projectUid: job.projectUid,
                 csdPath: csd ? documentPath(doc, project.documents) : undefined,
-                csdText:
-                    !csd && score !== undefined
-                        ? `<CsoundSynthesizer>\n<CsInstruments>\n${doc.currentValue}\n</CsInstruments>\n<CsScore>\n${score}\n</CsScore>\n</CsoundSynthesizer>`
-                        : undefined,
                 orc: doc.currentValue,
                 collectFiles: false,
                 mode: "render",
@@ -108,8 +101,7 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
                     ...job.settings,
                     ...(intermediate
                         ? { format: "wav", bitDepth: "double", dither: false }
-                        : {}),
-                    score
+                        : {})
                 }
             });
             if (!result.audio)

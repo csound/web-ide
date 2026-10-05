@@ -20,7 +20,7 @@ import { closeModal } from "@comp/modal/actions";
 import { nonCloudFiles } from "@comp/file-tree/actions";
 import { outputNameFromCsd } from "./actions";
 import { FieldLabel } from "./render-field";
-import { RenderAdvanced } from "./render-advanced";
+import { RenderMacros } from "./render-macros";
 import { renderJob } from "./render-job";
 import {
     selectPlaybackMode,
@@ -227,7 +227,6 @@ export function RenderDialog({
     );
     const [combine, setCombine] = useState(false);
     const [splitChannels, setSplitChannels] = useState(false);
-    const [scores, setScores] = useState<Record<string, string>>({});
     const [progress, setProgress] = useState("");
     const chosen = tracks.filter((doc) => selected.has(doc.documentUid));
     const [settings, setSettings] = useState<RenderSettings>(() => ({
@@ -296,7 +295,6 @@ export function RenderDialog({
                 projectUid,
                 documents: chosen,
                 settings,
-                scores,
                 combine,
                 splitChannels,
                 signal: controller.signal,
@@ -748,12 +746,9 @@ export function RenderDialog({
                                 stays unchanged.
                             </p>
                         </div>
-                        <RenderAdvanced
-                            documents={chosen}
+                        <RenderMacros
                             settings={settings}
                             onSettings={setSettings}
-                            scores={scores}
-                            onScores={setScores}
                         />
                         <FormControlLabel
                             className="bell"

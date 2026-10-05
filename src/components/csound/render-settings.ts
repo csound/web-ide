@@ -10,7 +10,6 @@ export type RenderSettings = {
     dither?: boolean;
     orchestraMacros?: string;
     scoreMacros?: string;
-    score?: string;
 };
 
 export function validateRenderSettings(
@@ -64,13 +63,6 @@ export function validateRenderSettings(
     } catch (error) {
         return (error as Error).message;
     }
-    if (
-        settings.score &&
-        /<\/?Cs(?:Score|Instruments|Options|oundSynthesizer)\b/i.test(
-            settings.score
-        )
-    )
-        return "Enter score statements only, without CSD section tags.";
     return undefined;
 }
 
@@ -139,23 +131,6 @@ export function macroOptions(text = "", scope: "o" | "s"): string[] {
             names.add(match[1]);
             return `--${scope}macro:${match[1]}=${match[2]}`;
         });
-}
-
-export function scoreFromCsd(source: string): string | undefined {
-    return source.match(/<CsScore\s*>([\s\S]*?)<\/CsScore>/i)?.[1].trim();
-}
-
-export function withRenderScore(source: string, score?: string): string {
-    if (score === undefined) return source;
-    if (/<CsScore\b[^>]*>[\s\S]*?<\/CsScore>/i.test(source))
-        return source.replace(
-            /<CsScore\b[^>]*>[\s\S]*?<\/CsScore>/i,
-            () => `<CsScore>\n${score}\n</CsScore>`
-        );
-    return source.replace(
-        /<\/CsoundSynthesizer>/i,
-        () => `<CsScore>\n${score}\n</CsScore>\n</CsoundSynthesizer>`
-    );
 }
 
 // Append run-only overrides so source CsOptions cannot take precedence.

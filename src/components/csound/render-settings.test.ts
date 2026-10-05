@@ -2,8 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
     macroOptions,
     renderOptions,
-    validateRenderSettings,
-    withRenderScore
+    validateRenderSettings
 } from "./render-settings";
 const settings = {
     filename: "piece",
@@ -40,14 +39,5 @@ describe("advanced render settings", () => {
         expect(
             validateRenderSettings({ ...settings, orchestraMacros: value })
         ).toBeTruthy();
-    });
-    it("replaces the score verbatim including macros and section statements", () => {
-        const source =
-            '<CsoundSynthesizer><CsInstruments>instr 1\nendin</CsInstruments><CsScore bin="generator">original</CsScore></CsoundSynthesizer>';
-        const score = "a 0 0 32\ni1 32 $DUR\ns\ni1 0 4\ne 0 12";
-        const rendered = withRenderScore(source, score);
-        expect(rendered).toContain(`<CsScore>\n${score}\n</CsScore>`);
-        expect(rendered).not.toContain('bin="generator"');
-        expect(source).toContain("original");
     });
 });
