@@ -65,23 +65,34 @@ function packWave(wave: Wave, chunks: Uint8Array[]): Uint8Array {
         throw new Error(
             "This combined export exceeds 512 MB. Render fewer tracks at a time."
         );
-    const bytes = new Uint8Array(44 + size + (size % 2));
+    const floatingPoint = wave.format === 3;
+    const formatSize = floatingPoint ? 18 : 16;
+    const dataOffset = 20 + formatSize + (floatingPoint ? 12 : 0);
+    const frameBytes = (wave.channels * wave.bits) / 8;
+    const bytes = new Uint8Array(dataOffset + 8 + size + (size % 2));
     const view = new DataView(bytes.buffer);
     const writeText = (offset: number, value: string) =>
         bytes.set(new TextEncoder().encode(value), offset);
     writeText(0, "RIFF");
     view.setUint32(4, bytes.length - 8, true);
     writeText(8, "WAVEfmt ");
-    view.setUint32(16, 16, true);
+    view.setUint32(16, formatSize, true);
     view.setUint16(20, wave.format, true);
     view.setUint16(22, wave.channels, true);
     view.setUint32(24, wave.sampleRate, true);
-    view.setUint32(28, (wave.sampleRate * wave.channels * wave.bits) / 8, true);
-    view.setUint16(32, (wave.channels * wave.bits) / 8, true);
+    view.setUint32(28, wave.sampleRate * frameBytes, true);
+    view.setUint16(32, frameBytes, true);
     view.setUint16(34, wave.bits, true);
-    writeText(36, "data");
-    view.setUint32(40, size, true);
-    let offset = 44;
+    if (floatingPoint) {
+        view.setUint16(36, 0, true); // WAVEFORMATEX cbSize: no extra format data.
+        writeText(38, "fact");
+        view.setUint32(42, 4, true);
+        // Derive the frame count from all output data, including joined tracks.
+        view.setUint32(46, size / frameBytes, true);
+    }
+    writeText(dataOffset, "data");
+    view.setUint32(dataOffset + 4, size, true);
+    let offset = dataOffset + 8;
     for (const chunk of chunks) {
         bytes.set(chunk, offset);
         offset += chunk.length;

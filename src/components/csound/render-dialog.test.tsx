@@ -173,6 +173,27 @@ describe("render dialog", () => {
             screen.getByRole("button", { name: "Render audio" })
         ).toBeTruthy();
     });
+    it("keeps completed files available when the bell fails", async () => {
+        ring.mockImplementationOnce(() => {
+            throw new Error("Audio context failed");
+        });
+        fireEvent.click(
+            screen.getByRole("checkbox", {
+                name: "Play a bell when rendering finishes"
+            })
+        );
+        fireEvent.click(screen.getByRole("button", { name: "Render audio" }));
+        await screen.findByText("Render complete");
+        expect(
+            screen.getByRole("button", { name: "Download audio" })
+        ).toBeTruthy();
+        expect(screen.queryByRole("alert")).toBeNull();
+        expect(
+            screen.queryByRole("button", { name: "Render audio" })
+        ).toBeNull();
+        expect(renderJob).toHaveBeenCalledOnce();
+        expect(close).toHaveBeenCalledOnce();
+    });
     it("cancels through the run signal without ringing", async () => {
         vi.mocked(renderJob).mockImplementationOnce(
             ({ signal }) =>

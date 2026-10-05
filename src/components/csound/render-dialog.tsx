@@ -320,8 +320,18 @@ export function RenderDialog({
             controller.signal.throwIfAborted();
             setFiles(result);
             setPhase("completed");
-            notification.current?.ring();
+            const completionBell = notification.current;
             notification.current = undefined;
+            try {
+                completionBell?.ring();
+            } catch {
+                // A failed notification must not hide completed exports.
+                try {
+                    completionBell?.close();
+                } catch {
+                    /* Audio cleanup is optional too. */
+                }
+            }
         } catch (cause) {
             setError(
                 controller.signal.aborted

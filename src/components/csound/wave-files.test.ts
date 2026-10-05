@@ -10,6 +10,78 @@ import {
 const stereo = () =>
     rawToWave(new Uint8Array([1, 0, 11, 0, 2, 0, 12, 0]), 48000, 2, "16", 1);
 describe("WAV export", () => {
+    it.each(["float", "double"])(
+        "writes complete %s headers for direct, joined, and split exports",
+        (bitDepth) => {
+            const samples =
+                bitDepth === "float"
+                    ? new Float32Array([0.25, -0.5, 0.75, -1])
+                    : new Float64Array([0.25, -0.5, 0.75, -1]);
+            const direct = rawToWave(
+                new Uint8Array(samples.buffer),
+                48000,
+                2,
+                bitDepth,
+                1
+            );
+            const joined = joinWaves([direct, direct]);
+            const outputs = [
+                { bytes: direct, frames: 2, channels: 2 },
+                { bytes: joined, frames: 4, channels: 2 },
+                ...splitWave(joined).map((bytes) => ({
+                    bytes,
+                    frames: 4,
+                    channels: 1
+                }))
+            ];
+            for (const { bytes, frames, channels } of outputs) {
+                const view = new DataView(bytes.buffer);
+                const tag = (offset: number) =>
+                    new TextDecoder().decode(
+                        bytes.subarray(offset, offset + 4)
+                    );
+                expect(view.getUint32(4, true)).toBe(bytes.length - 8);
+                expect(tag(12)).toBe("fmt ");
+                expect(view.getUint32(16, true)).toBe(18);
+                expect(view.getUint16(20, true)).toBe(3);
+                expect(view.getUint16(36, true)).toBe(0);
+                expect(tag(38)).toBe("fact");
+                expect(view.getUint32(42, true)).toBe(4);
+                expect(view.getUint32(46, true)).toBe(frames);
+                expect(tag(50)).toBe("data");
+                expect(view.getUint32(54, true)).toBe(
+                    frames * channels * samples.BYTES_PER_ELEMENT
+                );
+                expect(bytes.length).toBe(
+                    58 + frames * channels * samples.BYTES_PER_ELEMENT
+                );
+                expect(readWave(bytes)).toMatchObject({
+                    frames,
+                    channels,
+                    format: 3
+                });
+            }
+            expect(readWave(direct).data).toEqual(
+                new Uint8Array(samples.buffer)
+            );
+        }
+    );
+    it("keeps the compact PCM header and pads odd-sized data", () => {
+        const bytes = rawToWave(
+            new Uint8Array([128, 0, 255]),
+            44100,
+            1,
+            "8",
+            1
+        );
+        const view = new DataView(bytes.buffer);
+        expect(bytes.length).toBe(48);
+        expect(view.getUint32(4, true)).toBe(40);
+        expect(view.getUint32(16, true)).toBe(16);
+        expect(new TextDecoder().decode(bytes.subarray(36, 40))).toBe("data");
+        expect(view.getUint32(40, true)).toBe(3);
+        expect([...bytes.subarray(44)]).toEqual([128, 0, 255, 0]);
+    });
     it("writes one valid header and preserves PCM frames", () => {
         const bytes = stereo();
         expect(new DataView(bytes.buffer).getUint32(4, true)).toBe(
