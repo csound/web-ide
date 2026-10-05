@@ -371,6 +371,26 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         },
                         checked: isSpectralAnalyzerVisible
                     },
+                    ...(
+                        [
+                            ["sampleEditor", "Sample Editor"],
+                            ["audioAnalysis", "Audio Analysis"]
+                        ] as const
+                    ).map(([type, label]) => {
+                        const tab = projectEditorState.bottomSidebar?.tabs.find(
+                            (item: IWorkspaceTab) => item.type === type
+                        );
+                        return {
+                            label,
+                            checked: Boolean(tab),
+                            callback: () =>
+                                dispatch(
+                                    tab
+                                        ? closeSidebarTab("bottom", tab.id)
+                                        : openSidebarTab("bottom", type)
+                                )
+                        };
+                    }),
                     {
                         label: "Virtual Midi Keyboard",
                         callback: () => {

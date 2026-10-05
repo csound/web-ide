@@ -14,6 +14,17 @@ import {
 import * as SS from "./styles";
 import { useReadlineRequest } from "@comp/console/readline";
 
+const SampleEditor = React.lazy(() =>
+    import("@comp/audio-tools/project-tools").then((module) => ({
+        default: module.SampleEditor
+    }))
+);
+const AudioAnalysis = React.lazy(() =>
+    import("@comp/audio-tools/project-tools").then((module) => ({
+        default: module.AudioAnalysis
+    }))
+);
+
 const MobileTabs = ({
     activeProject,
     projectUid,
@@ -110,6 +121,16 @@ const MobileTabs = ({
                         mobileConsole
                     ) : mobileTabIndex === 3 ? (
                         mobileManual
+                    ) : mobileTabIndex === 4 || mobileTabIndex === 5 ? (
+                        <React.Suspense
+                            fallback={<p role="status">Opening audio tools…</p>}
+                        >
+                            {mobileTabIndex === 4 ? (
+                                <SampleEditor projectUid={projectUid} />
+                            ) : (
+                                <AudioAnalysis projectUid={projectUid} />
+                            )}
+                        </React.Suspense>
                     ) : undefined}
                 </div>
                 <MobileNavigation

@@ -3,13 +3,17 @@ import AutoStoriesRoundedIcon from "@mui/icons-material/AutoStoriesRounded";
 import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
 import AccountTree from "@mui/icons-material/AccountTree";
 import CodeRounded from "@mui/icons-material/CodeRounded";
+import ContentCut from "@mui/icons-material/ContentCut";
+import StackedLineChart from "@mui/icons-material/StackedLineChart";
 import * as SS from "./styles";
 
 const tabs = [
     { label: "Edit", Icon: CodeRounded, index: 0 },
     { label: "Files", Icon: AccountTree, index: 1 },
     { label: "Console", Icon: ListAltRoundedIcon, index: 2 },
-    { label: "Manual", Icon: AutoStoriesRoundedIcon, index: 3 }
+    { label: "Manual", Icon: AutoStoriesRoundedIcon, index: 3 },
+    { label: "Samples", Icon: ContentCut, index: 4 },
+    { label: "Analysis", Icon: StackedLineChart, index: 5 }
 ] as const;
 
 const MobileNavigation = ({
