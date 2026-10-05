@@ -68,15 +68,22 @@ describe(`Editor [${targetName}]`, () => {
     });
 
     it("runs and produces console output", async () => {
-        const btn = await findRunButton(page);
-        assert.ok(btn, "Run button not found");
-        await openConsolePanel(page);
-        const consoleOutput = await page.$('[data-testid="console-output"]');
-        assert.ok(consoleOutput, "Console panel not mounted before run");
-        const beforeLength = await getConsoleOutputLength(page);
-        await btn.click();
-        await waitForConsoleOutputGrowth(page, beforeLength);
-        await waitForConsoleOutput(page);
+        try {
+            await openConsolePanel(page);
+            const consoleOutput = await page.$(
+                '[data-testid="console-output"]'
+            );
+            assert.ok(consoleOutput, "Console panel not mounted before run");
+            const beforeLength = await getConsoleOutputLength(page);
+            // Wait for the actual button to be enabled and stable before clicking.
+            // Its wrapper can exist while project documents are still loading.
+            await page.locator('[data-testid="run-button-native"]').click();
+            await waitForConsoleOutputGrowth(page, beforeLength);
+            await waitForConsoleOutput(page);
+        } catch (err) {
+            await dumpDebugInfo(page, "editor-playback-failure");
+            throw err;
+        }
     });
 
     it(

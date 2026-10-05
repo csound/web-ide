@@ -8,6 +8,7 @@ import {
     IconButton,
     InputAdornment,
     LinearProgress,
+    Link,
     TextField
 } from "@mui/material";
 import CloseRounded from "@mui/icons-material/CloseRounded";
@@ -832,6 +833,38 @@ export function RenderDialog({
                                 stays unchanged.
                             </p>
                         </div>
+                        {settings.format === "mp3" && (
+                            <details>
+                                <summary>Metadata</summary>
+                                <div className="advanced-body">
+                                    <Alert severity="warning" role="note">
+                                        MP3 metadata editing is unsupported here
+                                        until libsndfile{" "}
+                                        <Link
+                                            href="https://github.com/libsndfile/libsndfile/pull/1028"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            color="inherit"
+                                        >
+                                            PR #1028
+                                        </Link>{" "}
+                                        is merged and released in the version
+                                        Csound uses. It adds missing copyright
+                                        tags. Non-ASCII text also has a separate
+                                        encoding issue, tracked in{" "}
+                                        <Link
+                                            href="https://github.com/libsndfile/libsndfile/issues/915"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            color="inherit"
+                                        >
+                                            issue #915
+                                        </Link>
+                                        .
+                                    </Alert>
+                                </div>
+                            </details>
+                        )}
                         <RenderMacros
                             settings={settings}
                             onSettings={setSettings}
