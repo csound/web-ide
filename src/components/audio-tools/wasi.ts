@@ -6,6 +6,7 @@ import {
     PreopenDirectory
 } from "@bjorn3/browser_wasi_shim";
 import type { ToolRequest, ToolResult } from "./types";
+import { OutputFile } from "./output-file";
 
 /** Run one WASI command in an isolated memory filesystem and return its output and bounded log. */
 // The worker owns this filesystem. Tools cannot reach project files or the host.
@@ -14,9 +15,16 @@ export async function executeTool(
     request: ToolRequest
 ): Promise<ToolResult> {
     const files = new Map(
-        request.files.map(({ name, data }) => [name, new File(data)])
+        request.files.map(({ name, data }) => {
+            // The request already owns a worker copy. Reuse it for read-only input.
+            const file = new File([], { readonly: true });
+            file.data = data;
+            return [name, file] as const;
+        })
     );
-    const stdout = new File([]);
+    const stdout = new OutputFile();
+    if (request.output !== "stdout")
+        files.set(request.output, new OutputFile());
     const directory = new PreopenDirectory("/", files);
     let log = "";
     const decoder = new TextDecoder();
@@ -25,7 +33,7 @@ export async function executeTool(
         [],
         [
             new OpenFile(new File([])),
-            new OpenFile(stdout),
+            stdout.path_open(0, BigInt(0), 0).fd_obj,
             new ConsoleStdout((bytes) => {
                 // Keep a bounded tail even for verbose, long-running analyses.
                 log = (log + decoder.decode(bytes, { stream: true })).slice(

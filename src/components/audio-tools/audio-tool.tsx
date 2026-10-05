@@ -8,7 +8,7 @@ import UploadFileRounded from "@mui/icons-material/UploadFileRounded";
 import DownloadRounded from "@mui/icons-material/DownloadRounded";
 import SaveRounded from "@mui/icons-material/SaveRounded";
 import GraphicEqRounded from "@mui/icons-material/GraphicEqRounded";
-import { decodeAudio, decodeWave, durationOf, encodeAudio } from "./audio";
+import { decodeAudio, durationOf, encodeAudioAsync } from "./audio";
 import {
     analysisOperations,
     defaultSettings,
@@ -48,7 +48,7 @@ function useAudioUrl(data?: Uint8Array) {
             return;
         }
         const next = URL.createObjectURL(
-            new Blob([data.slice()], { type: "audio/wav" })
+            new Blob([data], { type: "audio/wav" })
         );
         setUrl(next);
         return () => URL.revokeObjectURL(next);
@@ -134,7 +134,8 @@ export default function AudioTool({
             checkAudioBytes(bytes.length);
             const audio = await decodeAudio(bytes, controller.signal);
             if (controller.signal.aborted) return;
-            const data = encodeAudio(audio);
+            const data = await encodeAudioAsync(audio, controller.signal);
+            if (controller.signal.aborted) return;
             setSource({ name, audio, data });
             setRange([0, durationOf(audio)]);
             setChannel(0);
@@ -158,14 +159,27 @@ export default function AudioTool({
         resetResult();
         setBusy("Preparing audio…");
         try {
-            const data = analysis
-                ? encodeAudio(source.audio, [0, duration], channel)
-                : source.data;
+            const data =
+                analysis && source.audio.channels.length > 1
+                    ? await encodeAudioAsync(
+                          source.audio,
+                          controller.signal,
+                          [0, duration],
+                          channel
+                      )
+                    : source.data;
             // extractor in wasm-bin beta27 skips a buffered block and mishandles
             // channels. Copy the selected frames directly to keep trims exact.
             const output =
                 operation === "trim"
-                    ? { data: encodeAudio(source.audio, range), log: "" }
+                    ? {
+                          data: await encodeAudioAsync(
+                              source.audio,
+                              controller.signal,
+                              range
+                          ),
+                          log: ""
+                      }
                     : await runTool(
                           makeRequest(
                               operation,
@@ -198,7 +212,9 @@ export default function AudioTool({
                         "The analysis file is ready, but its plot could not be drawn."
                     );
                 }
-            } else next.audio = decodeWave(output.data);
+            } else
+                next.audio = await decodeAudio(output.data, controller.signal);
+            if (controller.signal.aborted) return;
             setResult(next);
             setPreview("result");
         } catch (failure) {
@@ -241,7 +257,7 @@ export default function AudioTool({
     /** Download the current result and release its temporary URL. */
     const download = () => {
         if (!result) return;
-        const url = URL.createObjectURL(new Blob([result.data.slice()]));
+        const url = URL.createObjectURL(new Blob([result.data]));
         const anchor = document.createElement("a");
         anchor.href = url;
         anchor.download = result.name;

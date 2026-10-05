@@ -23,7 +23,14 @@ const urls: Record<ToolName, string> = {
     envext
 };
 /** Send progress or a final result to the caller without exposing worker state. */
-const send = (message: ToolMessage) => self.postMessage(message);
+const send = (message: ToolMessage) => {
+    const transfer =
+        message.type === "result" &&
+        message.result.data.buffer instanceof ArrayBuffer
+            ? [message.result.data.buffer]
+            : [];
+    self.postMessage(message, { transfer });
+};
 self.onmessage = async ({ data }: MessageEvent<ToolRequest>) => {
     try {
         send({ type: "status", text: "Loading audio tool…" });

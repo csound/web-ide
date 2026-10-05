@@ -1,4 +1,4 @@
-import { rawToWave, readWave } from "../csound/wave-files";
+import { readWave } from "../csound/wave-files";
 import type { AudioData } from "./types";
 import { checkAudioBytes, checkAudioLayout } from "./limits";
 
@@ -114,19 +114,28 @@ export async function decodeAudio(
     }
 }
 
-/** Write float WAV frames for a selected interval and optional single channel. */
-export function encodeAudio(
+/** Pack one float WAV buffer in blocks, keeping selection and channel order exact. */
+function* waveEncoder(
     audio: AudioData,
-    range: [number, number] = [0, durationOf(audio)],
+    range: [number, number],
     channel?: number
-): Uint8Array {
+): Generator<void, Uint8Array> {
+    if (
+        !Number.isInteger(audio.sampleRate) ||
+        audio.sampleRate <= 0 ||
+        !audio.channels.length ||
+        audio.channels.some(
+            (samples) => samples.length !== audio.channels[0].length
+        )
+    )
+        throw new Error("Invalid audio layout.");
     if (
         range.some((value) => !Number.isFinite(value)) ||
         range[0] < 0 ||
         range[1] > durationOf(audio) + 0.001
     )
         throw new Error("Choose a valid audio range.");
-    const first = Math.max(0, Math.round(range[0] * audio.sampleRate));
+    const first = Math.round(range[0] * audio.sampleRate);
     const end = Math.min(
         audio.channels[0].length,
         Math.round(range[1] * audio.sampleRate)
@@ -135,18 +144,71 @@ export function encodeAudio(
         channel === undefined ? audio.channels : [audio.channels[channel]];
     if (end <= first || channels.some((value) => !value))
         throw new Error("Select a non-empty audio range.");
-    const bytes = new Uint8Array((end - first) * channels.length * 4);
+    checkAudioLayout(end - first, channels.length);
+    yield;
+    // WAVEFORMATEX float header plus fact and data chunks. Write directly into
+    // the final buffer instead of copying a separate PCM buffer into a WAV.
+    const bytes = new Uint8Array(58 + (end - first) * channels.length * 4);
     const view = new DataView(bytes.buffer);
+    const text = (offset: number, value: string) =>
+        bytes.set(new TextEncoder().encode(value), offset);
+    text(0, "RIFF");
+    view.setUint32(4, bytes.length - 8, true);
+    text(8, "WAVEfmt ");
+    view.setUint32(16, 18, true);
+    view.setUint16(20, 3, true);
+    view.setUint16(22, channels.length, true);
+    view.setUint32(24, audio.sampleRate, true);
+    view.setUint32(28, audio.sampleRate * channels.length * 4, true);
+    view.setUint16(32, channels.length * 4, true);
+    view.setUint16(34, 32, true);
+    text(38, "fact");
+    view.setUint32(42, 4, true);
+    view.setUint32(46, end - first, true);
+    text(50, "data");
+    view.setUint32(54, bytes.length - 58, true);
+    const blockFrames = Math.max(1, Math.floor(65536 / channels.length));
     for (let frame = first; frame < end; frame++) {
+        if (frame > first && (frame - first) % blockFrames === 0) yield;
         for (let index = 0; index < channels.length; index++) {
             view.setFloat32(
-                ((frame - first) * channels.length + index) * 4,
+                58 + ((frame - first) * channels.length + index) * 4,
                 channels[index][frame],
                 true
             );
         }
     }
-    return rawToWave(bytes, audio.sampleRate, channels.length, "float", 1);
+    return bytes;
+}
+
+/** Encode synchronously for small fixtures and non-interactive callers. UI callers use encodeAudioAsync. */
+export function encodeAudio(
+    audio: AudioData,
+    range: [number, number] = [0, durationOf(audio)],
+    channel?: number
+): Uint8Array {
+    const encoder = waveEncoder(audio, range, channel);
+    let step = encoder.next();
+    while (!step.done) step = encoder.next();
+    return step.value;
+}
+
+/** Yield between encoding blocks and stop before publishing cancelled output. */
+export async function encodeAudioAsync(
+    audio: AudioData,
+    signal: AbortSignal,
+    range: [number, number] = [0, durationOf(audio)],
+    channel?: number
+): Promise<Uint8Array> {
+    signal.throwIfAborted();
+    const encoder = waveEncoder(audio, range, channel);
+    let step = encoder.next();
+    while (!step.done) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        signal.throwIfAborted();
+        step = encoder.next();
+    }
+    return step.value;
 }
 
 /** Reduce every channel to min/max pairs for a bounded waveform preview. */

@@ -1,4 +1,6 @@
 import type { ToolName, ToolRequest } from "./types";
+import { readWave } from "../csound/wave-files";
+import { checkAudioLayout } from "./limits";
 
 export type SampleOperation =
     | "trim"
@@ -163,6 +165,14 @@ export function makeRequest(
             "Use whole numbers for sample rate, frequency detail, harmonics, and poles."
         );
     const { tool, extension } = definitions[operation];
+    if (operation === "resample") {
+        const wave = readWave(input);
+        // Reject oversized output before downloading or running the resampler.
+        checkAudioLayout(
+            Math.ceil((wave.frames * settings.rate) / wave.sampleRate),
+            wave.channels
+        );
+    }
     const output = `result.${extension}`;
     const args: Record<WasmOperation, string[]> = {
         gain: [

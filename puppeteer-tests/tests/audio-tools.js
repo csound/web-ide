@@ -1,6 +1,12 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import {
+    mkdtempSync,
+    mkdirSync,
+    writeFileSync,
+    readFileSync,
+    rmSync
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getSession, closeSession } from "../utils/session.js";
@@ -190,6 +196,48 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             await dumpDebugInfo(page, "audio-tools-sample");
             throw error;
         }
+    });
+    it("cancels preparation at the 16-million-sample limit and can open another file", async () => {
+        const path = join(directory, "large.wav");
+        const bytes = Buffer.alloc(44 + 16_000_000, 128);
+        readFileSync(fixture).copy(bytes, 0, 0, 44);
+        bytes.writeUInt32LE(bytes.length - 8, 4);
+        bytes.writeUInt32LE(16000, 28);
+        bytes.writeUInt16LE(1, 32);
+        bytes.writeUInt16LE(8, 34);
+        bytes.writeUInt32LE(16_000_000, 40);
+        writeFileSync(path, bytes);
+        await (await page.$(`${sample} input[type=file]`)).uploadFile(path);
+        await page.waitForFunction(
+            (selector) => {
+                const section = document.querySelector(selector);
+                return (
+                    section?.textContent.includes("large.wav") &&
+                    !section.querySelector('[aria-label="Loading audio"]')
+                );
+            },
+            { timeout: 30000 },
+            sample
+        );
+        await click(sample, "Trim");
+        await click(sample, "Apply");
+        await click(sample, "Cancel");
+        assert.equal(await page.$(`${sample} [role=alert]`), null);
+        assert.equal(
+            await page.$eval(sample, (element) =>
+                element.textContent.includes("large-trim.wav")
+            ),
+            false
+        );
+        await upload(sample);
+        await page.waitForFunction(
+            (selector) =>
+                document
+                    .querySelector(selector)
+                    ?.textContent.includes("tone.wav"),
+            {},
+            sample
+        );
     });
     it("plots all analyses and loads the bin inspector only when requested", async () => {
         try {

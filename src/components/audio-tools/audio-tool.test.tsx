@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
     cleanup,
+    act,
     fireEvent,
     render,
     screen,
@@ -34,6 +35,7 @@ afterEach(() => {
     cleanup();
     vi.clearAllMocks();
     vi.unstubAllGlobals();
+    vi.useRealTimers();
 });
 /** Render a themed tool with a local audio source and observable result retention. */
 function mount(mode: "sample" | "analysis" = "sample") {
@@ -136,4 +138,35 @@ it("offers analysis modes without loading WASM on open", async () => {
     ])
         expect(screen.getByRole("button", { name, exact: true })).toBeTruthy();
     expect(runTool).not.toHaveBeenCalled();
+});
+
+it("cancels trim preparation without publishing a result, then allows retry", async () => {
+    mount();
+    await load();
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await act(() => vi.runAllTimersAsync());
+    expect(screen.queryByRole("button", { name: "Keep result" })).toBeNull();
+    expect(runTool).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    await act(() => vi.runAllTimersAsync());
+    expect(screen.getByRole("button", { name: "Keep result" })).toBeTruthy();
+});
+
+it("cancels result decoding without publishing a late worker result", async () => {
+    mount();
+    await load();
+    vi.useFakeTimers();
+    vi.mocked(runTool).mockResolvedValue({ data, log: "" });
+    fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
+    await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    });
+    expect(runTool).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await act(() => vi.runAllTimersAsync());
+    expect(screen.queryByRole("button", { name: "Keep result" })).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
 });
