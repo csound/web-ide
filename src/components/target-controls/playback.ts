@@ -119,7 +119,7 @@ export async function playProject(
             ...(/\.csd$/i.test(document.filename)
                 ? { csdPath: documentPath(document, allDocuments) }
                 : { orc: document.currentValue }),
-            mode: playlistMode ? "play" : "auto",
+            mode: "play",
             signal: run.controller.signal,
             setConsole,
             onEnded: (reason) => {

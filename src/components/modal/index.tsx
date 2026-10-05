@@ -21,6 +21,7 @@ import * as SS from "./styles";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import { closeModal } from "./actions";
+import { RenderDialog, RenderDialogProps } from "@comp/csound/render-dialog";
 
 function getModalStyle(width: number, height: number) {
     if (!width || !height) {
@@ -106,6 +107,7 @@ export default function GlobalModal() {
             onClose={
                 [
                     "profile-edit-dialog",
+                    "render-dialog",
                     "add-document-prompt",
                     "new-folder-prompt"
                 ].includes(modalComponentName || "")
@@ -134,6 +136,12 @@ export default function GlobalModal() {
                 >
                     {modalComponentName === "target-controls" && (
                         <TargetControlsConfigDialog {...modalProperties} />
+                    )}
+                    {modalComponentName === "render-dialog" && (
+                        <RenderDialog
+                            {...(modalProperties as RenderDialogProps)}
+                            onSubmittingChange={setIsSubmitting}
+                        />
                     )}
                     {modalComponentName === "share-dialog" && (
                         <ShareDialog {...modalProperties} />

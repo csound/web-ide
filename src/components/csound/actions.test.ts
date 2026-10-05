@@ -82,6 +82,7 @@ beforeEach(() => {
         compileCSD: vi.fn(async (path) => (writes.has(path) ? 0 : -1)),
         compileOrc: vi.fn(async () => 0),
         isRequestingRtAudioInput: vi.fn(async () => 0),
+        isRequestingRtMidiInput: vi.fn(async () => 0),
         enableAudioInput: vi.fn(async () => undefined),
         start: vi.fn(async () => {
             if (options.at(-1) !== "-odac") {
@@ -95,6 +96,7 @@ beforeEach(() => {
             return 1;
         }),
         cleanup: vi.fn(async () => undefined),
+        reset: vi.fn(async () => undefined),
         terminateInstance: vi.fn(async () => undefined),
         stop: vi.fn(async () => undefined),
         pause: vi.fn(async () =>
@@ -516,6 +518,98 @@ describe("shared Csound performance", () => {
         expect(store.getState().csound.status).toBe("error");
     });
 
+    it.each(["wav", "ogg", "mp3"] as const)(
+        "renders %s with overrides while leaving the source unchanged",
+        async (format) => {
+            const original =
+                store.getState().ProjectsReducer.projects["audio-test"]
+                    .documents.csd.currentValue;
+            delete engine.cleanup;
+            engine.reset.mockImplementation(async () => {
+                writes.set(
+                    `csound-export.${format}`,
+                    new Uint8Array([1, 2, 3, 4])
+                );
+            });
+            engine.start.mockImplementation(async () => {
+                queueMicrotask(() => listeners.get("renderEnded")?.());
+                return 0;
+            });
+            const result = await runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                mode: "render",
+                setConsole,
+                renderSettings: {
+                    filename: "dac recording",
+                    format,
+                    bitDepth: "24",
+                    quality: 0.9,
+                    sampleRate: 44100,
+                    ksmps: 1
+                }
+            });
+            expect(result.files).toEqual([`dac recording.${format}`]);
+            expect(engine.reset).toHaveBeenCalledOnce();
+            expect(options).toContain("--sample-rate=44100");
+            expect(options).toContain("--ksmps=1");
+            expect(options).toContain(
+                format === "wav"
+                    ? "--format=wav:24bit"
+                    : format === "ogg"
+                      ? "--ogg"
+                      : "--mpeg"
+            );
+            const compiledSource = new TextDecoder().decode(
+                writes.get("scores/piece.csd")
+            );
+            expect(compiledSource).toContain("--ksmps=1\n-ocsound-export.");
+            expect(
+                store.getState().ProjectsReducer.projects["audio-test"]
+                    .documents.csd.currentValue
+            ).toBe(original);
+            expect(
+                nonCloudFiles.get(`dac recording.${format}`)?.buffer
+            ).toEqual(new Uint8Array([1, 2, 3, 4]));
+        }
+    );
+
+    it("rejects invalid render settings before starting the engine", async () => {
+        await expect(
+            runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                mode: "render",
+                setConsole,
+                renderSettings: {
+                    filename: "../file",
+                    format: "wav",
+                    bitDepth: "24",
+                    quality: 0.6
+                }
+            })
+        ).rejects.toThrow("filename");
+        expect(Csound).not.toHaveBeenCalled();
+    });
+
+    it.each(["isRequestingRtAudioInput", "isRequestingRtMidiInput"])(
+        "rejects offline rendering with %s instead of waiting forever",
+        async (method) => {
+            engine[method].mockResolvedValue(1);
+            await expect(
+                runPerformance({
+                    projectUid: "audio-test",
+                    csdPath: "scores/piece.csd",
+                    mode: "render",
+                    setConsole
+                })
+            ).rejects.toThrow("Offline rendering cannot use live");
+            expect(engine.start).not.toHaveBeenCalled();
+            expect(engine.terminateInstance).toHaveBeenCalledOnce();
+            expect(nonCloudFiles.size).toBe(0);
+        }
+    );
+
     it("reports compile failures without starting or publishing files", async () => {
         engine.compileCSD.mockResolvedValue(1);
         await expect(
@@ -695,7 +789,7 @@ describe("project playlists", () => {
                 .selectedTargetPlaylistIndex
         ).toBe(2);
     });
-    it("rejects file output when auditioning a playlist tab", async () => {
+    it("plays file-output CSDs when auditioning a playlist tab", async () => {
         configurePlaylist(2);
         store.dispatch({
             type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
@@ -703,21 +797,16 @@ describe("project playlists", () => {
             documentUid: "csd",
             val: source.replace("-odac", "-opiece.wav")
         });
-        await expect(
-            playProject("audio-test", setConsole, "csd")
-        ).rejects.toThrow("This CSD requests file output");
-        expect(Csound).not.toHaveBeenCalled();
+        await playProject("audio-test", setConsole, "csd");
+        expect(options.at(-1)).toBe("-odac");
         expect(nonCloudFiles.size).toBe(0);
-        expect(projectPlayback()).toBeUndefined();
-        expect(
-            store.getState().ProfileReducer.currentlyPlayingProject
-        ).toBeUndefined();
+        expect(projectPlayback()?.playlist).toBe(false);
         expect(
             store.getState().TargetControlsReducer["audio-test"]
                 .selectedTargetPlaylistIndex
         ).toBe(2);
     });
-    it("still renders file output for a main-mode project", async () => {
+    it("uses realtime output for a main-mode project with file options", async () => {
         updateAllTargetsLocally(store.dispatch, "Main", "audio-test", {
             Main: {
                 targetName: "Main",
@@ -733,11 +822,9 @@ describe("project playlists", () => {
             val: source.replace("-odac", "-opiece.wav")
         });
         await playProject("audio-test", setConsole);
-        expect(nonCloudFiles.has("piece.wav")).toBe(true);
-        expect(projectPlayback()).toBeUndefined();
-        expect(
-            store.getState().ProfileReducer.currentlyPlayingProject
-        ).toBeUndefined();
+        expect(options.at(-1)).toBe("-odac");
+        expect(nonCloudFiles.size).toBe(0);
+        expect(store.getState().csound.status).toBe("playing");
     });
     it.each(["completed", "stopped"])(
         "keeps profile controls on later tracks until %s",

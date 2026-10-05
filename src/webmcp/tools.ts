@@ -184,7 +184,7 @@ export const toolCatalog = [
     ),
     tool(
         "play",
-        "Compile and play current unsaved source. Pass document_id for an explicit CSD/ORC, or omit it to use the selected target. Produces sound; does not save. Reject if audio is busy. For a CSD with file output options, use render instead.",
+        "Compile and play current unsaved source. Pass document_id for an explicit CSD/ORC, or omit it to use the selected target. Produces sound; does not save. Reject if audio is busy. Always uses realtime output, overriding CSD file output options. Use render to create an audio file.",
         { document_id: id },
         []
     ),
