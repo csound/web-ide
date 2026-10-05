@@ -199,12 +199,13 @@ export function splitWave(bytes: Uint8Array): Uint8Array[] {
         () => new Uint8Array(wave.frames * width)
     );
     for (let frame = 0; frame < wave.frames; frame++) {
+        const targetOffset = frame * width;
         for (let channel = 0; channel < wave.channels; channel++) {
             const start = (frame * wave.channels + channel) * width;
-            channels[channel].set(
-                wave.data.subarray(start, start + width),
-                frame * width
-            );
+            const target = channels[channel];
+            for (let byte = 0; byte < width; byte++) {
+                target[targetOffset + byte] = wave.data[start + byte];
+            }
         }
     }
     return channels.map((data) => packWave({ ...wave, channels: 1 }, [data]));
