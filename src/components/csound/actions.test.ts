@@ -16,9 +16,11 @@ import {
     getLiveCsound,
     outputNameFromCsd,
     runPerformance,
+    runPerformanceBatch,
     stopCsound,
     stopPerformance
 } from "./actions";
+import { readWave } from "./wave-files";
 import { nonCloudFiles } from "../file-tree/actions";
 import { storeProjectEditorKeyboardCallbacks } from "../hot-keys/actions";
 import { keyboardCallbacks } from "../hot-keys";
@@ -81,6 +83,9 @@ beforeEach(() => {
         setOption: vi.fn(async (option) => options.push(option)),
         compileCSD: vi.fn(async (path) => (writes.has(path) ? 0 : -1)),
         compileOrc: vi.fn(async () => 0),
+        getSr: vi.fn(async () => 44100),
+        getNchnls: vi.fn(async () => 2),
+        get0dBFS: vi.fn(async () => 1),
         isRequestingRtAudioInput: vi.fn(async () => 0),
         isRequestingRtMidiInput: vi.fn(async () => 0),
         enableAudioInput: vi.fn(async () => undefined),
@@ -528,7 +533,7 @@ describe("shared Csound performance", () => {
             engine.reset.mockImplementation(async () => {
                 writes.set(
                     `csound-export.${format}`,
-                    new Uint8Array([1, 2, 3, 4])
+                    new Uint8Array([1, 2, 3, 4, 5, 6])
                 );
             });
             engine.start.mockImplementation(async () => {
@@ -555,7 +560,7 @@ describe("shared Csound performance", () => {
             expect(options).toContain("--ksmps=1");
             expect(options).toContain(
                 format === "wav"
-                    ? "--format=wav:24bit"
+                    ? "--format=raw:24bit"
                     : format === "ogg"
                       ? "--ogg"
                       : "--mpeg"
@@ -563,14 +568,15 @@ describe("shared Csound performance", () => {
             const compiledSource = new TextDecoder().decode(
                 writes.get("scores/piece.csd")
             );
-            expect(compiledSource).toContain("--ksmps=1\n-ocsound-export.");
+            expect(compiledSource).toContain("--ksmps=1");
             expect(
                 store.getState().ProjectsReducer.projects["audio-test"]
                     .documents.csd.currentValue
             ).toBe(original);
-            expect(
-                nonCloudFiles.get(`dac recording.${format}`)?.buffer
-            ).toEqual(new Uint8Array([1, 2, 3, 4]));
+            const buffer = nonCloudFiles.get(`dac recording.${format}`)!.buffer;
+            expect(format === "wav" ? readWave(buffer).data : buffer).toEqual(
+                new Uint8Array([1, 2, 3, 4, 5, 6])
+            );
         }
     );
 
@@ -946,5 +952,68 @@ describe("project playlists", () => {
         await pending;
         expect(engine.start).not.toHaveBeenCalled();
         expect(projectPlayback()).toBeUndefined();
+    });
+});
+
+describe("batch engine reservation", () => {
+    it("blocks other playback between tracks and releases the engine after the job", async () => {
+        let continueJob!: () => void;
+        const gate = new Promise<void>((resolve) => {
+            continueJob = resolve;
+        });
+        const task = runPerformanceBatch(async (perform) => {
+            const options = {
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                mode: "render" as const,
+                collectFiles: false,
+                setConsole
+            };
+            const result = await perform(options);
+            expect(result.audio).toEqual(new Uint8Array([82, 73, 70, 70]));
+            expect(nonCloudFiles.size).toBe(0);
+            await gate;
+            await perform(options);
+        }, new AbortController().signal);
+        await vi.waitFor(() =>
+            expect(engine.terminateInstance).toHaveBeenCalledOnce()
+        );
+        expect(isCsoundBusy()).toBe(true);
+        await expect(
+            runPerformance({
+                projectUid: "audio-test",
+                csdText: source,
+                mode: "play",
+                setConsole
+            })
+        ).rejects.toThrow("busy");
+        continueJob();
+        await task;
+        expect(isCsoundBusy()).toBe(false);
+        expect(store.getState().csound.status).toBe("stopped");
+    });
+    it("stop cancels a batch while it is between engines", async () => {
+        const task = runPerformanceBatch(async (_perform, signal) => {
+            await new Promise<void>((_resolve, reject) =>
+                signal.addEventListener("abort", () => reject(signal.reason))
+            );
+        }, new AbortController().signal);
+        const rejected = expect(task).rejects.toThrow();
+        await stopPerformance();
+        await rejected;
+        expect(isCsoundBusy()).toBe(false);
+    });
+    it("releases a failed reservation and rejects an already-aborted job", async () => {
+        await expect(
+            runPerformanceBatch(async () => {
+                throw new Error("fail");
+            }, new AbortController().signal)
+        ).rejects.toThrow("fail");
+        expect(isCsoundBusy()).toBe(false);
+        const task = vi.fn();
+        await expect(
+            runPerformanceBatch(task, AbortSignal.abort())
+        ).rejects.toThrow();
+        expect(task).not.toHaveBeenCalled();
     });
 });

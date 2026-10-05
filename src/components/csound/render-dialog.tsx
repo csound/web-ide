@@ -8,18 +8,24 @@ import {
     IconButton,
     InputAdornment,
     LinearProgress,
-    TextField,
-    Tooltip
+    TextField
 } from "@mui/material";
 import CloseRounded from "@mui/icons-material/CloseRounded";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
 import CheckCircleOutlineRounded from "@mui/icons-material/CheckCircleOutlineRounded";
 import DownloadRounded from "@mui/icons-material/DownloadRounded";
 import { saveAs } from "file-saver";
+import JSZip from "jszip";
 import { useDispatch, useSelector } from "@root/store";
 import { closeModal } from "@comp/modal/actions";
 import { nonCloudFiles } from "@comp/file-tree/actions";
-import { documentPath, outputNameFromCsd, runPerformance } from "./actions";
+import { outputNameFromCsd } from "./actions";
+import { FieldLabel } from "./render-field";
+import { RenderAdvanced } from "./render-advanced";
+import { renderJob } from "./render-job";
+import {
+    selectPlaybackMode,
+    selectPlaybackDocuments
+} from "@comp/target-controls/selectors";
 import {
     RenderSettings,
     renderFilename,
@@ -36,7 +42,29 @@ export type RenderDialogProps = {
 };
 
 const layout = (theme: Theme) => css`
-    width: 540px;
+    width: 580px;
+    && {
+        max-height: calc(100dvh - 32px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    .form-body {
+        overflow-y: auto;
+        min-height: 0;
+        padding: 0 8px 0 2px;
+        margin-right: -8px;
+        scrollbar-width: thin;
+    }
+    header,
+    footer {
+        flex-shrink: 0;
+    }
     max-width: calc(100vw - 32px);
     h2 {
         margin: 0;
@@ -89,6 +117,42 @@ const layout = (theme: Theme) => css`
         color: ${theme.altTextColor};
         opacity: 1;
     }
+    .track-section {
+        margin-bottom: 22px;
+    }
+    .track-list {
+        display: flex;
+        flex-direction: column;
+        max-height: 150px;
+        overflow: auto;
+        margin-bottom: 12px;
+    }
+    .track-list .MuiFormControlLabel-label {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
+    .channel-fields {
+        margin-top: 18px;
+    }
+    .channel-checkbox .MuiFormControlLabel-label {
+        font-size: 13px;
+    }
+    .channel-checkbox {
+        margin-top: 12px;
+    }
+    details {
+        border-top: 1px solid ${theme.line};
+        margin: 0 0 18px;
+        padding-top: 14px;
+    }
+    summary {
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .advanced-body {
+        padding-top: 18px;
+    }
     .settings {
         padding: 20px 0;
         margin-top: 22px;
@@ -135,40 +199,6 @@ const layout = (theme: Theme) => css`
     }
 `;
 
-function FieldLabel({
-    id,
-    label,
-    help
-}: {
-    id: string;
-    label: string;
-    help: string;
-}) {
-    const [open, setOpen] = useState(false);
-    return (
-        <div className="field-label">
-            <label htmlFor={id}>{label}</label>
-            <Tooltip
-                id={`${id}-help`}
-                title={help}
-                open={open}
-                onOpen={() => setOpen(true)}
-                onClose={() => setOpen(false)}
-                describeChild
-            >
-                <IconButton
-                    size="small"
-                    aria-label={`About ${label}`}
-                    onClick={() => setOpen(!open)}
-                    onBlur={() => setOpen(false)}
-                >
-                    <InfoOutlined />
-                </IconButton>
-            </Tooltip>
-        </div>
-    );
-}
-
 export function RenderDialog({
     projectUid,
     documentUid,
@@ -180,6 +210,26 @@ export function RenderDialog({
         (state) => state.ProjectsReducer.projects[projectUid]
     );
     const document = project?.documents[documentUid];
+    const playlistMode =
+        useSelector((state) => selectPlaybackMode(state, projectUid)) ===
+        "playlist";
+    const playlist = useSelector((state) =>
+        selectPlaybackDocuments(state, projectUid)
+    );
+    const tracks = playlistMode ? playlist : document ? [document] : [];
+    const [selected, setSelected] = useState(
+        () =>
+            new Set(
+                playlistMode
+                    ? playlist.map((doc) => doc.documentUid)
+                    : [documentUid]
+            )
+    );
+    const [combine, setCombine] = useState(false);
+    const [splitChannels, setSplitChannels] = useState(false);
+    const [scores, setScores] = useState<Record<string, string>>({});
+    const [progress, setProgress] = useState("");
+    const chosen = tracks.filter((doc) => selected.has(doc.documentUid));
     const [settings, setSettings] = useState<RenderSettings>(() => ({
         filename: (
             outputNameFromCsd(document?.currentValue ?? "")
@@ -198,6 +248,7 @@ export function RenderDialog({
     );
     const [error, setError] = useState("");
     const [files, setFiles] = useState<string[]>([]);
+    const [downloading, setDownloading] = useState(false);
     const run = useRef<AbortController>();
     const notification = useRef<ReturnType<typeof prepareCompletionBell>>();
     const busy = phase === "rendering";
@@ -218,7 +269,9 @@ export function RenderDialog({
         value: RenderSettings[K]
     ) => setSettings((previous) => ({ ...previous, [key]: value }));
     const start = async () => {
-        const invalid = validateRenderSettings(settings);
+        const invalid = validateRenderSettings(
+            splitChannels ? { ...settings, format: "wav" } : settings
+        );
         if (invalid) {
             setError(invalid);
             return;
@@ -239,20 +292,19 @@ export function RenderDialog({
             }
         }
         try {
-            const result = await runPerformance({
+            const result = await renderJob({
                 projectUid,
-                csdPath: /\.csd$/i.test(document.filename)
-                    ? documentPath(document, project.documents)
-                    : undefined,
-                orc: document.currentValue,
-                mode: "render",
-                renderSettings: settings,
+                documents: chosen,
+                settings,
+                scores,
+                combine,
+                splitChannels,
                 signal: controller.signal,
-                setConsole
+                setConsole,
+                onProgress: setProgress
             });
             controller.signal.throwIfAborted();
-            // The render output is first; other generated files stay in the tree.
-            setFiles(result.files.slice(0, 1));
+            setFiles(result);
             setPhase("completed");
             notification.current?.ring();
             notification.current = undefined;
@@ -271,6 +323,42 @@ export function RenderDialog({
             run.current = undefined;
         }
     };
+    const download = async () => {
+        setDownloading(true);
+        setError("");
+        try {
+            if (files.length === 1) {
+                const file = nonCloudFiles.get(files[0]);
+                if (!file)
+                    throw new Error(
+                        "The rendered file is no longer available."
+                    );
+                saveAs(new Blob([new Uint8Array(file.buffer)]), files[0]);
+            } else {
+                const zip = new JSZip();
+                for (const name of files) {
+                    const file = nonCloudFiles.get(name);
+                    if (!file)
+                        throw new Error(
+                            "A rendered file is no longer available."
+                        );
+                    zip.file(name, file.buffer);
+                }
+                saveAs(
+                    await zip.generateAsync({ type: "blob" }),
+                    `${settings.filename.replace(/\.(wav|ogg|mp3)$/i, "")}.zip`
+                );
+            }
+        } catch (cause) {
+            setError(
+                cause instanceof Error
+                    ? cause.message
+                    : "Could not prepare the download. Try again."
+            );
+        } finally {
+            setDownloading(false);
+        }
+    };
     return (
         <div
             css={layout}
@@ -282,8 +370,10 @@ export function RenderDialog({
                 <div>
                     <h2 id="render-title">Render to disk</h2>
                     <p>
-                        {document?.filename ?? "No target selected"} · Audio
-                        export
+                        {playlistMode
+                            ? `${chosen.length} of ${tracks.length} tracks`
+                            : (document?.filename ?? "No target selected")}{" "}
+                        · Audio export
                     </p>
                 </div>
                 <IconButton
@@ -301,151 +391,97 @@ export function RenderDialog({
                         void start();
                     }}
                 >
-                    <div className="fields">
-                        <div className="full">
-                            <FieldLabel
-                                id="render-filename"
-                                label="Filename"
-                                help="The extension follows your format. The rendered file appears in the project tree as an unsaved file, ready to download."
-                            />
-                            <TextField
-                                id="render-filename"
-                                fullWidth
-                                size="small"
-                                value={settings.filename}
-                                onChange={(event) =>
-                                    update("filename", event.target.value)
-                                }
-                                slotProps={{
-                                    input: {
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                .{settings.format}
-                                            </InputAdornment>
-                                        )
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <FieldLabel
-                                id="render-format"
-                                label="Format"
-                                help="WAV keeps uncompressed audio for editing. Ogg Vorbis and MP3 make smaller files by discarding some audio detail. MP3 has broad player support."
-                            />
-                            <TextField
-                                id="render-format"
-                                select
-                                fullWidth
-                                size="small"
-                                value={settings.format}
-                                onChange={(event) =>
-                                    update(
-                                        "format",
-                                        event.target
-                                            .value as RenderSettings["format"]
-                                    )
-                                }
-                                slotProps={{ select: { native: true } }}
+                    <div className="form-body">
+                        {playlistMode && (
+                            <section
+                                className="track-section"
+                                aria-label="Tracks to render"
                             >
-                                <option value="wav">WAV</option>
-                                <option value="ogg">Ogg Vorbis</option>
-                                <option value="mp3">MP3</option>
-                            </TextField>
-                        </div>
-                        <div>
-                            {settings.format === "wav" ? (
-                                <>
-                                    <FieldLabel
-                                        id="render-depth"
-                                        label="Bit depth"
-                                        help="More bits store finer amplitude detail and make larger files. 24-bit suits editing; 16-bit suits delivery. 32-bit float preserves levels above 0 dBFS for later adjustment."
-                                    />
-                                    <TextField
-                                        id="render-depth"
-                                        select
-                                        fullWidth
-                                        size="small"
-                                        value={settings.bitDepth}
-                                        onChange={(event) =>
-                                            update(
-                                                "bitDepth",
-                                                event.target
-                                                    .value as RenderSettings["bitDepth"]
-                                            )
-                                        }
-                                        slotProps={{ select: { native: true } }}
-                                    >
-                                        <option value="16">16-bit PCM</option>
-                                        <option value="24">24-bit PCM</option>
-                                        <option value="float">
-                                            32-bit float
-                                        </option>
-                                    </TextField>
-                                </>
-                            ) : (
-                                <>
-                                    <FieldLabel
-                                        id="render-quality"
-                                        label="Encoding quality"
-                                        help="Higher quality uses a higher average bitrate: more data per second, larger files, and less detail lost. Variable bitrate adapts to the music, so the final bitrate and size vary."
-                                    />
-                                    <TextField
-                                        id="render-quality"
-                                        select
-                                        fullWidth
-                                        size="small"
-                                        value={settings.quality}
-                                        onChange={(event) =>
-                                            update(
-                                                "quality",
-                                                Number(event.target.value)
-                                            )
-                                        }
-                                        slotProps={{ select: { native: true } }}
-                                    >
-                                        <option value={0.3}>Compact</option>
-                                        <option value={0.6}>Balanced</option>
-                                        <option value={0.9}>
-                                            High quality
-                                        </option>
-                                    </TextField>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                    <div className="settings">
-                        <div className="fields">
-                            <div>
+                                <div className="track-list">
+                                    {tracks.map((track, index) => (
+                                        <FormControlLabel
+                                            key={track.documentUid}
+                                            control={
+                                                <Checkbox
+                                                    size="small"
+                                                    checked={selected.has(
+                                                        track.documentUid
+                                                    )}
+                                                    onChange={(event) =>
+                                                        setSelected(
+                                                            (previous) => {
+                                                                const next =
+                                                                    new Set(
+                                                                        previous
+                                                                    );
+                                                                if (
+                                                                    event.target
+                                                                        .checked
+                                                                )
+                                                                    next.add(
+                                                                        track.documentUid
+                                                                    );
+                                                                else
+                                                                    next.delete(
+                                                                        track.documentUid
+                                                                    );
+                                                                return next;
+                                                            }
+                                                        )
+                                                    }
+                                                />
+                                            }
+                                            label={`${index + 1}. ${track.filename}`}
+                                        />
+                                    ))}
+                                </div>
                                 <FieldLabel
-                                    id="render-sr"
-                                    label="Sample rate (sr)"
-                                    help="Samples per second. Higher rates can capture higher frequencies, but use more CPU and space. Leave blank to keep the project rate; changing it can alter instruments that depend on sr."
+                                    id="render-layout"
+                                    label="Track files"
+                                    help="Combined tracks play one after another in playlist order, including their tails. Separate files export each selected track on its own. Combined tracks need matching sample rates and channel counts."
                                 />
                                 <TextField
-                                    id="render-sr"
-                                    type="number"
-                                    size="small"
+                                    id="render-layout"
+                                    select
                                     fullWidth
-                                    placeholder={projectSettingHint(
-                                        document?.currentValue ?? "",
-                                        "sr"
-                                    )}
-                                    value={settings.sampleRate ?? ""}
+                                    size="small"
+                                    value={combine ? "combined" : "separate"}
                                     onChange={(event) =>
-                                        update(
-                                            "sampleRate",
-                                            event.target.value === ""
-                                                ? undefined
-                                                : Number(event.target.value)
+                                        setCombine(
+                                            event.target.value === "combined"
                                         )
                                     }
+                                    slotProps={{ select: { native: true } }}
+                                >
+                                    <option value="separate">
+                                        One file per track
+                                    </option>
+                                    <option value="combined">
+                                        One continuous file
+                                    </option>
+                                </TextField>
+                            </section>
+                        )}
+                        <div className="fields">
+                            <div className="full">
+                                <FieldLabel
+                                    id="render-filename"
+                                    label="Filename"
+                                    help="The extension follows your format. The rendered file appears in the project tree as an unsaved file, ready to download."
+                                />
+                                <TextField
+                                    id="render-filename"
+                                    fullWidth
+                                    size="small"
+                                    value={settings.filename}
+                                    onChange={(event) =>
+                                        update("filename", event.target.value)
+                                    }
                                     slotProps={{
-                                        htmlInput: { min: 8000, max: 192000 },
                                         input: {
                                             endAdornment: (
                                                 <InputAdornment position="end">
-                                                    Hz
+                                                    .{settings.format}
                                                 </InputAdornment>
                                             )
                                         }
@@ -454,52 +490,285 @@ export function RenderDialog({
                             </div>
                             <div>
                                 <FieldLabel
-                                    id="render-ksmps"
-                                    label="Control block (ksmps)"
-                                    help="Audio samples per control update. Lower values give finer timing for envelopes and modulation, but can render much more slowly. They do not always improve sound. Leave blank to keep the project setting; local setksmps remains in effect."
+                                    id="render-format"
+                                    label="Format"
+                                    help="WAV keeps uncompressed audio for editing. Ogg Vorbis and MP3 make smaller files by discarding some audio detail. MP3 has broad player support."
                                 />
                                 <TextField
-                                    id="render-ksmps"
-                                    type="number"
-                                    size="small"
+                                    id="render-format"
+                                    select
                                     fullWidth
-                                    placeholder={projectSettingHint(
-                                        document?.currentValue ?? "",
-                                        "ksmps"
-                                    )}
-                                    value={settings.ksmps ?? ""}
+                                    size="small"
+                                    value={settings.format}
                                     onChange={(event) =>
                                         update(
-                                            "ksmps",
-                                            event.target.value === ""
-                                                ? undefined
-                                                : Number(event.target.value)
+                                            "format",
+                                            event.target
+                                                .value as RenderSettings["format"]
                                         )
                                     }
-                                    slotProps={{
-                                        htmlInput: { min: 1, max: 8192 }
-                                    }}
-                                />
+                                    slotProps={{ select: { native: true } }}
+                                >
+                                    <option value="wav">WAV</option>
+                                    <option value="ogg">Ogg Vorbis</option>
+                                    <option value="mp3">MP3</option>
+                                </TextField>
+                            </div>
+                            <div>
+                                {settings.format === "wav" ? (
+                                    <>
+                                        <FieldLabel
+                                            id="render-depth"
+                                            label="Bit depth"
+                                            help="More bits store finer amplitude detail and make larger files. 24-bit suits editing; 16-bit suits delivery. 32-bit float preserves levels above 0 dBFS for later adjustment."
+                                        />
+                                        <TextField
+                                            id="render-depth"
+                                            select
+                                            fullWidth
+                                            size="small"
+                                            value={settings.bitDepth}
+                                            onChange={(event) =>
+                                                update(
+                                                    "bitDepth",
+                                                    event.target
+                                                        .value as RenderSettings["bitDepth"]
+                                                )
+                                            }
+                                            slotProps={{
+                                                select: { native: true }
+                                            }}
+                                        >
+                                            <option value="8">8-bit PCM</option>
+                                            <option value="16">
+                                                16-bit PCM
+                                            </option>
+                                            <option value="24">
+                                                24-bit PCM
+                                            </option>
+                                            <option value="32">
+                                                32-bit PCM
+                                            </option>
+                                            <option value="float">
+                                                32-bit float
+                                            </option>
+                                            <option value="double">
+                                                64-bit float
+                                            </option>
+                                        </TextField>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FieldLabel
+                                            id="render-quality"
+                                            label="Encoding quality"
+                                            help="Higher quality uses a higher average bitrate: more data per second, larger files, and less detail lost. Variable bitrate adapts to the music, so the final bitrate and size vary."
+                                        />
+                                        <TextField
+                                            id="render-quality"
+                                            select
+                                            fullWidth
+                                            size="small"
+                                            value={settings.quality}
+                                            onChange={(event) =>
+                                                update(
+                                                    "quality",
+                                                    Number(event.target.value)
+                                                )
+                                            }
+                                            slotProps={{
+                                                select: { native: true }
+                                            }}
+                                        >
+                                            <option value={0.3}>Compact</option>
+                                            <option value={0.6}>
+                                                Balanced
+                                            </option>
+                                            <option value={0.9}>
+                                                High quality
+                                            </option>
+                                        </TextField>
+                                    </>
+                                )}
                             </div>
                         </div>
-                        <p className="note">
-                            These settings apply to this render. Your source
-                            stays unchanged.
-                        </p>
-                    </div>
-                    <FormControlLabel
-                        className="bell"
-                        control={
-                            <Checkbox
-                                checked={bell}
-                                onChange={(event) =>
-                                    setBell(event.target.checked)
+                        <div className="settings">
+                            <div className="fields">
+                                <div>
+                                    <FieldLabel
+                                        id="render-sr"
+                                        label="Sample rate (sr)"
+                                        help="Samples per second. Higher rates can capture higher frequencies, but use more CPU and space. Leave blank to keep the project rate; changing it can alter instruments that depend on sr."
+                                    />
+                                    <TextField
+                                        id="render-sr"
+                                        type="number"
+                                        size="small"
+                                        fullWidth
+                                        placeholder={projectSettingHint(
+                                            document?.currentValue ?? "",
+                                            "sr"
+                                        )}
+                                        value={settings.sampleRate ?? ""}
+                                        onChange={(event) =>
+                                            update(
+                                                "sampleRate",
+                                                event.target.value === ""
+                                                    ? undefined
+                                                    : Number(event.target.value)
+                                            )
+                                        }
+                                        slotProps={{
+                                            htmlInput: {
+                                                min: 8000,
+                                                max: 192000
+                                            },
+                                            input: {
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        Hz
+                                                    </InputAdornment>
+                                                )
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <FieldLabel
+                                        id="render-ksmps"
+                                        label="Control block (ksmps)"
+                                        help="Audio samples per control update. Lower values give finer timing for envelopes and modulation, but can render much more slowly. They do not always improve sound. Leave blank to keep the project setting; local setksmps remains in effect."
+                                    />
+                                    <TextField
+                                        id="render-ksmps"
+                                        type="number"
+                                        size="small"
+                                        fullWidth
+                                        placeholder={projectSettingHint(
+                                            document?.currentValue ?? "",
+                                            "ksmps"
+                                        )}
+                                        value={settings.ksmps ?? ""}
+                                        onChange={(event) =>
+                                            update(
+                                                "ksmps",
+                                                event.target.value === ""
+                                                    ? undefined
+                                                    : Number(event.target.value)
+                                            )
+                                        }
+                                        slotProps={{
+                                            htmlInput: { min: 1, max: 8192 }
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="fields channel-fields">
+                                <div>
+                                    <FieldLabel
+                                        id="render-channels"
+                                        label="Output channels"
+                                        help="Overrides nchnls for every selected track. This changes the orchestra's output count; it does not downmix or duplicate channels. Leave blank to use each project's value. MP3 allows at most two channels per file."
+                                    />
+                                    <TextField
+                                        id="render-channels"
+                                        type="number"
+                                        fullWidth
+                                        size="small"
+                                        placeholder={projectSettingHint(
+                                            document?.currentValue ?? "",
+                                            "nchnls"
+                                        )}
+                                        value={settings.channels ?? ""}
+                                        onChange={(event) =>
+                                            update(
+                                                "channels",
+                                                event.target.value === ""
+                                                    ? undefined
+                                                    : Number(event.target.value)
+                                            )
+                                        }
+                                        slotProps={{
+                                            htmlInput: { min: 1, max: 64 }
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <FieldLabel
+                                        id="render-dither"
+                                        label="Dither"
+                                        help="Adds very quiet noise to reduce distortion when converting to integer PCM. This engine supports dither for 16-bit WAV. Float and compressed exports do not need this setting."
+                                    />
+                                    <TextField
+                                        id="render-dither"
+                                        select
+                                        fullWidth
+                                        size="small"
+                                        disabled={
+                                            settings.format !== "wav" ||
+                                            settings.bitDepth !== "16"
+                                        }
+                                        value={
+                                            settings.dither &&
+                                            settings.format === "wav" &&
+                                            settings.bitDepth === "16"
+                                                ? "on"
+                                                : "off"
+                                        }
+                                        onChange={(event) =>
+                                            update(
+                                                "dither",
+                                                event.target.value === "on"
+                                            )
+                                        }
+                                        slotProps={{ select: { native: true } }}
+                                    >
+                                        <option value="off">Off</option>
+                                        <option value="on">Triangular</option>
+                                    </TextField>
+                                </div>
+                            </div>
+                            <FormControlLabel
+                                className="channel-checkbox"
+                                control={
+                                    <Checkbox
+                                        size="small"
+                                        checked={splitChannels}
+                                        onChange={(event) =>
+                                            setSplitChannels(
+                                                event.target.checked
+                                            )
+                                        }
+                                    />
                                 }
-                                size="small"
+                                label="Separate mono file for each channel"
                             />
-                        }
-                        label="Play a bell when rendering finishes"
-                    />
+                            <p className="note">
+                                These settings apply to this render. Your source
+                                stays unchanged.
+                            </p>
+                        </div>
+                        <RenderAdvanced
+                            documents={chosen}
+                            settings={settings}
+                            onSettings={setSettings}
+                            scores={scores}
+                            onScores={setScores}
+                        />
+                        <FormControlLabel
+                            className="bell"
+                            control={
+                                <Checkbox
+                                    checked={bell}
+                                    onChange={(event) =>
+                                        setBell(event.target.checked)
+                                    }
+                                    size="small"
+                                />
+                            }
+                            label="Play a bell when rendering finishes"
+                        />
+                    </div>
                     {error && (
                         <Alert severity="error" sx={{ mb: 2 }}>
                             {error}
@@ -511,6 +780,7 @@ export function RenderDialog({
                         </Button>
                         <Button
                             type="submit"
+                            disabled={!chosen.length}
                             variant="contained"
                             disableElevation
                         >
@@ -526,7 +796,7 @@ export function RenderDialog({
                                 <LinearProgress aria-label="Rendering audio" />
                                 <h3>Rendering audio…</h3>
                                 <p>
-                                    {renderFilename(settings)}
+                                    {progress || renderFilename(settings)}
                                     <br />
                                     Keep this tab open. Long scores and small
                                     ksmps values can take time.
@@ -545,6 +815,11 @@ export function RenderDialog({
                             </>
                         )}
                     </div>
+                    {error && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {error}
+                        </Alert>
+                    )}
                     <footer>
                         {busy ? (
                             <Button onClick={() => run.current?.abort()}>
@@ -559,23 +834,12 @@ export function RenderDialog({
                                     variant="contained"
                                     disableElevation
                                     startIcon={<DownloadRounded />}
-                                    onClick={() => {
-                                        for (const name of files) {
-                                            const file =
-                                                nonCloudFiles.get(name);
-                                            if (file)
-                                                saveAs(
-                                                    new Blob([
-                                                        new Uint8Array(
-                                                            file.buffer
-                                                        )
-                                                    ]),
-                                                    name
-                                                );
-                                        }
-                                    }}
+                                    disabled={downloading}
+                                    onClick={() => void download()}
                                 >
-                                    Download audio
+                                    {files.length > 1
+                                        ? "Download ZIP"
+                                        : "Download audio"}
                                 </Button>
                             </>
                         )}
