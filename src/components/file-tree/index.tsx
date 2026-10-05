@@ -377,7 +377,8 @@ const makeTree = (
     path: string[],
     [documentIndex]: [Record<string, any>, any],
     filelist: IDocument[],
-    playlistUids: string[]
+    playlistUids: string[],
+    onOpenDocument?: () => void
 ): any[] => {
     // Getting all directories (where type is "folder")
     const allDirectories = filelist.filter((file) => file.type === "folder");
@@ -497,7 +498,8 @@ const makeTree = (
                     folderPath,
                     [documentIndex_, [] as any],
                     newFileList,
-                    playlistUids
+                    playlistUids,
+                    onOpenDocument
                 );
 
                 const folderElement = (
@@ -618,14 +620,15 @@ const makeTree = (
                                             sx={{
                                                 "--file-tree-indent": `${6 + 24 * path.length}px`
                                             }}
-                                            onClick={() =>
+                                            onClick={() => {
                                                 dispatch(
                                                     tabOpenByDocumentUid(
                                                         document_.documentUid,
                                                         activeProjectUid
                                                     )
-                                                )
-                                            }
+                                                );
+                                                onOpenDocument?.();
+                                            }}
                                             style={{
                                                 ...provided.draggableProps
                                                     .style,
@@ -692,9 +695,11 @@ const makeTree = (
 };
 
 export const FileTree = ({
-    activeProjectUid
+    activeProjectUid,
+    onOpenDocument
 }: {
     activeProjectUid: string;
+    onOpenDocument?: () => void;
 }) => {
     const [collapseState, setCollapseState] = useState<Record<string, boolean>>(
         {}
@@ -743,7 +748,8 @@ export const FileTree = ({
               [],
               [stateDnD!.docIdx, []],
               filelist,
-              playlistUids
+              playlistUids,
+              onOpenDocument
           )
         : [{}, []];
 
@@ -776,14 +782,15 @@ export const FileTree = ({
                                     style={{ cursor: "pointer" }}
                                 >
                                     <ListItem
-                                        onClick={() =>
+                                        onClick={() => {
                                             dispatch(
                                                 tabOpenNonCloudDocument(
                                                     file.name,
                                                     mimeType
                                                 )
-                                            )
-                                        }
+                                            );
+                                            onOpenDocument?.();
+                                        }}
                                         css={SS.listItem}
                                         style={{
                                             position: "relative",

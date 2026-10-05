@@ -40,13 +40,21 @@ const MobileTabs = ({
     >({});
     const documentKey =
         (currentDocument as IDocument | undefined)?.documentUid ?? "";
+    const documentName =
+        currentDocument &&
+        ("filename" in currentDocument
+            ? currentDocument.filename
+            : currentDocument.temporary?.filename || currentDocument.uid);
     const isMarkdown = /\.(md|markdown)$/i.test(
         (currentDocument as IDocument | undefined)?.filename ?? ""
     );
 
     const mobileFileTree = (
         <div css={SS.mobileFileTree}>
-            <FileTree activeProjectUid={projectUid} />
+            <FileTree
+                activeProjectUid={projectUid}
+                onOpenDocument={() => setMobileTabIndex(0)}
+            />
         </div>
     );
 
@@ -58,19 +66,35 @@ const MobileTabs = ({
 
     const mobileManual = (
         <div css={SS.mobileManual}>
-            <CsoundManualWindow projectUid={projectUid} />
+            <CsoundManualWindow projectUid={projectUid} showHeader={false} />
         </div>
     );
 
     return (
         <DnDProvider project={activeProject}>
             <div css={SS.mobileLayout}>
+                {mobileTabIndex === 0 && currentDocument && (
+                    <div css={SS.mobileDocumentBar}>
+                        <span title={documentName}>{documentName}</span>
+                        {isMarkdown ? (
+                            <MarkdownModeToggle
+                                mode={markdownModes[documentKey] ?? "preview"}
+                                onChange={(mode) =>
+                                    setMarkdownModes((modes) => ({
+                                        ...modes,
+                                        [documentKey]: mode
+                                    }))
+                                }
+                            />
+                        ) : undefined}
+                    </div>
+                )}
                 <div css={SS.mobileContent}>
                     {mobileTabIndex === 0 ? (
                         <div css={SS.mobileEditor}>
                             {currentDocument && (
                                 <EditorForDocument
-                                    uid={projectUid}
+                                    uid={activeProject.userUid}
                                     projectUid={projectUid}
                                     doc={currentDocument}
                                     isOwner={false}
@@ -91,19 +115,6 @@ const MobileTabs = ({
                 <MobileNavigation
                     mobileTabIndex={mobileTabIndex}
                     setMobileTabIndex={setMobileTabIndex}
-                    editorControl={
-                        mobileTabIndex === 0 && isMarkdown ? (
-                            <MarkdownModeToggle
-                                mode={markdownModes[documentKey] ?? "preview"}
-                                onChange={(mode) =>
-                                    setMarkdownModes((modes) => ({
-                                        ...modes,
-                                        [documentKey]: mode
-                                    }))
-                                }
-                            />
-                        ) : undefined
-                    }
                 />
             </div>
         </DnDProvider>

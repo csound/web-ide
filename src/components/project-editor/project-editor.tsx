@@ -1034,7 +1034,7 @@ const ProjectEditor = ({
     activeProject: IProject;
 }): React.ReactElement => {
     useGuestReadme(activeProject);
-    const compactLayout = useMediaQuery("(max-width: 767px)");
+    const compactLayout = useMediaQuery("(max-width: 900px)");
     const dispatch = useDispatch();
     const setConsole = useSetConsole();
     const [isDragging, setIsDragging] = useState(false);

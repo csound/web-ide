@@ -1,4 +1,4 @@
-import { css, SerializedStyles } from "@emotion/react";
+import { css, SerializedStyles, Theme } from "@emotion/react";
 
 export const mobileLayout = css`
     width: 100%;
@@ -53,7 +53,12 @@ export const mobileFileTree = (): SerializedStyles => css`
     height: 100%;
     min-height: 0;
     overflow: auto;
-    zoom: 120%;
+    .MuiListItem-root {
+        min-height: 44px;
+    }
+    .MuiList-root {
+        padding-bottom: 12px;
+    }
     & > div {
         padding: 0 !important;
         margin-top: 0 !important;
@@ -73,5 +78,27 @@ export const heightFix = css`
     & > div > div:nth-of-type(2) {
         height: auto;
         min-height: 0;
+    }
+`;
+
+export const mobileDocumentBar = (theme: Theme): SerializedStyles => css`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 2px 8px 2px 12px;
+    border-bottom: 1px solid ${theme.line};
+    color: ${theme.altTextColor};
+    background: ${theme.background};
+    font-size: 12px;
+    > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .MuiToggleButtonGroup-root .MuiToggleButton-root {
+        min-height: 36px;
     }
 `;

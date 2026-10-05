@@ -6,8 +6,9 @@ export const main: SerializedStyles = css`
     position: fixed;
     top: ${headerHeight}px;
     right: 0;
-    bottom: 0;
     left: 0;
+    height: calc(100vh - ${headerHeight}px);
+    height: calc(100dvh - ${headerHeight}px);
     min-height: 0;
     overflow: hidden;
     display: flex;

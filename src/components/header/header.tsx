@@ -304,7 +304,7 @@ export const Header = () => {
                                 )}
                         </div>
                     ) : null}
-                    {utilityNav}
+                    {(!routeIsEditor || !mobileView) && utilityNav}
                     <div css={SS.authSlot}>
                         {isAuthRequesting ? (
                             <div css={SS.authPlaceholder} />

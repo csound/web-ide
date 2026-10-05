@@ -25,7 +25,7 @@ export default function TargetDropdown({
     activeProjectUid: string;
 }) {
     const dispatch = useDispatch();
-    const narrow = useMediaQuery("(max-width:380px)");
+    const narrow = useMediaQuery("(max-width:600px)");
     const isOwner = useSelector(selectIsOwnerForProject(activeProjectUid));
     const mode = useSelector((state) =>
         selectPlaybackMode(state, activeProjectUid)
@@ -62,7 +62,9 @@ export default function TargetDropdown({
                 <Select
                     size="small"
                     value={documents.length ? index : ""}
-                    disabled={busy || !documents.length}
+                    disabled={
+                        busy || (!documents.length && !(isOwner && narrow))
+                    }
                     displayEmpty
                     inputProps={{
                         "aria-label": busy

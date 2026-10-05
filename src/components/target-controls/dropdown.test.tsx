@@ -1,4 +1,4 @@
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
@@ -7,8 +7,16 @@ import palette from "../../styles/_theme-monokai";
 import TargetDropdown from "./dropdown";
 import TargetControlsReducer from "./reducer";
 
-afterEach(cleanup);
-function setup(owner: boolean, playing = false, mode = "playlist") {
+afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+});
+function setup(
+    owner: boolean,
+    playing = false,
+    mode = "playlist",
+    empty = false
+) {
     const controls = {
         project: {
             defaultTarget: "Playlist",
@@ -19,7 +27,7 @@ function setup(owner: boolean, playing = false, mode = "playlist") {
                     targetName: "Playlist",
                     targetType: mode,
                     targetDocumentUid: "first",
-                    playlistDocumentsUid: ["first", "second"],
+                    playlistDocumentsUid: empty ? [] : ["first", "second"],
                     csoundOptions: {}
                 }
             }
@@ -112,5 +120,34 @@ it.each([true, false])(
         expect(
             !!screen.queryByRole("button", { name: "Playback settings" })
         ).toBe(owner);
+    }
+);
+
+it.each([
+    { owner: true, playing: false, disabled: false },
+    { owner: false, playing: false, disabled: true },
+    { owner: true, playing: true, disabled: true }
+])(
+    "keeps empty phone playlists configurable only for idle owners ($owner, $playing)",
+    ({ owner, playing, disabled }) => {
+        vi.stubGlobal("matchMedia", () => ({
+            matches: true,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn()
+        }));
+        setup(owner, playing, "playlist", true);
+        const select = screen.getByRole("combobox");
+        expect(select.getAttribute("aria-disabled")).toBe(
+            disabled ? "true" : null
+        );
+        expect(
+            screen.queryByRole("button", { name: "Playback settings" })
+        ).toBeNull();
+        if (!disabled) {
+            fireEvent.mouseDown(select);
+            expect(
+                screen.getByRole("option", { name: "Playback settings" })
+            ).toBeTruthy();
+        }
     }
 );

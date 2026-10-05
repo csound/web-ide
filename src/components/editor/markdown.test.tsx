@@ -176,23 +176,21 @@ it.each(["README.md", "notes.markdown"])(
     }
 );
 
-it("fits the Markdown control into the existing mobile navigation row", () => {
+it("keeps all mobile views available and marks the current view", () => {
     const { wrapper } = fixture("README.md", "# Project notes");
+    const selectView = vi.fn();
     render(
-        <MobileNavigation
-            mobileTabIndex={0}
-            setMobileTabIndex={vi.fn()}
-            editorControl={
-                <MarkdownModeToggle mode="preview" onChange={vi.fn()} />
-            }
-        />,
+        <MobileNavigation mobileTabIndex={0} setMobileTabIndex={selectView} />,
         { wrapper }
     );
-    const control = screen.getByRole("group", { name: "Markdown view" });
-    expect(control.closest("footer")?.getAttribute("aria-label")).toBe(
-        "Editor footer"
-    );
-    expect(screen.getByRole("button", { name: "Files" })).toBeTruthy();
+    expect(
+        screen
+            .getByRole("button", { name: "Edit" })
+            .getAttribute("aria-current")
+    ).toBe("page");
+    fireEvent.click(screen.getByRole("button", { name: "Files" }));
+    expect(selectView).toHaveBeenCalledWith(1);
+    expect(screen.getByRole("button", { name: "Console" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Manual" })).toBeTruthy();
 });
 
