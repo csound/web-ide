@@ -46,7 +46,15 @@ export default function PlayButton({
                 ? `Play playlist from ${index + 1}: ${documents[index]?.filename ?? "no track selected"}`
                 : `Play ${documents[0]?.filename ?? "project"}`;
     return (
-        <Tooltip title={busy ? "Loading playback" : label}>
+        <Tooltip
+            title={
+                status === "rendering"
+                    ? "Rendering audio"
+                    : busy
+                      ? "Loading playback"
+                      : label
+            }
+        >
             <span css={SS.buttonContainer} data-testid="run-button">
                 <IconButton
                     aria-label={label}

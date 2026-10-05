@@ -6,6 +6,7 @@ export type CsoundObj = NonNullable<
     getAudioContext: any;
     // Exported by @csound/browser, but missing from its CsoundObj declaration.
     isRequestingRtAudioInput: () => Promise<number>;
+    isRequestingRtMidiInput: () => Promise<number>;
 };
 
 export async function compileCSD(

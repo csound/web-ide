@@ -14,6 +14,15 @@ import {
 import { addDocumentToCsoundFS, getUniqueFilename } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { consoleReadline } from "../console/readline";
+import { rawToWave } from "./wave-files";
+import { finalizeFlac } from "./flac-file";
+import {
+    RenderSettings,
+    renderFilename,
+    renderOptions,
+    validateRenderSettings,
+    withPerformanceOptions
+} from "./render-settings";
 
 export let csoundInstance: CsoundObj;
 
@@ -24,12 +33,15 @@ type Run = {
     projectUid: string;
 };
 let activeRun: Run | undefined;
+let batch:
+    | { token: symbol; controller: AbortController; done: Promise<void> }
+    | undefined;
 
 export const setCsoundPlayState = (status: ICsoundStatus) => ({
     type: SET_CSOUND_PLAY_STATE,
     status
 });
-export const isCsoundBusy = () => !!activeRun;
+export const isCsoundBusy = () => !!activeRun || !!batch;
 export const getLiveCsound = (projectUid: string): CsoundObj | undefined =>
     activeRun?.projectUid === projectUid &&
     !activeRun.controller.signal.aborted &&
@@ -82,6 +94,7 @@ export function outputNameFromCsd(source: string): string | undefined {
 export type PerformanceResult = {
     status: "playing" | "completed";
     files: string[];
+    audio?: Uint8Array;
 };
 
 type PerformanceOptions = {
@@ -96,6 +109,8 @@ type PerformanceOptions = {
     mode?: "auto" | "play" | "render";
     // Embeds must work without cross-origin isolation or stored preferences.
     useSAB?: boolean;
+    renderSettings?: RenderSettings;
+    batchToken?: symbol;
     signal?: AbortSignal;
     setConsole: SetConsole;
 };
@@ -111,14 +126,19 @@ export async function runPerformance({
     orc,
     mode = "auto",
     useSAB,
+    renderSettings,
+    batchToken,
     signal,
     setConsole
 }: PerformanceOptions): Promise<PerformanceResult> {
+    const ownsBatch = batch && batch.token === batchToken;
     if (
         activeRun ||
-        ["playing", "paused", "rendering", "loading"].includes(
-            store.getState().csound.status
-        )
+        (batch && !ownsBatch) ||
+        (!ownsBatch &&
+            ["playing", "paused", "rendering", "loading"].includes(
+                store.getState().csound.status
+            ))
     ) {
         throw new Error(
             "Csound is busy. Stop it before starting another performance."
@@ -134,14 +154,32 @@ export async function runPerformance({
     const requestedOutput = document
         ? outputNameFromCsd(document.currentValue)
         : undefined;
-    if (mode === "play" && requestedOutput)
-        throw new Error(
-            "This CSD requests file output. Use csound_render or change CsOptions to -odac."
-        );
+    if (renderSettings) {
+        const error = validateRenderSettings(renderSettings);
+        if (error) throw new Error(error);
+    }
     const render = mode === "render" || (mode === "auto" && !!requestedOutput);
     const outputName =
+        (renderSettings ? renderFilename(renderSettings) : undefined) ??
         requestedOutput ??
         `${document?.filename.replace(/\.[^.]+$/, "") ?? "render"}.wav`;
+    // The browser engine treats any output path containing "dac" as realtime.
+    const engineOutputName = renderSettings
+        ? getUniqueFilename(
+              `csound-export.${renderSettings.format}`,
+              Object.values(project.documents).map((doc) =>
+                  documentPath(doc, project.documents)
+              )
+          )
+        : outputName;
+    const overrides = [
+        ...(renderSettings
+            ? renderOptions(renderSettings)
+            : !render
+              ? ["--format=wav:float"]
+              : []),
+        render ? `-o${engineOutputName}` : "-odac"
+    ];
     const controller = new AbortController();
     let resolveDone!: () => void;
     const run: Run = {
@@ -158,6 +196,7 @@ export async function runPerformance({
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
+    let audio: Uint8Array | undefined;
     let disconnectReadline = () => {};
     const finish = (collect: boolean): Promise<string[]> => {
         if (finishPromise) return finishPromise;
@@ -166,9 +205,42 @@ export async function runPerformance({
             const files: string[] = [];
             try {
                 if (csound) {
-                    // Csound 7 closes output at end-of-score and omits cleanup
-                    // on some browser backends; older backends still expose it.
-                    await csound.cleanup?.();
+                    const waveInfo =
+                        renderSettings?.format === "wav" &&
+                        collect &&
+                        !failed &&
+                        !controller.signal.aborted
+                            ? await Promise.all([
+                                  csound.getSr(),
+                                  csound.getNchnls(),
+                                  csound.get0dBFS()
+                              ])
+                            : undefined;
+                    // Flush buffered samples and close the encoder before reading.
+                    if (csound.cleanup) await csound.cleanup();
+                    else if (render) await csound.reset();
+                    if (
+                        render &&
+                        collect &&
+                        !failed &&
+                        !controller.signal.aborted
+                    ) {
+                        audio = await csound.fs.readFile(engineOutputName);
+                        if (audio?.length && waveInfo && renderSettings)
+                            audio = rawToWave(
+                                audio,
+                                waveInfo[0],
+                                waveInfo[1],
+                                renderSettings.bitDepth,
+                                waveInfo[2]
+                            );
+                        if (audio?.length && renderSettings?.format === "flac")
+                            audio = finalizeFlac(audio);
+                        if (!audio?.length)
+                            throw new Error(
+                                "Csound produced no audio file. Read the console for details."
+                            );
+                    }
                     if (
                         collect &&
                         collectFiles &&
@@ -177,21 +249,36 @@ export async function runPerformance({
                         store.getState().ProjectsReducer.activeProjectUid ===
                             projectUid
                     ) {
+                        if (
+                            render &&
+                            !(await csound.fs.readFile(engineOutputName))
+                                ?.length
+                        ) {
+                            throw new Error(
+                                "Csound produced no audio file. Read the console for details."
+                            );
+                        }
                         const after = await csound.fs.readdir("/");
                         const candidates = new Set([
-                            ...after.filter((name) => !before.includes(name)),
-                            ...(render ? [outputName] : [])
+                            ...(render ? [engineOutputName] : []),
+                            ...after.filter((name) => !before.includes(name))
                         ]);
                         for (const name of candidates) {
                             let buffer: Uint8Array;
                             try {
-                                buffer = await csound.fs.readFile(name);
+                                buffer =
+                                    name === engineOutputName && audio
+                                        ? audio
+                                        : await csound.fs.readFile(name);
                             } catch {
                                 continue;
                             }
                             if (!buffer?.length) continue;
                             const unique = getUniqueFilename(
-                                name.replace(/^\/+/, ""),
+                                (name === engineOutputName && render
+                                    ? outputName
+                                    : name
+                                ).replace(/^\/+/, ""),
                                 [...nonCloudFiles.keys()]
                             );
                             nonCloudFiles.set(unique, {
@@ -223,7 +310,13 @@ export async function runPerformance({
                     if (activeRun === run) {
                         activeRun = undefined;
                         store.dispatch(
-                            setCsoundPlayState(failed ? "error" : "stopped")
+                            setCsoundPlayState(
+                                failed
+                                    ? "error"
+                                    : batch
+                                      ? "rendering"
+                                      : "stopped"
+                            )
                         );
                     }
                     resolveDone();
@@ -279,10 +372,24 @@ export async function runPerformance({
             check();
         }
         before = await csound.fs.readdir("/");
-        await csound.setOption(render ? `-o${outputName}` : "-odac");
+        for (const option of overrides) await csound.setOption(option);
+        if (csdPath && document && renderSettings) {
+            await csound.fs.writeFile(
+                csdPath,
+                new TextEncoder().encode(
+                    withPerformanceOptions(document.currentValue, overrides)
+                )
+            );
+        }
         const compiled =
             csdText !== undefined
-                ? await compileCSD(csound, csdText, true)
+                ? await compileCSD(
+                      csound,
+                      renderSettings
+                          ? withPerformanceOptions(csdText, overrides)
+                          : csdText,
+                      true
+                  )
                 : csdPath
                   ? await compileCSD(csound, csdPath)
                   : await csound.compileOrc(orc ?? "");
@@ -292,7 +399,18 @@ export async function runPerformance({
                 "Csound compilation failed. Read the console for details."
             );
         // CsOptions may override the initial command-line options.
-        await csound.setOption(render ? `-o${outputName}` : "-odac");
+        for (const option of overrides) await csound.setOption(option);
+        // Live inputs make the browser backend start a realtime thread even
+        // with file output, so it would never send the renderEnded event.
+        if (
+            render &&
+            ((await csound.isRequestingRtAudioInput()) ||
+                (await csound.isRequestingRtMidiInput()))
+        ) {
+            throw new Error(
+                "Offline rendering cannot use live audio or MIDI input. Remove live input options from CsOptions, or use an input file."
+            );
+        }
         const rendered = render
             ? new Promise<void>((resolve) =>
                   csound!.once("renderEnded", resolve)
@@ -372,11 +490,15 @@ export async function runPerformance({
                 "Csound reported a performance error. Read the console for details."
             );
         const files = await finish(true);
-        if (!files.length)
+        if (!files.length && !audio)
             throw new Error(
                 "Csound produced no audio file. Check CsOptions and the console."
             );
-        return { status: "completed", files };
+        return {
+            status: "completed",
+            files,
+            ...(!collectFiles ? { audio } : {})
+        };
     } catch (error) {
         failed = !controller.signal.aborted;
         try {
@@ -390,12 +512,58 @@ export async function runPerformance({
     }
 }
 
+/** Reserve audio across a multi-file job, including the gaps between engines. */
+export async function runPerformanceBatch<T>(
+    task: (perform: typeof runPerformance, signal: AbortSignal) => Promise<T>,
+    signal: AbortSignal
+): Promise<T> {
+    if (
+        isCsoundBusy() ||
+        ["loading", "playing", "paused", "rendering"].includes(
+            store.getState().csound.status
+        )
+    )
+        throw new Error("Csound is busy. Stop it before rendering.");
+    signal.throwIfAborted();
+    const controller = new AbortController();
+    const cancel = () => controller.abort();
+    signal.addEventListener("abort", cancel, { once: true });
+    let resolve!: () => void;
+    const lease = {
+        token: Symbol("render"),
+        controller,
+        done: new Promise<void>((r) => {
+            resolve = r;
+        })
+    };
+    batch = lease;
+    try {
+        return await task((options) => {
+            controller.signal.throwIfAborted();
+            return runPerformance({
+                ...options,
+                batchToken: lease.token,
+                signal: controller.signal
+            });
+        }, controller.signal);
+    } finally {
+        signal.removeEventListener("abort", cancel);
+        if (batch === lease) batch = undefined;
+        if (store.getState().csound.status === "rendering")
+            store.dispatch(setCsoundPlayState("stopped"));
+        resolve();
+    }
+}
+
 export async function stopPerformance(): Promise<void> {
+    const job = batch;
+    job?.controller.abort();
     const run = activeRun;
     if (run) {
         run.controller.abort();
         await run.done;
     }
+    await job?.done;
 }
 
 export const stopCsound = () => async () => {
@@ -417,7 +585,7 @@ export const playCsdFromFs =
         _dispatch: AppThunkDispatch,
         setConsole: SetConsole
     ): Promise<void> => {
-        await runPerformance({ projectUid, csdPath, setConsole });
+        await runPerformance({ projectUid, csdPath, mode: "play", setConsole });
     };
 export const playORCFromString =
     ({ projectUid, orc }: { projectUid: string; orc: string }) =>
@@ -425,7 +593,7 @@ export const playORCFromString =
         _dispatch: AppThunkDispatch,
         setConsole: SetConsole
     ): Promise<void> => {
-        await runPerformance({ projectUid, orc, setConsole });
+        await runPerformance({ projectUid, orc, mode: "play", setConsole });
     };
 
 export const renderToDisk =
@@ -448,30 +616,13 @@ export const renderToDisk =
             );
             return;
         }
-        try {
-            await runPerformance({
+        dispatch(
+            openSimpleModal("render-dialog", {
                 projectUid: project.projectUid,
-                csdPath: /\.csd$/i.test(document.filename)
-                    ? documentPath(document, project.documents)
-                    : undefined,
-                orc: document.currentValue,
-                mode: "render",
+                documentUid: document.documentUid,
                 setConsole
-            });
-            dispatch(
-                openSnackbar(
-                    `Render of ${document.filename} done`,
-                    SnackbarType.Success
-                )
-            );
-        } catch (error) {
-            dispatch(
-                openSnackbar(
-                    error instanceof Error ? error.message : "Render failed",
-                    SnackbarType.Error
-                )
-            );
-        }
+            })
+        );
     };
 
 export const listAvailableOpcodes = async (): Promise<void> => {
