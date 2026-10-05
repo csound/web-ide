@@ -79,13 +79,22 @@ const layout = (theme: Theme) => css`
     }
     header {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
         gap: 12px;
+        margin-bottom: 18px;
     }
-    header p {
-        margin: 6px 0 24px;
-        overflow-wrap: anywhere;
+    .sample-rate-presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 6px;
+    }
+    .sample-rate-presets button {
+        min-width: 0;
+        padding: 3px 6px;
+        font-size: 11px;
+        text-transform: none;
     }
     .fields {
         display: grid;
@@ -372,15 +381,7 @@ export function RenderDialog({
             aria-labelledby="render-title"
         >
             <header>
-                <div>
-                    <h2 id="render-title">Render to disk</h2>
-                    <p>
-                        {playlistMode
-                            ? `${chosen.length} of ${tracks.length} tracks`
-                            : (document?.filename ?? "No target selected")}{" "}
-                        · Audio export
-                    </p>
-                </div>
+                <h2 id="render-title">Render to disk</h2>
                 <IconButton
                     aria-label="Close render dialog"
                     disabled={busy}
@@ -656,6 +657,34 @@ export function RenderDialog({
                                             }
                                         }}
                                     />
+                                    <div
+                                        className="sample-rate-presets"
+                                        role="group"
+                                        aria-label="Common sample rates"
+                                    >
+                                        {[44100, 48000, 96000, 192000].map(
+                                            (rate) => (
+                                                <Button
+                                                    key={rate}
+                                                    type="button"
+                                                    size="small"
+                                                    variant="text"
+                                                    aria-pressed={
+                                                        settings.sampleRate ===
+                                                        rate
+                                                    }
+                                                    onClick={() =>
+                                                        update(
+                                                            "sampleRate",
+                                                            rate
+                                                        )
+                                                    }
+                                                >
+                                                    {rate / 1000} kHz
+                                                </Button>
+                                            )
+                                        )}
+                                    </div>
                                 </div>
                                 <div>
                                     <FieldLabel
