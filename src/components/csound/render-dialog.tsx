@@ -131,6 +131,15 @@ const layout = (theme: Theme) => css`
         font-size: 13px;
         overflow-wrap: anywhere;
     }
+    .timing-option {
+        display: flex;
+        align-items: center;
+        margin-left: -11px;
+    }
+    .timing-option .field-label {
+        margin-bottom: 0;
+        font-weight: 400;
+    }
     .channel-fields {
         margin-top: 18px;
     }
@@ -268,9 +277,7 @@ export function RenderDialog({
         value: RenderSettings[K]
     ) => setSettings((previous) => ({ ...previous, [key]: value }));
     const start = async () => {
-        const invalid = validateRenderSettings(
-            splitChannels ? { ...settings, format: "wav" } : settings
-        );
+        const invalid = validateRenderSettings(settings, splitChannels);
         if (invalid) {
             setError(invalid);
             return;
@@ -344,7 +351,7 @@ export function RenderDialog({
                 }
                 saveAs(
                     await zip.generateAsync({ type: "blob" }),
-                    `${settings.filename.replace(/\.(wav|ogg|mp3)$/i, "")}.zip`
+                    `${settings.filename.replace(/\.(wav|flac|ogg|mp3)$/i, "")}.zip`
                 );
             }
         } catch (cause) {
@@ -490,7 +497,7 @@ export function RenderDialog({
                                 <FieldLabel
                                     id="render-format"
                                     label="Format"
-                                    help="WAV keeps uncompressed audio for editing. Ogg Vorbis and MP3 make smaller files by discarding some audio detail. MP3 has broad player support."
+                                    help="WAV keeps uncompressed audio for editing. FLAC compresses integer PCM without losing audio detail. Ogg Vorbis and MP3 make smaller files by discarding some audio detail. MP3 has broad player support."
                                 />
                                 <TextField
                                     id="render-format"
@@ -498,22 +505,33 @@ export function RenderDialog({
                                     fullWidth
                                     size="small"
                                     value={settings.format}
-                                    onChange={(event) =>
-                                        update(
-                                            "format",
-                                            event.target
-                                                .value as RenderSettings["format"]
-                                        )
-                                    }
+                                    onChange={(event) => {
+                                        const format = event.target
+                                            .value as RenderSettings["format"];
+                                        setSettings((previous) => ({
+                                            ...previous,
+                                            format,
+                                            bitDepth:
+                                                format === "flac" &&
+                                                !["16", "24"].includes(
+                                                    previous.bitDepth
+                                                )
+                                                    ? "24"
+                                                    : previous.bitDepth
+                                        }));
+                                    }}
                                     slotProps={{ select: { native: true } }}
                                 >
                                     <option value="wav">WAV</option>
+                                    <option value="flac">
+                                        FLAC (lossless)
+                                    </option>
                                     <option value="ogg">Ogg Vorbis</option>
                                     <option value="mp3">MP3</option>
                                 </TextField>
                             </div>
                             <div>
-                                {settings.format === "wav" ? (
+                                {["wav", "flac"].includes(settings.format) ? (
                                     <>
                                         <FieldLabel
                                             id="render-depth"
@@ -537,22 +555,30 @@ export function RenderDialog({
                                                 select: { native: true }
                                             }}
                                         >
-                                            <option value="8">8-bit PCM</option>
+                                            {settings.format === "wav" && (
+                                                <option value="8">
+                                                    8-bit PCM
+                                                </option>
+                                            )}
                                             <option value="16">
                                                 16-bit PCM
                                             </option>
                                             <option value="24">
                                                 24-bit PCM
                                             </option>
-                                            <option value="32">
-                                                32-bit PCM
-                                            </option>
-                                            <option value="float">
-                                                32-bit float
-                                            </option>
-                                            <option value="double">
-                                                64-bit float
-                                            </option>
+                                            {settings.format === "wav" && (
+                                                <>
+                                                    <option value="32">
+                                                        32-bit PCM
+                                                    </option>
+                                                    <option value="float">
+                                                        32-bit float
+                                                    </option>
+                                                    <option value="double">
+                                                        64-bit float
+                                                    </option>
+                                                </>
+                                            )}
                                         </TextField>
                                     </>
                                 ) : (
@@ -666,7 +692,7 @@ export function RenderDialog({
                                     <FieldLabel
                                         id="render-channels"
                                         label="Output channels"
-                                        help="Overrides nchnls for every selected track. This changes the orchestra's output count; it does not downmix or duplicate channels. Leave blank to use each project's value. MP3 allows at most two channels per file."
+                                        help="Overrides nchnls for every selected track. This changes the orchestra's output count; it does not downmix or duplicate channels. Leave blank to use each project's value. MP3 allows two channels per file; FLAC allows eight."
                                     />
                                     <TextField
                                         id="render-channels"
@@ -695,7 +721,7 @@ export function RenderDialog({
                                     <FieldLabel
                                         id="render-dither"
                                         label="Dither"
-                                        help="Adds very quiet noise to reduce distortion when converting to integer PCM. This engine supports dither for 16-bit WAV. Float and compressed exports do not need this setting."
+                                        help="Adds very quiet noise to reduce distortion when converting to integer PCM. Available for 16-bit WAV and FLAC. It changes the samples before encoding; keep it off to preserve existing 16-bit samples."
                                     />
                                     <TextField
                                         id="render-dither"
@@ -703,12 +729,15 @@ export function RenderDialog({
                                         fullWidth
                                         size="small"
                                         disabled={
-                                            settings.format !== "wav" ||
-                                            settings.bitDepth !== "16"
+                                            !["wav", "flac"].includes(
+                                                settings.format
+                                            ) || settings.bitDepth !== "16"
                                         }
                                         value={
                                             settings.dither &&
-                                            settings.format === "wav" &&
+                                            ["wav", "flac"].includes(
+                                                settings.format
+                                            ) &&
                                             settings.bitDepth === "16"
                                                 ? "on"
                                                 : "off"
@@ -741,6 +770,24 @@ export function RenderDialog({
                                 }
                                 label="Separate mono file for each channel"
                             />
+                            <div className="timing-option">
+                                <Checkbox
+                                    id="render-sample-accurate"
+                                    size="small"
+                                    checked={settings.sampleAccurate ?? false}
+                                    onChange={(event) =>
+                                        update(
+                                            "sampleAccurate",
+                                            event.target.checked
+                                        )
+                                    }
+                                />
+                                <FieldLabel
+                                    id="render-sample-accurate"
+                                    label="Sample-accurate score timing"
+                                    help="Enables --sample-accurate so score events can start between control blocks. Control updates still follow ksmps, and tied notes are not supported. Leave unchecked to keep the project's timing setting."
+                                />
+                            </div>
                             <p className="note">
                                 These settings apply to this render. Your source
                                 stays unchanged.

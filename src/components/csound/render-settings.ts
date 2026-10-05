@@ -1,4 +1,4 @@
-export type RenderFormat = "wav" | "ogg" | "mp3";
+export type RenderFormat = "wav" | "flac" | "ogg" | "mp3";
 export type RenderSettings = {
     filename: string;
     format: RenderFormat;
@@ -8,12 +8,14 @@ export type RenderSettings = {
     ksmps?: number;
     channels?: number;
     dither?: boolean;
+    sampleAccurate?: boolean;
     orchestraMacros?: string;
     scoreMacros?: string;
 };
 
 export function validateRenderSettings(
-    settings: RenderSettings
+    settings: RenderSettings,
+    splitChannels = false
 ): string | undefined {
     if (
         !settings.filename.trim() ||
@@ -24,7 +26,7 @@ export function validateRenderSettings(
         /^\.+$/.test(settings.filename)
     )
         return "Enter a filename without path separators or special characters.";
-    if (!["wav", "ogg", "mp3"].includes(settings.format))
+    if (!["wav", "flac", "ogg", "mp3"].includes(settings.format))
         return "Choose a supported format.";
     if (!["8", "16", "24", "32", "float", "double"].includes(settings.bitDepth))
         return "Choose a supported bit depth.";
@@ -55,8 +57,22 @@ export function validateRenderSettings(
             settings.channels > 64)
     )
         return "Choose 1 to 64 output channels.";
-    if (settings.format === "mp3" && settings.channels && settings.channels > 2)
+    if (
+        !splitChannels &&
+        settings.format === "mp3" &&
+        settings.channels &&
+        settings.channels > 2
+    )
         return "MP3 supports one or two channels. Use WAV or Ogg for multichannel audio, or export separate mono files.";
+    if (settings.format === "flac" && !["16", "24"].includes(settings.bitDepth))
+        return "Choose 16-bit or 24-bit PCM for FLAC.";
+    if (
+        !splitChannels &&
+        settings.format === "flac" &&
+        settings.channels &&
+        settings.channels > 8
+    )
+        return "FLAC supports up to eight channels per file. Use WAV or export separate mono files.";
     try {
         macroOptions(settings.orchestraMacros, "o");
         macroOptions(settings.scoreMacros, "s");
@@ -67,7 +83,7 @@ export function validateRenderSettings(
 }
 
 export function renderFilename(settings: RenderSettings): string {
-    return `${settings.filename.trim().replace(/\.(wav|ogg|mp3)$/i, "")}.${settings.format}`;
+    return `${settings.filename.trim().replace(/\.(wav|flac|ogg|mp3)$/i, "")}.${settings.format}`;
 }
 
 export function projectSettingHint(
@@ -89,10 +105,12 @@ export function renderOptions(settings: RenderSettings): string[] {
     return [
         settings.format === "wav"
             ? `--format=raw:${{ "8": "uchar", "16": "short", "24": "24bit", "32": "long", float: "float", double: "double" }[settings.bitDepth]}`
-            : settings.format === "ogg"
-              ? "--ogg"
-              : "--mpeg",
-        ...(settings.format !== "wav"
+            : settings.format === "flac"
+              ? `--format=flac:${settings.bitDepth === "16" ? "short" : "24bit"}`
+              : settings.format === "ogg"
+                ? "--ogg"
+                : "--mpeg",
+        ...(["ogg", "mp3"].includes(settings.format)
             ? [
                   `--vbr-quality=${settings.quality}`,
                   ...(settings.format === "mp3" ? ["--vbr"] : [])
@@ -101,10 +119,11 @@ export function renderOptions(settings: RenderSettings): string[] {
         ...(settings.sampleRate
             ? [`--sample-rate=${settings.sampleRate}`]
             : []),
+        ...(settings.sampleAccurate ? ["--sample-accurate"] : []),
         ...(settings.ksmps ? [`--ksmps=${settings.ksmps}`] : []),
         ...(settings.channels ? [`--nchnls=${settings.channels}`] : []),
         settings.dither &&
-        settings.format === "wav" &&
+        ["wav", "flac"].includes(settings.format) &&
         settings.bitDepth === "16"
             ? "-Z1"
             : "-Z0",

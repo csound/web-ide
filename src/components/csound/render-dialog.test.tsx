@@ -58,6 +58,53 @@ afterEach(() => {
 });
 
 describe("render dialog", () => {
+    it("switches float WAV to valid FLAC settings and submits sample-accurate timing", async () => {
+        fireEvent.change(screen.getByLabelText("Bit depth", { exact: true }), {
+            target: { value: "float" }
+        });
+        fireEvent.change(screen.getByLabelText("Format", { exact: true }), {
+            target: { value: "flac" }
+        });
+        expect(
+            (
+                screen.getByLabelText("Bit depth", {
+                    exact: true
+                }) as HTMLSelectElement
+            ).value
+        ).toBe("24");
+        expect(
+            screen.queryByRole("option", { name: "32-bit float" })
+        ).toBeNull();
+        expect(
+            screen.queryByLabelText("Encoding quality", { exact: true })
+        ).toBeNull();
+        fireEvent.change(screen.getByLabelText("Bit depth", { exact: true }), {
+            target: { value: "16" }
+        });
+        expect(
+            (
+                screen.getByLabelText("Dither", {
+                    exact: true
+                }) as HTMLSelectElement
+            ).disabled
+        ).toBe(false);
+        fireEvent.click(
+            screen.getByRole("checkbox", {
+                name: "Sample-accurate score timing"
+            })
+        );
+        fireEvent.click(screen.getByRole("button", { name: "Render audio" }));
+        await screen.findByText("Render complete");
+        expect(renderJob).toHaveBeenCalledWith(
+            expect.objectContaining({
+                settings: expect.objectContaining({
+                    format: "flac",
+                    bitDepth: "16",
+                    sampleAccurate: true
+                })
+            })
+        );
+    });
     it("uses project values by default and offers the right format controls", async () => {
         expect(screen.getByPlaceholderText("Project: 48000")).toBeTruthy();
         fireEvent.change(screen.getByLabelText("Format", { exact: true }), {

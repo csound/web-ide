@@ -42,6 +42,10 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
                 throw new Error(
                     "MP3 supports one or two channels. Choose separate mono files or use WAV or Ogg."
                 );
+            if (job.settings.format === "flac" && wave.channels > 8)
+                throw new Error(
+                    "FLAC supports up to eight channels. Choose separate mono files or WAV."
+                );
             const inputName = getUniqueFilename(
                 "csound-encoding-input.wav",
                 Object.values(project.documents).map((doc) =>
@@ -106,7 +110,10 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
             });
             if (!result.audio)
                 throw new Error(`${doc.filename} produced no audio.`);
-            const stem = job.settings.filename.replace(/\.(wav|ogg|mp3)$/i, "");
+            const stem = job.settings.filename.replace(
+                /\.(wav|flac|ogg|mp3)$/i,
+                ""
+            );
             const name =
                 job.documents.length === 1 || job.combine
                     ? stem
@@ -128,7 +135,7 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
         if (job.combine)
             await exportPcm(
                 joinWaves(combined),
-                job.settings.filename.replace(/\.(wav|ogg|mp3)$/i, "")
+                job.settings.filename.replace(/\.(wav|flac|ogg|mp3)$/i, "")
             );
         signal.throwIfAborted();
         if (

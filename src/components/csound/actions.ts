@@ -15,6 +15,7 @@ import { addDocumentToCsoundFS, getUniqueFilename } from "@comp/projects/utils";
 import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { consoleReadline } from "../console/readline";
 import { rawToWave } from "./wave-files";
+import { finalizeFlac } from "./flac-file";
 import {
     RenderSettings,
     renderFilename,
@@ -233,6 +234,8 @@ export async function runPerformance({
                                 renderSettings.bitDepth,
                                 waveInfo[2]
                             );
+                        if (audio?.length && renderSettings?.format === "flac")
+                            audio = finalizeFlac(audio);
                         if (!audio?.length)
                             throw new Error(
                                 "Csound produced no audio file. Read the console for details."
