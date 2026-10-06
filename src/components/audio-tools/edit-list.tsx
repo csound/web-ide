@@ -7,11 +7,13 @@ import CloseRounded from "@mui/icons-material/CloseRounded";
 export function EditList({
     rows,
     status,
-    onClear
+    onClear,
+    emptyText = "Choose an edit to update the preview automatically."
 }: {
     rows: { id: string; label: string; detail: string; remove: () => void }[];
     status?: string;
     onClear: () => void;
+    emptyText?: string;
 }) {
     const theme = useTheme();
     return (
@@ -40,7 +42,7 @@ export function EditList({
             </p>
             {!rows.length ? (
                 <p css={{ paddingTop: 12, color: theme.altTextColor }}>
-                    Choose an edit to update the preview automatically.
+                    {emptyText}
                 </p>
             ) : (
                 <ol css={{ listStyle: "none", padding: 0, margin: "8px 0 0" }}>

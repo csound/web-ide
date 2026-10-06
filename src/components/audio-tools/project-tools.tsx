@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "@root/store";
 import { addNonCloudFile, nonCloudFiles } from "../file-tree/actions";
 import { getUniqueFilename } from "../projects/utils";
 import { checkAudioBytes, readAudioStream } from "./limits";
+import type { ToolFile } from "./types";
+import ImpulseTool from "./impulse-tool";
 import AudioTool, { type AudioSource } from "./audio-tool";
 
 /** Identify project files the browser audio loader can accept. */
@@ -16,7 +18,7 @@ function ProjectAudioTool({
     mode
 }: {
     projectUid: string;
-    mode: "sample" | "analysis";
+    mode: "sample" | "analysis" | "impulse" | "convolution";
 }) {
     const dispatch = useDispatch();
     const documents = useSelector(
@@ -75,28 +77,31 @@ function ProjectAudioTool({
             }
         }))
     ];
-    return (
+    const onSave = (file: ToolFile) => {
+        const name = getUniqueFilename(file.name.replace(/^.*[/\\]/, ""), [
+            ...nonCloudFiles.keys(),
+            ...Object.values(documents || {}).map(
+                (document) => document.filename
+            )
+        ]);
+        const createdAt = new Date();
+        nonCloudFiles.set(name, { name, createdAt, buffer: file.data });
+        dispatch(addNonCloudFile({ name, createdAt: createdAt.getTime() }));
+        return name;
+    };
+    return mode === "impulse" || mode === "convolution" ? (
+        <ImpulseTool
+            key={projectUid}
+            mode={mode}
+            sources={sources}
+            onSave={onSave}
+        />
+    ) : (
         <AudioTool
             key={projectUid}
             mode={mode}
             sources={sources}
-            onSave={(file) => {
-                const name = getUniqueFilename(
-                    file.name.replace(/^.*[/\\]/, ""),
-                    [
-                        ...nonCloudFiles.keys(),
-                        ...Object.values(documents || {}).map(
-                            (document) => document.filename
-                        )
-                    ]
-                );
-                const createdAt = new Date();
-                nonCloudFiles.set(name, { name, createdAt, buffer: file.data });
-                dispatch(
-                    addNonCloudFile({ name, createdAt: createdAt.getTime() })
-                );
-                return name;
-            }}
+            onSave={onSave}
         />
     );
 }
@@ -108,4 +113,13 @@ export function SampleEditor({ projectUid }: { projectUid: string }) {
 /** Open file analysis with project audio sources and downloadable Csound data. */
 export function AudioAnalysis({ projectUid }: { projectUid: string }) {
     return <ProjectAudioTool projectUid={projectUid} mode="analysis" />;
+}
+
+/** Create a reference sweep or recover a response from recorded audio. */
+export function ImpulseResponse({ projectUid }: { projectUid: string }) {
+    return <ProjectAudioTool projectUid={projectUid} mode="impulse" />;
+}
+/** Prepare an existing response for Csound's convolve opcode. */
+export function ConvolutionPrep({ projectUid }: { projectUid: string }) {
+    return <ProjectAudioTool projectUid={projectUid} mode="convolution" />;
 }

@@ -1,3 +1,4 @@
+import { useAudioUrl } from "./use-audio-url";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
@@ -38,23 +39,6 @@ export type AudioSource = {
     name: string;
     load: (signal: AbortSignal) => Promise<Uint8Array>;
 };
-
-/** Own one playback URL and revoke it when the preview changes. */
-function useAudioUrl(data?: Uint8Array) {
-    const [owned, setOwned] = useState<{ data: Uint8Array; url: string }>();
-    useEffect(() => {
-        if (!data) {
-            setOwned(undefined);
-            return;
-        }
-        const next = URL.createObjectURL(
-            new Blob([data], { type: "audio/wav" })
-        );
-        setOwned({ data, url: next });
-        return () => URL.revokeObjectURL(next);
-    }, [data]);
-    return owned?.data === data ? owned?.url : undefined;
-}
 
 /** A single automatic preview for sample edits and audio analysis. */
 export default function AudioTool({
