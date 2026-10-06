@@ -50,6 +50,8 @@ const executablePath =
 export const BROWSER_SETTINGS = {
     headless: process.env.HEADLESS !== "false",
     executablePath,
+    // Connect directly instead of waiting for Chrome to print a WebSocket URL.
+    pipe: true,
     args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
