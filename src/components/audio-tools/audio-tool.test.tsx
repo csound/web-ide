@@ -7,6 +7,7 @@ import {
     screen,
     waitFor
 } from "@testing-library/react";
+import { within } from "@testing-library/react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import theme from "../../styles/_theme-github-light";
 import AudioTool from "./audio-tool";
@@ -23,6 +24,7 @@ const data = encodeAudio({
     channels: [new Float32Array(8000).fill(0.2)]
 });
 beforeEach(() => {
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
     vi.stubGlobal(
         "URL",
         Object.assign(URL, {
@@ -34,6 +36,7 @@ beforeEach(() => {
 afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
 });
@@ -74,15 +77,17 @@ it("loads audio without starting WASM, then keeps the result only on request", a
         target: { value: "0.25" }
     });
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await screen.findByRole("button", { name: "Keep result" });
+    await screen.findByRole("button", { name: "Add sample to project" });
     expect(runTool).not.toHaveBeenCalled();
     expect(save).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Keep result" }));
+    fireEvent.click(
+        screen.getByRole("button", { name: "Add sample to project" })
+    );
     expect(save).toHaveBeenCalledOnce();
     expect(durationOf(decodeWave(save.mock.calls[0][0].data))).toBe(0.75);
     expect(
         screen
-            .getByRole("button", { name: "Keep result" })
+            .getByRole("button", { name: "Add sample to project" })
             .hasAttribute("disabled")
     ).toBe(true);
 });
@@ -119,7 +124,7 @@ it("shows processing errors and can retry", async () => {
     );
     vi.mocked(runTool).mockResolvedValueOnce({ data, log: "" });
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await screen.findByRole("button", { name: "Keep result" });
+    await screen.findByRole("button", { name: "Add sample to project" });
     expect(screen.queryByRole("alert")).toBeNull();
 });
 it("offers analysis modes without loading WASM on open", async () => {
@@ -143,16 +148,21 @@ it("offers analysis modes without loading WASM on open", async () => {
 it("cancels trim preparation without publishing a result, then allows retry", async () => {
     mount();
     await load();
+    fireEvent.click(screen.getByRole("button", { name: "Trim", exact: true }));
     vi.useFakeTimers();
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await act(() => vi.runAllTimersAsync());
-    expect(screen.queryByRole("button", { name: "Keep result" })).toBeNull();
+    expect(
+        screen.queryByRole("button", { name: "Add sample to project" })
+    ).toBeNull();
     expect(runTool).not.toHaveBeenCalled();
     expect(screen.queryByRole("alert")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     await act(() => vi.runAllTimersAsync());
-    expect(screen.getByRole("button", { name: "Keep result" })).toBeTruthy();
+    expect(
+        screen.getByRole("button", { name: "Add sample to project" })
+    ).toBeTruthy();
 });
 
 it("cancels result decoding without publishing a late worker result", async () => {
@@ -167,6 +177,50 @@ it("cancels result decoding without publishing a late worker result", async () =
     expect(runTool).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await act(() => vi.runAllTimersAsync());
-    expect(screen.queryByRole("button", { name: "Keep result" })).toBeNull();
+    expect(
+        screen.queryByRole("button", { name: "Add sample to project" })
+    ).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
+});
+
+it("keeps applied settings stable while pending edits change, and lets users discard the result", async () => {
+    mount();
+    await load();
+    expect(
+        screen.getByRole("button", { name: "Apply" }).hasAttribute("disabled")
+    ).toBe(true);
+    fireEvent.change(screen.getByLabelText("Selection start"), {
+        target: { value: "0.25" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    await screen.findByRole("button", { name: "Add sample to project" });
+    expect(
+        screen.getByRole("button", { name: "Apply" }).hasAttribute("disabled")
+    ).toBe(true);
+    expect(screen.queryByRole("group", { name: "Compare audio" })).toBeNull();
+    fireEvent.change(screen.getByLabelText("Selection start"), {
+        target: { value: "0.5" }
+    });
+    expect(
+        within(screen.getByRole("region", { name: "Pending edits" })).getByText(
+            "Keep 0.5 s to 1 s"
+        )
+    ).toBeTruthy();
+    expect(
+        within(screen.getByRole("region", { name: "Applied edits" })).getByText(
+            "Keep 0.25 s to 1 s"
+        )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Result playback time").textContent).toContain(
+        "0.75"
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Remove trim" }));
+    expect(
+        screen.getByRole("button", { name: "Apply" }).hasAttribute("disabled")
+    ).toBe(true);
+    expect(screen.getByRole("region", { name: "Applied edits" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Discard result" }));
+    expect(screen.queryByRole("region", { name: "Applied edits" })).toBeNull();
+    expect(screen.queryByLabelText("Result audio")).toBeNull();
+    expect(screen.getByLabelText("Original audio")).toBeTruthy();
 });

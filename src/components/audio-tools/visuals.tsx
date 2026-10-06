@@ -39,29 +39,32 @@ export function Waveform({
     audio,
     range,
     onSelect,
+    onSeek,
     disabled = false,
     gain = 0
 }: {
     audio: AudioData;
     range?: [number, number];
     onSelect?: (value: [number, number]) => void;
+    onSeek?: (seconds: number) => void;
     disabled?: boolean;
     gain?: number;
 }) {
     const theme = useTheme();
     const peaks = useMemo(() => waveformPeaks(audio), [audio]);
     const duration = durationOf(audio);
-    const drag = useRef<{ start: number; end: number }>();
+    const drag = useRef<{ start: number; end: number; x: number }>();
     const draw = useCallback(
         (context: CanvasRenderingContext2D, width: number, height: number) => {
             context.fillStyle = theme.headerBackground;
             context.fillRect(0, 0, width, height);
-            const selection = drag.current
-                ? [
-                      Math.min(drag.current.start, drag.current.end),
-                      Math.max(drag.current.start, drag.current.end)
-                  ]
-                : range;
+            const selection =
+                drag.current && onSelect && !disabled
+                    ? [
+                          Math.min(drag.current.start, drag.current.end),
+                          Math.max(drag.current.start, drag.current.end)
+                      ]
+                    : range;
             if (selection) {
                 context.fillStyle = theme.tabHighlightActive;
                 context.globalAlpha = 0.14;
@@ -115,7 +118,7 @@ export function Waveform({
                 );
             }
         },
-        [theme, range, duration, peaks, gain]
+        [theme, range, duration, peaks, gain, onSelect, disabled]
     );
     const { ref, paint } = useCanvas(draw);
     const timeAt = (event: React.PointerEvent) => {
@@ -138,9 +141,13 @@ export function Waveform({
                     : "Audio waveform"
             }
             onPointerDown={(event) => {
-                if (!onSelect || disabled) return;
+                if (!onSeek && (!onSelect || disabled)) return;
                 event.currentTarget.setPointerCapture(event.pointerId);
-                drag.current = { start: timeAt(event), end: timeAt(event) };
+                drag.current = {
+                    start: timeAt(event),
+                    end: timeAt(event),
+                    x: event.clientX
+                };
                 paint();
             }}
             onPointerMove={(event) => {
@@ -153,9 +160,14 @@ export function Waveform({
                 if (!drag.current) return;
                 const start = Math.min(drag.current.start, timeAt(event));
                 const end = Math.max(drag.current.start, timeAt(event));
+                const selecting =
+                    onSelect &&
+                    !disabled &&
+                    Math.abs(event.clientX - drag.current.x) >= 4;
                 drag.current = undefined;
-                if (end - start >= 1 / audio.sampleRate)
+                if (selecting && end - start >= 1 / audio.sampleRate)
                     onSelect?.([start, end]);
+                else onSeek?.(timeAt(event));
                 paint();
             }}
             onPointerCancel={() => {
@@ -168,7 +180,12 @@ export function Waveform({
                 height: 156,
                 borderRadius: 4,
                 touchAction: onSelect && !disabled ? "none" : "auto",
-                cursor: onSelect && !disabled ? "crosshair" : "default"
+                cursor:
+                    onSelect && !disabled
+                        ? "crosshair"
+                        : onSeek
+                          ? "pointer"
+                          : "default"
             }}
         />
     );

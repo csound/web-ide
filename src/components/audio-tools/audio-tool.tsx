@@ -22,7 +22,17 @@ import {
 import { analysisPlot, binPlot, inspectFrame } from "./plots";
 import { runTool } from "./runner";
 import { checkAudioBytes, readAudioStream } from "./limits";
-import { AnalysisGraph, Waveform } from "./visuals";
+import { AnalysisGraph } from "./visuals";
+import { WavePlayer } from "./wave-player";
+import { AudioSelect } from "./audio-select";
+import { EditList } from "./edit-list";
+import {
+    applySampleEdits,
+    stageEdit,
+    editsMatch,
+    type SampleEdit
+} from "./sample-edits";
+import type { SampleOperation } from "./operations";
 import type { AudioData, Plot, ToolFile } from "./types";
 
 export type AudioSource = {
@@ -37,6 +47,7 @@ type Result = ToolFile & {
     operation: Operation;
     sampleRate: number;
     log: string;
+    edits?: SampleEdit[];
 };
 
 /** Own a preview URL and revoke it when audio changes or the window closes. */
@@ -83,13 +94,16 @@ export default function AudioTool({
     const [saved, setSaved] = useState("");
     const [frameTime, setFrameTime] = useState(0);
     const [bins, setBins] = useState<Plot>();
-    const [preview, setPreview] = useState<"original" | "result">("result");
+    const [edits, setEdits] = useState<SampleEdit[]>([]);
     const job = useRef<AbortController>();
     const input = useRef<HTMLInputElement>(null);
     const sourceUrl = useAudioUrl(source?.data);
     const resultUrl = useAudioUrl(result?.audio ? result.data : undefined);
     const duration = source ? durationOf(source.audio) : 1;
     const active = Boolean(busy) || loading;
+    const resultMatches = Boolean(
+        result?.edits && editsMatch(result.edits, edits)
+    );
     const selectRange =
         !analysis && (operation === "trim" || operation === "denoise");
     useEffect(
@@ -105,17 +119,60 @@ export default function AudioTool({
         setBusy("");
         setLoading(false);
     };
-    /** Clear output and feedback when the source or settings change. */
+    /** Discard output and feedback without changing pending edits. */
     const resetResult = () => {
         setResult(undefined);
         setSaved("");
         setBins(undefined);
         setError("");
     };
-    /** Update one setting and discard results produced with the old value. */
+    /** Keep pending edits separate from the snapshot currently heard in Result. */
     const changeSetting = (key: keyof Settings, value: number) => {
-        setSettings((current) => ({ ...current, [key]: value }));
-        resetResult();
+        const next = { ...settings, [key]: value };
+        setSettings(next);
+        if (analysis) resetResult();
+        else
+            setEdits((current) =>
+                stageEdit(current, {
+                    operation: operation as SampleOperation,
+                    settings: next,
+                    range
+                })
+            );
+    };
+    const changeRange = (next: [number, number]) => {
+        setRange(next);
+        if (!analysis)
+            setEdits((current) =>
+                stageEdit(current, {
+                    operation: operation as SampleOperation,
+                    settings,
+                    range: next
+                })
+            );
+    };
+    const chooseOperation = (next: Operation) => {
+        setOperation(next);
+        if (analysis) {
+            resetResult();
+            return;
+        }
+        const existing = edits.find((edit) => edit.operation === next);
+        if (existing) {
+            setSettings(existing.settings);
+            setRange(existing.range);
+            return;
+        }
+        const nextRange: [number, number] =
+            next === "denoise" ? [0, Math.min(0.2, duration)] : [0, duration];
+        setRange(nextRange);
+        setEdits((current) =>
+            stageEdit(current, {
+                operation: next as SampleOperation,
+                settings,
+                range: nextRange
+            })
+        );
     };
     /** Read and decode one source within tool limits, ignoring cancelled or superseded loads. */
     const load = async (
@@ -137,6 +194,9 @@ export default function AudioTool({
             const data = await encodeAudioAsync(audio, controller.signal);
             if (controller.signal.aborted) return;
             setSource({ name, audio, data });
+            setEdits([]);
+            setSettings(defaultSettings);
+            setOperation(analysis ? "spectrum" : "trim");
             setRange([0, durationOf(audio)]);
             setChannel(0);
             setFrameTime(0);
@@ -156,11 +216,40 @@ export default function AudioTool({
         if (!source || active) return;
         const controller = new AbortController();
         job.current = controller;
-        resetResult();
+        if (analysis) resetResult();
+        else setError("");
         setBusy("Preparing audio…");
         try {
+            if (!analysis) {
+                const applied = edits.map((edit) => ({
+                    ...edit,
+                    settings: { ...edit.settings },
+                    range: [...edit.range] as [number, number]
+                }));
+                const output = await applySampleEdits(
+                    source,
+                    applied,
+                    controller.signal,
+                    setBusy
+                );
+                if (controller.signal.aborted) return;
+                const name =
+                    applied.length === 1
+                        ? resultFilename(source.name, applied[0].operation)
+                        : `${source.name.replace(/\.[^.]+$/, "")}-edited.wav`;
+                setResult({
+                    ...output,
+                    name,
+                    operation: applied[applied.length - 1].operation,
+                    sampleRate: output.audio.sampleRate,
+                    log: "",
+                    edits: applied
+                });
+                setSaved("");
+                return;
+            }
             const data =
-                analysis && source.audio.channels.length > 1
+                source.audio.channels.length > 1
                     ? await encodeAudioAsync(
                           source.audio,
                           controller.signal,
@@ -168,29 +257,17 @@ export default function AudioTool({
                           channel
                       )
                     : source.data;
-            // extractor in wasm-bin beta27 skips a buffered block and mishandles
-            // channels. Copy the selected frames directly to keep trims exact.
-            const output =
-                operation === "trim"
-                    ? {
-                          data: await encodeAudioAsync(
-                              source.audio,
-                              controller.signal,
-                              range
-                          ),
-                          log: ""
-                      }
-                    : await runTool(
-                          makeRequest(
-                              operation,
-                              settings,
-                              data,
-                              range,
-                              duration
-                          ),
-                          controller.signal,
-                          setBusy
-                      );
+            const output = await runTool(
+                makeRequest(
+                    operation as AnalysisOperation,
+                    settings,
+                    data,
+                    range,
+                    duration
+                ),
+                controller.signal,
+                setBusy
+            );
             if (controller.signal.aborted) return;
             const next: Result = {
                 name: resultFilename(source.name, operation),
@@ -199,24 +276,18 @@ export default function AudioTool({
                 sampleRate: source.audio.sampleRate,
                 log: output.log
             };
-            if (analysis) {
-                // A readable file remains downloadable even if its plot is unavailable.
-                try {
-                    next.plot = analysisPlot(
-                        operation as AnalysisOperation,
-                        output.data,
-                        duration
-                    );
-                } catch {
-                    setError(
-                        "The analysis file is ready, but its plot could not be drawn."
-                    );
-                }
-            } else
-                next.audio = await decodeAudio(output.data, controller.signal);
-            if (controller.signal.aborted) return;
+            try {
+                next.plot = analysisPlot(
+                    operation as AnalysisOperation,
+                    output.data,
+                    duration
+                );
+            } catch {
+                setError(
+                    "The analysis file is ready, but its plot could not be drawn."
+                );
+            }
             setResult(next);
-            setPreview("result");
         } catch (failure) {
             if (!controller.signal.aborted)
                 setError(
@@ -393,12 +464,6 @@ export default function AudioTool({
                     maxWidth: 130,
                     fontFamily: theme.font.monospace
                 },
-                "& audio": {
-                    display: "block",
-                    width: "100%",
-                    height: 36,
-                    colorScheme: theme.mode
-                },
                 "& output": { fontFamily: theme.font.monospace },
                 "& p": { fontSize: 12, lineHeight: 1.5, margin: 0 },
                 "& fieldset": { border: 0, padding: 0, margin: 0, minWidth: 0 },
@@ -419,7 +484,7 @@ export default function AudioTool({
             >
                 <label css={{ flex: "1 1 180px" }}>
                     Audio file
-                    <select
+                    <AudioSelect
                         aria-label="Project audio file"
                         value=""
                         disabled={active || !sources.length}
@@ -441,7 +506,7 @@ export default function AudioTool({
                                 {item.name}
                             </option>
                         ))}
-                    </select>
+                    </AudioSelect>
                 </label>
                 <Button
                     variant="outlined"
@@ -539,7 +604,7 @@ export default function AudioTool({
                     <div
                         css={{
                             display: "grid",
-                            gap: 16,
+                            gap: 12,
                             alignContent: "start",
                             minWidth: 0
                         }}
@@ -549,19 +614,18 @@ export default function AudioTool({
                                 display: "flex",
                                 flexWrap: "wrap",
                                 justifyContent: "space-between",
+                                alignItems: "center",
+                                minHeight: 32,
                                 gap: 8,
                                 fontSize: 11,
                                 color: theme.altTextColor
                             }}
                         >
-                            <span
-                                css={{
-                                    overflowWrap: "anywhere",
-                                    color: theme.textColor
-                                }}
+                            <strong
+                                css={{ fontSize: 13, color: theme.textColor }}
                             >
-                                {source.name}
-                            </span>
+                                {analysis ? "Source audio" : "Original"}
+                            </strong>
                             <span>
                                 {duration.toFixed(2)} s /{" "}
                                 {source.audio.sampleRate.toLocaleString()} Hz /{" "}
@@ -570,26 +634,23 @@ export default function AudioTool({
                                     : `${source.audio.channels.length} channels`}
                             </span>
                         </div>
-                        <Waveform
-                            audio={source.audio}
-                            range={selectRange ? range : undefined}
-                            onSelect={
-                                selectRange
-                                    ? (value) => {
-                                          setRange(value);
-                                          resetResult();
-                                      }
-                                    : undefined
-                            }
-                            disabled={active}
-                            gain={operation === "gain" ? settings.gain : 0}
-                        />
-                        <audio
+                        <div
+                            css={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                overflowWrap: "anywhere"
+                            }}
+                        >
+                            {source.name}
+                        </div>
+                        <WavePlayer
                             key={sourceUrl}
-                            controls
-                            preload="metadata"
+                            audio={source.audio}
                             src={sourceUrl}
-                            aria-label="Original audio"
+                            label="Original"
+                            range={selectRange ? range : undefined}
+                            onSelect={selectRange ? changeRange : undefined}
+                            disabled={active}
                         />
                         <div
                             role="group"
@@ -609,10 +670,7 @@ export default function AudioTool({
                                     key={choice.id}
                                     disabled={active}
                                     aria-pressed={operation === choice.id}
-                                    onClick={() => {
-                                        setOperation(choice.id);
-                                        resetResult();
-                                    }}
+                                    onClick={() => chooseOperation(choice.id)}
                                     css={
                                         operation === choice.id
                                             ? {
@@ -668,8 +726,10 @@ export default function AudioTool({
                                                     value >= 0 &&
                                                     value < range[1]
                                                 ) {
-                                                    setRange([value, range[1]]);
-                                                    resetResult();
+                                                    changeRange([
+                                                        value,
+                                                        range[1]
+                                                    ]);
                                                 }
                                             }}
                                         />
@@ -694,8 +754,10 @@ export default function AudioTool({
                                                     value > range[0] &&
                                                     value <= duration
                                                 ) {
-                                                    setRange([range[0], value]);
-                                                    resetResult();
+                                                    changeRange([
+                                                        range[0],
+                                                        value
+                                                    ]);
                                                 }
                                             }}
                                         />
@@ -704,8 +766,7 @@ export default function AudioTool({
                                         <Button
                                             disabled={active}
                                             onClick={() => {
-                                                setRange([0, duration]);
-                                                resetResult();
+                                                changeRange([0, duration]);
                                             }}
                                         >
                                             Select all
@@ -728,7 +789,7 @@ export default function AudioTool({
                             {operation === "resample" && (
                                 <label>
                                     Sample rate
-                                    <select
+                                    <AudioSelect
                                         value={settings.rate}
                                         onChange={(event) =>
                                             changeSetting(
@@ -745,13 +806,13 @@ export default function AudioTool({
                                                 {rate.toLocaleString()} Hz
                                             </option>
                                         ))}
-                                    </select>
+                                    </AudioSelect>
                                 </label>
                             )}
                             {analysis && source.audio.channels.length > 1 && (
                                 <label>
                                     Channel
-                                    <select
+                                    <AudioSelect
                                         value={channel}
                                         onChange={(event) => {
                                             setChannel(
@@ -770,13 +831,13 @@ export default function AudioTool({
                                                 </option>
                                             )
                                         )}
-                                    </select>
+                                    </AudioSelect>
                                 </label>
                             )}
                             {operation === "spectrum" && (
                                 <label>
                                     Frequency detail
-                                    <select
+                                    <AudioSelect
                                         value={settings.fft}
                                         onChange={(event) =>
                                             changeSetting(
@@ -794,7 +855,7 @@ export default function AudioTool({
                                         <option value={8192}>
                                             Fine pitches (8192)
                                         </option>
-                                    </select>
+                                    </AudioSelect>
                                 </label>
                             )}
                             {operation === "harmonics" && (
@@ -819,11 +880,21 @@ export default function AudioTool({
                                     0.005
                                 )}
                         </fieldset>
-                        {operation === "gain" && (
-                            <p css={{ color: theme.altTextColor }}>
-                                The waveform previews the gain. Apply to hear
-                                the result.
-                            </p>
+                        {!analysis && (
+                            <EditList
+                                edits={edits}
+                                pending
+                                disabled={active}
+                                onRemove={(edit) =>
+                                    setEdits((current) =>
+                                        current.filter(
+                                            (item) =>
+                                                item.operation !==
+                                                edit.operation
+                                        )
+                                    )
+                                }
+                            />
                         )}
                         <div
                             css={{
@@ -834,7 +905,11 @@ export default function AudioTool({
                         >
                             <Button
                                 variant="outlined"
-                                disabled={active}
+                                disabled={
+                                    active ||
+                                    (!analysis &&
+                                        (!edits.length || resultMatches))
+                                }
                                 onClick={() => void run()}
                                 css={{
                                     "&&": {
@@ -845,6 +920,17 @@ export default function AudioTool({
                             >
                                 {analysis ? "Analyze" : "Apply"}
                             </Button>
+                            {!analysis && !busy && resultMatches && (
+                                <span
+                                    role="status"
+                                    css={{
+                                        fontSize: 12,
+                                        color: theme.altTextColor
+                                    }}
+                                >
+                                    Result is up to date
+                                </span>
+                            )}
                             {busy && (
                                 <>
                                     <Button onClick={cancel}>Cancel</Button>
@@ -884,6 +970,33 @@ export default function AudioTool({
                             }}
                         >
                             <div
+                                css={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 8
+                                }}
+                            >
+                                <strong
+                                    css={{
+                                        fontSize: 13,
+                                        minHeight: 32,
+                                        display: "flex",
+                                        alignItems: "center"
+                                    }}
+                                >
+                                    Result
+                                </strong>
+                                <Button
+                                    onClick={() => {
+                                        cancel();
+                                        resetResult();
+                                    }}
+                                >
+                                    Discard result
+                                </Button>
+                            </div>
+                            <div
                                 role="status"
                                 css={{
                                     fontSize: 12,
@@ -895,48 +1008,11 @@ export default function AudioTool({
                             </div>
                             {result.audio && (
                                 <>
-                                    <div
-                                        role="group"
-                                        aria-label="Compare audio"
-                                    >
-                                        <Button
-                                            aria-pressed={
-                                                preview === "original"
-                                            }
-                                            onClick={() =>
-                                                setPreview("original")
-                                            }
-                                        >
-                                            Original
-                                        </Button>
-                                        <Button
-                                            aria-pressed={preview === "result"}
-                                            onClick={() => setPreview("result")}
-                                        >
-                                            Result
-                                        </Button>
-                                    </div>
-                                    <Waveform
-                                        audio={
-                                            preview === "result"
-                                                ? result.audio
-                                                : source.audio
-                                        }
-                                    />
-                                    <audio
-                                        key={
-                                            preview === "result"
-                                                ? resultUrl
-                                                : sourceUrl
-                                        }
-                                        controls
-                                        preload="metadata"
-                                        src={
-                                            preview === "result"
-                                                ? resultUrl
-                                                : sourceUrl
-                                        }
-                                        aria-label="Preview audio"
+                                    <WavePlayer
+                                        key={resultUrl}
+                                        audio={result.audio}
+                                        src={resultUrl}
+                                        label="Result"
                                     />
                                     <p css={{ color: theme.altTextColor }}>
                                         {durationOf(result.audio).toFixed(2)} s
@@ -944,6 +1020,15 @@ export default function AudioTool({
                                         {result.audio.sampleRate.toLocaleString()}{" "}
                                         Hz
                                     </p>
+                                    {result.edits && (
+                                        <EditList edits={result.edits} />
+                                    )}
+                                    {!resultMatches && (
+                                        <p css={{ color: theme.altTextColor }}>
+                                            Pending edits differ. Apply to
+                                            update this result.
+                                        </p>
+                                    )}
                                 </>
                             )}
                             {result.plot && (
@@ -1025,7 +1110,9 @@ export default function AudioTool({
                                         }
                                     }}
                                 >
-                                    Keep result
+                                    {analysis
+                                        ? "Add analysis to project"
+                                        : "Add sample to project"}
                                 </Button>
                                 <Button
                                     startIcon={<DownloadRounded />}

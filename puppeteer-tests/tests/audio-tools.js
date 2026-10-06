@@ -174,7 +174,7 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
                 {},
                 sample
             );
-            await click(sample, "Keep result");
+            await click(sample, "Add sample to project");
             await page.waitForFunction(
                 (selector) =>
                     document
@@ -186,7 +186,7 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             await snapshot("sample-dark");
             await click(sample, "Gain");
             await click(sample, "Apply");
-            await result(sample, "tone-gain.wav");
+            await result(sample, "tone-edited.wav");
             assert.ok(wasm.some((url) => url.includes("scale")));
             assert.ok(
                 wasm.every((url) => url.includes("scale")),
@@ -196,6 +196,159 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             await dumpDebugInfo(page, "audio-tools-sample");
             throw error;
         }
+    });
+    it("plays, seeks, and changes volume on the waveform", async () => {
+        assert.equal(await page.$(`${sample} audio[controls]`), null);
+        await page.locator(`${sample} [aria-label="Play original"]`).click();
+        await page.waitForFunction(
+            (selector) => {
+                const media = document.querySelector(`${selector} audio`);
+                const head = document.querySelector(
+                    `${selector} [data-testid="original-playhead"]`
+                );
+                return (
+                    media.currentTime > 0.1 && parseFloat(head.style.left) > 0
+                );
+            },
+            {},
+            sample
+        );
+        await page.locator(`${sample} [aria-label="Play result"]`).click();
+        await page.waitForFunction(
+            (selector) => {
+                const media = document.querySelectorAll(`${selector} audio`);
+                return media[0].paused && !media[1].paused;
+            },
+            {},
+            sample
+        );
+        await page.locator(`${sample} [aria-label="Pause result"]`).click();
+        await page.focus(`${sample} [aria-label="Result playback position"]`);
+        await page.keyboard.press("Home");
+        await page.keyboard.press("ArrowRight");
+        assert.equal(
+            await page.$eval(
+                `${sample} audio[aria-label="Result audio"]`,
+                (node) => node.currentTime
+            ),
+            1
+        );
+        await page.$eval(`${sample} [aria-label="Result volume"]`, (input) => {
+            Object.getOwnPropertyDescriptor(
+                HTMLInputElement.prototype,
+                "value"
+            ).set.call(input, "0.25");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        assert.equal(
+            await page.$eval(
+                `${sample} audio[aria-label="Result audio"]`,
+                (node) => node.volume
+            ),
+            0.25
+        );
+        await page.locator(`${sample} [aria-label="Mute result"]`).click();
+        assert.equal(
+            await page.$eval(
+                `${sample} audio[aria-label="Result audio"]`,
+                (node) => node.muted
+            ),
+            true
+        );
+        await page.locator(`${sample} [aria-label="Unmute result"]`).click();
+        const canvas = await page.$(
+            `${sample} [aria-label="Result player"] canvas`
+        );
+        const width = await canvas.evaluate(
+            (node) => node.getBoundingClientRect().width
+        );
+        await canvas.asLocator().click({ offset: { x: width / 2, y: 20 } });
+        const seekTime = await page.$eval(
+            `${sample} audio[aria-label="Result audio"]`,
+            (node) => node.currentTime
+        );
+        assert.ok(
+            Math.abs(seekTime - 0.75) < 0.02,
+            `Click sought to ${seekTime}, expected 0.75`
+        );
+        const offset = await page.$eval(`${sample} select`, (node) => {
+            const select = node.getBoundingClientRect();
+            const arrow = node.parentElement
+                .querySelector("svg")
+                .getBoundingClientRect();
+            return Math.abs(
+                select.y + select.height / 2 - arrow.y - arrow.height / 2
+            );
+        });
+        assert.ok(offset < 1, `Arrow centre differs by ${offset}px`);
+        await page.$eval(sample, (node) => (node.scrollTop = 0));
+        await snapshot("sample-top-dark");
+        assert.equal(await page.$(`${sample} [role=alert]`), null);
+    });
+    it("keeps applied edits stable until Apply and can discard only the result", async () => {
+        await page.locator(`${sample} [aria-label="Remove gain"]`).click();
+        assert.equal(
+            (await page.$$(`${sample} [aria-label="Pending edits"] li`)).length,
+            1
+        );
+        assert.equal(
+            (await page.$$(`${sample} [aria-label="Applied edits"] li`)).length,
+            2
+        );
+        await click(sample, "Trim");
+        await page.$eval(
+            `${sample} input[aria-label="Selection start"]`,
+            (input) => {
+                Object.getOwnPropertyDescriptor(
+                    HTMLInputElement.prototype,
+                    "value"
+                ).set.call(input, "0.75");
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        );
+        assert.match(
+            await page.$eval(
+                `${sample} [aria-label="Applied edits"]`,
+                (node) => node.textContent
+            ),
+            /0.5 s/
+        );
+        assert.match(
+            await page.$eval(
+                `${sample} [aria-label="Pending edits"]`,
+                (node) => node.textContent
+            ),
+            /0.75 s/
+        );
+        await click(sample, "Apply");
+        await result(sample, "tone-trim.wav");
+        await page.waitForFunction(
+            (selector) =>
+                Math.abs(
+                    document.querySelector(
+                        `${selector} audio[aria-label="Result audio"]`
+                    ).duration - 1.25
+                ) < 0.001,
+            {},
+            sample
+        );
+        assert.ok(
+            await page.$$eval(`${sample} button`, (nodes) =>
+                nodes.some(
+                    (node) => node.textContent === "Apply" && node.disabled
+                )
+            )
+        );
+        await click(sample, "Discard result");
+        assert.equal(
+            await page.$(`${sample} [aria-label="Result player"]`),
+            null
+        );
+        assert.ok(await page.$(`${sample} [aria-label="Original player"]`));
+        assert.equal(
+            (await page.$$(`${sample} [aria-label="Pending edits"] li`)).length,
+            1
+        );
     });
     it("cancels preparation at the 16-million-sample limit and can open another file", async () => {
         const path = join(directory, "large.wav");
@@ -307,5 +460,19 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         }));
         assert.ok(sizes.scroll <= sizes.width + 1, JSON.stringify(sizes));
         await snapshot("analysis-mobile");
+        await click("", "Samples");
+        await page.waitForSelector(`${sample} input[type=file]`);
+        await upload(sample);
+        await click(sample, "Gain");
+        await click(sample, "Apply");
+        await result(sample, "tone-gain.wav");
+        assert.ok(
+            await page.$eval(
+                sample,
+                (node) => node.scrollWidth <= node.clientWidth + 1
+            )
+        );
+        await page.$eval(sample, (node) => (node.scrollTop = 0));
+        await snapshot("sample-mobile");
     });
 });
