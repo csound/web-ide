@@ -105,6 +105,11 @@ export async function gotoProject(page) {
         return;
     }
 
+    await gotoProjectFromHome(page);
+}
+
+/** Navigate through the loaded home app when hosting cannot serve editor URLs directly. */
+export async function gotoProjectFromHome(page) {
     // Remote targets: use pushState workaround for Firebase hosting
     // 1. Load the SPA shell from the home page
     await page.goto(`${target.baseUrl}/`, {
@@ -112,8 +117,12 @@ export async function gotoProject(page) {
         timeout: TIMEOUT.NAVIGATION
     });
 
-    // 2. Wait for React to mount
-    await page.waitForSelector("#root", { timeout: TIMEOUT.NAVIGATION });
+    // #root belongs to the HTML shell. Wait for the lazy app and its router
+    // before dispatching navigation, or it can leave the home page rendered.
+    await page.waitForSelector("main #search-projects", {
+        visible: true,
+        timeout: TIMEOUT.NAVIGATION
+    });
 
     // 3. Client-side navigate to the editor route
     const editorPath = new URL(target.projectUrl).pathname;

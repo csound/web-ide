@@ -1,8 +1,13 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { goto } from "../utils/browser.js";
+import {
+    goto,
+    gotoProjectFromHome,
+    waitForProject,
+    dumpDebugInfo
+} from "../utils/browser.js";
 import { getSession, closeSession } from "../utils/session.js";
-import { targetName, TIMEOUT } from "../utils/config.js";
+import { target, targetName, TIMEOUT } from "../utils/config.js";
 
 async function assertHomeContent(page) {
     // Network idle can occur while React's lazy Main import is still pending.
@@ -41,6 +46,64 @@ describe(`Home [${targetName}]`, () => {
     it("renders page content", async () => {
         await assertHomeContent(page);
     });
+
+    it(
+        "waits for the lazy app before navigating from home to the editor",
+        { skip: targetName !== "local", timeout: TIMEOUT.NAVIGATION * 2 },
+        async () => {
+            const slowPage = await page.browser().newPage();
+            let delayedApp = false;
+            try {
+                // Match the editor suite; narrow layouts keep the file tree in a drawer.
+                await slowPage.setViewport({ width: 1280, height: 900 });
+                await slowPage.setCacheEnabled(false);
+                await slowPage.evaluateOnNewDocument((editorPath) => {
+                    window.earlyEditorNavigation = false;
+                    const pushState = history.pushState.bind(history);
+                    history.pushState = (state, title, url) => {
+                        if (
+                            url === editorPath &&
+                            !document.querySelector("main #search-projects")
+                        ) {
+                            window.earlyEditorNavigation = true;
+                        }
+                        pushState(state, title, url);
+                    };
+                }, new URL(target.projectUrl).pathname);
+                await slowPage.setRequestInterception(true);
+                slowPage.on("request", async (request) => {
+                    if (
+                        new URL(request.url()).pathname ===
+                        "/src/components/main/main.tsx"
+                    ) {
+                        delayedApp = true;
+                        // Simulate a slow lazy import while #root is already present.
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+                    }
+                    if (!slowPage.isClosed()) await request.continue();
+                });
+                await gotoProjectFromHome(slowPage);
+                assert.equal(
+                    await slowPage.evaluate(() => window.earlyEditorNavigation),
+                    false,
+                    "The route changed before the app was ready to handle navigation"
+                );
+                assert.equal(
+                    delayedApp,
+                    true,
+                    "Expected to delay the lazy app module"
+                );
+                await waitForProject(slowPage).catch(async (error) => {
+                    await dumpDebugInfo(slowPage, "home-editor-navigation");
+                    throw error;
+                });
+            } finally {
+                await slowPage.close();
+            }
+        }
+    );
 
     it(
         "waits for the home controls when the app module loads slowly",
