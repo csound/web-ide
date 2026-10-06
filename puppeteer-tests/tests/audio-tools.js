@@ -37,6 +37,20 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         }
         throw new Error(`Missing button: ${text}`);
     }
+    /** Change a native input through the same event React observes. */
+    async function setInput(selector, value) {
+        await page.$eval(
+            selector,
+            (input, next) => {
+                Object.getOwnPropertyDescriptor(
+                    HTMLInputElement.prototype,
+                    "value"
+                ).set.call(input, next);
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            },
+            value
+        );
+    }
     /** Save an optional screenshot for visual checks. */
     async function snapshot(name) {
         if (!process.env.AUDIO_TOOLS_SCREENSHOTS) return;
@@ -53,15 +67,20 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
     }
     /** Wait for a named result and fail if the tool reports an error. */
     async function result(section, filename) {
-        await page.waitForFunction(
-            (selector, name) =>
-                Array.from(
-                    document.querySelectorAll(`${selector} [role=status]`)
-                ).some((node) => node.textContent === name),
-            { timeout: 30000 },
-            section,
-            filename
-        );
+        await page
+            .waitForFunction(
+                (selector, name) =>
+                    Array.from(
+                        document.querySelectorAll(`${selector} [role=status]`)
+                    ).some((node) => node.textContent === name),
+                { timeout: 30000 },
+                section,
+                filename
+            )
+            .catch(async (error) => {
+                await dumpDebugInfo(page, `audio-tools-${filename}`);
+                throw error;
+            });
         assert.equal(await page.$(`${section} [role=alert]`), null);
     }
     before(async () => {
@@ -103,6 +122,8 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         writeFileSync(fixture, bytes);
         await gotoProject(page);
         await waitForProject(page);
+        const dismiss = await page.$('[aria-label="Dismiss project info"]');
+        if (dismiss) await dismiss.click();
     });
     after(async () => {
         await page?.close();
@@ -143,68 +164,57 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         }
         assert.equal(wasm.length, 0);
     });
-    it("opens and loads audio without downloading WASM, then fetches only the chosen tool", async () => {
-        try {
-            await page.click('[data-testid="sidebar-bottom-sampleEditor"]');
-            await page.waitForSelector(`${sample} input[type=file]`);
-            assert.equal(wasm.length, 0);
-            await upload(sample);
-            assert.equal(wasm.length, 0);
-            await page.$eval(
-                `${sample} input[aria-label="Selection start"]`,
-                (input) => {
-                    const set = Object.getOwnPropertyDescriptor(
-                        HTMLInputElement.prototype,
-                        "value"
-                    ).set;
-                    set.call(input, "0.5");
-                    input.dispatchEvent(new Event("input", { bubbles: true }));
-                }
-            );
-            await click(sample, "Apply");
-            await result(sample, "tone-trim.wav");
-            assert.equal(wasm.length, 0);
-            await page.waitForFunction(
-                (selector) => {
-                    const players = document.querySelectorAll(
-                        `${selector} audio`
-                    );
-                    return Math.abs(players[1].duration - 1.5) < 0.001;
-                },
-                {},
-                sample
-            );
-            await click(sample, "Add sample to project");
-            await page.waitForFunction(
-                (selector) =>
-                    document
-                        .querySelector(selector)
-                        ?.textContent.includes("Added tone-trim.wav"),
-                {},
-                sample
-            );
-            await snapshot("sample-dark");
-            await click(sample, "Gain");
-            await click(sample, "Apply");
-            await result(sample, "tone-edited.wav");
-            assert.ok(wasm.some((url) => url.includes("scale")));
-            assert.ok(
-                wasm.every((url) => url.includes("scale")),
-                wasm.join("\n")
-            );
-        } catch (error) {
-            await dumpDebugInfo(page, "audio-tools-sample");
-            throw error;
-        }
+    it("loads without WASM, then updates a single preview automatically", async () => {
+        await page.click('[data-testid="sidebar-bottom-sampleEditor"]');
+        await page.waitForSelector(`${sample} input[type=file]`);
+        assert.equal(wasm.length, 0);
+        await upload(sample);
+        assert.equal(wasm.length, 0);
+        assert.equal(
+            await page.$$eval(`${sample} button`, (nodes) =>
+                nodes.some((node) =>
+                    ["Apply", "Analyze", "Discard result"].includes(
+                        node.textContent.trim()
+                    )
+                )
+            ),
+            false
+        );
+        await setInput(`${sample} input[aria-label="Selection start"]`, "0.5");
+        await result(sample, "tone-trim.wav");
+        assert.equal(wasm.length, 0);
+        assert.equal((await page.$$(`${sample} audio`)).length, 1);
+        await page.waitForFunction(
+            (selector) =>
+                Math.abs(
+                    document.querySelector(`${selector} audio`).duration - 1.5
+                ) < 0.001,
+            {},
+            sample
+        );
+        await click(sample, "Add to project");
+        await page.waitForFunction(
+            (selector) =>
+                document
+                    .querySelector(selector)
+                    .textContent.includes("Added tone-trim.wav"),
+            {},
+            sample
+        );
+        await click(sample, "Gain");
+        await result(sample, "tone-edited.wav");
+        assert.ok(wasm.some((url) => url.includes("scale")));
+        assert.ok(wasm.every((url) => url.includes("scale")));
+        await snapshot("sample-changes-dark");
     });
-    it("plays, seeks, and changes volume on the waveform", async () => {
+    it("plays, seeks, and changes volume on the single waveform", async () => {
         assert.equal(await page.$(`${sample} audio[controls]`), null);
-        await page.locator(`${sample} [aria-label="Play original"]`).click();
+        await page.locator(`${sample} [aria-label="Play preview"]`).click();
         await page.waitForFunction(
             (selector) => {
                 const media = document.querySelector(`${selector} audio`);
                 const head = document.querySelector(
-                    `${selector} [data-testid="original-playhead"]`
+                    `${selector} [data-testid="preview-playhead"]`
                 );
                 return (
                     media.currentTime > 0.1 && parseFloat(head.style.left) > 0
@@ -213,144 +223,102 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             {},
             sample
         );
-        await page.locator(`${sample} [aria-label="Play result"]`).click();
-        await page.waitForFunction(
-            (selector) => {
-                const media = document.querySelectorAll(`${selector} audio`);
-                return media[0].paused && !media[1].paused;
-            },
-            {},
-            sample
-        );
-        await page.locator(`${sample} [aria-label="Pause result"]`).click();
-        await page.focus(`${sample} [aria-label="Result playback position"]`);
+        await page.locator(`${sample} [aria-label="Pause preview"]`).click();
+        await page.focus(`${sample} [aria-label="Preview playback position"]`);
         await page.keyboard.press("Home");
         await page.keyboard.press("ArrowRight");
         assert.equal(
-            await page.$eval(
-                `${sample} audio[aria-label="Result audio"]`,
-                (node) => node.currentTime
-            ),
+            await page.$eval(`${sample} audio`, (node) => node.currentTime),
             1
         );
-        await page.$eval(`${sample} [aria-label="Result volume"]`, (input) => {
-            Object.getOwnPropertyDescriptor(
-                HTMLInputElement.prototype,
-                "value"
-            ).set.call(input, "0.25");
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-        });
+        await setInput(`${sample} [aria-label="Preview volume"]`, "0.25");
         assert.equal(
-            await page.$eval(
-                `${sample} audio[aria-label="Result audio"]`,
-                (node) => node.volume
-            ),
+            await page.$eval(`${sample} audio`, (node) => node.volume),
             0.25
         );
-        await page.locator(`${sample} [aria-label="Mute result"]`).click();
+        await page.locator(`${sample} [aria-label="Mute preview"]`).click();
         assert.equal(
-            await page.$eval(
-                `${sample} audio[aria-label="Result audio"]`,
-                (node) => node.muted
-            ),
+            await page.$eval(`${sample} audio`, (node) => node.muted),
             true
         );
-        await page.locator(`${sample} [aria-label="Unmute result"]`).click();
+        await page.locator(`${sample} [aria-label="Unmute preview"]`).click();
         const canvas = await page.$(
-            `${sample} [aria-label="Result player"] canvas`
+            `${sample} [aria-label="Preview player"] canvas`
         );
         const width = await canvas.evaluate(
             (node) => node.getBoundingClientRect().width
         );
         await canvas.asLocator().click({ offset: { x: width / 2, y: 20 } });
-        const seekTime = await page.$eval(
-            `${sample} audio[aria-label="Result audio"]`,
+        const time = await page.$eval(
+            `${sample} audio`,
             (node) => node.currentTime
         );
-        assert.ok(
-            Math.abs(seekTime - 0.75) < 0.02,
-            `Click sought to ${seekTime}, expected 0.75`
-        );
+        assert.ok(Math.abs(time - 0.75) < 0.02, `Sought to ${time}`);
         const offset = await page.$eval(`${sample} select`, (node) => {
-            const select = node.getBoundingClientRect();
-            const arrow = node.parentElement
-                .querySelector("svg")
-                .getBoundingClientRect();
+            const select = node.getBoundingClientRect(),
+                arrow = node.parentElement
+                    .querySelector("svg")
+                    .getBoundingClientRect();
             return Math.abs(
                 select.y + select.height / 2 - arrow.y - arrow.height / 2
             );
         });
-        assert.ok(offset < 1, `Arrow centre differs by ${offset}px`);
+        assert.ok(offset < 1);
         await page.$eval(sample, (node) => (node.scrollTop = 0));
         await snapshot("sample-top-dark");
-        assert.equal(await page.$(`${sample} [role=alert]`), null);
     });
-    it("keeps applied edits stable until Apply and can discard only the result", async () => {
+    it("debounces rapid settings, removes edits, and clears back to the loaded file", async () => {
         await page.locator(`${sample} [aria-label="Remove gain"]`).click();
-        assert.equal(
-            (await page.$$(`${sample} [aria-label="Pending edits"] li`)).length,
-            1
-        );
-        assert.equal(
-            (await page.$$(`${sample} [aria-label="Applied edits"] li`)).length,
-            2
-        );
-        await click(sample, "Trim");
-        await page.$eval(
-            `${sample} input[aria-label="Selection start"]`,
-            (input) => {
-                Object.getOwnPropertyDescriptor(
-                    HTMLInputElement.prototype,
-                    "value"
-                ).set.call(input, "0.75");
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-        );
-        assert.match(
-            await page.$eval(
-                `${sample} [aria-label="Applied edits"]`,
-                (node) => node.textContent
-            ),
-            /0.5 s/
-        );
-        assert.match(
-            await page.$eval(
-                `${sample} [aria-label="Pending edits"]`,
-                (node) => node.textContent
-            ),
-            /0.75 s/
-        );
-        await click(sample, "Apply");
         await result(sample, "tone-trim.wav");
+        await click(sample, "Trim");
+        await setInput(`${sample} input[aria-label="Selection start"]`, "0.6");
+        await setInput(`${sample} input[aria-label="Selection start"]`, "0.7");
+        await setInput(`${sample} input[aria-label="Selection start"]`, "0.75");
+        assert.ok(await page.$(`${sample} [role=progressbar]`));
+        assert.ok(
+            await page.$$eval(`${sample} button`, (nodes) =>
+                nodes.some(
+                    (node) =>
+                        node.textContent.trim() === "Download" && node.disabled
+                )
+            )
+        );
         await page.waitForFunction(
             (selector) =>
+                !document.querySelector(`${selector} [role=progressbar]`) &&
                 Math.abs(
-                    document.querySelector(
-                        `${selector} audio[aria-label="Result audio"]`
-                    ).duration - 1.25
+                    document.querySelector(`${selector} audio`).duration - 1.25
                 ) < 0.001,
             {},
             sample
         );
-        assert.ok(
-            await page.$$eval(`${sample} button`, (nodes) =>
-                nodes.some(
-                    (node) => node.textContent === "Apply" && node.disabled
-                )
-            )
+        assert.match(
+            await page.$eval(
+                `${sample} [aria-label="Changes"]`,
+                (node) => node.textContent
+            ),
+            /0.75 s/
         );
-        await click(sample, "Discard result");
-        assert.equal(
-            await page.$(`${sample} [aria-label="Result player"]`),
-            null
+        await click(sample, "Clear all changes");
+        await page.waitForFunction(
+            (selector) =>
+                Math.abs(
+                    document.querySelector(`${selector} audio`).duration - 2
+                ) < 0.001,
+            {},
+            sample
         );
-        assert.ok(await page.$(`${sample} [aria-label="Original player"]`));
         assert.equal(
-            (await page.$$(`${sample} [aria-label="Pending edits"] li`)).length,
-            1
+            (await page.$$(`${sample} [aria-label="Changes"] li`)).length,
+            0
+        );
+        assert.equal((await page.$$(`${sample} audio`)).length, 1);
+        assert.equal(
+            await page.$eval(`${sample} audio`, (node) => node.volume),
+            0.25
         );
     });
-    it("cancels preparation at the 16-million-sample limit and can open another file", async () => {
+    it("cancels automatic preparation at the 16-million-sample limit", async () => {
         const path = join(directory, "large.wav");
         const bytes = Buffer.alloc(44 + 16_000_000, 128);
         readFileSync(fixture).copy(bytes, 0, 0, 44);
@@ -362,35 +330,35 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         writeFileSync(path, bytes);
         await (await page.$(`${sample} input[type=file]`)).uploadFile(path);
         await page.waitForFunction(
-            (selector) => {
-                const section = document.querySelector(selector);
-                return (
-                    section?.textContent.includes("large.wav") &&
-                    !section.querySelector('[aria-label="Loading audio"]')
-                );
-            },
+            (selector) =>
+                document
+                    .querySelector(selector)
+                    ?.textContent.includes("large.wav") &&
+                !document.querySelector(
+                    `${selector} [aria-label="Loading audio"]`
+                ),
             { timeout: 30000 },
             sample
         );
         await click(sample, "Trim");
-        await click(sample, "Apply");
-        await click(sample, "Cancel");
-        assert.equal(await page.$(`${sample} [role=alert]`), null);
-        assert.equal(
-            await page.$eval(sample, (element) =>
-                element.textContent.includes("large-trim.wav")
-            ),
-            false
-        );
-        await upload(sample);
         await page.waitForFunction(
             (selector) =>
                 document
                     .querySelector(selector)
-                    ?.textContent.includes("tone.wav"),
+                    ?.textContent.includes("Applying trim"),
             {},
             sample
         );
+        await click(sample, "Clear all changes");
+        assert.equal(await page.$(`${sample} [role=alert]`), null);
+        assert.equal(
+            await page.$eval(sample, (node) =>
+                node.textContent.includes("large-trim.wav")
+            ),
+            false
+        );
+        await upload(sample);
+        await result(sample, "tone.wav");
     });
     it("plots all analyses and loads the bin inspector only when requested", async () => {
         try {
@@ -398,7 +366,6 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             await page.waitForSelector(`${analysis} input[type=file]`);
             await upload(analysis);
             assert.ok(wasm.every((url) => url.includes("scale")));
-            await click(analysis, "Analyze");
             await result(analysis, "tone-spectrum.pvx");
             await page.waitForSelector(
                 `${analysis} canvas[aria-label^="Spectral energy"]`
@@ -407,7 +374,6 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             assert.ok(!wasm.some((url) => url.includes("pvlook")));
             await snapshot("analysis-dark");
             await page.click(`${analysis} summary`);
-            await click(analysis, "Inspect");
             await page.waitForSelector(
                 `${analysis} canvas[aria-label^="Frequency bins"]`
             );
@@ -419,10 +385,17 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
                 ["Envelope", "tone-envelope.txt"]
             ]) {
                 await click(analysis, label);
-                await click(analysis, "Analyze");
                 await result(analysis, name);
                 assert.ok(await page.$(`${analysis} figure canvas`));
             }
+            await click(analysis, "Clear all changes");
+            assert.equal(await page.$(`${analysis} figure`), null);
+            assert.equal(
+                (await page.$$(`${analysis} [aria-label="Changes"] li`)).length,
+                0
+            );
+            assert.equal((await page.$$(`${analysis} audio`)).length, 1);
+            await result(analysis, "tone.wav");
         } catch (error) {
             await dumpDebugInfo(page, "audio-tools-analysis");
             throw error;
@@ -434,11 +407,12 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         );
         await page.reload({ waitUntil: "networkidle2" });
         await waitForProject(page);
+        const dismiss = await page.$('[aria-label="Dismiss project info"]');
+        if (dismiss) await dismiss.click();
         if (!(await page.$(`${analysis} input[type=file]`)))
             await page.click('[data-testid="sidebar-bottom-audioAnalysis"]');
         await page.waitForSelector(`${analysis} input[type=file]`);
         await upload(analysis);
-        await click(analysis, "Analyze");
         await result(analysis, "tone-spectrum.pvx");
         await snapshot("analysis-light");
     });
@@ -452,7 +426,6 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         );
         await page.waitForSelector(`${analysis} input[type=file]`);
         await upload(analysis);
-        await click(analysis, "Analyze");
         await result(analysis, "tone-spectrum.pvx");
         const sizes = await page.$eval(analysis, (node) => ({
             width: node.clientWidth,
@@ -464,7 +437,6 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         await page.waitForSelector(`${sample} input[type=file]`);
         await upload(sample);
         await click(sample, "Gain");
-        await click(sample, "Apply");
         await result(sample, "tone-gain.wav");
         assert.ok(
             await page.$eval(

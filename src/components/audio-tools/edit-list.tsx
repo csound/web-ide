@@ -1,45 +1,53 @@
 import { useTheme } from "@emotion/react";
+import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import CloseRounded from "@mui/icons-material/CloseRounded";
-import { describeEdit, type SampleEdit } from "./sample-edits";
 
-/** Show ordered parameter snapshots; removing a pending row never changes the current result. */
+/** Show the settings used by the automatic preview, with controls to remove them. */
 export function EditList({
-    edits,
-    pending = false,
-    disabled = false,
-    onRemove
+    rows,
+    status,
+    onClear
 }: {
-    edits: SampleEdit[];
-    pending?: boolean;
-    disabled?: boolean;
-    onRemove?: (edit: SampleEdit) => void;
+    rows: { id: string; label: string; detail: string; remove: () => void }[];
+    status?: string;
+    onClear: () => void;
 }) {
     const theme = useTheme();
     return (
         <section
-            aria-label={pending ? "Pending edits" : "Applied edits"}
+            aria-label="Changes"
             css={{ borderTop: `1px solid ${theme.line}`, paddingTop: 12 }}
         >
-            <strong css={{ fontSize: 12 }}>
-                {pending ? "Pending edits" : "Applied edits"}
-            </strong>
-            <p css={{ color: theme.altTextColor, marginTop: "4px !important" }}>
-                {pending
-                    ? "Apply starts from Original. Edits run top to bottom."
-                    : "These are the edits you hear in this result."}
+            <div
+                css={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8
+                }}
+            >
+                <strong css={{ fontSize: 12 }}>Changes</strong>
+                <Button onClick={onClear} disabled={!rows.length}>
+                    Clear all changes
+                </Button>
+            </div>
+            <p role="status" css={{ color: theme.altTextColor }}>
+                {status ||
+                    (rows.length
+                        ? "Preview uses these settings."
+                        : "No changes. Playing the loaded file.")}
             </p>
-            {!edits.length ? (
+            {!rows.length ? (
                 <p css={{ paddingTop: 12, color: theme.altTextColor }}>
-                    Select a range or choose an edit to begin.
+                    Choose an edit to update the preview automatically.
                 </p>
             ) : (
                 <ol css={{ listStyle: "none", padding: 0, margin: "8px 0 0" }}>
-                    {edits.map((edit, index) => {
-                        const { label, detail } = describeEdit(edit);
+                    {rows.map(({ id, label, detail, remove }, index) => {
                         return (
                             <li
-                                key={edit.operation}
+                                key={id}
                                 css={{
                                     display: "flex",
                                     alignItems: "center",
@@ -70,17 +78,14 @@ export function EditList({
                                         {detail}
                                     </span>
                                 </span>
-                                {onRemove && (
-                                    <IconButton
-                                        size="small"
-                                        disabled={disabled}
-                                        aria-label={`Remove ${label.toLowerCase()}`}
-                                        onClick={() => onRemove(edit)}
-                                        css={{ color: theme.altTextColor }}
-                                    >
-                                        <CloseRounded fontSize="small" />
-                                    </IconButton>
-                                )}
+                                <IconButton
+                                    size="small"
+                                    aria-label={`Remove ${label.toLowerCase()}`}
+                                    onClick={remove}
+                                    css={{ color: theme.altTextColor }}
+                                >
+                                    <CloseRounded fontSize="small" />
+                                </IconButton>
                             </li>
                         );
                     })}

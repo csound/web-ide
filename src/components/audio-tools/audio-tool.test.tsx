@@ -66,161 +66,146 @@ async function load() {
     fireEvent.change(screen.getByLabelText("Project audio file"), {
         target: { value: "test" }
     });
-    await screen.findByRole("button", { name: "Apply" });
+    await screen.findByRole("button", { name: "Add to project" });
 }
-it("loads audio without starting WASM, then keeps the result only on request", async () => {
+
+it("automatically trims, plays one preview, and saves only on request", async () => {
     const save = mount();
     await load();
+    expect(screen.queryByRole("button", { name: "Apply" })).toBeNull();
     expect(runTool).not.toHaveBeenCalled();
-    vi.mocked(runTool).mockResolvedValue({ data, log: "" });
     fireEvent.change(screen.getByLabelText("Selection start"), {
         target: { value: "0.25" }
     });
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await screen.findByRole("button", { name: "Add sample to project" });
-    expect(runTool).not.toHaveBeenCalled();
+    expect(
+        screen
+            .getByRole("button", { name: "Add to project" })
+            .hasAttribute("disabled")
+    ).toBe(true);
+    await screen.findByText("tone-trim.wav");
+    expect(document.querySelectorAll("audio")).toHaveLength(1);
+    expect(
+        screen.getByLabelText("Preview playback time").textContent
+    ).toContain("0.75");
     expect(save).not.toHaveBeenCalled();
-    fireEvent.click(
-        screen.getByRole("button", { name: "Add sample to project" })
-    );
-    expect(save).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Add to project" }));
     expect(durationOf(decodeWave(save.mock.calls[0][0].data))).toBe(0.75);
     expect(
         screen
-            .getByRole("button", { name: "Add sample to project" })
+            .getByRole("button", { name: "Add to project" })
             .hasAttribute("disabled")
     ).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Clear all changes" }));
+    expect(
+        screen.getByLabelText("Preview playback time").textContent
+    ).toContain("1.00");
+    expect(
+        screen.getByRole("region", { name: "Changes" }).textContent
+    ).toContain("No changes");
+    expect(
+        screen
+            .getByRole("button", { name: "Download" })
+            .hasAttribute("disabled")
+    ).toBe(false);
 });
-it("cancels a job and allows another operation", async () => {
+
+it("debounces changes and clearing cancels preparation without publishing a late result", async () => {
     mount();
     await load();
-    fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
+    vi.useFakeTimers();
+    let resolve: (value: { data: Uint8Array; log: string }) => void = () => {};
     let signal: AbortSignal | undefined;
     vi.mocked(runTool).mockImplementation((_, current) => {
         signal = current;
-        return new Promise((_, reject) =>
-            current.addEventListener("abort", () =>
-                reject(new DOMException("Cancelled", "AbortError"))
-            )
-        );
+        return new Promise((done) => {
+            resolve = done;
+        });
     });
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(signal?.aborted).toBe(true);
-    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
-    expect(screen.getByRole("slider", { name: "Gain" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("slider", { name: "Gain" }), {
+        target: { value: "-6" }
+    });
+    await act(() => vi.advanceTimersByTimeAsync(399));
+    expect(runTool).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByRole("slider", { name: "Gain" }), {
+        target: { value: "-12" }
+    });
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expect(runTool).toHaveBeenCalledOnce();
+    expect(runTool).toHaveBeenCalledWith(
+        expect.objectContaining({
+            args: expect.arrayContaining([`-F${10 ** (-12 / 20)}`])
+        }),
+        expect.any(AbortSignal),
+        expect.any(Function)
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Clear all changes" }));
+    expect(signal?.aborted).toBe(true);
+    await act(async () => {
+        resolve({ data, log: "" });
+        await vi.runAllTimersAsync();
+    });
+    expect(screen.queryByText("tone-gain.wav")).toBeNull();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(
+        screen.getByLabelText("Preview playback time").textContent
+    ).toContain("1.00");
 });
-it("shows processing errors and can retry", async () => {
+
+it("removes an effect and restores the loaded file without another worker", async () => {
     mount();
     await load();
+    vi.mocked(runTool).mockResolvedValue({ data, log: "" });
     fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
+    await screen.findByText("tone-gain.wav");
+    fireEvent.click(screen.getByRole("button", { name: "Remove gain" }));
+    expect(screen.queryByText("tone-gain.wav")).toBeNull();
+    expect(runTool).toHaveBeenCalledOnce();
+    expect(
+        screen.getByRole("slider", { name: "Gain" }).getAttribute("value")
+    ).toBe("0");
+});
+
+it("shows errors, blocks stale exports, and retries on request", async () => {
+    mount();
+    await load();
     vi.mocked(runTool).mockRejectedValueOnce(
         new Error("Could not load the audio tool. Try again.")
     );
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
     expect((await screen.findByRole("alert")).textContent).toContain(
         "Try again"
     );
+    expect(
+        screen
+            .getByRole("button", { name: "Download" })
+            .hasAttribute("disabled")
+    ).toBe(true);
     vi.mocked(runTool).mockResolvedValueOnce({ data, log: "" });
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await screen.findByRole("button", { name: "Add sample to project" });
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await screen.findByText("tone-gain.wav");
     expect(screen.queryByRole("alert")).toBeNull();
 });
-it("offers analysis modes without loading WASM on open", async () => {
+
+it("automatically starts analysis after loading and clear cancels it", async () => {
     mount("analysis");
-    expect(screen.getByText("See what is in your sound")).toBeTruthy();
-    fireEvent.change(screen.getByLabelText("Project audio file"), {
-        target: { value: "test" }
-    });
-    await screen.findByRole("button", { name: "Analyze" });
-    for (const name of [
-        "Spectrum",
-        "Partials",
-        "Harmonics",
-        "Voice",
-        "Envelope"
-    ])
-        expect(screen.getByRole("button", { name, exact: true })).toBeTruthy();
-    expect(runTool).not.toHaveBeenCalled();
-});
-
-it("cancels trim preparation without publishing a result, then allows retry", async () => {
-    mount();
+    vi.mocked(runTool).mockImplementation(() => new Promise(() => {}));
     await load();
-    fireEvent.click(screen.getByRole("button", { name: "Trim", exact: true }));
-    vi.useFakeTimers();
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    await act(() => vi.runAllTimersAsync());
+    expect(screen.queryByRole("button", { name: "Analyze" })).toBeNull();
+    await waitFor(() => expect(runTool).toHaveBeenCalledOnce());
     expect(
-        screen.queryByRole("button", { name: "Add sample to project" })
-    ).toBeNull();
-    expect(runTool).not.toHaveBeenCalled();
-    expect(screen.queryByRole("alert")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await act(() => vi.runAllTimersAsync());
-    expect(
-        screen.getByRole("button", { name: "Add sample to project" })
-    ).toBeTruthy();
-});
-
-it("cancels result decoding without publishing a late worker result", async () => {
-    mount();
-    await load();
-    vi.useFakeTimers();
-    vi.mocked(runTool).mockResolvedValue({ data, log: "" });
-    fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
-    await act(async () => {
-        fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    });
-    expect(runTool).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    await act(() => vi.runAllTimersAsync());
-    expect(
-        screen.queryByRole("button", { name: "Add sample to project" })
-    ).toBeNull();
-    expect(screen.queryByRole("alert")).toBeNull();
-});
-
-it("keeps applied settings stable while pending edits change, and lets users discard the result", async () => {
-    mount();
-    await load();
-    expect(
-        screen.getByRole("button", { name: "Apply" }).hasAttribute("disabled")
-    ).toBe(true);
-    fireEvent.change(screen.getByLabelText("Selection start"), {
-        target: { value: "0.25" }
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await screen.findByRole("button", { name: "Add sample to project" });
-    expect(
-        screen.getByRole("button", { name: "Apply" }).hasAttribute("disabled")
-    ).toBe(true);
-    expect(screen.queryByRole("group", { name: "Compare audio" })).toBeNull();
-    fireEvent.change(screen.getByLabelText("Selection start"), {
-        target: { value: "0.5" }
-    });
-    expect(
-        within(screen.getByRole("region", { name: "Pending edits" })).getByText(
-            "Keep 0.5 s to 1 s"
+        within(screen.getByRole("region", { name: "Changes" })).getByText(
+            "Spectrum"
         )
     ).toBeTruthy();
+    const signal = vi.mocked(runTool).mock.calls[0][1];
+    fireEvent.click(screen.getByRole("button", { name: "Clear all changes" }));
+    expect(signal.aborted).toBe(true);
+    expect(screen.queryByRole("progressbar")).toBeNull();
     expect(
-        within(screen.getByRole("region", { name: "Applied edits" })).getByText(
-            "Keep 0.25 s to 1 s"
-        )
-    ).toBeTruthy();
-    expect(screen.getByLabelText("Result playback time").textContent).toContain(
-        "0.75"
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Remove trim" }));
-    expect(
-        screen.getByRole("button", { name: "Apply" }).hasAttribute("disabled")
-    ).toBe(true);
-    expect(screen.getByRole("region", { name: "Applied edits" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Discard result" }));
-    expect(screen.queryByRole("region", { name: "Applied edits" })).toBeNull();
-    expect(screen.queryByLabelText("Result audio")).toBeNull();
-    expect(screen.getByLabelText("Original audio")).toBeTruthy();
+        screen
+            .getByRole("button", { name: "Download" })
+            .hasAttribute("disabled")
+    ).toBe(false);
+    expect(document.querySelectorAll("audio")).toHaveLength(1);
 });

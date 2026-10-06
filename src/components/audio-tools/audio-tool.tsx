@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
@@ -12,62 +12,51 @@ import { decodeAudio, durationOf, encodeAudioAsync } from "./audio";
 import {
     analysisOperations,
     defaultSettings,
-    makeRequest,
-    resultFilename,
     sampleOperations,
     type AnalysisOperation,
     type Operation,
-    type Settings
+    type Settings,
+    type SampleOperation
 } from "./operations";
-import { analysisPlot, binPlot, inspectFrame } from "./plots";
-import { runTool } from "./runner";
 import { checkAudioBytes, readAudioStream } from "./limits";
 import { AnalysisGraph } from "./visuals";
 import { WavePlayer } from "./wave-player";
 import { AudioSelect } from "./audio-select";
 import { EditList } from "./edit-list";
+import { stageEdit, describeEdit, type SampleEdit } from "./sample-edits";
 import {
-    applySampleEdits,
-    stageEdit,
-    editsMatch,
-    type SampleEdit
-} from "./sample-edits";
-import type { SampleOperation } from "./operations";
-import type { AudioData, Plot, ToolFile } from "./types";
+    buildPreview,
+    buildBins,
+    type LoadedAudio,
+    type PreviewRequest
+} from "./preview";
+import { useDebouncedTask } from "./use-debounced-task";
+import type { ToolFile } from "./types";
 
 export type AudioSource = {
     id: string;
     name: string;
     load: (signal: AbortSignal) => Promise<Uint8Array>;
 };
-type LoadedAudio = { name: string; audio: AudioData; data: Uint8Array };
-type Result = ToolFile & {
-    audio?: AudioData;
-    plot?: Plot;
-    operation: Operation;
-    sampleRate: number;
-    log: string;
-    edits?: SampleEdit[];
-};
 
-/** Own a preview URL and revoke it when audio changes or the window closes. */
+/** Own one playback URL and revoke it when the preview changes. */
 function useAudioUrl(data?: Uint8Array) {
-    const [url, setUrl] = useState<string>();
+    const [owned, setOwned] = useState<{ data: Uint8Array; url: string }>();
     useEffect(() => {
         if (!data) {
-            setUrl(undefined);
+            setOwned(undefined);
             return;
         }
         const next = URL.createObjectURL(
             new Blob([data], { type: "audio/wav" })
         );
-        setUrl(next);
+        setOwned({ data, url: next });
         return () => URL.revokeObjectURL(next);
     }, [data]);
-    return url;
+    return owned?.data === data ? owned?.url : undefined;
 }
 
-/** Provide visual editing or analysis with cancellable loading, previews, and explicit result retention. */
+/** A single automatic preview for sample edits and audio analysis. */
 export default function AudioTool({
     mode,
     sources = [],
@@ -84,53 +73,100 @@ export default function AudioTool({
         analysis ? "spectrum" : "trim"
     );
     const [source, setSource] = useState<LoadedAudio>();
-    const [result, setResult] = useState<Result>();
     const [settings, setSettings] = useState(defaultSettings);
     const [range, setRange] = useState<[number, number]>([0, 1]);
     const [channel, setChannel] = useState(0);
-    const [busy, setBusy] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [saved, setSaved] = useState("");
+    const [saved, setSaved] = useState<{ file: ToolFile; name: string }>();
     const [frameTime, setFrameTime] = useState(0);
-    const [bins, setBins] = useState<Plot>();
+    const [inspecting, setInspecting] = useState(false);
+    const [analysisEnabled, setAnalysisEnabled] = useState(false);
     const [edits, setEdits] = useState<SampleEdit[]>([]);
     const job = useRef<AbortController>();
     const input = useRef<HTMLInputElement>(null);
-    const sourceUrl = useAudioUrl(source?.data);
-    const resultUrl = useAudioUrl(result?.audio ? result.data : undefined);
     const duration = source ? durationOf(source.audio) : 1;
-    const active = Boolean(busy) || loading;
-    const resultMatches = Boolean(
-        result?.edits && editsMatch(result.edits, edits)
-    );
     const selectRange =
         !analysis && (operation === "trim" || operation === "denoise");
-    useEffect(
-        () => () => {
-            job.current?.abort();
-        },
-        []
+    const analysisConfig = useMemo(
+        () =>
+            analysis && analysisEnabled
+                ? {
+                      operation: operation as AnalysisOperation,
+                      settings,
+                      channel
+                  }
+                : undefined,
+        [analysis, analysisEnabled, operation, settings, channel]
     );
+    const request = useMemo<PreviewRequest | undefined>(
+        () =>
+            source && !loading && (analysis ? analysisConfig : edits.length)
+                ? { source, edits, analysis: analysisConfig }
+                : undefined,
+        [source, loading, analysis, analysisConfig, edits]
+    );
+    const preview = useDebouncedTask(request, buildPreview);
+    const result = preview.value;
+    const binRequest = useMemo(
+        () =>
+            result?.spectrum && inspecting
+                ? { preview: result, time: frameTime }
+                : undefined,
+        [result, inspecting, frameTime]
+    );
+    const inspection = useDebouncedTask(binRequest, buildBins);
+    const updating = preview.pending || inspection.pending;
+    // Loaded formats are decoded to WAV; exports must use the matching extension.
+    const loadedFile = useMemo(
+        () =>
+            source
+                ? {
+                      name: `${source.name.replace(/\.[^.]+$/, "")}.wav`,
+                      data: source.data
+                  }
+                : undefined,
+        [source]
+    );
+    const file = result || loadedFile;
+    const audio = result?.audio || source?.audio;
+    const audioUrl = useAudioUrl(result?.audio ? result.data : source?.data);
+    const problem = error || preview.error || inspection.error;
+    const exportReady = Boolean(
+        file && !loading && !preview.pending && !preview.error
+    );
+    const trim = result?.audio
+        ? edits.find((edit) => edit.operation === "trim")
+        : undefined;
+    const offset = trim?.range[0] || 0;
+    const visibleDuration = audio ? durationOf(audio) : duration;
+    const visibleRange: [number, number] = [
+        Math.max(0, range[0] - offset),
+        Math.min(visibleDuration, range[1] - offset)
+    ];
+    useEffect(() => () => job.current?.abort(), []);
 
-    /** Abort the active load or worker and restore the controls. */
     const cancel = () => {
         job.current?.abort();
-        setBusy("");
         setLoading(false);
     };
-    /** Discard output and feedback without changing pending edits. */
-    const resetResult = () => {
-        setResult(undefined);
-        setSaved("");
-        setBins(undefined);
+    const clear = () => {
+        setEdits([]);
+        setAnalysisEnabled(false);
+        setSettings(defaultSettings);
+        setRange([0, duration]);
+        setChannel(0);
+        setOperation(analysis ? "spectrum" : "trim");
+        setInspecting(false);
+        setFrameTime(0);
         setError("");
+        setSaved(undefined);
     };
-    /** Keep pending edits separate from the snapshot currently heard in Result. */
     const changeSetting = (key: keyof Settings, value: number) => {
         const next = { ...settings, [key]: value };
         setSettings(next);
-        if (analysis) resetResult();
+        setError("");
+        if (analysis) setAnalysisEnabled(true);
         else
             setEdits((current) =>
                 stageEdit(current, {
@@ -142,19 +178,20 @@ export default function AudioTool({
     };
     const changeRange = (next: [number, number]) => {
         setRange(next);
-        if (!analysis)
-            setEdits((current) =>
-                stageEdit(current, {
-                    operation: operation as SampleOperation,
-                    settings,
-                    range: next
-                })
-            );
+        setEdits((current) =>
+            stageEdit(current, {
+                operation: operation as SampleOperation,
+                settings,
+                range: next
+            })
+        );
     };
     const chooseOperation = (next: Operation) => {
         setOperation(next);
+        setError("");
         if (analysis) {
-            resetResult();
+            setAnalysisEnabled(true);
+            setInspecting(false);
             return;
         }
         const existing = edits.find((edit) => edit.operation === next);
@@ -174,7 +211,46 @@ export default function AudioTool({
             })
         );
     };
-    /** Read and decode one source within tool limits, ignoring cancelled or superseded loads. */
+    const removeEdit = (edit: SampleEdit) => {
+        setEdits((current) =>
+            current.filter((item) => item.operation !== edit.operation)
+        );
+        if (edit.operation === operation) {
+            setSettings(defaultSettings);
+            setRange([0, duration]);
+        }
+    };
+    const rows = analysis
+        ? analysisEnabled
+            ? [
+                  {
+                      id: operation,
+                      label: analysisOperations.find(
+                          (item) => item.id === operation
+                      )!.label,
+                      detail: [
+                          source && source.audio.channels.length > 1
+                              ? `Channel ${channel + 1}`
+                              : "Mono",
+                          {
+                              spectrum: `Frequency detail ${settings.fft}`,
+                              partials: "Track individual tones",
+                              harmonics: `${settings.fundamental} Hz · ${settings.harmonics} harmonics`,
+                              lpc: `${settings.poles} filter poles`,
+                              envelope: `${settings.window} s window`
+                          }[operation as AnalysisOperation]
+                      ].join(" · "),
+                      remove: clear
+                  }
+              ]
+            : []
+        : edits.map((edit) => ({
+              id: edit.operation,
+              ...describeEdit(edit),
+              remove: () => removeEdit(edit)
+          }));
+
+    /** Replace the source without allowing an older load or preview to finish later. */
     const load = async (
         name: string,
         read: (signal: AbortSignal) => Promise<Uint8Array>
@@ -183,23 +259,18 @@ export default function AudioTool({
         const controller = new AbortController();
         job.current = controller;
         setLoading(true);
-        setBusy("");
-        resetResult();
+        setSource(undefined);
+        clear();
         try {
             const bytes = await read(controller.signal);
             controller.signal.throwIfAborted();
             checkAudioBytes(bytes.length);
-            const audio = await decodeAudio(bytes, controller.signal);
-            if (controller.signal.aborted) return;
-            const data = await encodeAudioAsync(audio, controller.signal);
-            if (controller.signal.aborted) return;
-            setSource({ name, audio, data });
-            setEdits([]);
-            setSettings(defaultSettings);
-            setOperation(analysis ? "spectrum" : "trim");
-            setRange([0, durationOf(audio)]);
-            setChannel(0);
-            setFrameTime(0);
+            const decoded = await decodeAudio(bytes, controller.signal);
+            const data = await encodeAudioAsync(decoded, controller.signal);
+            controller.signal.throwIfAborted();
+            setSource({ name, audio: decoded, data });
+            setRange([0, durationOf(decoded)]);
+            setAnalysisEnabled(analysis);
         } catch (failure) {
             if (!controller.signal.aborted)
                 setError(
@@ -211,127 +282,12 @@ export default function AudioTool({
             if (!controller.signal.aborted) setLoading(false);
         }
     };
-    /** Apply a local trim or run the selected WASM command, then prepare its visual result. */
-    const run = async () => {
-        if (!source || active) return;
-        const controller = new AbortController();
-        job.current = controller;
-        if (analysis) resetResult();
-        else setError("");
-        setBusy("Preparing audio…");
-        try {
-            if (!analysis) {
-                const applied = edits.map((edit) => ({
-                    ...edit,
-                    settings: { ...edit.settings },
-                    range: [...edit.range] as [number, number]
-                }));
-                const output = await applySampleEdits(
-                    source,
-                    applied,
-                    controller.signal,
-                    setBusy
-                );
-                if (controller.signal.aborted) return;
-                const name =
-                    applied.length === 1
-                        ? resultFilename(source.name, applied[0].operation)
-                        : `${source.name.replace(/\.[^.]+$/, "")}-edited.wav`;
-                setResult({
-                    ...output,
-                    name,
-                    operation: applied[applied.length - 1].operation,
-                    sampleRate: output.audio.sampleRate,
-                    log: "",
-                    edits: applied
-                });
-                setSaved("");
-                return;
-            }
-            const data =
-                source.audio.channels.length > 1
-                    ? await encodeAudioAsync(
-                          source.audio,
-                          controller.signal,
-                          [0, duration],
-                          channel
-                      )
-                    : source.data;
-            const output = await runTool(
-                makeRequest(
-                    operation as AnalysisOperation,
-                    settings,
-                    data,
-                    range,
-                    duration
-                ),
-                controller.signal,
-                setBusy
-            );
-            if (controller.signal.aborted) return;
-            const next: Result = {
-                name: resultFilename(source.name, operation),
-                data: output.data,
-                operation,
-                sampleRate: source.audio.sampleRate,
-                log: output.log
-            };
-            try {
-                next.plot = analysisPlot(
-                    operation as AnalysisOperation,
-                    output.data,
-                    duration
-                );
-            } catch {
-                setError(
-                    "The analysis file is ready, but its plot could not be drawn."
-                );
-            }
-            setResult(next);
-        } catch (failure) {
-            if (!controller.signal.aborted)
-                setError(
-                    failure instanceof Error
-                        ? failure.message
-                        : "Could not process this audio."
-                );
-        } finally {
-            if (!controller.signal.aborted) setBusy("");
-        }
-    };
-    /** Load pvlook only when the user requests frequency bins for a spectrum frame. */
-    const inspect = async () => {
-        if (!result || active) return;
-        const controller = new AbortController();
-        job.current = controller;
-        setBusy("Loading frequency bins…");
-        setError("");
-        try {
-            const output = await runTool(
-                inspectFrame(result.data, frameTime),
-                controller.signal,
-                setBusy
-            );
-            if (!controller.signal.aborted)
-                setBins(binPlot(output.data, result.sampleRate));
-        } catch (failure) {
-            if (!controller.signal.aborted)
-                setError(
-                    failure instanceof Error
-                        ? failure.message
-                        : "Could not inspect this frame."
-                );
-        } finally {
-            if (!controller.signal.aborted) setBusy("");
-        }
-    };
-    /** Download the current result and release its temporary URL. */
     const download = () => {
-        if (!result) return;
-        const url = URL.createObjectURL(new Blob([result.data]));
+        if (!file || !exportReady) return;
+        const url = URL.createObjectURL(new Blob([file.data]));
         const anchor = document.createElement("a");
         anchor.href = url;
-        anchor.download = result.name;
+        anchor.download = file.name;
         anchor.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
@@ -351,7 +307,7 @@ export default function AudioTool({
                 min={min}
                 max={max}
                 step={step}
-                disabled={active}
+                disabled={loading}
                 onChange={(event) =>
                     changeSetting(key, event.currentTarget.valueAsNumber)
                 }
@@ -382,14 +338,12 @@ export default function AudioTool({
             <Slider
                 key={`${operation}-${key}`}
                 aria-label={label}
-                defaultValue={settings[key]}
+                value={settings[key]}
                 min={min}
                 max={max}
                 step={1}
-                disabled={active}
-                onChangeCommitted={(_, value) =>
-                    changeSetting(key, value as number)
-                }
+                disabled={loading}
+                onChange={(_, value) => changeSetting(key, value as number)}
                 valueLabelDisplay="auto"
                 css={{
                     color: theme.tabHighlightActive,
@@ -399,7 +353,6 @@ export default function AudioTool({
             />
         </label>
     );
-
     return (
         <section
             onPlayCapture={(event) => {
@@ -409,6 +362,7 @@ export default function AudioTool({
                     if (audio !== event.target) audio.pause();
                 }
             }}
+            aria-busy={loading || updating}
             aria-label={analysis ? "Audio Analysis" : "Sample Editor"}
             css={{
                 height: "100%",
@@ -472,6 +426,33 @@ export default function AudioTool({
                 }
             }}
         >
+            {(loading || updating) && (
+                <div
+                    css={{
+                        position: "sticky",
+                        top: 0,
+                        height: 0,
+                        zIndex: 2,
+                        background: theme.background
+                    }}
+                >
+                    <LinearProgress
+                        aria-label={
+                            loading
+                                ? "Reading audio"
+                                : preview.pending
+                                  ? preview.status
+                                  : inspection.status
+                        }
+                        css={{
+                            background: theme.line,
+                            "& .MuiLinearProgress-bar": {
+                                background: theme.tabHighlightActive
+                            }
+                        }}
+                    />
+                </div>
+            )}
             <div
                 css={{
                     padding: "12px 16px",
@@ -487,7 +468,7 @@ export default function AudioTool({
                     <AudioSelect
                         aria-label="Project audio file"
                         value=""
-                        disabled={active || !sources.length}
+                        disabled={!sources.length}
                         onChange={(event) => {
                             const chosen = sources.find(
                                 (item) => item.id === event.target.value
@@ -511,7 +492,7 @@ export default function AudioTool({
                 <Button
                     variant="outlined"
                     startIcon={<UploadFileRounded />}
-                    disabled={active}
+                    disabled={loading}
                     onClick={() => input.current?.click()}
                 >
                     Open audio
@@ -588,550 +569,365 @@ export default function AudioTool({
                     <Button onClick={cancel}>Cancel</Button>
                 </div>
             )}
-            {source && !loading && (
+            {source && audio && !loading && (
                 <div
-                    css={{
-                        padding: 16,
-                        display: "grid",
-                        gap: 16,
-                        "@container (min-width: 850px)": {
-                            gridTemplateColumns: result
-                                ? "minmax(0, 1fr) minmax(0, 1fr)"
-                                : "minmax(0, 1fr)"
-                        }
-                    }}
+                    css={{ padding: 16, display: "grid", gap: 16, minWidth: 0 }}
                 >
                     <div
                         css={{
-                            display: "grid",
-                            gap: 12,
-                            alignContent: "start",
-                            minWidth: 0
+                            display: "flex",
+                            flexWrap: "wrap",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            alignItems: "center"
                         }}
                     >
-                        <div
-                            css={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                minHeight: 32,
-                                gap: 8,
-                                fontSize: 11,
-                                color: theme.altTextColor
-                            }}
+                        <strong
+                            role="status"
+                            css={{ fontSize: 12, overflowWrap: "anywhere" }}
                         >
-                            <strong
-                                css={{ fontSize: 13, color: theme.textColor }}
-                            >
-                                {analysis ? "Source audio" : "Original"}
-                            </strong>
-                            <span>
-                                {duration.toFixed(2)} s /{" "}
-                                {source.audio.sampleRate.toLocaleString()} Hz /{" "}
-                                {source.audio.channels.length === 1
-                                    ? "Mono"
-                                    : `${source.audio.channels.length} channels`}
-                            </span>
-                        </div>
-                        <div
-                            css={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                overflowWrap: "anywhere"
-                            }}
-                        >
-                            {source.name}
-                        </div>
-                        <WavePlayer
-                            key={sourceUrl}
-                            audio={source.audio}
-                            src={sourceUrl}
-                            label="Original"
-                            range={selectRange ? range : undefined}
-                            onSelect={selectRange ? changeRange : undefined}
-                            disabled={active}
-                        />
-                        <div
-                            role="group"
-                            aria-label={
-                                analysis ? "Analysis type" : "Sample operation"
+                            {file?.name}
+                        </strong>
+                        <span css={{ fontSize: 11, color: theme.altTextColor }}>
+                            {visibleDuration.toFixed(2)} s /{" "}
+                            {audio.sampleRate.toLocaleString()} Hz /{" "}
+                            {audio.channels.length === 1
+                                ? "Mono"
+                                : `${audio.channels.length} channels`}
+                        </span>
+                    </div>
+                    <WavePlayer
+                        audio={audio}
+                        src={audioUrl}
+                        label="Preview"
+                        playbackDisabled={
+                            preview.pending || Boolean(preview.error)
+                        }
+                        range={
+                            selectRange && visibleRange[1] > visibleRange[0]
+                                ? visibleRange
+                                : undefined
+                        }
+                        onSelect={
+                            selectRange
+                                ? (next) =>
+                                      changeRange([
+                                          next[0] + offset,
+                                          next[1] + offset
+                                      ])
+                                : undefined
+                        }
+                    />
+                    {result?.plot && <AnalysisGraph plot={result.plot} />}
+                    {result?.spectrum && (
+                        <details
+                            open={inspecting}
+                            onToggle={(event) =>
+                                setInspecting(event.currentTarget.open)
                             }
-                            css={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: 4,
-                                paddingBottom: 12,
-                                borderBottom: `1px solid ${theme.line}`
-                            }}
                         >
-                            {choices.map((choice) => (
-                                <Button
-                                    key={choice.id}
-                                    disabled={active}
-                                    aria-pressed={operation === choice.id}
-                                    onClick={() => chooseOperation(choice.id)}
-                                    css={
-                                        operation === choice.id
-                                            ? {
-                                                  "&&": {
-                                                      background:
-                                                          theme.highlightBackgroundAlt,
-                                                      boxShadow: `inset 0 -2px ${theme.tabHighlightActive}`
-                                                  }
-                                              }
-                                            : undefined
-                                    }
+                            <summary css={{ fontSize: 12, cursor: "pointer" }}>
+                                Inspect frequency bins
+                            </summary>
+                            {inspecting && (
+                                <div
+                                    css={{
+                                        display: "grid",
+                                        gap: 12,
+                                        marginTop: 12
+                                    }}
                                 >
-                                    {choice.label}
-                                </Button>
-                            ))}
-                        </div>
-                        <p css={{ color: theme.altTextColor }}>
-                            {
-                                choices.find(
-                                    (choice) => choice.id === operation
-                                )?.hint
-                            }
-                        </p>
-                        <fieldset
-                            disabled={active}
-                            css={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: 16,
-                                alignItems: "flex-start",
-                                "@container (max-width: 420px)": { gap: 12 }
-                            }}
-                        >
-                            {selectRange && (
-                                <>
                                     <label>
-                                        Start (seconds)
+                                        Time (seconds)
                                         <input
-                                            aria-label="Selection start"
                                             type="number"
-                                            value={Number(range[0].toFixed(4))}
                                             min={0}
-                                            max={
-                                                range[1] -
-                                                1 / source.audio.sampleRate
-                                            }
+                                            max={duration}
                                             step="0.01"
+                                            value={frameTime}
                                             onChange={(event) => {
                                                 const value =
                                                     event.target.valueAsNumber;
                                                 if (
                                                     Number.isFinite(value) &&
                                                     value >= 0 &&
-                                                    value < range[1]
-                                                ) {
-                                                    changeRange([
-                                                        value,
-                                                        range[1]
-                                                    ]);
-                                                }
-                                            }}
-                                        />
-                                    </label>
-                                    <label>
-                                        End (seconds)
-                                        <input
-                                            aria-label="Selection end"
-                                            type="number"
-                                            value={Number(range[1].toFixed(4))}
-                                            min={
-                                                range[0] +
-                                                1 / source.audio.sampleRate
-                                            }
-                                            max={duration}
-                                            step="0.01"
-                                            onChange={(event) => {
-                                                const value =
-                                                    event.target.valueAsNumber;
-                                                if (
-                                                    Number.isFinite(value) &&
-                                                    value > range[0] &&
                                                     value <= duration
-                                                ) {
-                                                    changeRange([
-                                                        range[0],
-                                                        value
-                                                    ]);
-                                                }
+                                                )
+                                                    setFrameTime(value);
                                             }}
                                         />
                                     </label>
-                                    <div css={{ alignSelf: "flex-end" }}>
-                                        <Button
-                                            disabled={active}
-                                            onClick={() => {
-                                                changeRange([0, duration]);
-                                            }}
-                                        >
-                                            Select all
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                            {operation === "gain" &&
-                                slider("Gain", "gain", -36, 18, "dB")}
-                            {operation === "normalize" &&
-                                slider("Peak level", "peak", -24, 0, "dB")}
-                            {operation === "denoise" &&
-                                slider(
-                                    "Noise reduction",
-                                    "reduction",
-                                    6,
-                                    60,
-                                    "dB"
-                                )}
-                            {operation === "resample" && (
-                                <label>
-                                    Sample rate
-                                    <AudioSelect
-                                        value={settings.rate}
-                                        onChange={(event) =>
-                                            changeSetting(
-                                                "rate",
-                                                Number(event.target.value)
-                                            )
-                                        }
-                                    >
-                                        {[
-                                            8000, 16000, 22050, 32000, 44100,
-                                            48000, 88200, 96000
-                                        ].map((rate) => (
-                                            <option key={rate} value={rate}>
-                                                {rate.toLocaleString()} Hz
-                                            </option>
-                                        ))}
-                                    </AudioSelect>
-                                </label>
-                            )}
-                            {analysis && source.audio.channels.length > 1 && (
-                                <label>
-                                    Channel
-                                    <AudioSelect
-                                        value={channel}
-                                        onChange={(event) => {
-                                            setChannel(
-                                                Number(event.target.value)
-                                            );
-                                            resetResult();
-                                        }}
-                                    >
-                                        {source.audio.channels.map(
-                                            (_, index) => (
-                                                <option
-                                                    key={index}
-                                                    value={index}
-                                                >
-                                                    Channel {index + 1}
-                                                </option>
-                                            )
-                                        )}
-                                    </AudioSelect>
-                                </label>
-                            )}
-                            {operation === "spectrum" && (
-                                <label>
-                                    Frequency detail
-                                    <AudioSelect
-                                        value={settings.fft}
-                                        onChange={(event) =>
-                                            changeSetting(
-                                                "fft",
-                                                Number(event.target.value)
-                                            )
-                                        }
-                                    >
-                                        <option value={512}>
-                                            Fast transients (512)
-                                        </option>
-                                        <option value={2048}>
-                                            Balanced (2048)
-                                        </option>
-                                        <option value={8192}>
-                                            Fine pitches (8192)
-                                        </option>
-                                    </AudioSelect>
-                                </label>
-                            )}
-                            {operation === "harmonics" && (
-                                <>
-                                    {number(
-                                        "Fundamental (Hz)",
-                                        "fundamental",
-                                        20,
-                                        4000
+                                    {inspection.pending && (
+                                        <p role="status">{inspection.status}</p>
                                     )}
-                                    {number("Harmonics", "harmonics", 1, 32)}
-                                </>
+                                    {inspection.value && (
+                                        <AnalysisGraph
+                                            plot={inspection.value}
+                                        />
+                                    )}
+                                </div>
                             )}
-                            {operation === "lpc" &&
-                                number("Filter poles", "poles", 4, 60, 2)}
-                            {operation === "envelope" &&
-                                number(
-                                    "Window (seconds)",
-                                    "window",
-                                    0.005,
-                                    1,
-                                    0.005
-                                )}
-                        </fieldset>
-                        {!analysis && (
-                            <EditList
-                                edits={edits}
-                                pending
-                                disabled={active}
-                                onRemove={(edit) =>
-                                    setEdits((current) =>
-                                        current.filter(
-                                            (item) =>
-                                                item.operation !==
-                                                edit.operation
-                                        )
-                                    )
-                                }
-                            />
-                        )}
-                        <div
-                            css={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 12
-                            }}
-                        >
+                        </details>
+                    )}
+                    <div
+                        role="group"
+                        aria-label={
+                            analysis ? "Analysis type" : "Sample operation"
+                        }
+                        css={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 4,
+                            paddingBottom: 12,
+                            borderBottom: `1px solid ${theme.line}`
+                        }}
+                    >
+                        {choices.map((choice) => (
                             <Button
-                                variant="outlined"
-                                disabled={
-                                    active ||
-                                    (!analysis &&
-                                        (!edits.length || resultMatches))
+                                key={choice.id}
+                                disabled={loading}
+                                aria-pressed={operation === choice.id}
+                                onClick={() => chooseOperation(choice.id)}
+                                css={
+                                    operation === choice.id
+                                        ? {
+                                              "&&": {
+                                                  background:
+                                                      theme.highlightBackgroundAlt,
+                                                  boxShadow: `inset 0 -2px ${theme.tabHighlightActive}`
+                                              }
+                                          }
+                                        : undefined
                                 }
-                                onClick={() => void run()}
-                                css={{
-                                    "&&": {
-                                        borderColor: theme.tabHighlightActive,
-                                        fontWeight: 600
-                                    }
-                                }}
                             >
-                                {analysis ? "Analyze" : "Apply"}
+                                {choice.label}
                             </Button>
-                            {!analysis && !busy && resultMatches && (
-                                <span
-                                    role="status"
-                                    css={{
-                                        fontSize: 12,
-                                        color: theme.altTextColor
+                        ))}
+                    </div>
+                    <p css={{ color: theme.altTextColor }}>
+                        {
+                            choices.find((choice) => choice.id === operation)
+                                ?.hint
+                        }
+                    </p>
+                    <fieldset
+                        disabled={loading}
+                        css={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 16,
+                            alignItems: "flex-start",
+                            "@container (max-width: 420px)": { gap: 12 }
+                        }}
+                    >
+                        {selectRange && (
+                            <>
+                                <label>
+                                    Start (seconds)
+                                    <input
+                                        aria-label="Selection start"
+                                        type="number"
+                                        value={Number(range[0].toFixed(4))}
+                                        min={0}
+                                        max={
+                                            range[1] -
+                                            1 / source.audio.sampleRate
+                                        }
+                                        step="0.01"
+                                        onChange={(event) => {
+                                            const value =
+                                                event.target.valueAsNumber;
+                                            if (
+                                                Number.isFinite(value) &&
+                                                value >= 0 &&
+                                                value < range[1]
+                                            ) {
+                                                changeRange([value, range[1]]);
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                <label>
+                                    End (seconds)
+                                    <input
+                                        aria-label="Selection end"
+                                        type="number"
+                                        value={Number(range[1].toFixed(4))}
+                                        min={
+                                            range[0] +
+                                            1 / source.audio.sampleRate
+                                        }
+                                        max={duration}
+                                        step="0.01"
+                                        onChange={(event) => {
+                                            const value =
+                                                event.target.valueAsNumber;
+                                            if (
+                                                Number.isFinite(value) &&
+                                                value > range[0] &&
+                                                value <= duration
+                                            ) {
+                                                changeRange([range[0], value]);
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                <div css={{ alignSelf: "flex-end" }}>
+                                    <Button
+                                        disabled={loading}
+                                        onClick={() => {
+                                            changeRange([0, duration]);
+                                        }}
+                                    >
+                                        Select all
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                        {operation === "gain" &&
+                            slider("Gain", "gain", -36, 18, "dB")}
+                        {operation === "normalize" &&
+                            slider("Peak level", "peak", -24, 0, "dB")}
+                        {operation === "denoise" &&
+                            slider("Noise reduction", "reduction", 6, 60, "dB")}
+                        {operation === "resample" && (
+                            <label>
+                                Sample rate
+                                <AudioSelect
+                                    value={settings.rate}
+                                    onChange={(event) =>
+                                        changeSetting(
+                                            "rate",
+                                            Number(event.target.value)
+                                        )
+                                    }
+                                >
+                                    {[
+                                        8000, 16000, 22050, 32000, 44100, 48000,
+                                        88200, 96000
+                                    ].map((rate) => (
+                                        <option key={rate} value={rate}>
+                                            {rate.toLocaleString()} Hz
+                                        </option>
+                                    ))}
+                                </AudioSelect>
+                            </label>
+                        )}
+                        {analysis && source.audio.channels.length > 1 && (
+                            <label>
+                                Channel
+                                <AudioSelect
+                                    value={channel}
+                                    onChange={(event) => {
+                                        setChannel(Number(event.target.value));
+                                        setAnalysisEnabled(true);
                                     }}
                                 >
-                                    Result is up to date
-                                </span>
-                            )}
-                            {busy && (
-                                <>
-                                    <Button onClick={cancel}>Cancel</Button>
-                                    <span role="status" css={{ fontSize: 12 }}>
-                                        {busy}
-                                    </span>
-                                </>
-                            )}
-                        </div>
-                        {busy && (
-                            <LinearProgress
-                                aria-label="Audio processing"
-                                css={{
-                                    background: theme.line,
-                                    "& .MuiLinearProgress-bar": {
-                                        background: theme.tabHighlightActive
-                                    }
-                                }}
-                            />
+                                    {source.audio.channels.map((_, index) => (
+                                        <option key={index} value={index}>
+                                            Channel {index + 1}
+                                        </option>
+                                    ))}
+                                </AudioSelect>
+                            </label>
                         )}
-                    </div>
-                    {result && (
-                        <div
-                            css={{
-                                display: "grid",
-                                gap: 12,
-                                paddingTop: 16,
-                                borderTop: `1px solid ${theme.line}`,
-                                minWidth: 0,
-                                alignContent: "start",
-                                "@container (min-width: 850px)": {
-                                    borderTop: 0,
-                                    paddingTop: 0,
-                                    borderLeft: `1px solid ${theme.line}`,
-                                    paddingLeft: 16
+                        {operation === "spectrum" && (
+                            <label>
+                                Frequency detail
+                                <AudioSelect
+                                    value={settings.fft}
+                                    onChange={(event) =>
+                                        changeSetting(
+                                            "fft",
+                                            Number(event.target.value)
+                                        )
+                                    }
+                                >
+                                    <option value={512}>
+                                        Fast transients (512)
+                                    </option>
+                                    <option value={2048}>
+                                        Balanced (2048)
+                                    </option>
+                                    <option value={8192}>
+                                        Fine pitches (8192)
+                                    </option>
+                                </AudioSelect>
+                            </label>
+                        )}
+                        {operation === "harmonics" && (
+                            <>
+                                {number(
+                                    "Fundamental (Hz)",
+                                    "fundamental",
+                                    20,
+                                    4000
+                                )}
+                                {number("Harmonics", "harmonics", 1, 32)}
+                            </>
+                        )}
+                        {operation === "lpc" &&
+                            number("Filter poles", "poles", 4, 60, 2)}
+                        {operation === "envelope" &&
+                            number(
+                                "Window (seconds)",
+                                "window",
+                                0.005,
+                                1,
+                                0.005
+                            )}
+                    </fieldset>
+                    {selectRange && (
+                        <p css={{ color: theme.altTextColor }}>
+                            Range times refer to the loaded file.
+                        </p>
+                    )}
+                    <EditList
+                        rows={rows}
+                        status={
+                            preview.pending
+                                ? preview.status
+                                : preview.error
+                                  ? "Preview unavailable. Check the settings or retry."
+                                  : undefined
+                        }
+                        onClear={clear}
+                    />
+                    <div css={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<SaveRounded />}
+                            disabled={!exportReady || saved?.file === file}
+                            onClick={() => {
+                                if (!file || !exportReady) return;
+                                try {
+                                    setSaved({ file, name: onSave(file) });
+                                } catch {
+                                    setError(
+                                        "Could not save the file. Download it or try again."
+                                    );
                                 }
                             }}
                         >
-                            <div
-                                css={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    gap: 8
-                                }}
-                            >
-                                <strong
-                                    css={{
-                                        fontSize: 13,
-                                        minHeight: 32,
-                                        display: "flex",
-                                        alignItems: "center"
-                                    }}
-                                >
-                                    Result
-                                </strong>
-                                <Button
-                                    onClick={() => {
-                                        cancel();
-                                        resetResult();
-                                    }}
-                                >
-                                    Discard result
-                                </Button>
-                            </div>
-                            <div
-                                role="status"
-                                css={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    overflowWrap: "anywhere"
-                                }}
-                            >
-                                {result.name}
-                            </div>
-                            {result.audio && (
-                                <>
-                                    <WavePlayer
-                                        key={resultUrl}
-                                        audio={result.audio}
-                                        src={resultUrl}
-                                        label="Result"
-                                    />
-                                    <p css={{ color: theme.altTextColor }}>
-                                        {durationOf(result.audio).toFixed(2)} s
-                                        /{" "}
-                                        {result.audio.sampleRate.toLocaleString()}{" "}
-                                        Hz
-                                    </p>
-                                    {result.edits && (
-                                        <EditList edits={result.edits} />
-                                    )}
-                                    {!resultMatches && (
-                                        <p css={{ color: theme.altTextColor }}>
-                                            Pending edits differ. Apply to
-                                            update this result.
-                                        </p>
-                                    )}
-                                </>
-                            )}
-                            {result.plot && (
-                                <AnalysisGraph plot={result.plot} />
-                            )}
-                            {result.operation === "spectrum" && (
-                                <details>
-                                    <summary
-                                        css={{
-                                            fontSize: 12,
-                                            cursor: "pointer"
-                                        }}
-                                    >
-                                        Inspect frequency bins
-                                    </summary>
-                                    <div
-                                        css={{
-                                            display: "flex",
-                                            alignItems: "flex-end",
-                                            gap: 12,
-                                            marginTop: 12
-                                        }}
-                                    >
-                                        <label>
-                                            Time (seconds)
-                                            <input
-                                                type="number"
-                                                min={0}
-                                                max={duration}
-                                                step="0.01"
-                                                value={frameTime}
-                                                disabled={active}
-                                                onChange={(event) => {
-                                                    const value =
-                                                        event.target
-                                                            .valueAsNumber;
-                                                    if (
-                                                        Number.isFinite(
-                                                            value
-                                                        ) &&
-                                                        value >= 0 &&
-                                                        value <= duration
-                                                    ) {
-                                                        setFrameTime(value);
-                                                        setBins(undefined);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
-                                        <Button
-                                            disabled={active}
-                                            variant="outlined"
-                                            onClick={() => void inspect()}
-                                        >
-                                            Inspect
-                                        </Button>
-                                    </div>
-                                    {bins && <AnalysisGraph plot={bins} />}
-                                </details>
-                            )}
-                            <div
-                                css={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    gap: 8
-                                }}
-                            >
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<SaveRounded />}
-                                    disabled={Boolean(saved)}
-                                    onClick={() => {
-                                        try {
-                                            setSaved(onSave(result));
-                                        } catch {
-                                            setError(
-                                                "Could not save the result. Download it or try again."
-                                            );
-                                        }
-                                    }}
-                                >
-                                    {analysis
-                                        ? "Add analysis to project"
-                                        : "Add sample to project"}
-                                </Button>
-                                <Button
-                                    startIcon={<DownloadRounded />}
-                                    onClick={download}
-                                >
-                                    Download
-                                </Button>
-                            </div>
-                            {saved && (
-                                <p role="status">
-                                    Added {saved} to the file tree. Project
-                                    owners can use its upload button to save it.
-                                </p>
-                            )}
-                        </div>
+                            Add to project
+                        </Button>
+                        <Button
+                            startIcon={<DownloadRounded />}
+                            disabled={!exportReady}
+                            onClick={download}
+                        >
+                            Download
+                        </Button>
+                    </div>
+                    {saved?.file === file && (
+                        <p role="status">
+                            Added {saved?.name} to the file tree. Project owners
+                            can use its upload button to save it.
+                        </p>
                     )}
                 </div>
             )}
-            {error && (
+            {problem && (
                 <div
                     role="alert"
                     css={{
@@ -1142,12 +938,19 @@ export default function AudioTool({
                         color: theme.errorText,
                         fontSize: 12,
                         whiteSpace: "pre-wrap",
-                        overflowWrap: "anywhere",
-                        maxHeight: 160,
-                        overflow: "auto"
+                        overflowWrap: "anywhere"
                     }}
                 >
-                    {error}
+                    {problem}
+                    {(preview.error || inspection.error) && (
+                        <Button
+                            onClick={
+                                preview.error ? preview.retry : inspection.retry
+                            }
+                        >
+                            Retry
+                        </Button>
+                    )}
                 </div>
             )}
         </section>

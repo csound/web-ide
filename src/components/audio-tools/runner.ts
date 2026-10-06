@@ -11,7 +11,7 @@ export function runTool(
             reject(new DOMException("Cancelled", "AbortError"));
             return;
         }
-        // Create a worker only on Run. Termination also cancels synchronous WASM.
+        // Create a worker only when processing starts. Termination also cancels synchronous WASM.
         const worker = new Worker(
             new URL("./tool.worker.ts", import.meta.url),
             {

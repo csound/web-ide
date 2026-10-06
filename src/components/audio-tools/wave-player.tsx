@@ -16,7 +16,8 @@ export function WavePlayer({
     label,
     range,
     onSelect,
-    disabled = false
+    disabled = false,
+    playbackDisabled = false
 }: {
     audio: AudioData;
     src?: string;
@@ -24,6 +25,7 @@ export function WavePlayer({
     range?: [number, number];
     onSelect?: (range: [number, number]) => void;
     disabled?: boolean;
+    playbackDisabled?: boolean;
 }) {
     const theme = useTheme();
     const media = useRef<HTMLAudioElement>(null);
@@ -69,6 +71,9 @@ export function WavePlayer({
         frame = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(frame);
     }, [playing, sync]);
+    useEffect(() => {
+        if (playbackDisabled) media.current?.pause();
+    }, [playbackDisabled]);
     const seek = (seconds: number) => {
         if (!media.current) return;
         media.current.currentTime = Math.max(0, Math.min(duration, seconds));
@@ -76,7 +81,7 @@ export function WavePlayer({
     };
     const toggle = async () => {
         const element = media.current;
-        if (!element) return;
+        if (!element || playbackDisabled) return;
         setError("");
         if (!element.paused) element.pause();
         else {
@@ -117,7 +122,7 @@ export function WavePlayer({
                 <IconButton
                     aria-label={`${playing ? "Pause" : "Play"} ${label.toLowerCase()}`}
                     size="small"
-                    disabled={!src}
+                    disabled={!src || playbackDisabled}
                     onClick={() => void toggle()}
                     css={{ color: theme.textColor }}
                 >
