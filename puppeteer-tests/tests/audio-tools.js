@@ -201,8 +201,14 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             {},
             sample
         );
+        const documentId = await page.evaluate(() => performance.timeOrigin);
         await click(sample, "Gain");
         await result(sample, "tone-edited.wav");
+        assert.equal(
+            await page.evaluate(() => performance.timeOrigin),
+            documentId,
+            "Starting the first audio worker must not reload the editor"
+        );
         assert.ok(wasm.some((url) => url.includes("scale")));
         assert.ok(wasm.every((url) => url.includes("scale")));
         await snapshot("sample-changes-dark");
@@ -268,7 +274,9 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         await snapshot("sample-top-dark");
     });
     it("debounces rapid settings, removes edits, and clears back to the loaded file", async () => {
-        await page.locator(`${sample} [aria-label="Remove gain"]`).click();
+        await page
+            .locator(`${sample} [aria-label="Reset gain to default"]`)
+            .click();
         await result(sample, "tone-trim.wav");
         await click(sample, "Trim");
         await setInput(`${sample} input[aria-label="Selection start"]`, "0.6");
@@ -389,13 +397,13 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
                 assert.ok(await page.$(`${analysis} figure canvas`));
             }
             await click(analysis, "Clear all changes");
+            await result(analysis, "tone.wav");
             assert.equal(await page.$(`${analysis} figure`), null);
             assert.equal(
                 (await page.$$(`${analysis} [aria-label="Changes"] li`)).length,
                 0
             );
             assert.equal((await page.$$(`${analysis} audio`)).length, 1);
-            await result(analysis, "tone.wav");
         } catch (error) {
             await dumpDebugInfo(page, "audio-tools-analysis");
             throw error;
