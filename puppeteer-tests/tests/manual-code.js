@@ -16,6 +16,29 @@ addEventListener('message', event => {
 });
 </script>`;
 
+async function clickControl(frame, selector) {
+    // Being in the viewport does not mean a control is clear of the sticky header.
+    await frame.$eval(selector, (node) =>
+        node.scrollIntoView({
+            block: "center",
+            inline: "nearest",
+            behavior: "instant"
+        })
+    );
+    await frame
+        .locator(selector)
+        .filter((node) => {
+            const box = node.getBoundingClientRect();
+            return node.contains(
+                document.elementFromPoint(
+                    box.left + box.width / 2,
+                    box.top + box.height / 2
+                )
+            );
+        })
+        .click();
+}
+
 async function setup(browser, blockPreview = false) {
     const page = await browser.newPage();
     const errors = [];
@@ -45,6 +68,62 @@ async function setup(browser, blockPreview = false) {
     });
     return { page, errors, requests };
 }
+
+test(
+    "manual code controls can be reached below the sticky header",
+    localOnly,
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const { page } = await setup(browser);
+            await page.setViewport({ width: 320, height: 900 });
+            await page.goto(`${target.baseUrl}/manual-code-test`);
+            const frame = page
+                .frames()
+                .find((frame) => frame.url().includes("/opcodes/oscili/"));
+            const selector = '[data-example="oscili.csd"] .copy-code';
+            await frame.waitForSelector(
+                '[data-example="oscili.csd"] .cm-editor'
+            );
+            // A control may be inside the viewport but covered by the sticky links.
+            await frame.waitForFunction(
+                (selector) => {
+                    const node = document.querySelector(selector);
+                    const link = document
+                        .querySelector(".opcode-step")
+                        .getBoundingClientRect();
+                    const button = node.getBoundingClientRect();
+                    window.scrollBy(
+                        0,
+                        button.top +
+                            button.height / 2 -
+                            (link.top + link.height / 2)
+                    );
+                    const box = node.getBoundingClientRect();
+                    return !!document
+                        .elementFromPoint(
+                            box.left + box.width / 2,
+                            box.top + box.height / 2
+                        )
+                        ?.closest(".opcode-step");
+                },
+                {},
+                selector
+            );
+            await clickControl(frame, selector);
+            await frame.waitForFunction(
+                () => window.copiedCode?.includes("</CsoundSynthesizer>"),
+                { timeout: 5000 }
+            );
+            assert.equal(
+                frame.url(),
+                `${target.baseUrl}/manual/opcodes/oscili/`
+            );
+        } finally {
+            await browser.close();
+        }
+    }
+);
 
 test(
     "readonly Csound previews pair copy and open controls at every width and theme",
@@ -132,7 +211,7 @@ test(
                             path: `${process.env.MANUAL_CODE_SCREENSHOTS}-${theme}-${width}.png`
                         });
                     }
-                    await frame.click(`${block} .copy-code`);
+                    await clickControl(frame, `${block} .copy-code`);
                     const source = await frame.$eval(
                         `${block} pre code`,
                         (node) => {
@@ -153,7 +232,7 @@ test(
                     );
                     await frame.focus(`${block} .cm-content`);
                     await page.keyboard.type("should not edit");
-                    await frame.click(`${block} .copy-code`);
+                    await clickControl(frame, `${block} .copy-code`);
                     assert.equal(
                         await frame.evaluate(() => window.copiedCode),
                         source
@@ -301,7 +380,8 @@ test(
                                     ].click();
                         }
                     );
-                    await frame.click(
+                    await clickControl(
+                        frame,
                         `[data-example="${filename}"] .open-example`
                     );
                     await page.waitForFunction(
@@ -352,13 +432,13 @@ test(
                 ),
                 "block"
             );
-            await frame.click("[data-example] .copy-code");
+            await clickControl(frame, "[data-example] .copy-code");
             assert.ok(
                 (await frame.evaluate(() => window.copiedCode)).includes(
                     "</CsoundSynthesizer>"
                 )
             );
-            await frame.click("[data-example] .open-example");
+            await clickControl(frame, "[data-example] .open-example");
             await page.waitForFunction(() => window.opened.length === 1);
             assert.deepEqual(errors, []);
         } finally {

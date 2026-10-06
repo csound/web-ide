@@ -1,0 +1,105 @@
+import assert from "node:assert/strict";
+import { once } from "node:events";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { join, matchesGlob } from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { build } from "vite";
+import puppeteer from "puppeteer";
+import { BROWSER_SETTINGS, targetName } from "../utils/config.js";
+
+test(
+    "built audio worker runs under Firebase hosting headers",
+    {
+        skip: targetName !== "local",
+        timeout: 60000
+    },
+    async () => {
+        const root = fileURLToPath(new URL("../../", import.meta.url));
+        const hosting = JSON.parse(
+            await readFile(join(root, "firebase.json"), "utf8")
+        ).hosting;
+        const outDir = await mkdtemp(join(tmpdir(), "csound-worker-hosting-"));
+        const fixture = "puppeteer-tests/fixtures/worker-hosting.html";
+        let browser;
+        let server;
+        try {
+            // Use the real bundled worker and WASM, rather than Vite's dev worker.
+            await build({
+                configFile: false,
+                root,
+                logLevel: "error",
+                build: {
+                    outDir,
+                    emptyOutDir: true,
+                    rollupOptions: { input: join(root, fixture) }
+                }
+            });
+            server = createServer(async (request, response) => {
+                const path = new URL(request.url, "http://localhost").pathname;
+                for (const rule of hosting.headers) {
+                    if (matchesGlob(path, rule.source)) {
+                        for (const { key, value } of rule.headers)
+                            response.setHeader(key, value);
+                    }
+                }
+                const file =
+                    path === "/editor/worker-hosting" ? fixture : path.slice(1);
+                response.setHeader(
+                    "Content-Type",
+                    file.endsWith(".html")
+                        ? "text/html"
+                        : file.endsWith(".wasm")
+                          ? "application/wasm"
+                          : "text/javascript"
+                );
+                try {
+                    response.end(await readFile(join(outDir, file)));
+                } catch {
+                    response.writeHead(404).end();
+                }
+            });
+            server.listen(0, "127.0.0.1");
+            await once(server, "listening");
+            browser = await puppeteer.launch(BROWSER_SETTINGS);
+            const page = await browser.newPage();
+            const wasm = [];
+            page.on("request", (request) => {
+                if (request.url().endsWith(".wasm")) wasm.push(request.url());
+            });
+            await page.goto(
+                `http://127.0.0.1:${server.address().port}/editor/worker-hosting`
+            );
+            assert.equal(await page.evaluate(() => crossOriginIsolated), true);
+            assert.deepEqual(
+                wasm,
+                [],
+                "WASM must not load before starting a tool"
+            );
+            await page.click("#generate");
+            await page.waitForFunction(
+                () => document.querySelector("#result").textContent
+            );
+            const result = await page.$eval(
+                "#result",
+                (node) => node.textContent
+            );
+            assert.match(result, /^RIFF:\d+$/, result);
+            assert.ok(
+                Number(result.split(":")[1]) > 48000,
+                "default sweep has audio data"
+            );
+            assert.equal(wasm.length, 1, "only the requested tool loads");
+            assert.match(wasm[0], /\/mkir-[^/]+\.wasm$/);
+        } finally {
+            await browser?.close();
+            if (server) {
+                server.closeAllConnections();
+                await new Promise((resolve) => server.close(resolve));
+            }
+            await rm(outDir, { recursive: true, force: true });
+        }
+    }
+);
