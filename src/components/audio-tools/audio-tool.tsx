@@ -203,10 +203,11 @@ export default function AudioTool({
         const nextRange: [number, number] =
             next === "denoise" ? [0, Math.min(0.2, duration)] : [0, duration];
         setRange(nextRange);
+        setSettings(defaultSettings);
         setEdits((current) =>
             stageEdit(current, {
                 operation: next as SampleOperation,
-                settings,
+                settings: defaultSettings,
                 range: nextRange
             })
         );
@@ -217,8 +218,16 @@ export default function AudioTool({
         );
         if (edit.operation === operation) {
             setSettings(defaultSettings);
-            setRange([0, duration]);
+            setRange(
+                edit.operation === "denoise"
+                    ? [0, Math.min(0.2, duration)]
+                    : [0, duration]
+            );
         }
+    };
+    const resetAnalysis = () => {
+        clear();
+        setOperation(operation);
     };
     const rows = analysis
         ? analysisEnabled
@@ -240,7 +249,7 @@ export default function AudioTool({
                               envelope: `${settings.window} s window`
                           }[operation as AnalysisOperation]
                       ].join(" · "),
-                      remove: clear
+                      remove: resetAnalysis
                   }
               ]
             : []

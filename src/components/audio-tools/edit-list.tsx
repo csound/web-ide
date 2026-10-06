@@ -78,6 +78,12 @@ export function EditList({
                                         {detail}
                                     </span>
                                 </span>
+                                <Button
+                                    aria-label={`Reset ${label.toLowerCase()} to default`}
+                                    onClick={remove}
+                                >
+                                    Reset to default
+                                </Button>
                                 <IconButton
                                     size="small"
                                     aria-label={`Remove ${label.toLowerCase()}`}

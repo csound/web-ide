@@ -209,8 +209,19 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             Icon: MusicNoteIcon
         }
     ],
+    // Keep the main tools first; sample editing and analysis belong at the tail.
     bottom: [
         { type: "console", label: "Console", Icon: ListAltRoundedIcon },
+        {
+            type: "manual",
+            label: "Csound Manual",
+            Icon: AutoStoriesRoundedIcon
+        },
+        {
+            type: "piano",
+            label: "Virtual Midi Keyboard",
+            Icon: MusicNoteIcon
+        },
         {
             type: "spectralAnalyzer",
             label: "Spectral Analyzer",
@@ -221,16 +232,6 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             type: "audioAnalysis",
             label: "Audio Analysis",
             Icon: StackedLineChartIcon
-        },
-        {
-            type: "piano",
-            label: "Virtual Midi Keyboard",
-            Icon: MusicNoteIcon
-        },
-        {
-            type: "manual",
-            label: "Csound Manual",
-            Icon: AutoStoriesRoundedIcon
         }
     ]
 };

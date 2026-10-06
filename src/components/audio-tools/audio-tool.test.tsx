@@ -209,3 +209,33 @@ it("automatically starts analysis after loading and clear cancels it", async () 
     ).toBe(false);
     expect(document.querySelectorAll("audio")).toHaveLength(1);
 });
+
+it("resets one effect to default while keeping the other changes", async () => {
+    mount();
+    await load();
+    vi.mocked(runTool).mockResolvedValue({ data, log: "" });
+    fireEvent.change(screen.getByLabelText("Selection start"), {
+        target: { value: "0.25" }
+    });
+    await screen.findByText("tone-trim.wav");
+    fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
+    fireEvent.change(screen.getByRole("slider", { name: "Gain" }), {
+        target: { value: "-12" }
+    });
+    await screen.findByText("tone-edited.wav");
+    // Reset an inactive effect too: adding it again must not restore the old gain.
+    fireEvent.click(screen.getByRole("button", { name: "Trim", exact: true }));
+    fireEvent.click(
+        screen.getByRole("button", { name: "Reset gain to default" })
+    );
+    await screen.findByText("tone-trim.wav");
+    expect(screen.queryByRole("button", { name: "Remove gain" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Remove trim" })).toBeTruthy();
+    expect(
+        screen.getByLabelText("Preview playback time").textContent
+    ).toContain("0.75");
+    fireEvent.click(screen.getByRole("button", { name: "Gain", exact: true }));
+    expect(
+        screen.getByRole("slider", { name: "Gain" }).getAttribute("value")
+    ).toBe("0");
+});
