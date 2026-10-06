@@ -1,4 +1,6 @@
 export type ToolName =
+    | "mkir"
+    | "cvanal"
     | "scale"
     | "src_conv"
     | "dnoise"

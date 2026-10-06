@@ -101,6 +101,10 @@ import {
 } from "./temporary-documents";
 import { retainTemporaryPlayback } from "./temporary-playback";
 
+import { ToolOverflow } from "./tool-overflow";
+import WavesRounded from "@mui/icons-material/WavesRounded";
+import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+
 const TabStyles = tabStyles(false);
 
 type AnyTab = IDocument | IOpenDocument | NonCloudFile;
@@ -120,6 +124,22 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    impulseResponse: {
+        title: "Impulse Response",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.ImpulseResponse
+            }))
+        )
+    },
+    convolutionPrep: {
+        title: "Convolution Prep",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.ConvolutionPrep
+            }))
+        )
+    },
     sampleEditor: {
         title: "Sample Editor",
         component: React.lazy(() =>
@@ -152,6 +172,15 @@ const utilityTabDefinitions: Record<
     }
 };
 
+const impulseLaunchers: LauncherItem[] = [
+    { type: "impulseResponse", label: "Impulse Response", Icon: WavesRounded },
+    {
+        type: "convolutionPrep",
+        label: "Convolution Prep",
+        Icon: FilterAltRounded
+    }
+];
+
 type LauncherItem = {
     type: Exclude<WorkspaceTabType, "editor">;
     label: string;
@@ -182,7 +211,8 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             type: "piano",
             label: "Virtual Midi Keyboard",
             Icon: MusicNoteIcon
-        }
+        },
+        ...impulseLaunchers
     ],
     right: [
         {
@@ -207,9 +237,10 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             type: "piano",
             label: "Virtual Midi Keyboard",
             Icon: MusicNoteIcon
-        }
+        },
+        ...impulseLaunchers
     ],
-    // Keep the main tools first; sample editing and analysis belong at the tail.
+    // Keep the main tools first; specialist audio tools belong at the tail and overflow into More.
     bottom: [
         { type: "console", label: "Console", Icon: ListAltRoundedIcon },
         {
@@ -232,7 +263,8 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             type: "audioAnalysis",
             label: "Audio Analysis",
             Icon: StackedLineChartIcon
-        }
+        },
+        ...impulseLaunchers
     ]
 };
 
@@ -1060,11 +1092,16 @@ const SidebarLaunchers = ({
                 )}
             </div>
             <footer css={SS.bottomRail} aria-label="Editor footer">
-                <div css={SS.bottomRailActions}>
-                    {sidebarChoices.bottom.map((item) =>
-                        renderRailButton("bottom", item, false)
-                    )}
-                </div>
+                <ToolOverflow
+                    items={sidebarChoices.bottom}
+                    active={bottomSidebar?.tabs[bottomSidebar.tabIndex]?.type}
+                    onSelect={(type) =>
+                        handleLauncherClick(
+                            "bottom",
+                            type as LauncherItem["type"]
+                        )
+                    }
+                />
                 <WebMcpLink />
             </footer>
         </>
@@ -1286,8 +1323,12 @@ const ProjectEditor = ({
 
     const bottomPanel = useRef<ImperativePanelHandle>(null);
     const bottomTool = bottomSidebar?.tabs[bottomSidebar.tabIndex]?.type;
-    const audioToolOpen =
-        bottomTool === "sampleEditor" || bottomTool === "audioAnalysis";
+    const audioToolOpen = [
+        "sampleEditor",
+        "audioAnalysis",
+        "impulseResponse",
+        "convolutionPrep"
+    ].includes(bottomTool || "");
     useEffect(() => {
         // Give waveform controls room when opening from the compact console dock.
         if (audioToolOpen && (bottomPanel.current?.getSize() || 0) < 55)
