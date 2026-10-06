@@ -144,7 +144,7 @@ for (const [theme, width, height, variant = ""] of [
                         nav,
                         (element) => element.querySelectorAll("button").length
                     ),
-                    4
+                    6
                 );
                 assert.doesNotMatch(
                     await page.$eval("body", (element) => element.textContent),

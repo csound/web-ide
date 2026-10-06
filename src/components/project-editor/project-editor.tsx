@@ -1,7 +1,7 @@
 import { FilePlayButton } from "@comp/target-controls/file-play-button";
 import { ProjectFileDrop } from "./project-file-drop";
 import { useGuestReadme } from "./use-guest-readme";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import AccountTree from "@mui/icons-material/AccountTree";
 import ArrowBack from "@mui/icons-material/ArrowBack";
@@ -12,6 +12,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
+import ContentCutIcon from "@mui/icons-material/ContentCut";
+import StackedLineChartIcon from "@mui/icons-material/StackedLineChart";
 import HorizontalSplitIcon from "@mui/icons-material/HorizontalSplit";
 import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -86,7 +88,8 @@ import { revealConsole } from "./actions";
 import {
     Panel as ResizablePanel,
     PanelGroup,
-    PanelResizeHandle
+    PanelResizeHandle,
+    type ImperativePanelHandle
 } from "react-resizable-panels";
 import Tooltip from "@mui/material/Tooltip";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -117,6 +120,22 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    sampleEditor: {
+        title: "Sample Editor",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.SampleEditor
+            }))
+        )
+    },
+    audioAnalysis: {
+        title: "Audio Analysis",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.AudioAnalysis
+            }))
+        )
+    },
     console: {
         title: "Console",
         component: Console
@@ -153,6 +172,12 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             label: "Spectral Analyzer",
             Icon: GraphicEqIcon
         },
+        { type: "sampleEditor", label: "Sample Editor", Icon: ContentCutIcon },
+        {
+            type: "audioAnalysis",
+            label: "Audio Analysis",
+            Icon: StackedLineChartIcon
+        },
         {
             type: "piano",
             label: "Virtual Midi Keyboard",
@@ -172,18 +197,25 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             label: "Spectral Analyzer",
             Icon: GraphicEqIcon
         },
+        { type: "sampleEditor", label: "Sample Editor", Icon: ContentCutIcon },
+        {
+            type: "audioAnalysis",
+            label: "Audio Analysis",
+            Icon: StackedLineChartIcon
+        },
         {
             type: "piano",
             label: "Virtual Midi Keyboard",
             Icon: MusicNoteIcon
         }
     ],
+    // Keep the main tools first; sample editing and analysis belong at the tail.
     bottom: [
         { type: "console", label: "Console", Icon: ListAltRoundedIcon },
         {
-            type: "spectralAnalyzer",
-            label: "Spectral Analyzer",
-            Icon: GraphicEqIcon
+            type: "manual",
+            label: "Csound Manual",
+            Icon: AutoStoriesRoundedIcon
         },
         {
             type: "piano",
@@ -191,9 +223,15 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             Icon: MusicNoteIcon
         },
         {
-            type: "manual",
-            label: "Csound Manual",
-            Icon: AutoStoriesRoundedIcon
+            type: "spectralAnalyzer",
+            label: "Spectral Analyzer",
+            Icon: GraphicEqIcon
+        },
+        { type: "sampleEditor", label: "Sample Editor", Icon: ContentCutIcon },
+        {
+            type: "audioAnalysis",
+            label: "Audio Analysis",
+            Icon: StackedLineChartIcon
         }
     ]
 };
@@ -920,6 +958,7 @@ const WorkspaceNodeView = ({
     );
 };
 
+/** Show workspace tool launchers and open or focus the selected sidebar tab. */
 const SidebarLaunchers = ({
     maximized,
     leftSidebar,
@@ -987,7 +1026,11 @@ const SidebarLaunchers = ({
         const Icon = item.Icon;
 
         return (
-            <Tooltip key={`${sidebar}-${item.type}`} title={item.label}>
+            <Tooltip
+                key={`${sidebar}-${item.type}`}
+                title={item.label}
+                disableInteractive
+            >
                 <button
                     type="button"
                     id={`sidebar-${sidebar}-${item.type}`}
@@ -1028,6 +1071,7 @@ const SidebarLaunchers = ({
     );
 };
 
+/** Render the responsive project workspace and give visual audio tools enough dock space. */
 const ProjectEditor = ({
     activeProject
 }: {
@@ -1240,6 +1284,16 @@ const ProjectEditor = ({
         [maximizedPanelId, root]
     );
 
+    const bottomPanel = useRef<ImperativePanelHandle>(null);
+    const bottomTool = bottomSidebar?.tabs[bottomSidebar.tabIndex]?.type;
+    const audioToolOpen =
+        bottomTool === "sampleEditor" || bottomTool === "audioAnalysis";
+    useEffect(() => {
+        // Give waveform controls room when opening from the compact console dock.
+        if (audioToolOpen && (bottomPanel.current?.getSize() || 0) < 55)
+            bottomPanel.current?.resize(60);
+    }, [audioToolOpen]);
+
     const centerContent = bottomSidebar ? (
         <PanelGroup direction="vertical">
             <ResizablePanel defaultSize={80} minSize={30}>
@@ -1260,7 +1314,11 @@ const ProjectEditor = ({
                 className="ProjectEditorResizer horizontal"
                 onDragging={(dragging) => setIsDragging(dragging)}
             />
-            <ResizablePanel defaultSize={20} minSize={10}>
+            <ResizablePanel
+                ref={bottomPanel}
+                defaultSize={audioToolOpen ? 60 : 20}
+                minSize={10}
+            >
                 <SidebarPanelView
                     sidebar={bottomSidebar}
                     position="bottom"

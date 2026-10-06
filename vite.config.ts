@@ -14,8 +14,12 @@ export default defineConfig({
     },
     // depending on your application, base can also be "/"
     base: "/",
-    // Emotion's Babel transform adds this import after Vite scans dependencies.
-    optimizeDeps: { include: ["@emotion/styled/base"] },
+    // Emotion adds its import after scanning; WASI is only discovered in a lazy
+    // worker. Prepare both up front so the first audio edit cannot reload the page.
+    // This prepares JavaScript only; utility WASM still loads on demand.
+    optimizeDeps: {
+        include: ["@emotion/styled/base", "@bjorn3/browser_wasi_shim"]
+    },
     plugins: [
         manualPages(),
         checker({

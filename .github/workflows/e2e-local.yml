@@ -51,7 +51,15 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                suite: [home, editor, manual, manual-examples, manual-code]
+                suite:
+                    [
+                        home,
+                        editor,
+                        manual,
+                        manual-examples,
+                        manual-code,
+                        audio-tools
+                    ]
 
         steps:
             - uses: actions/checkout@v7

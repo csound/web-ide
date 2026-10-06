@@ -74,6 +74,7 @@ import {
 import { IProjectEditorReducer } from "@comp/project-editor/reducer";
 import { IWorkspaceTab } from "@comp/project-editor/types";
 
+/** Build project menus from current state and handle desktop and mobile menu navigation. */
 export function MenuBar({ projectUid }: { projectUid?: string }) {
     const setConsole = useSetConsole();
     const menuRootRef = useRef<HTMLDivElement | null>(null);
@@ -371,6 +372,26 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         },
                         checked: isSpectralAnalyzerVisible
                     },
+                    ...(
+                        [
+                            ["sampleEditor", "Sample Editor"],
+                            ["audioAnalysis", "Audio Analysis"]
+                        ] as const
+                    ).map(([type, label]) => {
+                        const tab = projectEditorState.bottomSidebar?.tabs.find(
+                            (item: IWorkspaceTab) => item.type === type
+                        );
+                        return {
+                            label,
+                            checked: Boolean(tab),
+                            callback: () =>
+                                dispatch(
+                                    tab
+                                        ? closeSidebarTab("bottom", tab.id)
+                                        : openSidebarTab("bottom", type)
+                                )
+                        };
+                    }),
                     {
                         label: "Virtual Midi Keyboard",
                         callback: () => {
@@ -478,6 +499,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
             isPublic,
             isSabEnabled,
             isSpectralAnalyzerVisible,
+            projectEditorState.bottomSidebar,
             loggedInUid,
             resolvedProjectUid,
             selectedThemeName,
