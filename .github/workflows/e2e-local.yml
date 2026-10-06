@@ -58,7 +58,8 @@ jobs:
                         manual,
                         manual-examples,
                         manual-code,
-                        audio-tools
+                        audio-tools,
+                        worker-hosting
                     ]
 
         steps:
