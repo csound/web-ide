@@ -762,6 +762,39 @@ describe("shared Csound performance", () => {
 });
 
 describe("project playlists", () => {
+    it.each(["loading", "playing"])(
+        "keeps %s playback when saved settings select the fallback file",
+        async (phase) => {
+            updateAllTargetsLocally(store.dispatch, "", "audio-test", {});
+            let resolveFactory!: (value: any) => void;
+            vi.mocked(Csound).mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveFactory = resolve;
+                    })
+            );
+            const pending = playProject("audio-test", setConsole);
+            if (phase === "playing") {
+                resolveFactory(engine);
+                await pending;
+            }
+            // Files can arrive before the saved target's Firestore snapshot.
+            updateAllTargetsLocally(store.dispatch, "Main", "audio-test", {
+                Main: {
+                    targetName: "Main",
+                    targetType: "main",
+                    targetDocumentUid: "csd",
+                    csoundOptions: {}
+                }
+            });
+            resolveFactory(engine);
+            await pending;
+            expect(engine.start).toHaveBeenCalledOnce();
+            expect(store.getState().csound.status).toBe("playing");
+            expect(projectPlayback()?.documentUid).toBe("csd");
+            expect(engine.stop).not.toHaveBeenCalled();
+        }
+    );
     const configurePlaylist = (index = 0) => {
         const project = store.getState().ProjectsReducer.projects["audio-test"];
         store.dispatch({
@@ -803,6 +836,34 @@ describe("project playlists", () => {
         });
         store.dispatch(setPlaylistIndex("audio-test", index));
     };
+    it.each(["file", "mode"])(
+        "cancels startup when saved settings change the playback %s",
+        async (change) => {
+            configurePlaylist();
+            updateAllTargetsLocally(store.dispatch, "", "audio-test", {});
+            let resolveFactory!: (value: any) => void;
+            vi.mocked(Csound).mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveFactory = resolve;
+                    })
+            );
+            const pending = playProject("audio-test", setConsole);
+            updateAllTargetsLocally(store.dispatch, "Saved", "audio-test", {
+                Saved: {
+                    targetName: "Saved",
+                    targetType: change === "mode" ? "playlist" : "main",
+                    targetDocumentUid: "third",
+                    playlistDocumentsUid: ["csd"],
+                    csoundOptions: {}
+                }
+            });
+            resolveFactory(engine);
+            await pending;
+            expect(engine.start).not.toHaveBeenCalled();
+            expect(projectPlayback()).toBeUndefined();
+        }
+    );
     it("plays in order after cleanup, follows the current track, and resets after the last", async () => {
         configurePlaylist();
         await playProject("audio-test", setConsole);

@@ -72,7 +72,29 @@ for (const project of projects)
     });
 (window as any).playbackFixture = {
     busy: isCsoundBusy,
-    live: (projectUid: string) => !!getLiveCsound(projectUid)
+    live: (projectUid: string) => !!getLiveCsound(projectUid),
+    loadTargetsOnNextRun: () => {
+        const unsubscribe = store.subscribe(() => {
+            if (store.getState().csound.status !== "loading") return;
+            unsubscribe();
+            // Replay the saved target arriving after the files and Run click.
+            queueMicrotask(() =>
+                store.dispatch({
+                    type: "TARGET_CONTROL.UPDATE_ALL_TARGETS_LOCALLY",
+                    projectUid: "First",
+                    defaultTarget: "Main",
+                    targets: {
+                        Main: {
+                            targetName: "Main",
+                            targetType: "main",
+                            targetDocumentUid: "csd",
+                            csoundOptions: {}
+                        }
+                    }
+                })
+            );
+        });
+    }
 };
 
 function ProfilePlayback({ children }: { children: ReactNode }) {
