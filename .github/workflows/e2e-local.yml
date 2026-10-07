@@ -60,6 +60,8 @@ jobs:
                         manual-code,
                         audio-tools,
                         project-playback,
+                        csd-diagnostics,
+                        score-preprocessors,
                         worker-hosting
                     ]
 

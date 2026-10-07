@@ -16,6 +16,8 @@ import { getSelectedTargetDocumentUid } from "@comp/target-controls/selectors";
 import { consoleReadline } from "../console/readline";
 import { rawToWave } from "./wave-files";
 import { finalizeFlac } from "./flac-file";
+import { prepareScorePreprocessors } from "./score-preprocessors";
+import { waitForCompilerMessages } from "./compiler-messages";
 import {
     RenderSettings,
     renderFilename,
@@ -199,6 +201,7 @@ export async function runPerformance({
     const cancel = () => controller.abort();
     signal?.addEventListener("abort", cancel, { once: true });
     let csound: CsoundObj | undefined;
+    let messageCount = 0;
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
@@ -393,6 +396,7 @@ export async function runPerformance({
             once: true
         });
         csound.on("message", (message: string) => {
+            messageCount++;
             if (
                 /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
                     message
@@ -407,6 +411,15 @@ export async function runPerformance({
             await csound.fs.writeFile(file.name, file.data);
             check();
         }
+        await prepareScorePreprocessors(
+            csound.fs,
+            csdText ?? document?.currentValue,
+            controller.signal,
+            Object.values(project.documents).map((doc) =>
+                documentPath(doc, project.documents)
+            )
+        );
+        check();
         before = await csound.fs.readdir("/");
         for (const option of overrides) await csound.setOption(option);
         if (csdPath && document && renderSettings) {
@@ -430,10 +443,16 @@ export async function runPerformance({
                   ? await compileCSD(csound, csdPath)
                   : await csound.compileOrc(orc ?? "");
         check();
-        if (compiled !== 0)
+        if (compiled !== 0) {
+            await waitForCompilerMessages(
+                () => messageCount,
+                controller.signal
+            );
+            check();
             throw new Error(
                 "Csound compilation failed. Read the console for details."
             );
+        }
         // CsOptions may override the initial command-line options.
         for (const option of overrides) await csound.setOption(option);
         // Live inputs make the browser backend start a realtime thread even
