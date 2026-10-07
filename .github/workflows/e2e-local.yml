@@ -59,6 +59,7 @@ jobs:
                         manual-examples,
                         manual-code,
                         audio-tools,
+                        project-playback,
                         worker-hosting
                     ]
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { playListItem } from "./actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
@@ -8,6 +8,8 @@ import AlertIcon from "@mui/icons-material/ErrorOutline";
 import { Theme, useTheme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
 import * as SS from "./styles";
+import { openSnackbar } from "@comp/snackbar/actions";
+import { SnackbarType } from "@comp/snackbar/types";
 
 const SvgPlayIcon = ({
     shouldDisplay,
@@ -64,28 +66,44 @@ export const ListPlayButton = ({
     const [isStartingUp, setIsStartingUp] = useState(false);
     const dispatch = useDispatch();
 
+    const request = useRef<AbortController>();
     useEffect(() => {
-        if (
-            (isPlaying && isStartingUp && csoundStatus === "playing") ||
-            (isPlaying && isStartingUp && csoundStatus === "error")
-        ) {
-            setIsStartingUp(false);
-        }
-    }, [isPlaying, csoundStatus, currentlyPlayingProject, isStartingUp]);
+        setIsStartingUp(false);
+        return () => request.current?.abort();
+    }, [projectUid]);
+    const isAudible = isPlaying && csoundStatus === "playing";
 
     const buttonCallback = useCallback(async () => {
-        if (isStartingUp) {
+        if (isStartingUp) return;
+        if (isPaused) {
+            dispatch(resumePausedCsound());
             return;
-        } else if (!isPlaying) {
-            setIsStartingUp(true);
         }
-
-        isPaused
-            ? dispatch(resumePausedCsound())
-            : isPlaying && !hasError
-              ? dispatch(pauseCsound())
-              : dispatch(playListItem({ projectUid }));
-    }, [dispatch, hasError, isPaused, isPlaying, isStartingUp, projectUid]);
+        if (isAudible) {
+            dispatch(pauseCsound());
+            return;
+        }
+        const controller = new AbortController();
+        request.current = controller;
+        setIsStartingUp(true);
+        try {
+            await dispatch(
+                playListItem({ projectUid, signal: controller.signal })
+            );
+        } catch (error) {
+            dispatch(
+                openSnackbar(
+                    error instanceof Error
+                        ? error.message
+                        : "Could not play this project.",
+                    SnackbarType.Error
+                )
+            );
+        } finally {
+            if (request.current === controller) request.current = undefined;
+            if (!controller.signal.aborted) setIsStartingUp(false);
+        }
+    }, [dispatch, isPaused, isAudible, isStartingUp, projectUid]);
 
     const IconComponent = (
         <ProjectAvatar
@@ -103,7 +121,7 @@ export const ListPlayButton = ({
             aria-label={
                 isStartingUp
                     ? `Starting ${projectName}`
-                    : isPlaying && !isPaused && !hasError
+                    : isAudible
                       ? `Pause ${projectName}`
                       : `Play ${projectName}`
             }
@@ -148,10 +166,7 @@ export const ListPlayButton = ({
                 </span>
                 <span
                     style={{
-                        display:
-                            isPlaying && !hasError && !isPaused
-                                ? "inherit"
-                                : "none"
+                        display: isAudible ? "inherit" : "none"
                     }}
                     css={SS.pauseIcon}
                 />

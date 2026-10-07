@@ -9,7 +9,7 @@ import { IProject } from "@comp/projects/types";
 import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
 import { activateProject, downloadProjectOnce, closeProject } from "./actions";
-import { isEmpty, pathOr } from "ramda";
+import { isEmpty } from "ramda";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
 
@@ -23,13 +23,12 @@ export const ProjectContext = () => {
     const theme = useTheme();
     const routeParams: { id?: string } = useParams();
 
-    const [projectFetchStarted, setProjectFetchStarted] = useState(false);
-    const [projectIsReady, setProjectIsReady] = useState(false);
-    const [needsLoading, setNeedsLoading] = useState(true);
-    // Ref guard: prevents StrictMode double-invocation from running
-    // the download effect twice (which would closeTabDock after
-    // tabDockInit, leaving the editor tab dock empty).
-    const fetchStartedRef = useRef(false);
+    const [readyProjectUid, setReadyProjectUid] = useState<string>();
+    // Reuse the fetch through StrictMode's effect replay, but cancel each consumer.
+    const download = useRef<{
+        projectUid: string;
+        promise: ReturnType<ReturnType<typeof downloadProjectOnce>>;
+    }>();
     const projectUid = routeParams.id ?? "";
     const invalidUrl = !projectUid || isEmpty(projectUid);
     // this is true when /editor path is missing projectUid
@@ -45,74 +44,45 @@ export const ProjectContext = () => {
     );
 
     const project: IProject | undefined = useSelector((store: RootState) =>
-        activeProjectUid && !invalidUrl
+        activeProjectUid === projectUid && !invalidUrl
             ? store?.ProjectsReducer?.projects?.[activeProjectUid]
             : undefined
     );
 
-    const tabIndex: number = useSelector(
-        pathOr(-1, ["ProjectEditorReducer", "tabDock", "tabIndex"])
-    );
-
-    // Effect 1: Reset states when projectUid changes
     useEffect(() => {
-        setProjectFetchStarted(false);
-        setProjectIsReady(false);
-        setNeedsLoading(true);
-        fetchStartedRef.current = false;
-    }, [projectUid]);
-
-    // Effect 2: Handle project download initiation
-    useEffect(() => {
-        if (!projectFetchStarted && projectUid && !fetchStartedRef.current) {
-            fetchStartedRef.current = true;
-            setProjectFetchStarted(true);
-
-            const downloadProject = async () => {
-                try {
-                    const result =
-                        await downloadProjectOnce(projectUid)(dispatch);
-                    if (!result.exists) {
-                        setProjectIsReady(true);
-                        navigate("/404", {
-                            state: { message: "Project not found" }
-                        });
-                        return;
-                    }
-                } catch (error: any) {
-                    console.error(
-                        `[ProjectContext] Error during project download:`,
-                        error
-                    );
-                    setProjectIsReady(true);
-                    navigate("/404", {
-                        state: { message: "Project not found" }
-                    });
-                    return;
-                }
-
-                // Cleanup and activate project
-                dispatch(
-                    cleanupNonCloudFiles({
-                        projectUid
-                    }) as any
-                );
-                await activateProject(projectUid)(dispatch);
-                setProjectIsReady(true);
+        if (!projectUid) return;
+        let cancelled = false;
+        if (download.current?.projectUid !== projectUid) {
+            download.current = {
+                projectUid,
+                promise: downloadProjectOnce(projectUid)(dispatch)
             };
-
-            downloadProject();
         }
-    }, [projectUid]); // Only depend on projectUid, not on projectFetchStarted or dispatch
+        const pending = download.current.promise;
+        const openProject = async () => {
+            try {
+                const result = await pending;
+                if (cancelled) return;
+                if (!result.exists) throw new Error("Project not found");
+                dispatch(cleanupNonCloudFiles({ projectUid }) as any);
+                await activateProject(projectUid)(dispatch);
+                if (!cancelled) setReadyProjectUid(projectUid);
+            } catch (error) {
+                if (cancelled) return;
+                console.error(
+                    "[ProjectContext] Error during project download:",
+                    error
+                );
+                navigate("/404", { state: { message: "Project not found" } });
+            }
+        };
+        void openProject();
+        return () => {
+            cancelled = true;
+        };
+    }, [projectUid, dispatch, navigate]);
 
-    // Effect 3: Handle loading state management
-    useEffect(() => {
-        if (needsLoading && projectFetchStarted && projectIsReady) {
-            setNeedsLoading(false);
-        }
-    }, [needsLoading, projectFetchStarted, projectIsReady]);
-
-    // Effect 4: Cleanup when component unmounts (user navigates away from project editor)
+    // Close the tab dock when leaving the editor route.
     useEffect(() => {
         return () => {
             // Clean up tab dock when leaving project editor entirely
@@ -127,7 +97,7 @@ export const ProjectContext = () => {
             <main css={SS.main}>
                 {project && <ProjectEditor activeProject={project} />}
             </main>
-            {needsLoading && (
+            {readyProjectUid !== projectUid && (
                 <div
                     css={SS.loadMain}
                     aria-live="polite"

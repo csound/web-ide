@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
 import { CircularProgress, IconButton, Tooltip } from "@mui/material";
 import PlayArrow from "@mui/icons-material/PlayArrow";
@@ -26,6 +26,11 @@ export default function PlayButton({
     const dispatch = useDispatch();
     const setConsole = useSetConsole();
     const [pending, setPending] = useState(false);
+    const request = useRef<AbortController>();
+    useEffect(() => {
+        setPending(false);
+        return () => request.current?.abort();
+    }, [activeProjectUid]);
     const status = useSelector((state) => state.csound.status);
     const documents = useSelector((state) =>
         selectPlaybackDocuments(state, activeProjectUid)
@@ -61,6 +66,8 @@ export default function PlayButton({
                     data-testid="run-button-native"
                     disabled={busy || !documents.length}
                     onClick={async () => {
+                        const controller = new AbortController();
+                        request.current = controller;
                         setPending(true);
                         try {
                             if (status === "playing") dispatch(pauseCsound());
@@ -68,9 +75,16 @@ export default function PlayButton({
                                 dispatch(resumePausedCsound());
                             else {
                                 if (isOwner) await dispatch(saveAllFiles());
-                                await playProject(activeProjectUid, setConsole);
+                                if (controller.signal.aborted) return;
+                                await playProject(
+                                    activeProjectUid,
+                                    setConsole,
+                                    undefined,
+                                    controller.signal
+                                );
                             }
                         } catch (error) {
+                            if (controller.signal.aborted) return;
                             dispatch(
                                 openSnackbar(
                                     error instanceof Error
@@ -80,7 +94,9 @@ export default function PlayButton({
                                 )
                             );
                         } finally {
-                            setPending(false);
+                            if (request.current === controller)
+                                request.current = undefined;
+                            if (!controller.signal.aborted) setPending(false);
                         }
                     }}
                 >
