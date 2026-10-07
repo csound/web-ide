@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { mkdirSync, writeFileSync } from "node:fs";
 import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, target, targetName } from "../utils/config.js";
 
@@ -78,8 +79,29 @@ for (const sab of [false, true]) {
                     );
                 const button = (name) => `::-p-aria(${name}[role="button"])`;
                 const click = async (name) => {
-                    await page.waitForSelector(button(name));
-                    await page.locator(button(name)).click();
+                    try {
+                        const control = await page.waitForSelector(
+                            button(name)
+                        );
+                        await page.waitForFunction(
+                            (element) => !element.disabled,
+                            {},
+                            control
+                        );
+                        await control.click();
+                    } catch (error) {
+                        mkdirSync("screenshots", { recursive: true });
+                        await page.screenshot({
+                            path: `screenshots/project-playback-${sab}.png`
+                        });
+                        writeFileSync(
+                            `screenshots/project-playback-${sab}.html`,
+                            await page.content()
+                        );
+                        throw new Error(`Could not click ${name}`, {
+                            cause: error
+                        });
+                    }
                 };
                 const wait = async (name) => {
                     await page.waitForSelector(button(name));

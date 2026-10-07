@@ -80,27 +80,36 @@ function Fixture() {
             <output aria-label="Engine status">{status}</output>
             {editor ? (
                 <>
-                    <button
-                        onClick={() => {
-                            setEditor(false);
-                            void store.dispatch(closeProject());
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            flexShrink: 0
                         }}
                     >
-                        Leave editor
-                    </button>
-                    <button
-                        onClick={() =>
-                            void runPerformance({
-                                projectUid: "First",
-                                csdText: source,
-                                mode: "play",
-                                setConsole: () => {}
-                            })
-                        }
-                    >
-                        Play direct engine
-                    </button>
-                    <TargetControls activeProjectUid="First" />
+                        <button
+                            onClick={() => {
+                                setEditor(false);
+                                void store.dispatch(closeProject());
+                            }}
+                        >
+                            Leave editor
+                        </button>
+                        <button
+                            onClick={() =>
+                                void runPerformance({
+                                    projectUid: "First",
+                                    csdText: source,
+                                    mode: "play",
+                                    setConsole: () => {}
+                                })
+                            }
+                        >
+                            Play direct engine
+                        </button>
+                        <TargetControls activeProjectUid="First" />
+                    </div>
                     <div style={{ flex: 1, minHeight: 0 }}>
                         <ProjectEditor activeProject={projects[0]} />
                     </div>
