@@ -100,6 +100,8 @@ import {
     temporaryDocumentUids
 } from "./temporary-documents";
 import { retainTemporaryPlayback } from "./temporary-playback";
+import { stopProjectPlayback } from "@comp/target-controls/playback";
+import { stopPerformance } from "@comp/csound/actions";
 
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
@@ -1166,7 +1168,12 @@ const ProjectEditor = ({
         retainTemporaryPlayback(projectUid, temporaryDocumentUids(root));
     }, [projectUid, root]);
     useEffect(
-        () => () => retainTemporaryPlayback(projectUid, []),
+        () => () => {
+            retainTemporaryPlayback(projectUid, []);
+            stopProjectPlayback(projectUid);
+            // The workspace owns all its runs, including examples and WebMCP.
+            void stopPerformance(projectUid).catch(console.error);
+        },
         [projectUid]
     );
 

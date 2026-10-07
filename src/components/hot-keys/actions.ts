@@ -74,7 +74,11 @@ export const storeProjectEditorKeyboardCallbacks = (
                 store.dispatch(resumePausedCsound());
                 return;
             }
-            if (isCsoundBusy()) return;
+            if (
+                isCsoundBusy() ||
+                store.getState().ProjectsReducer.activeProjectUid !== projectUid
+            )
+                return;
             const playActionDefault = getPlayActionFromTarget(projectUid)(
                 store.getState()
             );
@@ -89,6 +93,11 @@ export const storeProjectEditorKeyboardCallbacks = (
                         ? selectIsOwner(store.getState())
                         : false;
                     if (isOwner) await store.dispatch(saveAllFiles());
+                    if (
+                        store.getState().ProjectsReducer.activeProjectUid !==
+                        projectUid
+                    )
+                        return;
                     await playAction(store.dispatch, setConsole);
                 } catch (error) {
                     store.dispatch(

@@ -37,7 +37,6 @@ import {
     SET_CURRENT_TAG_TEXT,
     SET_TAGS_INPUT,
     GET_ALL_TAGS,
-    SET_CURRENTLY_PLAYING_PROJECT,
     REFRESH_USER_PROFILE,
     SET_FOLLOWING_FILTER_STRING,
     SET_PROJECT_FILTER_STRING,
@@ -57,20 +56,14 @@ import { SnackbarType } from "@comp/snackbar/types";
 import { closeModal, openSimpleModal } from "@comp/modal/actions";
 import { openLoginDialog, setPostAuthFlow } from "@comp/login/actions";
 import { selectLoggedInUid } from "@comp/login/selectors";
-import { selectCurrentlyPlayingProject } from "./selectors";
-import {
-    downloadAllProjectDocumentsOnce,
-    downloadProjectOnce
-} from "@comp/projects/actions";
+import { downloadProjectOnce } from "@comp/projects/actions";
 import { getProjectLastModifiedOnce } from "@comp/project-last-modified/actions";
-import {
-    getPlayActionFromProject,
-    getPlayActionFromTarget
-} from "@comp/target-controls/utils";
+import { playProject } from "@comp/target-controls/playback";
+import { stopPerformance } from "@comp/csound/actions";
 import { downloadTargetsOnce } from "@comp/target-controls/actions";
 import { IProject } from "@comp/projects/types";
 import { unsetProject } from "@comp/projects/actions";
-import { assoc, difference, keys, path, hasPath } from "ramda";
+import { assoc, difference, keys, path } from "ramda";
 import { navigateTo } from "@comp/router/navigate";
 
 export type ProjectStarterTemplate = "single-csd" | "split-csd" | "empty";
@@ -567,83 +560,55 @@ export const uploadProfileImage =
         }
     };
 
+// Only the latest card click may start audio after its downloads finish.
+let pendingPlayback: AbortController | undefined;
 export const playListItem =
-    ({ projectUid }: { projectUid: string | false }) =>
+    ({
+        projectUid,
+        signal
+    }: {
+        projectUid: string | false;
+        signal?: AbortSignal;
+    }) =>
     async (
         dispatch: AppThunkDispatch,
         getState: () => RootState
     ): Promise<void> => {
-        const state = getState();
-
-        const currentlyPlayingProject = selectCurrentlyPlayingProject(state);
-
-        if (projectUid === false) {
-            console.log("playListItem: projectUid is false");
-            return;
-        }
-
-        if (projectUid !== currentlyPlayingProject) {
-            dispatch({
-                type: SET_CURRENTLY_PLAYING_PROJECT,
-                projectUid: undefined
-            });
-        }
-
-        const projectIsCached = hasPath(
-            ["ProjectsReducer", "projects", projectUid],
-            state
-        );
-        const projectHasLastModule = hasPath(
-            ["ProjectLastModifiedReducer", projectUid, "timestamp"],
-            state
-        );
-        let timestampMismatch = false;
-
-        if (projectIsCached && projectHasLastModule) {
-            const cachedTimestamp: Timestamp | number | undefined =
-                state.ProjectsReducer.projects[projectUid]
-                    .cachedProjectLastModified;
-
-            const currentTimestamp: Timestamp | number | undefined =
-                state.ProjectLastModifiedReducer[projectUid].timestamp;
-
+        if (projectUid === false || signal?.aborted) return;
+        pendingPlayback?.abort();
+        const request = new AbortController();
+        pendingPlayback = request;
+        const cancellation = signal
+            ? AbortSignal.any([signal, request.signal])
+            : request.signal;
+        try {
+            // A paused engine still owns audio. Wait for its worker to terminate.
+            await stopPerformance();
+            cancellation.throwIfAborted();
+            const state = getState();
+            const project = state.ProjectsReducer.projects[projectUid];
+            const modified = state.ProjectLastModifiedReducer[projectUid];
+            const millis = (value: Timestamp | number | undefined) =>
+                typeof value === "object" ? value.toMillis() : value;
             if (
-                cachedTimestamp &&
-                currentTimestamp &&
-                typeof cachedTimestamp === "object" &&
-                typeof currentTimestamp === "object"
+                !project ||
+                !modified ||
+                millis(project.cachedProjectLastModified) !==
+                    millis(modified.timestamp)
             ) {
-                timestampMismatch =
-                    (cachedTimestamp as Timestamp).toMillis() !==
-                    (currentTimestamp as Timestamp).toMillis();
+                const result = await downloadProjectOnce(projectUid)(dispatch);
+                cancellation.throwIfAborted();
+                if (!result.exists) throw new Error("Project not found.");
+                await downloadTargetsOnce(projectUid)(dispatch);
+                cancellation.throwIfAborted();
+                await getProjectLastModifiedOnce(projectUid)(dispatch);
+                cancellation.throwIfAborted();
             }
-        }
-
-        if (!projectIsCached || timestampMismatch || !projectHasLastModule) {
-            const result = await downloadProjectOnce(projectUid)(dispatch);
-            if (!result.exists) {
-                console.error("Project not found:", projectUid);
-                return;
-            }
-            await downloadAllProjectDocumentsOnce(projectUid)(dispatch);
-            await downloadTargetsOnce(projectUid)(dispatch);
-            await getProjectLastModifiedOnce(projectUid)(dispatch);
-            // recursion
-            return await playListItem({ projectUid })(dispatch, getState);
-        }
-
-        const playAction =
-            getPlayActionFromTarget(projectUid)(state) ||
-            getPlayActionFromProject(projectUid)(state);
-
-        if (playAction) {
-            (playAction as any)(dispatch);
-            dispatch({
-                type: SET_CURRENTLY_PLAYING_PROJECT,
-                projectUid
-            });
-        } else {
-            // handle unplayable project
+            await playProject(projectUid, () => {}, undefined, cancellation);
+        } catch (error) {
+            if (!cancellation.aborted) throw error;
+        } finally {
+            if (pendingPlayback === request) pendingPlayback = undefined;
         }
     };
 

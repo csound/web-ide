@@ -31,10 +31,16 @@ type Run = {
     controller: AbortController;
     done: Promise<void>;
     projectUid: string;
+    transport?: Promise<void>;
 };
 let activeRun: Run | undefined;
 let batch:
-    | { token: symbol; controller: AbortController; done: Promise<void> }
+    | {
+          token: symbol;
+          controller: AbortController;
+          done: Promise<void>;
+          projectUid?: string;
+      }
     | undefined;
 
 export const setCsoundPlayState = (status: ICsoundStatus) => ({
@@ -196,15 +202,45 @@ export async function runPerformance({
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
+    let forceTermination = false;
     let audio: Uint8Array | undefined;
     let disconnectReadline = () => {};
+    const stopEngine = async () => {
+        if (!csound) return;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+            await Promise.race([
+                (async () => {
+                    if (run.transport) await run.transport;
+                    if (forceTermination || activeRun !== run) return;
+                    await csound.stop();
+                })(),
+                new Promise<never>((_, reject) => {
+                    timer = setTimeout(
+                        () =>
+                            reject(
+                                new Error("Csound did not acknowledge stop.")
+                            ),
+                        2000
+                    );
+                })
+            ]);
+        } catch (error) {
+            // A paused SAB worker can miss its wake-up. Terminate it instead of
+            // sending cleanup RPCs to a worker that no longer answers them.
+            forceTermination = true;
+            if (!controller.signal.aborted) throw error;
+        } finally {
+            clearTimeout(timer);
+        }
+    };
     const finish = (collect: boolean): Promise<string[]> => {
         if (finishPromise) return finishPromise;
         disconnectReadline();
         finishPromise = (async () => {
             const files: string[] = [];
             try {
-                if (csound) {
+                if (csound && !forceTermination) {
                     const waveInfo =
                         renderSettings?.format === "wav" &&
                         collect &&
@@ -471,7 +507,7 @@ export async function runPerformance({
                 () => {
                     void (async () => {
                         try {
-                            await csound?.stop();
+                            await stopEngine();
                         } finally {
                             await finish(false);
                         }
@@ -502,7 +538,7 @@ export async function runPerformance({
     } catch (error) {
         failed = !controller.signal.aborted;
         try {
-            await csound?.stop();
+            await stopEngine();
         } catch {
             /* The engine may not have started. */
         }
@@ -529,7 +565,7 @@ export async function runPerformanceBatch<T>(
     const cancel = () => controller.abort();
     signal.addEventListener("abort", cancel, { once: true });
     let resolve!: () => void;
-    const lease = {
+    const lease: NonNullable<typeof batch> = {
         token: Symbol("render"),
         controller,
         done: new Promise<void>((r) => {
@@ -540,6 +576,7 @@ export async function runPerformanceBatch<T>(
     try {
         return await task((options) => {
             controller.signal.throwIfAborted();
+            lease.projectUid = options.projectUid;
             return runPerformance({
                 ...options,
                 batchToken: lease.token,
@@ -555,10 +592,14 @@ export async function runPerformanceBatch<T>(
     }
 }
 
-export async function stopPerformance(): Promise<void> {
-    const job = batch;
+export async function stopPerformance(projectUid?: string): Promise<void> {
+    const job =
+        !projectUid || batch?.projectUid === projectUid ? batch : undefined;
     job?.controller.abort();
-    const run = activeRun;
+    const run =
+        !projectUid || activeRun?.projectUid === projectUid
+            ? activeRun
+            : undefined;
     if (run) {
         run.controller.abort();
         await run.done;
@@ -570,12 +611,30 @@ export const stopCsound = () => async () => {
     // finish() publishes the final state once cleanup and termination finish.
     await stopPerformance().catch(console.error);
 };
+// Native pause/resume acknowledge asynchronously. Finish them before stopping,
+// otherwise a late pause can leave the SAB worker waiting during shutdown.
+function changeTransport(method: "pause" | "resume") {
+    const run = activeRun;
+    const engine = csoundInstance;
+    if (!run || run.controller.signal.aborted) return;
+    const perform = () => {
+        if (activeRun === run && !run.controller.signal.aborted)
+            return engine[method]();
+    };
+    const pending = (
+        run.transport ? run.transport.then(perform) : Promise.resolve(perform())
+    ).then(() => {}, console.error);
+    run.transport = pending;
+    void pending.then(() => {
+        if (run.transport === pending) run.transport = undefined;
+    });
+}
 export const pauseCsound = () => {
-    if (csoundInstance) void csoundInstance.pause();
+    changeTransport("pause");
     return setCsoundPlayState("paused");
 };
 export const resumePausedCsound = () => {
-    if (csoundInstance) void csoundInstance.resume();
+    changeTransport("resume");
     return setCsoundPlayState("playing");
 };
 

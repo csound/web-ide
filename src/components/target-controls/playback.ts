@@ -45,8 +45,10 @@ export function stopProjectPlayback(projectUid: string) {
 export async function playProject(
     projectUid: string,
     setConsole: SetConsole,
-    onlyDocumentUid?: string
+    onlyDocumentUid?: string,
+    signal?: AbortSignal
 ) {
+    signal?.throwIfAborted();
     if (current || isCsoundBusy())
         throw new Error("Stop playback before playing another file.");
     const state = store.getState();
@@ -69,6 +71,8 @@ export async function playProject(
         playlist,
         controller: new AbortController()
     };
+    const cancel = () => run.controller.abort();
+    signal?.addEventListener("abort", cancel, { once: true });
     current = run;
     const unsubscribe = store.subscribe(() => {
         const controls = store.getState().TargetControlsReducer[projectUid];
@@ -84,6 +88,7 @@ export async function playProject(
     });
     const finish = () => {
         unsubscribe();
+        signal?.removeEventListener("abort", cancel);
         if (current === run) {
             current = undefined;
             notify();
