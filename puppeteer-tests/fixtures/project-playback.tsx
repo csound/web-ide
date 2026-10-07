@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router";
@@ -15,7 +15,9 @@ import {
 import { tabDockInit } from "../../src/components/project-editor/actions";
 import {
     runPerformance,
-    isCsoundBusy
+    isCsoundBusy,
+    getLiveCsound,
+    stopCsound
 } from "../../src/components/csound/actions";
 import type { IProject } from "../../src/components/projects/types";
 
@@ -68,10 +70,25 @@ for (const project of projects)
         projectUid: project.projectUid,
         timestamp: 1
     });
-(window as any).playbackFixture = { busy: isCsoundBusy };
+(window as any).playbackFixture = {
+    busy: isCsoundBusy,
+    live: (projectUid: string) => !!getLiveCsound(projectUid)
+};
+
+function ProfilePlayback({ children }: { children: ReactNode }) {
+    // Match Profile's page cleanup; filtering cards must not stop playback.
+    useEffect(
+        () => () => {
+            void store.dispatch(stopCsound());
+        },
+        []
+    );
+    return <>{children}</>;
+}
 
 function Fixture() {
     const [editor, setEditor] = useState(false);
+    const [hideFirst, setHideFirst] = useState(false);
     const status = useSelector((state) => state.csound.status);
     return (
         <div
@@ -115,14 +132,22 @@ function Fixture() {
                     </div>
                 </>
             ) : (
-                <>
-                    {projects.map((project) => (
-                        <ListPlayButton
-                            key={project.projectUid}
-                            projectUid={project.projectUid}
-                            projectName={project.name}
-                        />
-                    ))}
+                <ProfilePlayback>
+                    <button onClick={() => setHideFirst(!hideFirst)}>
+                        {hideFirst ? "Show First" : "Hide First"}
+                    </button>
+                    {projects
+                        .filter(
+                            (project) =>
+                                !hideFirst || project.projectUid !== "First"
+                        )
+                        .map((project) => (
+                            <ListPlayButton
+                                key={project.projectUid}
+                                projectUid={project.projectUid}
+                                projectName={project.name}
+                            />
+                        ))}
                     <button
                         onClick={async () => {
                             await store.dispatch(activateProject("First"));
@@ -138,7 +163,7 @@ function Fixture() {
                     >
                         Open First editor
                     </button>
-                </>
+                </ProfilePlayback>
             )}
         </div>
     );

@@ -100,6 +100,7 @@ export const ListPlayButton = ({
                 )
             );
         } finally {
+            if (request.current === controller) request.current = undefined;
             if (!controller.signal.aborted) setIsStartingUp(false);
         }
     }, [dispatch, isPaused, isAudible, isStartingUp, projectUid]);

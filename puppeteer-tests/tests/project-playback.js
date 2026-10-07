@@ -130,6 +130,18 @@ for (const sab of [false, true]) {
                 };
                 await click("Play First");
                 await wait("Pause First");
+                await click("Hide First");
+                await page.waitForSelector(button("Pause First"), {
+                    hidden: true
+                });
+                assert.equal(
+                    await page.evaluate(() =>
+                        window.playbackFixture.live("First")
+                    ),
+                    true
+                );
+                await click("Show First");
+                await wait("Pause First");
                 await click("Pause First");
                 await click("Play Second");
                 await wait("Pause Second");

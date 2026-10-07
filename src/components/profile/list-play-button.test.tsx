@@ -79,3 +79,14 @@ it("cancels pending playback when the card leaves the page", async () => {
     expect(signal.aborted).toBe(true);
     await act(async () => finish());
 });
+
+it("does not abort started playback when its card is filtered out", async () => {
+    vi.mocked(playListItem).mockReturnValueOnce(async () => {});
+    const view = setup();
+    await act(async () =>
+        fireEvent.click(screen.getByRole("button", { name: "Play Demo" }))
+    );
+    const signal = vi.mocked(playListItem).mock.calls[0][0].signal!;
+    view.unmount();
+    expect(signal.aborted).toBe(false);
+});
