@@ -57,6 +57,7 @@ export type WorkspaceTabType =
     | "audioAnalysis"
     | "impulseResponse"
     | "convolutionPrep"
+    | "scoreTools"
     | "piano";
 
 export interface IWorkspaceTab extends IOpenDocument {

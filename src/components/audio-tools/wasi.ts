@@ -32,7 +32,7 @@ export async function executeTool(
         [request.tool, ...request.args],
         [],
         [
-            new OpenFile(new File([])),
+            new OpenFile(files.get(request.stdin ?? "") ?? new File([])),
             stdout.path_open(0, BigInt(0), 0).fd_obj,
             new ConsoleStdout((bytes) => {
                 // Keep a bounded tail even for verbose, long-running analyses.

@@ -106,6 +106,7 @@ import { stopPerformance } from "@comp/csound/actions";
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
 const TabStyles = tabStyles(false);
 
@@ -126,6 +127,10 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    scoreTools: {
+        title: "Score Converter",
+        component: React.lazy(() => import("@comp/score-tools/score-tool"))
+    },
     impulseResponse: {
         title: "Impulse Response",
         component: React.lazy(() =>
@@ -174,13 +179,14 @@ const utilityTabDefinitions: Record<
     }
 };
 
-const impulseLaunchers: LauncherItem[] = [
+const specialistLaunchers: LauncherItem[] = [
     { type: "impulseResponse", label: "Impulse Response", Icon: WavesRounded },
     {
         type: "convolutionPrep",
         label: "Convolution Prep",
         Icon: FilterAltRounded
-    }
+    },
+    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded }
 ];
 
 type LauncherItem = {
@@ -214,7 +220,7 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             label: "Virtual Midi Keyboard",
             Icon: MusicNoteIcon
         },
-        ...impulseLaunchers
+        ...specialistLaunchers
     ],
     right: [
         {
@@ -240,9 +246,9 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             label: "Virtual Midi Keyboard",
             Icon: MusicNoteIcon
         },
-        ...impulseLaunchers
+        ...specialistLaunchers
     ],
-    // Keep the main tools first; specialist audio tools belong at the tail and overflow into More.
+    // Keep the main tools first; specialist tools belong at the tail and overflow into More.
     bottom: [
         { type: "console", label: "Console", Icon: ListAltRoundedIcon },
         {
@@ -266,7 +272,7 @@ const sidebarChoices: Record<SidebarPosition, LauncherItem[]> = {
             label: "Audio Analysis",
             Icon: StackedLineChartIcon
         },
-        ...impulseLaunchers
+        ...specialistLaunchers
     ]
 };
 
@@ -1330,17 +1336,18 @@ const ProjectEditor = ({
 
     const bottomPanel = useRef<ImperativePanelHandle>(null);
     const bottomTool = bottomSidebar?.tabs[bottomSidebar.tabIndex]?.type;
-    const audioToolOpen = [
+    const largeToolOpen = [
         "sampleEditor",
         "audioAnalysis",
         "impulseResponse",
-        "convolutionPrep"
+        "convolutionPrep",
+        "scoreTools"
     ].includes(bottomTool || "");
     useEffect(() => {
-        // Give waveform controls room when opening from the compact console dock.
-        if (audioToolOpen && (bottomPanel.current?.getSize() || 0) < 55)
+        // Give tool controls room when opening from the compact console dock.
+        if (largeToolOpen && (bottomPanel.current?.getSize() || 0) < 55)
             bottomPanel.current?.resize(60);
-    }, [audioToolOpen]);
+    }, [largeToolOpen]);
 
     const centerContent = bottomSidebar ? (
         <PanelGroup direction="vertical">
@@ -1364,7 +1371,7 @@ const ProjectEditor = ({
             />
             <ResizablePanel
                 ref={bottomPanel}
-                defaultSize={audioToolOpen ? 60 : 20}
+                defaultSize={largeToolOpen ? 60 : 20}
                 minSize={10}
             >
                 <SidebarPanelView

@@ -13,6 +13,7 @@ import {
     type ViewUpdate
 } from "@codemirror/view";
 import { analyzeCsoundSemanticLine } from "@kunstmusik/codemirror-lang-csound";
+import { csdScoreSections } from "./csd-score-sections";
 
 const identifierNodes = csoundNodeSet(csoundNodeGroups.CsoundIdentifier);
 const headerNames = new Set([
@@ -98,6 +99,8 @@ function identifierClass(
 }
 
 function decorations(view: EditorView, documentText: string): DecorationSet {
+    const externalScores =
+        view.state.field(csdScoreSections, false)?.external ?? [];
     const ranges: Range<Decoration>[] = [];
     const seen = new Set<string>();
     const opcodePositions = new Set<number>();
@@ -108,6 +111,14 @@ function decorations(view: EditorView, documentText: string): DecorationSet {
             enter(node) {
                 // A token can straddle more than one visible range.
                 if (node.to <= from || node.from >= to) return;
+                // The mounted notation parser supplies these colors, including its tags.
+                if (
+                    externalScores.some(
+                        (section) =>
+                            node.from >= section.from && node.to <= section.to
+                    )
+                )
+                    return false;
                 if (node.name === nodes.OrcGenericLine) {
                     const text = view.state.sliceDoc(node.from, node.to);
                     for (const span of analyzeCsoundSemanticLine(text, {

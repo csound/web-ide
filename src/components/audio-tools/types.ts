@@ -1,4 +1,7 @@
+import type { ScoreProgram } from "../score-tools/programs";
+
 export type ToolName =
+    | ScoreProgram
     | "mkir"
     | "cvanal"
     | "scale"
@@ -17,6 +20,7 @@ export type ToolRequest = {
     args: string[];
     files: ToolFile[];
     output: string;
+    stdin?: string;
 };
 export type ToolResult = { data: Uint8Array; log: string };
 export type ToolMessage =

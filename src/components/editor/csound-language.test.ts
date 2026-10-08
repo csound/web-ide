@@ -46,6 +46,34 @@ function marked(view: EditorView, className: string, token: string) {
 }
 
 describe("the IDE Csound adapter", () => {
+    it.each(["orc", "udo"])(
+        "keeps %s features after score markup inside a raw string",
+        async (fileType) => {
+            const doc =
+                'Sexample = {{\n<CsScore bin="scot">\n}}\na1 = oscili(0.2, 440)\n';
+            const view = editor(doc, fileType, doc.indexOf("440"));
+            expect(marked(view, "cm-csound-a-rate-var", "a1")).toBeDefined();
+            expect(marked(view, "cm-csound-opcode", "oscili")).toBeDefined();
+            await vi.waitFor(() =>
+                expect(
+                    view.dom.querySelector(".cm-csound-synopsis strong")
+                        ?.textContent
+                ).toBe("xcps")
+            );
+            const position = doc.indexOf("oscili") + "oscili".length;
+            const [complete] = view.state.languageDataAt<CompletionSource>(
+                "autocomplete",
+                position
+            );
+            const result = await complete(
+                new CompletionContext(view.state, position, true)
+            );
+            expect(
+                result?.options.some((option) => option.label === "oscili")
+            ).toBe(true);
+        }
+    );
+
     it("shows descriptions beside opcode completions without a second info popup", async () => {
         const doc = "a1 = oscil";
         const view = editor(doc, "orc", doc.length, [

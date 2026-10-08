@@ -4,6 +4,9 @@ import type { prepareScorePreprocessors } from "./score-preprocessors";
 vi.mock("@csound/wasm-bin/lib/csbeats.wasm?url", () => ({
     default: "/csbeats.wasm"
 }));
+vi.mock("@csound/wasm-bin/lib/scot.wasm?url", () => ({
+    default: "/scot.wasm"
+}));
 let prepare: typeof prepareScorePreprocessors;
 let files: Map<string, Uint8Array>;
 const fs = {
@@ -28,19 +31,28 @@ beforeEach(async () => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-it.each(["csbeats", "csbeats.wasm", "./csbeats", "/csbeats", "'csbeats'"])(
-    "loads the bundled command on demand for %s",
-    async (command) => {
-        const abortSignal = signal();
-        await prepare(fs, score(command), abortSignal);
-        expect(fetch).toHaveBeenCalledWith("/csbeats.wasm", {
-            signal: abortSignal
-        });
-        expect(files.get("csbeats.wasm")).toEqual(
-            new Uint8Array([0, 97, 115, 109])
-        );
-    }
-);
+it.each([
+    "csbeats",
+    "csbeats.wasm",
+    "./csbeats",
+    "/csbeats",
+    "'csbeats'",
+    "scot",
+    "scot.wasm",
+    "./scot",
+    "/scot",
+    "'scot'"
+])("loads the bundled command on demand for %s", async (command) => {
+    const abortSignal = signal();
+    await prepare(fs, score(command), abortSignal);
+    const name = command.includes("csbeats") ? "csbeats" : "scot";
+    expect(fetch).toHaveBeenCalledWith(`/${name}.wasm`, {
+        signal: abortSignal
+    });
+    expect(files.get(`${name}.wasm`)).toEqual(
+        new Uint8Array([0, 97, 115, 109])
+    );
+});
 
 it("skips ordinary scores, tag strings, comments and custom command paths", async () => {
     for (const source of [
@@ -50,6 +62,8 @@ it("skips ordinary scores, tag strings, comments and custom command paths", asyn
         `<!--\n${score("csbeats")}\n-->`,
         score("tools/uploaded"),
         score("tools/csbeats"),
+        score("scsort"),
+        score("extract"),
         score("constructor")
     ])
         await prepare(fs, source, signal());
@@ -57,12 +71,12 @@ it("skips ordinary scores, tag strings, comments and custom command paths", asyn
     expect(fs.readdir).not.toHaveBeenCalled();
 });
 
-it.each(["csbeats", "csbeats.wasm"])(
+it.each(["csbeats", "csbeats.wasm", "scot", "scot.wasm"])(
     "preserves an uploaded %s",
     async (name) => {
         const uploaded = new Uint8Array([7]);
         files.set(name, uploaded);
-        await prepare(fs, score("csbeats"), signal());
+        await prepare(fs, score(name.replace(/\.wasm$/, "")), signal());
         expect(fetch).not.toHaveBeenCalled();
         expect(fs.writeFile).not.toHaveBeenCalled();
         expect(files.get(name)).toBe(uploaded);
