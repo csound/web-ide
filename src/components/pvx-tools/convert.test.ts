@@ -129,6 +129,47 @@ it("retains negative zero and the smallest float32 in editable text", async () =
     expect(Object.is(result.analysis.values[0], -0)).toBe(true);
     expect(result.analysis.values[1]).toBe(analysis.values[1]);
 });
+it.each(["1e-400", "+1E-400", "-1e-400", ".0001e-400", "1e-100"])(
+    "rejects nonzero %s instead of silently exporting zero",
+    (value) => {
+        const lines = exampleText.trim().split("\n");
+        const cells = lines[4].split(",");
+        cells[0] = value;
+        lines[4] = cells.join(",");
+        expect(() => parsePvxText(lines.join("\n"))).toThrow(/float range/);
+    }
+);
+it.each(["0e-400", "-0e-400", "+0.000e-400", "0e+400"])(
+    "preserves literal zero %s through native conversion",
+    async (value) => {
+        const lines = exampleText.trim().split("\n");
+        const cells = lines[4].split(",");
+        cells[0] = value;
+        lines[4] = cells.join(",");
+        const output = await convertPvx(
+            { text: lines.join("\n"), name: "zero" },
+            signal(),
+            status
+        );
+        expect(Object.is(output.analysis.values[0], Number(value))).toBe(true);
+    }
+);
+it.each([
+    ["", 5],
+    ["\n", 6],
+    ["\uFEFF \r\n\t\r\n", 7]
+])(
+    "keeps the editor row offset for prefix %j",
+    async (prefix, firstDataRow) => {
+        const output = await convertPvx(
+            { text: prefix + exampleText, name: "rows" },
+            signal(),
+            status
+        );
+        expect(output).toHaveProperty("firstDataRow", firstDataRow);
+        expect(output.text).toBe(exampleText);
+    }
+);
 it.each([
     (s: string) => s.replace("65534,1", "65534,0"),
     (s: string) => s.replace("33,64,64,264", "33,64,0,264"),

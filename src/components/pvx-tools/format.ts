@@ -100,15 +100,21 @@ function numbers(line: string, row: number, count: number) {
         );
     return tokens.map((token) => {
         const text = token.trim();
-        if (
-            text.length > 64 ||
-            !numeric.test(text) ||
-            !Number.isFinite(Number(text))
-        )
+        if (text.length > 64 || !numeric.test(text))
             throw new Error(
                 `Row ${row}: use comma-separated numbers without empty fields.`
             );
-        return Number(text);
+        const value = Number(text);
+        // Number can underflow before the float32 check. Ignore exponent digits
+        // so literal zeros such as -0e-400 still retain their sign.
+        if (
+            !Number.isFinite(value) ||
+            (value === 0 && /[1-9]/.test(text.split(/e/i, 1)[0]))
+        )
+            throw new Error(
+                `Row ${row}: a value is outside the 32-bit float range.`
+            );
+        return value;
     });
 }
 /** Parse converter CSV, checking every row before the permissive native importer. */

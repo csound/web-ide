@@ -50,6 +50,29 @@ test(
                                 node.textContent.includes("Preview matches")
                         )
                 );
+            const editAndWait = async (text) => {
+                // Observe this edit's pending state before waiting for its result.
+                // Otherwise ready() can still see the previous conversion.
+                await page.evaluate((text) => {
+                    const editor = document.querySelector(
+                        '[aria-label="PVX editor"]'
+                    );
+                    return new Promise((resolve) => {
+                        const observer = new MutationObserver(() => {
+                            if (editor.getAttribute("aria-busy") !== "true")
+                                return;
+                            observer.disconnect();
+                            resolve();
+                        });
+                        observer.observe(editor, {
+                            attributes: true,
+                            attributeFilter: ["aria-busy"]
+                        });
+                        window.editPvx(text);
+                    });
+                }, text);
+                await ready();
+            };
             await mkdir("screenshots", { recursive: true });
             for (const theme of ["dark", "light"]) {
                 wasm.clear();
@@ -123,6 +146,62 @@ test(
                 await page.waitForFunction(
                     () => window.selectedPvxRow() === 21
                 );
+                const stereoRows = edited.trim().split("\n");
+                const wave = stereoRows[1].split(",").map(Number);
+                wave[1] = 2;
+                wave[3] *= 2;
+                wave[4] *= 2;
+                stereoRows[1] = wave.join(",");
+                const stereo = "\n\n" + stereoRows.join("\n") + "\n";
+                await editAndWait(stereo);
+                await page.select('[aria-label="Channel"]', "1");
+                await editAndWait(stereo + "\n");
+                assert.deepEqual(
+                    await page.evaluate(() => [
+                        document.querySelector('[aria-label="Frame number"]')
+                            .value,
+                        document.querySelector('[aria-label="Channel"]').value
+                    ]),
+                    ["17", "1"]
+                );
+                await (await button("Show text row")).click();
+                await page.waitForFunction(
+                    () => window.selectedPvxRow() === 40
+                );
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.body.textContent.includes("Text row 40.")
+                    ),
+                    true
+                );
+                const underflowRows = [...stereoRows];
+                const underflowCells = underflowRows[4].split(",");
+                underflowCells[0] = "1e-400";
+                underflowRows[4] = underflowCells.join(",");
+                await page.evaluate(
+                    (text) => window.editPvx(text),
+                    underflowRows.join("\n")
+                );
+                await page.waitForFunction(() =>
+                    document
+                        .querySelector('[role="alert"]')
+                        ?.textContent.includes("float range")
+                );
+                assert.equal(
+                    await (
+                        await button("Add .pvx to project")
+                    ).evaluate((node) => node.disabled),
+                    true
+                );
+                await editAndWait(stereo);
+                assert.deepEqual(
+                    await page.evaluate(() => [
+                        document.querySelector('[aria-label="Frame number"]')
+                            .value,
+                        document.querySelector('[aria-label="Channel"]').value
+                    ]),
+                    ["17", "1"]
+                );
                 assert.equal(
                     await (
                         await button("Download .pvx")
@@ -166,6 +245,14 @@ test(
                 assert.equal(
                     await page.evaluate(() => window.readPvx()),
                     original
+                );
+                assert.deepEqual(
+                    await page.evaluate(() => [
+                        document.querySelector('[aria-label="Frame number"]')
+                            .value,
+                        document.querySelector('[aria-label="Channel"]').value
+                    ]),
+                    ["1", "0"]
                 );
                 await page.evaluate(
                     (text) => window.editPvx(text + "\n"),

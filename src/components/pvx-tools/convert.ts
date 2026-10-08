@@ -57,6 +57,12 @@ export async function convertPvx(
     status: (text: string) => void
 ) {
     const analysis = parsePvxText(request.text);
+    // The editor keeps leading blank lines even though converter CSV does not.
+    const firstDataRow =
+        4 +
+        request.text
+            .slice(0, request.text.indexOf(WAVE_HEADER))
+            .split(/\r\n?|\n/).length;
     const text = formatPvx(analysis);
     const result = await runTool(
         {
@@ -88,5 +94,11 @@ export async function convertPvx(
     const stem =
         request.name.replace(/^.*[/\\]/, "").replace(/\.[^.]+$/, "") ||
         "analysis";
-    return { name: `${stem}.pvx`, data: result.data, text, analysis: verified };
+    return {
+        name: `${stem}.pvx`,
+        data: result.data,
+        text,
+        analysis: verified,
+        firstDataRow
+    };
 }

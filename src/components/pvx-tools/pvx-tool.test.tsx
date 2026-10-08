@@ -9,22 +9,25 @@ import {
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import theme from "../../styles/_theme-github-light";
 import PvxTool from "./pvx-tool";
-import { exampleText, parsePvxText } from "./format";
-import { updatePvx } from "./client";
+import { exampleText, formatPvx, parsePvxText } from "./format";
+import { openPvxFile, updatePvx } from "./client";
 import type { AudioSource } from "../audio-tools/audio-tool";
 vi.mock("./client", () => ({ updatePvx: vi.fn(), openPvxFile: vi.fn() }));
 vi.mock("../score-tools/code-pane", () => ({
     CodePane: ({
         value,
         onChange,
-        label
+        label,
+        revealLine
     }: {
         value: string;
         onChange?: (value: string) => void;
         label: string;
+        revealLine?: { line: number };
     }) => (
         <textarea
             aria-label={label}
+            data-reveal-line={revealLine?.line}
             value={value}
             readOnly={!onChange}
             onChange={(event) => onChange?.(event.target.value)}
@@ -67,7 +70,88 @@ const result = (text: string) => ({
     name: "analysis.pvx",
     data: new Uint8Array([1, 0]),
     text,
+    firstDataRow: 5,
     analysis: parsePvxText(text)
+});
+function stereoText(frames = 32) {
+    const analysis = parsePvxText(exampleText);
+    analysis.wave[1] = 2;
+    analysis.wave[3] *= 2;
+    analysis.wave[4] *= 2;
+    analysis.values = analysis.values.slice(0, frames * 132);
+    return formatPvx(analysis);
+}
+const chooseFrame = (frame: number) =>
+    fireEvent.change(screen.getByLabelText("Frame number"), {
+        target: { value: String(frame) }
+    });
+const chooseChannel = (channel: number) =>
+    fireEvent.change(screen.getByLabelText("Channel"), {
+        target: { value: String(channel) }
+    });
+function expectSelection(frame: number, channel: number) {
+    expect(
+        (screen.getByLabelText("Frame number") as HTMLInputElement).value
+    ).toBe(String(frame));
+    expect((screen.getByLabelText("Channel") as HTMLSelectElement).value).toBe(
+        String(channel)
+    );
+}
+it("uses the original text's first frame row for its label and reveal action", async () => {
+    mount();
+    vi.mocked(updatePvx).mockResolvedValue({
+        ...result(stereoText()),
+        firstDataRow: 7
+    });
+    edit("\n\n" + stereoText());
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    chooseFrame(17);
+    chooseChannel(1);
+    expect(screen.getByText(/Text row 40\./)).toBeDefined();
+    fireEvent.click(button("Show text row"));
+    expect(
+        screen.getByLabelText("PVX text").getAttribute("data-reveal-line")
+    ).toBe("40");
+});
+it("retains navigation through pending and invalid edits, clamps smaller data, and resets on another file", async () => {
+    mount([
+        { id: "other", name: "other.txt", load: async () => new Uint8Array() }
+    ]);
+    vi.mocked(updatePvx).mockImplementation(async ({ text }) => result(text));
+    vi.mocked(openPvxFile).mockResolvedValue(stereoText());
+    edit(stereoText());
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    chooseFrame(17);
+    chooseChannel(1);
+    edit(stereoText() + "\n");
+    expect(button("Download .pvx").disabled).toBe(true);
+    expect(screen.queryByLabelText("Frame number")).toBeNull();
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expectSelection(17, 1);
+    edit("invalid");
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expect(screen.getByRole("alert")).toBeDefined();
+    expect(button("Add .pvx to project").disabled).toBe(true);
+    edit(stereoText());
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expectSelection(17, 1);
+    const smaller = parsePvxText(exampleText);
+    smaller.values = smaller.values.slice(0, 3 * 66);
+    edit(formatPvx(smaller));
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expectSelection(3, 0);
+    edit(stereoText());
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expectSelection(3, 0);
+    chooseFrame(17);
+    chooseChannel(1);
+    await act(async () =>
+        fireEvent.change(screen.getByLabelText("Project analysis file"), {
+            target: { value: "other" }
+        })
+    );
+    await act(() => vi.advanceTimersByTimeAsync(400));
+    expectSelection(1, 0);
 });
 it("debounces text, blocks old output, and never saves a cancelled result", async () => {
     const { save } = mount();

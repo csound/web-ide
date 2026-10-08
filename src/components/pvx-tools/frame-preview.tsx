@@ -1,24 +1,33 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
 import { AudioSelect } from "../audio-tools/audio-select";
 import { AnalysisGraph } from "../audio-tools/visuals";
 import { dimensions, spectrum, type PvxData } from "./format";
 
-/** Frame navigation redraws only the preview, leaving the large text editor alone. */
+/** Show a spectrum and locate its row in the current editor text. */
 export function FramePreview({
     analysis,
+    firstDataRow,
+    frame,
+    channel,
+    onFrameChange,
+    onChannelChange,
     onRevealRow
 }: {
     analysis: PvxData;
+    firstDataRow: number;
+    frame: number;
+    channel: number;
+    onFrameChange: (frame: number) => void;
+    onChannelChange: (channel: number) => void;
     onRevealRow: (row: number) => void;
 }) {
     const theme = useTheme();
-    const [frame, setFrame] = useState(0),
-        [channel, setChannel] = useState(0);
     const info = dimensions(analysis);
     const selected = Math.min(frame, info.frames - 1),
         selectedChannel = Math.min(channel, info.channels - 1);
+    const row = firstDataRow + selected * info.channels + selectedChannel;
     const plot = useMemo(
         () => spectrum(analysis, selected, selectedChannel),
         [analysis, selected, selectedChannel]
@@ -41,7 +50,7 @@ export function FramePreview({
                         max={info.frames}
                         value={selected + 1}
                         onChange={(event) =>
-                            setFrame(
+                            onFrameChange(
                                 Math.max(
                                     0,
                                     Math.min(
@@ -61,7 +70,7 @@ export function FramePreview({
                         aria-label="Channel"
                         value={selectedChannel}
                         onChange={(event) =>
-                            setChannel(Number(event.target.value))
+                            onChannelChange(Number(event.target.value))
                         }
                     >
                         {Array.from({ length: info.channels }, (_, index) => (
@@ -81,7 +90,7 @@ export function FramePreview({
                 step={1}
                 value={selected}
                 disabled={info.frames === 1}
-                onChange={(event) => setFrame(Number(event.target.value))}
+                onChange={(event) => onFrameChange(Number(event.target.value))}
                 css={{
                     width: "100%",
                     margin: 0,
@@ -99,17 +108,9 @@ export function FramePreview({
                 <p css={{ color: theme.altTextColor, flex: 1 }}>
                     Frame {selected + 1} of {info.frames} at{" "}
                     {((selected * info.hop) / info.sampleRate).toFixed(4)} s.
-                    Text row {5 + selected * info.channels + selectedChannel}.
+                    Text row {row}.
                 </p>
-                <Button
-                    onClick={() =>
-                        onRevealRow(
-                            5 + selected * info.channels + selectedChannel
-                        )
-                    }
-                >
-                    Show text row
-                </Button>
+                <Button onClick={() => onRevealRow(row)}>Show text row</Button>
             </div>
             <AnalysisGraph plot={plot} />
             <dl

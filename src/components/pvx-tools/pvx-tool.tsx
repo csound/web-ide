@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -17,10 +17,12 @@ import { AudioSelect } from "../audio-tools/audio-select";
 import type { AudioSource } from "../audio-tools/audio-tool";
 import type { ToolFile } from "../audio-tools/types";
 import { useDebouncedTask } from "../audio-tools/use-debounced-task";
-import { checkPvxSize, exampleText, MAX_PVX_BYTES } from "./format";
+import { checkPvxSize, dimensions, exampleText, MAX_PVX_BYTES } from "./format";
 import { openPvxFile, updatePvx } from "./client";
 import { FramePreview } from "./frame-preview";
 
+// Navigating frames should not rerender the large text editor.
+const PvxCodePane = memo(CodePane);
 const language = [
     StreamLanguage.define({
         token(stream) {
@@ -52,6 +54,8 @@ export default function PvxTool({
     const [baseline, setBaseline] = useState("");
     const [name, setName] = useState("analysis.pvx");
     const [revealLine, setRevealLine] = useState<{ line: number }>();
+    const [frame, setFrame] = useState(0);
+    const [channel, setChannel] = useState(0);
     const [loading, setLoading] = useState("");
     const [error, setError] = useState("");
 
@@ -70,6 +74,12 @@ export default function PvxTool({
     );
     const preview = useDebouncedTask(request, updatePvx);
     const result = preview.value;
+    useEffect(() => {
+        if (!result) return;
+        const { frames, channels } = dimensions(result.analysis);
+        setFrame((current) => Math.min(current, frames - 1));
+        setChannel((current) => Math.min(current, channels - 1));
+    }, [result]);
     const busy = Boolean(loading || preview.pending);
     const problem = error || preview.error;
     const load = async (source: AudioSource) => {
@@ -94,6 +104,9 @@ export default function PvxTool({
             setName(source.name);
             setSaved(undefined);
             setCopied(undefined);
+            setFrame(0);
+            setChannel(0);
+            setRevealLine(undefined);
         } catch (cause) {
             if (!controller.signal.aborted)
                 setError(
@@ -357,7 +370,7 @@ export default function PvxTool({
                                 borderRadius: 4
                             }}
                         >
-                            <CodePane
+                            <PvxCodePane
                                 revealLine={revealLine}
                                 label="PVX text"
                                 value={text}
@@ -375,6 +388,9 @@ export default function PvxTool({
                                     setBaseline(exampleText);
                                     setName("example.pvx");
                                     setError("");
+                                    setFrame(0);
+                                    setChannel(0);
+                                    setRevealLine(undefined);
                                 }}
                             >
                                 Try example
@@ -438,6 +454,11 @@ export default function PvxTool({
                         {result ? (
                             <FramePreview
                                 analysis={result.analysis}
+                                firstDataRow={result.firstDataRow}
+                                frame={frame}
+                                channel={channel}
+                                onFrameChange={setFrame}
+                                onChannelChange={setChannel}
                                 onRevealRow={(line) => setRevealLine({ line })}
                             />
                         ) : (
