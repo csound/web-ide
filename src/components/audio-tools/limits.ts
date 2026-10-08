@@ -27,7 +27,8 @@ export function checkAudioLayout(frames: number, channels: number) {
 export async function readAudioStream(
     stream: ReadableStream<Uint8Array>,
     signal: AbortSignal,
-    size?: number
+    size?: number,
+    checkSize: (size: number) => void = checkAudioBytes
 ): Promise<Uint8Array> {
     const reader = stream.getReader();
     const abort = () => {
@@ -36,7 +37,7 @@ export async function readAudioStream(
     signal.addEventListener("abort", abort, { once: true });
     try {
         signal.throwIfAborted();
-        if (size !== undefined) checkAudioBytes(size);
+        if (size !== undefined) checkSize(size);
         const chunks: Uint8Array[] = [];
         let length = 0;
         while (true) {
@@ -44,7 +45,7 @@ export async function readAudioStream(
             signal.throwIfAborted();
             if (done) break;
             length += value.byteLength;
-            checkAudioBytes(length);
+            checkSize(length);
             chunks.push(value);
         }
         const bytes = new Uint8Array(length);

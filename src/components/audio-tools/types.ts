@@ -2,6 +2,8 @@ import type { ScoreProgram } from "../score-tools/programs";
 
 export type ToolName =
     | ScoreProgram
+    | "pv_export"
+    | "pv_import"
     | "mkir"
     | "cvanal"
     | "scale"

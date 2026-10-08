@@ -94,6 +94,17 @@ test(
             );
             assert.equal(wasm.length, 1, "only the requested tool loads");
             assert.match(wasm[0], /\/mkir-[^/]+\.wasm$/);
+            assert.equal(
+                await page.evaluate(() => window.roundTripPvx()),
+                true
+            );
+            for (const name of ["pv_import", "pv_export"])
+                assert.ok(
+                    wasm.some((url) =>
+                        new RegExp(`/${name}-[^/]+\\.wasm$`).test(url)
+                    ),
+                    `${name} loads on demand`
+                );
             for (const program of ["csbeats", "scot", "scsort", "extract"]) {
                 const output = await page.evaluate(
                     (program) => window.convertScore(program),
