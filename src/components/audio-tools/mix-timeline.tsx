@@ -173,6 +173,7 @@ export function MixTimeline({
                     }}
                 />
             </div>
+            {/* Keep one text child so React can replace the drag preview on commit. */}
             <output
                 ref={clock}
                 aria-hidden
@@ -186,7 +187,7 @@ export function MixTimeline({
                     background: theme.headerBackground
                 }}
             >
-                {start.toFixed(2)} s
+                {`${start.toFixed(2)} s`}
             </output>
         </div>
     );

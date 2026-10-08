@@ -46,26 +46,32 @@ it("commits a drag on the new scale and lets numeric edits and reset move the cl
     );
     const view = render(ui(0, 2));
     const clip = screen.getByRole("slider");
+    const clock = view.container.querySelector("output")!;
     Object.defineProperty(clip.parentElement, "clientWidth", { value: 100 });
     Object.defineProperty(clip, "setPointerCapture", { value: vi.fn() });
     fireEvent.pointerDown(clip, { button: 0, clientX: 0 });
     fireEvent.pointerMove(clip, { clientX: 50 });
     expect(clip.style.left).toBe("50%");
+    expect(clock.textContent).toBe("1.00 s");
     expect(move).not.toHaveBeenCalled();
     fireEvent.pointerUp(clip);
     expect(move).toHaveBeenCalledWith(1);
     view.rerender(ui(1, 2.4));
+    expect(clock.textContent).toBe("1.00 s");
     expect(Number.parseFloat(getComputedStyle(clip).left)).toBeCloseTo(
         100 / 2.4
     );
     view.rerender(ui(0.5, 2));
     expect(getComputedStyle(clip).left).toBe("25%");
+    expect(clock.textContent).toBe("0.50 s");
     view.rerender(ui(0, 2));
     expect(getComputedStyle(clip).left).toBe("0%");
+    expect(clock.textContent).toBe("0.00 s");
     fireEvent.pointerDown(clip, { button: 0, clientX: 0 });
     fireEvent.pointerMove(clip, { clientX: 50 });
     fireEvent.pointerCancel(clip);
     expect(move).toHaveBeenCalledOnce();
+    expect(clock.textContent).toBe("0.00 s");
     view.rerender(ui(0.5, 2));
     expect(getComputedStyle(clip).left).toBe("25%");
 });

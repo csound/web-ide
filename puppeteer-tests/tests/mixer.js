@@ -138,6 +138,8 @@ test(
                     const start = Number(node.getAttribute("aria-valuenow"));
                     const span = Math.max(2, (start + 2) * 1.2);
                     return (
+                        node.parentElement.querySelector("output")
+                            .textContent === `${start.toFixed(2)} s` &&
                         Math.abs(
                             (clip.left - lane.left) / lane.width - start / span
                         ) < 0.005
