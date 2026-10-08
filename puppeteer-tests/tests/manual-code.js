@@ -17,22 +17,32 @@ addEventListener('message', event => {
 </script>`;
 
 async function clickControl(frame, selector) {
-    // Being in the viewport does not mean a control is clear of the sticky header.
-    await frame.$eval(selector, (node) =>
-        node.scrollIntoView({
-            block: "center",
-            inline: "nearest",
-            behavior: "instant"
-        })
-    );
     await frame
         .locator(selector)
-        .filter((node) => {
+        .filter(async (node) => {
+            // Focus and CodeMirror layout can scroll again after the first attempt.
+            // Recenter on each poll, including controls covered by the sticky header.
+            node.scrollIntoView({
+                block: "center",
+                inline: "nearest",
+                behavior: "instant"
+            });
+            const before = node.getBoundingClientRect();
+            await new Promise((resolve) =>
+                requestAnimationFrame(() => requestAnimationFrame(resolve))
+            );
             const box = node.getBoundingClientRect();
-            return node.contains(
-                document.elementFromPoint(
-                    box.left + box.width / 2,
-                    box.top + box.height / 2
+            // Test the hit target after scrolling settles, not before it moves.
+            return (
+                box.x === before.x &&
+                box.y === before.y &&
+                box.width === before.width &&
+                box.height === before.height &&
+                node.contains(
+                    document.elementFromPoint(
+                        box.left + box.width / 2,
+                        box.top + box.height / 2
+                    )
                 )
             );
         })
