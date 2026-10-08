@@ -11,6 +11,7 @@ afterEach(() => {
 });
 
 it.each([
+    "sdif2ad",
     "envext",
     "mkir",
     "cvanal",

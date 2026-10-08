@@ -62,6 +62,7 @@ jobs:
                         project-playback,
                         csd-diagnostics,
                         score-preprocessors,
+                        sdif-tools,
                         worker-hosting
                     ]
 

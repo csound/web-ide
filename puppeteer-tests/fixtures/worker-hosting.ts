@@ -31,3 +31,24 @@ document.querySelector("#generate")!.addEventListener("click", async () => {
             error instanceof Error ? error.message : String(error);
     }
 });
+
+(window as any).convertSdifFixture = async () => {
+    const { inspectFile, updateSdif } =
+        await import("../../src/components/sdif-tools/client");
+    const { exampleSdif, defaults } =
+        await import("../../src/components/sdif-tools/format");
+    const file = { name: "example.sdif", data: exampleSdif() };
+    const signal = new AbortController().signal;
+    const streams = await inspectFile(file, signal, () => {});
+    const converted = await updateSdif(
+        { file, settings: defaults(streams[0]) },
+        signal,
+        () => {}
+    );
+    return {
+        name: converted.name,
+        size: converted.data.length,
+        partials: new DataView(converted.data.buffer).getInt16(0, true),
+        duration: converted.duration
+    };
+};

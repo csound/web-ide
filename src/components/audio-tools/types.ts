@@ -2,6 +2,7 @@ import type { ScoreProgram } from "../score-tools/programs";
 
 export type ToolName =
     | ScoreProgram
+    | "sdif2ad"
     | "mkir"
     | "cvanal"
     | "scale"

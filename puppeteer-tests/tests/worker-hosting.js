@@ -110,6 +110,15 @@ test(
                 if (program === "extract")
                     assert.match(output, /^i 1 2 2 1 1 440$/m);
             }
+            const sdif = await page.evaluate(() => window.convertSdifFixture());
+            assert.equal(sdif.name, "example.het");
+            assert.equal(sdif.partials, 3);
+            assert.equal(sdif.duration, 2);
+            assert.ok(sdif.size > 100);
+            assert.equal(
+                wasm.filter((url) => /\/sdif2ad-[^/]+\.wasm$/.test(url)).length,
+                1
+            );
         } finally {
             await browser?.close();
             if (server) {
