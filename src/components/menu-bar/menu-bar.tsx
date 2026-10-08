@@ -376,7 +376,8 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         [
                             ["sampleEditor", "Sample Editor"],
                             ["audioAnalysis", "Audio Analysis"],
-                            ["scoreTools", "Score Converter"]
+                            ["scoreTools", "Score Converter"],
+                            ["mixer", "Mixer"]
                         ] as const
                     ).map(([type, label]) => {
                         const tab = projectEditorState.bottomSidebar?.tabs.find(

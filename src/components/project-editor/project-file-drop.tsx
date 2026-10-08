@@ -13,6 +13,11 @@ import {
 const containsFiles = (event: DragEvent) =>
     Array.from(event.dataTransfer?.types ?? []).includes("Files");
 
+// Audio tools consume local files without uploading them into the project.
+const isLocalDrop = (event: DragEvent) =>
+    event.target instanceof Element &&
+    Boolean(event.target.closest("[data-local-file-drop]"));
+
 /** Handle OS files before CodeMirror or the browser can open the dropped file. */
 export function ProjectFileDrop({
     projectUid,
@@ -37,6 +42,7 @@ export function ProjectFileDrop({
         };
         const enter = (event: DragEvent) => {
             if (!containsFiles(event)) return;
+            if (isLocalDrop(event)) return reset();
             event.preventDefault();
             event.stopPropagation();
             depth++;
@@ -44,6 +50,7 @@ export function ProjectFileDrop({
         };
         const over = (event: DragEvent) => {
             if (!containsFiles(event)) return;
+            if (isLocalDrop(event)) return reset();
             event.preventDefault();
             event.stopPropagation();
             if (event.dataTransfer)
@@ -65,6 +72,7 @@ export function ProjectFileDrop({
         };
         const drop = (event: DragEvent) => {
             if (!containsFiles(event)) return;
+            if (isLocalDrop(event)) return reset();
             event.preventDefault();
             event.stopPropagation();
             reset();

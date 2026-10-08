@@ -17,9 +17,11 @@ import envext from "@csound/wasm-bin/lib/envext.wasm?url";
 
 import mkir from "@csound/wasm-bin/lib/mkir.wasm?url";
 import cvanal from "@csound/wasm-bin/lib/cvanal.wasm?url";
+import mixer from "@csound/wasm-bin/lib/mixer.wasm?url";
 
 // URL imports emit separate assets; they do not fetch or compile the binaries.
 const urls: Record<Exclude<ToolName, ScoreProgram>, string> = {
+    mixer,
     mkir,
     cvanal,
     scale,
