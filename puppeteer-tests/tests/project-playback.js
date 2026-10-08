@@ -153,8 +153,16 @@ for (const sab of [false, true]) {
                 await wait("Pause Second");
                 await click("Open First editor");
                 await stopped();
+                await page.evaluate(() =>
+                    window.playbackFixture.loadTargetsOnNextRun()
+                );
                 await click("Play project.csd");
                 await wait("Pause playback");
+                await page.waitForFunction(() =>
+                    document
+                        .querySelector('[data-testid="console-output"]')
+                        ?.textContent.includes("SECTION 1:")
+                );
                 await click("Pause playback");
                 await click("Leave editor");
                 await stopped();

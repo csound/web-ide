@@ -53,8 +53,9 @@ export async function playProject(
         throw new Error("Stop playback before playing another file.");
     const state = store.getState();
     const documents = selectPlaybackDocuments(state, projectUid);
-    const playlistMode = selectPlaybackMode(state, projectUid) === "playlist";
-    const playlist = !onlyDocumentUid && playlistMode;
+    const documentUids = documents.map((document) => document.documentUid);
+    const mode = selectPlaybackMode(state, projectUid);
+    const playlist = !onlyDocumentUid && mode === "playlist";
     const start = onlyDocumentUid
         ? documents.findIndex(
               (document) => document.documentUid === onlyDocumentUid
@@ -75,14 +76,20 @@ export async function playProject(
     signal?.addEventListener("abort", cancel, { once: true });
     current = run;
     const unsubscribe = store.subscribe(() => {
-        const controls = store.getState().TargetControlsReducer[projectUid];
-        const initial = state.TargetControlsReducer[projectUid];
+        const next = store.getState();
+        // Files and saved targets arrive separately. Keep a run when the saved
+        // target selects the same files and mode as the fallback already in use.
         if (
-            !store.getState().ProjectsReducer.projects[projectUid]?.documents[
+            !next.ProjectsReducer.projects[projectUid]?.documents[
                 run.documentUid
             ] ||
-            controls?.defaultTarget !== initial?.defaultTarget ||
-            !equals(controls?.targets, initial?.targets)
+            selectPlaybackMode(next, projectUid) !== mode ||
+            !equals(
+                selectPlaybackDocuments(next, projectUid).map(
+                    (document) => document.documentUid
+                ),
+                documentUids
+            )
         )
             run.controller.abort();
     });
