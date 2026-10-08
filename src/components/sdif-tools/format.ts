@@ -188,8 +188,9 @@ export function prepare(stream: SdifStream, settings: Settings): Prepared {
         throw new Error(
             "Choose a range within the stream, longer than 0 and no longer than 32.76 seconds."
         );
-    if (!Number.isInteger(partials) || partials < 1 || partials > 1024)
-        throw new Error("Keep between 1 and 1024 partials.");
+    const maxPartials = Math.min(stream.tracks.size, 1024);
+    if (!Number.isInteger(partials) || partials < 1 || partials > maxPartials)
+        throw new Error(`Keep between 1 and ${maxPartials} partials.`);
     if (gain < -60 || gain > 24)
         throw new Error("Gain must be from -60 to +24 dB.");
     const entries = [...stream.tracks]

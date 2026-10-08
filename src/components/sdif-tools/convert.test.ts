@@ -94,6 +94,29 @@ it("applies gain, track limit and a shifted window with interpolated boundaries"
     expect(result.tracks[0].points[1]).toBeGreaterThan(1000);
     expect(result.tracks[0].points[1]).toBeLessThan(8191);
 });
+it.each([0, 1.5, 4, 100, 1025, NaN, Infinity])(
+    "rejects partial limit %s outside the selected stream's track count",
+    async (partials) => {
+        const bytes = exampleSdif(),
+            settings = defaults(streamInfo(readSdif(bytes))[0]);
+        await expect(convert(bytes, { ...settings, partials })).rejects.toThrow(
+            "Keep between 1 and 3 partials."
+        );
+    }
+);
+it("caps large streams at the native limit while accepting exactly 1024 partials", () => {
+    const stream = readSdif(exampleSdif())[0];
+    const points = stream.tracks.get(1)!;
+    for (let id = 4; id <= 1025; id++) stream.tracks.set(id, points);
+    const settings = defaults(streamInfo([stream])[0]);
+    expect(settings.partials).toBe(1024);
+    const result = prepare(stream, settings);
+    expect(result.tracks).toHaveLength(1024);
+    expect(result.omitted).toBe(1);
+    expect(() => prepare(stream, { ...settings, partials: 1025 })).toThrow(
+        "Keep between 1 and 1024 partials."
+    );
+});
 it("remaps sparse track IDs, zero IDs and isolates the chosen stream", async () => {
     const first = exampleSdif(),
         second = first.slice(),

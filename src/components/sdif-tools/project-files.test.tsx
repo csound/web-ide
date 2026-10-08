@@ -1,14 +1,26 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { cleanup, renderHook } from "@testing-library/react";
+import { cleanup, render, renderHook } from "@testing-library/react";
+import type { AudioSource } from "../audio-tools/audio-tool";
 import type { IDocument } from "../projects/types";
 import { nonCloudFiles } from "../file-tree/actions";
 import { useProjectToolFiles } from "../audio-tools/project-files";
 import { checkSdifSize, MAX_SDIF_BYTES } from "./format";
-const { documents, generated, dispatch } = vi.hoisted(() => ({
+import {
+    SampleEditor,
+    AudioAnalysis,
+    ImpulseResponse,
+    ConvolutionPrep
+} from "../audio-tools/project-tools";
+import ProjectSdif from "./project-sdif";
+const { documents, generated, dispatch, tool } = vi.hoisted(() => ({
     documents: {} as Record<string, IDocument>,
     generated: [] as string[],
-    dispatch: vi.fn()
+    dispatch: vi.fn(),
+    tool: vi.fn<React.FC<{ sources: AudioSource[] }>>(() => null)
 }));
+vi.mock("../audio-tools/audio-tool", () => ({ default: tool }));
+vi.mock("../audio-tools/impulse-tool", () => ({ default: tool }));
+vi.mock("./sdif-tool", () => ({ default: tool }));
 vi.mock("../../store", () => ({
     useDispatch: () => dispatch,
     useSelector: (select: (state: any) => unknown) =>
@@ -51,12 +63,51 @@ function document(id: string, type: IDocument["type"], value = "SDIF 1") {
 }
 const mount = () =>
     renderHook(() =>
-        useProjectToolFiles(
-            "project",
-            (name) => name.endsWith(".sdif"),
-            checkSdifSize
-        )
+        useProjectToolFiles("project", (name) => name.endsWith(".sdif"), {
+            checkSize: checkSdifSize
+        })
     ).result;
+it.each([
+    ["Sample Editor", SampleEditor],
+    ["Audio Analysis", AudioAnalysis],
+    ["Impulse Response", ImpulseResponse],
+    ["Convolution Prep", ConvolutionPrep]
+])(
+    "%s lists binary and generated audio but excludes renamed text and folders",
+    (_, Tool) => {
+        document("audio", "bin");
+        document("renamed", "txt");
+        document("folder", "folder");
+        for (const value of Object.values(documents))
+            value.filename = `${value.documentUid}.wav`;
+        document("analysis", "bin");
+        generated.push("render.wav", "notes.txt");
+        render(<Tool projectUid="project" />);
+        expect(
+            tool.mock.lastCall?.[0].sources.map((source) => source.id)
+        ).toEqual(["audio", "generated:render.wav"]);
+    }
+);
+it("the SDIF tool lists only binary and generated analyses with its own size limit", async () => {
+    document("draft", "txt");
+    document("analysis", "bin");
+    document("folder", "folder");
+    generated.push("render.sdif", "audio.wav");
+    render(<ProjectSdif projectUid="project" />);
+    const sources = tool.mock.lastCall![0].sources;
+    expect(sources.map((source) => source.id)).toEqual([
+        "analysis",
+        "generated:render.sdif"
+    ]);
+    nonCloudFiles.set("render.sdif", {
+        name: "render.sdif",
+        createdAt: new Date(),
+        buffer: new Uint8Array(MAX_SDIF_BYTES + 1)
+    });
+    await expect(sources[1].load(new AbortController().signal)).rejects.toThrow(
+        "32 MB"
+    );
+});
 it("opens the current text draft, excludes folders, and retains results under a fresh name", async () => {
     document("analysis", "txt");
     document("folder", "folder");

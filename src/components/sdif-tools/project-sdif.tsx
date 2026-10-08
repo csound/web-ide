@@ -3,6 +3,9 @@ import { checkSdifSize } from "./format";
 import SdifTool from "./sdif-tool";
 const accepts = (name: string) => /\.sdif$/i.test(name);
 export default function ProjectSdif({ projectUid }: { projectUid: string }) {
-    const files = useProjectToolFiles(projectUid, accepts, checkSdifSize);
+    const files = useProjectToolFiles(projectUid, accepts, {
+        checkSize: checkSdifSize,
+        acceptsDocument: (document) => document.type === "bin"
+    });
     return <SdifTool key={projectUid} {...files} />;
 }

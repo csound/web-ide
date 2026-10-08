@@ -109,6 +109,36 @@ test(
                         JSON.stringify(render)
                     );
                 }
+                await edit("Partial limit", "100");
+                await page.waitForFunction(() =>
+                    document
+                        .querySelector('[role="alert"]')
+                        ?.textContent.includes("Keep between 1 and 3 partials.")
+                );
+                for (const label of [
+                    "Download .het",
+                    "Add to project",
+                    "Copy Csound code"
+                ])
+                    assert.equal(
+                        await (
+                            await button(label)
+                        ).evaluate((node) => node.disabled),
+                        true
+                    );
+                assert.equal(
+                    await page.$('[aria-label="Preview partial"]'),
+                    null
+                );
+                await edit("Partial limit", "3");
+                await ready();
+                assert.equal(
+                    await page.$$eval(
+                        '[aria-label="Preview partial"] option',
+                        (nodes) => nodes.length
+                    ),
+                    3
+                );
                 await edit("End (s)", "0");
                 await page.waitForSelector('[role="alert"]');
                 assert.equal(
