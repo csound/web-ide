@@ -9,6 +9,7 @@ import {
     dimensions,
     exampleText,
     formatLpc,
+    MAX_LPC_BYTES,
     parseLpcText,
     readLpc,
     writeLpc
@@ -157,6 +158,31 @@ it("uses actual frame data rather than source duration to find the last frame", 
         frames: 64,
         duration: 0.63
     });
+});
+it("rejects pasted CSV above the UTF-8 byte limit even when its character count fits", async () => {
+    const text = exampleText.replace(
+        "999,",
+        "\u2003".repeat(Math.floor(MAX_LPC_BYTES / 3)) + "999,"
+    );
+    expect(text.length).toBeLessThan(MAX_LPC_BYTES);
+    expect(new TextEncoder().encode(text).length).toBeGreaterThan(
+        MAX_LPC_BYTES
+    );
+    await expect(
+        convertLpc({ text, name: "large.csv" }, signal(), status)
+    ).rejects.toThrow("16 MB");
+});
+it("accepts valid Unicode-padded CSV at the byte limit and rejects one byte more", () => {
+    const remaining =
+        MAX_LPC_BYTES - new TextEncoder().encode(exampleText).length;
+    const padding =
+        "\u2003".repeat(Math.floor(remaining / 3)) + " ".repeat(remaining % 3);
+    const text = exampleText.replace("999,", padding + "999,");
+    expect(new TextEncoder().encode(text).length).toBe(MAX_LPC_BYTES);
+    expect(writeLpc(parseLpcText(text))).toEqual(
+        writeLpc(parseLpcText(exampleText))
+    );
+    expect(() => parseLpcText(text + " ")).toThrow("16 MB");
 });
 it.each([
     (s: string) => s.replace("999,2,6", "42,2,6"),

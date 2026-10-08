@@ -109,6 +109,8 @@ function numbers(line: string, row: number, count: number) {
 /** The editor CSV stores complete frames and opaque header bytes, unlike native lpc_export. */
 export function parseLpcText(source: string): LpcData {
     checkLpcSize(source.length);
+    // Bound the encoded file before allocating parsed rows and frame values.
+    checkLpcSize(new TextEncoder().encode(source).length);
     const rows = source
         .replace(/^\uFEFF/, "")
         .trim()
