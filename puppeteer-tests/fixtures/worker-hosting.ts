@@ -1,3 +1,5 @@
+import { openLpcFile, updateLpc } from "../../src/components/lpc-tools/client";
+import { exampleText } from "../../src/components/lpc-tools/format";
 import { runTool } from "../../src/components/audio-tools/runner";
 import {
     convertScore,
@@ -31,3 +33,13 @@ document.querySelector("#generate")!.addEventListener("click", async () => {
             error instanceof Error ? error.message : String(error);
     }
 });
+
+(window as any).roundTripLpc = async () => {
+    const signal = new AbortController().signal;
+    const binary = await updateLpc(
+        { text: exampleText, name: "test" },
+        signal,
+        () => {}
+    );
+    return (await openLpcFile(binary, signal, () => {})) === exampleText;
+};

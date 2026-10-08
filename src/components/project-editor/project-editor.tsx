@@ -106,6 +106,7 @@ import { stopPerformance } from "@comp/csound/actions";
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+import GraphicEqRounded from "@mui/icons-material/GraphicEqRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
 const TabStyles = tabStyles(false);
@@ -127,6 +128,10 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    lpcEditor: {
+        title: "LPC Editor",
+        component: React.lazy(() => import("@comp/lpc-tools/project-lpc"))
+    },
     scoreTools: {
         title: "Score Converter",
         component: React.lazy(() => import("@comp/score-tools/score-tool"))
@@ -186,7 +191,8 @@ const specialistLaunchers: LauncherItem[] = [
         label: "Convolution Prep",
         Icon: FilterAltRounded
     },
-    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded }
+    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded },
+    { type: "lpcEditor", label: "LPC Editor", Icon: GraphicEqRounded }
 ];
 
 type LauncherItem = {
@@ -1341,7 +1347,8 @@ const ProjectEditor = ({
         "audioAnalysis",
         "impulseResponse",
         "convolutionPrep",
-        "scoreTools"
+        "scoreTools",
+        "lpcEditor"
     ].includes(bottomTool || "");
     useEffect(() => {
         // Give tool controls room when opening from the compact console dock.

@@ -79,6 +79,11 @@ test(
                 [],
                 "WASM must not load before starting a tool"
             );
+            assert.equal(
+                await page.evaluate(() => window.roundTripLpc()),
+                true
+            );
+            assert.deepEqual(wasm, [], "LPC conversion needs no WASM download");
             await page.click("#generate");
             await page.waitForFunction(
                 () => document.querySelector("#result").textContent

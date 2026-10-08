@@ -57,6 +57,7 @@ export type WorkspaceTabType =
     | "audioAnalysis"
     | "impulseResponse"
     | "convolutionPrep"
+    | "lpcEditor"
     | "scoreTools"
     | "piano";
 

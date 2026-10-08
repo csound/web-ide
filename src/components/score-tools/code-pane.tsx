@@ -22,12 +22,14 @@ export function CodePane({
     label,
     language,
     onChange,
+    revealLine,
     hint = ""
 }: {
     value: string;
     label: string;
     language: Extension;
     onChange?: (text: string) => void;
+    revealLine?: { line: number };
     hint?: string;
 }) {
     const theme = useTheme();
@@ -87,5 +89,16 @@ export function CodePane({
                 changes: { from: 0, to: view.state.doc.length, insert: value }
             });
     }, [value]);
+    useEffect(() => {
+        const view = editor.current;
+        if (!view || !revealLine) return;
+        const line = view.state.doc.line(
+            Math.max(1, Math.min(view.state.doc.lines, revealLine.line))
+        );
+        view.dispatch({
+            selection: { anchor: line.from, head: line.to },
+            effects: EditorView.scrollIntoView(line.from, { y: "center" })
+        });
+    }, [revealLine]);
     return <div ref={host} css={editorStyle(theme)} />;
 }
