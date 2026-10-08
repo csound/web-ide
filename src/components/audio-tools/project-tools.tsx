@@ -14,7 +14,9 @@ function ProjectAudioTool({
     projectUid: string;
     mode: "sample" | "analysis" | "impulse" | "convolution";
 }) {
-    const { sources, onSave } = useProjectToolFiles(projectUid, isAudio);
+    const { sources, onSave } = useProjectToolFiles(projectUid, isAudio, {
+        acceptsDocument: (document) => document.type === "bin"
+    });
     return mode === "impulse" || mode === "convolution" ? (
         <ImpulseTool
             key={projectUid}

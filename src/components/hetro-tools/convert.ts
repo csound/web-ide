@@ -150,15 +150,14 @@ export async function openHetro(
     status: (text: string) => void
 ) {
     checkHetroSize(file.data.length);
-    const prefix = new TextDecoder()
-        .decode(file.data.subarray(0, 32))
-        .trimStart();
-    if (prefix.startsWith("HETRO"))
-        return formatHetro(
-            parseHetroText(
-                new TextDecoder("utf-8", { fatal: true }).decode(file.data)
-            )
-        );
+    let source: string | undefined;
+    try {
+        source = new TextDecoder("utf-8", { fatal: true }).decode(file.data);
+    } catch {
+        // Binary HETRO contains bytes that are not valid UTF-8.
+    }
+    if (source?.trimStart().startsWith("HETRO"))
+        return formatHetro(parseHetroText(source));
     const data = parseHetroBinary(file.data);
     const canonical = formatHetro(data);
     // het_export mistakes the legal maximum value for a row terminator. Preserve

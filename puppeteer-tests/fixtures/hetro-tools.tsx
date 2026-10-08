@@ -48,7 +48,12 @@ function Fixture() {
                                     id: "text",
                                     name: "partials.txt",
                                     load: async () =>
-                                        new TextEncoder().encode(exampleText)
+                                        // Text detection must handle a header beyond the first 32 bytes.
+                                        new TextEncoder().encode(
+                                            "\uFEFF" +
+                                                " \t\r\n".repeat(16) +
+                                                exampleText
+                                        )
                                 },
                                 {
                                     id: "saved",

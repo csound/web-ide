@@ -89,10 +89,40 @@ it("adds the final newline, normalizes CRLF and whitespace, and preserves all va
     );
     expect(await openHetro(result, signal(), status)).toBe(exampleText);
 });
+it.each([
+    ["header crossing byte 32", " ".repeat(31)],
+    ["header after byte 32", " ".repeat(33)],
+    ["BOM and mixed whitespace", "\uFEFF" + " \t\r\n\u2003".repeat(20)]
+])(
+    "opens text with %s without loading a binary converter",
+    async (_, prefix) => {
+        const before = commands.length;
+        expect(
+            await openHetro(
+                {
+                    name: "analysis.het",
+                    data: new TextEncoder().encode(prefix + exampleText)
+                },
+                signal(),
+                status
+            )
+        ).toBe(exampleText);
+        expect(commands).toHaveLength(before);
+    }
+);
 it("preserves maximum amplitudes despite het_export's END-value bug", async () => {
     const text = exampleText.replace("16000", "32767");
     const output = await convertHetro({ text, name: "peak" }, signal(), status);
     expect(await openHetro(output, signal(), status)).toBe(text);
+});
+it("rejects invalid UTF-8 text without running a converter", async () => {
+    const data = new TextEncoder().encode(exampleText + " ");
+    data[data.length - 1] = 255;
+    const before = commands.length;
+    await expect(
+        openHetro({ name: "invalid.txt", data }, signal(), status)
+    ).rejects.toThrow();
+    expect(commands).toHaveLength(before);
 });
 it("supports older binary files that omit the partial count", async () => {
     const result = await convertHetro(
