@@ -53,6 +53,23 @@ it("cancels a stalled read and rejects it", async () => {
     expect(cancel).toHaveBeenCalledOnce();
 });
 
+it.each([undefined, 1, 20])(
+    "uses the caller's smaller data-file limit for size %s",
+    async (size) => {
+        const { stream, cancel } = source([
+            new Uint8Array(8),
+            new Uint8Array(8)
+        ]);
+        const limit = (size: number) => {
+            if (size > 10) throw new Error("Data limit");
+        };
+        await expect(
+            readAudioStream(stream, new AbortController().signal, size, limit)
+        ).rejects.toThrow("Data limit");
+        expect(cancel).toHaveBeenCalledOnce();
+    }
+);
+
 it("joins a completed bounded stream", async () => {
     const stream = new ReadableStream<Uint8Array>({
         start(controller) {

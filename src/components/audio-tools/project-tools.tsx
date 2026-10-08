@@ -1,12 +1,6 @@
-import { getDownloadURL } from "firebase/storage";
-import { storageReference } from "@config/firestore";
-import { useDispatch, useSelector } from "@root/store";
-import { addNonCloudFile, nonCloudFiles } from "../file-tree/actions";
-import { getUniqueFilename } from "../projects/utils";
-import { checkAudioBytes, readAudioStream } from "./limits";
-import type { ToolFile } from "./types";
+import { useProjectToolFiles } from "./project-files";
 import ImpulseTool from "./impulse-tool";
-import AudioTool, { type AudioSource } from "./audio-tool";
+import AudioTool from "./audio-tool";
 
 /** Identify project files the browser audio loader can accept. */
 const isAudio = (name: string) =>
@@ -20,75 +14,7 @@ function ProjectAudioTool({
     projectUid: string;
     mode: "sample" | "analysis" | "impulse" | "convolution";
 }) {
-    const dispatch = useDispatch();
-    const documents = useSelector(
-        (state) => state.ProjectsReducer.projects[projectUid]?.documents
-    );
-    const generated = useSelector(
-        (state) => state.FileTreeReducer.nonCloudFiles
-    );
-    const sources: AudioSource[] = [
-        ...Object.values(documents || {})
-            .filter(
-                (document) =>
-                    document.type === "bin" && isAudio(document.filename)
-            )
-            .map((document) => ({
-                id: document.documentUid,
-                name: [
-                    ...document.path.map(
-                        (id) => documents?.[id]?.filename || id
-                    ),
-                    document.filename
-                ].join("/"),
-                load: async (signal: AbortSignal) => {
-                    const url = await getDownloadURL(
-                        await storageReference(
-                            `${document.userUid}/${projectUid}/${document.documentUid}`
-                        )
-                    );
-                    const response = await fetch(url, { signal });
-                    if (!response.ok)
-                        throw new Error(
-                            "Could not read the project audio file."
-                        );
-                    if (!response.body)
-                        throw new Error(
-                            "Could not read the project audio file."
-                        );
-                    return readAudioStream(
-                        response.body,
-                        signal,
-                        Number(response.headers.get("content-length"))
-                    );
-                }
-            })),
-        ...generated.filter(isAudio).map((name) => ({
-            id: `generated:${name}`,
-            name,
-            load: async () => {
-                const file = nonCloudFiles.get(name);
-                if (!file)
-                    throw new Error(
-                        "This generated file is no longer available."
-                    );
-                checkAudioBytes(file.buffer.length);
-                return file.buffer.slice();
-            }
-        }))
-    ];
-    const onSave = (file: ToolFile) => {
-        const name = getUniqueFilename(file.name.replace(/^.*[/\\]/, ""), [
-            ...nonCloudFiles.keys(),
-            ...Object.values(documents || {}).map(
-                (document) => document.filename
-            )
-        ]);
-        const createdAt = new Date();
-        nonCloudFiles.set(name, { name, createdAt, buffer: file.data });
-        dispatch(addNonCloudFile({ name, createdAt: createdAt.getTime() }));
-        return name;
-    };
+    const { sources, onSave } = useProjectToolFiles(projectUid, isAudio);
     return mode === "impulse" || mode === "convolution" ? (
         <ImpulseTool
             key={projectUid}
