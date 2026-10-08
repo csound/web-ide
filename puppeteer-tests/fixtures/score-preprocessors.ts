@@ -16,11 +16,12 @@ nchnls = 1
 0dbfs = 1
 instr 1
 prints "generated frequency %.4f\\n", p4
+prints "generated pitch %.2f\\n", p5
 out poscil(0.01, p4)
 endin
 </CsInstruments>
 <CsScore${command ? ` bin="${command}"` : ""}>
-${command ? "i1 m1 b1 C4 q mf" : "i1 0 .01 440"}
+${command?.includes("scot") ? "orchestra { voice=1 }\nscore { $voice 64c }" : command ? "i1 m1 b1 C4 q mf" : "i1 0 .01 440"}
 </CsScore>
 </CsoundSynthesizer>`;
 

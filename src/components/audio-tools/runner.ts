@@ -1,4 +1,5 @@
 import type { ToolMessage, ToolRequest, ToolResult } from "./types";
+import { isScoreProgram } from "../score-tools/programs";
 
 /** Load a command worker on demand and terminate it on completion, failure, or cancellation. */
 export function runTool(
@@ -39,7 +40,7 @@ export function runTool(
             cleanup();
             reject(
                 new Error(
-                    "The audio worker stopped. Try a smaller file or retry."
+                    `The ${isScoreProgram(request.tool) ? "score" : "audio"} worker stopped. Try a smaller file or retry.`
                 )
             );
         };

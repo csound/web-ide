@@ -16,9 +16,15 @@ for (const [mode, useSAB] of [
             try {
                 const page = await browser.newPage();
                 let downloads = 0;
+                let scotDownloads = 0;
                 await page.setRequestInterception(true);
                 page.on("request", async (request) => {
                     const url = new URL(request.url());
+                    if (
+                        url.pathname.endsWith("/scot.wasm") &&
+                        request.resourceType() === "fetch"
+                    )
+                        scotDownloads++;
                     if (
                         url.pathname.endsWith("/csbeats.wasm") &&
                         request.resourceType() === "fetch"
@@ -93,6 +99,21 @@ for (const [mode, useSAB] of [
                     before + 1,
                     "reuse the downloaded binary for the next run"
                 );
+                assert.equal(
+                    scotDownloads,
+                    0,
+                    "other notations must not load SCOT"
+                );
+                assert.match(
+                    await run({ command: "scot" }),
+                    /generated pitch 8\.00/
+                );
+                assert.equal(scotDownloads, 1);
+                assert.match(
+                    await run({ command: "./scot.wasm" }),
+                    /generated pitch 8\.00/
+                );
+                assert.equal(scotDownloads, 1, "reuse SCOT across engines");
                 const failed = await page.evaluate(
                     (options) => window.scoreFixture(options),
                     { mode, useSAB, command: "csbeats", uploaded: "failure" }
@@ -115,3 +136,129 @@ for (const [mode, useSAB] of [
         }
     );
 }
+
+test(
+    "score converter runs on demand and updates both panes",
+    { skip: targetName !== "local", timeout: 60000 },
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            // Match the manual's copy test without changing the host clipboard.
+            await page.evaluateOnNewDocument(() => {
+                Object.defineProperty(navigator.clipboard, "writeText", {
+                    value: async (text) => {
+                        window.copiedScore = text;
+                    }
+                });
+            });
+            const downloads = new Set();
+            const errors = [];
+            page.on("pageerror", (error) => errors.push(error.message));
+            page.on("request", (request) => {
+                const name = new URL(request.url()).pathname.match(
+                    /\/(csbeats|scot|scsort|extract)\.wasm$/
+                )?.[1];
+                if (name && request.resourceType() === "fetch")
+                    downloads.add(name);
+            });
+            await page.goto(
+                `${target.baseUrl}/puppeteer-tests/fixtures/score-tools.html`
+            );
+            await page.waitForSelector("footer button");
+            assert.equal(downloads.size, 0);
+            await page.click("footer button");
+            const ready = async () => {
+                await page.waitForFunction(() =>
+                    document
+                        .querySelector('.score-footer[role="status"]')
+                        ?.textContent.includes("Up to date")
+                );
+                return page.evaluate(() => window.readScore());
+            };
+            const beats = await ready();
+            assert.match(beats, /261\.625565/);
+            assert.deepEqual([...downloads], ["csbeats"]);
+            assert.equal(
+                await page.$$eval(".cm-score-pitch", (nodes) => nodes.length),
+                4
+            );
+            await page.click(".score-output button");
+            await page.waitForFunction(
+                () =>
+                    document.querySelector(".score-output button")
+                        ?.textContent === "Copied"
+            );
+            assert.equal(await page.evaluate(() => window.copiedScore), beats);
+            await page.select('select[aria-label="Source language"]', "scot");
+            assert.match(await ready(), /8\.00/);
+            assert.deepEqual([...downloads], ["csbeats", "scot"]);
+            await page.evaluate(() =>
+                window.editScore(
+                    "orchestra { voice=1 }\nscore { $voice 4c nonsense }"
+                )
+            );
+            await page.waitForSelector('[role="alert"]');
+            assert.equal(await page.evaluate(() => window.readScore()), "");
+            assert.equal(
+                await page.$eval(
+                    ".score-output button",
+                    (button) => button.disabled
+                ),
+                true
+            );
+            await page.evaluate(() =>
+                window.editScore("orchestra { voice=1 }\nscore { $voice 4d }")
+            );
+            assert.match(await ready(), /8\.02/);
+            // The next edit immediately hides the old score; the worker starts after the debounce.
+            await page.evaluate(() =>
+                window.editScore("orchestra { voice=1 }\nscore { $voice 4e }")
+            );
+            assert.equal(
+                await page.$eval(
+                    ".score-output button",
+                    (button) => button.disabled
+                ),
+                true
+            );
+            assert.match(await ready(), /8\.04/);
+            await page.select('select[aria-label="Source language"]', "scsort");
+            const sorted = await ready();
+            assert.ok(sorted.indexOf("220") < sorted.indexOf("330"));
+            assert.ok(sorted.indexOf("330") < sorted.indexOf("440"));
+            await page.select(
+                'select[aria-label="Source language"]',
+                "extract"
+            );
+            const extracted = await ready();
+            assert.doesNotMatch(extracted, /^i 2/m);
+            assert.match(extracted, /^i 1 0 0 1 1 220$/m);
+            assert.match(extracted, /^i 1 2 2 1 1 440$/m);
+            assert.deepEqual(
+                [...downloads],
+                ["csbeats", "scot", "scsort", "extract"]
+            );
+            // Each language keeps its draft when switching back.
+            await page.select('select[aria-label="Source language"]', "scot");
+            assert.match(await ready(), /8\.04/);
+            await page.setViewport({ width: 390, height: 700 });
+            assert.equal(
+                await page.evaluate(
+                    () => document.documentElement.scrollWidth <= innerWidth
+                ),
+                true
+            );
+            await page.evaluate(() =>
+                window.editScore("orchestra { voice=1 }\nscore { $voice 4f }")
+            );
+            await page.click("footer button");
+            await page.waitForSelector('[aria-label="Score converter"]', {
+                hidden: true
+            });
+            assert.deepEqual(errors, []);
+        } finally {
+            await browser.close();
+        }
+    }
+);

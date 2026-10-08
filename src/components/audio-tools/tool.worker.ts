@@ -1,5 +1,10 @@
 import { executeTool } from "./wasi";
 import type { ToolMessage, ToolName, ToolRequest } from "./types";
+import {
+    isScoreProgram,
+    loadScoreProgram,
+    type ScoreProgram
+} from "../score-tools/programs";
 import scale from "@csound/wasm-bin/lib/scale.wasm?url";
 import srcConv from "@csound/wasm-bin/lib/src_conv.wasm?url";
 import dnoise from "@csound/wasm-bin/lib/dnoise.wasm?url";
@@ -14,7 +19,7 @@ import mkir from "@csound/wasm-bin/lib/mkir.wasm?url";
 import cvanal from "@csound/wasm-bin/lib/cvanal.wasm?url";
 
 // URL imports emit separate assets; they do not fetch or compile the binaries.
-const urls: Record<ToolName, string> = {
+const urls: Record<Exclude<ToolName, ScoreProgram>, string> = {
     mkir,
     cvanal,
     scale,
@@ -37,14 +42,24 @@ const send = (message: ToolMessage) => {
     self.postMessage(message, { transfer });
 };
 self.onmessage = async ({ data }: MessageEvent<ToolRequest>) => {
+    const kind = isScoreProgram(data.tool) ? "score" : "audio";
     try {
-        send({ type: "status", text: "Loading audio tool…" });
-        const response = await fetch(urls[data.tool]);
-        if (!response.ok)
-            throw new Error("Could not load the audio tool. Try again.");
+        send({ type: "status", text: `Loading ${kind} tool…` });
+        let bytes: Uint8Array;
+        if (isScoreProgram(data.tool))
+            bytes = await loadScoreProgram(data.tool);
+        else {
+            const response = await fetch(urls[data.tool]);
+            if (!response.ok)
+                throw new Error(`Could not load the ${kind} tool. Try again.`);
+            bytes = new Uint8Array(await response.arrayBuffer());
+        }
         // arrayBuffer also works on hosts that omit the application/wasm MIME type.
-        const module = await WebAssembly.compile(await response.arrayBuffer());
-        send({ type: "status", text: "Processing audio…" });
+        const module = await WebAssembly.compile(bytes);
+        send({
+            type: "status",
+            text: kind === "score" ? "Converting score…" : "Processing audio…"
+        });
         const result = await executeTool(module, data);
         send({ type: "result", result });
     } catch (error) {
@@ -52,10 +67,10 @@ self.onmessage = async ({ data }: MessageEvent<ToolRequest>) => {
             type: "error",
             message:
                 error instanceof WebAssembly.CompileError
-                    ? "This browser cannot run the audio tools. Try a current version of Chrome or Firefox."
+                    ? "This browser cannot run the tools. Try a current version of Chrome or Firefox."
                     : error instanceof Error
                       ? error.message
-                      : "The audio tool failed. Try again."
+                      : `The ${kind} tool failed. Try again.`
         });
     }
 };

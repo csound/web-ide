@@ -11,7 +11,7 @@ import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, targetName } from "../utils/config.js";
 
 test(
-    "built audio worker runs under Firebase hosting headers",
+    "built audio and score workers run under Firebase hosting headers",
     {
         skip: targetName !== "local",
         timeout: 60000
@@ -31,6 +31,7 @@ test(
                 configFile: false,
                 root,
                 logLevel: "error",
+                worker: { format: "es" },
                 build: {
                     outDir,
                     emptyOutDir: true,
@@ -93,6 +94,22 @@ test(
             );
             assert.equal(wasm.length, 1, "only the requested tool loads");
             assert.match(wasm[0], /\/mkir-[^/]+\.wasm$/);
+            for (const program of ["csbeats", "scot", "scsort", "extract"]) {
+                const output = await page.evaluate(
+                    (program) => window.convertScore(program),
+                    program
+                );
+                assert.match(output, /^i\s*1/m, `${program} produces notes`);
+                assert.ok(
+                    wasm.some((url) =>
+                        new RegExp(`/${program}-[^/]+\\.wasm$`).test(url)
+                    ),
+                    `${program} loads on demand`
+                );
+                if (program === "scot") assert.match(output, /8\.00/);
+                if (program === "extract")
+                    assert.match(output, /^i 1 2 2 1 1 440$/m);
+            }
         } finally {
             await browser?.close();
             if (server) {

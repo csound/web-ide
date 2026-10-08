@@ -38,6 +38,7 @@ export default defineConfig({
         //     fileRegex: /\.csd|\.orc\.sco\.udo$/
         // })
     ],
+    worker: { format: "es" },
     server: {
         // this ensures that the browser opens upon server start
         open: true,

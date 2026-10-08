@@ -3,6 +3,7 @@ import { syntaxTree } from "@codemirror/language";
 import type { EditorState, Extension } from "@codemirror/state";
 import type { SyntaxNode } from "@lezer/common";
 import { showPanel } from "@codemirror/view";
+import { scoreNotation, scoreSections } from "../csound/score-source";
 import {
     getCsoundHoverInfo,
     analyzeCsoundSemanticLine
@@ -75,6 +76,15 @@ function outputRate(
 function callAtSelection(state: EditorState): CallContext | undefined {
     const position = state.selection.main.head;
     const documentText = state.doc.toString();
+    if (
+        scoreSections(documentText).some(
+            (section) =>
+                scoreNotation(section.command) &&
+                position >= section.bodyFrom &&
+                position <= section.bodyTo
+        )
+    )
+        return;
     const tree = syntaxTree(state);
     const after = tree.resolveInner(position, 1);
     let node: SyntaxNode | null =

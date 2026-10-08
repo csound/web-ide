@@ -1,10 +1,23 @@
 import { runTool } from "../../src/components/audio-tools/runner";
 import {
+    convertScore,
+    scoreExamples
+} from "../../src/components/score-tools/convert";
+import type { ScoreProgram } from "../../src/components/score-tools/programs";
+import {
     sweepDefaults,
     sweepRequest
 } from "../../src/components/audio-tools/impulse";
 
 const result = document.querySelector<HTMLOutputElement>("#result")!;
+(window as any).convertScore = async (program: ScoreProgram) =>
+    (
+        await convertScore(
+            { program, source: scoreExamples[program], selection: "i 1" },
+            new AbortController().signal,
+            () => {}
+        )
+    ).text;
 document.querySelector("#generate")!.addEventListener("click", async () => {
     try {
         const { data } = await runTool(

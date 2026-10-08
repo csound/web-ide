@@ -7,9 +7,20 @@ import { indentUnit } from "@codemirror/language";
 import type { Extension } from "@codemirror/state";
 import { csoundRateHighlighting } from "./csound-highlighting";
 import { csoundSynopsis } from "./csound-synopsis";
+import { csdWithScoreLanguages, scoreHighlighting } from "./score-languages";
+import { scoreNotation, scoreSections } from "../csound/score-source";
 
 // The IDE shows short help in the list, not categories or a second popup.
 const editorCompletionSource: CompletionSource = (context) => {
+    if (
+        scoreSections(context.state.doc.toString()).some(
+            (section) =>
+                scoreNotation(section.command) &&
+                context.pos >= section.bodyFrom &&
+                context.pos <= section.bodyTo
+        )
+    )
+        return null;
     const result = csoundCompletionSource(context);
     if (!result) return null;
     return {
@@ -36,8 +47,11 @@ export function csoundEditorLanguage(fileType?: string): Extension {
         hover: false
     });
     return [
-        language,
-        language.language.data.of({ autocomplete: editorCompletionSource }),
+        mode === "csd" ? csdWithScoreLanguages : language,
+        scoreHighlighting,
+        (mode === "csd" ? csdWithScoreLanguages : language.language).data.of({
+            autocomplete: editorCompletionSource
+        }),
         csoundRateHighlighting(),
         csoundSynopsis(),
         indentUnit.of("  ")

@@ -10,7 +10,15 @@ afterEach(() => {
     vi.resetModules();
 });
 
-it.each(["envext", "mkir", "cvanal"] as const)(
+it.each([
+    "envext",
+    "mkir",
+    "cvanal",
+    "csbeats",
+    "scot",
+    "scsort",
+    "extract"
+] as const)(
     "loads %s only on request, then transfers the result without cloning it",
     async (tool) => {
         const messages: ToolMessage[] = [];
@@ -39,7 +47,7 @@ it.each(["envext", "mkir", "cvanal"] as const)(
             data: { tool, args: [], files: [], output: "out.txt" }
         } as MessageEvent<ToolRequest>);
         expect(fetch).toHaveBeenCalledOnce();
-        expect(fetch).toHaveBeenCalledWith(
+        expect(fetch.mock.calls[0][0]).toEqual(
             expect.stringContaining(`${tool}.wasm`)
         );
         expect(messages.at(-1)).toEqual({
