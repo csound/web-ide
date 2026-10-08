@@ -1,6 +1,7 @@
 import {
     HighlightStyle,
     LRLanguage,
+    ParseContext,
     StreamLanguage,
     syntaxHighlighting
 } from "@codemirror/language";
@@ -8,6 +9,7 @@ import { parseMixed } from "@lezer/common";
 import { Tag } from "@lezer/highlight";
 import { csoundCsdLanguage } from "@kunstmusik/codemirror-lang-csound";
 import { scoreNotation, scoreSections } from "../csound/score-source";
+import { csdScoreSections } from "./csd-score-sections";
 
 type Notation = "csbeats" | "scot";
 type State = { notation?: Notation; comment: boolean };
@@ -123,9 +125,18 @@ export const csdWithScoreLanguages = LRLanguage.define({
     parser: csoundCsdLanguage.parser.configure({
         wrap: parseMixed((node, input) => {
             if (!node.type.isTop) return null;
-            const source = input.read(0, input.length);
-            const overlay = scoreSections(source)
-                .filter((section) => scoreNotation(section.command))
+            const cached = ParseContext.get()?.state.field(
+                csdScoreSections,
+                false
+            );
+            // A direct parser.parse() call has no editor state to share.
+            const source = cached?.source ?? input.read(0, input.length);
+            const external =
+                cached?.external ??
+                scoreSections(source).filter((section) =>
+                    scoreNotation(section.command)
+                );
+            const overlay = external
                 // Keep the newline so a stream parser cannot join two distant tag lines.
                 .map(({ from, to }) => ({
                     from,

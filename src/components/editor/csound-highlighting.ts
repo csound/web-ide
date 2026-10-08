@@ -13,7 +13,7 @@ import {
     type ViewUpdate
 } from "@codemirror/view";
 import { analyzeCsoundSemanticLine } from "@kunstmusik/codemirror-lang-csound";
-import { scoreNotation, scoreSections } from "../csound/score-source";
+import { csdScoreSections } from "./csd-score-sections";
 
 const identifierNodes = csoundNodeSet(csoundNodeGroups.CsoundIdentifier);
 const headerNames = new Set([
@@ -99,9 +99,8 @@ function identifierClass(
 }
 
 function decorations(view: EditorView, documentText: string): DecorationSet {
-    const externalScores = scoreSections(documentText).filter((section) =>
-        scoreNotation(section.command)
-    );
+    const externalScores =
+        view.state.field(csdScoreSections, false)?.external ?? [];
     const ranges: Range<Decoration>[] = [];
     const seen = new Set<string>();
     const opcodePositions = new Set<number>();

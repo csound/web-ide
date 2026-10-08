@@ -3,7 +3,7 @@ import { syntaxTree } from "@codemirror/language";
 import type { EditorState, Extension } from "@codemirror/state";
 import type { SyntaxNode } from "@lezer/common";
 import { showPanel } from "@codemirror/view";
-import { scoreNotation, scoreSections } from "../csound/score-source";
+import { csdScoreSections, inExternalScore } from "./csd-score-sections";
 import {
     getCsoundHoverInfo,
     analyzeCsoundSemanticLine
@@ -75,16 +75,9 @@ function outputRate(
 
 function callAtSelection(state: EditorState): CallContext | undefined {
     const position = state.selection.main.head;
-    const documentText = state.doc.toString();
-    if (
-        scoreSections(documentText).some(
-            (section) =>
-                scoreNotation(section.command) &&
-                position >= section.bodyFrom &&
-                position <= section.bodyTo
-        )
-    )
-        return;
+    if (inExternalScore(state, position)) return;
+    const documentText =
+        state.field(csdScoreSections, false)?.source ?? state.doc.toString();
     const tree = syntaxTree(state);
     const after = tree.resolveInner(position, 1);
     let node: SyntaxNode | null =
@@ -294,7 +287,9 @@ export function csoundSynopsis(): Extension {
             if (!call) return;
             const [name] = call.token.split(":");
             void getCsoundHoverInfo(name, {
-                documentText: view.state.doc.toString()
+                documentText:
+                    view.state.field(csdScoreSections, false)?.source ??
+                    view.state.doc.toString()
             })
                 .then((info) => {
                     // The rich catalog loads on demand. Ignore a result for an old cursor.

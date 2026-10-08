@@ -1,12 +1,22 @@
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
+import {
+    CompletionContext,
+    type CompletionSource
+} from "@codemirror/autocomplete";
 import { EditorView } from "@codemirror/view";
-import { syntaxTree } from "@codemirror/language";
-import { afterEach, expect, it } from "vitest";
+import { forceParsing, syntaxTree } from "@codemirror/language";
+import { afterEach, expect, it, vi } from "vitest";
 import { csoundEditorLanguage } from "./csound-language";
 import { scoreSections } from "../csound/score-source";
+import * as scoreSource from "../csound/score-source";
+import { csdScoreSections, inExternalScore } from "./csd-score-sections";
+import { csdWithScoreLanguages } from "./score-languages";
 
 const views: EditorView[] = [];
-afterEach(() => views.splice(0).forEach((view) => view.destroy()));
+afterEach(() => {
+    views.splice(0).forEach((view) => view.destroy());
+    vi.restoreAllMocks();
+});
 const score = (command: string, body: string) =>
     `<CsScore bin="${command}">\n${body}\n</CsScore>`;
 const create = (doc: string) => {
@@ -20,10 +30,13 @@ const create = (doc: string) => {
     views.push(view);
     return view;
 };
-const tokens = (view: EditorView, name: string) =>
-    [...view.contentDOM.querySelectorAll(`.cm-score-${name}`)].map(
+const tokens = (view: EditorView, name: string) => {
+    // Parsing can yield under full-suite load; inspect colors only once it finishes.
+    expect(forceParsing(view, view.state.doc.length, 1000)).toBe(true);
+    return [...view.contentDOM.querySelectorAll(`.cm-score-${name}`)].map(
         (element) => element.textContent
     );
+};
 
 it.each(["scot", "scot.wasm", "./scot", "tools/scot.wasm"])(
     "mounts SCOT highlighting for %s without changing orchestra colors",
@@ -44,6 +57,20 @@ it.each(["scot", "scot.wasm", "./scot", "tools/scot.wasm"])(
             "scoreInstrument"
         );
         expect(view.state.languageDataAt("autocomplete", pos)).toEqual([]);
+    }
+);
+
+it.each([
+    [" scot", "score { $voice 4c }", "c"],
+    ["  ./scot.wasm  ", "score { $voice 4c }", "c"],
+    ["  'tools/scot.wasm'  ", "score { $voice 4c }", "c"],
+    [" csbeats", "i1 m1 b1 C4 q mf", "C4"],
+    ["  ./csbeats.wasm  ", "i1 m1 b1 C4 q mf", "C4"]
+])(
+    "highlights whitespace-padded bin=%s consistently",
+    (command, body, pitch) => {
+        const view = create(score(command, body));
+        expect(tokens(view, "pitch")).toEqual([pitch]);
     }
 );
 
@@ -72,4 +99,58 @@ it("does not treat comments, raw orchestra strings or embedded files as score bl
 it("keeps highlighting an incomplete score while typing", () => {
     const view = create('<CsScore bin="scot">\nscore { $voice 4c');
     expect(tokens(view, "pitch")).toEqual(["c"]);
+});
+
+it("shares one score scan across parsing, highlighting, completion and cursor moves", async () => {
+    const scan = vi.spyOn(scoreSource, "scoreSections");
+    const source = `<CsInstruments>\na1 = oscili(0.2, 440)\n</CsInstruments>\n${score("scot", "score { $voice 4c }")}`;
+    const view = create(source);
+    const cached = view.state.field(csdScoreSections);
+    expect(scan).toHaveBeenCalledTimes(1);
+    for (const position of [
+        source.indexOf("oscili") + 6,
+        source.indexOf("440"),
+        source.indexOf("$voice")
+    ]) {
+        view.dispatch({ selection: { anchor: position } });
+        for (const complete of view.state.languageDataAt<CompletionSource>(
+            "autocomplete",
+            position
+        ))
+            await complete(new CompletionContext(view.state, position, true));
+        expect(view.state.field(csdScoreSections)).toBe(cached);
+    }
+    expect(scan).toHaveBeenCalledTimes(1);
+    view.dispatch({ changes: { from: 0, insert: "; changed\n" } });
+    expect(scan).toHaveBeenCalledTimes(2);
+    expect(view.state.field(csdScoreSections)).not.toBe(cached);
+    expect(view.state.field(csdScoreSections).external[0].from).toBe(
+        cached.external[0].from + "; changed\n".length
+    );
+    expect(tokens(view, "pitch")).toEqual(["c"]);
+});
+
+it("removes score exclusions when switching away from CSD mode without editing", () => {
+    const mode = new Compartment();
+    const doc =
+        'Sexample = {{\n<CsScore bin="scot">\n}}\na1 = oscili(0.2, 440)';
+    const state = EditorState.create({
+        doc,
+        extensions: mode.of(csoundEditorLanguage("csd"))
+    });
+    expect(inExternalScore(state, doc.length)).toBe(true);
+    const standalone = state.update({
+        effects: mode.reconfigure(csoundEditorLanguage("orc"))
+    }).state;
+    expect(standalone.doc).toBe(state.doc);
+    expect(standalone.field(csdScoreSections, false)).toBeUndefined();
+    expect(inExternalScore(standalone, doc.length)).toBe(false);
+});
+
+it("supports direct parsing without an editor state cache", () => {
+    const source = score(" scot", "score { $voice 4c }");
+    const tree = csdWithScoreLanguages.parser.parse(source);
+    expect(tree.topNode.resolveInner(source.indexOf("$voice") + 1).name).toBe(
+        "scoreInstrument"
+    );
 });

@@ -36,6 +36,7 @@ export function scoreSections(source: string): ScoreSection[] {
 export function scoreProgramPath(command: string): string {
     return (
         command
+            .trim()
             .match(/^(?:'([^']+)'|([^\s]+))/)
             ?.slice(1)
             .find(Boolean) ?? ""
