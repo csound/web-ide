@@ -1,4 +1,10 @@
-import { decodeAudio, durationOf, encodeAudioAsync } from "./audio";
+import {
+    decodeAudio,
+    decodeWaveWithPeak,
+    durationOf,
+    encodeAudioAsync,
+    encodeSilenceAsync
+} from "./audio";
 import { checkAudioLayout, MAX_AUDIO_SAMPLES } from "./limits";
 import { runTool } from "./runner";
 import type { AudioData, ToolRequest } from "./types";
@@ -126,11 +132,7 @@ export async function makeMixRequest(
     signal: AbortSignal
 ): Promise<ToolRequest> {
     const { sampleRate, frames } = mixLayout(request);
-    const silence = new Float32Array(frames);
-    const bed = await encodeAudioAsync(
-        { sampleRate, channels: [silence, silence] },
-        signal
-    );
+    const bed = await encodeSilenceAsync(sampleRate, frames, 2, signal);
     const args = ["-W", "-f", "-o", "mix.wav", "silence.wav"];
     const files = [{ name: "silence.wav", data: bed }];
     const solo = request.tracks.some((track) => track.solo);
@@ -161,16 +163,6 @@ export async function buildMix(
     status("Preparing mix…");
     const command = await makeMixRequest(request, signal);
     const result = await runTool(command, signal, status);
-    const audio = await decodeAudio(result.data, signal);
-    let peak = 0;
-    for (const samples of audio.channels) {
-        for (let index = 0; index < samples.length; index++) {
-            if (index % 65536 === 0) {
-                await new Promise<void>((resolve) => setTimeout(resolve, 0));
-                signal.throwIfAborted();
-            }
-            peak = Math.max(peak, Math.abs(samples[index]));
-        }
-    }
+    const { audio, peak } = await decodeWaveWithPeak(result.data, signal);
     return { name: "mix.wav", data: result.data, audio, peak };
 }

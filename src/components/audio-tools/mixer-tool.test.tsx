@@ -115,7 +115,7 @@ it("never loads the binary on open and aborts an obsolete render before saving",
         await vi.advanceTimersByTimeAsync(400);
     });
     fireEvent.click(screen.getByRole("button", { name: "Add to project" }));
-    expect(save).toHaveBeenCalledWith(result);
+    expect(save).toHaveBeenCalledWith({ name: result.name, data: result.data });
     expect(save).toHaveBeenCalledOnce();
     expect(document.querySelectorAll("audio")).toHaveLength(1);
     unmount();

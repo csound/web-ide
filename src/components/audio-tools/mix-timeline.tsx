@@ -76,6 +76,12 @@ export function MixTimeline({
         if (clip.current) clip.current.style.left = `${(value / span) * 100}%`;
         if (clock.current) clock.current.textContent = `${value.toFixed(2)} s`;
     };
+    const endDrag = () => {
+        drag.current = undefined;
+        // Drag previews are temporary; committed positions must follow the new scale.
+        clip.current?.style.removeProperty("left");
+        if (clock.current) clock.current.textContent = `${start.toFixed(2)} s`;
+    };
     return (
         <div
             ref={lane}
@@ -131,12 +137,13 @@ export function MixTimeline({
                 }}
                 onPointerUp={() => {
                     if (!drag.current) return;
-                    onMove(drag.current.value);
-                    drag.current = undefined;
+                    const value = drag.current.value;
+                    endDrag();
+                    onMove(value);
                 }}
-                onPointerCancel={() => {
-                    drag.current = undefined;
-                    paintPosition(start);
+                onPointerCancel={endDrag}
+                onLostPointerCapture={() => {
+                    if (drag.current) endDrag();
                 }}
                 css={{
                     position: "absolute",

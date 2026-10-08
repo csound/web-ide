@@ -125,14 +125,28 @@ describe("published mixer with the browser filesystem", () => {
         expect(prepared.audio.channels[0]).toEqual(prepared.audio.channels[1]);
         expect(Math.max(...prepared.audio.channels[0])).toBeCloseTo(0.3, 2);
     });
-    it("retains floating-point peaks above full scale for an honest clipping warning", async () => {
-        const result = await buildMix(
-            { tracks: [track("one", 0.8), track("two", 0.8)], gain: 0 },
-            signal(),
-            () => {}
-        );
-        expect(result.peak).toBeCloseTo(1.6);
-    });
+    it.each([
+        [0.8, 0.1, 1.6],
+        [0.1, -1.2, 2.4]
+    ])(
+        "retains floating-point peaks above full scale (%s left, %s right)",
+        async (left, right, peak) => {
+            const result = await buildMix(
+                {
+                    tracks: [
+                        track("one", left, right),
+                        track("two", left, right)
+                    ],
+                    gain: 0
+                },
+                signal(),
+                () => {}
+            );
+            expect(result.peak).toBeCloseTo(peak);
+            expect(result.audio.channels[0][4000]).toBeCloseTo(left * 2);
+            expect(result.audio.channels[1][4000]).toBeCloseTo(right * 2);
+        }
+    );
     it("rejects invalid settings and oversized arrangements before running WASM", () => {
         const value = track("one");
         for (const start of [NaN, -1, 100000])

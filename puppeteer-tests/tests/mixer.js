@@ -122,6 +122,37 @@ test(
                 ),
                 "0.76"
             );
+            const clip = await page.$('[aria-label="Move chimes.wav"]');
+            const box = await clip.boundingBox();
+            await page.mouse.move(box.x + 12, box.y + box.height / 2);
+            await page.mouse.down();
+            await page.mouse.move(box.x + 112, box.y + box.height / 2, {
+                steps: 4
+            });
+            await page.mouse.up();
+            await ready();
+            const positioned = () =>
+                page.$eval('[aria-label="Move chimes.wav"]', (node) => {
+                    const lane = node.parentElement.getBoundingClientRect();
+                    const clip = node.getBoundingClientRect();
+                    const start = Number(node.getAttribute("aria-valuenow"));
+                    const span = Math.max(2, (start + 2) * 1.2);
+                    return (
+                        Math.abs(
+                            (clip.left - lane.left) / lane.width - start / span
+                        ) < 0.005
+                    );
+                });
+            assert.ok(
+                await positioned(),
+                "drag uses the updated timeline scale"
+            );
+            await input("Track 2 start", "0.5");
+            await ready();
+            assert.ok(
+                await positioned(),
+                "numeric edits replace the drag position"
+            );
             await page.click('[aria-label="Solo track 2"]');
             await ready();
             assert.equal(
@@ -155,6 +186,7 @@ test(
                 ),
                 "0"
             );
+            assert.ok(await positioned(), "reset restores the visual position");
             await input("Track 2 start", "-1");
             await page.waitForSelector("[role=alert]");
             assert.ok(

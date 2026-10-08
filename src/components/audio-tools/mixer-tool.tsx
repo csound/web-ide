@@ -42,7 +42,7 @@ export default function MixerTool({
     const [gain, setGain] = useState(0);
     const [loading, setLoading] = useState("");
     const [error, setError] = useState("");
-    const [saved, setSaved] = useState<{ file: ToolFile; name: string }>();
+    const [saved, setSaved] = useState<{ data: Uint8Array; name: string }>();
     const input = useRef<HTMLInputElement>(null);
     const job = useRef<AbortController>();
     const nextId = useRef(0);
@@ -765,14 +765,17 @@ export default function MixerTool({
                                 variant="outlined"
                                 startIcon={<SaveRounded />}
                                 disabled={
-                                    !exportReady || saved?.file === result
+                                    !exportReady || saved?.data === result?.data
                                 }
                                 onClick={() => {
                                     if (result && exportReady) {
                                         try {
                                             setSaved({
-                                                file: result,
-                                                name: onSave(result)
+                                                data: result.data,
+                                                name: onSave({
+                                                    name: result.name,
+                                                    data: result.data
+                                                })
                                             });
                                         } catch (cause) {
                                             setError(
@@ -786,7 +789,7 @@ export default function MixerTool({
                             >
                                 Add to project
                             </Button>
-                            {saved && saved.file === result && (
+                            {saved && saved.data === result?.data && (
                                 <p role="status">Added {saved.name}</p>
                             )}
                         </div>
