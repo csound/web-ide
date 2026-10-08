@@ -52,8 +52,15 @@ describe("the IDE Csound adapter", () => {
             const doc =
                 'Sexample = {{\n<CsScore bin="scot">\n}}\na1 = oscili(0.2, 440)\n';
             const view = editor(doc, fileType, doc.indexOf("440"));
-            expect(marked(view, "cm-csound-a-rate-var", "a1")).toBeDefined();
-            expect(marked(view, "cm-csound-opcode", "oscili")).toBeDefined();
+            // CodeMirror may finish its first parse in a later view update.
+            await vi.waitFor(() => {
+                expect(
+                    marked(view, "cm-csound-a-rate-var", "a1")
+                ).toBeDefined();
+                expect(
+                    marked(view, "cm-csound-opcode", "oscili")
+                ).toBeDefined();
+            });
             await vi.waitFor(() =>
                 expect(
                     view.dom.querySelector(".cm-csound-synopsis strong")
