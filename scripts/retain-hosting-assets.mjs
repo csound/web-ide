@@ -56,7 +56,9 @@ export async function retainAssets({
         // Vite hashes these names from their content; use the new build's copy
         // when it already has the same immutable URL.
         if (current.has(file.path)) continue;
-        const replacedAt = retired[file.path] ?? now;
+        const replacedAt = Object.hasOwn(retired, file.path)
+            ? retired[file.path]
+            : now;
         assert.ok(
             Number.isSafeInteger(replacedAt) &&
                 replacedAt >= 0 &&
@@ -191,6 +193,9 @@ if (
         files,
         readAsset: (file) => download(`https://${site}.web.app`, file, version)
     });
+    // This detects changes during preparation, not after the hook returns.
+    // Publication must be serialized separately; the Firebase console and
+    // other CLI processes do not share GitHub Actions' concurrency group.
     const latest = await liveSnapshot(client, site);
     assert.equal(
         latest.version,

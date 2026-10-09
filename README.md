@@ -262,7 +262,7 @@ offline-capable desktop app.
 
 GitHub Actions handles website deployment.
 
-Each Hosting deploy keeps replaced, hashed files under `/assets/` for 30 days.
+Serialized Hosting deploys keep replaced, hashed files under `/assets/` for 30 days.
 An open editor can still load its old JavaScript, CSS, workers and WASM during
 that time. Tools stay lazy, and deployment does not reload the page or discard
 edits. A service worker cannot protect a tool it has never downloaded without
@@ -279,9 +279,22 @@ for deployment. After a failed deploy, rebuild before retrying the hook.
 HTML and the inventory must revalidate; hashed assets can stay cached. Firebase's
 `pinTag` setting keeps the `host` function's HTML paired with its Hosting release,
 including rollbacks. Pinning takes effect once this config reaches the live site.
-Both deployment workflows run one release at a time. Use a fresh build when
-redeploying an old commit so it also retains assets needed by newer open tabs;
-Firebase console rollbacks cannot run the predeploy hook.
+Each deployment workflow runs one release at a time for its site, from preparation
+through publication. This only orders runs in that GitHub Actions concurrency
+group; it does not lock Firebase against local CLI deploys, other workflows,
+channel clones, or console rollbacks. The hook's final snapshot check can detect
+a release during preparation, but a publisher can still change Hosting after
+that check and before this deploy publishes. Such an overlapping release can lose
+assets needed by its open tabs. Retention therefore requires one serialized
+publishing path per site. The repository does not set IAM restrictions to enforce
+that rule.
+
+Use the site's deployment workflow and rebuild an old commit for a rollback so
+it also retains assets needed by newer open tabs. Firebase console rollbacks and
+channel clones cannot run this retention hook. A lock used only by our scripts
+would not protect against those paths, and the
+[Hosting release API](https://firebase.google.com/docs/reference/hosting/rest/v1beta1/sites.releases/create)
+does not document a precondition for the current live release.
 
 Run `node --test scripts/retain-hosting-assets.test.mjs` for the deploy checks.
 The `deployment-assets` browser suite builds two releases, switches between them,

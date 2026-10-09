@@ -194,21 +194,32 @@ test("verifies the live ETag across compressed responses and rejects wrong relea
     }
 });
 
-test("rejects a malformed inventory instead of silently discarding retained assets", async (t) => {
-    const outDir = await build(t);
-    const inventory = Buffer.from(
-        JSON.stringify({ schema: 1, retired: { [oldName]: "yesterday" } })
-    );
-    await assert.rejects(
-        retainAssets({
-            outDir,
-            files: [oldFile, { path: inventoryPath, hash: digest(inventory) }],
-            now,
-            readAsset: async () => inventory
-        }),
-        /Invalid retirement date/
-    );
-});
+for (const retiredAt of [null, "yesterday", false, -1, now + 1, 1.5]) {
+    test(`rejects a malformed retirement date (${JSON.stringify(retiredAt)})`, async (t) => {
+        const outDir = await build(t);
+        const inventory = Buffer.from(
+            JSON.stringify({ schema: 1, retired: { [oldName]: retiredAt } })
+        );
+        await assert.rejects(
+            retainAssets({
+                outDir,
+                files: [
+                    oldFile,
+                    { path: inventoryPath, hash: digest(inventory) }
+                ],
+                now,
+                readAsset: async () => inventory
+            }),
+            /Invalid retirement date/
+        );
+        await assert.rejects(
+            readFile(path.join(outDir, inventoryPath.slice(1))),
+            {
+                code: "ENOENT"
+            }
+        );
+    });
+}
 
 test("reads the live channel and all pages of its active files", async () => {
     const calls = [];
