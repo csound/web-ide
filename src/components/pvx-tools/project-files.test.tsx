@@ -1,28 +1,28 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, render, renderHook } from "@testing-library/react";
-import type { AudioSource } from "./audio-tool";
+import type { AudioSource } from "../audio-tools/audio-tool";
 import type { IDocument } from "../projects/types";
 import { nonCloudFiles } from "../file-tree/actions";
-import { useProjectToolFiles } from "./project-files";
-import { checkHetroSize, MAX_HETRO_BYTES } from "../hetro-tools/convert";
+import { useProjectToolFiles } from "../audio-tools/project-files";
+import { checkPvxSize, MAX_PVX_BYTES } from "../pvx-tools/format";
 import {
     AudioMixer,
     SampleEditor,
     AudioAnalysis,
     ImpulseResponse,
     ConvolutionPrep
-} from "./project-tools";
-import ProjectHetro from "../hetro-tools/project-hetro";
+} from "../audio-tools/project-tools";
+import ProjectPvx from "../pvx-tools/project-pvx";
 const { documents, generated, dispatch, tool } = vi.hoisted(() => ({
     documents: {} as Record<string, IDocument>,
     generated: [] as string[],
     dispatch: vi.fn(),
     tool: vi.fn<React.FC<{ sources: AudioSource[] }>>(() => null)
 }));
-vi.mock("./audio-tool", () => ({ default: tool }));
-vi.mock("./impulse-tool", () => ({ default: tool }));
-vi.mock("./mixer-tool", () => ({ default: tool }));
-vi.mock("../hetro-tools/hetro-tool", () => ({ default: tool }));
+vi.mock("../audio-tools/audio-tool", () => ({ default: tool }));
+vi.mock("../audio-tools/impulse-tool", () => ({ default: tool }));
+vi.mock("../audio-tools/mixer-tool", () => ({ default: tool }));
+vi.mock("../pvx-tools/pvx-tool", () => ({ default: tool }));
 vi.mock("../../store", () => ({
     useDispatch: () => dispatch,
     useSelector: (select: (state: any) => unknown) =>
@@ -49,10 +49,10 @@ afterEach(() => {
     vi.unstubAllGlobals();
     vi.clearAllMocks();
 });
-function document(id: string, type: IDocument["type"], value = "HETRO 1") {
+function document(id: string, type: IDocument["type"], value = "PVX 1") {
     documents[id] = {
         documentUid: id,
-        filename: `${id}.het`,
+        filename: `${id}.pvx`,
         type,
         currentValue: value,
         savedValue: "older text",
@@ -65,8 +65,8 @@ function document(id: string, type: IDocument["type"], value = "HETRO 1") {
 }
 const mount = () =>
     renderHook(() =>
-        useProjectToolFiles("project", (name) => name.endsWith(".het"), {
-            checkSize: checkHetroSize
+        useProjectToolFiles("project", (name) => name.endsWith(".pvx"), {
+            checkSize: checkPvxSize
         })
     ).result;
 it.each([
@@ -91,30 +91,30 @@ it.each([
         ).toEqual(["audio", "generated:render.wav"]);
     }
 );
-it("the HETRO tool lists both text and binary analyses with its own size limit", async () => {
+it("the PVX tool lists both text and binary analyses with its own size limit", async () => {
     document("draft", "txt");
     document("analysis", "bin");
     document("folder", "folder");
-    generated.push("render.het", "audio.wav");
-    render(<ProjectHetro projectUid="project" />);
+    generated.push("render.pvx", "audio.wav");
+    render(<ProjectPvx projectUid="project" />);
     const sources = tool.mock.lastCall![0].sources;
     expect(sources.map((source) => source.id)).toEqual([
         "draft",
         "analysis",
-        "generated:render.het"
+        "generated:render.pvx"
     ]);
     expect(
         new TextDecoder().decode(
             await sources[0].load(new AbortController().signal)
         )
-    ).toBe("HETRO 1");
-    nonCloudFiles.set("render.het", {
-        name: "render.het",
+    ).toBe("PVX 1");
+    nonCloudFiles.set("render.pvx", {
+        name: "render.pvx",
         createdAt: new Date(),
-        buffer: new Uint8Array(MAX_HETRO_BYTES + 1)
+        buffer: new Uint8Array(MAX_PVX_BYTES + 1)
     });
     await expect(sources[2].load(new AbortController().signal)).rejects.toThrow(
-        "2 MB"
+        "16 MB"
     );
 });
 it("opens the current text draft, excludes folders, and retains results under a fresh name", async () => {
@@ -129,14 +129,14 @@ it("opens the current text draft, excludes folders, and retains results under a 
     const bytes = await result.current.sources[0].load(
         new AbortController().signal
     );
-    expect(new TextDecoder().decode(bytes)).toBe("HETRO 1");
+    expect(new TextDecoder().decode(bytes)).toBe("PVX 1");
     expect(fetch).not.toHaveBeenCalled();
-    const name = result.current.onSave({ name: "analysis.het", data: bytes });
-    expect(name).not.toBe("analysis.het");
+    const name = result.current.onSave({ name: "analysis.pvx", data: bytes });
+    expect(name).not.toBe("analysis.pvx");
     expect(nonCloudFiles.get(name)?.buffer).toEqual(bytes);
     expect(dispatch).toHaveBeenCalledOnce();
 });
-it("bounds binary project reads at the HETRO limit before reading their bodies", async () => {
+it("bounds binary project reads at the PVX limit before reading their bodies", async () => {
     document("large", "bin");
     const cancel = vi.fn();
     const stream = new ReadableStream<Uint8Array>({ cancel });
@@ -146,27 +146,27 @@ it("bounds binary project reads at the HETRO limit before reading their bodies",
             ok: true,
             body: stream,
             headers: new Headers({
-                "content-length": String(MAX_HETRO_BYTES + 1)
+                "content-length": String(MAX_PVX_BYTES + 1)
             })
         }))
     );
     const result = mount();
     await expect(
         result.current.sources[0].load(new AbortController().signal)
-    ).rejects.toThrow("2 MB");
+    ).rejects.toThrow("16 MB");
     expect(cancel).toHaveBeenCalledOnce();
 });
 it("checks generated files before copying them", async () => {
-    generated.push("large.het");
-    const buffer = new Uint8Array(MAX_HETRO_BYTES + 1);
+    generated.push("large.pvx");
+    const buffer = new Uint8Array(MAX_PVX_BYTES + 1);
     const copy = vi.spyOn(buffer, "slice");
-    nonCloudFiles.set("large.het", {
-        name: "large.het",
+    nonCloudFiles.set("large.pvx", {
+        name: "large.pvx",
         createdAt: new Date(),
         buffer
     });
     await expect(
         mount().current.sources[0].load(new AbortController().signal)
-    ).rejects.toThrow("2 MB");
+    ).rejects.toThrow("16 MB");
     expect(copy).not.toHaveBeenCalled();
 });

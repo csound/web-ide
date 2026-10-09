@@ -107,6 +107,7 @@ import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
 import DataArrayRounded from "@mui/icons-material/DataArrayRounded";
+import MultilineChartRounded from "@mui/icons-material/MultilineChartRounded";
 import TuneRounded from "@mui/icons-material/TuneRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
@@ -132,6 +133,10 @@ const utilityTabDefinitions: Record<
     pvxEditor: {
         title: "PVX Editor",
         component: React.lazy(() => import("@comp/pvx-tools/project-pvx"))
+    },
+    hetroEditor: {
+        title: "HETRO Editor",
+        component: React.lazy(() => import("@comp/hetro-tools/project-hetro"))
     },
     mixer: {
         title: "Mixer",
@@ -202,7 +207,8 @@ const specialistLaunchers: LauncherItem[] = [
         Icon: FilterAltRounded
     },
     { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded },
-    { type: "pvxEditor", label: "PVX Editor", Icon: DataArrayRounded }
+    { type: "pvxEditor", label: "PVX Editor", Icon: DataArrayRounded },
+    { type: "hetroEditor", label: "HETRO Editor", Icon: MultilineChartRounded }
 ];
 
 type LauncherItem = {
@@ -1359,6 +1365,7 @@ const ProjectEditor = ({
         "convolutionPrep",
         "scoreTools",
         "pvxEditor",
+        "hetroEditor",
         "mixer"
     ].includes(bottomTool || "");
     useEffect(() => {

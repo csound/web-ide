@@ -18,6 +18,8 @@ import envext from "@csound/wasm-bin/lib/envext.wasm?url";
 import pvExport from "@csound/wasm-bin/lib/pv_export.wasm?url";
 import pvImport from "@csound/wasm-bin/lib/pv_import.wasm?url";
 import mkir from "@csound/wasm-bin/lib/mkir.wasm?url";
+import hetExport from "@csound/wasm-bin/lib/het_export.wasm?url";
+import hetImport from "@csound/wasm-bin/lib/het_import.wasm?url";
 import cvanal from "@csound/wasm-bin/lib/cvanal.wasm?url";
 import mixer from "@csound/wasm-bin/lib/mixer.wasm?url";
 
@@ -25,6 +27,8 @@ import mixer from "@csound/wasm-bin/lib/mixer.wasm?url";
 const urls: Record<Exclude<ToolName, ScoreProgram>, string> = {
     pv_export: pvExport,
     pv_import: pvImport,
+    het_export: hetExport,
+    het_import: hetImport,
     mixer,
     mkir,
     cvanal,

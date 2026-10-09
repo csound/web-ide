@@ -98,7 +98,16 @@ test(
                 await page.evaluate(() => window.roundTripPvx()),
                 true
             );
-            for (const name of ["pv_import", "pv_export"])
+            assert.equal(
+                await page.evaluate(() => window.roundTripHetro()),
+                true
+            );
+            for (const name of [
+                "pv_import",
+                "pv_export",
+                "het_import",
+                "het_export"
+            ])
                 assert.ok(
                     wasm.some((url) =>
                         new RegExp(`/${name}-[^/]+\\.wasm$`).test(url)
