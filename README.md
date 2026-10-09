@@ -283,6 +283,12 @@ offline-capable desktop app.
 
 GitHub Actions handles website deployment.
 
+Keep `develop` and `master` in the same Git history. Merge changes made directly
+on `master` back into `develop` before the next release. Promote `develop` with
+a merge or fast-forward into `master`, then use a normal push. Resetting `master`
+to `develop` and force-pushing can remove features that shipped only on `master`,
+even when the build and deployment pass.
+
 Serialized Hosting deploys keep replaced, hashed files under `/assets/` for 30 days.
 An open editor can still load its old JavaScript, CSS, workers and WASM during
 that time. Tools stay lazy, and deployment does not reload the page or discard

@@ -59,9 +59,14 @@ jobs:
                         manual-examples,
                         manual-code,
                         audio-tools,
+                        mixer,
                         project-playback,
                         csd-diagnostics,
                         score-preprocessors,
+                        sdif-tools,
+                        lpc-tools,
+                        pvx-tools,
+                        hetro-tools,
                         worker-hosting,
                         deployment-assets
                     ]

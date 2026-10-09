@@ -2,6 +2,12 @@ import type { ScoreProgram } from "../score-tools/programs";
 
 export type ToolName =
     | ScoreProgram
+    | "sdif2ad"
+    | "pv_export"
+    | "pv_import"
+    | "het_export"
+    | "het_import"
+    | "mixer"
     | "mkir"
     | "cvanal"
     | "scale"

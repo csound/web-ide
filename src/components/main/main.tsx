@@ -4,7 +4,6 @@ import { isMobile } from "@root/utils";
 import { WebIdeRouter } from "@comp/router/router";
 import ThemeProvider from "@styles/theme-provider";
 import Modal from "@comp/modal";
-import IosWarning from "./ios-warning";
 import Snackbar from "@comp/snackbar/snackbar";
 import { subscribeToLoggedInUserProfile } from "@comp/login/subscribers";
 import {
@@ -64,7 +63,6 @@ const Main = () => {
             <ConsoleProvider>
                 <HotKeys>
                     <Modal />
-                    <IosWarning />
                     <Snackbar />
                     <WebMcpProvider>
                         <WebIdeRouter />
