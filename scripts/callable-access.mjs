@@ -168,7 +168,13 @@ export async function checkPreflights(target, request = fetch) {
 // the metadata handler to read project or profile records.
 export async function checkHosting(target, request = fetch) {
     const paths = hosting.rewrites
-        .filter((rewrite) => access.hostingFunctions.includes(rewrite.function))
+        .filter((rewrite) =>
+            access.hostingFunctions.includes(
+                typeof rewrite.function === "string"
+                    ? rewrite.function
+                    : rewrite.function?.functionId
+            )
+        )
         .map((rewrite) =>
             rewrite.source.replace("/**", "/__hosting_access_check__")
         );

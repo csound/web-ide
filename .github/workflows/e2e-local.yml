@@ -62,7 +62,8 @@ jobs:
                         project-playback,
                         csd-diagnostics,
                         score-preprocessors,
-                        worker-hosting
+                        worker-hosting,
+                        deployment-assets
                     ]
 
         steps:
