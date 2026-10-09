@@ -17,6 +17,8 @@ import { consoleReadline } from "../console/readline";
 import { rawToWave } from "./wave-files";
 import { finalizeFlac } from "./flac-file";
 import { prepareScorePreprocessors } from "./score-preprocessors";
+import { readDiagnostics } from "../editor/validation/diagnostics";
+import { compilerDiagnostics } from "../editor/validation/messages";
 import { waitForCompilerMessages } from "./compiler-messages";
 import { beginPlaybackAudioSession } from "./audio-session";
 import {
@@ -205,6 +207,8 @@ export async function runPerformance({
     let csound: CsoundObj | undefined;
     let audioSession: ReturnType<typeof beginPlaybackAudioSession>;
     let messageCount = 0;
+    let compilerLog = "";
+    let compiling = true;
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
@@ -404,6 +408,8 @@ export async function runPerformance({
         });
         csound.on("message", (message: string) => {
             messageCount++;
+            if (compiling)
+                compilerLog = (compilerLog + message + "\n").slice(-32000);
             if (
                 /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
                     message
@@ -456,10 +462,38 @@ export async function runPerformance({
                 controller.signal
             );
             check();
+            if (csdPath && csdText === undefined && !renderSettings) {
+                const diagnostics = readDiagnostics(
+                    compilerLog,
+                    csdPath,
+                    Object.values(project.documents).map((entry) =>
+                        documentPath(entry, project.documents)
+                    )
+                );
+                for (const entry of Object.values(project.documents)) {
+                    const path = documentPath(entry, project.documents);
+                    const located = diagnostics.filter(
+                        (item) => item.filename === path
+                    );
+                    if (path === csdPath || located.length)
+                        compilerDiagnostics(
+                            entry.documentUid,
+                            entry.currentValue,
+                            located
+                        );
+                }
+            }
             throw new Error(
                 "Csound compilation failed. Read the console for details."
             );
         }
+        compiling = false;
+        if (document)
+            compilerDiagnostics(
+                document.documentUid,
+                document.currentValue,
+                []
+            );
         // CsOptions may override the initial command-line options.
         for (const option of overrides) await csound.setOption(option);
         // Live inputs make the browser backend start a realtime thread even

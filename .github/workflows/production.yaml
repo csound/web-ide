@@ -38,6 +38,8 @@ jobs:
                   npm run lint
                   npm run typecheck
                   npm run format:check
+            - name: Build Csound checker
+              uses: ./.github/actions/csound-check
             - name: Build
               run: |
                   echo "STORAGE_BUCKET_URL=gs://csound-ide.appspot.com" >> functions/.env

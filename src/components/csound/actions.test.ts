@@ -22,6 +22,7 @@ import {
     stopCsound,
     stopPerformance
 } from "./actions";
+import { watchCompiler } from "../editor/validation/messages";
 import { readWave } from "./wave-files";
 import { nonCloudFiles } from "../file-tree/actions";
 import { storeProjectEditorKeyboardCallbacks } from "../hot-keys/actions";
@@ -230,6 +231,46 @@ describe("iOS audio session lifecycle", () => {
 });
 
 describe("shared Csound performance", () => {
+    it("publishes compiler locations with the exact source snapshot", async () => {
+        const receive = vi.fn();
+        const unsubscribe = watchCompiler("csd", receive);
+        try {
+            engine.compileCSD.mockImplementationOnce(async () => {
+                listeners.get("message")?.(
+                    "syntax error, unexpected STRING_TOKEN, line 2\nfrom file scores/piece.csd (1)\n"
+                );
+                return -1;
+            });
+            await expect(
+                runPerformance({
+                    projectUid: "audio-test",
+                    csdPath: "scores/piece.csd",
+                    setConsole
+                })
+            ).rejects.toThrow("Csound compilation failed");
+            expect(receive).toHaveBeenCalledWith({
+                text: source,
+                diagnostics: [
+                    expect.objectContaining({
+                        filename: "scores/piece.csd",
+                        line: 2
+                    })
+                ]
+            });
+            await runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                setConsole
+            });
+            expect(receive).toHaveBeenLastCalledWith({
+                text: source,
+                diagnostics: []
+            });
+        } finally {
+            unsubscribe();
+        }
+    });
+
     it.each(["pause", "stop"] as const)(
         "terminates a worker that never acknowledges %s",
         async (method) => {

@@ -156,6 +156,23 @@ describe("the IDE Csound adapter", () => {
         expect(view.state.doc.toString()).toBe(doc.slice(0, -3) + "localPass");
     });
 
+    it("offers a typed local variable through the editor completion source", async () => {
+        const doc =
+            "instr Lead\nfrequency:i = 440\na1 = oscili(0.1, fre\nendin";
+        const position = doc.indexOf("fre\n") + 3;
+        const view = editor(doc, "orc", position);
+        const source = view.state.languageDataAt<CompletionSource>(
+            "autocomplete",
+            position
+        )[0];
+        const result = await source(
+            new CompletionContext(view.state, position, true)
+        );
+        expect(
+            result?.options.find((item) => item.label === "frequency")
+        ).toMatchObject({ type: "variable", detail: "i" });
+    });
+
     it("chooses the core language and the IDE's indentation and completion", () => {
         for (const [fileType, top] of [
             ["csd", "CsdFile"],

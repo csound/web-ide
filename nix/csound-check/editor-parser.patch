@@ -1,0 +1,310 @@
+--- a/Engine/csound_orc.y
++++ b/Engine/csound_orc.y
+@@ -185,6 +185,7 @@
+     extern ORCTOKEN *make_string(CSOUND *, char *);
+     extern char* UNARY_PLUS;
+     extern TREE* make_opcall_from_func_start(CSOUND*, int32_t, uint64_t, int32_t, TREE*, TREE*);
++    extern void csoundIdeUdo(CSOUND *, TREE *);
+     extern void add_instr_variable(CSOUND *csound,  TREE *x);
+ %}
+ %%
+@@ -270,66 +271,44 @@
+           ;
+ 
+ 
+-udo_definition   : UDOSTART_DEFINITION identifier ',' UDO_IDENT ',' UDO_IDENT NEWLINE
+-                   statement_list UDOEND_TOKEN NEWLINE
+-              {
+-                TREE *udoTop = make_leaf(csound, LINE,LOCN, UDO_TOKEN,
+-                                         (ORCTOKEN *)NULL);
+-                TREE *ident = $2;
+-                TREE *udoAns = make_leaf(csound, LINE,LOCN, UDO_ANS_TOKEN,
+-                                         (ORCTOKEN *)$4);
+-                TREE *udoArgs = make_leaf(csound, LINE,LOCN, UDO_ARGS_TOKEN,
+-                                          (ORCTOKEN *)$6);
+-                if (UNLIKELY(PARSER_DEBUG))
+-                  csound->Message(csound, "UDO COMPLETE\n");
+-
+-                udoTop->left = ident;
+-                ident->left = udoAns;
+-                ident->right = udoArgs;
+-
+-                udoTop->right = (TREE *)$8;
+-
+-                $$ = udoTop;
+-
+-                if (UNLIKELY(PARSER_DEBUG))
+-                  print_tree(csound, "UDO\n", (TREE *)$$);
+-
+-              }
+-              | UDOSTART_DEFINITION identifier udo_arg_list ':' udo_out_arg_list NEWLINE
+-                statement_list UDOEND_TOKEN NEWLINE
+-              {
+-                TREE *udoTop = make_leaf(csound, LINE, LOCN, UDO_TOKEN,
+-                                        (ORCTOKEN*)NULL);
+-                $$ = udoTop;
+-                udoTop->left = $2;
+-                $2->left = $5;
+-                $2->right = $3;
+-                $$->right = $7;
+-              }
+-              | UDOSTART_DEFINITION identifier udo_arg_list ':' NEWLINE udo_out_arg_list NEWLINE
+-                statement_list UDOEND_TOKEN NEWLINE
+-              {
+-                TREE *udoTop = make_leaf(csound, LINE, LOCN, UDO_TOKEN,
+-                                        (ORCTOKEN*)NULL);
+-                $$ = udoTop;
+-                udoTop->left = $2;
+-                $2->left = $6;
+-                $2->right = $3;
+-                $$->right = $8;
+-              }
+-            ;
+-              | UDOSTART_DEFINITION identifier udo_arg_list NEWLINE ':' udo_out_arg_list NEWLINE
+-                statement_list UDOEND_TOKEN NEWLINE
+-              {
+-                TREE *udoTop = make_leaf(csound, LINE, LOCN, UDO_TOKEN,
+-                                        (ORCTOKEN*)NULL);
+-                $$ = udoTop;
+-                udoTop->left = $2;
+-                $2->left = $6;
+-                $2->right = $3;
+-                $$->right = $8;
+-              }
+-            ;
++/* The IDE exports a complete header before attempting its body. */
++udo_definition : udo_header statement_list UDOEND_TOKEN NEWLINE
++                 { $$ = $1; $$->right = $2; }
++               ;
++
++udo_header : UDOSTART_DEFINITION identifier ',' UDO_IDENT ',' UDO_IDENT NEWLINE
++             {
++               $$ = make_leaf(csound, $2->line, $2->locn, UDO_TOKEN, NULL);
++               $$->left = $2;
++               $2->left = make_leaf(csound, LINE, LOCN, UDO_ANS_TOKEN, (ORCTOKEN *)$4);
++               $2->right = make_leaf(csound, LINE, LOCN, UDO_ARGS_TOKEN, (ORCTOKEN *)$6);
++               csoundIdeUdo(csound, $$);
++             }
++           | UDOSTART_DEFINITION identifier udo_arg_list ':' udo_out_arg_list NEWLINE
++             {
++               $$ = make_leaf(csound, $2->line, $2->locn, UDO_TOKEN, NULL);
++               $$->left = $2;
++               $2->left = $5;
++               $2->right = $3;
++               csoundIdeUdo(csound, $$);
++             }
++           | UDOSTART_DEFINITION identifier udo_arg_list ':' NEWLINE udo_out_arg_list NEWLINE
++             {
++               $$ = make_leaf(csound, $2->line, $2->locn, UDO_TOKEN, NULL);
++               $$->left = $2;
++               $2->left = $6;
++               $2->right = $3;
++               csoundIdeUdo(csound, $$);
++             }
++           | UDOSTART_DEFINITION identifier udo_arg_list NEWLINE ':' udo_out_arg_list NEWLINE
++             {
++               $$ = make_leaf(csound, $2->line, $2->locn, UDO_TOKEN, NULL);
++               $$->left = $2;
++               $2->left = $6;
++               $2->right = $3;
++               csoundIdeUdo(csound, $$);
++             }
++           ;
+ 
+ 
+ udo_arg_list : '(' out_arg_list ')'
+@@ -480,7 +459,13 @@
+                   }
+                 ;
+ 
+-statement : out_arg_list assignment expr_list NEWLINE
++statement : error udo_definition
++            { $$ = NULL; yyerrok; }
++          | error instr_definition
++            { $$ = NULL; yyerrok; }
++          | error NEWLINE
++            { $$ = NULL; yyerrok; }
++          | out_arg_list assignment expr_list NEWLINE
+                 {
+                   $$ = (TREE *)$2;
+                   $$->left = (TREE *)$1;
+--- a/Engine/parse_param.h
++++ b/Engine/parse_param.h
+@@ -60,6 +60,7 @@
+     uint32_t        first_column;
+     uint32_t        last_column;  
+     uint32_t        paren_depth;  /* suppress newlines inside parentheses */
++    unsigned        ide_errors; /* IDE-only bounded syntax recovery */
+     int             xsubstr;    /* count for substr */
+ } PARSE_PARM;
+ 
+--- a/Engine/csound_orc_semantics.c
++++ b/Engine/csound_orc_semantics.c
+@@ -4234,8 +4234,9 @@
+                      CSOUND *csound, TREE **astTree, const char *str)
+ {
+ 
+-  IGN(pp);
+   IGN(astTree);
++  /* Bound recovery and let the next source newline end the bad statement. */
++  if (++pp->ide_errors > 20) csound->LongJmp(csound, 1);
+   char *p = csound_orcget_current_pointer(yyscanner)-1;
+   int32_t line = csound_orcget_lineno(yyscanner);
+   uint64_t files = csound_orcget_locn(yyscanner);
+@@ -4246,6 +4247,8 @@
+                   str, csound_orcget_text(yyscanner));
+   csound->ErrorMsg(csound, Str(" line %d, columns %d,%d\n"), line, column1, column2);
+   do_baktrace(csound, files);
++  extern void csound_orc_recover(void *);
++  csound_orc_recover(yyscanner);
+ }
+ 
+ void do_baktrace(CSOUND *csound, uint64_t files)
+--- a/Engine/csound_orc.lex
++++ b/Engine/csound_orc.lex
+@@ -46,6 +46,9 @@
+ YYLTYPE *yylloc_param;
+  ORCTOKEN *make_string(CSOUND *, char *, void*);
+  ORCTOKEN *lookup_token(CSOUND *, char *, void *);
++ static ORCTOKEN *ide_lookup_token(CSOUND *, char *, void *, int);
++ void csoundIdeIdentifier(CSOUND *, ORCTOKEN *, int, int, uint64_t);
++ void csoundIdeLexEnd(void);
+  ORCTOKEN *new_token(CSOUND *csound, int32_t type, void *yyscanner);
+  ORCTOKEN *make_int(CSOUND *, char *, void*);
+  ORCTOKEN *make_num(CSOUND *, char *,  void*);
+@@ -438,7 +441,7 @@
+ 
+ 
+   {IDENT}/[ \t]*\( { BEGIN(INITIAL);
+-                    *lvalp = lookup_token(csound, yytext, yyscanner);
++                    *lvalp = ide_lookup_token(csound, yytext, yyscanner, 0);
+                     /*csound->Message(csound, ">>>> NEW UDO DEF <<<<<<<\n");*/
+                     /*csound->Message(csound,"%s -> %d\n",*/
+                     /*                   yytext, (*lvalp)->type); */
+@@ -447,7 +450,7 @@
+ 
+   {IDENT} { BEGIN(udoarg);
+                     /*csound->Message(csound, ">>>> OLD UDO DEF <<<<<<<\n");*/
+-                    *lvalp = lookup_token(csound, yytext, yyscanner);
++                    *lvalp = ide_lookup_token(csound, yytext, yyscanner, 0);
+                     /* csound->Message(csound,"%s -> %d\n",
+                                        yytext, (*lvalp)->type); */
+                     return (*lvalp)->type; }
+@@ -457,14 +460,14 @@
+ 
+ <declare>{
+   {IDENT} { BEGIN(INITIAL);
+-            *lvalp = lookup_token(csound, yytext, yyscanner);
++            *lvalp = ide_lookup_token(csound, yytext, yyscanner, 0);
+             return (*lvalp)->type; }
+ }
+ 
+ <udoarg>{
+   ","     { return ','; }
+  {XIDENT} { BEGIN(udoarg);
+-                  *lvalp = lookup_token(csound, yytext, yyscanner);
++                  *lvalp = ide_lookup_token(csound, yytext, yyscanner, 0);
+                   /* csound->Message(csound,"%s -> %d\n",
+                                      yytext, (*lvalp)->type); */
+                   (*lvalp)->type = UDO_IDENT;
+@@ -538,32 +541,32 @@
+                   (*lvalp)->type = T_IDENT;
+                   /* csound->Message(csound,"%d\n", (*lvalp)->type); */
+                   return T_IDENT; }
+-{IDENT}         { *lvalp = lookup_token(csound, yytext, yyscanner);
++{IDENT}         { *lvalp = ide_lookup_token(csound, yytext, yyscanner, 0);
+                   /* csound->Message(csound,"%s -> %d\n",
+                                      yytext, (*lvalp)->type); */
+                   return (*lvalp)->type; }
+-{IDENTB}        { PARM->paren_depth++;
+-                  if (UNLIKELY(strchr(yytext, '\n'))) {
+-                       yycolumn = 1;
+-                       csound_orcset_lineno(1+csound_orcget_lineno(yyscanner),
+-                                            yyscanner);
++{IDENTB} { PARM->paren_depth++;
++                  int newline = strchr(yytext, '\n') != NULL;
++                  *strrchr(yytext, '(') = '\0';
++                  *lvalp = ide_lookup_token(csound, yytext, yyscanner, 1);
++                  if (newline) {
++                    yycolumn = 1;
++                    csound_orcset_lineno(1+csound_orcget_lineno(yyscanner), yyscanner);
+                   }
+-                  *strrchr(yytext, '(') = '\0';
+-                  *lvalp = lookup_token(csound, yytext, yyscanner);
+                   return (*lvalp)->type+1; }
+-{TYPED_IDENTIFIER} { *lvalp = lookup_token(csound, yytext, yyscanner);
++{TYPED_IDENTIFIER} { *lvalp = ide_lookup_token(csound, yytext, yyscanner, 0);
+                   /* csound->Message(csound,"%s -> %d\n",
+                                      yytext, (*lvalp)->type); */
+                   return (*lvalp)->type; }
+ {TYPED_IDENTIFIERB} { PARM->paren_depth++;
+-                      if (UNLIKELY(strchr(yytext, '\n'))) {
+-                           yycolumn = 1;
+-                           csound_orcset_lineno(1+csound_orcget_lineno(yyscanner),
+-                                                yyscanner);
+-                      }
+-                      *strrchr(yytext, '(') = '\0';
+-                      *lvalp = lookup_token(csound, yytext, yyscanner);
+-                      return (*lvalp)->type+1; }
++                  int newline = strchr(yytext, '\n') != NULL;
++                  *strrchr(yytext, '(') = '\0';
++                  *lvalp = ide_lookup_token(csound, yytext, yyscanner, 1);
++                  if (newline) {
++                    yycolumn = 1;
++                    csound_orcset_lineno(1+csound_orcget_lineno(yyscanner), yyscanner);
++                  }
++                  return (*lvalp)->type+1; }
+ {INTGR}         {
+                     *lvalp = make_int(csound, yytext, yyscanner); return (INTEGER_TOKEN);
+                     /*csound->Message(csound,"%d\n", (*lvalp)->type);*/
+@@ -610,6 +613,7 @@
+                 }
+ 
+ <<EOF>>         {
++                  csoundIdeLexEnd();
+                   yyterminate();
+                 }
+ 
+@@ -620,6 +624,13 @@
+                    return NEWLINE; }
+ 
+ %%
++
++/* Reset lexer state after Bison reports a malformed statement or header. */
++void csound_orc_recover(void *yyscanner) {
++  struct yyguts_t *yyg = (struct yyguts_t *)yyscanner;
++  PARM->paren_depth = 0;
++  if (strcmp(yytext, "opcode") && strcmp(yytext, "declare")) BEGIN(INITIAL);
++}
+ 
+ ORCTOKEN *lookup_token(CSOUND *csound, char *s, void *yyscanner)
+ {
+@@ -641,6 +652,14 @@
+     }
+     ans->type = type;
+     return ans;
++}
++
++
++static ORCTOKEN *ide_lookup_token(CSOUND *csound, char *s, void *yyscanner, int call)
++{
++    ORCTOKEN *token = lookup_token(csound, s, yyscanner);
++    csoundIdeIdentifier(csound, token, call, csound_orcget_lineno(yyscanner), PARM->locn);
++    return token;
+ }
+ 
+ 
+--- a/Engine/new_orc_parser.c
++++ b/Engine/new_orc_parser.c
+@@ -30,6 +30,11 @@
+ #include "new_orc_parser.h"
+ #include "csmodule.h"
+ void add_opcode_defs(CSOUND *csound);
++/* The metadata generator links the same library, without an IDE consumer. */
++__attribute__((weak)) void csoundIdeUdo(CSOUND *csound, TREE *tree) {}
++__attribute__((weak)) void csoundIdeLexEnd(void) {}
++__attribute__((weak)) void csoundIdeIdentifier(CSOUND *csound, ORCTOKEN *token,
++                                             int call, int line, uint64_t locn) {}
+ 
+ #if defined(HAVE_DIRENT_H)
+ #  include <dirent.h>

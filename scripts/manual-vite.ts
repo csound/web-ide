@@ -51,7 +51,17 @@ export function manualPages(): Plugin {
             } else {
                 response.statusCode = 404;
                 response.setHeader("Content-Type", "text/html; charset=utf-8");
-                response.end(readFileSync(path.join(root, "404.html")));
+                let page: Buffer | string;
+                try {
+                    page = readFileSync(path.join(root, "404.html"));
+                } catch (error) {
+                    if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+                        throw error;
+                    // A fresh worktree may not have generated its manual yet.
+                    page =
+                        "<!doctype html><title>Manual page not found</title><h1>Manual page not found</h1>";
+                }
+                response.end(page);
             }
         });
     };
