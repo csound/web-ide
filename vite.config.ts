@@ -14,11 +14,15 @@ export default defineConfig({
     },
     // depending on your application, base can also be "/"
     base: "/",
-    // Emotion adds its import after scanning; WASI is only discovered in a lazy
-    // worker. Prepare both up front so the first audio edit cannot reload the page.
-    // This prepares JavaScript only; utility WASM still loads on demand.
+    // Emotion and the lazy audio workers reveal imports after Vite scans the app.
+    // Prebundle their JavaScript in development to avoid a first-use page reload.
+    // Production chunks and utility WASM still load only when requested.
     optimizeDeps: {
-        include: ["@emotion/styled/base", "@bjorn3/browser_wasi_shim"]
+        include: [
+            "@emotion/styled/base",
+            "@bjorn3/browser_wasi_shim",
+            "music-metadata"
+        ]
     },
     plugins: [
         manualPages(),

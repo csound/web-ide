@@ -94,6 +94,27 @@ to preserve their order. The project's include supplies the Lisp runtime.
 
 ---
 
+## Audio file preview
+
+Open an audio file in the file tree to see its waveform and file details. Click the
+waveform to seek, or drag to select a range. The player supports keyboard seeking,
+volume, mute, and playback speed.
+
+Buttons beside the waveform and table values open editing or analysis tools in
+that file's editor tab. Trim keeps the selected range; Cut / splice removes it or
+replaces it with another clip. Inserted clips must match the source's sample rate
+and channel count. Changes update after a short delay. Download the result or use
+Add to project to create a separate file, then use its upload button to save it.
+Returning to File details closes the tool preview and shows the unchanged source.
+
+File properties come from encoded headers. Signal levels use decoded samples,
+which the browser may resample for some formats. WAV/AIFF instrument and loop
+settings and broadcast-WAV metadata appear when present. Missing fields say
+"Not reported". Waveform editing uses the existing 64 MB, eight-channel and
+16-million-sample limits; native playback remains available if inspection fails.
+The metadata parser runs in an on-demand worker. Csound binaries load only when
+an operation needs them.
+
 ## Prerequisites
 
 <!-- #prerequisites -->
@@ -288,6 +309,13 @@ that check and before this deploy publishes. Such an overlapping release can los
 assets needed by its open tabs. Retention therefore requires one serialized
 publishing path per site. The repository does not set IAM restrictions to enforce
 that rule.
+
+Keep the home, editor, and profile paths in one grouped `host` rewrite. Firebase
+CLI tags once per rewrite without grouping by service. Separate pinned rewrites
+for the same service send concurrent updates with the same Cloud Run resource
+version, causing Hosting publication to fail with a version conflict. Browser
+access checks use explicit paths in `scripts/callable-access.json` so they still
+check all three routes.
 
 Use the site's deployment workflow and rebuild an old commit for a rollback so
 it also retains assets needed by newer open tabs. Firebase console rollbacks and

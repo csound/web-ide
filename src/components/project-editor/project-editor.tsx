@@ -323,13 +323,21 @@ export function EditorForDocument({
         isAudioFile((doc as IDocument).filename)
     ) {
         const path = `${uid}/${projectUid}/${(doc as IDocument).documentUid}`;
-        return <AudioEditor audioFileUrl={path} />;
+        return (
+            <AudioEditor
+                audioFileUrl={path}
+                filename={(doc as IDocument).filename}
+                projectUid={projectUid}
+            />
+        );
     } else if (
         (doc as IOpenDocument).isNonCloudDocument &&
         (doc as IOpenDocument).nonCloudFileAudioUrl
     ) {
         return (
             <AudioEditor
+                filename={(doc as IOpenDocument).uid}
+                projectUid={projectUid}
                 audioFileUrl={
                     (doc as IOpenDocument).nonCloudFileAudioUrl as string
                 }

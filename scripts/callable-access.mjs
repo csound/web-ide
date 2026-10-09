@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
+import { matchesGlob } from "node:path";
 
 export const access = JSON.parse(
     await readFile(new URL("./callable-access.json", import.meta.url))
@@ -167,17 +168,26 @@ export async function checkPreflights(target, request = fetch) {
 // Use a browser user agent so synthetic URLs check the app shell without asking
 // the metadata handler to read project or profile records.
 export async function checkHosting(target, request = fetch) {
-    const paths = hosting.rewrites
-        .filter((rewrite) =>
-            access.hostingFunctions.includes(
-                typeof rewrite.function === "string"
-                    ? rewrite.function
-                    : rewrite.function?.functionId
-            )
-        )
-        .map((rewrite) =>
-            rewrite.source.replace("/**", "/__hosting_access_check__")
+    // A rewrite can group several routes. Probe real URLs rather than trying
+    // to turn its glob into a URL, and verify that each probe still targets host.
+    const paths = access.hostingPaths;
+    assert.ok(
+        Array.isArray(paths) && paths.length,
+        "Declare Hosting probe paths."
+    );
+    for (const pathname of paths) {
+        const rewrite = hosting.rewrites.find((rule) =>
+            matchesGlob(pathname, rule.source)
         );
+        const id =
+            typeof rewrite?.function === "string"
+                ? rewrite.function
+                : rewrite?.function?.functionId;
+        assert.ok(
+            access.hostingFunctions.includes(id),
+            `${pathname}: Hosting probe must target a declared function`
+        );
+    }
     for (const origin of target.origins) {
         if (new URL(origin).hostname === "localhost") continue;
         for (const path of paths) {

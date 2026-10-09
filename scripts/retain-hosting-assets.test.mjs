@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import {
     mkdtemp,
     mkdir,
@@ -296,4 +297,96 @@ test("all deployments retain assets and pin HTML to the Hosting release", async 
         assert.equal(workflow.concurrency["cancel-in-progress"], false);
         assert.ok(workflow.concurrency.group);
     }
+});
+
+test("pinned HTML rewrites update each Cloud Run service once", async (t) => {
+    const require = createRequire(
+        new URL("../functions/package.json", import.meta.url)
+    );
+    const run = require("firebase-tools/lib/gcp/run.js");
+    const runTags = require("firebase-tools/lib/hosting/runTags.js");
+    const { hosting } = JSON.parse(
+        await readFile(new URL("../firebase.json", import.meta.url))
+    );
+    let version = 1;
+    let updates = 0;
+    const service = {
+        metadata: {
+            name: "host",
+            namespace: "fixture-project",
+            resourceVersion: "1",
+            generation: 1,
+            labels: { "cloud.googleapis.com/location": "us-central1" }
+        },
+        spec: { traffic: [{ revisionName: "host-00001", percent: 100 }] },
+        status: {
+            latestReadyRevisionName: "host-00001",
+            observedGeneration: 1,
+            conditions: [{ type: "Ready", status: "True" }]
+        }
+    };
+    // Run the real CLI pinning path against Cloud Run's optimistic concurrency
+    // contract. Separate reads yield separate snapshots of the same version.
+    t.mock.method(run, "getService", async () => structuredClone(service));
+    t.mock.method(run, "replaceService", async (_name, replacement) => {
+        assert.equal(
+            replacement.metadata.resourceVersion,
+            String(version),
+            "Failed to replace Run service: resource version conflict"
+        );
+        version++;
+        updates++;
+        return { ...replacement, status: service.status };
+    });
+    const rewrites = hosting.rewrites
+        .filter((rewrite) => rewrite.function?.pinTag)
+        .map((rewrite) => ({
+            source: rewrite.source,
+            run: {
+                serviceId: rewrite.function.functionId,
+                region: rewrite.function.region,
+                tag: runTags.TODO_TAG_NAME
+            }
+        }));
+    await runTags.setRewriteTags(rewrites, "fixture-project", "new-release");
+    assert.equal(updates, 1);
+    assert.ok(
+        rewrites.every((rewrite) => rewrite.run.tag === "fh-new-release")
+    );
+});
+
+test("host routing keeps app paths pinned and leaves other routes alone", async () => {
+    const { hosting } = JSON.parse(
+        await readFile(new URL("../firebase.json", import.meta.url))
+    );
+    const route = (pathname) =>
+        hosting.rewrites.find((rewrite) =>
+            path.matchesGlob(pathname, rewrite.source)
+        );
+    for (const pathname of [
+        "/",
+        "/editor/",
+        "/editor/project",
+        "/editor/project/nested",
+        "/profile/",
+        "/profile/person"
+    ]) {
+        assert.equal(route(pathname)?.function?.functionId, "host", pathname);
+        assert.equal(route(pathname)?.function?.pinTag, true, pathname);
+    }
+    for (const pathname of [
+        "/editorial/example",
+        "/profile-picture",
+        "/assets/main-abcdefgh.js",
+        "/404"
+    ])
+        assert.equal(route(pathname), undefined, pathname);
+    for (const [pathname, destination] of [
+        ["/embed", "/index.html"],
+        ["/embed/project", "/index.html"],
+        ["/manual/opcode", "/manual/404.html"],
+        ["/documentation", "/index.html"],
+        ["/documentation/page", "/index.html"]
+    ])
+        assert.equal(route(pathname)?.destination, destination, pathname);
 });

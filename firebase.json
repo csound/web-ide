@@ -23,23 +23,7 @@
                 "destination": "/manual/404.html"
             },
             {
-                "source": "/",
-                "function": {
-                    "functionId": "host",
-                    "region": "us-central1",
-                    "pinTag": true
-                }
-            },
-            {
-                "source": "/editor/**",
-                "function": {
-                    "functionId": "host",
-                    "region": "us-central1",
-                    "pinTag": true
-                }
-            },
-            {
-                "source": "/profile/**",
+                "source": "{/,/editor/**,/profile/**}",
                 "function": {
                     "functionId": "host",
                     "region": "us-central1",

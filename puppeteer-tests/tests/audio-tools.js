@@ -16,7 +16,7 @@ import {
     dumpDebugInfo,
     attachPageDebugListeners
 } from "../utils/browser.js";
-import { targetName } from "../utils/config.js";
+import { target, targetName } from "../utils/config.js";
 
 // Exercise the shipped commands in a real browser, including asset requests.
 describe("Visual audio tools", { skip: targetName !== "local" }, () => {
@@ -454,5 +454,167 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         );
         await page.$eval(sample, (node) => (node.scrollTop = 0));
         await snapshot("sample-mobile");
+    });
+});
+
+// File preview and all processing stay within the document tab. This fixture
+// exercises real metadata workers, browser playback, and on-demand Csound WASM.
+describe("Audio file preview", { skip: targetName !== "local" }, () => {
+    let page;
+    const requests = [];
+    async function click(text) {
+        for (const button of await page.$$("button")) {
+            if (
+                (await button.evaluate((node) => node.textContent.trim())) ===
+                text
+            ) {
+                await button.asLocator().click();
+                return;
+            }
+        }
+        throw new Error(`Missing button: ${text}`);
+    }
+    before(async () => {
+        ({ page } = await getSession());
+        page.on("request", (request) => {
+            if (
+                /\.wasm$/.test(new URL(request.url()).pathname) &&
+                !new URL(request.url()).searchParams.has("url")
+            )
+                requests.push(request.url());
+        });
+    });
+    after(async () => {
+        await page?.close();
+        await closeSession();
+    });
+    it("reads source properties without WASM and supports seek, speed, mute and volume", async () => {
+        await page.goto(
+            `${target.baseUrl}/puppeteer-tests/fixtures/audio-file.html?light`
+        );
+        await page.waitForSelector('[aria-label="Sample playback position"]');
+        assert.match(
+            await page.$eval(
+                '[aria-label="File details"]',
+                (node) => node.textContent
+            ),
+            /22,050 Hz/
+        );
+        assert.equal(requests.length, 0);
+        await page.click('[aria-label="Play sample"]');
+        await page.waitForFunction(
+            () => document.querySelector("audio").currentTime > 0.1
+        );
+        await page.click('[aria-label="Pause sample"]');
+        await page.focus('[aria-label="Sample playback position"]');
+        await page.keyboard.press("Home");
+        await page.keyboard.press("ArrowRight");
+        assert.equal(await page.$eval("audio", (node) => node.currentTime), 1);
+        await page.select('[aria-label="Sample playback speed"]', "1.5");
+        assert.equal(
+            await page.$eval("audio", (node) => node.playbackRate),
+            1.5
+        );
+        await page.click('[aria-label="Mute sample"]');
+        assert.equal(await page.$eval("audio", (node) => node.muted), true);
+        await page.$eval('[aria-label="Sample volume"]', (input) => {
+            Object.getOwnPropertyDescriptor(
+                HTMLInputElement.prototype,
+                "value"
+            ).set.call(input, "0.3");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        assert.equal(await page.$eval("audio", (node) => node.volume), 0.3);
+        assert.equal(await page.$eval("audio", (node) => node.muted), false);
+    });
+    it("opens resampling in the document and loads its binary only when settings change", async () => {
+        await click("Resample");
+        await page.waitForSelector('section[aria-label="Sample Editor"]');
+        assert.equal(requests.length, 0);
+        const selector = await page.$(
+            'section[aria-label="Sample Editor"] select'
+        );
+        await selector.select("16000");
+        await page.waitForFunction(() =>
+            Array.from(document.querySelectorAll("[role=status]")).some(
+                (node) => node.textContent === "synth-texture-resample.wav"
+            )
+        );
+        assert.ok(requests.some((url) => url.includes("src_conv")));
+        await click("Add to project");
+        await page.waitForSelector('[aria-label="Saved sample"]');
+        await click("File details");
+        await page.waitForSelector('[aria-label="File details"]');
+    });
+    it("fits both themes on mobile and carries a waveform selection into cutting", async () => {
+        for (const theme of ["light", "dark"]) {
+            await page.setViewport({ width: 375, height: 900 });
+            await page.goto(
+                `${target.baseUrl}/puppeteer-tests/fixtures/audio-file.html${theme === "light" ? "?light" : ""}`
+            );
+            await page.waitForSelector(
+                '[aria-label="Sample playback position"]'
+            );
+            assert.ok(
+                await page.$eval(
+                    '[aria-label="Audio file"]',
+                    (node) => node.scrollWidth <= node.clientWidth + 1
+                )
+            );
+        }
+        const canvas = await page.$('canvas[aria-label^="Audio waveform"]');
+        const bounds = await canvas.boundingBox();
+        await page.mouse.move(bounds.x + bounds.width / 4, bounds.y + 40);
+        await page.mouse.down();
+        await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 40, {
+            steps: 5
+        });
+        await page.mouse.up();
+        await click("Cut / splice");
+        await page.waitForSelector('section[aria-label="Cut and splice"]');
+        await page.waitForFunction(() =>
+            document
+                .querySelector('[aria-label="Splice playback time"]')
+                ?.textContent.includes("3.00")
+        );
+        assert.equal((await page.$$("audio")).length, 1);
+        const directory = mkdtempSync(join(tmpdir(), "audio-splice-"));
+        try {
+            const bytes = Buffer.alloc(44 + 22050 * 4);
+            bytes.write("RIFF");
+            bytes.writeUInt32LE(bytes.length - 8, 4);
+            bytes.write("WAVEfmt ", 8);
+            bytes.writeUInt32LE(16, 16);
+            bytes.writeUInt16LE(1, 20);
+            bytes.writeUInt16LE(2, 22);
+            bytes.writeUInt32LE(22050, 24);
+            bytes.writeUInt32LE(88200, 28);
+            bytes.writeUInt16LE(4, 32);
+            bytes.writeUInt16LE(16, 34);
+            bytes.write("data", 36);
+            bytes.writeUInt32LE(bytes.length - 44, 40);
+            const filename = join(directory, "insert.wav");
+            writeFileSync(filename, bytes);
+            await (
+                await page.$(
+                    'section[aria-label="Cut and splice"] input[type=file]'
+                )
+            ).uploadFile(filename);
+            await page.waitForFunction(() =>
+                document
+                    .querySelector('[aria-label="Splice playback time"]')
+                    ?.textContent.includes("4.00")
+            );
+            await click("Add to project");
+            assert.match(
+                await page.$eval(
+                    '[aria-label="Saved sample"]',
+                    (node) => node.textContent
+                ),
+                /spliced.wav/
+            );
+        } finally {
+            rmSync(directory, { recursive: true, force: true });
+        }
     });
 });

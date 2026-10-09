@@ -17,7 +17,9 @@ export function WavePlayer({
     range,
     onSelect,
     disabled = false,
-    playbackDisabled = false
+    playbackDisabled = false,
+    peaks,
+    showSpeed = false
 }: {
     audio: AudioData;
     src?: string;
@@ -26,6 +28,8 @@ export function WavePlayer({
     onSelect?: (range: [number, number]) => void;
     disabled?: boolean;
     playbackDisabled?: boolean;
+    peaks?: [number, number][];
+    showSpeed?: boolean;
 }) {
     const theme = useTheme();
     const media = useRef<HTMLAudioElement>(null);
@@ -116,6 +120,7 @@ export function WavePlayer({
                     alignItems: "center",
                     gap: 6,
                     padding: "4px 8px",
+                    flexWrap: "wrap",
                     minHeight: 34
                 }}
             >
@@ -157,6 +162,32 @@ export function WavePlayer({
                         <VolumeUpRounded fontSize="small" />
                     )}
                 </IconButton>
+                {showSpeed && (
+                    <select
+                        aria-label={`${label} playback speed`}
+                        defaultValue="1"
+                        onChange={(event) => {
+                            if (media.current)
+                                media.current.playbackRate = Number(
+                                    event.target.value
+                                );
+                        }}
+                        css={{
+                            color: theme.textColor,
+                            background: theme.headerBackground,
+                            border: `1px solid ${theme.line}`,
+                            borderRadius: 4,
+                            fontSize: 12,
+                            padding: 4
+                        }}
+                    >
+                        {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                            <option key={rate} value={rate}>
+                                {rate}x
+                            </option>
+                        ))}
+                    </select>
+                )}
                 <input
                     type="range"
                     aria-label={`${label} volume`}
@@ -194,6 +225,11 @@ export function WavePlayer({
                 onKeyDown={(event) => {
                     const current = media.current?.currentTime || 0;
                     const step = event.shiftKey ? 5 : 1;
+                    if (event.key === " " || event.key === "Enter") {
+                        event.preventDefault();
+                        void toggle();
+                        return;
+                    }
                     const next = {
                         ArrowLeft: current - step,
                         ArrowRight: current + step,
@@ -215,6 +251,7 @@ export function WavePlayer({
             >
                 <Waveform
                     audio={audio}
+                    preparedPeaks={peaks}
                     range={range}
                     onSelect={onSelect}
                     disabled={disabled}
