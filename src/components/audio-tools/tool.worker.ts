@@ -19,11 +19,13 @@ import pvExport from "@csound/wasm-bin/lib/pv_export.wasm?url";
 import pvImport from "@csound/wasm-bin/lib/pv_import.wasm?url";
 import mkir from "@csound/wasm-bin/lib/mkir.wasm?url";
 import cvanal from "@csound/wasm-bin/lib/cvanal.wasm?url";
+import mixer from "@csound/wasm-bin/lib/mixer.wasm?url";
 
 // URL imports emit separate assets; they do not fetch or compile the binaries.
 const urls: Record<Exclude<ToolName, ScoreProgram>, string> = {
     pv_export: pvExport,
     pv_import: pvImport,
+    mixer,
     mkir,
     cvanal,
     scale,

@@ -14,6 +14,7 @@ it.each([
     "pv_export",
     "pv_import",
     "envext",
+    "mixer",
     "mkir",
     "cvanal",
     "csbeats",

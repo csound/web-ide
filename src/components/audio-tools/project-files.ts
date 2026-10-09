@@ -3,6 +3,7 @@ import { storageReference } from "@config/firestore";
 import { useDispatch, useSelector } from "@root/store";
 import { addNonCloudFile, nonCloudFiles } from "../file-tree/actions";
 import { getUniqueFilename } from "../projects/utils";
+import type { IDocument } from "../projects/types";
 import { checkAudioBytes, readAudioStream } from "./limits";
 import type { AudioSource } from "./audio-tool";
 import type { ToolFile } from "./types";
@@ -11,7 +12,13 @@ import type { ToolFile } from "./types";
 export function useProjectToolFiles(
     projectUid: string,
     accepts: (name: string) => boolean,
-    checkSize: (size: number) => void = checkAudioBytes
+    {
+        checkSize = checkAudioBytes,
+        acceptsDocument = () => true
+    }: {
+        checkSize?: (size: number) => void;
+        acceptsDocument?: (document: IDocument) => boolean;
+    } = {}
 ) {
     const dispatch = useDispatch();
     const documents = useSelector(
@@ -24,7 +31,9 @@ export function useProjectToolFiles(
         ...Object.values(documents || {})
             .filter(
                 (document) =>
-                    document.type !== "folder" && accepts(document.filename)
+                    document.type !== "folder" &&
+                    accepts(document.filename) &&
+                    acceptsDocument(document)
             )
             .map((document) => ({
                 id: document.documentUid,

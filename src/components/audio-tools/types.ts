@@ -4,6 +4,7 @@ export type ToolName =
     | ScoreProgram
     | "pv_export"
     | "pv_import"
+    | "mixer"
     | "mkir"
     | "cvanal"
     | "scale"

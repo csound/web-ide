@@ -161,6 +161,61 @@ describe("shared Csound performance", () => {
         }
     );
 
+    it("ignores repeated SAB pause/resume reports that contradict the latest control", async () => {
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        store.dispatch(pauseCsound());
+        await vi.waitFor(() => expect(engine.pause).toHaveBeenCalledOnce());
+        const dispatch = vi.spyOn(store, "dispatch");
+        for (let i = 0; i < 100; i++) {
+            listeners.get("realtimePerformanceResumed")?.();
+            expect(store.getState().csound.status).toBe("paused");
+            listeners.get("realtimePerformancePaused")?.();
+        }
+        expect(dispatch).not.toHaveBeenCalled();
+        store.dispatch(resumePausedCsound());
+        await vi.waitFor(() => expect(engine.resume).toHaveBeenCalledOnce());
+        dispatch.mockClear();
+        for (let i = 0; i < 100; i++) {
+            listeners.get("realtimePerformancePaused")?.();
+            expect(store.getState().csound.status).toBe("playing");
+            listeners.get("realtimePerformanceResumed")?.();
+        }
+        expect(dispatch).not.toHaveBeenCalled();
+        await stopPerformance();
+        expect(store.getState().csound.status).toBe("stopped");
+    });
+
+    it("keeps the latest pause choice while earlier transport calls finish", async () => {
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        let release!: () => void;
+        const calls: string[] = [];
+        engine.pause
+            .mockImplementationOnce(() => {
+                calls.push("pause");
+                return new Promise<void>((resolve) => {
+                    release = resolve;
+                });
+            })
+            .mockImplementationOnce(async () => {
+                calls.push("pause");
+                listeners.get("realtimePerformancePaused")?.();
+            });
+        engine.resume.mockImplementationOnce(async () => {
+            calls.push("resume");
+            listeners.get("realtimePerformanceResumed")?.();
+            expect(store.getState().csound.status).toBe("paused");
+        });
+        store.dispatch(pauseCsound());
+        store.dispatch(resumePausedCsound());
+        store.dispatch(pauseCsound());
+        expect(calls).toEqual(["pause"]);
+        release();
+        await vi.waitFor(() =>
+            expect(calls).toEqual(["pause", "resume", "pause"])
+        );
+        expect(store.getState().csound.status).toBe("paused");
+    });
+
     it("waits for a pending pause before stopping the engine", async () => {
         await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
         let paused!: () => void;
