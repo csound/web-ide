@@ -222,7 +222,7 @@ export function AudioFilePreview({
             setTool({
                 choice,
                 source,
-                range: ["trim", "splice"].includes(choice.operation)
+                range: ["trim", "splice", "denoise"].includes(choice.operation)
                     ? range
                     : undefined
             });

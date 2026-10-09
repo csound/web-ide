@@ -82,14 +82,13 @@ export default function AudioTool({
         Boolean(initial && analysis)
     );
     const [edits, setEdits] = useState<SampleEdit[]>(() =>
-        initial?.range && initial.operation === "trim"
-            ? [
-                  {
-                      operation: "trim",
-                      settings: defaultSettings,
-                      range: initial.range
-                  }
-              ]
+        initial?.range &&
+        (initial.operation === "trim" || initial.operation === "denoise")
+            ? stageEdit([], {
+                  operation: initial.operation,
+                  settings,
+                  range: initial.range
+              })
             : []
     );
     const job = useRef<AbortController>();
@@ -822,14 +821,25 @@ export default function AudioTool({
                                         )
                                     }
                                 >
-                                    {[
-                                        8000, 16000, 22050, 32000, 44100, 48000,
-                                        88200, 96000
-                                    ].map((rate) => (
-                                        <option key={rate} value={rate}>
-                                            {rate.toLocaleString()} Hz
-                                        </option>
-                                    ))}
+                                    {Array.from(
+                                        new Set([
+                                            8000,
+                                            16000,
+                                            22050,
+                                            32000,
+                                            44100,
+                                            48000,
+                                            88200,
+                                            96000,
+                                            source.audio.sampleRate
+                                        ])
+                                    )
+                                        .sort((a, b) => a - b)
+                                        .map((rate) => (
+                                            <option key={rate} value={rate}>
+                                                {rate.toLocaleString()} Hz
+                                            </option>
+                                        ))}
                                 </AudioSelect>
                             </label>
                         )}
