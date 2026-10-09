@@ -4,9 +4,11 @@ The IDE serves a static Csound 7 manual at `/manual/`. It does not load React,
 Firebase, a CDN, or web fonts. Search loads its index when used. Only pages with
 equations load MathJax. The editor sends its theme and opcode lookups to the
 same-origin iframe. The first page lists all opcodes in alphabetical groups;
-the upstream introduction lives at `/manual/about/`. Search opens a dialog that
-fills the manual view, with an always-visible close button and keyboard access.
-Entry headers link to the previous and next opcode in index order. Back and
+the upstream introduction lives at `/manual/about/`. Entry headers keep previous
+and next opcode links, history arrows, and a search icon on one row. Search opens
+a field below the row, with scrollable results beneath it. Press `/` to search,
+Down to focus the first result, and Escape to close. The short reveal animation
+respects reduced motion. Back and
 forward buttons retain manual visits and reading positions for each dock or tab;
 they stay inside the manual. Embedded pages hide the IDE and source links.
 
@@ -15,7 +17,8 @@ colors. The code bundle loads only on pages with Csound blocks. Readers can
 focus, select, and copy code; previews cannot change it. Examples expand to fit
 their full content, wrap long lines, and scroll with the page. Static code
 remains available if the bundle fails and supplies the full text for printing.
-**Copy code** and **Open example** share a header above each full example.
+Each code block has a copy icon in its top-right corner, with a **Copy code**
+label on hover or keyboard focus. **Open example** stays in the example header.
 
 In the editor's manual, **Open example** opens a CSD in a temporary, editable tab.
 A book icon and accent mark manual examples. **Play manual example** runs the

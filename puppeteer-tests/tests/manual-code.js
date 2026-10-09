@@ -99,15 +99,15 @@ test(
             await frame.waitForFunction(
                 (selector) => {
                     const node = document.querySelector(selector);
-                    const link = document
-                        .querySelector(".opcode-step")
+                    const header = document
+                        .querySelector(".site-header")
                         .getBoundingClientRect();
                     const button = node.getBoundingClientRect();
                     window.scrollBy(
                         0,
                         button.top +
                             button.height / 2 -
-                            (link.top + link.height / 2)
+                            (header.top + header.height / 2)
                     );
                     const box = node.getBoundingClientRect();
                     return !!document
@@ -115,7 +115,7 @@ test(
                             box.left + box.width / 2,
                             box.top + box.height / 2
                         )
-                        ?.closest(".opcode-step");
+                        ?.closest(".site-header");
                 },
                 {},
                 selector
@@ -136,7 +136,7 @@ test(
 );
 
 test(
-    "readonly Csound previews pair copy and open controls at every width and theme",
+    "readonly Csound previews keep a corner copy icon at every width and theme",
     localOnly,
     async () => {
         const browser = await puppeteer.launch(BROWSER_SETTINGS);
@@ -170,16 +170,16 @@ test(
                         theme === "github-light" ? "light" : "dark"
                     );
                     const layout = await frame.$eval(block, (node) => {
-                        const copy = node
-                            .querySelector(".copy-code")
-                            .getBoundingClientRect();
-                        const open = node
-                            .querySelector(".open-example")
+                        const button = node.querySelector(".copy-code");
+                        const copy = button.getBoundingClientRect();
+                        const surface = node
+                            .querySelector(".code-surface")
                             .getBoundingClientRect();
                         return {
-                            yCopy: copy.y,
-                            yOpen: open.y,
-                            gap: open.left - copy.right,
+                            topInset: copy.top - surface.top,
+                            rightInset: surface.right - copy.right,
+                            copyLabel: button.getAttribute("aria-label"),
+                            hasIcon: !!button.querySelector("svg"),
                             overflow:
                                 document.documentElement.scrollWidth >
                                 innerWidth,
@@ -190,8 +190,10 @@ test(
                                 !!node.querySelector(".cm-csound-xml-tag")
                         };
                     });
-                    assert.equal(layout.yCopy, layout.yOpen);
-                    assert.equal(layout.gap, 8);
+                    assert.equal(layout.topInset, 8);
+                    assert.equal(layout.rightInset, 8);
+                    assert.equal(layout.copyLabel, "Copy code");
+                    assert.equal(layout.hasIcon, true);
                     assert.equal(layout.overflow, false);
                     assert.equal(layout.editable, "false");
                     assert.equal(layout.highlighted, true);
@@ -222,6 +224,15 @@ test(
                         });
                     }
                     await clickControl(frame, `${block} .copy-code`);
+                    assert.equal(
+                        await frame.$eval(
+                            `${block} .copy-code-tooltip`,
+                            (node) =>
+                                getComputedStyle(node).visibility ===
+                                    "visible" && node.textContent === "Copied"
+                        ),
+                        true
+                    );
                     const source = await frame.$eval(
                         `${block} pre code`,
                         (node) => {
@@ -247,14 +258,22 @@ test(
                         await frame.evaluate(() => window.copiedCode),
                         source
                     );
-                    await frame.focus(`${block} .copy-code`);
+                    await frame.focus(`${block} .open-example`);
                     await page.keyboard.press("Tab");
                     assert.equal(
                         await frame.evaluate(
                             () => document.activeElement.className
                         ),
-                        "open-example"
+                        "copy-code"
                     );
+                    assert.equal(
+                        await frame.$eval(
+                            `${block} .copy-code-tooltip`,
+                            (node) => getComputedStyle(node).visibility
+                        ),
+                        "visible"
+                    );
+                    await frame.focus(`${block} .open-example`);
                     await page.keyboard.press("Enter");
                     await page.waitForFunction(
                         () => window.opened.length === 1

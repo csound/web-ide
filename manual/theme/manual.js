@@ -2,6 +2,7 @@
 const root = new URL(document.body.dataset.manualRoot + "/", location.href);
 const search = document.querySelector("#search");
 const panel = document.querySelector("#search-panel");
+const searchBody = document.querySelector(".search-body");
 const results = document.querySelector("#search-results");
 const status = document.querySelector("#search-status");
 const more = document.querySelector("#search-more");
@@ -175,9 +176,12 @@ function renderResults() {
 }
 /** Rank the current query and discard results from an older search. */
 async function runSearch() {
+    if (panel.hidden) return;
     const query = search.value.trim().toLowerCase();
     results.replaceChildren();
     more.hidden = true;
+    searchBody.hidden = !query;
+    searchBody.scrollTop = 0;
     if (!query) {
         status.textContent = "Enter an opcode name or a phrase.";
         return;
@@ -185,7 +189,7 @@ async function runSearch() {
     status.textContent = "Searching…";
     try {
         const documents = await getEntries();
-        if (query !== search.value.trim().toLowerCase() || !panel.open) return;
+        if (query !== search.value.trim().toLowerCase() || panel.hidden) return;
         const words = query.split(/\s+/);
         matches = documents
             .map((entry) => {
@@ -214,20 +218,24 @@ async function runSearch() {
         visible = 40;
         renderResults();
     } catch {
-        if (query !== search.value.trim().toLowerCase() || !panel.open) return;
+        if (query !== search.value.trim().toLowerCase() || panel.hidden) return;
         results.replaceChildren();
         status.textContent =
             "Could not load search. Submit the search again to retry.";
     }
 }
-/** Use the whole manual view while keeping focus inside search. */
+/** Reveal the search row without covering or disabling the navigation. */
 function openSearch(query) {
     if (typeof query === "string") search.value = query;
-    if (!panel.open) panel.showModal();
+    panel.hidden = false;
+    searchOpen.setAttribute("aria-expanded", "true");
     search.focus();
     runSearch();
 }
-searchOpen.addEventListener("click", () => openSearch());
+searchOpen.addEventListener("click", () => {
+    if (panel.hidden) openSearch();
+    else closeSearch();
+});
 search.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(runSearch, 120);
@@ -237,17 +245,14 @@ document.querySelector("#manual-search").addEventListener("submit", (event) => {
     clearTimeout(searchTimer);
     runSearch();
 });
-/** Dismiss results and return keyboard focus to the search field. */
+/** Collapse search and return keyboard focus to its toggle. */
 function closeSearch() {
     clearTimeout(searchTimer);
-    panel.close();
+    panel.hidden = true;
+    searchOpen.setAttribute("aria-expanded", "false");
     searchOpen.focus();
 }
 document.querySelector("#search-close").addEventListener("click", closeSearch);
-panel.addEventListener("cancel", (event) => {
-    event.preventDefault();
-    closeSearch();
-});
 more.addEventListener("click", () => {
     const next = visible;
     visible += 40;
@@ -255,6 +260,10 @@ more.addEventListener("click", () => {
     results.children[next]?.querySelector("a")?.focus();
 });
 document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !panel.hidden) {
+        event.preventDefault();
+        closeSearch();
+    }
     if (
         event.key === "/" &&
         !event.ctrlKey &&
@@ -267,7 +276,7 @@ document.addEventListener("keydown", (event) => {
     if (
         event.key === "ArrowDown" &&
         document.activeElement === search &&
-        panel.open
+        !panel.hidden
     ) {
         event.preventDefault();
         results.querySelector("a")?.focus();
@@ -300,7 +309,27 @@ for (const block of document.querySelectorAll("article .highlight")) {
     if (!code) continue;
     const content = code.cloneNode(true);
     content.querySelectorAll(".linenos").forEach((element) => element.remove());
-    const source = content.textContent;
+    const lines = content.textContent.split("\n");
+    let start = 0;
+    let end = lines.length;
+    while (start < end && !lines[start].trim()) start++;
+    while (end > start && !lines[end - 1].trim()) end--;
+    const source = lines.slice(start, end).join("\n");
+    const firstLine =
+        (Number(code.querySelector(".linenos")?.textContent.trim()) || 1) +
+        start;
+    // Trim the static fallback too, retaining the remaining source-line anchors.
+    const highlightedLines = code.querySelectorAll(
+        ':scope > span[id^="__span-"]'
+    );
+    highlightedLines.forEach((line, index) => {
+        if (index < start || index >= end) line.remove();
+    });
+    const text = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+    let lastText;
+    while (text.nextNode()) lastText = text.currentNode;
+    if (lastText)
+        lastText.textContent = lastText.textContent.replace(/\n$/, "");
     const toolbar = document.createElement("div");
     toolbar.className = "code-toolbar";
     const title = block.querySelector(".filename");
@@ -313,20 +342,40 @@ for (const block of document.querySelectorAll("article .highlight")) {
     const copy = document.createElement("button");
     copy.type = "button";
     copy.className = "copy-code";
-    copy.textContent = "Copy code";
+    copy.setAttribute("aria-label", "Copy code");
+    copy.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <g class="copy-icon"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></g>
+        <path class="copied-icon" d="m5 12 4 4L19 6"/>
+    </svg>`;
+    const copyLabel = document.createElement("span");
+    copyLabel.className = "copy-code-tooltip";
+    copyLabel.setAttribute("aria-hidden", "true");
+    copyLabel.textContent = "Copy code";
+    copy.append(copyLabel);
+    const copyStatus = document.createElement("span");
+    copyStatus.className = "visually-hidden";
+    copyStatus.setAttribute("role", "status");
+    let copyTimer;
     copy.addEventListener("click", async () => {
+        clearTimeout(copyTimer);
+        copyStatus.textContent = "";
         try {
             await navigator.clipboard.writeText(source);
-            copy.textContent = "Copied";
+            copy.dataset.copied = "true";
+            copyLabel.textContent = "Copied";
+            copyStatus.textContent = "Code copied.";
             feedback.textContent = "";
         } catch {
+            delete copy.dataset.copied;
+            copyLabel.textContent = "Copy code";
             feedback.textContent = "Copy failed. Select the code and copy it.";
         }
-        setTimeout(() => {
-            copy.textContent = "Copy code";
+        copyTimer = setTimeout(() => {
+            delete copy.dataset.copied;
+            copyLabel.textContent = "Copy code";
+            copyStatus.textContent = "";
         }, 2000);
     });
-    actions.append(copy);
     if (parent !== window && block.dataset.example) {
         const filename = block.dataset.example;
         const button = document.createElement("button");
@@ -356,8 +405,12 @@ for (const block of document.querySelectorAll("article .highlight")) {
         });
         actions.append(button);
     }
-    toolbar.append(actions);
-    block.prepend(toolbar);
+    if (actions.childElementCount) toolbar.append(actions);
+    if (toolbar.childElementCount) block.prepend(toolbar);
+    const surface = document.createElement("div");
+    surface.className = "code-surface";
+    pre.before(surface);
+    surface.append(copy, copyStatus, pre);
     block.append(feedback);
     const language = [...block.classList].find((name) =>
         name.startsWith("language-csound")
@@ -370,8 +423,7 @@ for (const block of document.querySelectorAll("article .highlight")) {
             feedback,
             language: language.slice("language-".length),
             label: block.dataset.example || title?.textContent || "Csound code",
-            firstLine:
-                Number(code.querySelector(".linenos")?.textContent.trim()) || 1
+            firstLine
         });
 }
 

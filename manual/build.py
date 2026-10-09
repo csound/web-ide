@@ -103,6 +103,19 @@ def annotate_examples(source):
     )
 
 
+def decode_example_titles(content):
+    """Decode title entities from upstream, keeping the result plain text."""
+    return re.sub(
+        r'(<span class="filename">)([^<]*)(</span>)',
+        # Undo the highlighter's escaping, decode the source title, then escape
+        # it once for HTML. Do not decode code blocks or create HTML elements.
+        lambda match: match[1] + html.escape(
+            html.unescape(html.unescape(match[2])), quote=False
+        ) + match[3],
+        content,
+    )
+
+
 class ManualThemePlugin(BasePlugin):
     """Use the same clean titles in navigation, page titles, and search."""
 
@@ -134,6 +147,10 @@ class ManualThemePlugin(BasePlugin):
     def on_page_markdown(self, markdown, **kwargs):
         """Record snippet links before Markdown expands their file contents."""
         return annotate_examples(markdown)
+
+    def on_page_content(self, html, **kwargs):
+        """Show operator symbols in code titles without changing code text."""
+        return decode_example_titles(html)
 
     def on_page_context(self, context, page, **kwargs):
         """Render opcode links without a browser-side index download."""

@@ -11,47 +11,49 @@
   <script defer src="{{ 'assets/manual.js' | url }}?v={{ config.extra.asset_version }}"></script>
 </head>
 <body data-manual-root="{{ '.' | url }}" data-code-source="{{ 'assets/manual-code.js' | url }}?v={{ config.extra.code_version }}"{% if page.is_homepage %} class="manual-home"{% endif %}>
+  {% from 'icons.html' import icon %}
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
     <div class="header-inner">
-      <div class="header-heading">
-        <a class="brand" href="{{ '.' | url }}" title="Opcode index">Csound <span>7 Manual</span></a>
-        <nav class="history-navigation" aria-label="Manual history">
-          <button id="manual-back" type="button" aria-label="Back in manual" title="Back in manual" disabled><span aria-hidden="true">←</span></button>
-          <button id="manual-forward" type="button" aria-label="Forward in manual" title="Forward in manual" disabled><span aria-hidden="true">→</span></button>
-        </nav>
-      </div>
       {% if opcode_neighbors %}
       <nav class="opcode-navigation" aria-label="Alphabetical opcodes">
         {% for direction, label in [('previous', 'Previous'), ('next', 'Next')] %}
         {% set entry = opcode_neighbors[direction] %}
         {% if entry %}
-        <a class="opcode-step" rel="{{ 'prev' if direction == 'previous' else 'next' }}" href="{{ entry.url | url }}" title="{{ label }} {{ entry.title | e }}">
+        <a class="opcode-step" rel="{{ 'prev' if direction == 'previous' else 'next' }}" href="{{ entry.url | url }}" aria-label="{{ label }} {{ entry.title | e }}" title="{{ label }} {{ entry.title | e }}">
+          {% if direction == 'previous' %}{{ icon(direction) }}{% endif %}
           <span class="opcode-direction">{{ label }}</span><span class="opcode-name">{{ entry.title | e }}</span>
+          {% if direction == 'next' %}{{ icon(direction) }}{% endif %}
         </a>
         {% else %}
-        <span class="opcode-step" aria-disabled="true">{{ label }}</span>
+        <span class="opcode-step" aria-disabled="true" aria-label="{{ label }} opcode">{{ icon(direction) }}<span class="opcode-direction">{{ label }}</span></span>
         {% endif %}
         {% endfor %}
       </nav>
+      {% else %}
+      <a class="brand" href="{{ '.' | url }}" title="Opcode index">Csound <span>7 Manual</span></a>
       {% endif %}
-      <button id="search-open" type="button" aria-haspopup="dialog" aria-controls="search-panel" title="Search opcodes and chapters"><span>Search opcodes and chapters</span><kbd>/</kbd></button>
+      <nav class="history-navigation" aria-label="Manual history">
+        <button id="manual-back" class="icon-button" type="button" aria-label="Back in manual" title="Back in manual" disabled>{{ icon('back') }}</button>
+        <button id="manual-forward" class="icon-button" type="button" aria-label="Forward in manual" title="Forward in manual" disabled>{{ icon('forward') }}</button>
+      </nav>
+      <button id="search-open" class="icon-button" type="button" aria-expanded="false" aria-controls="search-panel" aria-label="Search the manual" title="Search the manual (/)">{{ icon('search') }}</button>
+    </div>
+    <div id="search-panel" hidden>
+      <div class="search-heading">
+        <form role="search" id="manual-search" autocomplete="off">
+          <label class="visually-hidden" for="search">Search the manual</label>
+          <input id="search" name="q" type="search" placeholder="Search opcodes and chapters" aria-controls="search-results">
+        </form>
+        <button id="search-close" class="icon-button" type="button" aria-label="Close search" title="Close search (Esc)">{{ icon('close') }}</button>
+      </div>
+      <div class="search-body" hidden>
+        <p id="search-status" role="status"></p>
+        <ol id="search-results"></ol>
+        <button id="search-more" type="button" hidden>Show more results</button>
+      </div>
     </div>
   </header>
-  <dialog id="search-panel" aria-label="Search the manual">
-    <div class="search-heading">
-      <form role="search" id="manual-search" autocomplete="off">
-        <label class="visually-hidden" for="search">Search the manual</label>
-        <input id="search" name="q" type="search" placeholder="Search opcodes and chapters" aria-controls="search-results" autofocus>
-      </form>
-      <button id="search-close" type="button" aria-label="Close search" title="Close search"><span aria-hidden="true">×</span></button>
-      <p id="search-status" role="status"></p>
-    </div>
-    <div class="search-body">
-      <ol id="search-results"></ol>
-      <button id="search-more" type="button" hidden>Show more results</button>
-    </div>
-  </dialog>
   <div class="page-layout">
     <details class="navigation" id="navigation">
       <summary>Browse manual</summary>
