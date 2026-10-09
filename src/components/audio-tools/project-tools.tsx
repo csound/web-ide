@@ -1,10 +1,9 @@
 import { getDownloadURL } from "firebase/storage";
 import { storageReference } from "@config/firestore";
-import { useDispatch, useSelector } from "@root/store";
-import { addNonCloudFile, nonCloudFiles } from "../file-tree/actions";
-import { getUniqueFilename } from "../projects/utils";
+import { useSelector } from "@root/store";
+import { nonCloudFiles } from "../file-tree/actions";
 import { checkAudioBytes, readAudioStream } from "./limits";
-import type { ToolFile } from "./types";
+import { useSaveAudioFile } from "./use-save-audio-file";
 import ImpulseTool from "./impulse-tool";
 import AudioTool, { type AudioSource } from "./audio-tool";
 
@@ -20,7 +19,6 @@ function ProjectAudioTool({
     projectUid: string;
     mode: "sample" | "analysis" | "impulse" | "convolution";
 }) {
-    const dispatch = useDispatch();
     const documents = useSelector(
         (state) => state.ProjectsReducer.projects[projectUid]?.documents
     );
@@ -77,18 +75,7 @@ function ProjectAudioTool({
             }
         }))
     ];
-    const onSave = (file: ToolFile) => {
-        const name = getUniqueFilename(file.name.replace(/^.*[/\\]/, ""), [
-            ...nonCloudFiles.keys(),
-            ...Object.values(documents || {}).map(
-                (document) => document.filename
-            )
-        ]);
-        const createdAt = new Date();
-        nonCloudFiles.set(name, { name, createdAt, buffer: file.data });
-        dispatch(addNonCloudFile({ name, createdAt: createdAt.getTime() }));
-        return name;
-    };
+    const onSave = useSaveAudioFile(projectUid);
     return mode === "impulse" || mode === "convolution" ? (
         <ImpulseTool
             key={projectUid}

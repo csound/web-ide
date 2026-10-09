@@ -41,7 +41,8 @@ export function Waveform({
     onSelect,
     onSeek,
     disabled = false,
-    gain = 0
+    gain = 0,
+    preparedPeaks
 }: {
     audio: AudioData;
     range?: [number, number];
@@ -49,9 +50,13 @@ export function Waveform({
     onSeek?: (seconds: number) => void;
     disabled?: boolean;
     gain?: number;
+    preparedPeaks?: [number, number][];
 }) {
     const theme = useTheme();
-    const peaks = useMemo(() => waveformPeaks(audio), [audio]);
+    const peaks = useMemo(
+        () => preparedPeaks ?? waveformPeaks(audio),
+        [audio, preparedPeaks]
+    );
     const duration = durationOf(audio);
     const drag = useRef<{ start: number; end: number; x: number }>();
     const draw = useCallback(

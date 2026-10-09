@@ -44,29 +44,54 @@ export type AudioSource = {
 export default function AudioTool({
     mode,
     sources = [],
-    onSave
+    onSave,
+    initial
 }: {
     mode: "sample" | "analysis";
     sources?: AudioSource[];
     onSave: (file: ToolFile) => string;
+    initial?: {
+        source: LoadedAudio;
+        operation: Operation;
+        range?: [number, number];
+    };
 }) {
     const theme = useTheme();
     const analysis = mode === "analysis";
     const choices = analysis ? analysisOperations : sampleOperations;
     const [operation, setOperation] = useState<Operation>(
-        analysis ? "spectrum" : "trim"
+        initial?.operation ?? (analysis ? "spectrum" : "trim")
     );
-    const [source, setSource] = useState<LoadedAudio>();
-    const [settings, setSettings] = useState(defaultSettings);
-    const [range, setRange] = useState<[number, number]>([0, 1]);
+    const [source, setSource] = useState<LoadedAudio | undefined>(
+        initial?.source
+    );
+    const [settings, setSettings] = useState(() => ({
+        ...defaultSettings,
+        rate: initial?.source.audio.sampleRate ?? defaultSettings.rate
+    }));
+    const [range, setRange] = useState<[number, number]>(
+        initial?.range ?? [0, initial ? durationOf(initial.source.audio) : 1]
+    );
     const [channel, setChannel] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [saved, setSaved] = useState<{ file: ToolFile; name: string }>();
     const [frameTime, setFrameTime] = useState(0);
     const [inspecting, setInspecting] = useState(false);
-    const [analysisEnabled, setAnalysisEnabled] = useState(false);
-    const [edits, setEdits] = useState<SampleEdit[]>([]);
+    const [analysisEnabled, setAnalysisEnabled] = useState(
+        Boolean(initial && analysis)
+    );
+    const [edits, setEdits] = useState<SampleEdit[]>(() =>
+        initial?.range && initial.operation === "trim"
+            ? [
+                  {
+                      operation: "trim",
+                      settings: defaultSettings,
+                      range: initial.range
+                  }
+              ]
+            : []
+    );
     const job = useRef<AbortController>();
     const input = useRef<HTMLInputElement>(null);
     const duration = source ? durationOf(source.audio) : 1;
@@ -446,71 +471,73 @@ export default function AudioTool({
                     />
                 </div>
             )}
-            <div
-                css={{
-                    padding: "12px 16px",
-                    borderBottom: `1px solid ${theme.line}`,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    alignItems: "flex-end",
-                    gap: 12
-                }}
-            >
-                <label css={{ flex: "1 1 180px" }}>
-                    Audio file
-                    <AudioSelect
-                        aria-label="Project audio file"
-                        value=""
-                        disabled={!sources.length}
-                        onChange={(event) => {
-                            const chosen = sources.find(
-                                (item) => item.id === event.target.value
-                            );
-                            if (chosen) void load(chosen.name, chosen.load);
-                        }}
-                    >
-                        <option value="">
-                            {source?.name ||
-                                (sources.length
-                                    ? "Choose project audio"
-                                    : "Open an audio file to start")}
-                        </option>
-                        {sources.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </AudioSelect>
-                </label>
-                <Button
-                    variant="outlined"
-                    startIcon={<UploadFileRounded />}
-                    disabled={loading}
-                    onClick={() => input.current?.click()}
-                >
-                    Open audio
-                </Button>
-                <input
-                    ref={input}
-                    type="file"
-                    accept="audio/*,.wav,.aif,.aiff,.flac,.ogg,.mp3"
-                    aria-label="Open audio file"
-                    hidden
-                    onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        event.target.value = "";
-                        if (file)
-                            void load(file.name, async (signal) => {
-                                checkAudioBytes(file.size);
-                                return readAudioStream(
-                                    file.stream(),
-                                    signal,
-                                    file.size
-                                );
-                            });
+            {!initial && (
+                <div
+                    css={{
+                        padding: "12px 16px",
+                        borderBottom: `1px solid ${theme.line}`,
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "flex-end",
+                        gap: 12
                     }}
-                />
-            </div>
+                >
+                    <label css={{ flex: "1 1 180px" }}>
+                        Audio file
+                        <AudioSelect
+                            aria-label="Project audio file"
+                            value=""
+                            disabled={!sources.length}
+                            onChange={(event) => {
+                                const chosen = sources.find(
+                                    (item) => item.id === event.target.value
+                                );
+                                if (chosen) void load(chosen.name, chosen.load);
+                            }}
+                        >
+                            <option value="">
+                                {source?.name ||
+                                    (sources.length
+                                        ? "Choose project audio"
+                                        : "Open an audio file to start")}
+                            </option>
+                            {sources.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.name}
+                                </option>
+                            ))}
+                        </AudioSelect>
+                    </label>
+                    <Button
+                        variant="outlined"
+                        startIcon={<UploadFileRounded />}
+                        disabled={loading}
+                        onClick={() => input.current?.click()}
+                    >
+                        Open audio
+                    </Button>
+                    <input
+                        ref={input}
+                        type="file"
+                        accept="audio/*,.wav,.aif,.aiff,.flac,.ogg,.mp3"
+                        aria-label="Open audio file"
+                        hidden
+                        onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            if (file)
+                                void load(file.name, async (signal) => {
+                                    checkAudioBytes(file.size);
+                                    return readAudioStream(
+                                        file.stream(),
+                                        signal,
+                                        file.size
+                                    );
+                                });
+                        }}
+                    />
+                </div>
+            )}
             {!source && !loading && (
                 <div
                     css={{
