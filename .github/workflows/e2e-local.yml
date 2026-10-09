@@ -64,6 +64,8 @@ jobs:
                         csd-diagnostics,
                         score-preprocessors,
                         lpc-tools,
+                        pvx-tools,
+                        hetro-tools,
                         worker-hosting
                     ]
 
