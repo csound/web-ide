@@ -5,7 +5,8 @@ import {
     cleanup,
     fireEvent,
     render,
-    screen
+    screen,
+    within
 } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { legacy_createStore } from "redux";
@@ -299,4 +300,43 @@ it("does not render raw HTML or JavaScript links from project notes", () => {
     );
     expect(container.querySelector("script")).toBeNull();
     expect(container.querySelector("a")?.getAttribute("href")).toBe("");
+});
+
+it("renders pipe tables with headers, alignment and inline Markdown, then follows edits", () => {
+    const { wrapper, store } = fixture(
+        "README.md",
+        [
+            "| Instrument | Sound | Level |",
+            "| :--- | :---: | ---: |",
+            "| **Lead** | `moogladder` | 0.7 |",
+            "| Pad | Soft \\| bright | |"
+        ].join("\n")
+    );
+    render(<MarkdownPreview documentUid="note" projectUid="project" />, {
+        wrapper
+    });
+    const table = screen.getByRole("table");
+    const headers = within(table).getAllByRole("columnheader");
+    expect(headers.map((cell) => cell.textContent)).toEqual([
+        "Instrument",
+        "Sound",
+        "Level"
+    ]);
+    expect(headers.map((cell) => cell.style.textAlign)).toEqual([
+        "left",
+        "center",
+        "right"
+    ]);
+    expect(within(table).getAllByRole("row")).toHaveLength(3);
+    expect(
+        within(table)
+            .getAllByRole("cell")
+            .map((cell) => cell.textContent)
+    ).toEqual(["Lead", "moogladder", "0.7", "Pad", "Soft | bright", ""]);
+    expect(within(table).getByText("Lead").tagName).toBe("STRONG");
+    expect(within(table).getByText("moogladder").tagName).toBe("CODE");
+
+    act(() => store.dispatch({ type: "note/replace", value: "No table now." }));
+    expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.getByText("No table now.")).toBeTruthy();
 });
