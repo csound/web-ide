@@ -69,7 +69,7 @@ export class CheckerClient {
     }
 
     private finish(result: CheckResult) {
-        if (!result.available) {
+        if (!result.available && !result.rejected) {
             this.fail();
             return;
         }

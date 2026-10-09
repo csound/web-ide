@@ -14,6 +14,11 @@ import { validateTypes, typeRecords } from "./plugins/types";
 import type { CheckRequest, CheckResult, UdoDeclaration } from "./types";
 
 const encoder = new TextEncoder();
+
+/** Invalid input can be edited and retried without replacing the worker. */
+export class CheckRequestError extends Error {}
+
+/** Check one source snapshot in a fresh WASM instance; never perform its orchestra. */
 export async function runCheck(
     module: WebAssembly.Module,
     data: CheckRequest
@@ -32,7 +37,7 @@ export async function runCheck(
                     part.includes("\0")
             )
         )
-            throw new Error("Invalid source path");
+            throw new CheckRequestError("Invalid source path");
         const bytes = encoder.encode(file.text);
         for (let index = 0; index < parts.length; index++) {
             const suffix = parts.slice(index).join("/");
@@ -46,16 +51,20 @@ export async function runCheck(
         }
         size += bytes.length;
         if (size > MAX_SOURCE_BYTES)
-            throw new Error("Project too large for background checks");
+            throw new CheckRequestError(
+                "Project too large for background checks"
+            );
         let directory = root;
         for (const part of parts.slice(0, -1)) {
             if (!directory.contents.has(part))
                 directory.contents.set(part, new Directory(new Map()));
             const child = directory.contents.get(part);
             if (!(child instanceof Directory))
-                throw new Error("Conflicting source paths");
+                throw new CheckRequestError("Conflicting source paths");
             directory = child;
         }
+        if (directory.contents.has(parts.at(-1)!))
+            throw new CheckRequestError("Conflicting source paths");
         directory.contents.set(
             parts.at(-1)!,
             new File(bytes, { readonly: true })
@@ -68,15 +77,22 @@ export async function runCheck(
             log = (log + decoder.decode(bytes, { stream: true })).slice(-32000);
         });
     const args = ["csound-check", data.filename];
-    const pluginSignatures = validateSignatures(data.plugins ?? []);
-    const metadata =
-        typeRecords(validateTypes(data.pluginTypes ?? [])) +
-        pluginSignatures
-            .map(
-                ({ opname, outypes, intypes }) =>
-                    `O\t${opname}\t${outypes}\t${intypes}\n`
-            )
-            .join("");
+    let metadata: string;
+    try {
+        const pluginSignatures = validateSignatures(data.plugins ?? []);
+        metadata =
+            typeRecords(validateTypes(data.pluginTypes ?? [])) +
+            pluginSignatures
+                .map(
+                    ({ opname, outypes, intypes }) =>
+                        `O\t${opname}\t${outypes}\t${intypes}\n`
+                )
+                .join("");
+    } catch (error) {
+        throw new CheckRequestError("Invalid plugin metadata", {
+            cause: error
+        });
+    }
     let declarations = "";
     const declarationDecoder = new TextDecoder();
     const wasi = new WASI(
@@ -98,15 +114,9 @@ export async function runCheck(
         ],
         { debug: false }
     );
-    // A fresh instance per check bounds allocations even after a parser longjmp.
-    const instance = await WebAssembly.instantiate(module, {
-        wasi_snapshot_preview1: wasi.wasiImport
-    });
-    const { memory, _start } = instance.exports;
-    if (!(memory instanceof WebAssembly.Memory) || typeof _start !== "function")
-        throw new Error("Invalid checker");
     // browser_wasi_shim 0.4.2 counts UTF-16 characters here, but args_get writes
     // UTF-8 bytes. Reserve the right space for non-ASCII project filenames.
+    // Bind the override before instantiation captures the import functions.
     wasi.wasiImport.args_sizes_get = (argc, argvSize) => {
         const view = new DataView(memory.buffer);
         view.setUint32(argc, args.length, true);
@@ -120,6 +130,17 @@ export async function runCheck(
         );
         return 0;
     };
+    // A fresh instance per check bounds allocations even after a parser longjmp.
+    const instance = await WebAssembly.instantiate(module, {
+        wasi_snapshot_preview1: wasi.wasiImport
+    });
+    const { memory: exportedMemory, _start } = instance.exports;
+    if (
+        !(exportedMemory instanceof WebAssembly.Memory) ||
+        typeof _start !== "function"
+    )
+        throw new Error("Invalid checker");
+    const memory = exportedMemory;
     const status = wasi.start({
         exports: { memory, _start: () => _start() }
     });

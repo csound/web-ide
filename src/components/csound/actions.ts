@@ -18,7 +18,7 @@ import { rawToWave } from "./wave-files";
 import { finalizeFlac } from "./flac-file";
 import { prepareScorePreprocessors } from "./score-preprocessors";
 import { readDiagnostics } from "../editor/validation/diagnostics";
-import { compilerDiagnostics } from "../editor/validation/messages";
+import { replaceCompilerDiagnostics } from "../editor/validation/messages";
 import { waitForCompilerMessages } from "./compiler-messages";
 import { beginPlaybackAudioSession } from "./audio-session";
 import {
@@ -470,29 +470,33 @@ export async function runPerformance({
                         documentPath(entry, project.documents)
                     )
                 );
-                for (const entry of Object.values(project.documents)) {
-                    const path = documentPath(entry, project.documents);
-                    const located = diagnostics.filter(
-                        (item) => item.filename === path
-                    );
-                    if (path === csdPath || located.length)
-                        compilerDiagnostics(
-                            entry.documentUid,
-                            entry.currentValue,
-                            located
-                        );
-                }
+                replaceCompilerDiagnostics(
+                    Object.values(project.documents).map((entry) => {
+                        const path = documentPath(entry, project.documents);
+                        return {
+                            documentUid: entry.documentUid,
+                            text: entry.currentValue,
+                            diagnostics: diagnostics.filter(
+                                (item) => item.filename === path
+                            )
+                        };
+                    }),
+                    document?.documentUid
+                );
             }
             throw new Error(
                 "Csound compilation failed. Read the console for details."
             );
         }
         compiling = false;
-        if (document)
-            compilerDiagnostics(
-                document.documentUid,
-                document.currentValue,
-                []
+        if (document && csdText === undefined && !renderSettings)
+            replaceCompilerDiagnostics(
+                Object.values(project.documents).map((entry) => ({
+                    documentUid: entry.documentUid,
+                    text: entry.currentValue,
+                    diagnostics: []
+                })),
+                document.documentUid
             );
         // CsOptions may override the initial command-line options.
         for (const option of overrides) await csound.setOption(option);

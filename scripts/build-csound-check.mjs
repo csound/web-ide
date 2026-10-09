@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync, copyFileSync, renameSync, chmodSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 
 const required = process.argv.includes("--required");
 const probe = spawnSync("nix-build", ["--version"], { encoding: "utf8" });
@@ -15,7 +15,11 @@ const build = spawnSync("nix-build", ["nix", "--no-out-link"], {
     stdio: ["inherit", "pipe", "inherit"]
 });
 if (build.error || build.status !== 0) process.exit(build.status || 1);
-const output = build.stdout.trim().split("\n").at(-1);
+const output = build.stdout.trim().split("\n").at(-1).trim();
+if (!output || !isAbsolute(output))
+    throw new Error(
+        `Expected a Nix output directory, got ${JSON.stringify(build.stdout)}`
+    );
 mkdirSync(".wasm-build", { recursive: true });
 for (const name of ["csound-check", "plugin-types", "plugin-types-fixture"]) {
     const file = `.wasm-build/${name}.wasm`;

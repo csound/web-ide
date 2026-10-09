@@ -462,3 +462,24 @@ it.skipIf(!available)(
         expect(result.status, result.log).toBe(0);
     }
 );
+
+it.skipIf(!available)(
+    "reserves UTF-8 argv space for non-ASCII filenames",
+    async () => {
+        const filename = "音😀".repeat(30) + ".orc";
+        const result = await runCheck(module, {
+            filename,
+            files: [{ name: filename, text: "instr 1\nprint 1\nendin\n" }]
+        });
+        expect(result.valid, result.log).toBe(true);
+        const invalid = await runCheck(module, {
+            filename,
+            files: [
+                { name: filename, text: "instr 1\na1 = oscili(, )\nendin\n" }
+            ]
+        });
+        expect(invalid.diagnostics).toContainEqual(
+            expect.objectContaining({ filename, line: 2 })
+        );
+    }
+);

@@ -1,4 +1,4 @@
-import { runCheck } from "./run";
+import { CheckRequestError, runCheck } from "./run";
 import type { CheckRequest } from "./types";
 let compiled: Promise<WebAssembly.Module> | undefined;
 self.onmessage = async ({
@@ -12,7 +12,11 @@ self.onmessage = async ({
         const { available, diagnostics, udos, valid, udosComplete } =
             await runCheck(await compiled, data);
         self.postMessage({ available, diagnostics, udos, valid, udosComplete });
-    } catch {
-        self.postMessage({ available: false, diagnostics: [] });
+    } catch (error) {
+        self.postMessage({
+            available: false,
+            diagnostics: [],
+            ...(error instanceof CheckRequestError ? { rejected: true } : {})
+        });
     }
 };

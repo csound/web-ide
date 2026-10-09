@@ -28,7 +28,9 @@ export function csoundVariables(
             );
         if (!declaration) return;
         const [, label, explicitType] = declaration;
-        const global = text.includes("@global") || /^g[akiSf]/.test(label);
+        const global =
+            text.includes("@global") ||
+            (!explicitType && /^g[akiSf]/.test(label));
         const owner = scopeAt(node);
         if (!global && (owner?.from !== scope?.from || owner?.to !== scope?.to))
             return;

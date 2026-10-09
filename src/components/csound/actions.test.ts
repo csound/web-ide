@@ -60,6 +60,13 @@ beforeEach(() => {
                         filename: "scores",
                         path: []
                     },
+                    include: {
+                        documentUid: "include",
+                        type: "txt",
+                        filename: "voice.udo",
+                        currentValue: "opcode Voice():a\nxout 0\nendop\n",
+                        path: ["folder"]
+                    },
                     csd: {
                         documentUid: "csd",
                         type: "txt",
@@ -270,6 +277,64 @@ describe("shared Csound performance", () => {
             unsubscribe();
         }
     });
+
+    it.each(["success", "failure"])(
+        "clears old include errors after the next compilation %s",
+        async (outcome) => {
+            const receive = vi.fn();
+            const unrelated = vi.fn();
+            const unsubscribe = watchCompiler("include", receive);
+            const unsubscribeOther = watchCompiler(
+                "another-project",
+                unrelated
+            );
+            const play = () =>
+                runPerformance({
+                    projectUid: "audio-test",
+                    csdPath: "scores/piece.csd",
+                    setConsole
+                });
+            try {
+                engine.compileCSD.mockImplementationOnce(async () => {
+                    listeners.get("message")?.(
+                        "syntax error, unexpected STRING_TOKEN, line 2\nfrom file scores/voice.udo (1)\n"
+                    );
+                    return -1;
+                });
+                await expect(play()).rejects.toThrow(
+                    "Csound compilation failed"
+                );
+                expect(receive).toHaveBeenLastCalledWith({
+                    text: "opcode Voice():a\nxout 0\nendop\n",
+                    diagnostics: [
+                        expect.objectContaining({
+                            filename: "scores/voice.udo",
+                            line: 2
+                        })
+                    ]
+                });
+                if (outcome === "failure") {
+                    engine.compileCSD.mockImplementationOnce(async () => {
+                        listeners.get("message")?.(
+                            "syntax error, unexpected STRING_TOKEN, line 2\nfrom file scores/piece.csd (1)\n"
+                        );
+                        return -1;
+                    });
+                    await expect(play()).rejects.toThrow(
+                        "Csound compilation failed"
+                    );
+                } else await play();
+                expect(receive).toHaveBeenLastCalledWith({
+                    text: "opcode Voice():a\nxout 0\nendop\n",
+                    diagnostics: []
+                });
+                expect(unrelated).not.toHaveBeenCalled();
+            } finally {
+                unsubscribe();
+                unsubscribeOther();
+            }
+        }
+    );
 
     it.each(["pause", "stop"] as const)(
         "terminates a worker that never acknowledges %s",

@@ -20,6 +20,8 @@ export interface SourceDiagnostic {
 export interface CheckResult {
     diagnostics: SourceDiagnostic[];
     available: boolean;
+    /** This snapshot was rejected; the worker can still check the next edit. */
+    rejected?: boolean;
     valid?: boolean;
     udos?: UdoDeclaration[];
     udosComplete?: boolean;
