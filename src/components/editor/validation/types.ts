@@ -5,6 +5,8 @@ export interface SourceFile {
 export interface CheckRequest {
     filename: string;
     files: SourceFile[];
+    /** CSD structure errors that must be fixed before checking the orchestra. */
+    sourceDiagnostics?: SourceDiagnostic[];
     knownOpcodes?: string[];
     pluginRequests?: PluginRequest[];
     plugins?: OpcodeSignature[];

@@ -42,7 +42,23 @@ export function projectSources(
                     : document.currentValue
         }));
     const source = orchestra(text, filename);
-    if (source === undefined) return;
+    if (source === undefined) {
+        const opening = /<CsInstruments\s*>/i.exec(text);
+        if (!opening) return;
+        return {
+            filename,
+            files: [],
+            sourceDiagnostics: [
+                {
+                    filename,
+                    line:
+                        (text.slice(0, opening.index).match(/\n/g) || [])
+                            .length + 1,
+                    message: "Missing </CsInstruments>"
+                }
+            ]
+        };
+    }
     const entry = files.find((file) => file.name === filename);
     if (!entry) return;
     entry.text = source;

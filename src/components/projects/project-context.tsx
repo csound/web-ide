@@ -10,6 +10,7 @@ import { cleanupNonCloudFiles } from "@comp/file-tree/actions";
 import { Header } from "@comp/header/header";
 import { activateProject, downloadProjectOnce, closeProject } from "./actions";
 import { isEmpty } from "ramda";
+import { clearCompilerDiagnostics } from "../editor/validation/messages";
 import { RootState } from "@root/store";
 import * as SS from "./styles";
 
@@ -81,6 +82,8 @@ export const ProjectContext = () => {
             cancelled = true;
         };
     }, [projectUid, dispatch, navigate]);
+
+    useEffect(() => () => clearCompilerDiagnostics(projectUid), [projectUid]);
 
     // Close the tab dock when leaving the editor route.
     useEffect(() => {

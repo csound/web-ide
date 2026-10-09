@@ -94,6 +94,7 @@ store.dispatch({ type: "PROJECTS.ACTIVATE_PROJECT", projectUid });
     },
     compileError: () =>
         compilerDiagnostics(
+            projectUid,
             "checker-csd",
             openEditors.get("checker-csd")!.state.doc.toString(),
             [{ filename: "piece.csd", line: 11, message: "Compiler error" }]

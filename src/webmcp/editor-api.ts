@@ -578,7 +578,9 @@ export function createEditorApi(
                     csdPath: /\.csd$/i.test(target.filename)
                         ? documentPath(target, project().documents)
                         : undefined,
-                    orc: target.currentValue,
+                    orcPath: /\.orc$/i.test(target.filename)
+                        ? documentPath(target, project().documents)
+                        : undefined,
                     mode: name === "csound_render" ? "render" : "play",
                     setConsole,
                     signal: combined

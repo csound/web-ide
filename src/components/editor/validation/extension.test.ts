@@ -6,6 +6,7 @@ import {
     forEachDiagnostic,
     setDiagnostics
 } from "@codemirror/lint";
+import { projectSources } from "./source";
 import { backgroundValidation, CHECK_DELAY } from "./extension";
 import type { CheckResult } from "./types";
 import {
@@ -142,4 +143,58 @@ it("removes touched compiler markers and moves untouched markers with the text",
     expect(ranges).toEqual([[9, 14]]);
     await vi.advanceTimersByTimeAsync(CHECK_DELAY);
     expect(diagnosticCount(view.state)).toBe(1);
+});
+
+it("reports a missing CsInstruments closing tag after debounce and clears it when fixed", async () => {
+    const source = `<CsoundSynthesizer>
+<CsInstruments>
+instr 1
+endin
+<CsScore>i1 0 1</CsScore>
+</CsoundSynthesizer>`;
+    const documents = {
+        main: {
+            documentUid: "main",
+            filename: "main.csd",
+            type: "txt",
+            path: [],
+            currentValue: source
+        }
+    } as any;
+    const execute = vi.fn(async () => ({
+        available: true,
+        valid: true,
+        diagnostics: [],
+        udos: []
+    }));
+    view = new EditorView({
+        parent: document.body,
+        state: EditorState.create({
+            doc: source,
+            extensions: [
+                udoCatalog,
+                backgroundValidation(
+                    (text) => projectSources(documents, "main", text),
+                    execute,
+                    true
+                )
+            ]
+        })
+    });
+    await vi.advanceTimersByTimeAsync(CHECK_DELAY - 1);
+    expect(diagnosticCount(view.state)).toBe(0);
+    await vi.advanceTimersByTimeAsync(1);
+    const messages: string[] = [];
+    forEachDiagnostic(view.state, (item) => messages.push(item.message));
+    expect(messages).toEqual(["Missing </CsInstruments>"]);
+    expect(execute).not.toHaveBeenCalled();
+    view.dispatch({
+        changes: {
+            from: source.indexOf("<CsScore>"),
+            insert: "</CsInstruments>\n"
+        }
+    });
+    await vi.advanceTimersByTimeAsync(CHECK_DELAY);
+    expect(execute).toHaveBeenCalledOnce();
+    expect(diagnosticCount(view.state)).toBe(0);
 });

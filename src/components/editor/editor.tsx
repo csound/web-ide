@@ -7,7 +7,11 @@ import {
 } from "./validation/extension";
 import { projectPluginSignatures } from "./validation/plugins/project";
 import { checkWithPlugins } from "./validation/plugins/check";
-import { watchCompiler, compilerDiagnostics } from "./validation/messages";
+import {
+    watchCompiler,
+    compilerDiagnostics,
+    clearCompilerDiagnostics
+} from "./validation/messages";
 import { editorDiagnostics } from "./validation/ranges";
 import { setDiagnostics } from "@codemirror/lint";
 import { StateEffect } from "@codemirror/state";
@@ -133,6 +137,8 @@ const CodeEditor = ({
                     )
                 );
                 if (!signal.aborted && result.available) {
+                    // This editor applies its own result below. Do not replay an older Play error.
+                    clearCompilerDiagnostics(projectUid, documentUid);
                     const documents = projectRef.current.documents || {};
                     const sourcesByName = new Map(
                         request.files.map((file) => [file.name, file])
@@ -158,6 +164,7 @@ const CodeEditor = ({
                             if (diagnostics.length) markedIncludes.add(name);
                             else markedIncludes.delete(name);
                             compilerDiagnostics(
+                                projectUid,
                                 entry.documentUid,
                                 source.text,
                                 diagnostics
@@ -169,26 +176,6 @@ const CodeEditor = ({
             }
         );
     }, [projectUid, documentUid, document.filename, Boolean(buffer)]);
-
-    useEffect(() => {
-        let presentedView: EditorView | undefined;
-        return watchCompiler(documentUid, ({ text, diagnostics }) => {
-            const view = openEditors.get(documentUid);
-            if (!view || view.state.doc.toString() !== text) return;
-            if (view !== presentedView && diagnostics.length) {
-                view.dispatch({
-                    effects: StateEffect.appendConfig.of(validationPresentation)
-                });
-                presentedView = view;
-            }
-            view.dispatch(
-                setDiagnostics(
-                    view.state,
-                    editorDiagnostics(view.state.doc, diagnostics)
-                )
-            );
-        });
-    }, [documentUid]);
 
     useEffect(() => {
         openEditors
@@ -360,6 +347,32 @@ const CodeEditor = ({
         validationExtension,
         validationCompartment
     ]);
+
+    useEffect(() => {
+        let presentedView: EditorView | undefined;
+        return watchCompiler(
+            projectUid,
+            documentUid,
+            ({ text, diagnostics }) => {
+                const view = openEditors.get(documentUid);
+                if (!view || view.state.doc.toString() !== text) return;
+                if (view !== presentedView && diagnostics.length) {
+                    view.dispatch({
+                        effects: StateEffect.appendConfig.of(
+                            validationPresentation
+                        )
+                    });
+                    presentedView = view;
+                }
+                view.dispatch(
+                    setDiagnostics(
+                        view.state,
+                        editorDiagnostics(view.state.doc, diagnostics)
+                    )
+                );
+            }
+        );
+    }, [projectUid, documentUid]);
 
     useEffect(() => {
         openEditors.get(documentUid)?.dispatch({

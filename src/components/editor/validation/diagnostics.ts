@@ -4,7 +4,8 @@ import type { SourceDiagnostic } from "./types";
 export function readDiagnostics(
     log: string,
     filename: string,
-    files: string[] = [filename]
+    files: string[] = [filename],
+    stringSource = false
 ): SourceDiagnostic[] {
     const diagnostics: SourceDiagnostic[] = [];
     let last: SourceDiagnostic | undefined;
@@ -40,7 +41,7 @@ export function readDiagnostics(
             // Csound can report an include's basename rather than its full path.
             // Keep ambiguous locations out of the gutter instead of marking another file.
             last.filename =
-                name === filename
+                name === filename || (stringSource && name === "*string*")
                     ? filename
                     : matches.length === 1
                       ? matches[0]

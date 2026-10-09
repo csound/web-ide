@@ -130,7 +130,7 @@ export async function playProject(
             projectUid,
             ...(/\.csd$/i.test(document.filename)
                 ? { csdPath: documentPath(document, allDocuments) }
-                : { orc: document.currentValue }),
+                : { orcPath: documentPath(document, allDocuments) }),
             mode: "play",
             signal: run.controller.signal,
             setConsole,

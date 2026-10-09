@@ -112,6 +112,7 @@ export type PerformanceResult = {
 type PerformanceOptions = {
     projectUid: string;
     csdPath?: string;
+    orcPath?: string;
     // Audition an in-memory CSD without adding it or its output to the project.
     csdText?: string;
     inputFiles?: { name: string; data: Uint8Array }[];
@@ -131,6 +132,7 @@ type PerformanceOptions = {
 export async function runPerformance({
     projectUid,
     csdPath,
+    orcPath,
     csdText,
     inputFiles = [],
     collectFiles = true,
@@ -160,12 +162,21 @@ export async function runPerformance({
     const snapshot = store.getState();
     const project = snapshot.ProjectsReducer.projects[projectUid];
     if (!project) throw new Error("No project is open.");
+    const sourcePath = csdPath ?? orcPath;
     const document = Object.values(project.documents).find(
-        (doc) => documentPath(doc, project.documents) === csdPath
+        (doc) => documentPath(doc, project.documents) === sourcePath
     );
-    const requestedOutput = document
-        ? outputNameFromCsd(document.currentValue)
-        : undefined;
+    // Only attribute errors to the complete, unchanged project source.
+    const shareDiagnostics =
+        document &&
+        csdText === undefined &&
+        (csdPath
+            ? !renderSettings
+            : orc === undefined || orc === document.currentValue);
+    const requestedOutput =
+        csdPath && document
+            ? outputNameFromCsd(document.currentValue)
+            : undefined;
     if (renderSettings) {
         const error = validateRenderSettings(renderSettings);
         if (error) throw new Error(error);
@@ -426,7 +437,7 @@ export async function runPerformance({
         }
         await prepareScorePreprocessors(
             csound.fs,
-            csdText ?? document?.currentValue,
+            csdText ?? (csdPath ? document?.currentValue : undefined),
             controller.signal,
             Object.values(project.documents).map((doc) =>
                 documentPath(doc, project.documents)
@@ -454,7 +465,9 @@ export async function runPerformance({
                   )
                 : csdPath
                   ? await compileCSD(csound, csdPath)
-                  : await csound.compileOrc(orc ?? "");
+                  : await csound.compileOrc(
+                        orc ?? document?.currentValue ?? ""
+                    );
         check();
         if (compiled !== 0) {
             await waitForCompilerMessages(
@@ -462,15 +475,17 @@ export async function runPerformance({
                 controller.signal
             );
             check();
-            if (csdPath && csdText === undefined && !renderSettings) {
+            if (sourcePath && shareDiagnostics) {
                 const diagnostics = readDiagnostics(
                     compilerLog,
-                    csdPath,
+                    sourcePath,
                     Object.values(project.documents).map((entry) =>
                         documentPath(entry, project.documents)
-                    )
+                    ),
+                    !csdPath
                 );
                 replaceCompilerDiagnostics(
+                    projectUid,
                     Object.values(project.documents).map((entry) => {
                         const path = documentPath(entry, project.documents);
                         return {
@@ -489,8 +504,9 @@ export async function runPerformance({
             );
         }
         compiling = false;
-        if (document && csdText === undefined && !renderSettings)
+        if (shareDiagnostics)
             replaceCompilerDiagnostics(
+                projectUid,
                 Object.values(project.documents).map((entry) => ({
                     documentUid: entry.documentUid,
                     text: entry.currentValue,

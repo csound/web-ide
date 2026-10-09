@@ -98,7 +98,9 @@ export const EmbedPlayer = ({ projectUid }: { projectUid: string }) => {
                 csdPath: /\.csd$/i.test(selected.filename)
                     ? documentPath(selected, project.documents)
                     : undefined,
-                orc: selected.currentValue,
+                orcPath: /\.orc$/i.test(selected.filename)
+                    ? documentPath(selected, project.documents)
+                    : undefined,
                 mode,
                 useSAB: false,
                 signal,

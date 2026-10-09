@@ -27,6 +27,13 @@ CsOptions. It accepts signature metadata for custom opcode plugins. Checks time
 out after five seconds and have a 64 MiB WASM memory limit; a failed optional
 checker cannot stop editing.
 
+Playback shares compiler errors for both CSD and ORC targets. Errors in included
+files remain available when their editor opens later, but only when its text
+still matches the checked source. This cache holds at most 128 documents and
+4 MiB of source text (counting UTF-16 storage), and clears when the project closes.
+A missing `</CsInstruments>` gets a debounced error without running the checker
+or replacing the last known symbols.
+
 The local `csound-check/editor-parser.patch` captures UDO headers during the
 same parse used for diagnostics. It recovers at statement and definition
 boundaries, so a bad body or missing `endop` need not hide the next declaration.

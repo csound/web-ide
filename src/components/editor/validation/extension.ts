@@ -107,6 +107,19 @@ export function backgroundValidation(
                             );
                             return;
                         }
+                        if (request.sourceDiagnostics?.length) {
+                            // Keep the last known symbols while the CSD wrapper is incomplete.
+                            this.view.dispatch(
+                                setDiagnostics(
+                                    this.view.state,
+                                    editorDiagnostics(
+                                        snapshot,
+                                        request.sourceDiagnostics
+                                    )
+                                )
+                            );
+                            return;
+                        }
                         const controller = (this.controller =
                             new AbortController());
                         try {
