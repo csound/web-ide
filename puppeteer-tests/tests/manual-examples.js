@@ -267,6 +267,7 @@ test(
             await frame.goto(`${target.baseUrl}/manual/`);
             await frame.waitForSelector(".opcode-list");
             const scrollWithoutClicking = async () => {
+                await page.click(".cm-content");
                 const bounds = await iframe.boundingBox();
                 await page.mouse.move(
                     bounds.x + bounds.width / 2,
@@ -278,6 +279,13 @@ test(
                     (before) => window.scrollY > before + 100,
                     { timeout: 3000 },
                     before
+                );
+                assert.equal(
+                    await page.evaluate(() =>
+                        document.activeElement.matches(".cm-content")
+                    ),
+                    true,
+                    "Scrolling the manual must not steal the editor's keyboard focus"
                 );
             };
             await scrollWithoutClicking();

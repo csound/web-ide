@@ -95,7 +95,7 @@ for (const scenario of ["document", "lookup table"]) {
 const localOnly = { skip: targetName !== "local", timeout: 60000 };
 
 test(
-    "manual search fills the view and supports keyboard navigation",
+    "manual search opens below navigation and supports keyboard navigation",
     localOnly,
     async () => {
         const browser = await puppeteer.launch(BROWSER_SETTINGS);
@@ -125,6 +125,12 @@ test(
                 );
                 await page.click("#search-open");
                 assert.equal(
+                    await page.$eval("#search-open", (node) =>
+                        node.getAttribute("aria-expanded")
+                    ),
+                    "true"
+                );
+                assert.equal(
                     await page.evaluate(() => document.activeElement.id),
                     "search"
                 );
@@ -135,24 +141,29 @@ test(
                             ?.textContent === "oscili"
                 );
                 const layout = await page.evaluate(() => {
-                    const bounds = document
+                    const panel = document
                         .querySelector("#search-panel")
                         .getBoundingClientRect();
+                    const row = document
+                        .querySelector(".header-inner")
+                        .getBoundingClientRect();
+                    const results = document
+                        .querySelector(".search-body")
+                        .getBoundingClientRect();
                     return {
-                        x: bounds.x,
-                        y: bounds.y,
-                        width: bounds.width,
-                        height: bounds.height,
+                        belowNavigation: panel.top >= row.bottom,
+                        compactRow: row.height < 60,
+                        compactSearch: panel.height < 60,
+                        resultsFit: results.bottom <= innerHeight,
                         overflow:
-                            document.querySelector("#search-panel")
-                                .scrollWidth > innerWidth
+                            document.documentElement.scrollWidth > innerWidth
                     };
                 });
                 assert.deepEqual(layout, {
-                    x: 0,
-                    y: 0,
-                    width,
-                    height: 800,
+                    belowNavigation: true,
+                    compactRow: true,
+                    compactSearch: true,
+                    resultsFit: true,
                     overflow: false
                 });
                 const titles = await page.$$eval(
@@ -165,10 +176,13 @@ test(
                     document.querySelector(".brand").focus()
                 );
                 assert.equal(
-                    await page.evaluate(() => document.activeElement.id),
-                    "search",
-                    "The page behind the modal must remain inert"
+                    await page.evaluate(() =>
+                        document.activeElement.matches(".brand")
+                    ),
+                    true,
+                    "Inline search must leave the manual available"
                 );
+                await page.focus("#search");
                 await page.keyboard.press("Tab");
                 assert.equal(
                     await page.evaluate(() => document.activeElement.id),
@@ -200,9 +214,9 @@ test(
                 await page.keyboard.press("Escape");
                 assert.equal(
                     await page.evaluate(
-                        () => document.querySelector("#search-panel").open
+                        () => document.querySelector("#search-panel").hidden
                     ),
-                    false
+                    true
                 );
                 assert.equal(
                     await page.evaluate(() => document.activeElement.id),
@@ -212,9 +226,17 @@ test(
                 await page.click("#search-close");
                 assert.equal(
                     await page.evaluate(
-                        () => document.querySelector("#search-panel").open
+                        () => document.querySelector("#search-panel").hidden
                     ),
-                    false
+                    true
+                );
+                await page.click("#search-open");
+                await page.click("#search-open");
+                assert.equal(
+                    await page.$eval("#search-open", (node) =>
+                        node.getAttribute("aria-expanded")
+                    ),
+                    "false"
                 );
             }
             assert.deepEqual(errors, []);
@@ -355,7 +377,12 @@ test(
             );
             await followManual(page, "#manual-forward");
             assert.equal(page.url(), opcodes[selected].href);
-            await followManual(page, ".brand");
+            if (!(await page.$eval("#navigation", (node) => node.open)))
+                await page.click("#navigation > summary");
+            await followManual(
+                page,
+                "#navigation > nav > ul > li:first-child a"
+            );
             assert.equal(
                 await page.$eval("#manual-forward", (node) => node.disabled),
                 true,
@@ -457,12 +484,16 @@ test(
                     width
                 );
                 const geometry = await frame.evaluate(() => {
-                    const hint = document.querySelector("#search-open > span");
+                    const hint = document.querySelector(".opcode-name");
                     const style = getComputedStyle(hint);
                     window.scrollTo(0, 400);
                     return {
                         wraps: style.whiteSpace !== "nowrap",
                         ellipsis: style.textOverflow === "ellipsis",
+                        singleRow:
+                            document
+                                .querySelector(".header-inner")
+                                .getBoundingClientRect().height < 60,
                         headerTop: document
                             .querySelector(".site-header")
                             .getBoundingClientRect().top,
@@ -485,6 +516,7 @@ test(
                 assert.deepEqual(geometry, {
                     wraps: false,
                     ellipsis: true,
+                    singleRow: true,
                     headerTop: 0,
                     shadow: true,
                     controlsFit: true

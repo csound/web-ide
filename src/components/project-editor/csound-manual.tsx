@@ -130,6 +130,37 @@ const ManualWindow = ({
             sessionStorage.setItem(projectUid + ":manualVisible", `false`);
     }, [projectUid]);
 
+    useEffect(() => {
+        const iframe = frame.current;
+        if (!iframe || isDragging) return;
+        // A non-passive listener fixes stalled iframe scrolling after resize.
+        // Keep this no-op: the browser still handles scrolling and focus.
+        const synchronizeWheel = () => undefined;
+        let manualDocument: Document | null = null;
+        const connect = () => {
+            manualDocument?.removeEventListener(
+                "wheel",
+                synchronizeWheel,
+                true
+            );
+            manualDocument = iframe.contentDocument;
+            manualDocument?.addEventListener("wheel", synchronizeWheel, {
+                capture: true,
+                passive: false
+            });
+        };
+        connect();
+        iframe.addEventListener("load", connect);
+        return () => {
+            manualDocument?.removeEventListener(
+                "wheel",
+                synchronizeWheel,
+                true
+            );
+            iframe.removeEventListener("load", connect);
+        };
+    }, [isDragging]);
+
     return (
         <div
             style={{
