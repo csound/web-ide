@@ -33,6 +33,7 @@ import { filenameToCsoundType } from "@comp/csound/utils";
 import { evalBlinkExtension } from "./utils";
 import { IDocument, IProject } from "../projects/types";
 import * as projectActions from "../projects/actions";
+import { lookupManualString } from "../project-editor/actions";
 import { editorStyle } from "@styles/code-mirror-painter";
 
 import { useTheme } from "@emotion/react";
@@ -98,14 +99,18 @@ const CodeEditor = ({
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
     const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
+    const openManual = useCallback(
+        (opcode: string) => dispatch(lookupManualString(opcode)),
+        [dispatch]
+    );
     const languageExtension = useMemo(
         () =>
             isMarkdown
                 ? [markdown(), syntaxHighlighting(defaultHighlightStyle)]
                 : csoundFileType === "lisp"
                   ? clojureEditorLanguage()
-                  : csoundEditorLanguage(csoundFileType),
-        [isMarkdown, csoundFileType]
+                  : csoundEditorLanguage(csoundFileType, openManual),
+        [isMarkdown, csoundFileType, openManual]
     );
 
     const [csoundDocumentStateField, setCsoundDocumentStateField] = useState<

@@ -4,6 +4,7 @@ import type { EditorState, Extension } from "@codemirror/state";
 import type { SyntaxNode } from "@lezer/common";
 import { showPanel } from "@codemirror/view";
 import { csdScoreSections, inExternalScore } from "./csd-score-sections";
+import { findManualEntry } from "../../manual/lookup";
 import {
     getCsoundHoverInfo,
     analyzeCsoundSemanticLine
@@ -263,7 +264,9 @@ function renderSynopsis(info: CsoundHoverInfo, call: CallContext): HTMLElement {
 }
 
 /** Cursor-driven opcode help in CodeMirror's bottom panel. */
-export function csoundSynopsis(): Extension {
+export function csoundSynopsis(
+    onOpenManual?: (opcode: string) => void
+): Extension {
     return showPanel.of((view) => {
         const dom = document.createElement("div");
         dom.className = "cm-csound-synopsis";
@@ -295,6 +298,29 @@ export function csoundSynopsis(): Extension {
                     // The rich catalog loads on demand. Ignore a result for an old cursor.
                     if (destroyed || current !== request || !info) return;
                     setSynopsis(renderSynopsis(info, call));
+                    if (!onOpenManual || info.kind !== "builtInOpcode") return;
+                    const token = info.manualId ?? info.name;
+                    void findManualEntry(token).then((href) => {
+                        if (destroyed || current !== request || !href) return;
+                        const link = document.createElement("a");
+                        link.className = "cm-csound-manual-link";
+                        link.textContent = "Open in manual";
+                        link.href = href;
+                        link.addEventListener("click", (event) => {
+                            if (
+                                event.button !== 0 ||
+                                event.ctrlKey ||
+                                event.metaKey ||
+                                event.shiftKey ||
+                                event.altKey
+                            )
+                                return;
+                            event.preventDefault();
+                            onOpenManual(token);
+                        });
+                        dom.append(link);
+                        view.requestMeasure();
+                    });
                 })
                 .catch(() => {
                     if (!destroyed && current === request) setSynopsis();

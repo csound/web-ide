@@ -32,10 +32,33 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
     }
 
     .cm-csound-synopsis {
-        overflow: hidden;
-        text-overflow: ellipsis;
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
         padding: 4px 10px;
         min-height: 1.4em;
+    }
+
+    .cm-csound-synopsis-signature {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cm-csound-manual-link {
+        margin-left: auto;
+        flex-shrink: 0;
+        color: ${theme.keyword};
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        &:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
     }
 
     .cm-csound-synopsis .cm-csound-active-argument {
