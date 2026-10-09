@@ -1,11 +1,7 @@
-import { getDownloadURL } from "firebase/storage";
-import { storageReference } from "@config/firestore";
-import { useSelector } from "@root/store";
-import { nonCloudFiles } from "../file-tree/actions";
-import { checkAudioBytes, readAudioStream } from "./limits";
-import { useSaveAudioFile } from "./use-save-audio-file";
+import { useProjectToolFiles } from "./project-files";
+import MixerTool from "./mixer-tool";
 import ImpulseTool from "./impulse-tool";
-import AudioTool, { type AudioSource } from "./audio-tool";
+import AudioTool from "./audio-tool";
 
 /** Identify project files the browser audio loader can accept. */
 const isAudio = (name: string) =>
@@ -17,66 +13,14 @@ function ProjectAudioTool({
     mode
 }: {
     projectUid: string;
-    mode: "sample" | "analysis" | "impulse" | "convolution";
+    mode: "sample" | "analysis" | "impulse" | "convolution" | "mixer";
 }) {
-    const documents = useSelector(
-        (state) => state.ProjectsReducer.projects[projectUid]?.documents
-    );
-    const generated = useSelector(
-        (state) => state.FileTreeReducer.nonCloudFiles
-    );
-    const sources: AudioSource[] = [
-        ...Object.values(documents || {})
-            .filter(
-                (document) =>
-                    document.type === "bin" && isAudio(document.filename)
-            )
-            .map((document) => ({
-                id: document.documentUid,
-                name: [
-                    ...document.path.map(
-                        (id) => documents?.[id]?.filename || id
-                    ),
-                    document.filename
-                ].join("/"),
-                load: async (signal: AbortSignal) => {
-                    const url = await getDownloadURL(
-                        await storageReference(
-                            `${document.userUid}/${projectUid}/${document.documentUid}`
-                        )
-                    );
-                    const response = await fetch(url, { signal });
-                    if (!response.ok)
-                        throw new Error(
-                            "Could not read the project audio file."
-                        );
-                    if (!response.body)
-                        throw new Error(
-                            "Could not read the project audio file."
-                        );
-                    return readAudioStream(
-                        response.body,
-                        signal,
-                        Number(response.headers.get("content-length"))
-                    );
-                }
-            })),
-        ...generated.filter(isAudio).map((name) => ({
-            id: `generated:${name}`,
-            name,
-            load: async () => {
-                const file = nonCloudFiles.get(name);
-                if (!file)
-                    throw new Error(
-                        "This generated file is no longer available."
-                    );
-                checkAudioBytes(file.buffer.length);
-                return file.buffer.slice();
-            }
-        }))
-    ];
-    const onSave = useSaveAudioFile(projectUid);
-    return mode === "impulse" || mode === "convolution" ? (
+    const { sources, onSave } = useProjectToolFiles(projectUid, isAudio, {
+        acceptsDocument: (document) => document.type === "bin"
+    });
+    return mode === "mixer" ? (
+        <MixerTool key={projectUid} sources={sources} onSave={onSave} />
+    ) : mode === "impulse" || mode === "convolution" ? (
         <ImpulseTool
             key={projectUid}
             mode={mode}
@@ -109,4 +53,9 @@ export function ImpulseResponse({ projectUid }: { projectUid: string }) {
 /** Prepare an existing response for Csound's convolve opcode. */
 export function ConvolutionPrep({ projectUid }: { projectUid: string }) {
     return <ProjectAudioTool projectUid={projectUid} mode="convolution" />;
+}
+
+/** Mix project and local audio into a new project file. */
+export function AudioMixer({ projectUid }: { projectUid: string }) {
+    return <ProjectAudioTool projectUid={projectUid} mode="mixer" />;
 }

@@ -112,4 +112,5 @@ export const isMobile = (): boolean =>
     /android|webos|iphone|ipad|ipod|opera mini/i.test(navigator.userAgent);
 
 export const isIOS = (): boolean =>
-    /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);

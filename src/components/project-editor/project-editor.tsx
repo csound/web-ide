@@ -106,6 +106,11 @@ import { stopPerformance } from "@comp/csound/actions";
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+import TransformRounded from "@mui/icons-material/TransformRounded";
+import GraphicEqRounded from "@mui/icons-material/GraphicEqRounded";
+import DataArrayRounded from "@mui/icons-material/DataArrayRounded";
+import MultilineChartRounded from "@mui/icons-material/MultilineChartRounded";
+import TuneRounded from "@mui/icons-material/TuneRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
 const TabStyles = tabStyles(false);
@@ -127,6 +132,30 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    sdifConverter: {
+        title: "SDIF Converter",
+        component: React.lazy(() => import("@comp/sdif-tools/project-sdif"))
+    },
+    lpcEditor: {
+        title: "LPC Editor",
+        component: React.lazy(() => import("@comp/lpc-tools/project-lpc"))
+    },
+    pvxEditor: {
+        title: "PVX Editor",
+        component: React.lazy(() => import("@comp/pvx-tools/project-pvx"))
+    },
+    hetroEditor: {
+        title: "HETRO Editor",
+        component: React.lazy(() => import("@comp/hetro-tools/project-hetro"))
+    },
+    mixer: {
+        title: "Mixer",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.AudioMixer
+            }))
+        )
+    },
     scoreTools: {
         title: "Score Converter",
         component: React.lazy(() => import("@comp/score-tools/score-tool"))
@@ -180,13 +209,18 @@ const utilityTabDefinitions: Record<
 };
 
 const specialistLaunchers: LauncherItem[] = [
+    { type: "mixer", label: "Mixer", Icon: TuneRounded },
     { type: "impulseResponse", label: "Impulse Response", Icon: WavesRounded },
     {
         type: "convolutionPrep",
         label: "Convolution Prep",
         Icon: FilterAltRounded
     },
-    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded }
+    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded },
+    { type: "sdifConverter", label: "SDIF Converter", Icon: TransformRounded },
+    { type: "lpcEditor", label: "LPC Editor", Icon: GraphicEqRounded },
+    { type: "pvxEditor", label: "PVX Editor", Icon: DataArrayRounded },
+    { type: "hetroEditor", label: "HETRO Editor", Icon: MultilineChartRounded }
 ];
 
 type LauncherItem = {
@@ -1349,7 +1383,12 @@ const ProjectEditor = ({
         "audioAnalysis",
         "impulseResponse",
         "convolutionPrep",
-        "scoreTools"
+        "scoreTools",
+        "sdifConverter",
+        "lpcEditor",
+        "pvxEditor",
+        "hetroEditor",
+        "mixer"
     ].includes(bottomTool || "");
     useEffect(() => {
         // Give tool controls room when opening from the compact console dock.

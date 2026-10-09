@@ -18,6 +18,7 @@ import { rawToWave } from "./wave-files";
 import { finalizeFlac } from "./flac-file";
 import { prepareScorePreprocessors } from "./score-preprocessors";
 import { waitForCompilerMessages } from "./compiler-messages";
+import { beginPlaybackAudioSession } from "./audio-session";
 import {
     RenderSettings,
     renderFilename,
@@ -34,6 +35,7 @@ type Run = {
     done: Promise<void>;
     projectUid: string;
     transport?: Promise<void>;
+    desiredTransport?: "paused" | "playing";
 };
 let activeRun: Run | undefined;
 let batch:
@@ -201,6 +203,7 @@ export async function runPerformance({
     const cancel = () => controller.abort();
     signal?.addEventListener("abort", cancel, { once: true });
     let csound: CsoundObj | undefined;
+    let audioSession: ReturnType<typeof beginPlaybackAudioSession>;
     let messageCount = 0;
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
@@ -345,6 +348,7 @@ export async function runPerformance({
                     failed = true;
                     console.error(error);
                 } finally {
+                    audioSession?.release();
                     signal?.removeEventListener("abort", cancel);
                     if (activeRun === run) {
                         activeRun = undefined;
@@ -377,6 +381,9 @@ export async function runPerformance({
     store.dispatch(setCsoundPlayState("loading"));
     setConsole([""]);
     try {
+        // The factory creates/resumes its context before loading WASM. Set the
+        // iOS category first and keep context ownership/cleanup in the engine.
+        if (!render) audioSession = beginPlaybackAudioSession();
         csound = (await Csound({
             useWorker:
                 render || (useSAB ?? localStorage.getItem("sab") === "true"),
@@ -472,14 +479,24 @@ export async function runPerformance({
               )
             : undefined;
         if (!render) {
-            csound.on("realtimePerformancePaused", () => {
-                if (activeRun === run && !controller.signal.aborted)
-                    store.dispatch(setCsoundPlayState("paused"));
-            });
-            csound.on("realtimePerformanceResumed", () => {
-                if (activeRun === run && !controller.signal.aborted)
-                    store.dispatch(setCsoundPlayState("playing"));
-            });
+            const reportTransport = (status: "paused" | "playing") => {
+                // The SAB backend can repeat contradictory pause/resume notifications.
+                // Keep the latest user command and avoid redrawing the editor for repeats.
+                if (
+                    activeRun === run &&
+                    !controller.signal.aborted &&
+                    (!run.desiredTransport ||
+                        run.desiredTransport === status) &&
+                    store.getState().csound.status !== status
+                )
+                    store.dispatch(setCsoundPlayState(status));
+            };
+            csound.on("realtimePerformancePaused", () =>
+                reportTransport("paused")
+            );
+            csound.on("realtimePerformanceResumed", () =>
+                reportTransport("playing")
+            );
             csound.once("realtimePerformanceEnded", () => {
                 void finish(true).catch(console.error);
             });
@@ -503,6 +520,7 @@ export async function runPerformance({
         ) {
             check();
             try {
+                audioSession?.enableInput();
                 await Promise.race([csound.enableAudioInput(), aborted]);
             } catch (error) {
                 check();
@@ -636,6 +654,7 @@ function changeTransport(method: "pause" | "resume") {
     const run = activeRun;
     const engine = csoundInstance;
     if (!run || run.controller.signal.aborted) return;
+    run.desiredTransport = method === "pause" ? "paused" : "playing";
     const perform = () => {
         if (activeRun === run && !run.controller.signal.aborted)
             return engine[method]();
