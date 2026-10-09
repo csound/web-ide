@@ -6,6 +6,7 @@ import { nonCloudFiles } from "../file-tree/actions";
 import { useProjectToolFiles } from "../audio-tools/project-files";
 import { checkLpcSize, MAX_LPC_BYTES } from "./format";
 import {
+    AudioMixer,
     SampleEditor,
     AudioAnalysis,
     ImpulseResponse,
@@ -20,6 +21,7 @@ const { documents, generated, dispatch, tool } = vi.hoisted(() => ({
 }));
 vi.mock("../audio-tools/audio-tool", () => ({ default: tool }));
 vi.mock("../audio-tools/impulse-tool", () => ({ default: tool }));
+vi.mock("../audio-tools/mixer-tool", () => ({ default: tool }));
 vi.mock("./lpc-tool", () => ({ default: tool }));
 vi.mock("../../store", () => ({
     useDispatch: () => dispatch,
@@ -68,6 +70,7 @@ const mount = () =>
         })
     ).result;
 it.each([
+    ["Mixer", AudioMixer],
     ["Sample Editor", SampleEditor],
     ["Audio Analysis", AudioAnalysis],
     ["Impulse Response", ImpulseResponse],

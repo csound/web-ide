@@ -7,7 +7,10 @@ export const durationOf = (audio: AudioData) =>
     audio.channels[0].length / audio.sampleRate;
 
 /** Validate WAV metadata, then convert in blocks so file loading can yield and cancel. */
-function* waveDecoder(bytes: Uint8Array): Generator<void, AudioData> {
+function* waveDecoder(
+    bytes: Uint8Array,
+    peak?: { value: number }
+): Generator<void, AudioData> {
     checkAudioBytes(bytes.length);
     const wave = readWave(bytes);
     checkAudioLayout(wave.frames, wave.channels);
@@ -23,6 +26,7 @@ function* waveDecoder(bytes: Uint8Array): Generator<void, AudioData> {
         () => new Float32Array(wave.frames)
     );
     const step = wave.bits / 8;
+    let maximum = 0;
     for (let frame = 0; frame < wave.frames; frame++) {
         if (frame % 65536 === 0) yield;
         for (let channel = 0; channel < wave.channels; channel++) {
@@ -47,8 +51,11 @@ function* waveDecoder(bytes: Uint8Array): Generator<void, AudioData> {
                 sample = view.getInt32(offset, true) / 2147483648;
             else throw new Error("Unsupported WAV sample format.");
             channels[channel][frame] = Number.isFinite(sample) ? sample : 0;
+            if (peak)
+                maximum = Math.max(maximum, Math.abs(channels[channel][frame]));
         }
     }
+    if (peak) peak.value = maximum;
     return { channels, sampleRate: wave.sampleRate };
 }
 
@@ -58,6 +65,32 @@ export function decodeWave(bytes: Uint8Array): AudioData {
     let step = decoder.next();
     while (!step.done) step = decoder.next();
     return step.value;
+}
+
+async function decodeWaveAsync(
+    bytes: Uint8Array,
+    signal: AbortSignal,
+    peak?: { value: number }
+): Promise<AudioData> {
+    signal.throwIfAborted();
+    const decoder = waveDecoder(bytes, peak);
+    let step = decoder.next();
+    while (!step.done) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        signal.throwIfAborted();
+        step = decoder.next();
+    }
+    return step.value;
+}
+
+/** Measure a WAV's decoded peak in the same pass that reads its samples. */
+export async function decodeWaveWithPeak(
+    bytes: Uint8Array,
+    signal: AbortSignal
+) {
+    const peak = { value: 0 };
+    const audio = await decodeWaveAsync(bytes, signal, peak);
+    return { audio, peak: peak.value };
 }
 
 /** Load WAV in cancellable blocks; use the browser decoder for other audio formats.
@@ -73,14 +106,7 @@ export async function decodeAudio(
     const signature = new TextDecoder().decode(bytes.subarray(0, 12));
     if (signature.startsWith("RIFF") && signature.endsWith("WAVE")) {
         // Do not send invalid or oversized WAV to the browser decoder as a fallback.
-        const decoder = waveDecoder(bytes);
-        let step = decoder.next();
-        while (!step.done) {
-            await new Promise<void>((resolve) => setTimeout(resolve, 0));
-            signal.throwIfAborted();
-            step = decoder.next();
-        }
-        return step.value;
+        return decodeWaveAsync(bytes, signal);
     }
     const context = new AudioContext();
     let closed: Promise<void> | undefined;
@@ -112,6 +138,47 @@ export async function decodeAudio(
         // Do not hold cancellation hostage to a browser's native decoder shutdown.
         void close().catch(() => {});
     }
+}
+
+/** Allocate a zero-filled float WAV with its format, frame count and data header. */
+function createFloatWave(sampleRate: number, frames: number, channels: number) {
+    if (!Number.isInteger(sampleRate) || sampleRate <= 0)
+        throw new Error("Invalid audio layout.");
+    checkAudioLayout(frames, channels);
+    // WAVEFORMATEX float header plus fact and data chunks.
+    const bytes = new Uint8Array(58 + frames * channels * 4);
+    const view = new DataView(bytes.buffer);
+    const text = (offset: number, value: string) =>
+        bytes.set(new TextEncoder().encode(value), offset);
+    text(0, "RIFF");
+    view.setUint32(4, bytes.length - 8, true);
+    text(8, "WAVEfmt ");
+    view.setUint32(16, 18, true);
+    view.setUint16(20, 3, true);
+    view.setUint16(22, channels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * channels * 4, true);
+    view.setUint16(32, channels * 4, true);
+    view.setUint16(34, 32, true);
+    text(38, "fact");
+    view.setUint32(42, 4, true);
+    view.setUint32(46, frames, true);
+    text(50, "data");
+    view.setUint32(54, bytes.length - 58, true);
+    return bytes;
+}
+
+/** Yield before allocating silence; zero-filled WAV data needs no sample loop. */
+export async function encodeSilenceAsync(
+    sampleRate: number,
+    frames: number,
+    channels: number,
+    signal: AbortSignal
+): Promise<Uint8Array> {
+    signal.throwIfAborted();
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    signal.throwIfAborted();
+    return createFloatWave(sampleRate, frames, channels);
 }
 
 /** Pack one float WAV buffer in blocks, keeping selection and channel order exact. */
@@ -146,27 +213,12 @@ function* waveEncoder(
         throw new Error("Select a non-empty audio range.");
     checkAudioLayout(end - first, channels.length);
     yield;
-    // WAVEFORMATEX float header plus fact and data chunks. Write directly into
-    // the final buffer instead of copying a separate PCM buffer into a WAV.
-    const bytes = new Uint8Array(58 + (end - first) * channels.length * 4);
+    const bytes = createFloatWave(
+        audio.sampleRate,
+        end - first,
+        channels.length
+    );
     const view = new DataView(bytes.buffer);
-    const text = (offset: number, value: string) =>
-        bytes.set(new TextEncoder().encode(value), offset);
-    text(0, "RIFF");
-    view.setUint32(4, bytes.length - 8, true);
-    text(8, "WAVEfmt ");
-    view.setUint32(16, 18, true);
-    view.setUint16(20, 3, true);
-    view.setUint16(22, channels.length, true);
-    view.setUint32(24, audio.sampleRate, true);
-    view.setUint32(28, audio.sampleRate * channels.length * 4, true);
-    view.setUint16(32, channels.length * 4, true);
-    view.setUint16(34, 32, true);
-    text(38, "fact");
-    view.setUint32(42, 4, true);
-    view.setUint32(46, end - first, true);
-    text(50, "data");
-    view.setUint32(54, bytes.length - 58, true);
     const blockFrames = Math.max(1, Math.floor(65536 / channels.length));
     for (let frame = first; frame < end; frame++) {
         if (frame > first && (frame - first) % blockFrames === 0) yield;
