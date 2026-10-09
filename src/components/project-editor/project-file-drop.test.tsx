@@ -85,6 +85,23 @@ it("does not consume text or internal tree drags", () => {
     expect(screen.queryByRole("status")).toBeNull();
     expect(upload).not.toHaveBeenCalled();
 });
+it.each([true, false])(
+    "lets local audio tools receive files without uploading (owner: %s)",
+    (isOwner) => {
+        setup(isOwner);
+        const editor = screen.getByTestId("editor");
+        editor.setAttribute("data-local-file-drop", "");
+        const child = screen.getByTestId("child");
+        const receive = vi.fn();
+        child.addEventListener("drop", receive);
+        drag(window, "dragenter");
+        drag(child, "dragover");
+        expect(screen.queryByRole("status")).toBeNull();
+        drag(child, "drop", [new File(["sample"], "sample.wav")]);
+        expect(receive).toHaveBeenCalledOnce();
+        expect(upload).not.toHaveBeenCalled();
+    }
+);
 it("blocks visitor drops without letting the browser open files", () => {
     setup(false);
     drag(window, "dragenter");

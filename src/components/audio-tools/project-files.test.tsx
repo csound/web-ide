@@ -6,6 +6,7 @@ import { nonCloudFiles } from "../file-tree/actions";
 import { useProjectToolFiles } from "./project-files";
 import { checkHetroSize, MAX_HETRO_BYTES } from "../hetro-tools/convert";
 import {
+    AudioMixer,
     SampleEditor,
     AudioAnalysis,
     ImpulseResponse,
@@ -20,6 +21,7 @@ const { documents, generated, dispatch, tool } = vi.hoisted(() => ({
 }));
 vi.mock("./audio-tool", () => ({ default: tool }));
 vi.mock("./impulse-tool", () => ({ default: tool }));
+vi.mock("./mixer-tool", () => ({ default: tool }));
 vi.mock("../hetro-tools/hetro-tool", () => ({ default: tool }));
 vi.mock("../../store", () => ({
     useDispatch: () => dispatch,
@@ -68,6 +70,7 @@ const mount = () =>
         })
     ).result;
 it.each([
+    ["Mixer", AudioMixer],
     ["Sample Editor", SampleEditor],
     ["Audio Analysis", AudioAnalysis],
     ["Impulse Response", ImpulseResponse],

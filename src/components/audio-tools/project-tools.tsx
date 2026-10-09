@@ -1,4 +1,5 @@
 import { useProjectToolFiles } from "./project-files";
+import MixerTool from "./mixer-tool";
 import ImpulseTool from "./impulse-tool";
 import AudioTool from "./audio-tool";
 
@@ -12,12 +13,14 @@ function ProjectAudioTool({
     mode
 }: {
     projectUid: string;
-    mode: "sample" | "analysis" | "impulse" | "convolution";
+    mode: "sample" | "analysis" | "impulse" | "convolution" | "mixer";
 }) {
     const { sources, onSave } = useProjectToolFiles(projectUid, isAudio, {
         acceptsDocument: (document) => document.type === "bin"
     });
-    return mode === "impulse" || mode === "convolution" ? (
+    return mode === "mixer" ? (
+        <MixerTool key={projectUid} sources={sources} onSave={onSave} />
+    ) : mode === "impulse" || mode === "convolution" ? (
         <ImpulseTool
             key={projectUid}
             mode={mode}
@@ -50,4 +53,9 @@ export function ImpulseResponse({ projectUid }: { projectUid: string }) {
 /** Prepare an existing response for Csound's convolve opcode. */
 export function ConvolutionPrep({ projectUid }: { projectUid: string }) {
     return <ProjectAudioTool projectUid={projectUid} mode="convolution" />;
+}
+
+/** Mix project and local audio into a new project file. */
+export function AudioMixer({ projectUid }: { projectUid: string }) {
+    return <ProjectAudioTool projectUid={projectUid} mode="mixer" />;
 }

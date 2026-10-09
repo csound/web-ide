@@ -59,6 +59,7 @@ jobs:
                         manual-examples,
                         manual-code,
                         audio-tools,
+                        mixer,
                         project-playback,
                         csd-diagnostics,
                         score-preprocessors,
