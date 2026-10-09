@@ -34,6 +34,7 @@ type Run = {
     done: Promise<void>;
     projectUid: string;
     transport?: Promise<void>;
+    desiredTransport?: "paused" | "playing";
 };
 let activeRun: Run | undefined;
 let batch:
@@ -472,14 +473,24 @@ export async function runPerformance({
               )
             : undefined;
         if (!render) {
-            csound.on("realtimePerformancePaused", () => {
-                if (activeRun === run && !controller.signal.aborted)
-                    store.dispatch(setCsoundPlayState("paused"));
-            });
-            csound.on("realtimePerformanceResumed", () => {
-                if (activeRun === run && !controller.signal.aborted)
-                    store.dispatch(setCsoundPlayState("playing"));
-            });
+            const reportTransport = (status: "paused" | "playing") => {
+                // The SAB backend can repeat contradictory pause/resume notifications.
+                // Keep the latest user command and avoid redrawing the editor for repeats.
+                if (
+                    activeRun === run &&
+                    !controller.signal.aborted &&
+                    (!run.desiredTransport ||
+                        run.desiredTransport === status) &&
+                    store.getState().csound.status !== status
+                )
+                    store.dispatch(setCsoundPlayState(status));
+            };
+            csound.on("realtimePerformancePaused", () =>
+                reportTransport("paused")
+            );
+            csound.on("realtimePerformanceResumed", () =>
+                reportTransport("playing")
+            );
             csound.once("realtimePerformanceEnded", () => {
                 void finish(true).catch(console.error);
             });
@@ -636,6 +647,7 @@ function changeTransport(method: "pause" | "resume") {
     const run = activeRun;
     const engine = csoundInstance;
     if (!run || run.controller.signal.aborted) return;
+    run.desiredTransport = method === "pause" ? "paused" : "playing";
     const perform = () => {
         if (activeRun === run && !run.controller.signal.aborted)
             return engine[method]();

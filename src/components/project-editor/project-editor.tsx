@@ -106,6 +106,7 @@ import { stopPerformance } from "@comp/csound/actions";
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+import TuneRounded from "@mui/icons-material/TuneRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
 const TabStyles = tabStyles(false);
@@ -127,6 +128,14 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    mixer: {
+        title: "Mixer",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.AudioMixer
+            }))
+        )
+    },
     scoreTools: {
         title: "Score Converter",
         component: React.lazy(() => import("@comp/score-tools/score-tool"))
@@ -180,6 +189,7 @@ const utilityTabDefinitions: Record<
 };
 
 const specialistLaunchers: LauncherItem[] = [
+    { type: "mixer", label: "Mixer", Icon: TuneRounded },
     { type: "impulseResponse", label: "Impulse Response", Icon: WavesRounded },
     {
         type: "convolutionPrep",
@@ -1341,7 +1351,8 @@ const ProjectEditor = ({
         "audioAnalysis",
         "impulseResponse",
         "convolutionPrep",
-        "scoreTools"
+        "scoreTools",
+        "mixer"
     ].includes(bottomTool || "");
     useEffect(() => {
         // Give tool controls room when opening from the compact console dock.

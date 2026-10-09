@@ -94,6 +94,9 @@ test(
             );
             assert.equal(wasm.length, 1, "only the requested tool loads");
             assert.match(wasm[0], /\/mkir-[^/]+\.wasm$/);
+            const mix = await page.evaluate(() => window.mixAudio());
+            assert.deepEqual(mix, { duration: 3, peak: 0.25, channels: 2 });
+            assert.ok(wasm.some((url) => /\/mixer-[^/]+\.wasm$/.test(url)));
             for (const program of ["csbeats", "scot", "scsort", "extract"]) {
                 const output = await page.evaluate(
                     (program) => window.convertScore(program),
