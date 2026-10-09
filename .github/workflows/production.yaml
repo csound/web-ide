@@ -3,6 +3,9 @@ on:
     push:
         branches:
             - master
+concurrency:
+    group: deploy-csound-ide-prod
+    cancel-in-progress: false
 jobs:
     deploy-prod:
         name: deploy-production

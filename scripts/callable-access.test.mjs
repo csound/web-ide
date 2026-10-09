@@ -21,7 +21,11 @@ test("every hosting rewrite function has a public access declaration", async () 
     );
     const functions = [
         ...new Set(
-            hosting.rewrites.map(({ function: id }) => id).filter(Boolean)
+            hosting.rewrites
+                .map(({ function: target }) =>
+                    typeof target === "string" ? target : target?.functionId
+                )
+                .filter(Boolean)
         )
     ];
     assert.deepEqual([...access.hostingFunctions].sort(), functions.sort());
