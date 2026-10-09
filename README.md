@@ -310,6 +310,13 @@ assets needed by its open tabs. Retention therefore requires one serialized
 publishing path per site. The repository does not set IAM restrictions to enforce
 that rule.
 
+Keep the home, editor, and profile paths in one grouped `host` rewrite. Firebase
+CLI tags once per rewrite without grouping by service. Separate pinned rewrites
+for the same service send concurrent updates with the same Cloud Run resource
+version, causing Hosting publication to fail with a version conflict. Browser
+access checks use explicit paths in `scripts/callable-access.json` so they still
+check all three routes.
+
 Use the site's deployment workflow and rebuild an old commit for a rollback so
 it also retains assets needed by newer open tabs. Firebase console rollbacks and
 channel clones cannot run this retention hook. A lock used only by our scripts

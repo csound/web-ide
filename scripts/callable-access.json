@@ -30,5 +30,10 @@
                 "https://csound-ide.web.app"
             ]
         }
-    }
+    },
+    "hostingPaths": [
+        "/",
+        "/editor/__hosting_access_check__",
+        "/profile/__hosting_access_check__"
+    ]
 }
