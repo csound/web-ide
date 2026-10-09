@@ -107,6 +107,7 @@ import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
 import TransformRounded from "@mui/icons-material/TransformRounded";
+import TuneRounded from "@mui/icons-material/TuneRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
 const TabStyles = tabStyles(false);
@@ -131,6 +132,14 @@ const utilityTabDefinitions: Record<
     sdifConverter: {
         title: "SDIF Converter",
         component: React.lazy(() => import("@comp/sdif-tools/project-sdif"))
+    },
+    mixer: {
+        title: "Mixer",
+        component: React.lazy(() =>
+            import("@comp/audio-tools/project-tools").then((module) => ({
+                default: module.AudioMixer
+            }))
+        )
     },
     scoreTools: {
         title: "Score Converter",
@@ -185,6 +194,7 @@ const utilityTabDefinitions: Record<
 };
 
 const specialistLaunchers: LauncherItem[] = [
+    { type: "mixer", label: "Mixer", Icon: TuneRounded },
     { type: "impulseResponse", label: "Impulse Response", Icon: WavesRounded },
     {
         type: "convolutionPrep",
@@ -1348,7 +1358,8 @@ const ProjectEditor = ({
         "impulseResponse",
         "convolutionPrep",
         "scoreTools",
-        "sdifConverter"
+        "sdifConverter",
+        "mixer"
     ].includes(bottomTool || "");
     useEffect(() => {
         // Give tool controls room when opening from the compact console dock.

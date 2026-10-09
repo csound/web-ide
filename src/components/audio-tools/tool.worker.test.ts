@@ -13,6 +13,7 @@ afterEach(() => {
 it.each([
     "sdif2ad",
     "envext",
+    "mixer",
     "mkir",
     "cvanal",
     "csbeats",

@@ -18,10 +18,12 @@ import envext from "@csound/wasm-bin/lib/envext.wasm?url";
 import sdif2ad from "@csound/wasm-bin/lib/sdif2ad.wasm?url";
 import mkir from "@csound/wasm-bin/lib/mkir.wasm?url";
 import cvanal from "@csound/wasm-bin/lib/cvanal.wasm?url";
+import mixer from "@csound/wasm-bin/lib/mixer.wasm?url";
 
 // URL imports emit separate assets; they do not fetch or compile the binaries.
 const urls: Record<Exclude<ToolName, ScoreProgram>, string> = {
     sdif2ad,
+    mixer,
     mkir,
     cvanal,
     scale,
