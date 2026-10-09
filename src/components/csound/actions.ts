@@ -18,6 +18,7 @@ import { rawToWave } from "./wave-files";
 import { finalizeFlac } from "./flac-file";
 import { prepareScorePreprocessors } from "./score-preprocessors";
 import { waitForCompilerMessages } from "./compiler-messages";
+import { beginPlaybackAudioSession } from "./audio-session";
 import {
     RenderSettings,
     renderFilename,
@@ -202,6 +203,7 @@ export async function runPerformance({
     const cancel = () => controller.abort();
     signal?.addEventListener("abort", cancel, { once: true });
     let csound: CsoundObj | undefined;
+    let audioSession: ReturnType<typeof beginPlaybackAudioSession>;
     let messageCount = 0;
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
@@ -346,6 +348,7 @@ export async function runPerformance({
                     failed = true;
                     console.error(error);
                 } finally {
+                    audioSession?.release();
                     signal?.removeEventListener("abort", cancel);
                     if (activeRun === run) {
                         activeRun = undefined;
@@ -378,6 +381,9 @@ export async function runPerformance({
     store.dispatch(setCsoundPlayState("loading"));
     setConsole([""]);
     try {
+        // The factory creates/resumes its context before loading WASM. Set the
+        // iOS category first and keep context ownership/cleanup in the engine.
+        if (!render) audioSession = beginPlaybackAudioSession();
         csound = (await Csound({
             useWorker:
                 render || (useSAB ?? localStorage.getItem("sab") === "true"),
@@ -514,6 +520,7 @@ export async function runPerformance({
         ) {
             check();
             try {
+                audioSession?.enableInput();
                 await Promise.race([csound.enableAudioInput(), aborted]);
             } catch (error) {
                 check();

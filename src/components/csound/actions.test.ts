@@ -125,6 +125,108 @@ afterEach(async () => {
     localStorage.removeItem("sab");
     vi.restoreAllMocks();
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
+});
+
+describe("iOS audio session lifecycle", () => {
+    let session: { type: string };
+    const play = () =>
+        runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+    beforeEach(() => {
+        session = { type: "auto" };
+        vi.stubGlobal("navigator", {
+            userAgent: "iPhone",
+            audioSession: session
+        });
+    });
+
+    it("sets playback before the factory can create an AudioContext", async () => {
+        vi.mocked(Csound).mockImplementationOnce(async () => {
+            expect(session.type).toBe("playback");
+            return engine;
+        });
+        const playing = play();
+        expect(session.type).toBe("playback");
+        await playing;
+        engine.terminateInstance.mockImplementationOnce(async () => {
+            expect(session.type).toBe("playback");
+        });
+        await stopPerformance();
+        expect(session.type).toBe("auto");
+    });
+
+    it("restores the session after the score ends", async () => {
+        await play();
+        listeners.get("realtimePerformanceEnded")?.();
+        await vi.waitFor(() => expect(isCsoundBusy()).toBe(false));
+        expect(session.type).toBe("auto");
+    });
+
+    it("restores the session when initialization fails", async () => {
+        vi.mocked(Csound).mockRejectedValueOnce(new Error("WASM failed"));
+        await expect(play()).rejects.toThrow("WASM failed");
+        expect(session.type).toBe("auto");
+    });
+
+    it("restores the session when compilation fails", async () => {
+        engine.compileOrc.mockResolvedValueOnce(-1);
+        await expect(play()).rejects.toThrow("Csound compilation failed");
+        expect(session.type).toBe("auto");
+    });
+
+    it("restores the session when stopped during initialization", async () => {
+        let initialize!: (value: any) => void;
+        vi.mocked(Csound).mockReturnValueOnce(
+            new Promise((resolve) => {
+                initialize = resolve;
+            })
+        );
+        const playing = play();
+        const rejected = expect(playing).rejects.toMatchObject({
+            name: "AbortError"
+        });
+        const stopping = stopPerformance();
+        initialize(engine);
+        await rejected;
+        await stopping;
+        expect(session.type).toBe("auto");
+    });
+
+    it.each([false, true])(
+        "uses a recording session for microphone input (denied: %s)",
+        async (denied) => {
+            engine.isRequestingRtAudioInput.mockResolvedValue(1);
+            engine.enableAudioInput.mockImplementationOnce(async () => {
+                expect(session.type).toBe("play-and-record");
+                if (denied) throw new Error("Permission denied");
+            });
+            if (denied)
+                await expect(play()).rejects.toThrow(
+                    "Could not start microphone input"
+                );
+            else {
+                await play();
+                expect(session.type).toBe("play-and-record");
+                await stopPerformance();
+            }
+            expect(session.type).toBe("auto");
+        }
+    );
+
+    it("does not change the session for offline rendering", async () => {
+        const changes = vi.fn();
+        Object.defineProperty(session, "type", {
+            get: () => "auto",
+            set: changes
+        });
+        await runPerformance({
+            projectUid: "audio-test",
+            csdPath: "scores/piece.csd",
+            mode: "render",
+            setConsole
+        });
+        expect(changes).not.toHaveBeenCalled();
+    });
 });
 
 describe("shared Csound performance", () => {

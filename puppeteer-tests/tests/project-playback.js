@@ -23,11 +23,17 @@ const mocks = {
 };
 
 for (const sab of [false, true]) {
+    const ios = !sab;
     test(
-        `project switching and editor cleanup (SAB: ${sab})`,
+        `project switching and editor cleanup (SAB: ${sab}, iOS session: ${ios})`,
         { skip: targetName !== "local", timeout: 120000 },
         async () => {
-            const browser = await puppeteer.launch(BROWSER_SETTINGS);
+            const browser = await puppeteer.launch({
+                ...BROWSER_SETTINGS,
+                args: BROWSER_SETTINGS.args.filter(
+                    (argument) => !argument.startsWith("--autoplay-policy=")
+                )
+            });
             try {
                 const page = await browser.newPage();
                 await page.setViewport({ width: 1280, height: 900 });
@@ -35,6 +41,32 @@ for (const sab of [false, true]) {
                     (enabled) => localStorage.setItem("sab", String(enabled)),
                     sab
                 );
+                if (ios)
+                    await page.evaluateOnNewDocument(() => {
+                        // Chrome cannot emulate the silent switch. Check the
+                        // iOS session contract around real WASM/Web Audio instead.
+                        const session = { type: "auto" };
+                        const contexts = [];
+                        // iPadOS desktop mode: retain the desktop editor layout.
+                        Object.defineProperty(navigator, "userAgent", {
+                            get: () =>
+                                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15"
+                        });
+                        Object.defineProperty(navigator, "maxTouchPoints", {
+                            value: 5
+                        });
+                        Object.defineProperty(navigator, "audioSession", {
+                            value: session
+                        });
+                        window.AudioContext = new Proxy(window.AudioContext, {
+                            construct(target, args) {
+                                const context = Reflect.construct(target, args);
+                                contexts.push({ context, type: session.type });
+                                return context;
+                            }
+                        });
+                        window.audioSessionFixture = { session, contexts };
+                    });
                 const errors = [];
                 page.on("pageerror", (error) => errors.push(error.message));
                 await page.setRequestInterception(true);
@@ -127,9 +159,29 @@ for (const sab of [false, true]) {
                             );
                             throw error;
                         });
+                    if (ios)
+                        assert.deepEqual(
+                            await page.evaluate(() => ({
+                                type: window.audioSessionFixture.session.type,
+                                closed: window.audioSessionFixture.contexts.every(
+                                    ({ context }) => context.state === "closed"
+                                )
+                            })),
+                            { type: "auto", closed: true }
+                        );
                 };
                 await click("Play First");
                 await wait("Pause First");
+                if (ios)
+                    assert.deepEqual(
+                        await page.evaluate(() => ({
+                            type: window.audioSessionFixture.session.type,
+                            contexts: window.audioSessionFixture.contexts.map(
+                                ({ type }) => type
+                            )
+                        })),
+                        { type: "playback", contexts: ["playback"] }
+                    );
                 await click("Hide First");
                 await page.waitForSelector(button("Pause First"), {
                     hidden: true
