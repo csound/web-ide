@@ -106,6 +106,7 @@ import { stopPerformance } from "@comp/csound/actions";
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+import MultilineChartRounded from "@mui/icons-material/MultilineChartRounded";
 import TuneRounded from "@mui/icons-material/TuneRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
 
@@ -128,6 +129,10 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    hetroEditor: {
+        title: "HETRO Editor",
+        component: React.lazy(() => import("@comp/hetro-tools/project-hetro"))
+    },
     mixer: {
         title: "Mixer",
         component: React.lazy(() =>
@@ -196,7 +201,8 @@ const specialistLaunchers: LauncherItem[] = [
         label: "Convolution Prep",
         Icon: FilterAltRounded
     },
-    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded }
+    { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded },
+    { type: "hetroEditor", label: "HETRO Editor", Icon: MultilineChartRounded }
 ];
 
 type LauncherItem = {
@@ -1352,6 +1358,7 @@ const ProjectEditor = ({
         "impulseResponse",
         "convolutionPrep",
         "scoreTools",
+        "hetroEditor",
         "mixer"
     ].includes(bottomTool || "");
     useEffect(() => {

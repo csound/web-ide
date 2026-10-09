@@ -377,6 +377,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                             ["sampleEditor", "Sample Editor"],
                             ["audioAnalysis", "Audio Analysis"],
                             ["scoreTools", "Score Converter"],
+                            ["hetroEditor", "HETRO Editor"],
                             ["mixer", "Mixer"]
                         ] as const
                     ).map(([type, label]) => {

@@ -63,6 +63,7 @@ jobs:
                         project-playback,
                         csd-diagnostics,
                         score-preprocessors,
+                        hetro-tools,
                         worker-hosting
                     ]
 

@@ -1,5 +1,10 @@
 import { runTool } from "../../src/components/audio-tools/runner";
 import {
+    convertHetro,
+    openHetro,
+    exampleText
+} from "../../src/components/hetro-tools/convert";
+import {
     buildMix,
     trackDefaults
 } from "../../src/components/audio-tools/mixer";
@@ -18,6 +23,15 @@ import {
 } from "../../src/components/audio-tools/impulse";
 
 const result = document.querySelector<HTMLOutputElement>("#result")!;
+(window as any).roundTripHetro = async () => {
+    const signal = new AbortController().signal;
+    const binary = await convertHetro(
+        { text: exampleText, name: "test" },
+        signal,
+        () => {}
+    );
+    return (await openHetro(binary, signal, () => {})) === exampleText;
+};
 (window as any).mixAudio = async () => {
     const audio = {
         sampleRate: 8000,

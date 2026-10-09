@@ -2,6 +2,8 @@ import type { ScoreProgram } from "../score-tools/programs";
 
 export type ToolName =
     | ScoreProgram
+    | "het_export"
+    | "het_import"
     | "mixer"
     | "mkir"
     | "cvanal"

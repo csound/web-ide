@@ -12,6 +12,8 @@ afterEach(() => {
 
 it.each([
     "envext",
+    "het_export",
+    "het_import",
     "mixer",
     "mkir",
     "cvanal",
