@@ -79,6 +79,11 @@ test(
                 [],
                 "WASM must not load before starting a tool"
             );
+            assert.equal(
+                await page.evaluate(() => window.roundTripLpc()),
+                true
+            );
+            assert.deepEqual(wasm, [], "LPC conversion needs no WASM download");
             await page.click("#generate");
             await page.waitForFunction(
                 () => document.querySelector("#result").textContent
@@ -94,6 +99,26 @@ test(
             );
             assert.equal(wasm.length, 1, "only the requested tool loads");
             assert.match(wasm[0], /\/mkir-[^/]+\.wasm$/);
+            assert.equal(
+                await page.evaluate(() => window.roundTripPvx()),
+                true
+            );
+            assert.equal(
+                await page.evaluate(() => window.roundTripHetro()),
+                true
+            );
+            for (const name of [
+                "pv_import",
+                "pv_export",
+                "het_import",
+                "het_export"
+            ])
+                assert.ok(
+                    wasm.some((url) =>
+                        new RegExp(`/${name}-[^/]+\\.wasm$`).test(url)
+                    ),
+                    `${name} loads on demand`
+                );
             const mix = await page.evaluate(() => window.mixAudio());
             assert.deepEqual(mix, { duration: 3, peak: 0.25, channels: 2 });
             assert.ok(wasm.some((url) => /\/mixer-[^/]+\.wasm$/.test(url)));

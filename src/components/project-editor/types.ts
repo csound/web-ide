@@ -58,6 +58,9 @@ export type WorkspaceTabType =
     | "impulseResponse"
     | "convolutionPrep"
     | "sdifConverter"
+    | "lpcEditor"
+    | "pvxEditor"
+    | "hetroEditor"
     | "mixer"
     | "scoreTools"
     | "piano";

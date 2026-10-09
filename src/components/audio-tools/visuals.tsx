@@ -192,7 +192,13 @@ export function Waveform({
 }
 
 /** Draw labelled Csound analysis curves or spectral energy using the current theme. */
-export function AnalysisGraph({ plot }: { plot: Plot }) {
+export function AnalysisGraph({
+    plot,
+    cursor
+}: {
+    plot: Plot;
+    cursor?: number;
+}) {
     const theme = useTheme();
     const draw = useCallback(
         (context: CanvasRenderingContext2D, width: number, height: number) => {
@@ -246,6 +252,18 @@ export function AnalysisGraph({ plot }: { plot: Plot }) {
                     context.stroke();
                 }
             }
+            if (cursor !== undefined && Number.isFinite(cursor)) {
+                const x =
+                    left + Math.max(0, Math.min(1, cursor / plot.duration)) * w;
+                context.strokeStyle = theme.textColor;
+                context.lineWidth = 1;
+                context.setLineDash([3, 3]);
+                context.beginPath();
+                context.moveTo(x, top);
+                context.lineTo(x, bottom);
+                context.stroke();
+                context.setLineDash([]);
+            }
             context.strokeStyle = theme.line;
             context.lineWidth = 1;
             context.beginPath();
@@ -257,7 +275,7 @@ export function AnalysisGraph({ plot }: { plot: Plot }) {
             context.font = `10px ${theme.font.monospace}`;
             context.textAlign = "right";
             for (let index = 0; index <= 4; index++) {
-                const value = (plot.max * index) / 4;
+                const value = plot.max * (index / 4);
                 context.fillText(
                     value >= 1000
                         ? `${(value / 1000).toFixed(1)}k`
@@ -271,7 +289,7 @@ export function AnalysisGraph({ plot }: { plot: Plot }) {
             for (let index = 0; index <= 4; index++) {
                 context.textAlign =
                     index === 0 ? "left" : index === 4 ? "right" : "center";
-                const value = (plot.duration * index) / 4;
+                const value = plot.duration * (index / 4);
                 context.fillText(
                     `${value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toFixed(2)} ${plot.kind === "lines" ? plot.xUnit || "s" : "s"}`,
                     left + (w * index) / 4,
@@ -279,7 +297,7 @@ export function AnalysisGraph({ plot }: { plot: Plot }) {
                 );
             }
         },
-        [plot, theme]
+        [plot, theme, cursor]
     );
     const { ref } = useCanvas(draw);
     return (

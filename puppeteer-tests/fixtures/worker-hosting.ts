@@ -1,4 +1,13 @@
+import { openLpcFile, updateLpc } from "../../src/components/lpc-tools/client";
+import { exampleText as lpcExampleText } from "../../src/components/lpc-tools/format";
+import { openPvxFile, updatePvx } from "../../src/components/pvx-tools/client";
+import { exampleText as pvxExampleText } from "../../src/components/pvx-tools/format";
 import { runTool } from "../../src/components/audio-tools/runner";
+import {
+    convertHetro,
+    openHetro,
+    exampleText
+} from "../../src/components/hetro-tools/convert";
 import {
     buildMix,
     trackDefaults
@@ -18,6 +27,15 @@ import {
 } from "../../src/components/audio-tools/impulse";
 
 const result = document.querySelector<HTMLOutputElement>("#result")!;
+(window as any).roundTripHetro = async () => {
+    const signal = new AbortController().signal;
+    const binary = await convertHetro(
+        { text: exampleText, name: "test" },
+        signal,
+        () => {}
+    );
+    return (await openHetro(binary, signal, () => {})) === exampleText;
+};
 (window as any).mixAudio = async () => {
     const audio = {
         sampleRate: 8000,
@@ -90,4 +108,22 @@ document.querySelector("#generate")!.addEventListener("click", async () => {
         partials: new DataView(converted.data.buffer).getInt16(0, true),
         duration: converted.duration
     };
+};
+(window as any).roundTripLpc = async () => {
+    const signal = new AbortController().signal;
+    const binary = await updateLpc(
+        { text: lpcExampleText, name: "test" },
+        signal,
+        () => {}
+    );
+    return (await openLpcFile(binary, signal, () => {})) === lpcExampleText;
+};
+(window as any).roundTripPvx = async () => {
+    const signal = new AbortController().signal;
+    const binary = await updatePvx(
+        { text: pvxExampleText, name: "test" },
+        signal,
+        () => {}
+    );
+    return (await openPvxFile(binary, signal, () => {})) === pvxExampleText;
 };
