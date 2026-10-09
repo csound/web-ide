@@ -377,6 +377,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                             ["sampleEditor", "Sample Editor"],
                             ["audioAnalysis", "Audio Analysis"],
                             ["scoreTools", "Score Converter"],
+                            ["sdifConverter", "SDIF Converter"],
                             ["lpcEditor", "LPC Editor"],
                             ["pvxEditor", "PVX Editor"],
                             ["hetroEditor", "HETRO Editor"],

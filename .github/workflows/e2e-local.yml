@@ -63,6 +63,7 @@ jobs:
                         project-playback,
                         csd-diagnostics,
                         score-preprocessors,
+                        sdif-tools,
                         lpc-tools,
                         pvx-tools,
                         hetro-tools,

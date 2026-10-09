@@ -11,6 +11,7 @@ afterEach(() => {
 });
 
 it.each([
+    "sdif2ad",
     "pv_export",
     "pv_import",
     "envext",
