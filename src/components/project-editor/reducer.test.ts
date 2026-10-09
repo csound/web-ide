@@ -1,8 +1,45 @@
 import { describe, expect, it } from "vitest";
 import ProjectEditorReducer from "./reducer";
-import { TAB_DOCK_INIT, MANUAL_LOOKUP_STRING } from "./types";
+import { TAB_DOCK_INIT, MANUAL_LOOKUP_STRING, OPEN_SIDEBAR_TAB } from "./types";
 
 describe("ProjectEditorReducer", () => {
+    it.each(["left", "right", "bottom"] as const)(
+        "keeps a manual lookup in the existing %s pane",
+        (sidebar) => {
+            const initial = ProjectEditorReducer(
+                ProjectEditorReducer(undefined, { type: "@@INIT" }),
+                {
+                    type: OPEN_SIDEBAR_TAB,
+                    sidebar,
+                    tabType: "manual"
+                }
+            );
+            const next = ProjectEditorReducer(initial, {
+                type: MANUAL_LOOKUP_STRING,
+                manualLookupString: "oscili"
+            });
+            expect(next.manualLookupString).toBe("oscili");
+            expect(next.manualLookupVersion).toBe(
+                initial.manualLookupVersion + 1
+            );
+            expect(next.leftSidebar).toEqual(initial.leftSidebar);
+            expect(next.rightSidebar).toEqual(initial.rightSidebar);
+            expect(next.bottomSidebar).toEqual(initial.bottomSidebar);
+            expect(next.nextTabNumber).toBe(initial.nextTabNumber);
+        }
+    );
+    it("reveals the manual when the editor was maximized", () => {
+        const initial = ProjectEditorReducer(undefined, { type: "@@INIT" });
+        const next = ProjectEditorReducer(
+            { ...initial, maximizedPanelId: initial.activePanelId },
+            {
+                type: MANUAL_LOOKUP_STRING,
+                manualLookupString: "oscili"
+            }
+        );
+        expect(next.maximizedPanelId).toBeNull();
+        expect(next.rightSidebar?.tabs[0].type).toBe("manual");
+    });
     it("repeats an opcode lookup without adding another manual panel", () => {
         const initial = ProjectEditorReducer(undefined, { type: "@@INIT" });
         const action = {

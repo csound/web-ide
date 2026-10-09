@@ -25,7 +25,10 @@ const editorCompletionSource: CompletionSource = (context) => {
 };
 
 /** Compose language support with the IDE's presentation choices. */
-export function csoundEditorLanguage(fileType?: string): Extension {
+export function csoundEditorLanguage(
+    fileType?: string,
+    onOpenManual?: (opcode: string) => void
+): Extension {
     const mode =
         fileType === "csd" || !fileType
             ? "csd"
@@ -45,7 +48,7 @@ export function csoundEditorLanguage(fileType?: string): Extension {
             autocomplete: editorCompletionSource
         }),
         csoundRateHighlighting(),
-        csoundSynopsis(),
+        csoundSynopsis(onOpenManual),
         indentUnit.of("  ")
     ];
 }

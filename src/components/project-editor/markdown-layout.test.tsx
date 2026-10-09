@@ -22,6 +22,7 @@ import ProjectEditorReducer from "./reducer";
 import { TAB_DOCK_INIT } from "./types";
 import {
     closePanel,
+    lookupManualString,
     movePanel,
     openSidebarTab,
     toggleMaximizePanel
@@ -240,6 +241,18 @@ it("opens the requesting project's console and hides its input after navigation"
     } finally {
         act(() => disconnect());
     }
+});
+
+it("shows the manual for each mobile lookup and lets the user return to editing", () => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue("iPhone");
+    const { store } = renderWorkspace();
+    expect(screen.getByTestId("notes")).toBeTruthy();
+    act(() => store.dispatch(lookupManualString("oscili")));
+    expect(screen.getByTitle("Csound reference manual")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByTestId("notes")).toBeTruthy();
+    act(() => store.dispatch(lookupManualString("oscili")));
+    expect(screen.getByTitle("Csound reference manual")).toBeTruthy();
 });
 
 it.each([false, true])(

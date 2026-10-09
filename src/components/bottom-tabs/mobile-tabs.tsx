@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "@root/store";
 import { FileTree } from "@comp/file-tree";
 import Console from "@comp/console/console";
 import MobileNavigation from "@comp/project-editor/mobile-navigation";
@@ -36,6 +37,16 @@ const MobileTabs = ({
     currentDocument: IDocument | IOpenDocument | undefined;
 }): React.ReactElement => {
     const [mobileTabIndex, setMobileTabIndex] = useState(0);
+    const manualLookupVersion = useSelector(
+        (state) => state.ProjectEditorReducer.manualLookupVersion
+    );
+    const lastManualLookup = useRef(manualLookupVersion);
+    useEffect(() => {
+        if (lastManualLookup.current !== manualLookupVersion) {
+            lastManualLookup.current = manualLookupVersion;
+            setMobileTabIndex(3);
+        }
+    }, [manualLookupVersion]);
     const temporaryUid = (currentDocument as IOpenDocument | undefined)
         ?.temporary
         ? (currentDocument as IOpenDocument).uid

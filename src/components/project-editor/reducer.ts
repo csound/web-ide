@@ -577,17 +577,25 @@ const ProjectEditorReducer = (
             return syncLegacyState({ ...state, root });
         }
         case MANUAL_LOOKUP_STRING: {
+            const manualOpen = [
+                state.leftSidebar,
+                state.rightSidebar,
+                state.bottomSidebar
+            ].some((sidebar) => hasSidebarTab(sidebar, "manual"));
             return syncLegacyState({
                 ...state,
                 manualLookupString: action.manualLookupString,
                 manualLookupVersion: (state.manualLookupVersion || 0) + 1,
-                rightSidebar: ensureUtilityTab(state.rightSidebar, {
-                    id: `sidebar-right-manual-${state.nextTabNumber}`,
-                    type: "manual",
-                    uid: "manual",
-                    editorInstance: undefined
-                }),
-                nextTabNumber: state.nextTabNumber + 1
+                maximizedPanelId: null,
+                rightSidebar: manualOpen
+                    ? state.rightSidebar
+                    : ensureUtilityTab(state.rightSidebar, {
+                          id: `sidebar-right-manual-${state.nextTabNumber}`,
+                          type: "manual",
+                          uid: "manual",
+                          editorInstance: undefined
+                      }),
+                nextTabNumber: state.nextTabNumber + (manualOpen ? 0 : 1)
             });
         }
         case TAB_DOCK_CLOSE: {
