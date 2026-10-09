@@ -1,7 +1,21 @@
 import { useSelector } from "@root/store";
 import { css, useTheme, Theme, SerializedStyles } from "@emotion/react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { _scrollbars } from "@styles/_common";
+
+const markdownComponents: Components = {
+    table: ({ children }) => (
+        <div
+            className="markdown-table"
+            role="region"
+            aria-label="Markdown table"
+            tabIndex={0}
+        >
+            <table>{children}</table>
+        </div>
+    )
+};
 
 const previewStyle = (theme: Theme): SerializedStyles => css`
     height: 100%;
@@ -106,6 +120,36 @@ const previewStyle = (theme: Theme): SerializedStyles => css`
     img {
         max-width: 100%;
     }
+
+    .markdown-table {
+        overflow-x: auto;
+        margin: 0 0 16px;
+        ${_scrollbars(theme)}
+
+        &:focus-visible {
+            outline: 2px solid ${theme.keyword};
+            outline-offset: -2px;
+        }
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 8px 12px;
+        border: 1px solid ${theme.line};
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background: ${theme.highlightBackground};
+        color: ${theme.headerTextColor};
+        font-weight: 600;
+    }
 `;
 
 export function MarkdownPreview({
@@ -124,7 +168,12 @@ export function MarkdownPreview({
 
     return (
         <div css={previewStyle(theme)}>
-            <ReactMarkdown>{content}</ReactMarkdown>
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={markdownComponents}
+            >
+                {content}
+            </ReactMarkdown>
         </div>
     );
 }
