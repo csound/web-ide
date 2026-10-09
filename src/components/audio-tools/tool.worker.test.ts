@@ -11,6 +11,8 @@ afterEach(() => {
 });
 
 it.each([
+    "pv_export",
+    "pv_import",
     "envext",
     "het_export",
     "het_import",

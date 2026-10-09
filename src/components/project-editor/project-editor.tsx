@@ -106,6 +106,7 @@ import { stopPerformance } from "@comp/csound/actions";
 import { ToolOverflow } from "./tool-overflow";
 import WavesRounded from "@mui/icons-material/WavesRounded";
 import FilterAltRounded from "@mui/icons-material/FilterAltRounded";
+import DataArrayRounded from "@mui/icons-material/DataArrayRounded";
 import MultilineChartRounded from "@mui/icons-material/MultilineChartRounded";
 import TuneRounded from "@mui/icons-material/TuneRounded";
 import QueueMusicRounded from "@mui/icons-material/QueueMusicRounded";
@@ -129,6 +130,10 @@ const utilityTabDefinitions: Record<
         component: React.ComponentType<any>;
     }
 > = {
+    pvxEditor: {
+        title: "PVX Editor",
+        component: React.lazy(() => import("@comp/pvx-tools/project-pvx"))
+    },
     hetroEditor: {
         title: "HETRO Editor",
         component: React.lazy(() => import("@comp/hetro-tools/project-hetro"))
@@ -202,6 +207,7 @@ const specialistLaunchers: LauncherItem[] = [
         Icon: FilterAltRounded
     },
     { type: "scoreTools", label: "Score Converter", Icon: QueueMusicRounded },
+    { type: "pvxEditor", label: "PVX Editor", Icon: DataArrayRounded },
     { type: "hetroEditor", label: "HETRO Editor", Icon: MultilineChartRounded }
 ];
 
@@ -1358,6 +1364,7 @@ const ProjectEditor = ({
         "impulseResponse",
         "convolutionPrep",
         "scoreTools",
+        "pvxEditor",
         "hetroEditor",
         "mixer"
     ].includes(bottomTool || "");
