@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    lazy,
+    Suspense,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react";
 import { useDispatch, useSelector } from "@root/store";
 import {
     backgroundValidation,
@@ -55,6 +63,14 @@ import { editorStyle } from "@styles/code-mirror-painter";
 import { useTheme } from "@emotion/react";
 import { codeMirrorTheme } from "@styles/code-mirror-theme";
 
+import { plotterAvailable } from "./ftgen/client";
+import {
+    tablePlots,
+    closeTablePlot,
+    type PlotSnapshot
+} from "./ftgen/extension";
+const TablePlotWindow = lazy(() => import("./ftgen/window"));
+
 export const openEditors: Map<string, EditorView> = new Map();
 
 const stateFields: Record<string, any> = {};
@@ -98,6 +114,7 @@ const CodeEditor = ({
     onBufferChange?: (value: string) => void;
 }) => {
     const theme = useTheme();
+    const [tablePlot, setTablePlot] = useState<PlotSnapshot | null>(null);
     const themeCompartment = useMemo(() => new Compartment(), []);
     const languageCompartment = useMemo(() => new Compartment(), []);
     const editorReference = useRef<HTMLDivElement>(null);
@@ -114,6 +131,15 @@ const CodeEditor = ({
         : (project?.documents?.[documentUid] ?? ({} as IDocument));
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
+    const plotCompartment = useMemo(() => new Compartment(), []);
+    const plotExtension = useMemo(
+        () =>
+            plotterAvailable &&
+            /\.(csd|orc|sco|udo)$/i.test(document.filename || "")
+                ? tablePlots(document.filename, setTablePlot)
+                : [],
+        [document.filename]
+    );
     const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
     const validationCompartment = useMemo(() => new Compartment(), []);
     const projectRef = useRef(project);
@@ -288,6 +314,7 @@ const CodeEditor = ({
                     closeBrackets(),
                     autocompletion(),
                     validationCompartment.of(validationExtension),
+                    plotCompartment.of(plotExtension),
                     getHistory(documentUid),
                     EditorView.updateListener.of(onChange),
                     crosshairCursor()
@@ -345,7 +372,9 @@ const CodeEditor = ({
         theme,
         themeCompartment,
         validationExtension,
-        validationCompartment
+        validationCompartment,
+        plotCompartment,
+        plotExtension
     ]);
 
     useEffect(() => {
@@ -373,6 +402,12 @@ const CodeEditor = ({
             }
         );
     }, [projectUid, documentUid]);
+
+    useEffect(() => {
+        openEditors.get(documentUid)?.dispatch({
+            effects: plotCompartment.reconfigure(plotExtension)
+        });
+    }, [documentUid, plotCompartment, plotExtension]);
 
     useEffect(() => {
         openEditors.get(documentUid)?.dispatch({
@@ -409,7 +444,26 @@ const CodeEditor = ({
         }
     }, [isMounted, documentUid, csoundFileType, csoundDocumentStateField]);
 
-    return <div ref={editorReference} css={editorStyle} />;
+    return (
+        <>
+            <div ref={editorReference} css={editorStyle} />
+            {tablePlot && (
+                <Suspense fallback={null}>
+                    <TablePlotWindow
+                        snapshot={tablePlot}
+                        onClose={() => {
+                            setTablePlot(null);
+                            const view = openEditors.get(documentUid);
+                            view?.dispatch({
+                                effects: closeTablePlot.of(null)
+                            });
+                            view?.focus();
+                        }}
+                    />
+                </Suspense>
+            )}
+        </>
+    );
 };
 
 export default CodeEditor;

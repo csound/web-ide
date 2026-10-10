@@ -18,6 +18,10 @@ in base.overrideAttrs (old: {
     chmod -R u+w ide-check
     python ide-check/runtime.py
     cat ide-check/CMakeLists.txt >> CMakeLists.txt
+    cp -r ${./csound-ftgen} ide-ftgen
+    chmod -R u+w ide-ftgen
+    python ide-ftgen/prepare.py
+    cat ide-ftgen/CMakeLists.txt >> CMakeLists.txt
     substituteInPlace Engine/new_orc_parser.c \
       --replace-fail 'csoundLoadRequestedPlugins(csound)' '0'
   '';
@@ -28,7 +32,7 @@ in base.overrideAttrs (old: {
     cmake --build . --parallel "$NIX_BUILD_CORES" --target csound-metadata
     wasmtime run -Wexceptions=y -Ccache=n ./csound-metadata > signatures.h
     test "$(wc -l < signatures.h)" -gt 1000
-    cmake --build . --parallel "$NIX_BUILD_CORES" --target csound-check plugin-types plugin-types-fixture
+    cmake --build . --parallel "$NIX_BUILD_CORES" --target csound-check plugin-types plugin-types-fixture csound-ftgen
     printf 'prints "MUST NOT RUN"\ninstr 1\na1 = oscili(0.1, 440)\nendin\n' > valid.orc
     wasmtime run -Wexceptions=y -Ccache=n --dir=. ./csound-check valid.orc > valid.log 2>&1
     ! grep -q 'MUST NOT RUN' valid.log
@@ -37,10 +41,14 @@ in base.overrideAttrs (old: {
     wasmtime run -Wexceptions=y -Ccache=n --dir=. ./csound-check invalid.orc > invalid.log 2>&1 || status=$?
     test "$status" -eq 1
     grep -q 'line 2' invalid.log
+    printf '1 48000\n5 - 1 0 8 10 1\n' | wasmtime run -Wexceptions=y -Ccache=n ./csound-ftgen > table.bin
+    python -c 'import struct; b=open("table.bin", "rb").read(); assert len(b)==76; assert struct.unpack_from("<I", b)[0]==8; assert abs(struct.unpack_from("<d", b, 20)[0]-1)<1e-12'
+    test "$(wc -c < csound-ftgen)" -lt 200000
     runHook postBuild
   '';
   installPhase = ''
     mkdir -p $out
+    cp csound-ftgen $out/csound-ftgen.wasm
     cp csound-check $out/csound-check.wasm
     cp plugin-types $out/plugin-types.wasm
     cp plugin-types-fixture $out/plugin-types-fixture.wasm

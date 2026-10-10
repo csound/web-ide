@@ -55,7 +55,12 @@ test("copies all artifacts from the trimmed final absolute output path", (t) => 
     const f = fixture(t);
     const output = join(f.root, "nix output");
     mkdirSync(output);
-    const names = ["csound-check", "plugin-types", "plugin-types-fixture"];
+    const names = [
+        "csound-check",
+        "plugin-types",
+        "plugin-types-fixture",
+        "csound-ftgen"
+    ];
     for (const name of names) writeFileSync(join(output, `${name}.wasm`), name);
     const result = f.run(`build output\n  ${output}  \n\n`);
     assert.equal(result.status, 0, result.stderr);

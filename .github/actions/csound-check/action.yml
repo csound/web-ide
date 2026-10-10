@@ -1,5 +1,5 @@
-name: Build Csound checker
-description: Build the pinned parser WASM required in CI and deployments.
+name: Build Csound editor tools
+description: Build the pinned parser and GEN WASM required in CI and deployments.
 inputs:
     cachix-auth-token:
         description: Optional Cachix write token supplied by deployment workflows.
@@ -20,4 +20,4 @@ runs:
         - shell: bash
           run: npm run checker:build -- --required
         - shell: bash
-          run: npm run test:ci -- src/components/editor/validation/run.test.ts
+          run: npm run test:ci -- src/components/editor/validation/run.test.ts src/components/editor/ftgen/run.test.ts
