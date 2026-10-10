@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+    type ReactNode
+} from "react";
 import { useTheme } from "@emotion/react";
 import { plotIndices, type PlotGuide } from "./annotations";
 const format = (n: number) =>
@@ -19,7 +27,7 @@ export function TableGraph({
     const container = useRef<HTMLDivElement>(null);
     const cursor = useRef<SVGGElement>(null);
     const readout = useRef<HTMLOutputElement>(null);
-    const selected = useRef(0);
+    const selected = useRef<number | null>(null);
     const [size, setSize] = useState({ width: 640, height: 270 });
     useEffect(() => {
         const observer = new ResizeObserver(([entry]) =>
@@ -71,14 +79,28 @@ export function TableGraph({
                 .join(" ")
         };
     }, [samples, size]);
-    const inspect = (index: number) => {
-        const i = Math.max(0, Math.min(samples.length - 1, Math.round(index)));
-        selected.current = i;
-        cursor.current?.setAttribute("transform", `translate(${data.x(i)},0)`);
-        cursor.current?.setAttribute("visibility", "visible");
-        if (readout.current)
-            readout.current.value = `${i === samples.length - 1 ? "Guard point" : `Sample ${i}`}   ${format(samples[i])}`;
-    };
+    const inspect = useCallback(
+        (index: number) => {
+            const i = Math.max(
+                0,
+                Math.min(samples.length - 1, Math.round(index))
+            );
+            selected.current = i;
+            cursor.current?.setAttribute(
+                "transform",
+                `translate(${data.x(i)},0)`
+            );
+            cursor.current?.setAttribute("visibility", "visible");
+            if (readout.current)
+                readout.current.value = `${i === samples.length - 1 ? "Guard point" : `Sample ${i}`}   ${format(samples[i])}`;
+        },
+        [samples, data]
+    );
+    // Keep inspection in sync after edits and resize without a React render
+    // for each pointer move. Clamp the index if the table has become shorter.
+    useLayoutEffect(() => {
+        if (selected.current !== null) inspect(selected.current);
+    }, [inspect]);
     return (
         <div
             css={{
@@ -106,7 +128,7 @@ export function TableGraph({
                                 (samples.length - 1)
                         );
                     }}
-                    onFocus={() => inspect(selected.current)}
+                    onFocus={() => inspect(selected.current ?? 0)}
                     onKeyDown={(event) => {
                         if (
                             ["ArrowLeft", "ArrowRight", "Home", "End"].includes(
@@ -119,7 +141,7 @@ export function TableGraph({
                                     ? 0
                                     : event.key === "End"
                                       ? samples.length - 1
-                                      : selected.current +
+                                      : (selected.current ?? 0) +
                                         (event.key === "ArrowLeft" ? -1 : 1) *
                                             (event.shiftKey ? 100 : 1)
                             );

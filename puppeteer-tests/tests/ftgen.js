@@ -131,3 +131,90 @@ test(
         }
     }
 );
+
+test(
+    "table inspection follows sample edits and resizing",
+    { skip: targetName !== "local", timeout: 60000 },
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            await page.goto(
+                `${target.baseUrl}/puppeteer-tests/fixtures/ftgen.html`
+            );
+            await page.waitForFunction(() => window.ftgenFixture?.text());
+            if (!(await page.evaluate(() => window.ftgenFixture.available)))
+                return;
+            await page.evaluate(() =>
+                window.ftgenFixture.replace(
+                    "0,0,1024,7,1,5,-0.6,246,0.3,5,-0.3,251,0.6,5,-1,512,1",
+                    "0,0,8,-7,0,8,1"
+                )
+            );
+            await page.click(".cm-ftgen-link");
+            const graph = '[role="dialog"] svg[role="img"]';
+            const readout = '[role="dialog"] output';
+            await page.waitForSelector(graph);
+            assert.equal(
+                await page.$eval(readout, (node) => node.value),
+                "Point to the curve to inspect"
+            );
+            await page.$eval(graph, (svg) => svg.focus());
+            await page.keyboard.press("ArrowRight");
+            assert.match(
+                await page.$eval(readout, (node) => node.value),
+                /^Sample 1\s+0\.125$/
+            );
+            await page.evaluate(() =>
+                window.ftgenFixture.replace("8,-7,0,8,1", "8,-7,0,8,2")
+            );
+            await page.waitForFunction(() =>
+                /^Sample 1\s+0\.25$/.test(
+                    document.querySelector('[role="dialog"] output')?.value
+                )
+            );
+            await page.$eval(graph, (svg) => svg.focus());
+            await page.keyboard.press("End");
+            await page.evaluate(() =>
+                window.ftgenFixture.replace("8,-7,0,8,2", "4,-7,1,4,3")
+            );
+            await page.waitForFunction(() =>
+                /^Guard point\s+1$/.test(
+                    document.querySelector('[role="dialog"] output')?.value
+                )
+            );
+            const width = await page.$eval(
+                graph,
+                (svg) => svg.viewBox.baseVal.width
+            );
+            await page.focus('[aria-label="Resize table plot"]');
+            await page.keyboard.press("ArrowLeft");
+            await page.waitForFunction(
+                (previousWidth) => {
+                    const svg = document.querySelector(
+                        '[role="dialog"] svg[role="img"]'
+                    );
+                    const cursor = svg.querySelector(
+                        'g[pointer-events="none"]'
+                    );
+                    const x = cursor.transform.baseVal.consolidate().matrix.e;
+                    return (
+                        svg.viewBox.baseVal.width < previousWidth &&
+                        Math.abs(x - (svg.viewBox.baseVal.width - 20)) < 0.01
+                    );
+                },
+                {},
+                width
+            );
+            // Keyboard inspection must resume at the clamped index, too.
+            await page.$eval(graph, (svg) => svg.focus());
+            await page.keyboard.press("ArrowLeft");
+            assert.match(
+                await page.$eval(readout, (node) => node.value),
+                /^Sample 3\s+2\.5$/
+            );
+        } finally {
+            await browser.close();
+        }
+    }
+);

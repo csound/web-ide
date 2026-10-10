@@ -44,6 +44,27 @@ describe("table source", () => {
         );
         expect(request.tables.map((t) => t.fields[3])).toEqual([10, -24]);
     });
+    it.each([
+        "giWave = ftgen(0, 0, 1024, 10, 1)",
+        "  giWave = ftgen:i(0, 0, 1024, 10, 1)",
+        "  giWave = ftgen(\n    0, 0, 1024, 10, 1\n  )",
+        "giWave:i = ftgen(0, 0, 1024, 10, 1)"
+    ])("resolves a function-form source table: %s", (source) => {
+        const request = resolve(
+            `${source}\ngiShape = ftgen(0,0,1024,-24,giWave,-2,2)`
+        );
+        expect(request.tables.map((t) => t.fields)).toEqual([
+            [101, 0, 1024, 10, 1],
+            [102, 0, 1024, -24, 101, -2, 2]
+        ]);
+    });
+    it("still invalidates a table variable reassigned to a runtime value", () => {
+        expect(() =>
+            resolve(
+                "giWave = ftgen(0,0,1024,10,1)\ngiWave = p4\ngiShape ftgen 0,0,1024,-24,giWave,-2,2"
+            )
+        ).toThrow(/numeric/);
+    });
     it("rejects runtime parameters and missing sources without evaluating code", () => {
         expect(() => resolve("giWave ftgen 0,0,1024,10,p4")).toThrow(/numeric/);
         expect(() => resolve("giWave ftgen 2,0,1024,24,1,0,1")).toThrow(
@@ -91,5 +112,14 @@ describe("table source", () => {
         expect(
             resolve("f1 0 [(2^3)*4] 10 1", "piece.sco").tables[0].fields[2]
         ).toBe(32);
+    });
+    it.each([
+        ["8 / -2 / 2", -8],
+        ["8 / +2 / 2", 8],
+        ["8 / (-2) / 2", -2],
+        ["8 / -2 * 2", -2],
+        ["8 / -2^2 / 2", -4]
+    ])("matches native Csound's unary precedence for %s", (text, expected) => {
+        expect(numberExpression(text)).toBe(expected);
     });
 });

@@ -149,6 +149,8 @@ export function numberExpression(
         throw new Error("Expression is too large to preview.");
     const atom = (): number => {
         const token = tokens[at++];
+        // Csound's orchestra grammar gives unary signs the precedence of +/-,
+        // below products: 8 / -2 / 2 means 8 / -(2 / 2), which is -8.
         if (token === "+") return score ? atom() : product();
         if (token === "-") return score ? -atom() : -product();
         if (token === "(" || token === "[") {
@@ -239,7 +241,13 @@ export function tableRequest(
     const constants = maskComments(text)
         .slice(0, selected.end)
         .matchAll(/^\s*(g?i\w*|sr)\s*(?:=|init\b)\s*([^\n]+)$/gm);
-    const constantList = [...constants];
+    // Function-form ftgen assignments already resolve as tables. Treating one
+    // as a constant on the next pass would erase its resolved table number.
+    const tableStarts = new Set(definitions.map((d) => d.from));
+    const constantList = [...constants].filter(
+        (constant) =>
+            !tableStarts.has(constant.index! + constant[0].search(/\S/))
+    );
     const resolved = new Map<
         number,
         { fields: number[]; gen?: string; definition: TableDefinition }
