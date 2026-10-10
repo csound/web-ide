@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import {
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+    type PointerEvent
+} from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "@emotion/react";
 import IconButton from "@mui/material/IconButton";
@@ -16,6 +23,7 @@ import { tableRequest, type TableRequest } from "./source";
 import type { PlotSnapshot } from "./extension";
 import { plotGuide } from "./annotations";
 import { TableGraph } from "./graph";
+import { registerPlotWindow } from "./window-focus";
 
 type Rect = { left: number; top: number; width: number; height: number };
 const clampRect = (rect: Rect): Rect => {
@@ -36,7 +44,7 @@ export default function TablePlotWindow({
     onClose
 }: {
     snapshot: PlotSnapshot;
-    onClose: () => void;
+    onClose: (restoreEditorFocus: boolean) => void;
 }) {
     const theme = useTheme();
     const [rect, setRect] = useState(() =>
@@ -56,10 +64,22 @@ export default function TablePlotWindow({
     const [error, setError] = useState("");
     const [busy, setBusy] = useState(true);
     const frame = useRef<HTMLDivElement>(null);
-    const title = useRef<HTMLSpanElement>(null);
-    useEffect(() => {
-        title.current?.focus({ preventScroll: true });
+    const focus = useRef<ReturnType<typeof registerPlotWindow>>();
+    useLayoutEffect(() => {
+        const registration = registerPlotWindow(frame.current!);
+        focus.current = registration;
+        return () => {
+            registration.dispose();
+            focus.current = undefined;
+        };
+    }, []);
+    useLayoutEffect(() => {
+        frame.current?.focus({ preventScroll: true });
     }, [minimized]);
+    const close = () => {
+        if (focus.current) focus.current.close(onClose);
+        else onClose(true);
+    };
     const drag = useRef<{
         x: number;
         y: number;
@@ -271,12 +291,25 @@ export default function TablePlotWindow({
         <div
             ref={frame}
             role="dialog"
+            tabIndex={-1}
             aria-modal="false"
             aria-label={`Function table ${snapshot.selected.name}`}
+            onFocusCapture={() => focus.current?.activate()}
+            onPointerDownCapture={(event) => {
+                if (event.button !== 0) return;
+                focus.current?.activate();
+                if (!event.currentTarget.contains(document.activeElement))
+                    event.currentTarget.focus({ preventScroll: true });
+            }}
             onKeyDown={(event) => {
-                if (event.key === "Escape") {
+                if (
+                    event.key === "Escape" &&
+                    !event.defaultPrevented &&
+                    !event.nativeEvent.isComposing
+                ) {
+                    event.preventDefault();
                     event.stopPropagation();
-                    onClose();
+                    if (!event.repeat) close();
                 }
             }}
             style={
@@ -302,6 +335,7 @@ export default function TablePlotWindow({
                 borderRadius: 10,
                 boxShadow: "0 12px 48px #0005",
                 overflow: "auto",
+                outline: "none",
                 boxSizing: "border-box"
             }}
         >
@@ -323,7 +357,6 @@ export default function TablePlotWindow({
             >
                 <ShowChartIcon css={{ color: theme.iRateVar, fontSize: 20 }} />
                 <span
-                    ref={title}
                     tabIndex={0}
                     title="Drag to move. Use arrow keys here to move the window."
                     onKeyDown={(event) => {
@@ -365,6 +398,7 @@ export default function TablePlotWindow({
                         minWidth: 0,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        outline: "none",
                         whiteSpace: "nowrap"
                     }}
                 >
@@ -399,7 +433,7 @@ export default function TablePlotWindow({
                 )}
                 {button(
                     "Close table plot",
-                    onClose,
+                    close,
                     <CloseIcon fontSize="small" />
                 )}
             </header>
