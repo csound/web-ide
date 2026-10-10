@@ -1,14 +1,13 @@
-import admin from "firebase-admin";
-import functions from "firebase-functions/v1";
+import { getAuth, type UserRecord } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
+import * as functions from "firebase-functions/v1";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { log } from "firebase-functions/logger";
 
-const deleteUserDocument = async (
-    user: admin.auth.UserRecord
-): Promise<void> => {
+const deleteUserDocument = async (user: UserRecord): Promise<void> => {
     log(`deleteUserDocument: Deleting user document for: ${user.displayName}`);
     try {
-        await admin.firestore().collection("users").doc(user.uid).delete();
+        await getFirestore().collection("users").doc(user.uid).delete();
     } catch (error) {
         log(
             "error: " + JSON.stringify(error, Object.getOwnPropertyNames(error))
@@ -16,12 +15,10 @@ const deleteUserDocument = async (
     }
 };
 
-const deleteProfileDocument = async (
-    user: admin.auth.UserRecord
-): Promise<void> => {
+const deleteProfileDocument = async (user: UserRecord): Promise<void> => {
     log(`deleteProfileDocument: Deleting profile for: ${user.displayName}`);
     try {
-        await admin.firestore().collection("profiles").doc(user.uid).delete();
+        await getFirestore().collection("profiles").doc(user.uid).delete();
     } catch (error) {
         log(
             "error: " + JSON.stringify(error, Object.getOwnPropertyNames(error))
@@ -29,18 +26,15 @@ const deleteProfileDocument = async (
     }
 };
 
-const deleteUsernameDocument = async (
-    user: admin.auth.UserRecord
-): Promise<void> => {
+const deleteUsernameDocument = async (user: UserRecord): Promise<void> => {
     log(`deleteUsernameDocument: Deleting username of: ${user.displayName}`);
     try {
-        const querySnapshot = await admin
-            .firestore()
+        const querySnapshot = await getFirestore()
             .collection("usernames")
             .where("userUid", "==", user.uid)
             .get();
         for (const doc of querySnapshot.docs) {
-            await admin.firestore().doc(doc.ref.path).delete();
+            await getFirestore().doc(doc.ref.path).delete();
         }
     } catch (error) {
         log(
@@ -49,21 +43,18 @@ const deleteUsernameDocument = async (
     }
 };
 
-const deleteUserProjects = async (
-    user: admin.auth.UserRecord
-): Promise<void> => {
+const deleteUserProjects = async (user: UserRecord): Promise<void> => {
     log(`deleteProjects: Deleting projects created by: ${user.displayName}`);
-    const batch = admin.firestore().batch();
+    const batch = getFirestore().batch();
     try {
-        const allProjectsRef = await admin
-            .firestore()
+        const allProjectsRef = await getFirestore()
             .collection("projects")
             .where("userUid", "==", user.uid)
             .get();
 
         await Promise.all(
             allProjectsRef.docs.map(async (doc) => {
-                const projectRef = admin.firestore().doc(doc.ref.path);
+                const projectRef = getFirestore().doc(doc.ref.path);
                 const projectSubcolls = await projectRef.listCollections();
 
                 for (const subcoll of projectSubcolls) {
@@ -73,8 +64,7 @@ const deleteUserProjects = async (
                     });
                 }
 
-                const projectLastModifiedRef = admin
-                    .firestore()
+                const projectLastModifiedRef = getFirestore()
                     .collection("projectLastModified")
                     .doc(projectRef.id);
                 batch.delete(projectLastModifiedRef);
@@ -90,18 +80,12 @@ const deleteUserProjects = async (
     }
 };
 
-const deleteProjectsCount = async (
-    user: admin.auth.UserRecord
-): Promise<void> => {
+const deleteProjectsCount = async (user: UserRecord): Promise<void> => {
     log(
         `deleteProjectsCount: Deleting projectsCount for: ${user.displayName} under ${user.uid}`
     );
     try {
-        await admin
-            .firestore()
-            .collection("projectsCount")
-            .doc(user.uid)
-            .delete();
+        await getFirestore().collection("projectsCount").doc(user.uid).delete();
     } catch (error) {
         log(
             "error: " + JSON.stringify(error, Object.getOwnPropertyNames(error))
@@ -109,9 +93,7 @@ const deleteProjectsCount = async (
     }
 };
 
-const cleanupDeletedUserData = async (
-    user: admin.auth.UserRecord
-): Promise<void> => {
+const cleanupDeletedUserData = async (user: UserRecord): Promise<void> => {
     await deleteUserProjects(user);
     await deleteProfileDocument(user);
     await deleteUserDocument(user);
@@ -142,9 +124,9 @@ export const deleteAccount = onCall({ cors: true }, async (request) => {
     }
 
     try {
-        const user = await admin.auth().getUser(auth.uid);
+        const user = await getAuth().getUser(auth.uid);
         await cleanupDeletedUserData(user);
-        await admin.auth().deleteUser(auth.uid);
+        await getAuth().deleteUser(auth.uid);
 
         return { success: true };
     } catch (error) {

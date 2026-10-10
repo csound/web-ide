@@ -1,10 +1,10 @@
-import { Timestamp } from "firebase-admin/firestore";
-import admin from "firebase-admin";
-import functions from "firebase-functions/v1";
+import { type UserRecord } from "firebase-admin/auth";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
+import * as functions from "firebase-functions/v1";
 import { log } from "firebase-functions/logger";
 import { ensureProfileUsername } from "./profile_username.js";
 
-async function createProfileDocument(user: admin.auth.UserRecord) {
+async function createProfileDocument(user: UserRecord) {
     log(
         `createProfileDocument: Adding: ${user.displayName}, uid: ${user.uid} to profiles`
     );
@@ -20,7 +20,7 @@ async function createProfileDocument(user: admin.auth.UserRecord) {
         userJoinDate: Timestamp.now()
     };
 
-    return ensureProfileUsername(admin.firestore(), user.uid, profileDoc);
+    return ensureProfileUsername(getFirestore(), user.uid, profileDoc);
 }
 
 export const newUserCallback = functions

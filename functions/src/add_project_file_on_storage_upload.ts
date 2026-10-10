@@ -1,8 +1,8 @@
-import admin from "firebase-admin";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { log } from "firebase-functions/logger";
 
-const newTimestamp = admin.firestore.FieldValue.serverTimestamp();
+const newTimestamp = FieldValue.serverTimestamp();
 
 export const addProjectFileOnStorageUploadCallback = onObjectFinalized(
     async (event) => {
@@ -20,8 +20,7 @@ export const addProjectFileOnStorageUploadCallback = onObjectFinalized(
                     `addProjectFileOnStorageUploadCallback: Adding project file entry in Firestore: ${collection} ${docUid} ${filename}`
                 );
 
-                await admin
-                    .firestore()
+                await getFirestore()
                     .collection("projects")
                     .doc(projectUid)
                     .collection("files")

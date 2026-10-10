@@ -15,7 +15,7 @@ export function requestedPlugins(source: string): PluginRequest[] {
     const body = match[1];
     const offset = match.index + match[0].indexOf(">") + 1;
     const tokens: { value: string; start: number }[] = [];
-    for (let i = 0; i < body.length; ) {
+    for (let i = 0; i < body.length;) {
         if (/\s/.test(body[i])) {
             i++;
             continue;

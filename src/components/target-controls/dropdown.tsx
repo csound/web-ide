@@ -59,7 +59,7 @@ export default function TargetDropdown({
             css={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}
         >
             {mode === "playlist" && (
-                <Select
+                <Select<number | string>
                     size="small"
                     value={documents.length ? index : ""}
                     disabled={

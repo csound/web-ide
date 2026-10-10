@@ -148,7 +148,9 @@ const ProjectProfileMeta = (): React.ReactElement => {
                                 <CachedAvatar
                                     variant="square"
                                     src={profileImage}
-                                    imgProps={{ style: { objectFit: "cover" } }}
+                                    slotProps={{
+                                        img: { style: { objectFit: "cover" } }
+                                    }}
                                 >
                                     <AccountBox />
                                 </CachedAvatar>

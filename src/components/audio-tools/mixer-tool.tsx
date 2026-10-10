@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
@@ -186,7 +187,7 @@ export default function MixerTool({
     const download = () => {
         if (!result || !exportReady) return;
         const href = URL.createObjectURL(
-            new Blob([result.data], { type: "audio/wav" })
+            blobFromBytes(result.data, { type: "audio/wav" })
         );
         const anchor = document.createElement("a");
         anchor.href = href;

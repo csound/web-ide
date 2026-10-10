@@ -537,8 +537,12 @@ export const ProjectModal = (properties: IProjectModal) => {
                     )}
                     <FieldStack>
                         <TextField
+                            slotProps={{
+                                htmlInput: isFork
+                                    ? { maxLength: 200 }
+                                    : undefined
+                            }}
                             label="Project name"
-                            inputProps={isFork ? { maxLength: 200 } : undefined}
                             error={isEmpty(name.trim())}
                             helperText={
                                 isEmpty(name.trim())
@@ -553,10 +557,12 @@ export const ProjectModal = (properties: IProjectModal) => {
                             size="small"
                         />
                         <TextField
+                            slotProps={{
+                                htmlInput: isFork
+                                    ? { maxLength: 5000 }
+                                    : undefined
+                            }}
                             label="Description"
-                            inputProps={
-                                isFork ? { maxLength: 5000 } : undefined
-                            }
                             value={description}
                             multiline
                             minRows={3}
@@ -711,9 +717,7 @@ export const ProjectModal = (properties: IProjectModal) => {
 
                                                 return (
                                                     <Grid
-                                                        item
-                                                        xs={3}
-                                                        sm={3}
+                                                        size={{ xs: 3, sm: 3 }}
                                                         key={index}
                                                     >
                                                         <IconButton

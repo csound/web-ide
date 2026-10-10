@@ -46,7 +46,7 @@ test(
                         )
                 );
             const edit = async (label, value) => {
-                await page.click(`[aria-label="${label}"]`, { clickCount: 3 });
+                await page.click(`[aria-label="${label}"]`, { count: 3 });
                 await page.keyboard.type(value);
             };
             await mkdir("screenshots", { recursive: true });

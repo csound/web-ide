@@ -66,6 +66,7 @@ export function getBuildInputs(root) {
     for (const file of [
         "scripts/prepare-manual.mjs",
         "scripts/build-manual-theme.mjs",
+        "scripts/browser-targets.mjs",
         "package-lock.json",
         "src/styles/manual-page-theme.ts",
         "src/styles/manual-theme.ts",

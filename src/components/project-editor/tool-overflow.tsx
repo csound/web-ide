@@ -174,27 +174,29 @@ export function ToolOverflow({
                 <ExpandLessRounded fontSize="small" />
             </button>
             <Menu
-                id={id}
-                PaperProps={{
-                    sx: {
-                        background: theme.headerBackground,
-                        color: theme.textColor,
-                        border: `1px solid ${theme.line}`,
-                        "& .MuiListItemIcon-root": {
-                            color: theme.altTextColor
-                        },
-                        "& .MuiMenuItem-root": { fontSize: 12 },
-                        "& .Mui-selected, & .MuiMenuItem-root:hover": {
-                            background: theme.highlightBackgroundAlt
+                slotProps={{
+                    paper: {
+                        sx: {
+                            background: theme.headerBackground,
+                            color: theme.textColor,
+                            border: `1px solid ${theme.line}`,
+                            "& .MuiListItemIcon-root": {
+                                color: theme.altTextColor
+                            },
+                            "& .MuiMenuItem-root": { fontSize: 12 },
+                            "& .Mui-selected, & .MuiMenuItem-root:hover": {
+                                background: theme.highlightBackgroundAlt
+                            }
                         }
-                    }
+                    },
+                    list: { "aria-label": "More tools" }
                 }}
+                id={id}
                 anchorEl={anchor}
                 open={Boolean(anchor) && overflow.length > 0}
                 onClose={() => setAnchor(null)}
                 anchorOrigin={{ vertical: "top", horizontal: "left" }}
                 transformOrigin={{ vertical: "bottom", horizontal: "left" }}
-                MenuListProps={{ "aria-label": "More tools" }}
             >
                 {overflow.map(({ type, label, Icon }) => (
                     <MenuItem

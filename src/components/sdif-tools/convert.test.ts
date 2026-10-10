@@ -121,7 +121,7 @@ it("remaps sparse track IDs, zero IDs and isolates the chosen stream", async () 
     const first = exampleSdif(),
         second = first.slice(),
         v = new DataView(second.buffer);
-    for (let offset = 16; offset < second.length; ) {
+    for (let offset = 16; offset < second.length;) {
         v.setUint32(offset + 16, 42);
         for (let row = 0; row < 3; row++)
             v.setFloat32(offset + 40 + row * 16, row === 0 ? 0 : 9000 + row);
@@ -163,7 +163,7 @@ it("accepts float64 matrices before normalizing for the float32-only native read
     const source = exampleSdif(),
         input = new DataView(source.buffer),
         parts = [source.subarray(0, 16)];
-    for (let offset = 16; offset < source.length; ) {
+    for (let offset = 16; offset < source.length;) {
         const oldSize = input.getUint32(offset + 4) + 8,
             rows = input.getUint32(offset + 32),
             part = new Uint8Array(40 + rows * 32),

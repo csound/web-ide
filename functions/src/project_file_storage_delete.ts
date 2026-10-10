@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { log } from "firebase-functions/logger";
 
@@ -9,8 +9,8 @@ async function projectFileStorageDelete(binaryUrl: string): Promise<void> {
 
     const configuredBucket = process.env.STORAGE_BUCKET_URL?.trim();
     const bucket = configuredBucket
-        ? admin.storage().bucket(configuredBucket)
-        : admin.storage().bucket();
+        ? getStorage().bucket(configuredBucket)
+        : getStorage().bucket();
 
     if (!configuredBucket) {
         log(

@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     createReadCache,
@@ -26,8 +26,7 @@ const shuffle = <T>(items: T[]): T[] => {
 
 const acceptRequest = createRequestLimiter();
 const loadProjectIds = createReadCache(async () => {
-    const snapshot = await admin
-        .firestore()
+    const snapshot = await getFirestore()
         .collection("projects")
         .where("public", "==", true)
         .orderBy("created", "desc")

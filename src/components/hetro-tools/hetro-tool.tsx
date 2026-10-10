@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
@@ -116,7 +117,7 @@ export default function HetroTool({
         }
     };
     const download = (file: ToolFile) => {
-        const url = URL.createObjectURL(new Blob([file.data]));
+        const url = URL.createObjectURL(blobFromBytes(file.data));
         const anchor = document.createElement("a");
         anchor.href = url;
         anchor.download = file.name;

@@ -889,7 +889,6 @@ const WorkspaceNodeView = ({
                         );
                         return;
                     }
-
                     dispatch(closePanelTab(node.id, tab.id));
                 }}
                 renderTabContent={(tab) =>
@@ -1102,8 +1101,8 @@ const SidebarLaunchers = ({
             -1;
         const isActive = Boolean(
             currentSidebar &&
-                tabIndex > -1 &&
-                currentSidebar.tabIndex === tabIndex
+            tabIndex > -1 &&
+            currentSidebar.tabIndex === tabIndex
         );
         const Icon = item.Icon;
 
@@ -1464,9 +1463,7 @@ const ProjectEditor = ({
                         ? activeProject.documents[currentMobileTab.uid]
                         : undefined) ||
                     (mobileOpenDocuments[tabIndex] as
-                        | IDocument
-                        | IOpenDocument
-                        | undefined)
+                        IDocument | IOpenDocument | undefined)
                 }
             />
         </>

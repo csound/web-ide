@@ -155,8 +155,7 @@ export async function runCheck(
     for (const line of records) {
         try {
             const { origins, ...record } = JSON.parse(line) as (
-                | UdoDeclaration
-                | UnknownCall
+                UdoDeclaration | UnknownCall
             ) & { origins?: string[] };
             if ("kind" in record && record.kind === "unknownCall") {
                 // A macro body has no reliable column in its caller's source.

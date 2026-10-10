@@ -183,8 +183,7 @@ export const useDnDState = (): DnDState | undefined => {
 };
 
 export const useDnDDispatch = ():
-    | undefined
-    | ((dispatch: Record<string, any>) => void) => {
+    undefined | ((dispatch: Record<string, any>) => void) => {
     const context = useContext(DnDDispatchContext);
     if (context === undefined) {
         throw new Error("useDnD must be used within a DnDProvider");

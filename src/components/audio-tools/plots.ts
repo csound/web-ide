@@ -8,7 +8,7 @@ function pvxLayout(bytes: Uint8Array) {
     let format = 0,
         data = 0,
         size = 0;
-    for (let offset = 12; offset + 8 <= bytes.length; ) {
+    for (let offset = 12; offset + 8 <= bytes.length;) {
         const length = view.getUint32(offset + 4, true);
         if (offset + 8 + length > bytes.length)
             throw new Error("Incomplete analysis file.");

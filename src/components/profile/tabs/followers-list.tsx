@@ -28,10 +28,12 @@ export const FollowersList = ({
     if (isLoading) {
         return (
             <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                minHeight="200px"
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "200px"
+                }}
             >
                 <CircularProgress size={40} />
             </Box>
@@ -41,12 +43,14 @@ export const FollowersList = ({
     if (!filteredFollowers || filteredFollowers.length === 0) {
         return (
             <Box
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="center"
-                minHeight="200px"
-                padding={3}
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "200px",
+                    padding: 3
+                }}
             >
                 <PersonIcon
                     sx={{
@@ -59,9 +63,9 @@ export const FollowersList = ({
                     No Followers Yet
                 </Typography>
                 <Typography
+                    sx={{ textAlign: "center" }}
                     variant="body2"
                     color="text.secondary"
-                    textAlign="center"
                 >
                     This user doesn't have any followers yet.
                 </Typography>

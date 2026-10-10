@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import Fuse from "fuse.js";
 import {
@@ -79,7 +79,7 @@ const acceptRequest = createRequestLimiter();
 // One full directory per instance every five minutes, shared across queries
 // and concurrent requests. Never read the private users or Auth collections.
 const loadIndex = createReadCache(async () => {
-    const db = admin.firestore();
+    const db = getFirestore();
     const profiles = await db
         .collection("profiles")
         .select(...profileFields)
@@ -137,7 +137,7 @@ export const searchUsers = onCall<SearchUsersParams>(
             );
         acceptRequest();
         const matches = (await loadIndex()).search(normalized);
-        const db = admin.firestore();
+        const db = getFirestore();
         const users: UserSummary[] = [];
         let cursor = offset;
         let checked = 0;

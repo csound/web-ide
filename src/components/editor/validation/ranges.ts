@@ -56,8 +56,8 @@ export function editorDiagnostics(
             const line = doc.line(item.line);
             const hasColumn = Boolean(
                 item.column &&
-                    item.column > 0 &&
-                    (item.endColumn ?? item.column) >= item.column
+                item.column > 0 &&
+                (item.endColumn ?? item.column) >= item.column
             );
             const from = hasColumn
                 ? byteOffset(line.text, item.column! - 1)

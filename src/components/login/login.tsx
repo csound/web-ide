@@ -148,6 +148,7 @@ const Login = (): React.ReactElement => {
                 >
                     <div css={SS.fieldStack}>
                         <TextField
+                            slotProps={{ inputLabel: { shrink: true } }}
                             autoFocus
                             id="email"
                             label="Email Address"
@@ -165,10 +166,10 @@ const Login = (): React.ReactElement => {
                             fullWidth
                             error={fail}
                             autoComplete="current-email"
-                            InputLabelProps={{ shrink: true }}
                             css={SS.authField}
                         />
                         <TextField
+                            slotProps={{ inputLabel: { shrink: true } }}
                             id="password"
                             label="Password"
                             type="password"
@@ -185,7 +186,6 @@ const Login = (): React.ReactElement => {
                             fullWidth
                             error={fail}
                             autoComplete="current-password"
-                            InputLabelProps={{ shrink: true }}
                             css={SS.authField}
                         />
                     </div>
@@ -243,6 +243,7 @@ const Login = (): React.ReactElement => {
                 >
                     <div css={SS.fieldStack}>
                         <TextField
+                            slotProps={{ inputLabel: { shrink: true } }}
                             autoFocus
                             id="email"
                             label="Email Address"
@@ -262,7 +263,6 @@ const Login = (): React.ReactElement => {
                             fullWidth
                             error={fail}
                             autoComplete="current-email"
-                            InputLabelProps={{ shrink: true }}
                             css={SS.authField}
                         />
                     </div>
@@ -317,6 +317,7 @@ const Login = (): React.ReactElement => {
                 >
                     <div css={SS.fieldStack}>
                         <TextField
+                            slotProps={{ inputLabel: { shrink: true } }}
                             autoFocus
                             id="new-email"
                             label="Email Address"
@@ -335,11 +336,11 @@ const Login = (): React.ReactElement => {
                             }}
                             fullWidth
                             error={!localState.newEmailValid}
-                            InputLabelProps={{ shrink: true }}
                             css={SS.authField}
                         />
                         <p css={SS.helperCopy}>Use 6 or more characters.</p>
                         <TextField
+                            slotProps={{ inputLabel: { shrink: true } }}
                             id="new-password"
                             label="New Password"
                             type="password"
@@ -356,10 +357,10 @@ const Login = (): React.ReactElement => {
                             fullWidth
                             error={localState.newPassword.length < 5}
                             autoComplete="new-password"
-                            InputLabelProps={{ shrink: true }}
                             css={SS.authField}
                         />
                         <TextField
+                            slotProps={{ inputLabel: { shrink: true } }}
                             id="new-password-confirm"
                             label="Confirm New Password"
                             type="password"
@@ -381,7 +382,6 @@ const Login = (): React.ReactElement => {
                                     localState.newPassword
                             }
                             autoComplete="new-password"
-                            InputLabelProps={{ shrink: true }}
                             css={SS.authField}
                         />
                     </div>
@@ -427,19 +427,21 @@ const Login = (): React.ReactElement => {
 
     return (
         <Dialog
+            slotProps={{
+                paper: {
+                    sx: {
+                        m: { xs: 0, sm: 2 },
+                        borderRadius: { xs: 0, sm: 3 },
+                        overflow: "hidden"
+                    }
+                }
+            }}
             onClose={handleClose}
             open
             fullWidth
             maxWidth="xs"
             fullScreen={isCompactDialog}
             scroll="body"
-            PaperProps={{
-                sx: {
-                    m: { xs: 0, sm: 2 },
-                    borderRadius: { xs: 0, sm: 3 },
-                    overflow: "hidden"
-                }
-            }}
         >
             {renderView(localState.loginMode)}
             {errorBox}

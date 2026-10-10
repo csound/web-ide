@@ -1,6 +1,6 @@
+import { getStorage } from "firebase-admin/storage";
 import { randomUUID } from "node:crypto";
-import admin from "firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { error as logError } from "firebase-functions/logger";
 import { createRequestLimiter } from "./public_requests.js";
@@ -37,7 +37,7 @@ function text(value: unknown, max: number, required = false): string {
 function canFork(
     project: FirebaseFirestore.DocumentData | undefined,
     uid: string
-) {
+): asserts project is FirebaseFirestore.DocumentData {
     if (!project || (project.public !== true && project.userUid !== uid)) {
         throw new HttpsError(
             "permission-denied",
@@ -97,7 +97,7 @@ export const forkProject = onCall(
                 "Tags cannot contain slashes."
             );
 
-        const db = admin.firestore();
+        const db = getFirestore();
         const sourceRef = db.collection("projects").doc(data.sourceProjectUid);
         const destination = db.collection("projects").doc();
         const { source, files, targets } = await db.runTransaction(
@@ -138,9 +138,9 @@ export const forkProject = onCall(
                 "This project has no valid owner."
             );
 
-        const bucket = admin
-            .storage()
-            .bucket(process.env.STORAGE_BUCKET_URL?.trim() || undefined);
+        const bucket = getStorage().bucket(
+            process.env.STORAGE_BUCKET_URL?.trim() || undefined
+        );
         const copiedPaths: string[] = [];
         let commitAttempted = false;
         let binaryBytes = 0;

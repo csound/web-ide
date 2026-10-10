@@ -3,17 +3,9 @@ import { readWave } from "../csound/wave-files";
 import { checkAudioLayout } from "./limits";
 
 export type SampleOperation =
-    | "trim"
-    | "gain"
-    | "normalize"
-    | "resample"
-    | "denoise";
+    "trim" | "gain" | "normalize" | "resample" | "denoise";
 export type AnalysisOperation =
-    | "spectrum"
-    | "partials"
-    | "harmonics"
-    | "lpc"
-    | "envelope";
+    "spectrum" | "partials" | "harmonics" | "lpc" | "envelope";
 export type Operation = SampleOperation | AnalysisOperation;
 export type WasmOperation = Exclude<Operation, "trim">;
 export const sampleOperations: {

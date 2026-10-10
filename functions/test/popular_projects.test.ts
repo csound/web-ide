@@ -114,8 +114,8 @@ const { records, database, reads, deleteValue } = vi.hoisted(() => {
     return { records, database, reads, deleteValue };
 });
 
-vi.mock("firebase-admin", () => ({ default: { firestore: () => database } }));
 vi.mock("firebase-admin/firestore", () => ({
+    getFirestore: () => database,
     FieldPath: { documentId: () => "__name__" },
     FieldValue: { serverTimestamp: () => 123, delete: () => deleteValue }
 }));

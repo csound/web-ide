@@ -82,15 +82,11 @@ const fixture = vi.hoisted(() => {
     });
     return { records, objects, db, file, copy, deleted, get, timestamp };
 });
-vi.mock("firebase-admin", () => ({
-    default: {
-        firestore: Object.assign(() => fixture.db, {
-            FieldValue: { serverTimestamp: () => fixture.timestamp }
-        }),
-        storage: () => ({ bucket: () => ({ file: fixture.file }) })
-    }
+vi.mock("firebase-admin/storage", () => ({
+    getStorage: () => ({ bucket: () => ({ file: fixture.file }) })
 }));
 vi.mock("firebase-admin/firestore", () => ({
+    getFirestore: () => fixture.db,
     FieldValue: { serverTimestamp: () => fixture.timestamp }
 }));
 vi.mock("firebase-functions/v2/https", async (original) => ({
@@ -251,7 +247,7 @@ describe("fork project", () => {
             .file(sourcePath, sourceOptions);
         // Exercise File.copy's request formatting without credentials or network calls.
         const request = vi
-            .spyOn(sourceFile, "request")
+            .spyOn(sourceFile.bucket, "request")
             .mockImplementation((_options, callback) => {
                 callback(null, { done: true });
             });

@@ -10,8 +10,7 @@ function worker() {
         terminate: vi.fn(),
         postMessage: vi.fn(),
         onmessage: undefined as
-            | ((event: { data: unknown }) => void)
-            | undefined,
+            ((event: { data: unknown }) => void) | undefined,
         onerror: undefined as (() => void) | undefined
     };
     const create = vi.fn(function () {

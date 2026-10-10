@@ -23,7 +23,7 @@ import { FollowersList } from "./tabs/followers-list";
 import { StarsList } from "./tabs/stars-list";
 import { ListPlayButton } from "./list-play-button";
 import SettingsIcon from "@mui/icons-material/Settings";
-import DeleteIcon from "@mui/icons-material/DeleteOutline";
+import DeleteIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";

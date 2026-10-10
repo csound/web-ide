@@ -169,7 +169,7 @@ const UserSearch = ({ query }: { query: string }) => {
                                           <span css={SS.userSearchName}>
                                               {user.displayName ||
                                                   user.username}
-                                          </span>
+                                          </span>{" "}
                                           <span css={SS.userSearchUsername}>
                                               @{user.username}
                                           </span>

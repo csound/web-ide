@@ -49,7 +49,7 @@ const fixture = vi.hoisted(() => {
     });
     return { records, scans, getAll, snapshot, db: { collection, getAll } };
 });
-vi.mock("firebase-admin", () => ({ default: { firestore: () => fixture.db } }));
+vi.mock("firebase-admin/firestore", () => ({ getFirestore: () => fixture.db }));
 
 function profile(id: string, fields: Record<string, unknown> = {}) {
     fixture.records.set(`profiles/${id}`, {

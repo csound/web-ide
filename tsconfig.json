@@ -17,15 +17,14 @@
         "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "noEmit": true,
-        "baseUrl": "src",
         "paths": {
-            "@root/*": ["./*"],
-            "@comp/*": ["./components/*"],
-            "@elem/*": ["./elements/*"],
-            "@config/*": ["./config/*"],
-            "@db/*": ["./db/*"],
-            "@styles": ["./styles/index.ts"],
-            "@styles/*": ["./styles/*"]
+            "@root/*": ["./src/*"],
+            "@comp/*": ["./src/components/*"],
+            "@elem/*": ["./src/elements/*"],
+            "@config/*": ["./src/config/*"],
+            "@db/*": ["./src/db/*"],
+            "@styles": ["./src/styles/index.ts"],
+            "@styles/*": ["./src/styles/*"]
         },
         "noFallthroughCasesInSwitch": true
     },

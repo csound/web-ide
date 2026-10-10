@@ -1,5 +1,4 @@
-import admin from "firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 /** Commit the star, profile list, and ranking count together. */
@@ -22,7 +21,7 @@ export const toggleProjectStar = onCall<{ projectUid: string }>(
         )
             throw new HttpsError("invalid-argument", "Choose a project.");
 
-        const db = admin.firestore();
+        const db = getFirestore();
         const projectRef = db.collection("projects").doc(projectUid);
         const starsRef = db.collection("stars").doc(projectUid);
         const profileStarsRef = db.collection("profileStars").doc(auth.uid);

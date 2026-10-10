@@ -57,7 +57,7 @@ self.onmessage = async ({ data }: MessageEvent<ToolRequest>) => {
     const kind = isScoreProgram(data.tool) ? "score" : "audio";
     try {
         send({ type: "status", text: `Loading ${kind} tool…` });
-        let bytes: Uint8Array;
+        let bytes: Uint8Array<ArrayBuffer>;
         if (isScoreProgram(data.tool))
             bytes = await loadScoreProgram(data.tool);
         else {

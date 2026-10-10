@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { onRequest } from "firebase-functions/v2/https";
 import { isbot } from "isbot";
 import fs from "node:fs";
@@ -24,8 +24,7 @@ export const host = onRequest(async (req, res) => {
                 return;
             }
 
-            const projectSnapshot = await admin
-                .firestore()
+            const projectSnapshot = await getFirestore()
                 .collection("projects")
                 .doc(projectUid)
                 .get();
@@ -44,8 +43,7 @@ export const host = onRequest(async (req, res) => {
                 return;
             }
 
-            const profileSnap = await admin
-                .firestore()
+            const profileSnap = await getFirestore()
                 .collection("profiles")
                 .doc(userUid)
                 .get();

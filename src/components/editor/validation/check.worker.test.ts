@@ -22,8 +22,7 @@ beforeEach(async () => {
     vi.resetModules();
     const scope = {
         onmessage: undefined as
-            | ((event: { data: CheckRequest }) => Promise<void>)
-            | undefined,
+            ((event: { data: CheckRequest }) => Promise<void>) | undefined,
         postMessage: (data: CheckResult) => worker.onmessage?.({ data })
     };
     worker = {
