@@ -12,6 +12,12 @@ failure with Nix installed always fails. Tests that need the binary skip when
 `.wasm-build/csound-check.wasm` is absent. The editor then uses its usual syntax
 highlighting and completion without background compiler checks.
 
+CI and deployments pull Nix outputs from `csound-web-ide`, with the upstream
+`csound` cache also available. Develop and production deployments pass the
+repository's `CACHIX_AUTH_TOKEN` secret to the shared build action, which uploads
+new builds to `csound-web-ide` for later runs. CI leaves the token unset and only
+reads from the caches. The first deployment builds any outputs not yet cached.
+
 Restart Vite after building. Vite includes the file under a content-hashed URL
 only when it exists. The worker loads it on demand after a 2.5-second pause.
 
