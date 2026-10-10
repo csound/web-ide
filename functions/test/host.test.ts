@@ -15,16 +15,14 @@ const mocks = vi.hoisted(() => ({
 vi.mock("node:fs", () => ({
     default: { readFileSync: mocks.readFile }
 }));
-vi.mock("firebase-admin", () => ({
-    default: {
-        firestore: () => ({
-            collection: (name: string) => {
-                if (name === "projects") return { doc: mocks.projectDoc };
-                if (name === "profiles") return { doc: mocks.profileDoc };
-                throw new Error(`Unexpected collection: ${name}`);
-            }
-        })
-    }
+vi.mock("firebase-admin/firestore", () => ({
+    getFirestore: () => ({
+        collection: (name: string) => {
+            if (name === "projects") return { doc: mocks.projectDoc };
+            if (name === "profiles") return { doc: mocks.profileDoc };
+            throw new Error(`Unexpected collection: ${name}`);
+        }
+    })
 }));
 
 const project = {

@@ -1,5 +1,4 @@
-import admin from "firebase-admin";
-import { FieldPath } from "firebase-admin/firestore";
+import { FieldPath, getFirestore } from "firebase-admin/firestore";
 import { onCall } from "firebase-functions/v2/https";
 import {
     createRequestLimiter,
@@ -22,7 +21,7 @@ export const popularProjects = onCall<{ count?: number }>(
             typeof count === "number" && Number.isFinite(count)
                 ? Math.max(1, Math.min(50, Math.floor(count)))
                 : 8;
-        const db = admin.firestore();
+        const db = getFirestore();
         const projects = await db
             .collection("projects")
             .where("public", "==", true)

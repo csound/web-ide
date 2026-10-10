@@ -9,10 +9,11 @@ const mocks = vi.hoisted(() => ({
     deleteUser: vi.fn(),
     deleteDocument: vi.fn()
 }));
-vi.mock("firebase-admin", () => ({ default: mocks }));
+vi.mock("firebase-admin/auth", () => ({ getAuth: mocks.auth }));
+vi.mock("firebase-admin/firestore", () => ({ getFirestore: mocks.firestore }));
 vi.mock("firebase-functions/logger", () => ({ log: vi.fn() }));
 vi.mock("firebase-functions/v1", () => ({
-    default: { auth: { user: () => ({ onDelete: vi.fn() }) } }
+    auth: { user: () => ({ onDelete: vi.fn() }) }
 }));
 
 beforeEach(() => {

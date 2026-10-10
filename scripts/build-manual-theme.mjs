@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "vite";
+import { browserTargets } from "./browser-targets.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 await build({
@@ -10,9 +11,10 @@ await build({
     logLevel: "warn",
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
     build: {
+        target: browserTargets,
         outDir: path.resolve(process.argv[2]),
         emptyOutDir: false,
-        rollupOptions: {
+        rolldownOptions: {
             onwarn(warning, warn) {
                 // This static bundle has no server/client component boundary.
                 if (warning.code === "MODULE_LEVEL_DIRECTIVE") return;
@@ -34,15 +36,16 @@ await build({
     publicDir: false,
     logLevel: "warn",
     build: {
+        target: browserTargets,
         outDir: path.resolve(process.argv[2]),
         emptyOutDir: false,
-        rollupOptions: {
+        rolldownOptions: {
             input: path.join(root, "src/manual/code-preview.ts"),
             preserveEntrySignatures: "strict",
             output: {
                 format: "es",
                 entryFileNames: "manual-code.js",
-                inlineDynamicImports: true
+                codeSplitting: false
             }
         }
     }

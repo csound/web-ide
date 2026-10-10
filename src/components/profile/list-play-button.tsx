@@ -4,7 +4,7 @@ import { playListItem } from "./actions";
 import { selectCsoundStatus } from "@comp/csound/selectors";
 import { pauseCsound, resumePausedCsound } from "@comp/csound/actions";
 import { selectCurrentlyPlayingProject } from "./selectors";
-import AlertIcon from "@mui/icons-material/ErrorOutline";
+import AlertIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import { Theme, useTheme } from "@emotion/react";
 import ProjectAvatar from "@elem/project-avatar";
 import * as SS from "./styles";

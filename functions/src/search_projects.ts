@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import Fuse, { IFuseOptions } from "fuse.js";
 import {
@@ -90,7 +90,7 @@ function sortResults(
 }
 
 async function readProfiles(ids: string[]) {
-    const db = admin.firestore();
+    const db = getFirestore();
     const profiles: Record<string, FirebaseFirestore.DocumentData> = {};
     const userIds = [...new Set(ids)].filter(
         (id) => typeof id === "string" && id && !id.includes("/")
@@ -140,8 +140,7 @@ const acceptRequest = createRequestLimiter();
 // All queries share one full catalogue, including requests during its refresh.
 // Cached fields are used only to find candidates, never as response data.
 const loadIndex = createReadCache(async () => {
-    const snapshot = await admin
-        .firestore()
+    const snapshot = await getFirestore()
         .collection("projects")
         .where("public", "==", true)
         .get();

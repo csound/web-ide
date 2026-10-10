@@ -20,7 +20,7 @@ export function readWave(bytes: Uint8Array): Wave {
         sampleRate = 0,
         bits = 0;
     let data: Uint8Array | undefined;
-    for (let offset = 12; offset + 8 <= bytes.length; ) {
+    for (let offset = 12; offset + 8 <= bytes.length;) {
         const size = view.getUint32(offset + 4, true);
         const start = offset + 8;
         if (start + size > bytes.length)

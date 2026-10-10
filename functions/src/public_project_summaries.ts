@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 
 /** Expose only the fields used by public project cards. */
 export function publicProjectSummary(
@@ -35,7 +35,7 @@ export function publicProjectSummary(
 /** Check current visibility, including every match used in a search count. */
 export async function readPublicProjectSummaries(ids: string[]) {
     if (!ids.length) return [];
-    const db = admin.firestore();
+    const db = getFirestore();
     const projects: ReturnType<typeof publicProjectSummary>[] = [];
     for (let index = 0; index < ids.length; index += 50) {
         const snapshots = await db.getAll(
@@ -58,7 +58,7 @@ export async function addProjectCardDetails<T extends { userUid: string }>(
     projects: T[],
     projectId: (project: T) => string
 ) {
-    const db = admin.firestore();
+    const db = getFirestore();
     const dates = new Map<string, number>();
     const ids = [...new Set(projects.map(projectId))];
     for (let index = 0; index < ids.length; index += 50) {

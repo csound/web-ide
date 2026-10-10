@@ -14,6 +14,4 @@ export const SET_POST_AUTH_FLOW = PREFIX + "SET_POST_AUTH_FLOW";
 
 export type LoginDialogMode = "login" | "create" | "reset";
 export type PostAuthFlow =
-    | "create-project"
-    | { forkProjectUid: string }
-    | undefined;
+    "create-project" | { forkProjectUid: string } | undefined;

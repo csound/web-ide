@@ -94,6 +94,7 @@ const Search = ({ actions }: { actions?: React.ReactNode }) => {
                     <ToggleButton value="users">Users</ToggleButton>
                 </ToggleButtonGroup>
                 <TextField
+                    slotProps={{ htmlInput: { maxLength: 200 } }}
                     value={input}
                     onChange={onChange}
                     css={SS.searchField}
@@ -103,7 +104,6 @@ const Search = ({ actions }: { actions?: React.ReactNode }) => {
                     }
                     type="search"
                     variant="outlined"
-                    inputProps={{ maxLength: 200 }}
                 />
             </div>
             {mode === "users" ? (

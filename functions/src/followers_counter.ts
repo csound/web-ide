@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 
 export const followersCounter = onDocumentWritten(
@@ -11,8 +11,7 @@ export const followersCounter = onDocumentWritten(
         const after = event.data.after;
         const userUid = event.params.userUid;
 
-        const followersCountRef = admin
-            .firestore()
+        const followersCountRef = getFirestore()
             .collection("followersCount")
             .doc(userUid);
 

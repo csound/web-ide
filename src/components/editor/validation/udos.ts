@@ -91,13 +91,11 @@ function catalog(
     return {
         entries,
         completions,
-        typeCompletions: types.map(
-            (type): Completion => ({
-                label: typeName(type.name),
-                type: "type",
-                detail: type.struct ? "Plugin struct" : "Plugin object"
-            })
-        ),
+        typeCompletions: types.map((type): Completion => ({
+            label: typeName(type.name),
+            type: "type",
+            detail: type.struct ? "Plugin struct" : "Plugin object"
+        })),
         signatures: new Map(
             [...entries].map(([name, entry]) => [name, entry.signatures])
         )

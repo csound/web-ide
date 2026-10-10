@@ -18,8 +18,8 @@ import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import CameraIcon from "@mui/icons-material/CameraAltOutlined";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import PersonAddAlt1OutlinedIcon from "@mui/icons-material/PersonAddAlt1Outlined";
-import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutlineOutlined";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -77,11 +77,7 @@ import {
 } from "./profile-ui";
 
 type ProfileSection =
-    | "projects"
-    | "following"
-    | "followers"
-    | "stars"
-    | "about";
+    "projects" | "following" | "followers" | "stars" | "about";
 
 const PROFILE_ROUTE_SECTION_MAP: Record<
     string,

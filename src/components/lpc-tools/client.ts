@@ -1,8 +1,7 @@
 import type { ToolFile } from "../audio-tools/types";
 import type { convertLpc, LpcEdit } from "./convert";
 export type ConversionRequest =
-    | { kind: "open"; file: ToolFile }
-    | { kind: "convert"; edit: LpcEdit };
+    { kind: "open"; file: ToolFile } | { kind: "convert"; edit: LpcEdit };
 type Converted = Awaited<ReturnType<typeof convertLpc>>;
 function execute<Value>(
     request: ConversionRequest,

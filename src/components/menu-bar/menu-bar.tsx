@@ -19,7 +19,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import BuildIcon from "@mui/icons-material/Build";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import * as SS from "./styles";
 import { hr as hrCss } from "@styles/_common";

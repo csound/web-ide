@@ -1,8 +1,7 @@
 import type { ToolFile } from "../audio-tools/types";
 import type { convertPvx, PvxEdit } from "./convert";
 export type ConversionRequest =
-    | { kind: "open"; file: ToolFile }
-    | { kind: "convert"; edit: PvxEdit };
+    { kind: "open"; file: ToolFile } | { kind: "convert"; edit: PvxEdit };
 type Converted = Awaited<ReturnType<typeof convertPvx>>;
 function execute<Value>(
     request: ConversionRequest,

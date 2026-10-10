@@ -49,12 +49,9 @@ const fixture = vi.hoisted(() => {
     const database = { collection: (name: string) => query(name), getAll };
     return { records, queries, getAll, database, snapshot };
 });
-vi.mock("firebase-admin", () => ({
-    default: {
-        firestore: Object.assign(() => fixture.database, {
-            FieldPath: { documentId: () => "__name__" }
-        })
-    }
+vi.mock("firebase-admin/firestore", () => ({
+    getFirestore: () => fixture.database,
+    FieldPath: { documentId: () => "__name__" }
 }));
 vi.mock("firebase-functions/logger", () => ({ log: vi.fn() }));
 

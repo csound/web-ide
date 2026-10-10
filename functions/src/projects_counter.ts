@@ -1,5 +1,4 @@
-import admin from "firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { log } from "firebase-functions/logger";
 
@@ -24,8 +23,7 @@ export const projectsCounter = onDocumentWritten(
                 return;
             }
 
-            const countRef = admin
-                .firestore()
+            const countRef = getFirestore()
                 .collection("projectsCount")
                 .doc(ownerUid);
 
@@ -49,8 +47,7 @@ export const projectsCounter = onDocumentWritten(
             // If public status changed, adjust counts
             if (dataAfter && isPublicBefore !== isPublicAfter) {
                 const ownerUid = dataAfter.userUid;
-                const countRef = admin
-                    .firestore()
+                const countRef = getFirestore()
                     .collection("projectsCount")
                     .doc(ownerUid);
 
@@ -75,8 +72,7 @@ export const projectsCounter = onDocumentWritten(
                 return;
             }
 
-            const countRef = admin
-                .firestore()
+            const countRef = getFirestore()
                 .collection("projectsCount")
                 .doc(ownerUid);
 

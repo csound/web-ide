@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { useEffect, useState } from "react";
 
 /** Own one playback URL and revoke it when the preview changes. */
@@ -9,7 +10,7 @@ export function useAudioUrl(data?: Uint8Array) {
             return;
         }
         const next = URL.createObjectURL(
-            new Blob([data], { type: "audio/wav" })
+            blobFromBytes(data, { type: "audio/wav" })
         );
         setOwned({ data, url: next });
         return () => URL.revokeObjectURL(next);

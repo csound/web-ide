@@ -38,10 +38,12 @@ export const StarsList = ({
     if (isLoading || projectsLoading) {
         return (
             <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                minHeight="200px"
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    minHeight: "200px"
+                }}
             >
                 <CircularProgress size={40} />
             </Box>
@@ -51,12 +53,14 @@ export const StarsList = ({
     if (projects.length === 0) {
         return (
             <Box
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="center"
-                minHeight="200px"
-                padding={3}
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: "200px",
+                    padding: 3
+                }}
             >
                 <StarIcon
                     sx={{
@@ -69,9 +73,9 @@ export const StarsList = ({
                     No public starred projects
                 </Typography>
                 <Typography
+                    sx={{ textAlign: "center" }}
                     variant="body2"
                     color="text.secondary"
-                    textAlign="center"
                 >
                     Public projects starred by this user will appear here.
                 </Typography>

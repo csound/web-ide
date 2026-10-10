@@ -74,7 +74,7 @@ export async function retainAssets({
     const queue = [...pending];
     await Promise.all(
         Array.from({ length: Math.min(4, queue.length) }, async () => {
-            for (let file; (file = queue.pop()); ) {
+            for (let file; (file = queue.pop());) {
                 const bytes = await readAsset(file);
                 await writeFile(path.join(outDir, file.path.slice(1)), bytes, {
                     flag: "wx"

@@ -56,6 +56,15 @@ export function ProfileProjects({
                 autoComplete="off"
             >
                 <TextField
+                    slotProps={{
+                        input: {
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            )
+                        }
+                    }}
                     label="Search projects"
                     type="search"
                     size="small"
@@ -63,13 +72,6 @@ export function ProfileProjects({
                     onChange={(event) =>
                         dispatch(setProjectFilterString(event.target.value))
                     }
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <SearchIcon />
-                            </InputAdornment>
-                        )
-                    }}
                 />
                 <Autocomplete
                     multiple

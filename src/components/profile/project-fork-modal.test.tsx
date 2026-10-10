@@ -58,7 +58,7 @@ it("lets the user rename a private fork, blocks duplicate clicks, and opens the 
     );
     renderDialog();
     expect(
-        screen.getByRole("checkbox", { name: "Private project" })
+        screen.getByRole("switch", { name: "Private project" })
     ).toHaveProperty("checked", false);
     expect(screen.queryByText("Starter template")).toBeNull();
     fireEvent.change(screen.getByLabelText("Project name"), {
@@ -83,7 +83,7 @@ it("keeps the user's choices and shows an error when the source becomes hidden",
         new Error("This project is hidden or no longer exists.")
     );
     renderDialog();
-    fireEvent.click(screen.getByRole("checkbox", { name: "Private project" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Private project" }));
     fireEvent.click(screen.getByRole("button", { name: "Create fork" }));
     await waitFor(() =>
         expect(screen.getByRole("alert").textContent).toContain("hidden")

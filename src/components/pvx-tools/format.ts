@@ -179,7 +179,7 @@ export function readPvx(bytes: Uint8Array): {
     let fmtOffset = -1,
         dataOffset = -1,
         dataSize = 0;
-    for (let offset = 12; offset < bytes.length; ) {
+    for (let offset = 12; offset < bytes.length;) {
         if (offset + 8 > bytes.length) throw invalid();
         const size = view.getUint32(offset + 4, true),
             start = offset + 8;

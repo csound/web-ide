@@ -31,7 +31,7 @@ export function readSampleChunks(bytes: Uint8Array) {
     const aiff = text(0, 4) === "FORM" && ["AIFF", "AIFC"].includes(text(8, 4));
     if (!wave && !aiff) return { instrument, broadcast };
     const chunks = new Map<string, { start: number; size: number }>();
-    for (let offset = 12; offset + 8 <= bytes.length; ) {
+    for (let offset = 12; offset + 8 <= bytes.length;) {
         const size = view.getUint32(offset + 4, wave),
             start = offset + 8;
         if (start + size > bytes.length) break;

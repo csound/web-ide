@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
@@ -158,7 +159,7 @@ export function AudioFilePreview({
                 signal.throwIfAborted();
                 setSize(bytes.length);
                 localUrl = URL.createObjectURL(
-                    new Blob([bytes], {
+                    blobFromBytes(bytes, {
                         type:
                             response.headers.get("content-type") ||
                             "application/octet-stream"

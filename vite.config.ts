@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import viteTsconfigPaths from "vite-tsconfig-paths";
+import babel from "@rolldown/plugin-babel";
 import svgr from "vite-plugin-svgr";
 import checker from "vite-plugin-checker";
 import { fileURLToPath } from "node:url";
-import { csoundChecker } from "./scripts/csound-check-vite";
-import { manualPages } from "./scripts/manual-vite";
+import { csoundChecker } from "./scripts/csound-check-vite.ts";
+import { manualPages } from "./scripts/manual-vite.ts";
+import { browserTargets } from "./scripts/browser-targets.mjs";
 
 export default defineConfig({
     define: {
@@ -15,6 +16,8 @@ export default defineConfig({
     },
     // depending on your application, base can also be "/"
     base: "/",
+    resolve: { tsconfigPaths: true },
+    build: { target: browserTargets },
     // Emotion and the lazy audio workers reveal imports after Vite scans the app.
     // Prebundle their JavaScript in development to avoid a first-use page reload.
     // Production chunks and utility WASM still load only when requested.
@@ -33,12 +36,9 @@ export default defineConfig({
             typescript: true
         }),
         react({
-            jsxImportSource: "@emotion/react",
-            babel: {
-                plugins: ["@emotion/babel-plugin"]
-            }
+            jsxImportSource: "@emotion/react"
         }),
-        viteTsconfigPaths(),
+        babel({ plugins: ["@emotion/babel-plugin"] }),
         svgr()
         // viteRawPlugin({
         //     fileRegex: /\.csd|\.orc\.sco\.udo$/
@@ -52,6 +52,8 @@ export default defineConfig({
         port: 3000
     },
     test: {
+        // Transform the spinner's ESM wrapper so its CommonJS styling dependency interoperates in Node.
+        server: { deps: { inline: ["react-loader-spinner"] } },
         // The browser package has a module entry but no Node main entry.
         alias: [
             {

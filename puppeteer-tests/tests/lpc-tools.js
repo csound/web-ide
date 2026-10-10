@@ -121,7 +121,7 @@ test(
                 await (await button("Reset edits")).click();
                 await ready();
                 await page.click('[aria-label="Frame number"]', {
-                    clickCount: 3
+                    count: 3
                 });
                 await page.keyboard.type("17");
                 await page.waitForFunction(

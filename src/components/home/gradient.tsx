@@ -8,7 +8,8 @@ interface IGradient {
 
 export const Gradient = styled.span<IGradient>`
     background-color: ${(properties) => properties.colorB};
-    background-image: linear-gradient(
+    background-image:
+        linear-gradient(
             30deg,
             ${(properties) => properties.colorA} 12%,
             transparent 12.5%,

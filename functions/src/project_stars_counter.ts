@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { syncProjectStarCount } from "./project_stars.js";
 
@@ -8,9 +8,6 @@ export const projectStarsCounter = onDocumentWritten(
     { document: "stars/{projectUid}", retry: true },
     async (event) => {
         if (event.data)
-            await syncProjectStarCount(
-                admin.firestore(),
-                event.params.projectUid
-            );
+            await syncProjectStarCount(getFirestore(), event.params.projectUid);
     }
 );

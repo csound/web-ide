@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     createReadCache,
@@ -21,7 +21,7 @@ const countStars = (value: unknown): number => {
 
 const acceptRequest = createRequestLimiter();
 const loadArtists = createReadCache(async () => {
-    const db = admin.firestore();
+    const db = getFirestore();
 
     const [projectsSnapshot, starsSnapshot] = await Promise.all([
         db.collection("projects").where("public", "==", true).get(),

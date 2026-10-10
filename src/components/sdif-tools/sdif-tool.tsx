@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
@@ -283,7 +284,7 @@ export default function SdifTool({
                         onClick={() => {
                             if (!result) return;
                             const url = URL.createObjectURL(
-                                new Blob([result.data])
+                                blobFromBytes(result.data)
                             );
                             const a = document.createElement("a");
                             a.href = url;

@@ -143,9 +143,11 @@ export const activityButton =
         &::before {
             content: "";
             position: absolute;
-            ${compact
-                ? "left: 0; top: 4px; bottom: 4px; width: 2px;"
-                : "left: 8px; right: 8px; top: 0; height: 2px;"}
+            ${
+                compact
+                    ? "left: 0; top: 4px; bottom: 4px; width: 2px;"
+                    : "left: 8px; right: 8px; top: 0; height: 2px;"
+            }
             background: ${active ? theme.tabHighlightActive : "transparent"};
             border-radius: 999px;
         }
@@ -176,9 +178,9 @@ export const panelShell = (isActive: boolean) => (theme: Theme) => css`
     box-sizing: border-box;
     border: 0;
     background: ${theme.background};
-    box-shadow: ${isActive
-        ? `inset 0 1px 0 ${theme.tabHighlightActive}`
-        : "none"};
+    box-shadow: ${
+        isActive ? `inset 0 1px 0 ${theme.tabHighlightActive}` : "none"
+    };
 `;
 
 export const panelTopBar = (theme: Theme): SerializedStyles => css`

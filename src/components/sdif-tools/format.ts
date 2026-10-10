@@ -53,7 +53,7 @@ export function readSdif(bytes: Uint8Array): SdifStream[] {
         throw bad();
     const streams = new Map<number, SdifStream>();
     let points = 0;
-    for (let offset = header + 8; offset < bytes.length; ) {
+    for (let offset = header + 8; offset < bytes.length;) {
         if (offset + 8 > bytes.length) throw bad();
         const size = view.getUint32(offset + 4),
             end = offset + 8 + size;

@@ -55,11 +55,13 @@ export const makeMuiTheme = (theme: Theme) =>
             MuiButton: {
                 styleOverrides: {
                     root: { whiteSpace: "nowrap" },
-                    textPrimary: {
-                        color: theme.buttonTextColor,
-                        backgroundColor: theme.buttonBackground,
-                        "&:hover": {
-                            backgroundColor: theme.buttonBackgroundHover
+                    text: {
+                        "&.MuiButton-colorPrimary": {
+                            color: theme.buttonTextColor,
+                            backgroundColor: theme.buttonBackground,
+                            "&:hover": {
+                                backgroundColor: theme.buttonBackgroundHover
+                            }
                         }
                     }
                 }

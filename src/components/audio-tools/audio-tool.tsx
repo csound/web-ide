@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { useAudioUrl } from "./use-audio-url";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "@emotion/react";
@@ -301,7 +302,7 @@ export default function AudioTool({
     };
     const download = () => {
         if (!file || !exportReady) return;
-        const url = URL.createObjectURL(new Blob([file.data]));
+        const url = URL.createObjectURL(blobFromBytes(file.data));
         const anchor = document.createElement("a");
         anchor.href = url;
         anchor.download = file.name;

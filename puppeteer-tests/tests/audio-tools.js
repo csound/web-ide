@@ -87,9 +87,12 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
         ({ page } = await getSession());
         attachPageDebugListeners(page);
         page.on("request", (request) => {
+            const url = new URL(request.url());
+            // The editor can load its syntax checker independently of audio tools.
             if (
-                /\.wasm$/.test(new URL(request.url()).pathname) &&
-                !new URL(request.url()).searchParams.has("url")
+                url.pathname.includes("/@csound/wasm-bin/") &&
+                url.pathname.endsWith(".wasm") &&
+                !url.searchParams.has("url")
             )
                 wasm.push(request.url());
         });
@@ -373,7 +376,10 @@ describe("Visual audio tools", { skip: targetName !== "local" }, () => {
             await page.click('[data-testid="sidebar-bottom-audioAnalysis"]');
             await page.waitForSelector(`${analysis} input[type=file]`);
             await upload(analysis);
-            assert.ok(wasm.every((url) => url.includes("scale")));
+            assert.ok(
+                wasm.every((url) => url.includes("scale")),
+                `Unexpected WASM requests: ${JSON.stringify(wasm)}`
+            );
             await result(analysis, "tone-spectrum.pvx");
             await page.waitForSelector(
                 `${analysis} canvas[aria-label^="Spectral energy"]`

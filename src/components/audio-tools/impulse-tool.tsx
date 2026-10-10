@@ -1,3 +1,4 @@
+import { blobFromBytes } from "@root/utils/blob";
 import { useMemo, useState } from "react";
 import { useTheme } from "@emotion/react";
 import Button from "@mui/material/Button";
@@ -140,7 +141,7 @@ export default function ImpulseTool({
         if (!result || !ready) return;
         const link = document.createElement("a");
         const href = URL.createObjectURL(
-            new Blob([result.data], {
+            blobFromBytes(result.data, {
                 type: convolution ? "text/plain" : "audio/wav"
             })
         );

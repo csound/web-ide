@@ -5,7 +5,7 @@ export const scoreProgramLoaders = {
     extract: () => import("@csound/wasm-bin/lib/extract.wasm?url")
 };
 export type ScoreProgram = keyof typeof scoreProgramLoaders;
-const binaries = new Map<ScoreProgram, Uint8Array>();
+const binaries = new Map<ScoreProgram, Uint8Array<ArrayBuffer>>();
 
 export function isScoreProgram(name: string): name is ScoreProgram {
     return Object.hasOwn(scoreProgramLoaders, name);

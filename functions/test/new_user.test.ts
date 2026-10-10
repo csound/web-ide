@@ -65,15 +65,16 @@ const { records, database } = vi.hoisted(() => {
     return { records, database };
 });
 
-vi.mock("firebase-admin", () => ({ default: { firestore: () => database } }));
+vi.mock("firebase-admin/firestore", async (original) => ({
+    ...(await original<typeof import("firebase-admin/firestore")>()),
+    getFirestore: () => database
+}));
 vi.mock("firebase-functions/v1", () => ({
-    default: {
-        runWith: () => ({
-            auth: {
-                user: () => ({ onCreate: (callback: unknown) => callback })
-            }
-        })
-    }
+    runWith: () => ({
+        auth: {
+            user: () => ({ onCreate: (callback: unknown) => callback })
+        }
+    })
 }));
 
 const user = { uid: "author123", displayName: "An author", photoURL: null };
