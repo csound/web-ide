@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTheme } from "@emotion/react";
 import { plotIndices, type PlotGuide } from "./annotations";
 const format = (n: number) =>
@@ -8,10 +8,12 @@ const format = (n: number) =>
 
 export function TableGraph({
     samples,
-    guide
+    guide,
+    resizeHandle
 }: {
     samples: Float64Array;
     guide: PlotGuide;
+    resizeHandle?: ReactNode;
 }) {
     const theme = useTheme();
     const container = useRef<HTMLDivElement>(null);
@@ -298,32 +300,51 @@ export function TableGraph({
             <div
                 css={{
                     display: "flex",
-                    flexWrap: "wrap",
-                    gap: "8px 24px",
+                    alignItems: "center",
+                    gap: 12,
+                    flexShrink: 0,
                     borderTop: `1px solid ${theme.line}`,
-                    padding: "12px 20px",
+                    padding: "8px 12px 8px 20px",
                     font: `11px ${theme.font.monospace}`,
                     color: theme.altTextColor
                 }}
             >
-                <span>
-                    MIN{" "}
-                    <b css={{ color: theme.textColor }}>{format(data.min)}</b>
-                </span>
-                <span>
-                    MAX{" "}
-                    <b css={{ color: theme.textColor }}>{format(data.max)}</b>
-                </span>
-                <span>
-                    MEAN{" "}
-                    <b css={{ color: theme.textColor }}>{format(data.mean)}</b>
-                </span>
-                <span title="The endpoint sample used for interpolation, shown at the right edge">
-                    GUARD{" "}
-                    <b css={{ color: theme.textColor }}>
-                        {format(samples.at(-1)!)}
-                    </b>
-                </span>
+                <div
+                    css={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: "8px 24px",
+                        flex: 1,
+                        minWidth: 0
+                    }}
+                >
+                    <span>
+                        MIN{" "}
+                        <b css={{ color: theme.textColor }}>
+                            {format(data.min)}
+                        </b>
+                    </span>
+                    <span>
+                        MAX{" "}
+                        <b css={{ color: theme.textColor }}>
+                            {format(data.max)}
+                        </b>
+                    </span>
+                    <span>
+                        MEAN{" "}
+                        <b css={{ color: theme.textColor }}>
+                            {format(data.mean)}
+                        </b>
+                    </span>
+                    <span title="The endpoint sample used for interpolation, shown at the right edge">
+                        GUARD{" "}
+                        <b css={{ color: theme.textColor }}>
+                            {format(samples.at(-1)!)}
+                        </b>
+                    </span>
+                </div>
+                {resizeHandle}
             </div>
         </div>
     );

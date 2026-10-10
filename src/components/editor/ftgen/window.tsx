@@ -10,6 +10,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
+import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import { TableClient } from "./client";
 import { tableRequest, type TableRequest } from "./source";
 import type { PlotSnapshot } from "./extension";
@@ -202,6 +203,69 @@ export default function TablePlotWindow({
                 {icon}
             </IconButton>
         </Tooltip>
+    );
+    const resizeHandle = !full && (
+        <IconButton
+            disableRipple
+            aria-label="Resize table plot"
+            title="Drag to resize, or use arrow keys"
+            onPointerDown={(event) => startDrag(event, true)}
+            onPointerMove={move}
+            onPointerUp={finishDrag}
+            onLostPointerCapture={finishDrag}
+            onKeyDown={(event) => {
+                if (
+                    [
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "ArrowUp",
+                        "ArrowDown"
+                    ].includes(event.key)
+                ) {
+                    event.preventDefault();
+                    setRect((r) =>
+                        clampRect({
+                            ...r,
+                            width:
+                                r.width +
+                                (event.key === "ArrowLeft"
+                                    ? -20
+                                    : event.key === "ArrowRight"
+                                      ? 20
+                                      : 0),
+                            height:
+                                r.height +
+                                (event.key === "ArrowUp"
+                                    ? -20
+                                    : event.key === "ArrowDown"
+                                      ? 20
+                                      : 0)
+                        })
+                    );
+                }
+            }}
+            css={{
+                width: 24,
+                height: 24,
+                padding: 2,
+                flexShrink: 0,
+                cursor: "nwse-resize",
+                touchAction: "none",
+                color: theme.altTextColor,
+                "&:hover": { color: theme.textColor },
+                "&:focus-visible": {
+                    outline: `1px solid ${theme.altTextColor}`,
+                    outlineOffset: -2
+                }
+            }}
+        >
+            <KeyboardDoubleArrowDownIcon
+                css={{
+                    fontSize: 18,
+                    transform: "rotate(-45deg)"
+                }}
+            />
+        </IconButton>
     );
     return createPortal(
         <div
@@ -418,6 +482,7 @@ export default function TablePlotWindow({
                             <TableGraph
                                 samples={result.samples}
                                 guide={guide}
+                                resizeHandle={resizeHandle}
                             />
                         </div>
                     ) : (
@@ -432,91 +497,17 @@ export default function TablePlotWindow({
                             Generating table…
                         </p>
                     )}
-                    <footer
-                        css={{
-                            display: "flex",
-                            alignItems: "center",
-                            minHeight: 30,
-                            padding: "0 20px 8px",
-                            color: theme.altTextColor,
-                            fontSize: 10,
-                            gap: 12,
-                            flexShrink: 0
-                        }}
-                    >
-                        <span>
-                            {busy
-                                ? "Updating preview…"
-                                : error
-                                  ? "Edit the statement to retry"
-                                  : "Live preview · updates as you edit"}
-                        </span>
-                        {result && (
-                            <span css={{ marginLeft: "auto" }}>
-                                {result.request.tables.at(-1)!.fields[3] < 0
-                                    ? "Normalization off"
-                                    : "Native GEN scaling"}
-                            </span>
-                        )}
-                    </footer>
-                    {!full && (
-                        <span
-                            role="button"
-                            aria-label="Resize table plot"
-                            tabIndex={0}
-                            onPointerDown={(event) => startDrag(event, true)}
-                            onPointerMove={move}
-                            onPointerUp={finishDrag}
-                            onLostPointerCapture={finishDrag}
-                            onKeyDown={(event) => {
-                                if (
-                                    [
-                                        "ArrowLeft",
-                                        "ArrowRight",
-                                        "ArrowUp",
-                                        "ArrowDown"
-                                    ].includes(event.key)
-                                ) {
-                                    event.preventDefault();
-                                    setRect((r) =>
-                                        clampRect({
-                                            ...r,
-                                            width:
-                                                r.width +
-                                                (event.key === "ArrowLeft"
-                                                    ? -20
-                                                    : event.key === "ArrowRight"
-                                                      ? 20
-                                                      : 0),
-                                            height:
-                                                r.height +
-                                                (event.key === "ArrowUp"
-                                                    ? -20
-                                                    : event.key === "ArrowDown"
-                                                      ? 20
-                                                      : 0)
-                                        })
-                                    );
-                                }
-                            }}
+                    {(!result || error) && !full && (
+                        <div
                             css={{
-                                position: "absolute",
-                                bottom: 0,
-                                right: 0,
-                                width: 20,
-                                height: 20,
-                                cursor: "nwse-resize",
-                                touchAction: "none",
-                                color: theme.altTextColor
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                padding: "8px 12px",
+                                flexShrink: 0
                             }}
                         >
-                            <OpenInFullIcon
-                                css={{
-                                    fontSize: 14,
-                                    transform: "rotate(90deg)"
-                                }}
-                            />
-                        </span>
+                            {resizeHandle}
+                        </div>
                     )}
                 </>
             )}
