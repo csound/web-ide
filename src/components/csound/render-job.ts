@@ -97,7 +97,7 @@ export async function renderJob(job: RenderJob): Promise<string[]> {
             const result = await perform({
                 projectUid: job.projectUid,
                 csdPath: csd ? documentPath(doc, project.documents) : undefined,
-                orc: doc.currentValue,
+                orcPath: csd ? undefined : documentPath(doc, project.documents),
                 collectFiles: false,
                 mode: "render",
                 setConsole: job.setConsole,

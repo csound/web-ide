@@ -130,6 +130,33 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
 
+    .cm-tooltip-lint {
+        font-family: ${theme.font.monospace};
+        font-size: 12px;
+        line-height: 1.6;
+        width: max-content;
+        max-width: calc(100vw - 24px);
+        box-sizing: border-box;
+        padding: 4px;
+    }
+
+    .cm-tooltip-lint,
+    .cm-tooltip:has(.cm-tooltip-lint) {
+        border-radius: 4px;
+    }
+
+    .cm-tooltip-lint .cm-diagnostic {
+        margin: 0;
+        padding: 6px 10px;
+        border-left-width: 2px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .cm-tooltip-lint .cm-diagnostic-error {
+        border-left-color: ${theme.errorText};
+    }
+
     .cm-tooltip-autocomplete > ul {
         display: grid;
         grid-template-columns: auto fit-content(24ch) minmax(0, 1fr);

@@ -34,7 +34,8 @@
         "prestart:prod": "npm run manual:prepare",
         "prebuild": "npm run manual:prepare",
         "prebuild:dev": "npm run manual:prepare",
-        "test:manual": "node --test scripts/prepare-manual.test.mjs"
+        "test:manual": "node --test scripts/prepare-manual.test.mjs",
+        "checker:build": "node scripts/build-csound-check.mjs"
     },
     "dependencies": {
         "@bjorn3/browser_wasi_shim": "0.4.2",
@@ -42,6 +43,7 @@
         "@codemirror/commands": "^6.10.4",
         "@codemirror/lang-markdown": "^6.5.0",
         "@codemirror/language": "^6.12.4",
+        "@codemirror/lint": "^6.9.7",
         "@codemirror/state": "^6.7.1",
         "@codemirror/view": "^6.43.8",
         "@csound/browser": "7.0.0-beta38",

@@ -53,3 +53,7 @@ service-key-prod.json
 
 # Short-lived Google Actions credentials
 gha-creds-*.json
+
+# Optional Nix-built editor tools
+/.wasm-build/
+/nix/result

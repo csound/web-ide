@@ -11,6 +11,11 @@ import {
 import { Provider } from "react-redux";
 import { legacy_createStore } from "redux";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { diagnosticCount } from "@codemirror/lint";
+import {
+    compilerDiagnostics,
+    clearCompilerDiagnostics
+} from "./validation/messages";
 import { syntaxTree } from "@codemirror/language";
 import { isolateHistory, redo, undo, undoDepth } from "@codemirror/commands";
 import theme from "../../styles/_theme-dracula";
@@ -31,7 +36,10 @@ vi.mock("../projects/actions", () => ({
     updateDocumentValue: (value: string) => ({ type: "note/replace", value })
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    clearCompilerDiagnostics("project");
+});
 
 function fixture(filename: string, currentValue: string) {
     const initialState = {
@@ -339,4 +347,23 @@ it("renders pipe tables with headers, alignment and inline Markdown, then follow
     act(() => store.dispatch({ type: "note/replace", value: "No table now." }));
     expect(screen.queryByRole("table")).toBeNull();
     expect(screen.getByText("No table now.")).toBeTruthy();
+});
+
+it("shows a stored include diagnostic when its editor opens later", () => {
+    const text = "opcode Voice():a\nxout broken()\nendop";
+    compilerDiagnostics("project", "note", text, [
+        { filename: "voice.udo", line: 2, message: "Unknown opcode" }
+    ]);
+    const { wrapper } = fixture("voice.udo", text);
+    render(<Editor documentUid="note" projectUid="project" />, { wrapper });
+    expect(diagnosticCount(openEditors.get("note")!.state)).toBe(1);
+});
+
+it("ignores saved include errors for text that changed before opening", () => {
+    compilerDiagnostics("project", "note", "old text", [
+        { filename: "voice.udo", line: 1, message: "Old error" }
+    ]);
+    const { wrapper } = fixture("voice.udo", "opcode Voice():a\nxout 0\nendop");
+    render(<Editor documentUid="note" projectUid="project" />, { wrapper });
+    expect(diagnosticCount(openEditors.get("note")!.state)).toBe(0);
 });

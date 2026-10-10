@@ -14,6 +14,7 @@ import {
 } from "@codemirror/view";
 import { analyzeCsoundSemanticLine } from "@kunstmusik/codemirror-lang-csound";
 import { csdScoreSections } from "./csd-score-sections";
+import { udoCatalog } from "./validation/udos";
 
 const identifierNodes = csoundNodeSet(csoundNodeGroups.CsoundIdentifier);
 const headerNames = new Set([
@@ -123,7 +124,11 @@ function decorations(view: EditorView, documentText: string): DecorationSet {
                     const text = view.state.sliceDoc(node.from, node.to);
                     for (const span of analyzeCsoundSemanticLine(text, {
                         offset: node.from,
-                        documentText
+                        documentText,
+                        userOpcodeSignatures: view.state.field(
+                            udoCatalog,
+                            false
+                        )?.signatures
                     })) {
                         if (
                             span.kind === "builtInOpcode" ||
@@ -211,6 +216,8 @@ export function csoundRateHighlighting(): Extension {
                 if (
                     update.docChanged ||
                     update.viewportChanged ||
+                    update.state.field(udoCatalog, false) !==
+                        update.startState.field(udoCatalog, false) ||
                     tree !== this.tree
                 ) {
                     this.tree = tree;

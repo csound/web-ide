@@ -5,6 +5,7 @@ import type { SyntaxNode } from "@lezer/common";
 import { showPanel } from "@codemirror/view";
 import { csdScoreSections, inExternalScore } from "./csd-score-sections";
 import { findManualEntry } from "../../manual/lookup";
+import { udoCatalog } from "./validation/udos";
 import {
     getCsoundHoverInfo,
     analyzeCsoundSemanticLine
@@ -130,7 +131,10 @@ function callAtSelection(state: EditorState): CallContext | undefined {
         }
         if (node.name === nodes.OrcGenericLine) {
             const text = state.sliceDoc(node.from, node.to);
-            const spans = analyzeCsoundSemanticLine(text, { documentText });
+            const spans = analyzeCsoundSemanticLine(text, {
+                documentText,
+                userOpcodeSignatures: state.field(udoCatalog, false)?.signatures
+            });
             const opcodes = spans.filter(
                 (span) =>
                     span.kind === "builtInOpcode" || span.kind === "userOpcode"
@@ -289,10 +293,17 @@ export function csoundSynopsis(
             setSynopsis();
             if (!call) return;
             const [name] = call.token.split(":");
+            const udos = view.state.field(udoCatalog, false);
+            const local = udos?.entries.get(name);
+            if (local) {
+                setSynopsis(renderSynopsis(local, call));
+                return;
+            }
             void getCsoundHoverInfo(name, {
-                documentText:
-                    view.state.field(csdScoreSections, false)?.source ??
-                    view.state.doc.toString()
+                documentText: udos
+                    ? undefined
+                    : (view.state.field(csdScoreSections, false)?.source ??
+                      view.state.doc.toString())
             })
                 .then((info) => {
                     // The rich catalog loads on demand. Ignore a result for an old cursor.
@@ -335,6 +346,8 @@ export function csoundSynopsis(
                 if (
                     update.docChanged ||
                     update.selectionSet ||
+                    update.state.field(udoCatalog, false) !==
+                        update.startState.field(udoCatalog, false) ||
                     syntaxTree(update.state) !== syntaxTree(update.startState)
                 )
                     refresh();

@@ -1,5 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "@root/store";
+import {
+    backgroundValidation,
+    sourceFilesChanged,
+    validationPresentation
+} from "./validation/extension";
+import { projectPluginSignatures } from "./validation/plugins/project";
+import { checkWithPlugins } from "./validation/plugins/check";
+import {
+    watchCompiler,
+    compilerDiagnostics,
+    clearCompilerDiagnostics
+} from "./validation/messages";
+import { editorDiagnostics } from "./validation/ranges";
+import { setDiagnostics } from "@codemirror/lint";
+import { StateEffect } from "@codemirror/state";
+import { projectSources } from "./validation/source";
 import { csoundEditorLanguage } from "./csound-language";
 import { clojureEditorLanguage } from "./clojure-language";
 import { markdown } from "@codemirror/lang-markdown";
@@ -99,6 +115,74 @@ const CodeEditor = ({
 
     const csoundFileType = filenameToCsoundType(document.filename || "");
     const isMarkdown = /\.(md|markdown)$/i.test(document.filename || "");
+    const validationCompartment = useMemo(() => new Compartment(), []);
+    const projectRef = useRef(project);
+    projectRef.current = project;
+    const validationExtension = useMemo(() => {
+        if (buffer || !/\.(csd|orc)$/i.test(document.filename || "")) return [];
+        const markedIncludes = new Set<string>();
+        return backgroundValidation(
+            (text) =>
+                projectSources(
+                    projectRef.current.documents || {},
+                    documentUid,
+                    text
+                ),
+            async (request, signal) => {
+                const result = await checkWithPlugins(request, signal, () =>
+                    projectPluginSignatures(
+                        projectUid,
+                        projectRef.current.documents || {},
+                        request
+                    )
+                );
+                if (!signal.aborted && result.available) {
+                    // This editor applies its own result below. Do not replay an older Play error.
+                    clearCompilerDiagnostics(projectUid, documentUid);
+                    const documents = projectRef.current.documents || {};
+                    const sourcesByName = new Map(
+                        request.files.map((file) => [file.name, file])
+                    );
+                    for (const entry of Object.values(
+                        documents
+                    ) as IDocument[]) {
+                        const name = [
+                            ...entry.path.map(
+                                (id) => documents[id]?.filename || id
+                            ),
+                            entry.filename
+                        ].join("/");
+                        if (name === request.filename) continue;
+                        const diagnostics = result.diagnostics.filter(
+                            (item) => item.filename === name
+                        );
+                        const source = sourcesByName.get(name);
+                        if (
+                            source &&
+                            (diagnostics.length || markedIncludes.has(name))
+                        ) {
+                            if (diagnostics.length) markedIncludes.add(name);
+                            else markedIncludes.delete(name);
+                            compilerDiagnostics(
+                                projectUid,
+                                entry.documentUid,
+                                source.text,
+                                diagnostics
+                            );
+                        }
+                    }
+                }
+                return result;
+            }
+        );
+    }, [projectUid, documentUid, document.filename, Boolean(buffer)]);
+
+    useEffect(() => {
+        openEditors
+            .get(documentUid)
+            ?.dispatch({ effects: sourceFilesChanged.of(null) });
+    }, [documentUid, project.documents]);
+
     const openManual = useCallback(
         (opcode: string) => dispatch(lookupManualString(opcode)),
         [dispatch]
@@ -203,6 +287,7 @@ const CodeEditor = ({
                     bracketMatching(),
                     closeBrackets(),
                     autocompletion(),
+                    validationCompartment.of(validationExtension),
                     getHistory(documentUid),
                     EditorView.updateListener.of(onChange),
                     crosshairCursor()
@@ -258,8 +343,42 @@ const CodeEditor = ({
         onChange,
         onScroll,
         theme,
-        themeCompartment
+        themeCompartment,
+        validationExtension,
+        validationCompartment
     ]);
+
+    useEffect(() => {
+        let presentedView: EditorView | undefined;
+        return watchCompiler(
+            projectUid,
+            documentUid,
+            ({ text, diagnostics }) => {
+                const view = openEditors.get(documentUid);
+                if (!view || view.state.doc.toString() !== text) return;
+                if (view !== presentedView && diagnostics.length) {
+                    view.dispatch({
+                        effects: StateEffect.appendConfig.of(
+                            validationPresentation
+                        )
+                    });
+                    presentedView = view;
+                }
+                view.dispatch(
+                    setDiagnostics(
+                        view.state,
+                        editorDiagnostics(view.state.doc, diagnostics)
+                    )
+                );
+            }
+        );
+    }, [projectUid, documentUid]);
+
+    useEffect(() => {
+        openEditors.get(documentUid)?.dispatch({
+            effects: validationCompartment.reconfigure(validationExtension)
+        });
+    }, [documentUid, validationCompartment, validationExtension]);
 
     useEffect(() => {
         openEditors.get(documentUid)?.dispatch({

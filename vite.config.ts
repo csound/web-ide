@@ -4,6 +4,7 @@ import viteTsconfigPaths from "vite-tsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import checker from "vite-plugin-checker";
 import { fileURLToPath } from "node:url";
+import { csoundChecker } from "./scripts/csound-check-vite";
 import { manualPages } from "./scripts/manual-vite";
 
 export default defineConfig({
@@ -26,6 +27,7 @@ export default defineConfig({
     },
     plugins: [
         manualPages(),
+        csoundChecker(),
         checker({
             // e.g. use TypeScript check
             typescript: true
@@ -51,14 +53,17 @@ export default defineConfig({
     },
     test: {
         // The browser package has a module entry but no Node main entry.
-        alias: {
-            "@csound/browser": fileURLToPath(
-                new URL(
-                    "./node_modules/@csound/browser/dist/csound.js",
-                    import.meta.url
+        alias: [
+            {
+                find: /^@csound\/browser$/,
+                replacement: fileURLToPath(
+                    new URL(
+                        "./node_modules/@csound/browser/dist/csound.js",
+                        import.meta.url
+                    )
                 )
-            )
-        },
+            }
+        ],
         environment: "jsdom",
         include: ["src/**/*.test.{ts,tsx}", "functions/test/**/*.test.ts"]
     }

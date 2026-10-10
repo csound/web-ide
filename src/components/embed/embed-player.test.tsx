@@ -95,7 +95,7 @@ it("waits for a click, allows file selection, and disables SAB in the frame", as
         expect(runPerformance).toHaveBeenCalledWith(
             expect.objectContaining({
                 projectUid: "embed-test",
-                orc: "",
+                orcPath: "alternate.orc",
                 mode: "auto",
                 useSAB: false
             })

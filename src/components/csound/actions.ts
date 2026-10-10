@@ -17,6 +17,8 @@ import { consoleReadline } from "../console/readline";
 import { rawToWave } from "./wave-files";
 import { finalizeFlac } from "./flac-file";
 import { prepareScorePreprocessors } from "./score-preprocessors";
+import { readDiagnostics } from "../editor/validation/diagnostics";
+import { replaceCompilerDiagnostics } from "../editor/validation/messages";
 import { waitForCompilerMessages } from "./compiler-messages";
 import { beginPlaybackAudioSession } from "./audio-session";
 import {
@@ -110,6 +112,7 @@ export type PerformanceResult = {
 type PerformanceOptions = {
     projectUid: string;
     csdPath?: string;
+    orcPath?: string;
     // Audition an in-memory CSD without adding it or its output to the project.
     csdText?: string;
     inputFiles?: { name: string; data: Uint8Array }[];
@@ -129,6 +132,7 @@ type PerformanceOptions = {
 export async function runPerformance({
     projectUid,
     csdPath,
+    orcPath,
     csdText,
     inputFiles = [],
     collectFiles = true,
@@ -158,12 +162,21 @@ export async function runPerformance({
     const snapshot = store.getState();
     const project = snapshot.ProjectsReducer.projects[projectUid];
     if (!project) throw new Error("No project is open.");
+    const sourcePath = csdPath ?? orcPath;
     const document = Object.values(project.documents).find(
-        (doc) => documentPath(doc, project.documents) === csdPath
+        (doc) => documentPath(doc, project.documents) === sourcePath
     );
-    const requestedOutput = document
-        ? outputNameFromCsd(document.currentValue)
-        : undefined;
+    // Only attribute errors to the complete, unchanged project source.
+    const shareDiagnostics =
+        document &&
+        csdText === undefined &&
+        (csdPath
+            ? !renderSettings
+            : orc === undefined || orc === document.currentValue);
+    const requestedOutput =
+        csdPath && document
+            ? outputNameFromCsd(document.currentValue)
+            : undefined;
     if (renderSettings) {
         const error = validateRenderSettings(renderSettings);
         if (error) throw new Error(error);
@@ -205,6 +218,8 @@ export async function runPerformance({
     let csound: CsoundObj | undefined;
     let audioSession: ReturnType<typeof beginPlaybackAudioSession>;
     let messageCount = 0;
+    let compilerLog = "";
+    let compiling = true;
     let before: string[] = [];
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
@@ -404,6 +419,8 @@ export async function runPerformance({
         });
         csound.on("message", (message: string) => {
             messageCount++;
+            if (compiling)
+                compilerLog = (compilerLog + message + "\n").slice(-32000);
             if (
                 /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
                     message
@@ -420,7 +437,7 @@ export async function runPerformance({
         }
         await prepareScorePreprocessors(
             csound.fs,
-            csdText ?? document?.currentValue,
+            csdText ?? (csdPath ? document?.currentValue : undefined),
             controller.signal,
             Object.values(project.documents).map((doc) =>
                 documentPath(doc, project.documents)
@@ -448,7 +465,9 @@ export async function runPerformance({
                   )
                 : csdPath
                   ? await compileCSD(csound, csdPath)
-                  : await csound.compileOrc(orc ?? "");
+                  : await csound.compileOrc(
+                        orc ?? document?.currentValue ?? ""
+                    );
         check();
         if (compiled !== 0) {
             await waitForCompilerMessages(
@@ -456,10 +475,45 @@ export async function runPerformance({
                 controller.signal
             );
             check();
+            if (sourcePath && shareDiagnostics) {
+                const diagnostics = readDiagnostics(
+                    compilerLog,
+                    sourcePath,
+                    Object.values(project.documents).map((entry) =>
+                        documentPath(entry, project.documents)
+                    ),
+                    !csdPath
+                );
+                replaceCompilerDiagnostics(
+                    projectUid,
+                    Object.values(project.documents).map((entry) => {
+                        const path = documentPath(entry, project.documents);
+                        return {
+                            documentUid: entry.documentUid,
+                            text: entry.currentValue,
+                            diagnostics: diagnostics.filter(
+                                (item) => item.filename === path
+                            )
+                        };
+                    }),
+                    document?.documentUid
+                );
+            }
             throw new Error(
                 "Csound compilation failed. Read the console for details."
             );
         }
+        compiling = false;
+        if (shareDiagnostics)
+            replaceCompilerDiagnostics(
+                projectUid,
+                Object.values(project.documents).map((entry) => ({
+                    documentUid: entry.documentUid,
+                    text: entry.currentValue,
+                    diagnostics: []
+                })),
+                document.documentUid
+            );
         // CsOptions may override the initial command-line options.
         for (const option of overrides) await csound.setOption(option);
         // Live inputs make the browser backend start a realtime thread even

@@ -1,0 +1,16 @@
+name: Build Csound checker
+description: Build the pinned parser WASM required in CI and deployments.
+runs:
+    using: composite
+    steps:
+        - shell: bash
+          run: node --test scripts/build-csound-check.test.mjs
+        - uses: cachix/install-nix-action@v31.11.1
+        - uses: cachix/cachix-action@v17
+          with:
+              name: csound
+              skipPush: true
+        - shell: bash
+          run: npm run checker:build -- --required
+        - shell: bash
+          run: npm run test:ci -- src/components/editor/validation/run.test.ts

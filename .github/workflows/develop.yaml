@@ -54,6 +54,8 @@ jobs:
                   credentials_json: ${{ secrets.GCP_SA_KEY_DEV }}
             - name: Check dev deployment permissions
               run: node scripts/deploy-dev.mjs --preflight
+            - name: Build Csound checker
+              uses: ./.github/actions/csound-check
             - name: Build
               run: |
                   echo "STORAGE_BUCKET_URL=gs://csound-ide-dev.appspot.com" >> functions/.env.dev
