@@ -21,12 +21,17 @@ if (!output || !isAbsolute(output))
         `Expected a Nix output directory, got ${JSON.stringify(build.stdout)}`
     );
 mkdirSync(".wasm-build", { recursive: true });
-for (const name of ["csound-check", "plugin-types", "plugin-types-fixture"]) {
+for (const name of [
+    "csound-check",
+    "plugin-types",
+    "plugin-types-fixture",
+    "csound-ftgen"
+]) {
     const file = `.wasm-build/${name}.wasm`;
     copyFileSync(resolve(output, `${name}.wasm`), `${file}.tmp`);
     chmodSync(`${file}.tmp`, 0o644);
     renameSync(`${file}.tmp`, file);
 }
 console.log(
-    "Built .wasm-build/csound-check.wasm. Restart Vite to enable background checks."
+    "Built Csound tools in .wasm-build. Restart Vite to enable checks and table previews."
 );

@@ -7,7 +7,8 @@ import type { Plugin } from "vite";
 export function csoundChecker(): Plugin {
     const artifacts = [
         ["csound-check", "__CSOUND_CHECK_URL__"],
-        ["plugin-types", "__CSOUND_PLUGIN_TYPES_URL__"]
+        ["plugin-types", "__CSOUND_PLUGIN_TYPES_URL__"],
+        ["csound-ftgen", "__CSOUND_FTGEN_URL__"]
     ].map(([name, define]) => {
         const path = resolve(`.wasm-build/${name}.wasm`);
         const bytes = existsSync(path) ? readFileSync(path) : undefined;

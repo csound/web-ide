@@ -104,3 +104,45 @@ metadata is capped at 1 MiB. Inspection times out after eight seconds; file read
 and inspection together have a 20-second limit. Failed revisions wait 30 seconds before retry;
 a changed file can retry at once. Neither the binaries nor their runtimes stay
 in the cache. Local plugin tests use the C and C++ examples from `@csound/wasm-bin`.
+
+## Function table previews
+
+The same build also produces `csound-ftgen.wasm`, a separate command that links
+Csound's GEN routines and their math helpers. It has no orchestra parser, audio
+engine, opcode registry or file readers. On the current build it is about 144 KB
+(66 KB gzipped). `csound-ftgen/prepare.py` removes file-based routines and graph
+callbacks from the pinned source; it leaves the GEN math unchanged.
+
+Hover an `ftgen` variable or a score's `f` and table number, then click to plot.
+Alt+Enter at that position also opens the plot. Unique global table references
+in the same file are clickable too. The window moves, resizes, minimizes and
+fills the viewport; its title and resize handle accept arrow keys. The curve
+supports pointer inspection and arrow keys (Shift moves 100 samples).
+
+Edits refresh the preview after 350 ms. Renaming, renumbering or deleting its
+statement closes the window. An invalid edit clears the old plot and explains
+what the preview needs. The worker and window code load on first use. Successful
+edits reuse the worker's compiled module but get fresh WASM memory. Closing or
+minimizing releases the worker; superseding a running GEN terminates that work.
+
+The preview accepts numbers, simple arithmetic, earlier numeric constants, and
+explicit dependencies on earlier tables in the same file. It supports the
+numeric GEN routines except file-based GEN01, 23, 28, 43, 44 and 49, plus the
+named `tanh`, `exp`, `sone` and `quadbezier` routines. It shows the first output of
+GEN15. Runtime values, includes, macros, preprocessed scores and other named
+GENs are outside this static preview. They never cause orchestra execution.
+Random tables use a fixed seed, so the preview can differ from playback.
+Score powers mixed with other arithmetic require explicit parentheses because
+Csound's score reader and orchestra parser use different precedence rules.
+
+Limits: 262,144 samples, 1,024 pfields per table, 32 source tables, 32 MiB of WASM
+memory and five seconds per request. Plots retain each pixel bucket's extrema
+instead of dropping narrow peaks. The final point is the native guard sample;
+statistics cover the table itself. Guides identify segment breakpoints, input
+partial amplitudes, windows, transfer-function domains and other GEN families.
+
+CI, develop and production deployments require both tools and publish them at
+content-hashed URLs. Without the local artifact, Vite defines an empty URL and
+the editor adds no plot links or worker requests. Run the native tests with
+`npm run test:ci -- src/components/editor/ftgen` and the browser fixture at
+`/puppeteer-tests/fixtures/ftgen.html` (append `?light` for the light theme).
