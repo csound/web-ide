@@ -5,6 +5,137 @@ import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, target, targetName } from "../utils/config.js";
 
 test(
+    "Escape closes focused plots in focus order without a title outline",
+    { skip: targetName !== "local", timeout: 60000 },
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            const errors = [];
+            page.on("pageerror", (error) => errors.push(error.message));
+            await page.setViewport({ width: 1440, height: 900 });
+            await page.goto(
+                `${target.baseUrl}/puppeteer-tests/fixtures/ftgen.html?multiple`
+            );
+            await page.waitForFunction(() => window.ftgenFixture?.text());
+            if (!(await page.evaluate(() => window.ftgenFixture.available)))
+                return;
+            const first = '[aria-label="Function table gi_tales_trisaw"]';
+            const second = '[aria-label="Function table gi_second"]';
+            const third = '[aria-label="Function table gi_third"]';
+            const open = async (name, selector) => {
+                await page.evaluate(
+                    (name) => window.ftgenFixture.focus(name),
+                    name
+                );
+                await page.keyboard.down("Alt");
+                await page.keyboard.press("Enter");
+                await page.keyboard.up("Alt");
+                await page.waitForSelector(selector);
+                assert.equal(
+                    await page.$eval(
+                        selector,
+                        (node) => document.activeElement === node
+                    ),
+                    true,
+                    "opening a plot focuses the dialog, not the title"
+                );
+            };
+            await open("fixture", first);
+            assert.equal(
+                await page.$eval(`${first} header span[tabindex]`, (node) => {
+                    node.focus();
+                    return getComputedStyle(node).outlineStyle;
+                }),
+                "none"
+            );
+            // Leave part of the first window exposed behind the other two.
+            const title = await page.$eval(`${first} header`, (node) => {
+                const rect = node.getBoundingClientRect();
+                return { x: rect.x + 100, y: rect.y + 20 };
+            });
+            await page.mouse.move(title.x, title.y);
+            await page.mouse.down();
+            await page.mouse.move(108, title.y, { steps: 4 });
+            await page.mouse.up();
+            await open("second", second);
+            await open("third", third);
+
+            await page.evaluate(() => window.ftgenFixture.focus());
+            await page.keyboard.press("Escape");
+            assert.equal((await page.$$('[role="dialog"]')).length, 3);
+
+            // Clicking the title background must focus and raise that window.
+            await page.mouse.click(32, title.y);
+            assert.equal(
+                await page.$eval(
+                    first,
+                    (node) => document.activeElement === node
+                ),
+                true
+            );
+            assert.ok(
+                (await page.$eval(first, (node) => Number(node.style.zIndex))) >
+                    (await page.$eval(third, (node) =>
+                        Number(node.style.zIndex)
+                    ))
+            );
+            await page.keyboard.down("Escape");
+            await page.waitForSelector(first, { hidden: true });
+            assert.equal(
+                await page.$eval(
+                    third,
+                    (node) => document.activeElement === node
+                ),
+                true
+            );
+            await page.keyboard.down("Escape");
+            assert.equal(
+                (await page.$$('[role="dialog"]')).length,
+                2,
+                "holding Escape must not close the next window"
+            );
+            await page.keyboard.up("Escape");
+            await page.keyboard.press("Escape");
+            await page.waitForSelector(third, { hidden: true });
+            assert.equal(
+                await page.$eval(
+                    second,
+                    (node) => document.activeElement === node
+                ),
+                true
+            );
+            await page.keyboard.press("Escape");
+            await page.waitForSelector('[role="dialog"]', { hidden: true });
+            assert.equal(
+                await page.evaluate(() =>
+                    document.activeElement?.classList.contains("cm-content")
+                ),
+                true
+            );
+
+            await open("fixture", first);
+            await open("second", second);
+            await page.click(`${second} [aria-label="Minimize table plot"]`);
+            await page.keyboard.press("Escape");
+            await page.waitForSelector(second, { hidden: true });
+            assert.equal(
+                await page.$eval(
+                    first,
+                    (node) => document.activeElement === node
+                ),
+                true
+            );
+            await page.click(`${first} [aria-label="Close table plot"]`);
+            await page.waitForSelector('[role="dialog"]', { hidden: true });
+            assert.deepEqual(errors, []);
+        } finally {
+            await browser.close();
+        }
+    }
+);
+
+test(
     "function table preview is optional, lazy and follows edits",
     { skip: targetName !== "local", timeout: 60000 },
     async () => {

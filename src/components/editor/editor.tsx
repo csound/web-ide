@@ -451,13 +451,13 @@ const CodeEditor = ({
                 <Suspense fallback={null}>
                     <TablePlotWindow
                         snapshot={tablePlot}
-                        onClose={() => {
+                        onClose={(restoreEditorFocus) => {
                             setTablePlot(null);
                             const view = openEditors.get(documentUid);
                             view?.dispatch({
                                 effects: closeTablePlot.of(null)
                             });
-                            view?.focus();
+                            if (restoreEditorFocus) view?.focus();
                         }}
                     />
                 </Suspense>

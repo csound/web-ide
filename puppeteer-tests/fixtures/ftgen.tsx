@@ -6,7 +6,11 @@ import CodeEditor, { openEditors } from "../../src/components/editor/editor";
 import { plotterAvailable } from "../../src/components/editor/ftgen/client";
 import dark from "../../src/styles/_theme-dracula";
 import light from "../../src/styles/_theme-github-light";
-const colors = new URLSearchParams(location.search).has("light") ? light : dark;
+const options = new URLSearchParams(location.search);
+const colors = options.has("light") ? light : dark;
+const editors = options.has("multiple")
+    ? ["fixture", "second", "third"]
+    : ["fixture"];
 const source = `<CsoundSynthesizer>
 <CsInstruments>
 sr = 48000
@@ -26,6 +30,13 @@ f 1 0 8192 10 1 .5 .25 .125
 (window as any).ftgenFixture = {
     available: plotterAvailable,
     text: () => openEditors.get("ftgen-fixture")?.state.doc.toString(),
+    focus: (name = "fixture") => {
+        const view = openEditors.get(`ftgen-${name}`)!;
+        view.focus();
+        view.dispatch({
+            selection: { anchor: view.state.doc.toString().indexOf("gi_") }
+        });
+    },
     replace: (find: string, insert: string) => {
         const view = openEditors.get("ftgen-fixture")!;
         const from = view.state.doc.toString().indexOf(find);
@@ -44,13 +55,26 @@ createRoot(document.getElementById("root")!).render(
                 }
             })}
         >
-            <div style={{ height: "100dvh" }}>
-                <CodeEditor
-                    projectUid="ftgen-local"
-                    documentUid="ftgen-fixture"
-                    onBufferChange={() => {}}
-                    buffer={{ filename: "tables.csd", value: source }}
-                />
+            <div style={{ height: "100dvh", display: "flex" }}>
+                {editors.map((name) => (
+                    <div key={name} style={{ flex: 1, minWidth: 0 }}>
+                        <CodeEditor
+                            projectUid="ftgen-local"
+                            documentUid={`ftgen-${name}`}
+                            onBufferChange={() => {}}
+                            buffer={{
+                                filename: `${name}.csd`,
+                                value:
+                                    name === "fixture"
+                                        ? source
+                                        : source.replaceAll(
+                                              "gi_tales_trisaw",
+                                              `gi_${name}`
+                                          )
+                            }}
+                        />
+                    </div>
+                ))}
             </div>
         </ThemeProvider>
     </Provider>
