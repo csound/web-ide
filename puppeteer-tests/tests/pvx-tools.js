@@ -13,6 +13,10 @@ test(
             const page = await browser.newPage();
             const errors = [];
             const wasm = new Set();
+            let navigations = 0;
+            page.on("framenavigated", (frame) => {
+                if (frame === page.mainFrame()) navigations++;
+            });
             page.on("pageerror", (error) => errors.push(error.message));
             page.on("request", (request) => {
                 const match = new URL(request.url()).pathname.match(
@@ -76,6 +80,7 @@ test(
             await mkdir("screenshots", { recursive: true });
             for (const theme of ["dark", "light"]) {
                 wasm.clear();
+                const expectedNavigations = navigations + 1;
                 await page.setViewport({ width: 1100, height: 800 });
                 await page.goto(
                     `${target.baseUrl}/puppeteer-tests/fixtures/pvx-tools.html${theme === "light" ? "?light" : ""}`
@@ -262,6 +267,11 @@ test(
                 await page.waitForSelector('[aria-label="PVX editor"]', {
                     hidden: true
                 });
+                assert.equal(
+                    navigations,
+                    expectedNavigations,
+                    "Opening and using the tool must not reload the page"
+                );
             }
             assert.deepEqual(errors, []);
         } finally {

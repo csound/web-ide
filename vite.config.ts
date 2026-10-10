@@ -23,6 +23,9 @@ export default defineConfig({
     // Production chunks and utility WASM still load only when requested.
     optimizeDeps: {
         include: [
+            // Emotion's JSX source replaces React's runtime in plugin-react's
+            // includes, but dependencies still import the React runtime.
+            "react/jsx-runtime",
             "@emotion/styled/base",
             "@bjorn3/browser_wasi_shim",
             "music-metadata"
