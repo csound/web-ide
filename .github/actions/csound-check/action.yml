@@ -1,5 +1,10 @@
 name: Build Csound checker
 description: Build the pinned parser WASM required in CI and deployments.
+inputs:
+    cachix-auth-token:
+        description: Optional Cachix write token supplied by deployment workflows.
+        required: false
+        default: ""
 runs:
     using: composite
     steps:
@@ -8,8 +13,10 @@ runs:
         - uses: cachix/install-nix-action@v31.11.1
         - uses: cachix/cachix-action@v17
           with:
-              name: csound
-              skipPush: true
+              name: csound-web-ide
+              extraPullNames: csound
+              authToken: ${{ inputs.cachix-auth-token }}
+              skipPush: ${{ inputs.cachix-auth-token == '' }}
         - shell: bash
           run: npm run checker:build -- --required
         - shell: bash

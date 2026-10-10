@@ -56,6 +56,8 @@ jobs:
               run: node scripts/deploy-dev.mjs --preflight
             - name: Build Csound checker
               uses: ./.github/actions/csound-check
+              with:
+                  cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
             - name: Build
               run: |
                   echo "STORAGE_BUCKET_URL=gs://csound-ide-dev.appspot.com" >> functions/.env.dev

@@ -40,6 +40,8 @@ jobs:
                   npm run format:check
             - name: Build Csound checker
               uses: ./.github/actions/csound-check
+              with:
+                  cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
             - name: Build
               run: |
                   echo "STORAGE_BUCKET_URL=gs://csound-ide.appspot.com" >> functions/.env
