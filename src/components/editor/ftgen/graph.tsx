@@ -125,7 +125,11 @@ export function TableGraph({
                     }}
                     css={{
                         display: "block",
-                        outlineColor: theme.iRateVar,
+                        outline: "none",
+                        "&:focus-visible": {
+                            outline: `1px solid ${theme.altTextColor}`,
+                            outlineOffset: -3
+                        },
                         fontFamily: theme.font.monospace,
                         fontSize: 10,
                         overflow: "visible"
