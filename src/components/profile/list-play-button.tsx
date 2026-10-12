@@ -43,6 +43,7 @@ const SvgPlayIcon = ({
 export const ListPlayButton = ({
     projectUid,
     projectName,
+    className,
     size = 64,
     iconName,
     iconBackgroundColor,
@@ -50,6 +51,7 @@ export const ListPlayButton = ({
 }: {
     projectUid: string;
     projectName: string;
+    className?: string;
     size?: number;
     iconName?: string;
     iconBackgroundColor?: string;
@@ -116,6 +118,7 @@ export const ListPlayButton = ({
     return (
         <SS.StyledAvatar
             component="button"
+            className={className}
             size={size}
             type="button"
             aria-label={
