@@ -3,8 +3,7 @@ import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
 import {
     selectUserImageURL,
-    selectLoggedInUserName,
-    selectUserProfile
+    selectLoggedInProfile
 } from "@comp/profile/selectors";
 import { editProfile } from "@comp/profile/actions";
 import {
@@ -69,10 +68,9 @@ export const Header = () => {
 
     const loggedInUid = useSelector(selectLoggedInUid);
 
-    const loggedInUserName = useSelector(selectLoggedInUserName);
-    const loggedInProfile = useSelector(selectUserProfile(loggedInUid));
-    const myProjectsPath = loggedInUserName
-        ? `/profile/${loggedInUserName}`
+    const loggedInProfile = useSelector(selectLoggedInProfile);
+    const myProjectsPath = loggedInProfile?.username
+        ? `/profile/${loggedInProfile.username}`
         : undefined;
 
     const avatarUrl = useSelector(selectUserImageURL(loggedInUid || ""));
@@ -332,7 +330,7 @@ export const Header = () => {
                     ) : null}
                     {authenticated &&
                         !isAuthRequesting &&
-                        !mobileView &&
+                        !isCompactViewport &&
                         myProjectsPath && (
                             <Button
                                 component={Link}
