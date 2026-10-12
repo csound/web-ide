@@ -28,6 +28,11 @@ test(
                     (name) => window.ftgenFixture.focus(name),
                     name
                 );
+                await page.waitForFunction(
+                    (name) => window.ftgenFixture.tableFocused(name),
+                    {},
+                    name
+                );
                 await page.keyboard.down("Alt");
                 await page.keyboard.press("Enter");
                 await page.keyboard.up("Alt");

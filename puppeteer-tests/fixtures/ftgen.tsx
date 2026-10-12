@@ -30,12 +30,31 @@ f 1 0 8192 10 1 .5 .25 .125
 (window as any).ftgenFixture = {
     available: plotterAvailable,
     text: () => openEditors.get("ftgen-fixture")?.state.doc.toString(),
-    focus: (name = "fixture") => {
+    focus: async (name = "fixture") => {
         const view = openEditors.get(`ftgen-${name}`)!;
         view.focus();
+        // Let the browser finish restoring focus before setting the test cursor.
+        // Otherwise a pending selection update can move it back to line one.
+        await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => resolve())
+        );
         view.dispatch({
             selection: { anchor: view.state.doc.toString().indexOf("gi_") }
         });
+        view.focus();
+    },
+    tableFocused: (name = "fixture") => {
+        const view = openEditors.get(`ftgen-${name}`)!;
+        const position = view.state.doc.toString().indexOf("gi_");
+        const selection = window.getSelection();
+        return (
+            view.hasFocus &&
+            view.state.selection.main.head === position &&
+            selection?.anchorNode &&
+            view.contentDOM.contains(selection.anchorNode) &&
+            view.posAtDOM(selection.anchorNode, selection.anchorOffset) ===
+                position
+        );
     },
     replace: (find: string, insert: string) => {
         const view = openEditors.get("ftgen-fixture")!;

@@ -369,9 +369,9 @@ export const artistRank = (theme: Theme): SerializedStyles => css`
 
 export const projectArtwork = (theme: Theme): SerializedStyles => css`
     position: relative;
-    flex: 0 0 38px;
-    width: 38px;
-    height: 38px;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
     border-radius: 6px;
     overflow: hidden;
     border: 1px solid ${theme.line};

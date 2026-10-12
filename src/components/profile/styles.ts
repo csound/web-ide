@@ -245,7 +245,8 @@ export const mobileActionsButton = (theme: Theme): SerializedStyles => css`
 `;
 
 export const showAvatarPlayButton = css`
-    .projectIcon {
+    .projectIcon,
+    .project-avatar svg {
         opacity: 0;
     }
     .listPlayIcon {
@@ -294,6 +295,7 @@ export const StyledAvatar = styled(Avatar as any, {
     shouldForwardProp: (property) =>
         [
             "children",
+            "className",
             "onClick",
             "src",
             "component",
