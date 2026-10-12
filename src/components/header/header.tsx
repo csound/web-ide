@@ -3,8 +3,10 @@ import { RootState, useDispatch, useSelector } from "@root/store";
 import { selectIsOwnerForProject } from "@comp/project-editor/selectors";
 import {
     selectUserImageURL,
-    selectLoggedInUserName
+    selectLoggedInUserName,
+    selectUserProfile
 } from "@comp/profile/selectors";
+import { editProfile } from "@comp/profile/actions";
 import {
     selectLoggedInUid,
     selectLoginRequesting
@@ -68,6 +70,10 @@ export const Header = () => {
     const loggedInUid = useSelector(selectLoggedInUid);
 
     const loggedInUserName = useSelector(selectLoggedInUserName);
+    const loggedInProfile = useSelector(selectUserProfile(loggedInUid));
+    const myProjectsPath = loggedInUserName
+        ? `/profile/${loggedInUserName}`
+        : undefined;
 
     const avatarUrl = useSelector(selectUserImageURL(loggedInUid || ""));
 
@@ -144,22 +150,42 @@ export const Header = () => {
                 open={isProfileMenuOpen}
                 onClose={handleProfileMenuClose}
             >
-                <Link to={`/profile/${loggedInUserName}`} css={SS.menuItemLink}>
-                    <MenuItem
-                        onClick={() => {
-                            handleProfileMenuClose();
-                        }}
-                    >
-                        View Profile
-                    </MenuItem>
-                </Link>
+                <MenuItem
+                    component={Link}
+                    to={myProjectsPath || "#"}
+                    disabled={!myProjectsPath}
+                    onClick={handleProfileMenuClose}
+                >
+                    My projects
+                </MenuItem>
+                <MenuItem
+                    disabled={!loggedInProfile?.username}
+                    onClick={() => {
+                        handleProfileMenuClose();
+                        if (loggedInProfile?.username) {
+                            dispatch(
+                                editProfile(
+                                    loggedInProfile.username,
+                                    loggedInProfile.displayName || "",
+                                    loggedInProfile.bio || "",
+                                    loggedInProfile.link1 || "",
+                                    loggedInProfile.link2 || "",
+                                    loggedInProfile.link3 || "",
+                                    loggedInProfile.backgroundIndex || 0
+                                )
+                            );
+                        }
+                    }}
+                >
+                    Edit profile
+                </MenuItem>
                 <MenuItem
                     onClick={() => {
                         handleProfileMenuClose();
                         logout();
                     }}
                 >
-                    Logout
+                    Sign out
                 </MenuItem>
             </Menu>
         </div>
@@ -304,6 +330,19 @@ export const Header = () => {
                                 )}
                         </div>
                     ) : null}
+                    {authenticated &&
+                        !isAuthRequesting &&
+                        !mobileView &&
+                        myProjectsPath && (
+                            <Button
+                                component={Link}
+                                to={myProjectsPath}
+                                color="inherit"
+                                css={SS.myProjectsLink}
+                            >
+                                My projects
+                            </Button>
+                        )}
                     {(!routeIsEditor || !mobileView) && utilityNav}
                     <div css={SS.authSlot}>
                         {isAuthRequesting ? (

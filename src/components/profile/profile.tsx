@@ -311,7 +311,7 @@ export const Profile = () => {
                             )
                         }
                     >
-                        Edit Profile
+                        Edit profile
                     </Button>
                     <Button
                         css={profileActionButton}
@@ -509,7 +509,13 @@ export const Profile = () => {
                                     scrollButtons="auto"
                                     aria-label="Profile sections"
                                 >
-                                    <Tab label="Projects" />
+                                    <Tab
+                                        label={
+                                            isProfileOwner
+                                                ? "My projects"
+                                                : "Projects"
+                                        }
+                                    />
                                     <Tab label="Following" />
                                     <Tab label="Followers" />
                                     <Tab label="Stars" />
@@ -563,7 +569,7 @@ export const Profile = () => {
                         <BottomNavigationAction
                             value={0}
                             css={mobileNavigationButton}
-                            label="Projects"
+                            label={isProfileOwner ? "My projects" : "Projects"}
                             icon={<FolderOutlinedIcon fontSize="large" />}
                         />
                         <BottomNavigationAction
