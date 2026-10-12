@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router";
 import StarIcon from "@mui/icons-material/Star";
 import { useDispatch, useSelector } from "@root/store";
-import ProjectAvatar from "@elem/project-avatar";
+import { ListPlayButton } from "@comp/profile/list-play-button";
 import { fetchPopularProjects } from "./actions";
 import { RankingBoard } from "./ranking-board";
 import * as SS from "./styles";
@@ -43,22 +43,19 @@ const PopularProjects = () => {
                     <li key={project.projectUid} css={SS.artistBoardRow}>
                         <span css={SS.artistRank}>#{index + 1}</span>
                         <div css={SS.artistIdentityStatic}>
-                            <Link
-                                to={"/editor/" + project.projectUid}
+                            <ListPlayButton
+                                projectUid={project.projectUid}
+                                projectName={project.name}
+                                size={44}
                                 css={SS.projectArtwork}
-                                tabIndex={-1}
-                                aria-hidden="true"
-                            >
-                                <ProjectAvatar
-                                    iconName={project.iconName}
-                                    iconBackgroundColor={
-                                        project.iconBackgroundColor
-                                    }
-                                    iconForegroundColor={
-                                        project.iconForegroundColor
-                                    }
-                                />
-                            </Link>
+                                iconName={project.iconName}
+                                iconBackgroundColor={
+                                    project.iconBackgroundColor
+                                }
+                                iconForegroundColor={
+                                    project.iconForegroundColor
+                                }
+                            />
                             <span css={SS.artistNameGroup}>
                                 <Link
                                     css={SS.rankingLink}

@@ -4,8 +4,16 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, target, targetName } from "../utils/config.js";
 
-// Replace cloud subscriptions only: UI, playback controller, WASM and audio are real.
+// Replace cloud data only: UI, playback controller, WASM and audio are real.
 const mocks = {
+    "/src/components/home/actions.ts": [
+        "fetchPopularProjects",
+        "fetchPopularArtists",
+        "fetchRandomProjects",
+        "searchProjects"
+    ]
+        .map((name) => `export const ${name} = () => () => {};`)
+        .join("\n"),
     "/src/components/projects/subscribers.tsx":
         "export const subscribeToProjectChanges = () => () => {}; export const subscribeToProjectFilesChanges = () => () => {}; export const subscribeToProjectTargetsChanges = () => () => {};",
     "/src/components/project-last-modified/subscribers.tsx":
@@ -21,6 +29,141 @@ const mocks = {
         .map((name) => `export const ${name} = () => () => {};`)
         .join("\n")
 };
+
+for (const [theme, width] of [
+    ["default", 1280],
+    ["github-light", 360]
+]) {
+    test(
+        `popular thumbnails play; titles and artists navigate (${theme}, ${width}px)`,
+        { skip: targetName !== "local", timeout: 120000 },
+        async () => {
+            const browser = await puppeteer.launch({
+                ...BROWSER_SETTINGS,
+                args: BROWSER_SETTINGS.args.filter(
+                    (argument) => !argument.startsWith("--autoplay-policy=")
+                )
+            });
+            try {
+                const page = await browser.newPage();
+                await page.setViewport({
+                    width,
+                    height: 900,
+                    hasTouch: width < 500
+                });
+                await page.evaluateOnNewDocument((theme) => {
+                    localStorage.setItem("theme", theme);
+                    localStorage.setItem("sab", "false");
+                }, theme);
+                const errors = [];
+                page.on("pageerror", (error) => errors.push(error.message));
+                await page.setRequestInterception(true);
+                page.on("request", (request) => {
+                    const url = new URL(request.url());
+                    if (mocks[url.pathname])
+                        void request.respond({
+                            status: 200,
+                            contentType: "application/javascript",
+                            body: mocks[url.pathname]
+                        });
+                    else if (
+                        url.origin === new URL(target.baseUrl).origin ||
+                        ["blob:", "data:"].includes(url.protocol)
+                    )
+                        void request.continue();
+                    else void request.abort();
+                });
+                await page.goto(
+                    `${target.baseUrl}/puppeteer-tests/fixtures/project-playback.html?popular`
+                );
+                const button = (name) => `::-p-aria(${name}[role="button"])`;
+                const first = await page.waitForSelector(button("Play First"));
+                assert.equal(
+                    await page.$eval('a[title="First"]', (link) =>
+                        link.getAttribute("href")
+                    ),
+                    "/editor/First"
+                );
+                assert.equal(
+                    await page.$eval('a[title="A Csound artist"]', (link) =>
+                        link.getAttribute("href")
+                    ),
+                    "/profile/listener"
+                );
+                if (width >= 500) await first.focus();
+                assert.deepEqual(
+                    await first.evaluate((element) => ({
+                        artwork: getComputedStyle(
+                            element.querySelector(".project-avatar svg")
+                        ).opacity,
+                        play: getComputedStyle(
+                            element.querySelector(".listPlayIcon")
+                        ).opacity
+                    })),
+                    { artwork: "0", play: "1" }
+                );
+                if (width < 500) await first.tap();
+                else await page.keyboard.press("Enter");
+                await page.waitForSelector(button("Pause First"));
+                assert.equal(await page.$('[aria-label="Destination"]'), null);
+                await page.click(button("Pause First"));
+                await page.waitForFunction(
+                    () => window.playbackFixture.status() === "paused"
+                );
+                await page.click(button("Play First"));
+                await page.waitForSelector(button("Pause First"));
+                await page.click(button("Play Second"));
+                await page.waitForSelector(button("Pause Second"));
+                assert.equal(
+                    await page.evaluate(() =>
+                        window.playbackFixture.live("First")
+                    ),
+                    false
+                );
+                const board = await page.$(
+                    'section[aria-labelledby="popular-projects"]'
+                );
+                mkdirSync("screenshots", { recursive: true });
+                await board.screenshot({
+                    path: `screenshots/popular-projects-${theme}.png`
+                });
+                assert.equal(
+                    await page.evaluate(
+                        () => document.documentElement.scrollWidth <= innerWidth
+                    ),
+                    true
+                );
+                await page.click('a[title="First"]');
+                await page.waitForFunction(
+                    () =>
+                        document.querySelector('[aria-label="Destination"]')
+                            ?.textContent === "/editor/First"
+                );
+                const stopped = () =>
+                    page.waitForFunction(
+                        () =>
+                            window.playbackFixture.status() === "stopped" &&
+                            !window.playbackFixture.busy()
+                    );
+                await stopped();
+                await page.click('a[href="/"]');
+                await page.waitForSelector(button("Play First"));
+                await page.click(button("Play First"));
+                await page.waitForSelector(button("Pause First"));
+                await page.click('a[title="A Csound artist"]');
+                await page.waitForFunction(
+                    () =>
+                        document.querySelector('[aria-label="Destination"]')
+                            ?.textContent === "/profile/listener"
+                );
+                await stopped();
+                assert.deepEqual(errors, []);
+            } finally {
+                await browser.close();
+            }
+        }
+    );
+}
 
 for (const sab of [false, true]) {
     const ios = !sab;

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
-import { MemoryRouter } from "react-router";
+import { Link, MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { store, useSelector } from "../../src/store";
 import ThemeProvider from "../../src/styles/theme-provider";
 import { ConsoleProvider } from "../../src/components/console/context";
@@ -20,6 +20,7 @@ import {
     stopCsound
 } from "../../src/components/csound/actions";
 import type { IProject } from "../../src/components/projects/types";
+import Home from "../../src/components/home/home";
 
 const source = `<CsoundSynthesizer>
 <CsOptions>
@@ -72,6 +73,7 @@ for (const project of projects)
     });
 (window as any).playbackFixture = {
     busy: isCsoundBusy,
+    status: () => store.getState().csound.status,
     live: (projectUid: string) => !!getLiveCsound(projectUid),
     loadTargetsOnNextRun: () => {
         const unsubscribe = store.subscribe(() => {
@@ -96,6 +98,45 @@ for (const project of projects)
         });
     }
 };
+
+const popular = new URLSearchParams(window.location.search).has("popular");
+if (popular) {
+    store.dispatch({
+        type: "HOME.ADD_POPULAR_PROJECTS",
+        payload: projects.map((project, index) => ({
+            ...project,
+            public: true,
+            starCount: 12 - index,
+            iconBackgroundColor: index ? "#233847" : "#40334c",
+            iconForegroundColor: "#fff"
+        }))
+    });
+    store.dispatch({
+        type: "HOME.ADD_USER_PROFILES",
+        payload: {
+            "fixture-author": {
+                username: "listener",
+                displayName: "A Csound artist"
+            }
+        }
+    });
+    for (const type of [
+        "HOME.SET_POPULAR_PROJECTS_LOADING",
+        "HOME.SET_POPULAR_ARTISTS_LOADING",
+        "HOME.SET_RANDOM_PROJECTS_LOADING"
+    ])
+        store.dispatch({ type, isLoading: false });
+}
+
+function Destination() {
+    const { pathname } = useLocation();
+    return (
+        <>
+            <output aria-label="Destination">{pathname}</output>
+            <Link to="/">Home</Link>
+        </>
+    );
+}
 
 function ProfilePlayback({ children }: { children: ReactNode }) {
     // Match Profile's page cleanup; filtering cards must not stop playback.
@@ -195,7 +236,14 @@ createRoot(document.getElementById("root")!).render(
         <MemoryRouter>
             <ThemeProvider>
                 <ConsoleProvider>
-                    <Fixture />
+                    {popular ? (
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="*" element={<Destination />} />
+                        </Routes>
+                    ) : (
+                        <Fixture />
+                    )}
                 </ConsoleProvider>
             </ThemeProvider>
         </MemoryRouter>

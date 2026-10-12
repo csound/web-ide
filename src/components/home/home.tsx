@@ -4,6 +4,7 @@ import { Header } from "@comp/header/header";
 import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
 import { addProject } from "@comp/profile/actions";
+import { stopCsound } from "@comp/csound/actions";
 import Search from "./search";
 import PopularProjects from "./popular-projects";
 import RandomProjects from "./random-projects";
@@ -20,7 +21,10 @@ const Home = () => {
         const rootElement = document.querySelector("#root");
         rootElement && rootElement.scrollTo(0, 0);
         document.title = "Csound Web-IDE";
-    }, []);
+        return () => {
+            void dispatch(stopCsound());
+        };
+    }, [dispatch]);
 
     return (
         <>
