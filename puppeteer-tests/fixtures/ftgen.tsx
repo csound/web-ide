@@ -32,10 +32,12 @@ f 1 0 8192 10 1 .5 .25 .125
     text: () => openEditors.get("ftgen-fixture")?.state.doc.toString(),
     focus: (name = "fixture") => {
         const view = openEditors.get(`ftgen-${name}`)!;
-        view.focus();
+        // Set the cursor before focusing so Chrome restores the table position,
+        // not a stale DOM selection at the start of a previously focused editor.
         view.dispatch({
             selection: { anchor: view.state.doc.toString().indexOf("gi_") }
         });
+        view.focus();
     },
     replace: (find: string, insert: string) => {
         const view = openEditors.get("ftgen-fixture")!;
