@@ -20,6 +20,14 @@ Render, a source tab's play button, and [WebMCP](../reference/webmcp.md) playbac
 
 A visitor can try edits locally. Save your work in your own project or download it before leaving if you want to keep those changes.
 
+## Save a copy
+
+Choose **File → Save As…** while a text file is open. Give the copy a name, choose a project, and click a folder to save inside it. The folder path lets you go back up. **New folder** adds a folder at the current location; the IDE creates it only when you save.
+
+Save As includes unsaved edits and leaves the source unchanged. It works for temporary examples and local edits to someone else's project too, as long as you are signed in and have a project of your own. Existing names are blocked so you cannot overwrite a file by mistake.
+
+The copy opens in a new editor tab when you save in the same project. For another project, **Open project** opens a new browser tab, keeping your current work in place. Copies saved to a public project are public.
+
 ## Generated files need one more step
 
 Rendering and the tools' **Add to project** buttons put output in the local file list. You can open it and download it straight away. Adding a result there does not upload it to cloud storage.

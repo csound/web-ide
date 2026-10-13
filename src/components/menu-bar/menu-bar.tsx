@@ -29,6 +29,7 @@ import { invokeHotKeyCallback } from "@comp/hot-keys/actions";
 import { humanizeKeySequence } from "@comp/hot-keys/utils";
 import { showTargetsConfigDialog } from "@comp/target-controls/actions";
 import { openForkProject } from "@comp/projects/fork-project";
+import { openSaveAs, selectSaveAsSource } from "@comp/projects/save-as-source";
 import { exportProject, markProjectPublic } from "@comp/projects/actions";
 import {
     openSidebarTab,
@@ -89,6 +90,10 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
     const dispatch = useDispatch();
     const isOwner = useSelector(selectIsOwnerForProject(resolvedProjectUid));
     const csoundStatus = useSelector(selectCsoundStatus);
+    const canSaveAs = useSelector(
+        (state) =>
+            !!state.LoginReducer.loggedInUid && !!selectSaveAsSource(state)
+    );
     const fileEvaluationSupported = useSelector((store: RootState) => {
         const currentTab = selectCurrentTab(store);
         const filename =
@@ -160,6 +165,11 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         label: "Save Document",
                         hotKey: "save_document",
                         disabled: !isOwner
+                    },
+                    {
+                        label: "Save As…",
+                        callback: () => dispatch(openSaveAs()),
+                        disabled: !canSaveAs
                     },
                     {
                         label: "Save All",
@@ -495,6 +505,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
         ],
         [
             csoundStatus,
+            canSaveAs,
             fileEvaluationSupported,
             dispatch,
             isConsoleVisible,

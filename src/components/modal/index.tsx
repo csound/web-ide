@@ -1,3 +1,4 @@
+import { SaveAsDialog, SaveAsDialogProps } from "@comp/projects/save-as-dialog";
 import React, { useEffect, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
 import { TargetControlsConfigDialog } from "@comp/target-controls/config-dialog";
@@ -106,6 +107,7 @@ export default function GlobalModal() {
             open={isOpen}
             onClose={
                 [
+                    "save-as",
                     "profile-edit-dialog",
                     "render-dialog",
                     "add-document-prompt",
@@ -124,6 +126,7 @@ export default function GlobalModal() {
                     css={[
                         SS.content,
                         [
+                            "save-as",
                             "new-project-prompt",
                             "profile-edit-dialog",
                             "delete-project-prompt",
@@ -134,6 +137,12 @@ export default function GlobalModal() {
                     ref={modalReference}
                     style={getModalStyle(width, height)}
                 >
+                    {modalComponentName === "save-as" && (
+                        <SaveAsDialog
+                            {...(modalProperties as SaveAsDialogProps)}
+                            onSubmittingChange={setIsSubmitting}
+                        />
+                    )}
                     {modalComponentName === "target-controls" && (
                         <TargetControlsConfigDialog {...modalProperties} />
                     )}
