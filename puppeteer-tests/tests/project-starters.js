@@ -6,9 +6,13 @@ import { join } from "node:path";
 import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, target, targetName } from "../utils/config.js";
 
-for (const useSAB of [false, true]) {
+for (const { backend, useSAB, isolated } of [
+    { backend: "worklet", useSAB: false, isolated: false },
+    { backend: "worker", useSAB: true, isolated: false },
+    { backend: "shared-memory worker", useSAB: true, isolated: true }
+]) {
     test(
-        `project starters play, release MIDI notes, and filter live input (SAB=${useSAB})`,
+        `project starters play, release MIDI notes, and filter live input (${backend})`,
         { skip: targetName !== "local", timeout: 120000 },
         async () => {
             const directory = mkdtempSync(join(tmpdir(), "csound-starters-"));
@@ -64,7 +68,7 @@ for (const useSAB of [false, true]) {
                     if (
                         url.pathname ===
                             "/puppeteer-tests/fixtures/project-starters.html" &&
-                        useSAB
+                        isolated
                     ) {
                         // Match the isolation headers on production, which Vite omits.
                         const response = await fetch(request.url());
@@ -90,11 +94,10 @@ for (const useSAB of [false, true]) {
                     `${target.baseUrl}/puppeteer-tests/fixtures/project-starters.html`
                 );
                 await page.waitForFunction(() => !!window.starters);
-                if (useSAB)
-                    assert.equal(
-                        await page.evaluate(() => crossOriginIsolated),
-                        true
-                    );
+                assert.equal(
+                    await page.evaluate(() => crossOriginIsolated),
+                    isolated
+                );
                 for (const template of [
                     "single-csd",
                     "split-csd",

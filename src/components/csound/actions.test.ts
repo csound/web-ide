@@ -148,27 +148,30 @@ afterEach(async () => {
 });
 
 describe("MIDI worker compatibility", () => {
-    it("recompiles live MIDI once in the worklet before starting when shared memory is selected", async () => {
-        engine.isRequestingRtMidiInput.mockResolvedValue(1);
-        await runPerformance({
-            projectUid: "audio-test",
-            csdPath: "scores/piece.csd",
-            mode: "play",
-            useSAB: true,
-            setConsole
-        });
-        expect(Csound).toHaveBeenNthCalledWith(1, { useWorker: true });
-        expect(Csound).toHaveBeenNthCalledWith(2, {
-            useWorker: false,
-            useSAB: false
-        });
-        expect(engine.compileCSD).toHaveBeenCalledTimes(2);
-        expect(engine.terminateInstance).toHaveBeenCalledOnce();
-        expect(engine.start).toHaveBeenCalledOnce();
-        expect(isCsoundBusy()).toBe(true);
-        await stopPerformance();
-        expect(isCsoundBusy()).toBe(false);
-    });
+    it.each([false, true])(
+        "compiles live MIDI once with the selected backend (SAB=%s)",
+        async (useSAB) => {
+            engine.isRequestingRtMidiInput.mockResolvedValue(1);
+            await runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                mode: "play",
+                useSAB,
+                setConsole
+            });
+            expect(Csound).toHaveBeenCalledExactlyOnceWith(
+                useSAB
+                    ? { useWorker: true }
+                    : { useWorker: false, useSAB: false }
+            );
+            expect(engine.compileCSD).toHaveBeenCalledOnce();
+            expect(engine.terminateInstance).not.toHaveBeenCalled();
+            expect(engine.start).toHaveBeenCalledOnce();
+            expect(isCsoundBusy()).toBe(true);
+            await stopPerformance();
+            expect(isCsoundBusy()).toBe(false);
+        }
+    );
 
     it("keeps shared memory for projects without live MIDI", async () => {
         await runPerformance({

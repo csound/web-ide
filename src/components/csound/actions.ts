@@ -399,109 +399,76 @@ export async function runPerformance({
         // The factory creates/resumes its context before loading WASM. Set the
         // iOS category first and keep context ownership/cleanup in the engine.
         if (!render) audioSession = beginPlaybackAudioSession();
-        let useWorker =
-            render || (useSAB ?? localStorage.getItem("sab") === "true");
-        let midiFallback = false;
-        let compiled: number;
-        for (;;) {
-            csound = (await Csound({
-                useWorker,
-                ...(render || midiFallback || useSAB === false
-                    ? { useSAB: false }
-                    : {})
-            })) as CsoundObj | undefined;
-            check();
-            if (!csound) throw new Error("Csound failed to start.");
-            csoundInstance = csound;
-            disconnectReadline = consoleReadline.connect(
-                csound,
-                projectUid,
-                (text) => {
-                    setConsole((lines) => [...lines, text]);
-                }
-            );
-            controller.signal.addEventListener("abort", disconnectReadline, {
-                once: true
-            });
-            csound.on("message", (message: string) => {
-                messageCount++;
-                if (compiling)
-                    compilerLog = (compilerLog + message + "\n").slice(-32000);
-                if (
-                    /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
-                        message
-                    )
-                )
-                    failed = true;
-                setConsole((lines) => [...lines, message + "\n"]);
-            });
-            await syncFs(csound, projectUid, snapshot);
-            check();
-            for (const file of inputFiles) {
-                await csound.fs.writeFile(file.name, file.data);
-                check();
+        csound = (await Csound({
+            useWorker:
+                render || (useSAB ?? localStorage.getItem("sab") === "true"),
+            ...(render || useSAB === false ? { useSAB: false } : {})
+        })) as CsoundObj | undefined;
+        check();
+        if (!csound) throw new Error("Csound failed to start.");
+        csoundInstance = csound;
+        disconnectReadline = consoleReadline.connect(
+            csound,
+            projectUid,
+            (text) => {
+                setConsole((lines) => [...lines, text]);
             }
-            await prepareScorePreprocessors(
-                csound.fs,
-                csdText ?? (csdPath ? document?.currentValue : undefined),
-                controller.signal,
-                Object.values(project.documents).map((doc) =>
-                    documentPath(doc, project.documents)
-                )
-            );
-            check();
-            before = await csound.fs.readdir("/");
-            for (const option of overrides) await csound.setOption(option);
-            if (csdPath && document && renderSettings) {
-                await csound.fs.writeFile(
-                    csdPath,
-                    new TextEncoder().encode(
-                        withPerformanceOptions(document.currentValue, overrides)
-                    )
-                );
-            }
-            compiled =
-                csdText !== undefined
-                    ? await compileCSD(
-                          csound,
-                          renderSettings
-                              ? withPerformanceOptions(csdText, overrides)
-                              : csdText,
-                          true
-                      )
-                    : csdPath
-                      ? await compileCSD(csound, csdPath)
-                      : await csound.compileOrc(
-                            orc ?? document?.currentValue ?? ""
-                        );
-            check();
-            // @csound/browser beta38 loses handleMidiInput's name when bundling
-            // the worker backends. Their MIDI startup then throws before audio
-            // starts. Detect MIDI through Csound (including included options)
-            // and recompile once in the working single-worklet backend.
+        );
+        controller.signal.addEventListener("abort", disconnectReadline, {
+            once: true
+        });
+        csound.on("message", (message: string) => {
+            messageCount++;
+            if (compiling)
+                compilerLog = (compilerLog + message + "\n").slice(-32000);
             if (
-                !render &&
-                useWorker &&
-                compiled === 0 &&
-                (await csound.isRequestingRtMidiInput())
-            ) {
-                controller.signal.removeEventListener(
-                    "abort",
-                    disconnectReadline
-                );
-                disconnectReadline();
-                await csound.terminateInstance();
-                csound = undefined;
-                check();
-                useWorker = false;
-                midiFallback = true;
-                messageCount = 0;
-                compilerLog = "";
-                setConsole([""]);
-                continue;
-            }
-            break;
+                /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
+                    message
+                )
+            )
+                failed = true;
+            setConsole((lines) => [...lines, message + "\n"]);
+        });
+        await syncFs(csound, projectUid, snapshot);
+        check();
+        for (const file of inputFiles) {
+            await csound.fs.writeFile(file.name, file.data);
+            check();
         }
+        await prepareScorePreprocessors(
+            csound.fs,
+            csdText ?? (csdPath ? document?.currentValue : undefined),
+            controller.signal,
+            Object.values(project.documents).map((doc) =>
+                documentPath(doc, project.documents)
+            )
+        );
+        check();
+        before = await csound.fs.readdir("/");
+        for (const option of overrides) await csound.setOption(option);
+        if (csdPath && document && renderSettings) {
+            await csound.fs.writeFile(
+                csdPath,
+                new TextEncoder().encode(
+                    withPerformanceOptions(document.currentValue, overrides)
+                )
+            );
+        }
+        const compiled =
+            csdText !== undefined
+                ? await compileCSD(
+                      csound,
+                      renderSettings
+                          ? withPerformanceOptions(csdText, overrides)
+                          : csdText,
+                      true
+                  )
+                : csdPath
+                  ? await compileCSD(csound, csdPath)
+                  : await csound.compileOrc(
+                        orc ?? document?.currentValue ?? ""
+                    );
+        check();
         if (compiled !== 0) {
             await waitForCompilerMessages(
                 () => messageCount,
