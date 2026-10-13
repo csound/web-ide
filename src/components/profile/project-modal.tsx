@@ -1,5 +1,5 @@
 import { ProfileDialog } from "./profile-dialog";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "@root/store";
 import Tooltip from "@mui/material/Tooltip";
 import SVGPaths from "@elem/svg-icons";
@@ -16,12 +16,17 @@ import styled from "@emotion/styled";
 import IconButton from "@mui/material/IconButton";
 import TagAutosuggest from "./tag-auto-suggest";
 import { isEmpty } from "ramda";
+import { addUserProject, editUserProject } from "./actions";
 import {
-    addUserProject,
-    editUserProject,
     PROJECT_STARTER_TEMPLATE_OPTIONS,
-    ProjectStarterTemplate
-} from "./actions";
+    getStarterTemplate,
+    type ProjectStarterTemplate
+} from "@root/csound-templates/starters";
+import DescriptionOutlined from "@mui/icons-material/DescriptionOutlined";
+import FolderCopyOutlined from "@mui/icons-material/FolderCopyOutlined";
+import PianoOutlined from "@mui/icons-material/PianoOutlined";
+import MicNoneOutlined from "@mui/icons-material/MicNoneOutlined";
+import NoteAddOutlined from "@mui/icons-material/NoteAddOutlined";
 import { openSnackbar } from "../snackbar/actions";
 import { SnackbarType } from "../snackbar/types";
 import { closeModal } from "../modal/actions";
@@ -84,13 +89,6 @@ const StepCard = styled.button<{ active: boolean }>`
     }
 `;
 
-const StepIndex = styled.span`
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.66;
-`;
-
 const StepLabel = styled.span`
     font-size: 13px;
     font-weight: 700;
@@ -123,19 +121,22 @@ const FieldStack = styled.div`
 `;
 
 const StarterTemplateContainer = styled.div`
-    display: grid;
-    gap: 8px;
+    .MuiRadioGroup-root {
+        gap: 6px;
+    }
 
     .MuiFormControlLabel-root {
-        align-items: flex-start;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
         margin: 0;
-        padding: 10px 12px;
+        padding: 10px;
         border-radius: 4px;
-        background: rgb(0 0 0 / 7%);
-        border: 1px solid transparent;
-        transition:
-            border-color 120ms ease,
-            background-color 120ms ease;
+        border: 1px solid ${(properties) => properties.theme.line};
+    }
+
+    .MuiFormControlLabel-root:hover {
+        background: ${(properties) => properties.theme.buttonBackgroundHover};
     }
 
     .MuiFormControlLabel-root.selected {
@@ -145,12 +146,26 @@ const StarterTemplateContainer = styled.div`
 
     .MuiFormControlLabel-label {
         display: grid;
-        gap: 3px;
+        grid-template-columns: 24px minmax(0, 1fr);
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        font-size: 14px;
+    }
+
+    .template-copy {
+        display: grid;
+        gap: 2px;
+    }
+
+    .MuiFormControlLabel-root:has(:focus-visible) {
+        outline: 2px solid ${(properties) => properties.theme.textColor};
+        outline-offset: 2px;
     }
 `;
 
 const TemplateDescription = styled.span`
-    opacity: 0.76;
+    color: ${(properties) => properties.theme.altTextColor};
     font-size: 12px;
     line-height: 1.4;
 `;
@@ -158,11 +173,8 @@ const TemplateDescription = styled.span`
 const TemplateGuide = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px;
-    border-radius: 4px;
-    background: rgb(255 255 255 / 4%);
-    border: 1px solid rgb(255 255 255 / 6%);
+    gap: 6px;
+    padding-top: 4px;
 `;
 
 const TemplateGuideTitle = styled.span`
@@ -171,9 +183,9 @@ const TemplateGuideTitle = styled.span`
 `;
 
 const TemplateGuideLine = styled.span`
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.45;
-    opacity: 0.76;
+    color: ${(properties) => properties.theme.altTextColor};
 `;
 
 const IconPickerContainer = styled.div`
@@ -259,34 +271,12 @@ interface IProjectModal {
     onSubmittingChange?: (submitting: boolean) => void;
 }
 
-const templateGuides: Record<
-    ProjectStarterTemplate,
-    { title: string; lines: string[] }
-> = {
-    "single-csd": {
-        title: "Best for quick starts",
-        lines: [
-            "One self-contained file.",
-            "Good for teaching, sketching, and fast edits.",
-            "Opens with a ready-to-play Csound 7 example."
-        ]
-    },
-    "split-csd": {
-        title: "Best for structured projects",
-        lines: [
-            "Keeps wrapper, orchestra, and score separate.",
-            "Still starts from the same new default example.",
-            "Useful when you want students to compare roles of each file."
-        ]
-    },
-    empty: {
-        title: "Best for blank starts",
-        lines: [
-            "Creates an empty project.csd.",
-            "No starter notes or comments.",
-            "Useful when you already know the structure you want."
-        ]
-    }
+const templateIcons = {
+    "single-csd": DescriptionOutlined,
+    "split-csd": FolderCopyOutlined,
+    midi: PianoOutlined,
+    "audio-input": MicNoneOutlined,
+    empty: NoteAddOutlined
 };
 
 const forkColor = (color: string | undefined, fallback: string) => {
@@ -344,10 +334,7 @@ export const ProjectModal = (properties: IProjectModal) => {
               : "Saving..."
         : properties.label;
 
-    const activeTemplateGuide = useMemo(
-        () => templateGuides[starterTemplate],
-        [starterTemplate]
-    );
+    const activeTemplate = getStarterTemplate(starterTemplate);
 
     const handleOnSubmit = async () => {
         if (shouldDisable) {
@@ -373,7 +360,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                 navigateTo(`/editor/${projectUid}`);
                 dispatch(openSnackbar("Fork created", SnackbarType.Success));
             } else if (properties.newProject) {
-                await dispatch(
+                const projectUid = await dispatch(
                     addUserProject(
                         name.trim(),
                         description,
@@ -385,6 +372,8 @@ export const ProjectModal = (properties: IProjectModal) => {
                         starterTemplate
                     ) as any
                 );
+                if (!projectUid)
+                    setSubmitError("Could not create the project. Try again.");
             } else {
                 await dispatch(
                     editUserProject(
@@ -459,6 +448,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                     <Button
                         variant="text"
                         color="inherit"
+                        disabled={isSubmitting}
                         onClick={() => setStep((step - 1) as WizardStep)}
                     >
                         Back
@@ -503,7 +493,7 @@ export const ProjectModal = (properties: IProjectModal) => {
                 {isFork
                     ? `Make your own copy of “${properties.forkSourceName}”. Saved files and run targets will carry over.`
                     : properties.newProject
-                      ? "Set up the project in three short steps, then jump into the editor."
+                      ? "Name your project and choose a starting point."
                       : "Update the name, description, tags, and icon for this project."}
             </HeaderBody>
             {submitError && <Alert severity="error">{submitError}</Alert>}
@@ -515,10 +505,10 @@ export const ProjectModal = (properties: IProjectModal) => {
                             key={item.label}
                             type="button"
                             active={step === index}
+                            disabled={isSubmitting}
                             aria-current={step === index ? "step" : undefined}
                             onClick={() => goToStep(index as WizardStep)}
                         >
-                            <StepIndex>{`Step ${index + 1}`}</StepIndex>
                             <StepLabel>{item.label}</StepLabel>
                         </StepCard>
                     ))}
@@ -606,13 +596,13 @@ export const ProjectModal = (properties: IProjectModal) => {
 
             {properties.newProject && step === 1 && (
                 <Section>
-                    <SectionTitle>Starter template</SectionTitle>
-                    <SectionCaption>
-                        Choose the file structure before opening the editor.
-                    </SectionCaption>
+                    <SectionTitle id="starter-template-label">
+                        Choose a starting point
+                    </SectionTitle>
                     <StarterTemplateContainer>
                         <RadioGroup
                             name="project-starter-template"
+                            aria-labelledby="starter-template-label"
                             value={starterTemplate}
                             onChange={(event) => {
                                 setStarterTemplate(
@@ -620,37 +610,47 @@ export const ProjectModal = (properties: IProjectModal) => {
                                 );
                             }}
                         >
-                            {PROJECT_STARTER_TEMPLATE_OPTIONS.map((option) => (
-                                <FormControlLabel
-                                    key={option.value}
-                                    className={
-                                        starterTemplate === option.value
-                                            ? "selected"
-                                            : ""
-                                    }
-                                    value={option.value}
-                                    control={<Radio />}
-                                    label={
-                                        <>
-                                            <span>{option.label}</span>
-                                            <TemplateDescription>
-                                                {option.description}
-                                            </TemplateDescription>
-                                        </>
-                                    }
-                                />
-                            ))}
+                            {PROJECT_STARTER_TEMPLATE_OPTIONS.map((option) => {
+                                const Icon = templateIcons[option.value];
+                                return (
+                                    <FormControlLabel
+                                        key={option.value}
+                                        className={
+                                            starterTemplate === option.value
+                                                ? "selected"
+                                                : ""
+                                        }
+                                        value={option.value}
+                                        disabled={isSubmitting}
+                                        control={<Radio />}
+                                        label={
+                                            <>
+                                                <Icon
+                                                    aria-hidden="true"
+                                                    fontSize="small"
+                                                />
+                                                <span className="template-copy">
+                                                    <span>{option.label}</span>{" "}
+                                                    <TemplateDescription>
+                                                        {option.description}
+                                                    </TemplateDescription>
+                                                </span>
+                                            </>
+                                        }
+                                    />
+                                );
+                            })}
                         </RadioGroup>
                     </StarterTemplateContainer>
-                    <TemplateGuide>
+                    <TemplateGuide aria-live="polite" aria-atomic="true">
                         <TemplateGuideTitle>
-                            {activeTemplateGuide.title}
+                            {activeTemplate.files
+                                .map((file) => file.name)
+                                .join(", ")}
                         </TemplateGuideTitle>
-                        {activeTemplateGuide.lines.map((line) => (
-                            <TemplateGuideLine key={line}>
-                                {line}
-                            </TemplateGuideLine>
-                        ))}
+                        <TemplateGuideLine>
+                            {activeTemplate.guide}
+                        </TemplateGuideLine>
                     </TemplateGuide>
                 </Section>
             )}

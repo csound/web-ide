@@ -61,6 +61,7 @@ jobs:
                         audio-tools,
                         mixer,
                         project-playback,
+                        project-starters,
                         csd-diagnostics,
                         score-preprocessors,
                         sdif-tools,

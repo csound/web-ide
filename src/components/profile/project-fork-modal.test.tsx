@@ -23,8 +23,7 @@ vi.mock("../projects/fork-api", () => ({
 vi.mock("../router/navigate", () => ({ navigateTo: fixture.navigate }));
 vi.mock("./actions", () => ({
     addUserProject: vi.fn(),
-    editUserProject: vi.fn(),
-    PROJECT_STARTER_TEMPLATE_OPTIONS: []
+    editUserProject: vi.fn()
 }));
 vi.mock("./tag-auto-suggest", () => ({ default: () => null }));
 beforeEach(() => vi.clearAllMocks());

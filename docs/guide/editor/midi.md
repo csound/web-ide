@@ -6,7 +6,7 @@ Play Csound instruments from a controller or the on-screen keyboard.
 
 The orchestra must accept MIDI notes and stay running while you play. A CSD can request realtime MIDI with `-M0` in CsOptions. Its instruments still need to map incoming notes and velocity to sound, using opcodes such as `cpsmidi` and `ampmidi`.
 
-For a complete starting instrument, open a MIDI example in the [Csound Manual](../tools/manual.md). Press Play before sending notes.
+For a complete starting instrument, choose **MIDI instrument** when creating a project. It maps all MIDI channels to a synth with a filter and a release envelope. Press Play before sending notes, then press Stop when finished. See the [Csound Manual](../tools/manual.md) for more examples.
 
 ## Connect a controller
 

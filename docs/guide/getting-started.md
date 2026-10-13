@@ -10,7 +10,15 @@ The main play button runs the selected target. Clicking a source tab only opens 
 
 ## Make it yours
 
-Sign in, choose a username, and open **My projects** from the header. Create a project there. Give it a name people can find, then add a CSD file through the file menu or file tree.
+Sign in, choose a username, and open **My projects** from the header. Create a project there, give it a name, and choose a starter:
+
+- **Single CSD** puts instruments and score in one file. Press Play to hear a short synth phrase.
+- **CSD + ORC + SCO** separates the instruments and score. Run `project.csd`; it includes the other two files.
+- **MIDI instrument** gives you a synth to play with the [Virtual MIDI Keyboard](tools/midi-keyboard.md) or a controller. Press Play before sending notes.
+- **Live audio processing** filters your microphone or audio input. Use headphones at low volume, press Play, and allow microphone access.
+- **Empty** creates a blank `project.csd` for your own code.
+
+The MIDI and live audio starters keep running until you press Stop. Each starter is a copy you can edit freely. Add more files through the file menu or file tree.
 
 Use **Save** to keep source edits. Starting your project with the main **Play** button also starts a cloud save of all edited files. See [Files and saving](projects/filesystem.md) for details. Changes you make in someone else's project stay local unless you make your own copy. Keep a download of work you want to preserve.
 

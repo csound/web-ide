@@ -147,6 +147,58 @@ afterEach(async () => {
     vi.unstubAllGlobals();
 });
 
+describe("MIDI worker compatibility", () => {
+    it("recompiles live MIDI once in the worklet before starting when shared memory is selected", async () => {
+        engine.isRequestingRtMidiInput.mockResolvedValue(1);
+        await runPerformance({
+            projectUid: "audio-test",
+            csdPath: "scores/piece.csd",
+            mode: "play",
+            useSAB: true,
+            setConsole
+        });
+        expect(Csound).toHaveBeenNthCalledWith(1, { useWorker: true });
+        expect(Csound).toHaveBeenNthCalledWith(2, {
+            useWorker: false,
+            useSAB: false
+        });
+        expect(engine.compileCSD).toHaveBeenCalledTimes(2);
+        expect(engine.terminateInstance).toHaveBeenCalledOnce();
+        expect(engine.start).toHaveBeenCalledOnce();
+        expect(isCsoundBusy()).toBe(true);
+        await stopPerformance();
+        expect(isCsoundBusy()).toBe(false);
+    });
+
+    it("keeps shared memory for projects without live MIDI", async () => {
+        await runPerformance({
+            projectUid: "audio-test",
+            orc: "",
+            mode: "play",
+            useSAB: true,
+            setConsole
+        });
+        expect(Csound).toHaveBeenCalledExactlyOnceWith({ useWorker: true });
+        expect(engine.terminateInstance).not.toHaveBeenCalled();
+    });
+
+    it("does not retry syntax errors as a backend change", async () => {
+        engine.compileCSD.mockResolvedValue(1);
+        engine.isRequestingRtMidiInput.mockResolvedValue(1);
+        await expect(
+            runPerformance({
+                projectUid: "audio-test",
+                csdPath: "scores/piece.csd",
+                mode: "play",
+                useSAB: true,
+                setConsole
+            })
+        ).rejects.toThrow("compilation failed");
+        expect(Csound).toHaveBeenCalledOnce();
+        expect(engine.start).not.toHaveBeenCalled();
+    });
+});
+
 describe("iOS audio session lifecycle", () => {
     let session: { type: string };
     const play = () =>
