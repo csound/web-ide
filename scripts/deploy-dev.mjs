@@ -407,12 +407,11 @@ async function main() {
             path.join(root, ".firebase/function-inputs.json"),
             JSON.stringify({ ...current, deployed: verified.deployed }) + "\n"
         );
-        await writeFile(
-            path.join(root, "firebase.dev.hosting.generated.json"),
-            JSON.stringify(hostingConfig(config, verified.services), null, 4) +
-                "\n"
-        );
     }
+    await writeFile(
+        path.join(root, "firebase.dev.hosting.generated.json"),
+        JSON.stringify(hostingConfig(config, verified.services), null, 4) + "\n"
+    );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
