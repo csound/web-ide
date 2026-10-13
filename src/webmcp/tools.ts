@@ -322,7 +322,7 @@ export function createTools(execute: ToolExecutor): WebMcpTool[] {
 }
 
 export const guide = {
-    documentation_url: "/documentation#webmcp",
+    documentation_url: "/documentation/reference/webmcp",
     workflow: [
         "Read workspace, then read the document by ID.",
         "Use that document's revision as base_revision when updating or saving.",

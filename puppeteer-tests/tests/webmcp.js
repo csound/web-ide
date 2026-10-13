@@ -244,9 +244,9 @@ test(
                     );
                 label.click();
             }, rendered.files[0]);
-            await page.waitForSelector('audio source[src^="blob:"]');
+            await page.waitForSelector('[aria-label="Sample player"]');
             const header = await page.$eval(
-                'audio source[src^="blob:"]',
+                '[aria-label="Sample player"] audio[src^="blob:"]',
                 async (node) => {
                     const bytes = await (await fetch(node.src)).arrayBuffer();
                     return Array.from(new Uint8Array(bytes).slice(0, 12));
@@ -291,16 +291,18 @@ test(
                 '[data-testid="webmcp-status"]',
                 (node) => node.getAttribute("href")
             );
-            assert.equal(link, "/documentation#webmcp");
+            assert.equal(link, "/documentation/reference/webmcp");
             const docs = await browser.newPage();
             await docs.goto(new URL(link, projectUrl).href, {
                 waitUntil: "domcontentloaded"
             });
-            await docs.waitForSelector("#webmcp table");
+            await docs.waitForSelector("main #connect-an-agent");
             assert.equal(
-                await docs.$$eval("#webmcp tbody tr", (rows) => rows.length),
-                20
+                await docs.$eval("main h1", (node) => node.textContent),
+                "WebMCP"
             );
+            await docs.waitForSelector("main #edits-and-saving");
+            await docs.waitForSelector("main #scope-and-permissions");
             await page.bringToFront();
             await page.screenshot({ path: "/tmp/csound-webmcp-editor.png" });
             await page.setViewport({ width: 390, height: 844 });

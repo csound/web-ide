@@ -1,0 +1,162 @@
+[
+    {
+        "title": "Start here",
+        "articles": [
+            {
+                "slug": "getting-started",
+                "title": "Getting started",
+                "description": "Write, play, and share Csound music in your browser."
+            },
+            {
+                "slug": "projects/readme",
+                "title": "README and project notes",
+                "description": "Give visitors the instructions, artwork, and context they need before they press Play."
+            },
+            {
+                "slug": "projects/filesystem",
+                "title": "Files and saving",
+                "description": "Keep source, samples, and generated files together without losing track of what you have saved."
+            },
+            {
+                "slug": "projects/sharing",
+                "title": "Sharing and project copies",
+                "description": "Let people hear your work, keep a private draft, or start from someone else's project."
+            }
+        ]
+    },
+    {
+        "title": "In the editor",
+        "articles": [
+            {
+                "slug": "editor/playback",
+                "title": "Playback and rendering",
+                "description": "Choose what runs, try edits, and export audio when the piece is ready."
+            },
+            {
+                "slug": "editor/audio-files",
+                "title": "Audio file preview",
+                "description": "Inspect a sample and listen before choosing how to change it."
+            },
+            {
+                "slug": "editor/midi",
+                "title": "MIDI input",
+                "description": "Play Csound instruments from a controller or the on-screen keyboard."
+            },
+            {
+                "slug": "editor/audio-input",
+                "title": "Audio input",
+                "description": "Use a microphone or audio interface in a running Csound piece."
+            },
+            {
+                "slug": "editor/ftgen",
+                "title": "FTGEN plotting",
+                "description": "See the function table behind an ftgen statement or a score f event."
+            },
+            {
+                "slug": "editor/code-help",
+                "title": "Code help and syntax checks",
+                "description": "Find opcode arguments and catch errors without starting playback."
+            }
+        ]
+    },
+    {
+        "title": "Tools",
+        "articles": [
+            {
+                "slug": "tools/index",
+                "title": "Choose a tool",
+                "description": "Open tools from the editor controls. On smaller screens, look in More."
+            },
+            {
+                "slug": "tools/console",
+                "title": "Console",
+                "description": "Read messages from the running piece and find out why compilation stopped."
+            },
+            {
+                "slug": "tools/manual",
+                "title": "Csound Manual",
+                "description": "Look up an opcode without leaving your project."
+            },
+            {
+                "slug": "tools/midi-keyboard",
+                "title": "Virtual MIDI Keyboard",
+                "description": "Play notes with the pointer or computer keyboard while Csound runs."
+            },
+            {
+                "slug": "tools/spectral-analyzer",
+                "title": "Spectral Analyzer",
+                "description": "Watch the frequency content of the current Csound output."
+            },
+            {
+                "slug": "tools/sample-editor",
+                "title": "Sample Editor",
+                "description": "Trim a recording, set its level, or prepare it for another sample rate."
+            },
+            {
+                "slug": "tools/audio-analysis",
+                "title": "Audio Analysis",
+                "description": "Turn a recording into data for Csound's spectral and resynthesis opcodes."
+            },
+            {
+                "slug": "tools/mixer",
+                "title": "Mixer",
+                "description": "Combine audio files on a timeline and export one mix."
+            },
+            {
+                "slug": "tools/impulse-response",
+                "title": "Impulse Response",
+                "description": "Make a reference sweep and recover a response from a recording of that sweep."
+            },
+            {
+                "slug": "tools/convolution-prep",
+                "title": "Convolution Prep",
+                "description": "Prepare an audio impulse response for Csound's convolve opcode."
+            },
+            {
+                "slug": "tools/score-converter",
+                "title": "Score Converter",
+                "description": "Turn compact score languages into Csound events, or process an existing score."
+            },
+            {
+                "slug": "tools/hetro-editor",
+                "title": "HETRO Editor",
+                "description": "Inspect and edit harmonic analysis as text, then rebuild data for adsyn."
+            },
+            {
+                "slug": "tools/pvx-editor",
+                "title": "PVX Editor",
+                "description": "Read phase-vocoder analysis as editable text and rebuild a PVX file."
+            },
+            {
+                "slug": "tools/lpc-editor",
+                "title": "LPC Editor",
+                "description": "Inspect linear-prediction analysis and edit complete frames as text."
+            },
+            {
+                "slug": "tools/sdif-converter",
+                "title": "SDIF Converter",
+                "description": "Convert SDIF partial tracks into additive synthesis data for adsyn."
+            }
+        ]
+    },
+    {
+        "title": "Reference",
+        "articles": [
+            {
+                "slug": "reference/shortcuts",
+                "title": "Keyboard shortcuts",
+                "description": "Keep common editing and playback commands close at hand."
+            },
+            {
+                "slug": "reference/webmcp",
+                "title": "WebMCP",
+                "description": "Let a browser agent work with the project you have open."
+            },
+            {
+                "slug": "reference/contributing",
+                "title": "Improve this guide",
+                "description": "Change an article with a Markdown edit and a pull request."
+            }
+        ]
+    }
+]

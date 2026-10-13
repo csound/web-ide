@@ -9,6 +9,9 @@
 [![License: LGPL-2.1](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-ide.csound.com-brightgreen)](https://ide.csound.com)
 
+Read the [user guide](https://ide.csound.com/documentation) for project setup and tools.
+To change an article, see [the guide's Markdown source](docs/guide/README.md).
+
 ![Csound Web IDE — project editor](https://raw.githubusercontent.com/csound/web-ide/refs/heads/develop/public/img/project_editor.png)
 
 ---
@@ -246,7 +249,7 @@ web-ide/
 │   └── src/              # Function handlers (auth, search, counters, SSR host)
 ├── public/               # Static assets and Electron entry point
 ├── config/               # Legacy webpack/build helpers (unused in Vite flow)
-├── docs/                 # Developer notes and architecture documentation
+├── docs/                 # Site guide, developer notes, and architecture documentation
 ├── scripts/              # Utility build scripts
 ├── search/               # Experimental standalone search service (inactive)
 ├── .github/workflows/    # CI/CD pipelines (lint, test, deploy)

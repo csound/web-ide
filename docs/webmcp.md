@@ -1,8 +1,8 @@
 # WebMCP
 
 Open a project and click **WebMCP ready** in the editor footer for the setup guide at
-`/documentation#webmcp`. The guide lists every tool and its fields from the same
-catalog the browser uses.
+`/documentation/reference/webmcp`. Call `csound_read_guide` for the full tool
+catalog and fields from the same source the browser uses.
 
 ## Setup
 
