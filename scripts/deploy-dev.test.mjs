@@ -3,37 +3,22 @@ import { test } from "node:test";
 import { readFile } from "node:fs/promises";
 import { parse } from "yaml";
 import {
-    changedFilesSinceSuccess,
+    successfulDeploy,
     batchSize,
     requiredPermissions,
     functionDeployArgs,
     retryable,
     withRetry,
-    selectTargets,
     ready,
     checkPermissions,
     unhealthyFunctions,
+    inspectFunctions,
+    hostingConfig,
     deployBatches,
     waitUntilReady
 } from "./deploy-dev.mjs";
 
 const ids = ["fork_project", "host", "popular_projects"];
-test("backend changes deploy the shared bundle; frontend changes only deploy host", () => {
-    assert.deepEqual(selectTargets(ids, ["src/app.tsx"]), ["host"]);
-    assert.deepEqual(
-        selectTargets(ids, ["functions/src/fork_project.ts"]),
-        ids
-    );
-    assert.deepEqual(selectTargets(ids, null), ids);
-    assert.deepEqual(selectTargets(ids, []), []);
-    assert.deepEqual(selectTargets(ids, [], ["fork_project"]), [
-        "fork_project"
-    ]);
-    assert.deepEqual(selectTargets(ids, ["src/app.tsx"], ["fork_project"]), [
-        "fork_project",
-        "host"
-    ]);
-});
 test("CPU quota and transient failures back off; IAM and ordinary health failures do not", async () => {
     assert.equal(
         retryable(
@@ -96,7 +81,8 @@ const endpoint = {
     region: "us-central1",
     state: "ACTIVE",
     platform: "gcfv2",
-    runServiceId: "host"
+    runServiceId: "host",
+    hash: "uploaded-code-hash"
 };
 const service = {
     status: {
@@ -105,6 +91,84 @@ const service = {
         conditions: [{ type: "Ready", status: "True" }]
     }
 };
+test("readiness recovers from the wrapped 503 returned by Firebase functions.list", async () => {
+    const original = Object.assign(
+        new Error(
+            "Request had HTTP Error: 503, The service is currently unavailable."
+        ),
+        { status: 503, context: { response: { statusCode: 503 } } }
+    );
+    const failure = Object.assign(
+        new Error("Failed to list functions for csound-ide-dev"),
+        { status: 503, original }
+    );
+    let reads = 0;
+    const waits = [];
+    await waitUntilReady(
+        {
+            list: async () => {
+                if (reads++ === 0) throw failure;
+                return [endpoint];
+            },
+            service: async () => service
+        },
+        ["host"],
+        async (ms) => waits.push(ms)
+    );
+    assert.equal(reads, 2);
+    assert.deepEqual(waits, [60000]);
+});
+test("structured and nested transient errors retry, but nested auth errors take precedence", () => {
+    for (const status of [429, 500, 502, 503, 504]) {
+        assert.equal(retryable({ message: "API failed", status }), true);
+        assert.equal(
+            retryable({
+                cause: { context: { response: { statusCode: status } } }
+            }),
+            true
+        );
+    }
+    const cyclic = new Error("wrapper");
+    cyclic.original = cyclic;
+    assert.equal(retryable(cyclic), false);
+    for (const status of [401, 403]) {
+        assert.equal(retryable({ status: 503, children: [{ status }] }), false);
+        assert.equal(
+            retryable({ message: "Quota exceeded", cause: { status } }),
+            false
+        );
+    }
+});
+test("live deployment fingerprints include both source hash and Cloud Run revision", async () => {
+    const state = await inspectFunctions(
+        { list: async () => [endpoint], service: async () => service },
+        ["host", "missing"]
+    );
+    assert.deepEqual(state.unhealthy, ["missing"]);
+    assert.deepEqual(state.deployed, {
+        host: JSON.stringify([endpoint.hash, "host-2"])
+    });
+    assert.deepEqual(state.services, { host: "host" });
+});
+test("Hosting pins verified services without implicitly redeploying functions", async () => {
+    const config = JSON.parse(
+        await readFile(new URL("../firebase.json", import.meta.url), "utf8")
+    );
+    const before = structuredClone(config);
+    const result = hostingConfig(config, { host: "actual-host-service" });
+    assert.deepEqual(config, before);
+    assert.equal(result.functions, undefined);
+    const rewrite = result.hosting.rewrites.find((item) => item.run);
+    assert.deepEqual(rewrite.run, {
+        serviceId: "actual-host-service",
+        region: "us-central1",
+        pinTag: true
+    });
+    assert.equal(rewrite.function, undefined);
+    assert.deepEqual(result.hosting.headers, config.hosting.headers);
+    assert.deepEqual(result.hosting.predeploy, config.hosting.predeploy);
+    assert.throws(() => hostingConfig(config, {}), /No ready Cloud Run/);
+});
 test("an ACTIVE function with an older ready revision is still unhealthy", async () => {
     assert.equal(ready(endpoint, service), true);
     assert.equal(
@@ -205,9 +269,13 @@ test("the job timeout covers all recovery waits with time left for deployment", 
         async (ms) => (readinessWait += ms)
     );
     assert.equal(readinessWait, 9 * 60000);
-    const batches = Math.ceil(16 / batchSize);
+    const batches = Math.ceil(17 / batchSize);
     const totalWait =
-        batches * (deploymentWait + readinessWait) + readinessWait;
+        batches * (deploymentWait + readinessWait) +
+        readinessWait +
+        // Preflight initialization/permissions, baseline lookup, and the three
+        // API checks outside batch readiness in the functions command.
+        6 * deploymentWait;
     const workflow = parse(
         await readFile(
             new URL("../.github/workflows/develop.yaml", import.meta.url),
@@ -284,9 +352,26 @@ test("dev serializes deploys, uses one ADC login and CLI, and checks access befo
     assert.ok(position("--functions") < position("--only hosting"));
     assert.ok(position("--env dev --apply") < position("--only hosting"));
     assert.ok(position("--only hosting") < position("--env dev --check"));
+    const upload = steps.find(
+        (s) => s.name === "Save successful function inputs"
+    );
+    assert.ok(steps.indexOf(upload) > position("--env dev --check"));
+    assert.equal(upload.if, undefined);
+    assert.equal(upload.with["if-no-files-found"], "error");
+    assert.equal(upload.with["include-hidden-files"], true);
+    const download = steps.find((s) => s.id === "function-inputs");
+    assert.equal(download["continue-on-error"], true);
+    assert.equal(download.with.name, upload.with.name);
+    const deploy = steps.find(
+        (s) => s.run === "node scripts/deploy-dev.mjs --functions"
+    );
+    assert.equal(
+        deploy.env.FUNCTION_BASELINE_RESTORED,
+        "${{ steps.function-inputs.outcome == 'success' }}"
+    );
 });
 
-test("change selection uses a successful ancestor and includes changes from failed runs", async () => {
+test("baseline selection uses a successful ancestor and excludes the current run", async () => {
     const ancestor = "a".repeat(40);
     const unrelated = "b".repeat(40);
     const environment = {
@@ -298,25 +383,36 @@ test("change selection uses a successful ancestor and includes changes from fail
         assert.equal(options.headers.Authorization, "Bearer fixture-token");
         return Response.json({
             workflow_runs: [
-                { head_sha: unrelated },
-                { head_sha: "invalid" },
-                { head_sha: ancestor }
+                { id: 3, head_sha: unrelated },
+                { id: 2, head_sha: "invalid" },
+                { id: 1, head_sha: ancestor }
             ]
         });
     };
     const git = (args) => {
         if (args.includes(unrelated)) throw new Error("Not an ancestor");
-        if (args[0] === "merge-base") return "";
-        assert.deepEqual(args, ["diff", "--name-only", "-z", ancestor, "HEAD"]);
-        return "functions/src/fork_project.ts\0src/app.tsx\0";
+        assert.deepEqual(args, [
+            "merge-base",
+            "--is-ancestor",
+            ancestor,
+            "HEAD"
+        ]);
+        return "";
     };
-    assert.deepEqual(
-        await changedFilesSinceSuccess(request, git, environment),
-        ["functions/src/fork_project.ts", "src/app.tsx"]
-    );
-    assert.equal(await changedFilesSinceSuccess(request, git, {}), null);
+    assert.deepEqual(await successfulDeploy(request, git, environment), {
+        id: 1,
+        head_sha: ancestor
+    });
+    assert.equal(await successfulDeploy(request, git, {}), null);
     assert.equal(
-        await changedFilesSinceSuccess(
+        await successfulDeploy(request, git, {
+            ...environment,
+            GITHUB_RUN_ID: "1"
+        }),
+        null
+    );
+    assert.equal(
+        await successfulDeploy(
             async () => Response.json({ workflow_runs: [] }),
             git,
             environment
@@ -324,7 +420,7 @@ test("change selection uses a successful ancestor and includes changes from fail
         null
     );
     await assert.rejects(
-        changedFilesSinceSuccess(
+        successfulDeploy(
             async () => new Response(null, { status: 403 }),
             git,
             environment

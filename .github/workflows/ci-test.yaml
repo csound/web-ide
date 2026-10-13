@@ -39,7 +39,7 @@ jobs:
             - name: Check manual
               run: npm run test:manual && npm run manual:check
             - name: Test dev deployment safeguards
-              run: node --test scripts/deploy-dev.test.mjs
+              run: node --test scripts/deploy-dev.test.mjs scripts/function-inputs.test.mjs
             - name: Test deployment asset retention
               run: node --test scripts/retain-hosting-assets.test.mjs
             - name: Test browser access

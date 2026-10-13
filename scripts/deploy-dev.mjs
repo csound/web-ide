@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { appendFile, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import path from "node:path";
 import { access, deploymentTarget } from "./callable-access.mjs";
+import {
+    functionInputs,
+    readInputs,
+    selectInputTargets
+} from "./function-inputs.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const target = deploymentTarget("dev");
@@ -17,6 +22,7 @@ export const requiredPermissions = [
     "cloudfunctions.functions.update",
     "run.services.get",
     "run.services.list",
+    "run.services.update",
     "run.services.getIamPolicy",
     "run.services.setIamPolicy"
 ];
@@ -33,16 +39,38 @@ export const functionDeployArgs = (ids) => [
 ];
 
 export function retryable(error) {
-    const message = error.message || String(error);
+    const pending = [error];
+    const seen = new Set();
+    const messages = [];
+    const statuses = [];
+    while (pending.length) {
+        const item = pending.pop();
+        if (!item || seen.has(item)) continue;
+        seen.add(item);
+        messages.push(item.message || String(item));
+        statuses.push(
+            Number(item.status),
+            Number(item.context?.response?.statusCode),
+            Number(item.context?.body?.error?.code)
+        );
+        pending.push(item.original, item.cause);
+        if (Array.isArray(item.children)) pending.push(...item.children);
+        if (Array.isArray(item.errors)) pending.push(...item.errors);
+    }
+    const message = messages.join("\n");
     // A mixed failure containing a permission error must not be retried either.
     if (
+        statuses.some((status) => [401, 403].includes(status)) ||
         /PERMISSION_DENIED|UNAUTHENTICATED|HTTP Error: (401|403)|permission.*denied|invalid_grant/i.test(
             message
         )
     )
         return false;
-    return /quota exceeded|RESOURCE_EXHAUSTED|HTTP Error: (429|500|502|503|504)|ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up/i.test(
-        message
+    return (
+        statuses.some((status) => [429, 500, 502, 503, 504].includes(status)) ||
+        /quota exceeded|RESOURCE_EXHAUSTED|HTTP Error: (429|500|502|503|504)|ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up/i.test(
+            message
+        )
     );
 }
 
@@ -62,26 +90,6 @@ export async function withRetry(
             await wait(delay);
         }
     }
-}
-
-export function selectTargets(ids, changedFiles, unhealthy = []) {
-    // Functions share one source bundle. Backend/config changes can affect any
-    // export; frontend-only changes need the host's bundled index.html updated.
-    const backendChanged =
-        changedFiles === null ||
-        changedFiles.some(
-            (file) =>
-                file.startsWith("functions/") ||
-                file === "firebase.json" ||
-                file === ".firebaserc" ||
-                file === ".github/workflows/develop.yaml" ||
-                file.startsWith("scripts/prepare-dev-deploy")
-        );
-    const selected = new Set(unhealthy);
-    if (backendChanged) ids.forEach((id) => selected.add(id));
-    else if (changedFiles.length)
-        access.hostingFunctions.forEach((id) => selected.add(id));
-    return ids.filter((id) => selected.has(id)).sort();
 }
 
 export function ready(endpoint, service) {
@@ -114,9 +122,11 @@ export async function checkPermissions(client) {
     );
 }
 
-export async function unhealthyFunctions(client, ids) {
+export async function inspectFunctions(client, ids) {
     const endpoints = await client.list();
     const unhealthy = [];
+    const deployed = {};
+    const services = {};
     for (const id of ids) {
         const endpoint = endpoints.find(
             (item) =>
@@ -134,8 +144,43 @@ export async function unhealthyFunctions(client, ids) {
             }
         }
         if (!ready(endpoint, service)) unhealthy.push(id);
+        else if (endpoint.platform === "gcfv2")
+            services[id] = endpoint.runServiceId;
+        // Match the live deployment as well as the build. A failed or manual
+        // deploy may have changed healthy functions since the saved baseline.
+        if (endpoint?.hash)
+            deployed[id] = JSON.stringify([
+                endpoint.hash,
+                service?.status?.latestReadyRevisionName || null
+            ]);
     }
-    return unhealthy;
+    return { unhealthy, deployed, services };
+}
+
+export function hostingConfig(config, services) {
+    const hosting = structuredClone(config.hosting);
+    for (const site of Array.isArray(hosting) ? hosting : [hosting]) {
+        site.rewrites = (site.rewrites || []).map((rewrite) => {
+            if (!rewrite.function?.pinTag) return rewrite;
+            const { functionId, region = access.region } = rewrite.function;
+            const serviceId = services[functionId];
+            assert.equal(region, access.region);
+            assert.match(
+                serviceId || "",
+                /^[a-z][a-z0-9-]*$/,
+                `No ready Cloud Run service for ${functionId}`
+            );
+            const { function: ignoredFunction, ...rest } = rewrite;
+            // A function pin makes --only hosting redeploy the function. Pin its
+            // verified Cloud Run service instead, preserving Hosting rollbacks.
+            return { ...rest, run: { serviceId, region, pinTag: true } };
+        });
+    }
+    return { hosting };
+}
+
+export async function unhealthyFunctions(client, ids) {
+    return (await inspectFunctions(client, ids)).unhealthy;
 }
 
 export async function waitUntilReady(
@@ -147,8 +192,9 @@ export async function waitUntilReady(
     let attempt = 0;
     return withRetry(async () => {
         for (; ; attempt++) {
-            const unhealthy = await unhealthyFunctions(client, ids);
-            if (!unhealthy.length) return;
+            const state = await inspectFunctions(client, ids);
+            const { unhealthy } = state;
+            if (!unhealthy.length) return state;
             assert.ok(
                 attempt < 12,
                 `Functions are not ready on their latest revision: ${unhealthy.join(", ")}. Hosting was not published.`
@@ -205,7 +251,7 @@ const readGit = (args) =>
         stdio: ["ignore", "pipe", "ignore"]
     });
 
-export async function changedFilesSinceSuccess(
+export async function successfulDeploy(
     request = fetch,
     git = readGit,
     environment = process.env
@@ -214,30 +260,39 @@ export async function changedFilesSinceSuccess(
     const token = environment.GH_TOKEN;
     if (!repository || !token) return null;
     // A failed run is never a baseline: retrying it must include its backend changes.
-    const response = await request(
-        `https://api.github.com/repos/${repository}/actions/workflows/develop.yaml/runs?branch=develop&status=success&per_page=30`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/vnd.github+json"
-            },
-            signal: AbortSignal.timeout(10000)
-        }
-    );
-    assert.ok(
-        response.ok,
-        `Cannot find the last successful deploy: HTTP ${response.status}`
-    );
+    const response = await withRetry(async () => {
+        const response = await request(
+            `https://api.github.com/repos/${repository}/actions/workflows/develop.yaml/runs?branch=develop&status=success&per_page=30`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/vnd.github+json"
+                },
+                signal: AbortSignal.timeout(10000)
+            }
+        );
+        if (!response.ok)
+            throw Object.assign(
+                new Error(
+                    `Cannot find the last successful deploy: HTTP ${response.status}`
+                ),
+                { status: response.status }
+            );
+        return response;
+    });
     for (const run of (await response.json()).workflow_runs) {
-        if (!/^[a-f0-9]{40}$/.test(run.head_sha)) continue;
+        if (
+            !/^[a-f0-9]{40}$/.test(run.head_sha) ||
+            !Number.isSafeInteger(run.id) ||
+            String(run.id) === environment.GITHUB_RUN_ID
+        )
+            continue;
         try {
             git(["merge-base", "--is-ancestor", run.head_sha, "HEAD"]);
         } catch {
             continue;
         }
-        return git(["diff", "--name-only", "-z", run.head_sha, "HEAD"])
-            .split("\0")
-            .filter(Boolean);
+        return run;
     }
     return null;
 }
@@ -246,6 +301,7 @@ async function main() {
     const { values } = parseArgs({
         options: {
             preflight: { type: "boolean" },
+            baseline: { type: "boolean" },
             functions: { type: "boolean" },
             check: { type: "boolean" },
             repair: { type: "boolean" }
@@ -254,8 +310,16 @@ async function main() {
     assert.equal(
         Object.values(values).filter(Boolean).length,
         1,
-        "Choose --preflight, --functions, --repair, or --check"
+        "Choose --baseline, --preflight, --functions, --repair, or --check"
     );
+    if (values.baseline) {
+        const previous = await successfulDeploy();
+        await appendFile(
+            process.env.GITHUB_OUTPUT,
+            `run-id=${previous?.id || ""}\n`
+        );
+        return;
+    }
     const require = createRequire(
         new URL("../functions/package.json", import.meta.url)
     );
@@ -267,7 +331,7 @@ async function main() {
             project: target.project,
             nonInteractive: true
         });
-    await list();
+    await withRetry(list);
     const run = new Client({
         urlPrefix: "https://run.googleapis.com",
         apiVersion: "v1",
@@ -294,7 +358,7 @@ async function main() {
                 )
             ).body.permissions || []
     };
-    if (values.preflight) return checkPermissions(client);
+    if (values.preflight) return withRetry(() => checkPermissions(client));
     const config = JSON.parse(
         await readFile(path.join(root, "firebase.dev.generated.json"), "utf8")
     );
@@ -310,20 +374,45 @@ async function main() {
         "Expected named dev function exports"
     );
     if (values.check) return waitUntilReady(client, ids);
-    await checkPermissions(client);
-    const changed = values.repair ? [] : await changedFilesSinceSuccess();
-    const selected = selectTargets(
-        ids,
-        changed,
-        await unhealthyFunctions(client, ids)
-    );
+    await withRetry(() => checkPermissions(client));
+    const state = await withRetry(() => inspectFunctions(client, ids));
+    const current = await functionInputs(root, config);
+    const previous =
+        process.env.FUNCTION_BASELINE_RESTORED === "true"
+            ? await readInputs(
+                  path.join(
+                      root,
+                      ".firebase/previous-functions/function-inputs.json"
+                  )
+              )
+            : null;
+    const selected = values.repair
+        ? state.unhealthy
+        : selectInputTargets(
+              ids,
+              current,
+              previous,
+              state,
+              process.env.FORCE_FUNCTIONS === "true"
+          );
     console.log(
         `Selected ${selected.length}/${ids.length} functions for deployment.`
     );
     await deployBatches(selected, runFirebase, (batch) =>
         waitUntilReady(client, batch)
     );
-    await waitUntilReady(client, ids);
+    const verified = await waitUntilReady(client, ids);
+    if (values.functions) {
+        await writeFile(
+            path.join(root, ".firebase/function-inputs.json"),
+            JSON.stringify({ ...current, deployed: verified.deployed }) + "\n"
+        );
+        await writeFile(
+            path.join(root, "firebase.dev.hosting.generated.json"),
+            JSON.stringify(hostingConfig(config, verified.services), null, 4) +
+                "\n"
+        );
+    }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)

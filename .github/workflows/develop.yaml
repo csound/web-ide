@@ -4,6 +4,11 @@ on:
         branches:
             - develop
     workflow_dispatch:
+        inputs:
+            force_functions:
+                description: Redeploy all functions even when their inputs match
+                type: boolean
+                default: false
 permissions:
     contents: read
     actions: read
@@ -16,7 +21,7 @@ jobs:
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/develop'
         # Allow recovery backoffs plus builds, API calls, and Hosting publication.
-        timeout-minutes: 240
+        timeout-minutes: 300
         env:
             REACT_APP_DATABASE: DEV
         steps:
@@ -69,13 +74,39 @@ jobs:
             - name: Deploy Firestore indexes
               # Preserve unrelated indexes and field settings; do not use --force.
               run: ./functions/node_modules/.bin/firebase deploy -P develop --config firebase.json --only firestore:indexes --non-interactive
+            - name: Find last successful dev deployment
+              id: baseline
+              run: node scripts/deploy-dev.mjs --baseline
+              env:
+                  GH_TOKEN: ${{ github.token }}
+            - name: Read previous function inputs
+              id: function-inputs
+              if: steps.baseline.outputs.run-id != ''
+              # A missing/expired artifact causes a full deploy, never a skip.
+              continue-on-error: true
+              uses: actions/download-artifact@v8
+              with:
+                  name: dev-function-inputs
+                  path: .firebase/previous-functions
+                  run-id: ${{ steps.baseline.outputs.run-id }}
+                  github-token: ${{ github.token }}
             - name: Deploy to Firebase
               run: node scripts/deploy-dev.mjs --functions
               env:
-                  GH_TOKEN: ${{ github.token }}
+                  FUNCTION_BASELINE_RESTORED: ${{ steps.function-inputs.outcome == 'success' }}
+                  FORCE_FUNCTIONS: ${{ inputs.force_functions }}
             - name: Apply dev browser access and check page loads
               run: npm run access -- --env dev --apply
             - name: Publish Hosting after functions are ready
-              run: ./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.generated.json --only hosting --non-interactive
+              run: ./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.hosting.generated.json --only hosting --non-interactive
             - name: Check published dev browser access
               run: npm run access -- --env dev --check
+            - name: Save successful function inputs
+              uses: actions/upload-artifact@v7
+              with:
+                  name: dev-function-inputs
+                  path: .firebase/function-inputs.json
+                  include-hidden-files: true
+                  if-no-files-found: error
+                  retention-days: 90
+                  overwrite: true
