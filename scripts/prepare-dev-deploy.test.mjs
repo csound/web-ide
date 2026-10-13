@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { functionDeployArgs } from "./deploy-dev.mjs";
+import { functionDeployArgs, hostingConfig } from "./deploy-dev.mjs";
 import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -20,6 +20,9 @@ const {
 const { Config } = require("firebase-tools/lib/config.js");
 const { parse } = require("yaml");
 const backend = require("firebase-tools/lib/deploy/functions/backend.js");
+const {
+    hasPinnedFunctions
+} = require("firebase-tools/lib/deploy/hosting/prepare.js");
 const {
     promptForFailurePolicies
 } = require("firebase-tools/lib/deploy/functions/prompts.js");
@@ -77,6 +80,26 @@ test("dev skips the empty Extensions deploy and preserves every function and hos
             await readFile(path.join(root, "firebase.json"), "utf8")
         );
         const firebaseConfig = new Config(config, { cwd: root, configPath });
+        assert.equal(
+            hasPinnedFunctions({
+                project: "csound-ide-dev",
+                site: "csound-ide-dev",
+                config: firebaseConfig
+            }),
+            true
+        );
+        const hostingOnly = new Config(
+            hostingConfig(config, { host: "host" }),
+            { cwd: root, configPath }
+        );
+        assert.equal(
+            hasPinnedFunctions({
+                project: "csound-ide-dev",
+                site: "csound-ide-dev",
+                config: hostingOnly
+            }),
+            false
+        );
         devSource = firebaseConfig.path(config.functions.source);
         const delegate = new Delegate(
             "csound-ide-dev",

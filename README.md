@@ -286,6 +286,25 @@ offline-capable desktop app.
 
 GitHub Actions handles website deployment.
 
+The dev workflow compares the prepared function files, dependencies, environment
+and deploy settings with an artifact from a successful deployment. It skips
+function updates only when those inputs and the live function hashes/revisions
+match. Backend changes deploy all functions; a change to the built `index.html`
+deploys only `host`, which serves that file. Manual-only changes can therefore
+publish Hosting without rebuilding functions in Google Cloud.
+
+Missing or expired artifacts cause a full function deploy. Unhealthy or changed
+live functions also deploy again. The artifact contains hashes, not source or
+environment values, and is saved only after Hosting and browser checks pass.
+Use **Redeploy all functions even when their inputs match** when running the dev
+workflow manually after external changes, such as rotating a secret. This check
+does not audit every setting changed through the Google Cloud console.
+
+Dev Hosting pins the verified Cloud Run service behind `host` directly. This
+keeps rollback support without Firebase implicitly deploying `host` again during
+`--only hosting`. Transient API and quota failures get bounded retries; permission
+and authentication failures stop the job. Production deployment is unchanged.
+
 Keep `develop` and `master` in the same Git history. Merge changes made directly
 on `master` back into `develop` before the next release. Promote `develop` with
 a merge or fast-forward into `master`, then use a normal push. Resetting `master`

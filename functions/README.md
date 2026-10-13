@@ -192,11 +192,14 @@ These permissions let the shared access script maintain `roles/run.invoker` for
 The script validates function types before writing IAM and preserves other grants.
 IAM permissions belong to the service account; replacing its key does not add them.
 
-The deploy script compares the checkout with the latest successful dev workflow
-run that is its Git ancestor. Backend or deployment-config changes select all
-functions because they share one source bundle. Other changes select `host`,
-which serves the built app shell. Missing or unhealthy functions are always
-included. Without a usable baseline, it deploys all declared functions.
+The deploy script compares hashes of the prepared function files and deployment
+settings with an artifact from a successful dev workflow run that is its Git
+ancestor. Backend changes select all functions because they share one source
+bundle. A change to the built app shell selects `host`. Matching inputs and live
+function hashes/revisions skip function deployment. Missing or unhealthy
+functions are always included. Without a usable baseline, it deploys all declared
+functions. Use the workflow's force option after external changes such as secret
+rotation.
 
 It deploys named functions in batches of two, then checks each batch before
 starting the next. Named targets also bypass the CLI's unchanged-function skip.
@@ -211,9 +214,8 @@ latest-created/latest-ready revisions. Hosting publishes only after every declar
 function is ready and browser-access checks pass. Browser checks run again after
 publication. Each readiness check shares one three-retry allowance across all
 polls, with at most two minutes of polling and seven minutes of retry delays.
-For the current 16 functions, all eight batches and the final readiness check
-can wait at most 137 minutes in total. The job allows 240 minutes, leaving time
-for installs, builds, API calls, and Hosting publication.
+The job allows 300 minutes for bounded recovery waits, installs, builds, API calls,
+and Hosting publication.
 
 To repair failed revisions locally, first build the frontend and functions and
 run `npm run prepare:deploy:dev`. With valid Firebase/Google credentials, run:
@@ -222,11 +224,14 @@ run `npm run prepare:deploy:dev`. With valid Firebase/Google credentials, run:
 node scripts/deploy-dev.mjs --preflight
 node scripts/deploy-dev.mjs --repair
 npm run access -- --env dev --apply
-./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.generated.json --only hosting --non-interactive
+./functions/node_modules/.bin/firebase deploy -P develop --config firebase.dev.hosting.generated.json --only hosting --non-interactive
 npm run access -- --env dev --check
 ```
 
-`--repair` selects only missing or unhealthy functions. `--check` checks readiness
+`--repair` selects only missing or unhealthy functions. Once all functions are
+ready, it writes the Hosting config with pins to their Cloud Run services, so
+publishing Hosting does not deploy `host` again. Repairs do not record a new
+function-input baseline; only `--functions` does that. `--check` checks readiness
 without deploying. Publish the matching Hosting build when repairing `host`, so
 its app shell references assets present on Hosting. A saved account in
 `gcloud auth list` does not guarantee a valid login; refresh it with
