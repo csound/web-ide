@@ -88,7 +88,7 @@ export function WebMcpLink() {
             : "Open the WebMCP setup and tool guide.";
     return (
         <a
-            href="/documentation#webmcp"
+            href="/documentation/reference/webmcp"
             target="_blank"
             rel="noopener noreferrer"
             title={title}

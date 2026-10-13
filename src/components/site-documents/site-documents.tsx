@@ -1,246 +1,414 @@
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, Navigate, useLocation, useParams } from "react-router";
 import { useTheme } from "@emotion/react";
-import { mainStyle, rootStyle } from "./styles";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import IconButton from "@mui/material/IconButton";
+import SearchRounded from "@mui/icons-material/SearchRounded";
+import MenuBookRounded from "@mui/icons-material/MenuBookRounded";
+import ContentCopyRounded from "@mui/icons-material/ContentCopyRounded";
+import CheckRounded from "@mui/icons-material/CheckRounded";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import { Header } from "../header/header";
-import { WebMcpGuide } from "@root/webmcp/guide";
+import {
+    articles,
+    articleHeadings,
+    articleHref,
+    articlePath,
+    findArticles,
+    loadArticle,
+    sections,
+    type Article
+} from "./content";
+import { readerStyle } from "./styles";
 
+function CodeBlock({ children }: { children?: ReactNode }) {
+    const ref = useRef<HTMLPreElement>(null);
+    const [status, setStatus] = useState("Copy code");
+    useEffect(() => {
+        if (status === "Copy code") return;
+        const timer = window.setTimeout(() => setStatus("Copy code"), 2500);
+        return () => window.clearTimeout(timer);
+    }, [status]);
+    return (
+        <div className="doc-code">
+            <pre ref={ref}>{children}</pre>
+            <IconButton
+                aria-label={status}
+                title={status}
+                onClick={async () => {
+                    try {
+                        await navigator.clipboard.writeText(
+                            ref.current?.textContent ?? ""
+                        );
+                        setStatus("Copied");
+                    } catch {
+                        setStatus("Copy failed. Select and copy the code.");
+                    }
+                }}
+            >
+                {status === "Copied" ? (
+                    <CheckRounded fontSize="small" />
+                ) : (
+                    <ContentCopyRounded fontSize="small" />
+                )}
+            </IconButton>
+            <span className="doc-sr-only" role="status">
+                {status === "Copy code" ? "" : status}
+            </span>
+        </div>
+    );
+}
+function ArticleBody({ article }: { article: Article }) {
+    const [source, setSource] = useState<string>();
+    const [failed, setFailed] = useState(false);
+    const [attempt, setAttempt] = useState(0);
+    const main = useRef<HTMLElement>(null);
+    const { hash } = useLocation();
+    useEffect(() => {
+        let current = true;
+        setFailed(false);
+        void loadArticle(article.slug).then(
+            (text) => {
+                if (current) setSource(text);
+            },
+            () => {
+                if (current) setFailed(true);
+            }
+        );
+        return () => {
+            current = false;
+        };
+    }, [article.slug, attempt]);
+    useEffect(() => {
+        const previous = document.title;
+        document.title = `${article.title} | Csound Web-IDE Guide`;
+        return () => {
+            document.title = previous;
+        };
+    }, [article.title]);
+    useEffect(() => {
+        if (!source) return;
+        let id = hash.slice(1);
+        try {
+            id = decodeURIComponent(id);
+        } catch {
+            /* A malformed fragment still opens the article. */
+        }
+        const target = id
+            ? main.current?.querySelector<HTMLElement>(
+                  `[id="${CSS.escape(id)}"]`
+              )
+            : main.current;
+        (target ?? main.current)?.scrollIntoView({ block: "start" });
+        if (!hash) main.current?.focus({ preventScroll: true });
+    }, [source, hash]);
+    const headings = articleHeadings(source ?? "");
+    const components: Components = {
+        p: ({ children, node }) => (
+            <>
+                <p>{children}</p>
+                {node?.position?.start.line === 3 && headings.length > 0 && (
+                    <details className="doc-inline-outline">
+                        <summary>On this page</summary>
+                        <nav aria-label="Article sections">
+                            {headings.map((heading) => (
+                                <a key={heading.id} href={`#${heading.id}`}>
+                                    {heading.text}
+                                </a>
+                            ))}
+                        </nav>
+                    </details>
+                )}
+            </>
+        ),
+        h2: ({ children, node }) => (
+            <h2
+                id={
+                    headings.find((h) => h.line === node?.position?.start.line)
+                        ?.id
+                }
+            >
+                {children}
+            </h2>
+        ),
+        h3: ({ children, node }) => (
+            <h3
+                id={
+                    headings.find((h) => h.line === node?.position?.start.line)
+                        ?.id
+                }
+            >
+                {children}
+            </h3>
+        ),
+        a: ({ children, href }) => {
+            const to = articleHref(href, article.slug);
+            return to?.startsWith("/documentation/") ? (
+                <Link to={to}>{children}</Link>
+            ) : (
+                <a href={to}>{children}</a>
+            );
+        },
+        pre: CodeBlock,
+        table: ({ children }) => (
+            <div
+                className="doc-table"
+                role="region"
+                aria-label="Reference table"
+                tabIndex={0}
+            >
+                <table>{children}</table>
+            </div>
+        ),
+        img: ({ alt, src }) => <img alt={alt ?? ""} src={src} loading="lazy" />
+    };
+    const index = articles.indexOf(article);
+    return (
+        <>
+            <main
+                id="guide-article"
+                ref={main}
+                tabIndex={-1}
+                className="doc-article"
+                aria-label={article.title}
+                aria-busy={!source && !failed}
+            >
+                <div className="doc-eyebrow">
+                    {article.section}
+                    <span aria-hidden="true">/</span> Csound Web-IDE
+                </div>
+                {source ? (
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={components}
+                    >
+                        {source}
+                    </ReactMarkdown>
+                ) : (
+                    <>
+                        <h1>{article.title}</h1>
+                        {failed ? (
+                            <div role="alert">
+                                <p>
+                                    This article could not load. Check your
+                                    connection and try again.
+                                </p>
+                                <button
+                                    onClick={() =>
+                                        setAttempt((value) => value + 1)
+                                    }
+                                >
+                                    Try again
+                                </button>
+                            </div>
+                        ) : (
+                            <p role="status">Loading article...</p>
+                        )}
+                    </>
+                )}
+                {source && (
+                    <footer className="doc-footer">
+                        <a
+                            className="doc-edit"
+                            href={`https://github.com/csound/web-ide/edit/develop/docs/guide/${article.slug}.md`}
+                        >
+                            <EditOutlined fontSize="small" />
+                            Edit this page
+                        </a>
+                        <nav
+                            aria-label="Adjacent articles"
+                            className="doc-pagination"
+                        >
+                            {index > 0 ? (
+                                <Link
+                                    to={articlePath(articles[index - 1].slug)}
+                                >
+                                    <small>Previous</small>
+                                    {articles[index - 1].title}
+                                </Link>
+                            ) : (
+                                <span />
+                            )}
+                            {index < articles.length - 1 && (
+                                <Link
+                                    to={articlePath(articles[index + 1].slug)}
+                                >
+                                    <small>Next</small>
+                                    {articles[index + 1].title}
+                                    <ArrowForwardRounded fontSize="small" />
+                                </Link>
+                            )}
+                        </nav>
+                    </footer>
+                )}
+            </main>
+            <aside className="doc-outline" aria-label="On this page">
+                {headings.length > 0 && (
+                    <>
+                        <span className="doc-label">On this page</span>
+                        <nav>
+                            {headings.map((heading) => (
+                                <a
+                                    key={heading.id}
+                                    href={`#${heading.id}`}
+                                    className={
+                                        heading.level === 3
+                                            ? "doc-subheading"
+                                            : undefined
+                                    }
+                                >
+                                    {heading.text}
+                                </a>
+                            ))}
+                        </nav>
+                    </>
+                )}
+            </aside>
+        </>
+    );
+}
 export const SiteDocuments = () => {
     const theme = useTheme();
+    const params = useParams();
+    const location = useLocation();
+    const slug = params["*"]?.replace(/\/$/, "") || "getting-started";
+    const article = articles.find((item) => item.slug === slug);
+    const [query, setQuery] = useState("");
+    const [expanded, setExpanded] = useState(false);
+    const matches = findArticles(query);
+    useEffect(() => {
+        setExpanded(false);
+        setQuery("");
+    }, [slug]);
+    // Keep existing links from WebMCP clients and bookmarks working.
+    if (!params["*"] && location.hash === "#webmcp")
+        return <Navigate replace to={articlePath("reference/webmcp")} />;
     return (
-        <div css={rootStyle(theme)}>
+        <div css={readerStyle(theme)}>
             <Header />
-            <main css={mainStyle(theme)}>
-                <section>
-                    <h1>Csound Web-IDE</h1>
-
-                    <p>Welcome to the Csound Web-IDE!</p>
-                    <p>
-                        This site is an online Integrated Development
-                        Environment (IDE) for{" "}
-                        <a href="https://csound.com">Csound</a>, a sound and
-                        music computing system that has its roots in the
-                        earliest of computer software, the MUSIC-N series by{" "}
-                        <a href="https://en.wikipedia.org/wiki/Max_Mathews">
-                            Max Mathews
+            <a href="#guide-article" className="doc-skip">
+                Skip to article
+            </a>
+            <div className="doc-layout">
+                <aside
+                    className={`doc-sidebar${expanded ? " is-expanded" : ""}`}
+                >
+                    <div className="doc-brand">
+                        <Link to="/documentation">
+                            <MenuBookRounded />
+                            User guide
+                        </Link>
+                        <button
+                            className="doc-menu"
+                            aria-expanded={expanded}
+                            aria-controls="guide-contents"
+                            onClick={() => setExpanded(!expanded)}
+                        >
+                            {expanded ? "Close contents" : "Contents"}
+                        </button>
+                    </div>
+                    <div id="guide-contents" className="doc-contents">
+                        <label className="doc-search">
+                            <SearchRounded fontSize="small" />
+                            <span className="doc-sr-only">Find an article</span>
+                            <input
+                                type="search"
+                                placeholder="Find an article"
+                                value={query}
+                                onChange={(event) =>
+                                    setQuery(event.target.value)
+                                }
+                            />
+                        </label>
+                        <nav aria-label="Guide contents">
+                            {sections.map((section) => {
+                                const visible = section.articles.filter(
+                                    (item) =>
+                                        matches.some(
+                                            (match) => match.slug === item.slug
+                                        )
+                                );
+                                return visible.length ? (
+                                    <section key={section.title}>
+                                        <h2 className="doc-label">
+                                            {section.title}
+                                        </h2>
+                                        {visible.map((item) => (
+                                            <Link
+                                                key={item.slug}
+                                                to={articlePath(item.slug)}
+                                                onClick={() => {
+                                                    setExpanded(false);
+                                                    setQuery("");
+                                                    if (slug === item.slug) {
+                                                        const main =
+                                                            document.getElementById(
+                                                                "guide-article"
+                                                            );
+                                                        main?.focus();
+                                                        main?.scrollIntoView({
+                                                            block: "start"
+                                                        });
+                                                    }
+                                                }}
+                                                aria-current={
+                                                    slug === item.slug
+                                                        ? "page"
+                                                        : undefined
+                                                }
+                                            >
+                                                {item.title}
+                                            </Link>
+                                        ))}
+                                    </section>
+                                ) : null;
+                            })}
+                        </nav>
+                        {matches.length === 0 && (
+                            <p role="status">
+                                No articles match &quot;{query}&quot;. Try a
+                                tool name or a shorter phrase.
+                            </p>
+                        )}
+                        {query && (
+                            <button
+                                className="doc-clear"
+                                onClick={() => setQuery("")}
+                            >
+                                Clear search
+                            </button>
+                        )}
+                        <a
+                            className="doc-contribute"
+                            href="https://github.com/csound/web-ide/issues"
+                        >
+                            Report a problem{" "}
+                            <ArrowForwardRounded fontSize="small" />
                         </a>
-                        . Csound was originally released in 1986 by{" "}
-                        <a href="http://web.media.mit.edu/~bv/">Barry Vercoe</a>{" "}
-                        and it has been a part of the computer music world
-                        since. Today&apos;s Csound works on desktop, mobile,
-                        embedded, server, and web platforms and powers music
-                        software and music-making for musician&apos;s around the
-                        world.
-                    </p>
-
-                    <p>
-                        With this site we bring you an online, social coding
-                        Csound development experience with the same features
-                        found traditionally on desktop systems. We hope the
-                        features to compose, live code, share, and discover
-                        Csound work will help power your musical endeavors.
-                    </p>
-                </section>
-
-                <section>
-                    <h2>Getting Started</h2>
-
-                    <h3>Searching and Browsing Projects</h3>
-
-                    <p>
-                        The home page provides a search option for finding
-                        public projects. Enter in search terms to find projects
-                        matching the search terms. You can click on the project
-                        to view and run the project as well as click on the
-                        author to look at their profile. On the author&apos;s
-                        profile you will find a list of public projects they
-                        have shared as well as have the opportunity to follow
-                        that user (if you are logged in).
-                    </p>
-
-                    <h3>Sign up for an account</h3>
-
-                    <p>
-                        To use the site for your own work, sign up for an
-                        account by using the &quot;Login&quot; button in the top
-                        bar. You can sign up using an email account or sign-in
-                        using a Google or Facebook account. Once you sign in,
-                        you will need to choose a unique username for your
-                        account.
-                    </p>
-
-                    <h3>View/Edit Profile</h3>
-
-                    <p>
-                        The profile page houses your projects. It will show all
-                        of your project, public or private, as well as the list
-                        of people you follow.
-                    </p>
-                    <p>
-                        You can edit your information on the profile page as
-                        well, including updating your user image, bio, and
-                        links.
-                    </p>
-                    <p>
-                        The profile page is also where you will be creating and
-                        modifying project details. You can also audition
-                        projects using the play button on the project as well as
-                        select the project to view/edit the project in the main
-                        IDE editor.
-                    </p>
-
-                    <h3>Need assistance?</h3>
-
-                    <p>
-                        The easiest way to get help with the Web-IDE is to join
-                        the{" "}
-                        <a href="https://csound.com/community.html">
-                            Csound Slack
-                        </a>{" "}
-                        and ask questions in the #web-ide channel.
-                    </p>
-
-                    <h3>Have an issue or find a bug?</h3>
-
-                    <p>
-                        If you have an issue, find a bug, or want to make a
-                        suggestion for improvement, please either file an issue
-                        on the Web-IDE&apos;s{" "}
-                        <a href="https://github.com/csound/web-ide/issues">
-                            Github issue tracker
-                        </a>
-                        . The tracker allows us to follow up with issues when we
-                        can and have a conversation to figure out the best way
-                        to address the issue. We look forward to hearing from
-                        you!
-                    </p>
-                </section>
-
-                <section>
-                    <h2>Creating a New Project</h2>
-
-                    <p>
-                        On your profile page, use the &quot;Create +&quot;
-                        button to create a new project. A modal dialog will
-                        appear where you can fill in the name of the project,
-                        description, and any tags. You can later edit the
-                        project information using the &quot;Edit&quot; button.
-                        The name, description and tags will be visible for the
-                        project on your profile page for you and others who may
-                        look at your profile (if your project is public). These
-                        fields will also be used when users search for projects.
-                    </p>
-
-                    <h2>Editing a Project</h2>
-
-                    <img
-                        src="img/project_editor.png"
-                        alt="Project Editor"
-                        width="100%"
-                    ></img>
-
-                    <p>
-                        The project editor is made up of a number of components:
-                    </p>
-
-                    <ul>
-                        <li>Menu Bar</li>
-                        <li>Project File Tree</li>
-                        <li>File Editors</li>
-                        <li>Console Output</li>
-                        <li>Play Controls</li>
-                        <li>Social Controls</li>
-                        <li>
-                            Csound Manual Panel (not shown in screenshot above)
-                        </li>
-                    </ul>
-
-                    <h3>Menu Bar</h3>
-
-                    <p>
-                        The menu bar contains dropdown menus for various
-                        operations in the Web-IDE such as saving files, opening
-                        and closing views (i.e., Project File Tree, Console
-                        Ouptput, Csound Manual Panel), and more.
-                    </p>
-
-                    <h3>Project File Tree</h3>
-
-                    <p>
-                        Projects are made up of files laid out in a directory
-                        structure much like they would be when working with
-                        Csound on a desktop operating system. Click on a file in
-                        the file tree to open up its editor. Organize your code
-                        and resource files and use relative paths in the same
-                        way as you would if using Csound on the desktop.
-                    </p>
-
-                    <h3>File Editors</h3>
-
-                    <p>
-                        Editors appear for editing code and working with
-                        resource files. Code editors provide syntax
-                        highlighting, shortcuts for code evaluation (i.e., live
-                        coding), and code completion.
-                    </p>
-
-                    <h3>Console Output</h3>
-
-                    <p>
-                        The Console Output shows the output messages generated
-                        when Csound runs.{" "}
-                    </p>
-
-                    <h3>Play Controls</h3>
-
-                    <p>
-                        The Play controls include a Play/Pause button, Stop
-                        button, and playback settings. Choose one main CSD or
-                        ORC file, or switch the project to a playlist. Add
-                        tracks and use the up and down controls to set their
-                        order.
-                    </p>
-                    <p>
-                        In playlist mode, choose a starting track in the
-                        dropdown, then press Play to hear it and the remaining
-                        tracks. The dropdown follows playback. Stop to choose a
-                        new starting point. Each playlist tab also has a play
-                        button for that file alone; numbers in the file tree
-                        show the track order.
-                    </p>
-                    <p>
-                        A playlist advances when Csound ends the current
-                        performance. Files that run indefinitely, including
-                        orchestras without an end event, keep playing until you
-                        stop them. A playback error stops the playlist.
-                    </p>
-
-                    <h3>Social Controls</h3>
-
-                    <p>
-                        The social controls provide a button to share the
-                        project via Facebook, Twitter, and Email; a Star button
-                        to like the project; and an eye button to mark the
-                        project as public or private. If you are not the author
-                        of the project the eye button will not be available, but
-                        you may still share or like the project.
-                    </p>
-
-                    <h3>Csound Manual Panel</h3>
-
-                    <p>
-                        The Web-IDE provides a built-in version of the Csound
-                        Manual that you can search through. You can copy code
-                        from its examples or download the example files to use
-                        in a project.
-                    </p>
-                </section>
-
-                <WebMcpGuide />
-                <section>
-                    <h2>Audio/MIDI Input</h2>
-
-                    <p></p>
-                </section>
-            </main>
+                    </div>
+                </aside>
+                {article ? (
+                    <ArticleBody key={article.slug} article={article} />
+                ) : (
+                    <main
+                        className="doc-article"
+                        id="guide-article"
+                        tabIndex={-1}
+                    >
+                        <h1>Article not found</h1>
+                        <p>
+                            This address does not match a guide article. Choose
+                            a topic from the contents or{" "}
+                            <Link to="/documentation">
+                                start with the guide
+                            </Link>
+                            .
+                        </p>
+                    </main>
+                )}
+            </div>
         </div>
     );
 };

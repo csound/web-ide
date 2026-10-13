@@ -701,7 +701,7 @@ describe("editor tools", () => {
         });
         expect(await call("read_guide")).toMatchObject({
             ok: true,
-            documentation_url: "/documentation#webmcp"
+            documentation_url: "/documentation/reference/webmcp"
         });
     });
 });
