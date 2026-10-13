@@ -77,7 +77,7 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
     };
     return (
         <ProfileDialog
-            title="Edit Profile"
+            title="Edit profile"
             actions={
                 <>
                     <Button

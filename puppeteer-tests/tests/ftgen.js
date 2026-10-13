@@ -23,11 +23,22 @@ test(
             const first = '[aria-label="Function table gi_tales_trisaw"]';
             const second = '[aria-label="Function table gi_second"]';
             const third = '[aria-label="Function table gi_third"]';
+            const modifier = await page.evaluate(() =>
+                navigator.platform.includes("Mac") ? "Meta" : "Control"
+            );
             const open = async (name, selector) => {
-                await page.evaluate(
+                const position = await page.evaluate(
                     (name) => window.ftgenFixture.focus(name),
                     name
                 );
+                // Native keys let CodeMirror flush pending DOM selection updates.
+                // Dispatching a test selection after focus can race with restoration
+                // when the previous plot closes, resetting the caret to position 0.
+                await page.keyboard.down(modifier);
+                await page.keyboard.press("Home");
+                await page.keyboard.up(modifier);
+                for (let offset = 0; offset < position; offset++)
+                    await page.keyboard.press("ArrowRight");
                 await page.waitForFunction(
                     (name) => window.ftgenFixture.tableFocused(name),
                     {},

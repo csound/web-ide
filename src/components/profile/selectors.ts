@@ -77,6 +77,20 @@ export const selectUserProfile =
 const selectLogInReducer = (state: RootState) => state.LoginReducer;
 const selectProfiles = (state: RootState) => state.ProfileReducer.profiles;
 
+export const selectLoggedInProfile = ({
+    LoginReducer,
+    ProfileReducer
+}: RootState): IProfile | undefined => {
+    const { authenticated, requesting, loggedInUid, loadedProfileUid } =
+        LoginReducer;
+    return authenticated &&
+        !requesting &&
+        loggedInUid &&
+        loadedProfileUid === loggedInUid
+        ? ProfileReducer.profiles[loggedInUid]
+        : undefined;
+};
+
 // Selector to get the username for a specific profileUid
 export const selectLoggedInUserName = createSelector(
     [selectLogInReducer, selectProfiles],

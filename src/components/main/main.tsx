@@ -20,12 +20,14 @@ const Main = () => {
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
 
     useEffect(() => {
-        let unsubscribeLoggedInUserProfile: () => void;
+        let unsubscribeLoggedInUserProfile: (() => void) | undefined;
         // the observer doesn't know if the login state
         // change is a result of manual login or autologin
         // we determine this from a timeout
         !autoLoginTimeout && setTimeout(() => setAutoLoginTimeout(true), 1000);
         const unsubscribeAuthObserver = getAuth().onAuthStateChanged((user) => {
+            unsubscribeLoggedInUserProfile?.();
+            unsubscribeLoggedInUserProfile = undefined;
             if (user) {
                 unsubscribeLoggedInUserProfile = subscribeToLoggedInUserProfile(
                     user.uid,

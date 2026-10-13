@@ -75,10 +75,6 @@ export const utilityToggle = (theme: Theme): SerializedStyles => css`
     }
 `;
 
-export const menuItemLink = css`
-    text-decoration: none;
-`;
-
 export const toolbar = (contained: boolean) => css`
     display: flex;
     align-items: center;
@@ -136,6 +132,13 @@ export const loginButton = (theme: Theme): SerializedStyles => css`
     min-height: 36px;
     padding: 6px 12px;
     color: ${theme.headerTextColor} !important;
+`;
+
+export const myProjectsLink = css`
+    flex-shrink: 0;
+    min-height: 36px;
+    white-space: nowrap;
+    text-transform: none;
 `;
 
 export const authSlot = css`

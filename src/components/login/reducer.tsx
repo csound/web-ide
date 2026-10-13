@@ -11,7 +11,9 @@ import {
     LOG_OUT,
     LoginDialogMode,
     PostAuthFlow,
-    SET_POST_AUTH_FLOW
+    SET_POST_AUTH_FLOW,
+    UPDATE_USER_PROFILE,
+    CLEAR_USER_PROFILE_SNAPSHOT
 } from "./types";
 import { assoc, dissoc, pipe } from "ramda";
 
@@ -24,6 +26,7 @@ export interface ILoginReducer {
     dialogMode: LoginDialogMode;
     postAuthFlow: PostAuthFlow;
     loggedInUid: string | undefined;
+    loadedProfileUid: string | undefined;
     requesting: boolean;
 }
 
@@ -36,6 +39,7 @@ const INITIAL_STATE: ILoginReducer = {
     dialogMode: "login",
     postAuthFlow: undefined,
     loggedInUid: undefined,
+    loadedProfileUid: undefined,
     // we start always with onAuthStateChanged
     requesting: true
 };
@@ -45,6 +49,15 @@ const LoginReducer = (
     action: Record<string, any>
 ): ILoginReducer => {
     switch (action.type) {
+        case CLEAR_USER_PROFILE_SNAPSHOT: {
+            return { ...state, loadedProfileUid: undefined };
+        }
+        case UPDATE_USER_PROFILE: {
+            return {
+                ...state,
+                loadedProfileUid: action.profile ? action.userUid : undefined
+            };
+        }
         case SIGNIN_REQUEST: {
             return { ...state, requesting: true };
         }
@@ -57,6 +70,7 @@ const LoginReducer = (
                 ...state,
                 requesting: false,
                 authenticated: false,
+                loadedProfileUid: undefined,
                 failed: true,
                 errorCode: action.errorCode,
                 errorMessage: action.errorMessage
@@ -89,6 +103,7 @@ const LoginReducer = (
                 dialogMode: "login",
                 postAuthFlow: undefined,
                 authenticated: false,
+                loadedProfileUid: undefined,
                 requesting: false,
                 failed: false,
                 errorMessage: ""

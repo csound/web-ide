@@ -105,7 +105,7 @@ export function ProfileProjects({
                         onClick={() => dispatch(addProject())}
                         startIcon={<AddIcon />}
                     >
-                        Create
+                        New project
                     </Button>
                 )}
             </Box>
