@@ -6,6 +6,7 @@
         "popular_artists",
         "popular_projects",
         "random_projects",
+        "save_as_file",
         "search_projects",
         "search_users",
         "toggle_project_star"

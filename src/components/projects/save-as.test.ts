@@ -2,96 +2,71 @@ import { beforeEach, expect, it, vi } from "vitest";
 import {
     destinationError,
     listSaveAsProjects,
+    loadSaveAsDestination,
+    nameError,
     saveTextAs,
-    type SaveAsEntry,
     type SaveAsRequest
 } from "./save-as";
-
 const mock = vi.hoisted(() => ({
     uid: "owner" as string | undefined,
     getProject: vi.fn(),
     getFiles: vi.fn(),
-    set: vi.fn(),
-    commit: vi.fn()
+    call: vi.fn(),
+    callable: vi.fn()
 }));
 vi.mock("firebase/auth", () => ({
     getAuth: () => ({ currentUser: mock.uid ? { uid: mock.uid } : null })
 }));
-vi.mock("../../config/firestore", () => ({
-    database: "db",
-    projects: "projects",
-    projectLastModified: "dates",
-    getFirebaseTimestamp: () => "server-time"
-}));
+vi.mock("../../config/firestore", () => ({ projects: "projects" }));
 vi.mock("firebase/firestore", () => ({
-    doc: (...parts: string[]) =>
-        parts.length === 1 ? { id: "new-file" } : parts.join("/"),
+    doc: (...parts: string[]) => parts.join("/"),
     collection: (...parts: string[]) => parts.join("/"),
     getDocFromServer: mock.getProject,
     getDocsFromServer: mock.getFiles,
     query: (...parts: unknown[]) => parts,
-    where: (...parts: unknown[]) => parts,
-    writeBatch: () => ({ set: mock.set, commit: mock.commit })
+    where: (...parts: unknown[]) => parts
+}));
+vi.mock("firebase/functions", () => ({
+    getFunctions: () => "functions",
+    httpsCallable: mock.callable
 }));
 const request: SaveAsRequest = {
     projectUid: "dest",
     filename: "copy.csd",
     value: "unsaved source",
-    path: ["voices"],
+    path: [],
     folders: []
 };
-const folder: SaveAsEntry = {
-    id: "voices",
-    name: "voices",
-    type: "folder",
-    path: []
-};
-function files(entries: SaveAsEntry[]) {
-    return {
-        docs: entries.map(({ id, ...data }) => ({ id, data: () => data }))
-    };
-}
 beforeEach(() => {
     vi.resetAllMocks();
     mock.uid = "owner";
+    mock.callable.mockReturnValue(mock.call);
+    mock.call.mockResolvedValue({
+        data: {
+            project: { id: "dest", name: "Other project", isPublic: true },
+            documentUid: "copy",
+            entries: [{ id: "copy", name: "copy.csd", type: "txt", path: [] }]
+        }
+    });
     mock.getProject.mockResolvedValue({
         exists: () => true,
         data: () => ({ userUid: "owner", name: "Other project", public: true })
     });
-    mock.getFiles.mockResolvedValue(files([folder]));
-    mock.commit.mockResolvedValue(undefined);
+    mock.getFiles.mockResolvedValue({ docs: [] });
 });
-it("copies current text and selected new folders in one batch without touching the source", async () => {
-    const pending = {
-        id: "new-folder",
-        name: "Bass",
-        type: "folder",
-        path: ["voices"],
-        pending: true
-    };
-    const result = await saveTextAs("owner", {
-        ...request,
-        path: ["voices", "new-folder"],
-        folders: [pending, { ...pending, id: "unused", name: "Unused" }]
-    });
-    expect(mock.set.mock.calls.map(([ref]) => ref)).toEqual([
-        "projects/dest/files/new-folder",
-        "projects/dest/files/new-file",
-        "dates/dest"
-    ]);
-    expect(mock.set).toHaveBeenCalledWith(
-        "projects/dest/files/new-file",
+it("sends current text to the callable and only exposes confirmed documents", async () => {
+    const result = await saveTextAs("owner", request);
+    expect(mock.callable).toHaveBeenCalledWith("functions", "save_as_file");
+    expect(mock.call).toHaveBeenCalledWith(request);
+    expect(mock.getFiles).not.toHaveBeenCalled();
+    expect(result.documents).toEqual([
         expect.objectContaining({
-            value: "unsaved source",
-            name: "copy.csd",
-            type: "txt",
-            path: ["voices", "new-folder"],
-            userUid: "owner"
+            documentUid: "copy",
+            currentValue: "unsaved source",
+            savedValue: "unsaved source",
+            isModifiedLocally: false
         })
-    );
-    expect(mock.commit).toHaveBeenCalledOnce();
-    expect(result.documents).toHaveLength(2);
-    expect(result.project.isPublic).toBe(true);
+    ]);
 });
 it("queries only owned projects, not all public projects", async () => {
     mock.getFiles.mockResolvedValue({
@@ -109,80 +84,65 @@ it("queries only owned projects, not all public projects", async () => {
         ["userUid", "==", "owner"]
     ]);
 });
-it.each(["visitor", undefined])(
-    "refuses writes when the project owner is %s",
-    async (owner) => {
-        mock.getProject.mockResolvedValue({
-            exists: () => !!owner,
-            data: () => ({ userUid: owner })
-        });
-        await expect(saveTextAs("owner", request)).rejects.toThrow(
-            "write access"
-        );
-        expect(mock.commit).not.toHaveBeenCalled();
-    }
-);
-it("rejects an account change while loading", async () => {
+it("rejects an account change while loading destinations", async () => {
     mock.getFiles.mockImplementation(async () => {
         mock.uid = "other";
-        return files([folder]);
+        return { docs: [] };
     });
-    await expect(saveTextAs("owner", request)).rejects.toThrow("Sign in again");
-    expect(mock.commit).not.toHaveBeenCalled();
-});
-it.each(["txt", "folder"])(
-    "rejects a fresh name clash with a %s",
-    async (type) => {
-        mock.getFiles.mockResolvedValue(
-            files([
-                folder,
-                { id: "taken", name: "copy.csd", type, path: ["voices"] }
-            ])
-        );
-        await expect(saveTextAs("owner", request)).rejects.toThrow(
-            "already exists"
-        );
-        expect(mock.commit).not.toHaveBeenCalled();
-    }
-);
-it("allows the same filename in different folders", async () => {
-    mock.getFiles.mockResolvedValue(
-        files([
-            folder,
-            { id: "taken", name: "copy.csd", type: "txt", path: [] }
-        ])
+    await expect(loadSaveAsDestination("owner", "dest")).rejects.toThrow(
+        "Sign in again"
     );
-    await saveTextAs("owner", request);
-    expect(mock.commit).toHaveBeenCalledOnce();
+});
+it("does not send a save after the account changes", async () => {
+    mock.uid = "other";
+    await expect(saveTextAs("owner", request)).rejects.toThrow("Sign in again");
+    expect(mock.call).not.toHaveBeenCalled();
+});
+it("keeps callable errors visible to the dialog", async () => {
+    mock.call.mockRejectedValue(
+        new Error(
+            "That name already exists in this folder. Choose another name."
+        )
+    );
+    await expect(saveTextAs("owner", request)).rejects.toThrow(
+        "already exists"
+    );
 });
 it.each([
-    { entries: [] },
-    { entries: [{ ...folder, path: ["moved"] }] },
-    { entries: [{ ...folder, type: "txt" }] }
-])("rejects a deleted, moved or replaced folder", async ({ entries }) => {
-    mock.getFiles.mockResolvedValue(files(entries));
-    await expect(saveTextAs("owner", request)).rejects.toThrow("folder");
-    expect(mock.commit).not.toHaveBeenCalled();
-});
-it("checks pending folder names against fresh cloud data", async () => {
-    await expect(
-        saveTextAs("owner", {
-            ...request,
-            path: ["pending"],
-            folders: [{ ...folder, id: "pending", pending: true }]
-        })
-    ).rejects.toThrow("already exists");
-    expect(mock.commit).not.toHaveBeenCalled();
-});
-it.each(["", "..", ".", "a/b", "a\\b", " a", "a ", "a\n", "é".repeat(128)])(
-    "rejects invalid name %j",
-    (name) => {
-        expect(destinationError(name, [], [])).toBeTruthy();
-    }
+    ["", "Enter a name."],
+    [" ", "Enter a name."],
+    [".", 'Choose a name other than "." or "..".'],
+    ["..", 'Choose a name other than "." or "..".'],
+    [" a", "Remove spaces from the start or end of the name."],
+    ["a ", "Remove spaces from the start or end of the name."],
+    ["a/b", "Use a name without forward or back slashes."],
+    ["a\\b", "Use a name without forward or back slashes."],
+    [
+        "a\n",
+        "Remove control characters such as tabs and line breaks from the name."
+    ],
+    [
+        "\t",
+        "Remove control characters such as tabs and line breaks from the name."
+    ],
+    [
+        "a\t",
+        "Remove control characters such as tabs and line breaks from the name."
+    ],
+    [
+        "a\u007f",
+        "Remove control characters such as tabs and line breaks from the name."
+    ],
+    ["é".repeat(128), "Keep the name under 256 bytes."]
+])("explains invalid name %j", (name, message) =>
+    expect(nameError(name)).toBe(message)
 );
-it("reports write failure without pretending a copy exists", async () => {
-    mock.commit.mockRejectedValue(new Error("Permission denied"));
-    await expect(saveTextAs("owner", request)).rejects.toThrow(
-        "Permission denied"
+it("only reports clashes in the chosen folder", () => {
+    const entries = [
+        { id: "existing", name: "copy.csd", type: "txt", path: ["voices"] }
+    ];
+    expect(destinationError("copy.csd", [], entries)).toBeUndefined();
+    expect(destinationError("copy.csd", ["voices"], entries)).toContain(
+        "already exists"
     );
 });
