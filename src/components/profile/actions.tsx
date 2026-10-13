@@ -279,7 +279,6 @@ export const editUserProject =
                 userUid: loggedInUserUid,
                 name: name || "",
                 description: description || "",
-                public: false,
                 iconName: iconName || "",
                 iconForegroundColor: iconForegroundColor || "",
                 iconBackgroundColor: iconBackgroundColor || ""
