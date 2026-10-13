@@ -22,7 +22,7 @@ The tools work on the open project. They can read and edit source, change select
 
 An edit uses the document's current revision. If you change the same source while the agent is working, `stale_revision` tells it to read again. Open editors keep their undo history.
 
-Playback uses unsaved source. Opening a tab does not select a run target: the agent should pass a document ID or choose a target. Only the signed-in owner can save to the project, and saving a public project's source makes the edit public. Tell the agent when you want a cloud save, then wait for its result.
+WebMCP playback uses the current source without saving edits. Opening a tab does not select a run target: the agent should pass a document ID or choose a target. Only the signed-in owner can save to the project, and saving a public project's source makes the edit public. Tell the agent when you want a cloud save, then wait for its result.
 
 ## Visible typing and evaluation
 

@@ -12,7 +12,7 @@ The main play button runs the selected target. Clicking a source tab only opens 
 
 Sign in, choose a username, and open **My projects** from the header. Create a project there. Give it a name people can find, then add a CSD file through the file menu or file tree.
 
-Use **Save** to keep source edits. Changes you make in someone else's project stay local unless you make your own copy. Keep a download of work you want to preserve.
+Use **Save** to keep source edits. Starting your project with the main **Play** button also starts a cloud save of all edited files. See [Files and saving](projects/filesystem.md) for details. Changes you make in someone else's project stay local unless you make your own copy. Keep a download of work you want to preserve.
 
 ## Find your way around
 

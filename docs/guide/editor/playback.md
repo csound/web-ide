@@ -6,7 +6,9 @@ Choose what runs, try edits, and export audio when the piece is ready.
 
 Use the playback settings to choose the main CSD or ORC file. Opening another tab does not change that target. **Play** starts it, **Pause** pauses or resumes, and **Stop** ends the performance.
 
-Playback uses unsaved source. Save separately when you want to keep an edit. Check the [Console](../tools/console.md) if nothing starts or the performance stops with an error.
+Playback uses the current source. If you own the project, starting it with the main **Play** button or the **Run** shortcut also starts a cloud save of all edited files. In a public project, those saved edits become public. Pausing or resuming does not start a save.
+
+Check the [Console](../tools/console.md) if nothing starts or the performance stops with an error.
 
 ## Play several pieces
 
@@ -16,7 +18,7 @@ A piece with no end event can run forever. Stop it yourself. A playback error st
 
 ## Render an audio file
 
-Open **Render**, choose the output settings, and start the render. It runs the selected target offline and adds the finished audio to the local file list. A finite score gives the render a clear end.
+Open **Render**, choose the output settings, and start the render. It runs the selected target offline using the current source, without saving source edits, and adds the finished audio to the local file list. A finite score gives the render a clear end.
 
 Offline rendering cannot use a live microphone or live MIDI. Remove those input options or use input files first. You can stop a render to cancel it.
 

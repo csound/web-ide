@@ -356,7 +356,7 @@ export const readerStyle = (theme: Theme) => css`
         font-size: 14px;
         position: relative;
     }
-    .doc-pagination a:last-child {
+    .doc-pagination a:nth-child(2) {
         text-align: right;
     }
     .doc-pagination a svg {

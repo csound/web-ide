@@ -12,7 +12,11 @@ These paths belong to the project. They are not paths to your computer's Downloa
 
 ## Source edits and cloud saves
 
-Play and Render use the current source, including unsaved edits. **Save** writes the current document to the cloud, and **Save all** writes the edited documents. Only the signed-in owner can save changes to that project.
+**Save** writes the current document to the cloud, and **Save all** writes the edited documents. Only the signed-in owner can save changes to that project.
+
+If you own the project, starting playback with the main **Play** button or the **Run** shortcut also starts a cloud save of all edited files. Those saved edits become public if the project is public. Pausing or resuming does not start a save.
+
+Render, a source tab's play button, and [WebMCP](../reference/webmcp.md) playback use the current source without saving edits.
 
 A visitor can try edits locally. Save your work in your own project or download it before leaving if you want to keep those changes.
 

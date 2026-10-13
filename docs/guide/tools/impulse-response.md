@@ -4,7 +4,7 @@ Make a reference sweep and recover a response from a recording of that sweep.
 
 ## Make the reference
 
-Choose a sweep length and sample rate, then download the generated sweep. The supported length is 0.01 to 10 seconds. Keep this exact reference file for the next step.
+Choose a sweep length and sample rate, then download the generated sweep. The supported length is 0.1 to 10 seconds. Keep this exact reference file for the next step.
 
 Play the sweep through the room or system you want to measure and record its output. The tool works from files; it does not run a microphone measurement session for you.
 
