@@ -2,6 +2,8 @@
 
 Use a microphone or audio interface in a running Csound piece.
 
+Choose **Live audio processing** when creating a project for a working starting point. It reads one input channel, removes DC offset, and applies a low-pass filter at a reduced output level. Use headphones, press Play, and allow microphone access. Press Stop when finished.
+
 ## Request input
 
 Add `-iadc` to CsOptions along with `-odac` for live output. Read the signal with an input opcode such as `inch`. The first time you run the piece, the browser may ask for microphone access.

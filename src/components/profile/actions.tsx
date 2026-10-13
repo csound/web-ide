@@ -45,12 +45,9 @@ import {
     SET_STARS_LOADING
 } from "./types";
 import {
-    defaultCsd,
-    defaultSplitCsd,
-    defaultOrc,
-    defaultSco,
-    emptyCsd
-} from "@root/csound-templates";
+    getStarterFiles,
+    type ProjectStarterTemplate
+} from "@root/csound-templates/starters";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
 import { closeModal, openSimpleModal } from "@comp/modal/actions";
@@ -65,58 +62,6 @@ import { IProject } from "@comp/projects/types";
 import { unsetProject } from "@comp/projects/actions";
 import { assoc, difference, keys, path } from "ramda";
 import { navigateTo } from "@comp/router/navigate";
-
-export type ProjectStarterTemplate = "single-csd" | "split-csd" | "empty";
-
-export const PROJECT_STARTER_TEMPLATE_OPTIONS: Array<{
-    value: ProjectStarterTemplate;
-    label: string;
-    description: string;
-}> = [
-    {
-        value: "single-csd",
-        label: "Single CSD",
-        description: "One commented Csound 7 project.csd file."
-    },
-    {
-        value: "split-csd",
-        label: "CSD + ORC + SCO",
-        description: "Split the new starter into project.csd, .orc, and .sco."
-    },
-    {
-        value: "empty",
-        label: "Empty",
-        description: "Start with a blank project.csd file."
-    }
-];
-
-const getStarterFiles = (
-    starterTemplate: ProjectStarterTemplate,
-    loggedInUserUid: string
-) => {
-    const withUser = (document: {
-        name: string;
-        value: string;
-        type: string;
-    }) => ({
-        ...document,
-        userUid: loggedInUserUid
-    });
-
-    switch (starterTemplate) {
-        case "split-csd":
-            return [
-                withUser(defaultSplitCsd),
-                withUser(defaultOrc),
-                withUser(defaultSco)
-            ];
-        case "empty":
-            return [withUser(emptyCsd)];
-        case "single-csd":
-        default:
-            return [withUser(defaultCsd)];
-    }
-};
 
 const addUserProjectAction = (): ProfileActionTypes => {
     return {
