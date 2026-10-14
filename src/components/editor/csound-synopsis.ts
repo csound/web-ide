@@ -299,10 +299,9 @@ export function csoundSynopsis(
                 return;
             }
             void getCsoundHoverInfo(name, {
-                documentText: udos
-                    ? undefined
-                    : (view.state.field(csdScoreSections, false)?.source ??
-                      view.state.doc.toString())
+                documentText:
+                    view.state.field(csdScoreSections, false)?.source ??
+                    view.state.doc.toString()
             })
                 .then((found) => {
                     const info = found ?? bundledHoverInfo(name);

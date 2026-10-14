@@ -39,7 +39,7 @@ static CS_VARIABLE *metadata_variable(void *data, const CS_TYPE *type,
    Empty input/output fields remain valid for zero-argument opcodes. */
 static int plugin_signatures(CSOUND *cs) {
   char record[1400];
-  unsigned opcodes = 0, types = 0, members = 0;
+  unsigned opcodes = 0, bundled = 0, types = 0, members = 0;
   while (fgets(record, sizeof(record), stdin)) {
     char *newline = strchr(record, '\n');
     if (!newline) return 0;
@@ -85,8 +85,10 @@ static int plugin_signatures(CSOUND *cs) {
       CONS_CELL **tail = &owner->members;
       while (*tail) tail = &(*tail)->next;
       *tail = cell;
-    } else if (!strcmp(fields[0], "O") && count == 4) {
-      if (++opcodes > 2048 || strlen(fields[2]) > 512 || strlen(fields[3]) > 512) return 0;
+    } else if ((!strcmp(fields[0], "O") || !strcmp(fields[0], "B")) && count == 4) {
+      /* Bundled signatures must not consume the project-plugin allowance. */
+      unsigned *used = fields[0][0] == 'B' ? &bundled : &opcodes;
+      if (++*used > 2048 || strlen(fields[2]) > 512 || strlen(fields[3]) > 512) return 0;
       OENTRY entry = { .opname = strdup(fields[1]), .outypes = strdup(fields[2]),
                        .intypes = strdup(fields[3]) };
       if (csoundAppendOpcodes(cs, &entry, 1) != 0) return 0;

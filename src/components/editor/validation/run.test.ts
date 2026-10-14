@@ -3,6 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { beforeAll, expect, it } from "vitest";
 import { runCheck } from "./run";
 import { checkWithPlugins } from "./plugins/check";
+import { MAX_PLUGIN_SIGNATURES } from "./plugins/signatures";
+import { validateMetadata } from "./plugins/types";
 import { orchestra } from "./source";
 import { Text } from "@codemirror/state";
 import { editorDiagnostics } from "./ranges";
@@ -540,5 +542,70 @@ it.skipIf(!available)(
         );
         expect(result.valid).toBe(false);
         expect(result.diagnostics.length).toBeGreaterThan(0);
+    }
+);
+
+it.skipIf(!available)(
+    "checks all 2048 project signatures alongside bundled opcodes",
+    async () => {
+        const metadata = validateMetadata({
+            opcodes: Array.from(
+                { length: MAX_PLUGIN_SIGNATURES },
+                (_, index) => ({
+                    opname: `ProjectOpcode${index}`,
+                    outypes: "i",
+                    intypes: "i"
+                })
+            ),
+            types: []
+        });
+        const result = await checkWithPlugins(
+            {
+                filename: "main.orc",
+                pluginRequests: [{ path: "custom.wasm", line: 1 }],
+                files: [
+                    {
+                        name: "main.orc",
+                        text: `instr 1
+iFirst ProjectOpcode0 2
+iLast ProjectOpcode${MAX_PLUGIN_SIGNATURES - 1} 3
+iImage imagecreate iFirst, iLast
+aSound STKMandolin 220, 0.2
+endin
+`
+                    }
+                ]
+            },
+            new AbortController().signal,
+            async () => metadata,
+            (data) => runCheck(module, data)
+        );
+        expect(result.valid).toBe(true);
+        expect(result.diagnostics).toEqual([]);
+        expect(result.plugins).toEqual(metadata.opcodes);
+    }
+);
+
+it.skipIf(!available)(
+    "still rejects project metadata above its signature allowance",
+    async () => {
+        const plugins = Array.from(
+            { length: MAX_PLUGIN_SIGNATURES + 1 },
+            (_, index) => ({
+                opname: `ProjectOpcode${index}`,
+                outypes: "i",
+                intypes: "i"
+            })
+        );
+        expect(() => validateMetadata({ opcodes: plugins, types: [] })).toThrow(
+            "Plugin opcode list is too large"
+        );
+        await expect(
+            runCheck(module, {
+                filename: "main.orc",
+                files: [{ name: "main.orc", text: "instr 1\nendin\n" }],
+                plugins
+            })
+        ).rejects.toThrow("Invalid plugin metadata");
     }
 );

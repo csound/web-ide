@@ -82,7 +82,8 @@ editor and background checker. `npm run plugins:catalog` reads the installed
 WASM exports and local reference text to rebuild it. `npm run manual:check`
 checks it against those binaries, so a package update cannot silently leave
 the catalog out of date. The checker uses these signatures without running
-plugin code.
+plugin code. Bundled signatures have a separate allowance, so project plugins
+keep their limit of 2,048 signatures and 1 MiB of signature text.
 
 ## Development and deployment
 

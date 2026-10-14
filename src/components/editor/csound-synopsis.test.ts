@@ -8,6 +8,7 @@ import { EditorView } from "@codemirror/view";
 import { afterEach, expect, it, vi } from "vitest";
 import { findManualEntry } from "../../manual/lookup";
 import { csoundEditorLanguage } from "./csound-language";
+import { setUdoDeclarations } from "./validation/udos";
 
 vi.mock("../../manual/lookup", () => ({ findManualEntry: vi.fn() }));
 const views: EditorView[] = [];
@@ -169,3 +170,38 @@ it("keeps a local UDO named like a bundled opcode separate from its manual", asy
     expect(view.dom.querySelector(".cm-csound-plugin-label")).toBeNull();
     expect(findManualEntry).not.toHaveBeenCalled();
 });
+
+it.each([false, true])(
+    "keeps plugin and nested UDO help on the same line (catalog: %s)",
+    async (checked) => {
+        const doc =
+            "opcode localGain(value:i):i\n xout value\nendop\ninstr 1\na1 STKMandolin 220, localGain(0.2)\nendin";
+        vi.mocked(findManualEntry).mockResolvedValue(
+            "/manual/opcodes/STKMandolin/"
+        );
+        const { view } = editor(doc, doc.indexOf("220"));
+        if (checked) view.dispatch({ effects: setUdoDeclarations.of([]) });
+        const name = () =>
+            view.dom.querySelector(".cm-csound-synopsis .cm-csound-opcode")
+                ?.textContent;
+        await vi.waitFor(() => expect(name()).toBe("STKMandolin"));
+        expect(
+            view.dom.querySelector(".cm-csound-plugin-label")?.textContent
+        ).toBe("Plugin · STK");
+        const highlighted = [
+            ...view.contentDOM.querySelectorAll(".cm-csound-opcode")
+        ].map((node) => node.textContent);
+        expect(highlighted).toContain("STKMandolin");
+        expect(
+            highlighted.filter((name) => name === "localGain").length
+        ).toBeGreaterThanOrEqual(2);
+        view.dispatch({ selection: { anchor: doc.indexOf("0.2") } });
+        await vi.waitFor(() => expect(name()).toBe("localGain"));
+        expect(view.dom.querySelector(".cm-csound-plugin-label")).toBeNull();
+        expect(view.dom.querySelector(".cm-csound-manual-link")).toBeNull();
+        view.dispatch({
+            selection: { anchor: doc.indexOf("0.2") + "0.2)".length }
+        });
+        await vi.waitFor(() => expect(name()).toBe("STKMandolin"));
+    }
+);
