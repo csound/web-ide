@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { beforeAll, expect, it } from "vitest";
 import { runCheck } from "./run";
+import { checkWithPlugins } from "./plugins/check";
 import { orchestra } from "./source";
 import { Text } from "@codemirror/state";
 import { editorDiagnostics } from "./ranges";
@@ -481,5 +482,63 @@ it.skipIf(!available)(
         expect(invalid.diagnostics).toContainEqual(
             expect.objectContaining({ filename, line: 2 })
         );
+    }
+);
+
+it.skipIf(!available)(
+    "checks bundled plugin calls using metadata without loading plugin code",
+    async () => {
+        const result = await checkWithPlugins(
+            {
+                filename: "main.orc",
+                files: [
+                    {
+                        name: "main.orc",
+                        text: `instr 1
+iv la_i_vr_create 2
+iv la_i_vr_set 0, 3
+iv la_i_vr_set 1, 4
+inorm la_i_norm_euclid_vr iv
+ih imagecreate 2, 3
+a1 STKMandolin 220, 0.5
+a2, a3, a4 chuap 0.018, 0, 1e-7, 1/1500, -0.0008, -0.0005, 1, 1e-8, 0, 0, 0.1, 1e-5
+out a1
+endin
+`
+                    }
+                ]
+            },
+            new AbortController().signal,
+            async () => {
+                throw new Error("Must not inspect plugin binaries");
+            },
+            (data) => runCheck(module, data)
+        );
+        expect(result.valid).toBe(true);
+        expect(result.diagnostics).toEqual([]);
+    }
+);
+
+it.skipIf(!available)(
+    "rejects bundled plugin calls with the wrong argument types",
+    async () => {
+        const result = await checkWithPlugins(
+            {
+                filename: "main.orc",
+                files: [
+                    {
+                        name: "main.orc",
+                        text: 'instr 1\nih imagecreate "wrong", 3\nendin\n'
+                    }
+                ]
+            },
+            new AbortController().signal,
+            async () => {
+                throw new Error("Must not inspect plugin binaries");
+            },
+            (data) => runCheck(module, data)
+        );
+        expect(result.valid).toBe(false);
+        expect(result.diagnostics.length).toBeGreaterThan(0);
     }
 );

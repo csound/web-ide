@@ -1,3 +1,8 @@
+import {
+    CompletionContext,
+    type CompletionSource
+} from "@codemirror/autocomplete";
+import { bundledOpcodes } from "../../plugins/catalog";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { afterEach, expect, it, vi } from "vitest";
@@ -11,12 +16,15 @@ afterEach(() => {
     vi.resetAllMocks();
 });
 
-function editor(doc = "a1 = oscili:a(0.2, 440)\n") {
+function editor(
+    doc = "a1 = oscili:a(0.2, 440)\n",
+    anchor = doc.lastIndexOf("0.2")
+) {
     const openManual = vi.fn();
     const view = new EditorView({
         state: EditorState.create({
             doc,
-            selection: { anchor: doc.lastIndexOf("0.2") },
+            selection: { anchor },
             extensions: csoundEditorLanguage("orc", openManual)
         }),
         parent: document.body
@@ -99,3 +107,65 @@ it.each([false, true])(
         expect(openManual).not.toHaveBeenCalled();
     }
 );
+
+it.each([
+    ["a1 STKMandolin 220, 0.2\n", "STKMandolin", "STK"],
+    ["a1 STKMandolin 220, sin(0.1) + 0.2\n", "STKMandolin", "STK"],
+    ["a1, a2, a3 chuap 0.2, 0, 1e-7\n", "chuap", "Chua"],
+    ["ih = imagecreate(2, 0.2)\n", "imagecreate", "Image"],
+    ["iv la_i_vr_create 0.2\n", "la_i_vr_create", "Linear algebra"]
+])(
+    "shows bundled plugin help and a local manual link for %s",
+    async (doc, name, group) => {
+        vi.mocked(findManualEntry).mockResolvedValue(
+            `/manual/opcodes/${name}/`
+        );
+        const { view, openManual } = editor(doc);
+        await vi.waitFor(() =>
+            expect(
+                view.dom.querySelector(".cm-csound-plugin-label")?.textContent
+            ).toBe(`Plugin · ${group}`)
+        );
+        expect(view.dom.querySelector(".cm-csound-opcode")?.textContent).toBe(
+            name
+        );
+        await vi.waitFor(() =>
+            expect(
+                view.dom.querySelector(".cm-csound-manual-link")
+            ).not.toBeNull()
+        );
+        view.dom
+            .querySelector<HTMLAnchorElement>(".cm-csound-manual-link")!
+            .click();
+        expect(openManual).toHaveBeenCalledWith(name);
+    }
+);
+
+it("offers every bundled opcode with its plugin label before a background check", async () => {
+    const { view } = editor("STK", 3);
+    const sources = view.state.languageDataAt<CompletionSource>(
+        "autocomplete",
+        3
+    );
+    const result = await sources[0](new CompletionContext(view.state, 3, true));
+    for (const name of bundledOpcodes.keys()) {
+        const options = result!.options.filter(
+            (option) => option.label === name
+        );
+        expect(options).toHaveLength(1);
+        expect(options[0].detail).toContain("Plugin ·");
+    }
+});
+
+it("keeps a local UDO named like a bundled opcode separate from its manual", async () => {
+    const { view } = editor(
+        "opcode STKMandolin(signal:a):a\n xout(signal)\nendop\na1 = STKMandolin(0.2)\n"
+    );
+    await vi.waitFor(() =>
+        expect(view.dom.querySelector(".cm-csound-opcode")?.textContent).toBe(
+            "STKMandolin"
+        )
+    );
+    expect(view.dom.querySelector(".cm-csound-plugin-label")).toBeNull();
+    expect(findManualEntry).not.toHaveBeenCalled();
+});

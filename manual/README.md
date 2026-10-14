@@ -69,9 +69,24 @@ Csound 7 redirect locally; removed entries explain the change and link to the
 Csound 6 reference. This does not claim that every documented opcode is available
 in the browser engine; platform and plugin requirements still apply.
 
+## Bundled plugins
+
+The Web IDE keeps its plugin reference in [`plugins/`](plugins/README.md).
+Those pages, examples, and images join the temporary manual copy after the
+upstream appendix scripts run. The build adds them to the opcode index, search,
+and editor lookups, with a **Plugin** label and a note that they load by default.
+Removing an upstream plugin article does not remove this local copy.
+
+`src/plugins/catalog.json` supplies plugin names, signatures, and synopses to the
+editor and background checker. `npm run plugins:catalog` reads the installed
+WASM exports and local reference text to rebuild it. `npm run manual:check`
+checks it against those binaries, so a package update cannot silently leave
+the catalog out of date. The checker uses these signatures without running
+plugin code.
+
 ## Development and deployment
 
-Install Python 3.9 or later, then initialize the source and npm dependencies:
+Install Python 3.12 or later, then initialize the source and npm dependencies:
 
 ```sh
 git submodule update --init --recursive

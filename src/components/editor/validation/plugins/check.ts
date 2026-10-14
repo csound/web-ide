@@ -1,4 +1,5 @@
 import { checker } from "../client";
+import { bundledSignatures } from "../../../../plugins/catalog";
 import type { CheckRequest, CheckResult } from "../types";
 import { emptyMetadata, type PluginMetadata } from "./types";
 
@@ -36,7 +37,14 @@ export async function checkWithPlugins(
     signal.throwIfAborted();
     const plugins = { plugins: metadata.opcodes, pluginTypes: metadata.types };
     return {
-        ...(await execute({ ...request, ...plugins }, signal)),
+        ...(await execute(
+            {
+                ...request,
+                ...plugins,
+                plugins: [...bundledSignatures, ...metadata.opcodes]
+            },
+            signal
+        )),
         ...plugins
     };
 }

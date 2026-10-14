@@ -6,10 +6,9 @@ import { showPanel } from "@codemirror/view";
 import { csdScoreSections, inExternalScore } from "./csd-score-sections";
 import { findManualEntry } from "../../manual/lookup";
 import { udoCatalog } from "./validation/udos";
-import {
-    getCsoundHoverInfo,
-    analyzeCsoundSemanticLine
-} from "@kunstmusik/codemirror-lang-csound";
+import { getCsoundHoverInfo } from "@kunstmusik/codemirror-lang-csound";
+import { analyzeEditorLine as analyzeCsoundSemanticLine } from "./csound-semantics";
+import { bundledHoverInfo, pluginLabel } from "../../plugins/catalog";
 
 type CsoundHoverInfo = NonNullable<
     Awaited<ReturnType<typeof getCsoundHoverInfo>>
@@ -305,10 +304,21 @@ export function csoundSynopsis(
                     : (view.state.field(csdScoreSections, false)?.source ??
                       view.state.doc.toString())
             })
-                .then((info) => {
+                .then((found) => {
+                    const info = found ?? bundledHoverInfo(name);
                     // The rich catalog loads on demand. Ignore a result for an old cursor.
                     if (destroyed || current !== request || !info) return;
                     setSynopsis(renderSynopsis(info, call));
+                    const provider =
+                        info.kind === "builtInOpcode"
+                            ? pluginLabel(name)
+                            : undefined;
+                    if (provider) {
+                        const badge = document.createElement("span");
+                        badge.className = "cm-csound-plugin-label";
+                        badge.textContent = `Plugin · ${provider}`;
+                        dom.append(badge);
+                    }
                     if (!onOpenManual || info.kind !== "builtInOpcode") return;
                     const token = info.manualId ?? info.name;
                     void findManualEntry(token).then((href) => {

@@ -20,6 +20,7 @@ from mkdocs.commands.build import build
 from mkdocs.config import load_config
 from mkdocs.plugins import BasePlugin
 from pymdownx.emoji import to_alt
+from plugin_docs import add_plugin_docs
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -119,9 +120,10 @@ def decode_example_titles(content):
 class ManualThemePlugin(BasePlugin):
     """Use the same clean titles in navigation, page titles, and search."""
 
-    def __init__(self, groups):
+    def __init__(self, groups, plugins=None):
         """Pair opcode pages in exactly the same order as the index."""
         super().__init__()
+        self.plugins = plugins or {}
         entries = [
             {
                 "title": title,
@@ -155,6 +157,12 @@ class ManualThemePlugin(BasePlugin):
     def on_page_context(self, context, page, **kwargs):
         """Render opcode links without a browser-side index download."""
         context["opcode_neighbors"] = self.neighbors.get(page.file.src_uri)
+        source = page.file.src_uri
+        context["plugin"] = (
+            self.plugins.get(Path(source).stem) if source.startswith("opcodes/")
+            else "Linear algebra" if source == "math/linearalgebra.md" else None
+        )
+        context["local_plugin_page"] = bool(context["plugin"]) or source.startswith("plugins/")
         return context
 
 
@@ -184,8 +192,9 @@ def opcode_groups(docs):
     ]
 
 
-def opcode_index(groups):
+def opcode_index(groups, plugins=None):
     """List every opcode once, in alphabetical groups that fit narrow views."""
+    plugins = plugins or {}
     content = [
         "# Opcode index",
         '<nav class="opcode-jump" aria-label="Opcode initials">',
@@ -196,7 +205,9 @@ def opcode_index(groups):
     for group, entries in groups:
         content.extend([f"\n## {group}\n", '<div class="opcode-list" markdown="1">\n'])
         for title, name in entries:
-            content.append(f"- [`{title}`](opcodes/{name})")
+            plugin = plugins.get(Path(name).stem)
+            badge = f' <span class="plugin-label">Plugin · {html.escape(plugin)}</span>' if plugin else ""
+            content.append(f"- [`{title}`](opcodes/{name}){badge}")
         content.append("\n</div>\n")
     return "\n".join(content)
 
@@ -251,6 +262,9 @@ def main():
                 stdout=subprocess.DEVNULL,
                 env={**os.environ, "PYTHONUTF8": "1"},
             )
+        plugin_catalog = add_plugin_docs(ROOT, docs)
+        plugins = {entry["name"]: plugin_catalog["groups"][entry["plugin"]]
+                   for entry in plugin_catalog["opcodes"]}
         upstream = yaml.load(
             (source / "mkdocs.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
         )
@@ -262,12 +276,13 @@ def main():
             encoding="utf-8",
         )
         groups = opcode_groups(docs)
-        home.write_text(opcode_index(groups), encoding="utf-8")
+        home.write_text(opcode_index(groups, plugins), encoding="utf-8")
         (docs / "opcodesIndex.md").write_text(
             home.read_text(encoding="utf-8"), encoding="utf-8"
         )
         upstream["nav"][0] = {"Opcode index": "index.md"}
         upstream["nav"].insert(1, {"About this manual": "about.md"})
+        upstream["nav"].insert(2, {"Included plugins": "plugins/index.md"})
         theme_assets = work / "theme"
         subprocess.run(
             ["node", str(ROOT / "scripts/build-manual-theme.mjs"), str(theme_assets)],
@@ -337,7 +352,7 @@ def main():
         config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
         loaded = load_config(str(config_path))
         loaded.mdx_configs["pymdownx.emoji"] = {"emoji_generator": to_alt}
-        loaded.plugins["manual-theme"] = ManualThemePlugin(groups)
+        loaded.plugins["manual-theme"] = ManualThemePlugin(groups, plugins)
         build(loaded)
         assets = output / "assets"
         assets.mkdir(exist_ok=True)

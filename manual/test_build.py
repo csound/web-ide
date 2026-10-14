@@ -11,6 +11,7 @@ from mkdocs.config import load_config
 from markdown import markdown
 
 from build import ManualThemePlugin, ROOT, annotate_examples, page_url
+from plugin_docs import add_plugin_docs
 
 
 class NavigationMarkup(HTMLParser):
@@ -27,6 +28,19 @@ class NavigationMarkup(HTMLParser):
 
 class ManualBuildTests(unittest.TestCase):
     """Exercise the directory-index rules and active chapter markup."""
+
+    def test_plugin_pages_survive_without_upstream_articles(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            docs = Path(tmp)
+            catalog = add_plugin_docs(ROOT, docs)
+            for entry in catalog["opcodes"]:
+                self.assertTrue((docs / "opcodes" / (entry["name"] + ".md")).is_file())
+            self.assertIn("no sample download", (docs / "plugins/index.md").read_text())
+            self.assertTrue((docs / "examples/STKMandolin.csd").is_file())
+            self.assertIn("Michael Gogins", (docs / "opcodes/STKMandolin.md").read_text())
+            guide = (docs / "math/linearalgebra.md").read_text()
+            self.assertIn("../opcodes/la_i_vr_create.md", guide)
+            self.assertNotIn("``` csound-orc", guide)
 
     def test_example_metadata_survives_snippets_and_syntax_tabs(self):
         with tempfile.TemporaryDirectory() as tmp:

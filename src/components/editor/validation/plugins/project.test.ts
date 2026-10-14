@@ -4,6 +4,7 @@ import { projectPluginSignatures } from "./project";
 import { checkWithPlugins } from "./check";
 import { storageReference } from "../../../../config/firestore";
 import { MAX_PLUGIN_BYTES } from "./signatures";
+import { bundledSignatures } from "../../../../plugins/catalog";
 import type { IDocument } from "../../../projects/types";
 import { pluginMetadata } from "./cache";
 vi.mock("../../../../config/firestore", () => ({
@@ -144,7 +145,7 @@ it("reports a missing plugin at its option, avoids false opcode errors, and igno
     );
     expect(resolve).not.toHaveBeenCalled();
     expect(execute).toHaveBeenCalledWith(
-        expect.objectContaining({ plugins: [] }),
+        expect.objectContaining({ plugins: bundledSignatures }),
         expect.any(AbortSignal)
     );
 });

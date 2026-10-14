@@ -535,3 +535,93 @@ test(
         }
     }
 );
+
+test(
+    "bundled plugins appear in search, pages, and dock lookups",
+    localOnly,
+    async () => {
+        const browser = await puppeteer.launch(BROWSER_SETTINGS);
+        try {
+            const page = await browser.newPage();
+            const errors = [];
+            page.on("pageerror", (error) => errors.push(error.message));
+            await page.setViewport({ width: 390, height: 800 });
+            await page.goto(`${target.baseUrl}/manual/`);
+            await page.click("#search-open");
+            await page.type("#search", "STKMandolin");
+            await page.waitForFunction(
+                () =>
+                    document.querySelector("#search-results strong")
+                        ?.textContent === "STKMandolin"
+            );
+            await Promise.all([
+                page.waitForNavigation(),
+                page.click("#search-results a")
+            ]);
+            for (const [name, group] of [
+                ["STKMandolin", "STK"],
+                ["chuap", "Chua"],
+                ["imagecreate", "Image"],
+                ["la_i_vr_create", "Linear algebra"]
+            ]) {
+                await page.goto(`${target.baseUrl}/manual/opcodes/${name}/`);
+                assert.equal(
+                    await page.$eval("article h1", (node) => node.textContent),
+                    name
+                );
+                assert.equal(
+                    await page.$eval(
+                        ".plugin-notice strong",
+                        (node) => node.textContent
+                    ),
+                    `Plugin · ${group}`
+                );
+                assert.match(
+                    await page.$eval(
+                        ".page-footer",
+                        (node) => node.textContent
+                    ),
+                    /Web IDE plugin reference/
+                );
+                assert.equal(
+                    await page.evaluate(
+                        () => document.documentElement.scrollWidth > innerWidth
+                    ),
+                    false
+                );
+                if (group === "STK") {
+                    assert.match(
+                        await page.$eval(
+                            ".plugin-notice",
+                            (node) => node.textContent
+                        ),
+                        /Raw-wave samples are included/
+                    );
+                    assert.ok(await page.$('[data-example="STKMandolin.csd"]'));
+                }
+            }
+            await page.setRequestInterception(true);
+            page.on("request", (request) => {
+                if (new URL(request.url()).pathname === "/manual-delivery-test")
+                    void request.respond({
+                        status: 200,
+                        contentType: "text/html",
+                        body: harness
+                    });
+                else void request.continue();
+            });
+            await page.goto(`${target.baseUrl}/manual-delivery-test`);
+            await page.waitForFunction(() => window.bridge?.isReady);
+            await page.evaluate(() => window.bridge.lookup("STKMandolin"));
+            const frame = await (await page.$("#manual")).contentFrame();
+            await frame.waitForSelector(".plugin-notice");
+            assert.equal(
+                new URL(frame.url()).pathname,
+                "/manual/opcodes/STKMandolin/"
+            );
+            assert.deepEqual(errors, []);
+        } finally {
+            await browser.close();
+        }
+    }
+);
