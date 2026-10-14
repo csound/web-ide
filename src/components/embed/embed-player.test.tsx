@@ -79,7 +79,7 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
-it("waits for a click, allows file selection, and disables SAB in the frame", async () => {
+it("waits for a click, allows file selection, and leaves audio selection automatic", async () => {
     show();
     expect(screen.getByText("Loading project…")).toBeTruthy();
     await screen.findByRole("heading", { name: "Glass study" });
@@ -96,8 +96,7 @@ it("waits for a click, allows file selection, and disables SAB in the frame", as
             expect.objectContaining({
                 projectUid: "embed-test",
                 orcPath: "alternate.orc",
-                mode: "auto",
-                useSAB: false
+                mode: "auto"
             })
         )
     );

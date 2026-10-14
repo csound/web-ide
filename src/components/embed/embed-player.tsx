@@ -102,7 +102,6 @@ export const EmbedPlayer = ({ projectUid }: { projectUid: string }) => {
                     ? documentPath(selected, project.documents)
                     : undefined,
                 mode,
-                useSAB: false,
                 signal,
                 setConsole: (update) => {
                     if (!signal.aborted) {

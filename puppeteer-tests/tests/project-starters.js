@@ -7,9 +7,13 @@ import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, target, targetName } from "../utils/config.js";
 
 for (const { backend, useSAB, isolated } of [
-    { backend: "worklet", useSAB: false, isolated: false },
-    { backend: "worker", useSAB: true, isolated: false },
-    { backend: "shared-memory worker", useSAB: true, isolated: true }
+    {
+        backend: "explicitly disabled shared memory",
+        useSAB: false,
+        isolated: true
+    },
+    { backend: "automatic worker fallback", isolated: false },
+    { backend: "automatic shared-memory worker", isolated: true }
 ]) {
     test(
         `project starters play, release MIDI notes, and filter live input (${backend})`,
@@ -52,12 +56,30 @@ for (const { backend, useSAB, isolated } of [
                 });
                 const page = await browser.newPage();
                 await page.evaluateOnNewDocument(() => {
-                    // Exercise the real Web MIDI callback without needing hardware.
-                    window.testMidiInput = { name: "Test keyboard" };
-                    Object.defineProperty(navigator, "requestMIDIAccess", {
-                        value: async () => ({
-                            inputs: new Map([["test", window.testMidiInput]])
+                    localStorage.setItem(
+                        "csound-io-v1",
+                        JSON.stringify({
+                            inputChannel: 1,
+                            sampleRate: 44100,
+                            latency: "balanced"
                         })
+                    );
+                    // Exercise the real Web MIDI callback without needing hardware.
+                    window.testMidiInput = Object.assign(new EventTarget(), {
+                        name: "Test keyboard",
+                        id: "test",
+                        state: "connected",
+                        open: async () => window.testMidiInput,
+                        close: async () => window.testMidiInput
+                    });
+                    Object.defineProperty(navigator, "requestMIDIAccess", {
+                        configurable: true,
+                        value: async () =>
+                            Object.assign(new EventTarget(), {
+                                inputs: new Map([
+                                    ["test", window.testMidiInput]
+                                ])
+                            })
                     });
                 });
                 const errors = [];
@@ -113,6 +135,16 @@ for (const { backend, useSAB, isolated } of [
                         ),
                         "playing"
                     );
+                    assert.equal(
+                        /Shared/.test(
+                            await page.evaluate(() => window.starters.engine())
+                        ),
+                        isolated && useSAB !== false
+                    );
+                    assert.equal(
+                        await page.evaluate(() => window.starters.sampleRate()),
+                        44100
+                    );
                     if (template === "midi") {
                         assert.ok(
                             (await page.evaluate(() =>
@@ -134,23 +166,22 @@ for (const { backend, useSAB, isolated } of [
                         await page.waitForFunction(
                             () => window.starters.level() < 0.00001
                         );
-                        await page.waitForFunction(
-                            () =>
-                                typeof window.testMidiInput.onmidimessage ===
-                                "function"
-                        );
                         await page.evaluate(() =>
-                            window.testMidiInput.onmidimessage({
-                                data: [144, 60, 100]
-                            })
+                            window.testMidiInput.dispatchEvent(
+                                new MIDIMessageEvent("midimessage", {
+                                    data: new Uint8Array([144, 60, 100])
+                                })
+                            )
                         );
                         await page.waitForFunction(
                             () => window.starters.level() > 0.001
                         );
                         await page.evaluate(() =>
-                            window.testMidiInput.onmidimessage({
-                                data: [128, 60, 0]
-                            })
+                            window.testMidiInput.dispatchEvent(
+                                new MIDIMessageEvent("midimessage", {
+                                    data: new Uint8Array([128, 60, 0])
+                                })
+                            )
                         );
                         await page.waitForFunction(
                             () => window.starters.level() < 0.00001

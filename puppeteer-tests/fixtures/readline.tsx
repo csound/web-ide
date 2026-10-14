@@ -20,7 +20,12 @@ const theme = createTheme({
     font: { monospace: "monospace", regular: "sans-serif" }
 });
 document.body.style.cssText = `margin:0;background:${colors.background};color:${colors.textColor};font-family:sans-serif`;
-localStorage.setItem("sab", params.get("worker") === "true" ? "true" : "false");
+localStorage.setItem(
+    "csound-io-v1",
+    JSON.stringify({
+        disableSharedArrayBuffers: params.get("worker") !== "true"
+    })
+);
 const text =
     params.get("empty") === "true" ? source.replace('"input> "', '""') : source;
 store.dispatch({

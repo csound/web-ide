@@ -7,7 +7,7 @@ import React, {
     useState
 } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
-import { useLocalStorage } from "react-use-storage";
+import { useIoSettings, saveIoSettings } from "../io/settings";
 import SelectedIcon from "@mui/icons-material/DoneSharp";
 import NestedMenuIcon from "@mui/icons-material/ArrowRightSharp";
 import Dialog from "@mui/material/Dialog";
@@ -141,7 +141,7 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
         selectUserStarredProject(loggedInUid, resolvedProjectUid)
     );
 
-    const [isSabEnabled, setIsSabEnabled] = useLocalStorage("sab", "false");
+    const ioSettings = useIoSettings();
     const [openPath, setOpenPath] = useState<number[]>([]);
     const isCompactViewport = useMediaQuery("(max-width:900px)");
     const mobileView = isMobile() || isCompactViewport;
@@ -224,45 +224,6 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
                         disabled:
                             csoundStatus !== "playing" ||
                             !fileEvaluationSupported
-                    },
-                    {
-                        label: "Theme",
-                        submenu: [
-                            {
-                                label: "Default",
-                                callback: () =>
-                                    dispatch(changeTheme("default")),
-                                checked: selectedThemeName === "default"
-                            },
-                            {
-                                label: "GitHub Modern",
-                                callback: () => dispatch(changeTheme("github")),
-                                checked: selectedThemeName === "github"
-                            },
-                            {
-                                label: "GitHub Light",
-                                callback: () =>
-                                    dispatch(changeTheme("github-light")),
-                                checked: selectedThemeName === "github-light"
-                            },
-                            {
-                                label: "Dracula",
-                                callback: () =>
-                                    dispatch(changeTheme("dracula")),
-                                checked: selectedThemeName === "dracula"
-                            },
-                            {
-                                label: "Nord",
-                                callback: () => dispatch(changeTheme("nord")),
-                                checked: selectedThemeName === "nord"
-                            },
-                            {
-                                label: "Solarized Dark",
-                                callback: () =>
-                                    dispatch(changeTheme("solarized-dark")),
-                                checked: selectedThemeName === "solarized-dark"
-                            }
-                        ]
                     }
                 ]
             },
@@ -334,6 +295,45 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
             {
                 label: "View",
                 submenu: [
+                    {
+                        label: "Theme",
+                        submenu: [
+                            {
+                                label: "Default",
+                                callback: () =>
+                                    dispatch(changeTheme("default")),
+                                checked: selectedThemeName === "default"
+                            },
+                            {
+                                label: "GitHub Modern",
+                                callback: () => dispatch(changeTheme("github")),
+                                checked: selectedThemeName === "github"
+                            },
+                            {
+                                label: "GitHub Light",
+                                callback: () =>
+                                    dispatch(changeTheme("github-light")),
+                                checked: selectedThemeName === "github-light"
+                            },
+                            {
+                                label: "Dracula",
+                                callback: () =>
+                                    dispatch(changeTheme("dracula")),
+                                checked: selectedThemeName === "dracula"
+                            },
+                            {
+                                label: "Nord",
+                                callback: () => dispatch(changeTheme("nord")),
+                                checked: selectedThemeName === "nord"
+                            },
+                            {
+                                label: "Solarized Dark",
+                                callback: () =>
+                                    dispatch(changeTheme("solarized-dark")),
+                                checked: selectedThemeName === "solarized-dark"
+                            }
+                        ]
+                    },
                     {
                         label: "Csound Manual",
                         callback: () => dispatch(toggleManualPanel()),
@@ -430,14 +430,27 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
             {
                 label: "I/O",
                 submenu: [
+                    ...(
+                        [
+                            ["input", "Audio Input…"],
+                            ["output", "Audio Output…"],
+                            ["midi", "MIDI…"]
+                        ] as const
+                    ).map(([kind, label]) => ({
+                        label,
+                        callback: () =>
+                            dispatch(openSimpleModal("io-dialog", { kind }))
+                    })),
+                    { seperator: true },
                     {
-                        label: "Enable SharedArrayBuffer",
-                        checked: isSabEnabled === "true",
-                        callback: () => {
-                            setIsSabEnabled(
-                                isSabEnabled === "true" ? "false" : "true"
-                            );
-                        }
+                        label: "Disable SharedArrayBuffers",
+                        checked: ioSettings.disableSharedArrayBuffers,
+                        callback: () =>
+                            saveIoSettings({
+                                ...ioSettings,
+                                disableSharedArrayBuffers:
+                                    !ioSettings.disableSharedArrayBuffers
+                            })
                     }
                 ]
             },
@@ -514,14 +527,13 @@ export function MenuBar({ projectUid }: { projectUid?: string }) {
             isMidiPianoVisible,
             isOwner,
             isPublic,
-            isSabEnabled,
+            ioSettings,
             isSpectralAnalyzerVisible,
             projectEditorState.bottomSidebar,
             loggedInUid,
             resolvedProjectUid,
             selectedThemeName,
             setConsole,
-            setIsSabEnabled,
             starred
         ]
     );

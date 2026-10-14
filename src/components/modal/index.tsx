@@ -1,3 +1,4 @@
+import { IoDialog, type IoKind } from "../io/io-dialog";
 import { SaveAsDialog, SaveAsDialogProps } from "@comp/projects/save-as-dialog";
 import React, { useEffect, useState, useRef } from "react";
 import { RootState, useDispatch, useSelector } from "@root/store";
@@ -126,6 +127,7 @@ export default function GlobalModal() {
                     css={[
                         SS.content,
                         [
+                            "io-dialog",
                             "save-as",
                             "new-project-prompt",
                             "profile-edit-dialog",
@@ -137,6 +139,9 @@ export default function GlobalModal() {
                     ref={modalReference}
                     style={getModalStyle(width, height)}
                 >
+                    {modalComponentName === "io-dialog" && (
+                        <IoDialog kind={modalProperties.kind as IoKind} />
+                    )}
                     {modalComponentName === "save-as" && (
                         <SaveAsDialog
                             {...(modalProperties as SaveAsDialogProps)}

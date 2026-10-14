@@ -62,6 +62,7 @@ jobs:
                         mixer,
                         project-playback,
                         project-starters,
+                        io-settings,
                         csd-diagnostics,
                         score-preprocessors,
                         default-plugins,

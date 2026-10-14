@@ -53,7 +53,10 @@ for (const [theme, width] of [
                 });
                 await page.evaluateOnNewDocument((theme) => {
                     localStorage.setItem("theme", theme);
-                    localStorage.setItem("sab", "false");
+                    localStorage.setItem(
+                        "csound-io-v1",
+                        JSON.stringify({ disableSharedArrayBuffers: true })
+                    );
                 }, theme);
                 const errors = [];
                 page.on("pageerror", (error) => errors.push(error.message));
@@ -181,7 +184,13 @@ for (const sab of [false, true]) {
                 const page = await browser.newPage();
                 await page.setViewport({ width: 1280, height: 900 });
                 await page.evaluateOnNewDocument(
-                    (enabled) => localStorage.setItem("sab", String(enabled)),
+                    (enabled) =>
+                        localStorage.setItem(
+                            "csound-io-v1",
+                            JSON.stringify({
+                                disableSharedArrayBuffers: !enabled
+                            })
+                        ),
                     sab
                 );
                 if (ios)

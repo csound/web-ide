@@ -55,8 +55,11 @@ store.dispatch({
 });
 store.dispatch({ type: "PROJECTS.ACTIVATE_PROJECT", projectUid });
 localStorage.setItem(
-    "sab",
-    new URLSearchParams(location.search).get("worker") || "false"
+    "csound-io-v1",
+    JSON.stringify({
+        disableSharedArrayBuffers:
+            new URLSearchParams(location.search).get("worker") !== "true"
+    })
 );
 
 function Fixture() {
