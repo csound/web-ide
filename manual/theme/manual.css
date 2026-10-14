@@ -327,8 +327,8 @@ figcaption {
 }
 code,
 pre {
-    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono",
-        monospace;
+    font-family:
+        ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 13px;
 }
 code {
@@ -885,4 +885,18 @@ th {
     .tabbed-content > .tabbed-block {
         display: block;
     }
+}
+
+.plugin-label {
+    font-size: 0.75em;
+    font-family: sans-serif;
+    white-space: nowrap;
+}
+.plugin-notice {
+    border-left: 3px solid var(--accent);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+.plugin-notice p {
+    margin: 0.4rem 0;
 }

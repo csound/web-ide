@@ -45,6 +45,12 @@ export const editorStyle = (theme: Theme): SerializedStyles => css`
         text-overflow: ellipsis;
     }
 
+    .cm-csound-plugin-label {
+        flex-shrink: 0;
+        color: ${theme.textColor};
+        font-size: 11px;
+    }
+
     .cm-csound-manual-link {
         margin-left: auto;
         flex-shrink: 0;

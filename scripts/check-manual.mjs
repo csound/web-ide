@@ -19,6 +19,14 @@ execFileSync(
     ["-m", "unittest", "discover", "-s", "manual", "-p", "test_build.py"],
     { cwd: root, stdio: "inherit" }
 );
+execFileSync(
+    process.execPath,
+    [path.join(root, "scripts/plugin-catalog.mjs"), "--check"],
+    { cwd: root, stdio: "inherit" }
+);
+const pluginCatalog = JSON.parse(
+    readFileSync(path.join(root, "src/plugins/catalog.json"), "utf8")
+);
 const manual = path.join(root, "public/manual");
 /** List local assets recursively for link and fragment checks. */
 const walk = (directory) =>
@@ -126,7 +134,12 @@ const sourceOpcodes = readdirSync(path.join(root, "csound-manual/docs/opcodes"))
     .map((name) => name.slice(0, -3));
 assert.deepEqual(
     [...opcodeLinks].sort(),
-    sourceOpcodes.sort(),
+    [
+        ...new Set([
+            ...sourceOpcodes,
+            ...pluginCatalog.opcodes.map((entry) => entry.name)
+        ])
+    ].sort(),
     "The home page must list each opcode once"
 );
 for (const [index, name] of opcodeLinks.entries()) {
@@ -167,6 +180,15 @@ for (const entry of index)
 const lookup = JSON.parse(
     readFileSync(path.join(manual, "lookup.json"), "utf8")
 );
+for (const opcode of pluginCatalog.opcodes) {
+    assert.equal(lookup[opcode.name], `opcodes/${opcode.name}/`);
+    assert.ok(
+        pages
+            .get(path.join(manual, "opcodes", opcode.name, "index.html"))
+            .html.includes("Plugin ·")
+    );
+    assert.ok(index.some((entry) => entry.url === lookup[opcode.name]));
+}
 assert.equal(lookup.oscili, "opcodes/oscili/");
 assert.equal(lookup.Zerodbfs, "opcodes/0dbfs/");
 assert.equal(lookup.GEN01, "scoregens/gen01/");

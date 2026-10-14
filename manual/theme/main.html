@@ -82,20 +82,31 @@
       <nav class="quick-links" aria-label="Quick reference">
         <a href="{{ 'about/' | url }}">About this manual</a>
         <a href="{{ 'genIndex/' | url }}">GEN routines</a>
+        <a href="{{ 'plugins/' | url }}">Included plugins</a>
         <a href="{{ 'intro/whats-new-in-csound-7/' | url }}">What’s new in Csound 7</a>
       </nav>
+      {% endif %}
+      {% if plugin %}
+      <aside class="plugin-notice" aria-label="Plugin availability">
+        <strong>Plugin · {{ plugin | e }}</strong>
+        <p>Included in the Web IDE for playback and rendering. No separate installation is needed.</p>
+        {% if plugin == 'STK' %}<p>Raw-wave samples are included. No RAWWAVE_PATH setting is needed.</p>{% endif %}
+        <a href="{{ 'plugins/' | url }}">About the included plugins</a>
+      </aside>
       {% endif %}
       <article>{{ page.content }}</article>
       <footer class="page-footer">
         <a href="{{ 'intro/copyright-notice/' | url }}">Copyright and credits</a>
         <a href="{{ 'COPYING.GFDL-1.3' | url }}">GNU FDL 1.3</a>
-        {% if page.is_homepage or page.file.src_uri == 'opcodesIndex.md' %}
+        {% if local_plugin_page %}
+        <a class="standalone-link" href="https://github.com/csound/web-ide/tree/develop/manual/plugins">Web IDE plugin reference</a>
+        {% elif page.is_homepage or page.file.src_uri == 'opcodesIndex.md' %}
         <a class="standalone-link" href="https://github.com/csound/manual/tree/{{ config.extra.source_commit }}/docs/opcodes">View source</a>
         {% else %}
         <a class="standalone-link" href="https://github.com/csound/manual/blob/{{ config.extra.source_commit }}/docs/{{ 'index.md' if page.file.src_uri == 'about.md' else page.file.src_uri }}">View source</a>
         {% endif %}
         <a class="standalone-link" href="/">Csound Web IDE</a>
-        <span>Manual source: develop · {{ config.extra.source_date }}</span>
+        <span>{{ "Web IDE plugin reference" if local_plugin_page else "Manual source: develop · " ~ config.extra.source_date }}</span>
       </footer>
     </main>
     <aside class="contents" aria-label="On this page">

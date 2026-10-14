@@ -1,0 +1,1601 @@
+{
+    "package": "7.0.0-beta.0",
+    "browser": "7.0.0-beta39",
+    "groups": {
+        "chua": "Chua",
+        "image": "Image",
+        "linearAlgebra": "Linear algebra",
+        "stk": "STK"
+    },
+    "binaries": {
+        "chua": "b8069fe268f5a131fa4f7331859a691076888427060686d0166cd06b757f934b",
+        "image": "a9c5d9676040cb227c9b92b7cf9ed4ff9c27584fb6adb6ab5bf7b52c3ee76459",
+        "linearAlgebra": "ac660f9cf9bc1f228ef3259bb1f097a0ce2be43b67ad5fee0714a8edcb67aca9",
+        "stk": "bab14ef7c94795cd237d72861d10f400ac76411334868a9d68649bc85118e36d"
+    },
+    "opcodes": [
+        {
+            "name": "chuap",
+            "plugin": "chua",
+            "description": "Simulates Chua's oscillator, an LRC oscillator with an active resistor, proved capable of bifurcation and chaotic attractors, with k-rate control of circuit elements.",
+            "syntax": [
+                "aI3, aV2, aV1 chuap kL, kR0, kC2, kG, kGa, kGb, kE, kC1, iI3, iV2, iV1, ktime_step"
+            ],
+            "signatures": [{ "outTypes": "aaa", "inTypes": "kkkkkkkkiiik" }]
+        },
+        {
+            "name": "imagecreate",
+            "plugin": "image",
+            "description": "Create an empty image of a given size.",
+            "syntax": ["iimagenum imagecreate iwidth, iheight"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "imagefree",
+            "plugin": "image",
+            "description": "Frees memory allocated for a previously loaded or created image.",
+            "syntax": ["imagefree iimagenum"],
+            "signatures": [{ "outTypes": "", "inTypes": "i" }]
+        },
+        {
+            "name": "imagegetpixel",
+            "plugin": "image",
+            "description": "Return the RGB pixel values of a previously opened or created image.",
+            "syntax": [
+                "ared, agreen, ablue imagegetpixel iimagenum, ax, ay",
+                "kred, kgreen, kblue imagegetpixel iimagenum, kx, ky"
+            ],
+            "signatures": [
+                { "outTypes": "aaa", "inTypes": "iaa" },
+                { "outTypes": "kkk", "inTypes": "ikk" }
+            ]
+        },
+        {
+            "name": "imageload",
+            "plugin": "image",
+            "description": "Load an image.",
+            "syntax": ["iimagenum imageload filename"],
+            "signatures": [{ "outTypes": "i", "inTypes": "S" }]
+        },
+        {
+            "name": "imagesave",
+            "plugin": "image",
+            "description": "Save a previously created image.",
+            "syntax": ["imagesave iimagenum, filename"],
+            "signatures": [{ "outTypes": "", "inTypes": "iS" }]
+        },
+        {
+            "name": "imagesetpixel",
+            "plugin": "image",
+            "description": "Set the RGB value of a pixel inside a previously opened or created image.",
+            "syntax": [
+                "imagesetpixel iimagenum, ax, ay, ared, agreen, ablue",
+                "imagesetpixel iimagenum, kx, ky, kred, kgreen, kblue"
+            ],
+            "signatures": [
+                { "outTypes": "", "inTypes": "iaaaaa" },
+                { "outTypes": "", "inTypes": "ikkkkk" }
+            ]
+        },
+        {
+            "name": "imagesize",
+            "plugin": "image",
+            "description": "Return the width and height of a previously opened or created image.",
+            "syntax": ["iwidth, iheight imagesize iimagenum"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_add_mc",
+            "plugin": "linearAlgebra",
+            "description": "Add complex matrix elements.",
+            "syntax": ["iout1 la_i_add_mc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_add_mr",
+            "plugin": "linearAlgebra",
+            "description": "Add real matrix elements.",
+            "syntax": ["imr la_i_add_mr imr_a, imr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_add_vc",
+            "plugin": "linearAlgebra",
+            "description": "Add complex vector elements.",
+            "syntax": ["iout1 la_i_add_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_add_vr",
+            "plugin": "linearAlgebra",
+            "description": "Add real vector elements.",
+            "syntax": ["ivr la_i_add_vr ivr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_assign_mc",
+            "plugin": "linearAlgebra",
+            "description": "Copy a complex matrix into a pre-allocated vector or matrix.",
+            "syntax": ["imc la_i_assign_mc imc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_assign_mr",
+            "plugin": "linearAlgebra",
+            "description": "Copy a real matrix into a pre-allocated vector or matrix.",
+            "syntax": ["imr la_i_assign_mr imr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_assign_t",
+            "plugin": "linearAlgebra",
+            "description": "Copy a function table into a pre-allocated vector or matrix.",
+            "syntax": ["ivr la_i_assign_t itablenumber"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_assign_vc",
+            "plugin": "linearAlgebra",
+            "description": "Copy a complex vector into a pre-allocated vector or matrix.",
+            "syntax": ["ivc la_i_assign_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_assign_vr",
+            "plugin": "linearAlgebra",
+            "description": "Copy a real vector into a pre-allocated vector or matrix.",
+            "syntax": ["ivr la_i_assign_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_conjugate_mc",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a complex matrix.",
+            "syntax": ["imc la_i_conjugate_mc imc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_conjugate_mr",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a real matrix.",
+            "syntax": ["imr la_i_conjugate_mr imr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_conjugate_vc",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a complex vector.",
+            "syntax": ["ivc la_i_conjugate_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_conjugate_vr",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a real vector.",
+            "syntax": ["ivr la_i_conjugate_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_distance_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the distance between two complex vectors.",
+            "syntax": ["iout1 la_i_distance_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_distance_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the distance between two real vectors.",
+            "syntax": ["iout1 la_i_distance_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_divide_mc",
+            "plugin": "linearAlgebra",
+            "description": "Divide complex matrix elements.",
+            "syntax": ["iout1 la_i_divide_mc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_divide_mr",
+            "plugin": "linearAlgebra",
+            "description": "Divide real matrix elements.",
+            "syntax": ["imr la_i_divide_mr imr_a, imr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_divide_vc",
+            "plugin": "linearAlgebra",
+            "description": "Divide complex vector elements.",
+            "syntax": ["iout1 la_i_divide_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_divide_vr",
+            "plugin": "linearAlgebra",
+            "description": "Divide real vector elements.",
+            "syntax": ["ivr la_i_divide_vr ivr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_dot_mc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["imc la_i_dot_mc imc_a, imc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_dot_mc_vc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["ivc la_i_dot_mc_vc imc_a, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_dot_mr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["imr la_i_dot_mr imr_a, imr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_dot_mr_vr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["ivr la_i_dot_mr_vr imr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_dot_vc",
+            "plugin": "linearAlgebra",
+            "description": "Compute the dot product of two complex vectors.",
+            "syntax": ["ir, ii la_i_dot_vc ivc_a, ivc_b"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_dot_vr",
+            "plugin": "linearAlgebra",
+            "description": "Compute the dot product of two real vectors.",
+            "syntax": ["ir la_i_dot_vr ivr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_get_mc",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a complex matrix.",
+            "syntax": ["ivalue_r, ivalue_i la_i_get_mc imc, irow, icolumn"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "iii" }]
+        },
+        {
+            "name": "la_i_get_mr",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a real matrix.",
+            "syntax": ["ivalue la_i_get_mr imr, irow, icolumn"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iii" }]
+        },
+        {
+            "name": "la_i_get_vc",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a complex vector.",
+            "syntax": ["ivalue_r, ivalue_i la_i_get_vc ivc, irow"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_get_vr",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a real vector.",
+            "syntax": ["ivalue la_i_get_vr ivr, irow"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_invert_mc",
+            "plugin": "linearAlgebra",
+            "description": "Invert a complex matrix and return the determinant.",
+            "syntax": ["iout1, iout2, iout3 la_i_invert_mc iarg1"],
+            "signatures": [{ "outTypes": "iii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_invert_mr",
+            "plugin": "linearAlgebra",
+            "description": "Invert a real matrix and return the determinant.",
+            "syntax": ["imr, icondition la_i_invert_mr imr"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_lower_solve_mc",
+            "plugin": "linearAlgebra",
+            "description": "Solve a lower triangular system with a complex matrix.",
+            "syntax": ["iout1 la_i_lower_solve_mc iarg1, [iarg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "io" }]
+        },
+        {
+            "name": "la_i_lower_solve_mr",
+            "plugin": "linearAlgebra",
+            "description": "Solve a lower triangular system with a real matrix.",
+            "syntax": ["iout1 la_i_lower_solve_mr iarg1, [iarg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "io" }]
+        },
+        {
+            "name": "la_i_lu_det_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the determinant of a complex matrix.",
+            "syntax": ["iout1, iout2 la_i_lu_det_mc iarg1"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_lu_det_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the determinant of a real matrix.",
+            "syntax": ["iout1 la_i_lu_det_mr iarg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_lu_factor_mc",
+            "plugin": "linearAlgebra",
+            "description": "Compute the LU factorization of a complex matrix.",
+            "syntax": ["imc, ivr_pivot, isize la_i_lu_factor_mc imc"],
+            "signatures": [{ "outTypes": "iii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_lu_factor_mr",
+            "plugin": "linearAlgebra",
+            "description": "Compute the LU factorization of a real matrix.",
+            "syntax": ["imr, ivr_pivot, isize la_i_lu_factor_mr imr"],
+            "signatures": [{ "outTypes": "iii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_lu_solve_mc",
+            "plugin": "linearAlgebra",
+            "description": "Solve a linear system with a complex matrix using LU factorization.",
+            "syntax": ["ivc_x la_i_lu_solve_mc imc, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_lu_solve_mr",
+            "plugin": "linearAlgebra",
+            "description": "Solve a linear system with a real matrix using LU factorization.",
+            "syntax": ["ivr_x la_i_lu_solve_mr imr, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_mc_create",
+            "plugin": "linearAlgebra",
+            "description": "Create a complex matrix.",
+            "syntax": [
+                "iout1 la_i_mc_create iarg1, iarg2, [iarg3 = 0], [iarg4 = 0]"
+            ],
+            "signatures": [{ "outTypes": "i", "inTypes": "iioo" }]
+        },
+        {
+            "name": "la_i_mc_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a complex matrix.",
+            "syntax": ["imc la_i_mc_set irow, icolumn, ivalue_r, ivalue_i"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iiii" }]
+        },
+        {
+            "name": "la_i_mr_create",
+            "plugin": "linearAlgebra",
+            "description": "Create a real matrix.",
+            "syntax": ["iout1 la_i_mr_create iarg1, iarg2, [iarg3 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iio" }]
+        },
+        {
+            "name": "la_i_mr_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a real matrix.",
+            "syntax": ["iout1 la_i_mr_set iarg1, iarg2, iarg3"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iii" }]
+        },
+        {
+            "name": "la_i_multiply_mc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply complex matrix elements.",
+            "syntax": ["iout1 la_i_multiply_mc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_multiply_mr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply real matrix elements.",
+            "syntax": ["imr la_i_multiply_mr imr_a, imr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_multiply_vc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply complex vector elements.",
+            "syntax": ["iout1 la_i_multiply_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_multiply_vr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply real vector elements.",
+            "syntax": ["ivr la_i_multiply_vr ivr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_norm_euclid_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a complex matrix.",
+            "syntax": ["iout1 la_i_norm_euclid_mc iarg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_euclid_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a real matrix.",
+            "syntax": ["iout1 la_i_norm_euclid_mr iarg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_euclid_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a complex vector.",
+            "syntax": ["ir la_i_norm_euclid_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_euclid_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a real vector.",
+            "syntax": ["ir la_i_norm_euclid_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_inf_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a complex matrix.",
+            "syntax": ["ir la_i_norm_inf_mc imc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_inf_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a real matrix.",
+            "syntax": ["ir la_i_norm_inf_mr imr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_inf_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a complex vector.",
+            "syntax": ["ir la_i_norm_inf_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_inf_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a real vector.",
+            "syntax": ["ir la_i_norm_inf_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_max_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the maximum norm of a complex matrix.",
+            "syntax": ["iout1 la_i_norm_max_mc iarg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm_max_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the maximum norm of a real matrix.",
+            "syntax": ["iout1 la_i_norm_max_mr iarg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm1_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a complex matrix.",
+            "syntax": ["ir la_i_norm1_mc imc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm1_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a real matrix.",
+            "syntax": ["ir la_i_norm1_mr imr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm1_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a complex vector.",
+            "syntax": ["ir la_i_norm1_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_norm1_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a real vector.",
+            "syntax": ["ir la_i_norm1_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_print_mc",
+            "plugin": "linearAlgebra",
+            "description": "Print a complex matrix.",
+            "syntax": ["la_i_print_mc imc"],
+            "signatures": [{ "outTypes": "", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_print_mr",
+            "plugin": "linearAlgebra",
+            "description": "Print a real matrix.",
+            "syntax": ["la_i_print_mr imr"],
+            "signatures": [{ "outTypes": "", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_print_vc",
+            "plugin": "linearAlgebra",
+            "description": "Print a complex vector.",
+            "syntax": ["la_i_print_vc ivc"],
+            "signatures": [{ "outTypes": "", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_print_vr",
+            "plugin": "linearAlgebra",
+            "description": "Print a real vector.",
+            "syntax": ["la_i_print_vr ivr"],
+            "signatures": [{ "outTypes": "", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_qr_eigen_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues of a complex matrix using QR iteration.",
+            "syntax": ["ivr_eig_vals la_i_qr_eigen_mc imc, i_tolerance"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_qr_eigen_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues of a real matrix using QR iteration.",
+            "syntax": ["ivr_eig_vals la_i_qr_eigen_mr imr, i_tolerance"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_qr_factor_mc",
+            "plugin": "linearAlgebra",
+            "description": "Compute the QR factorization of a complex matrix.",
+            "syntax": ["imc_q, imc_r la_i_qr_factor_mc imc"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_qr_factor_mr",
+            "plugin": "linearAlgebra",
+            "description": "Compute the QR factorization of a real matrix.",
+            "syntax": ["imr_q, imr_r la_i_qr_factor_mr imr"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_qr_sym_eigen_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues and eigenvectors of a symmetric or Hermitian complex matrix.",
+            "syntax": [
+                "ivc_eig_vals, imc_eig_vecs la_i_qr_sym_eigen_mc imc, i_tolerance"
+            ],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_qr_sym_eigen_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues and eigenvectors of a symmetric or Hermitian real matrix.",
+            "syntax": [
+                "ivr_eig_vals, imr_eig_vecs la_i_qr_sym_eigen_mr imr, i_tolerance"
+            ],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_random_mc",
+            "plugin": "linearAlgebra",
+            "description": "Fill a complex matrix with random values.",
+            "syntax": ["iout1 la_i_random_mc [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_i_random_mr",
+            "plugin": "linearAlgebra",
+            "description": "Fill a real matrix with random values.",
+            "syntax": ["iout1 la_i_random_mr [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_i_random_vc",
+            "plugin": "linearAlgebra",
+            "description": "Fill a complex vector with random values.",
+            "syntax": ["iout1 la_i_random_vc [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_i_random_vr",
+            "plugin": "linearAlgebra",
+            "description": "Fill a real vector with random values.",
+            "syntax": ["iout1 la_i_random_vr [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_i_size_mc",
+            "plugin": "linearAlgebra",
+            "description": "Return the dimensions of a complex matrix.",
+            "syntax": ["irows, icolumns la_i_size_mc imc"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_size_mr",
+            "plugin": "linearAlgebra",
+            "description": "Return the dimensions of a real matrix.",
+            "syntax": ["irows, icolumns la_i_size_mr imr"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_size_vc",
+            "plugin": "linearAlgebra",
+            "description": "Return the dimensions of a complex vector.",
+            "syntax": ["irows la_i_size_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_size_vr",
+            "plugin": "linearAlgebra",
+            "description": "Return the dimensions of a real vector.",
+            "syntax": ["irows la_i_size_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_subtract_mc",
+            "plugin": "linearAlgebra",
+            "description": "Subtract complex matrix elements.",
+            "syntax": ["iout1 la_i_subtract_mc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_subtract_mr",
+            "plugin": "linearAlgebra",
+            "description": "Subtract real matrix elements.",
+            "syntax": ["imr la_i_subtract_mr imr_a, imr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_subtract_vc",
+            "plugin": "linearAlgebra",
+            "description": "Subtract complex vector elements.",
+            "syntax": ["iout1 la_i_subtract_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_subtract_vr",
+            "plugin": "linearAlgebra",
+            "description": "Subtract real vector elements.",
+            "syntax": ["ivr la_i_subtract_vr ivr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_i_t_assign",
+            "plugin": "linearAlgebra",
+            "description": "Copy a vector into a function table.",
+            "syntax": ["itablenum la_i_t_assign ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_trace_mc",
+            "plugin": "linearAlgebra",
+            "description": "Return the trace of a complex matrix.",
+            "syntax": ["ir, ii la_i_trace_mc imc"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_trace_mr",
+            "plugin": "linearAlgebra",
+            "description": "Return the trace of a real matrix.",
+            "syntax": ["ir la_i_trace_mr imr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_transpose_mc",
+            "plugin": "linearAlgebra",
+            "description": "Transpose a complex matrix.",
+            "syntax": ["imc la_i_transpose_mc imc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_transpose_mr",
+            "plugin": "linearAlgebra",
+            "description": "Transpose a real matrix.",
+            "syntax": [
+                "iout1 la_i_transpose_mr iarg1",
+                "iout1 la_i_transpose_mr karg1"
+            ],
+            "signatures": [
+                { "outTypes": "i", "inTypes": "i" },
+                { "outTypes": "i", "inTypes": "k" }
+            ]
+        },
+        {
+            "name": "la_i_upper_solve_mc",
+            "plugin": "linearAlgebra",
+            "description": "Solve an upper triangular system with a complex matrix.",
+            "syntax": ["iout1 la_i_upper_solve_mc iarg1, [iarg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "io" }]
+        },
+        {
+            "name": "la_i_upper_solve_mr",
+            "plugin": "linearAlgebra",
+            "description": "Solve an upper triangular system with a real matrix.",
+            "syntax": ["iout1 la_i_upper_solve_mr iarg1, [iarg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "io" }]
+        },
+        {
+            "name": "la_i_vc_create",
+            "plugin": "linearAlgebra",
+            "description": "Create a complex vector.",
+            "syntax": ["ivc la_i_vc_create irows"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_vc_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a complex vector.",
+            "syntax": ["ivc la_i_vc_set irow, ivalue_r, ivalue_i"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iii" }]
+        },
+        {
+            "name": "la_i_vr_create",
+            "plugin": "linearAlgebra",
+            "description": "Create a real vector.",
+            "syntax": ["ivr la_i_vr_create irows"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_i_vr_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a real vector.",
+            "syntax": ["ivr la_i_vr_set irow, ivalue"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_a_assign",
+            "plugin": "linearAlgebra",
+            "description": "Copy a vector into a audio signal.",
+            "syntax": ["aout1 la_k_a_assign karg1"],
+            "signatures": [{ "outTypes": "a", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_add_mc",
+            "plugin": "linearAlgebra",
+            "description": "Add complex matrix elements.",
+            "syntax": ["imc la_k_add_mc imc_a, imc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_add_mr",
+            "plugin": "linearAlgebra",
+            "description": "Add real matrix elements.",
+            "syntax": ["iout1 la_k_add_mr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_add_vc",
+            "plugin": "linearAlgebra",
+            "description": "Add complex vector elements.",
+            "syntax": ["ivc la_k_add_vc ivc_a, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_add_vr",
+            "plugin": "linearAlgebra",
+            "description": "Add real vector elements.",
+            "syntax": ["iout1 la_k_add_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_assign_a",
+            "plugin": "linearAlgebra",
+            "description": "Copy a audio signal into a pre-allocated vector or matrix.",
+            "syntax": ["ivr la_k_assign_a asig"],
+            "signatures": [{ "outTypes": "i", "inTypes": "a" }]
+        },
+        {
+            "name": "la_k_assign_f",
+            "plugin": "linearAlgebra",
+            "description": "Copy a spectral signal into a pre-allocated vector or matrix.",
+            "syntax": ["ivc la_k_assign_f fsig"],
+            "signatures": [{ "outTypes": "i", "inTypes": "f" }]
+        },
+        {
+            "name": "la_k_assign_mc",
+            "plugin": "linearAlgebra",
+            "description": "Copy a complex matrix into a pre-allocated vector or matrix.",
+            "syntax": ["iout1 la_k_assign_mc karg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_assign_mr",
+            "plugin": "linearAlgebra",
+            "description": "Copy a real matrix into a pre-allocated vector or matrix.",
+            "syntax": ["iout1 la_k_assign_mr karg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_assign_t",
+            "plugin": "linearAlgebra",
+            "description": "Copy a function table into a pre-allocated vector or matrix.",
+            "syntax": ["iout1 la_k_assign_t karg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_assign_vc",
+            "plugin": "linearAlgebra",
+            "description": "Copy a complex vector into a pre-allocated vector or matrix.",
+            "syntax": ["iout1 la_k_assign_vc karg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_assign_vr",
+            "plugin": "linearAlgebra",
+            "description": "Copy a real vector into a pre-allocated vector or matrix.",
+            "syntax": ["iout1 la_k_assign_vr karg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_conjugate_mc",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a complex matrix.",
+            "syntax": ["imc la_k_conjugate_mc imc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_conjugate_mr",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a real matrix.",
+            "syntax": ["imr la_k_conjugate_mr imr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_conjugate_vc",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a complex vector.",
+            "syntax": ["ivc la_k_conjugate_vc ivc"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_conjugate_vr",
+            "plugin": "linearAlgebra",
+            "description": "Take the complex conjugate of a real vector.",
+            "syntax": ["ivr la_k_conjugate_vr ivr"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_current_f",
+            "plugin": "linearAlgebra",
+            "description": "Test whether the spectral frame is current.",
+            "syntax": ["kout1 la_k_current_f farg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "f" }]
+        },
+        {
+            "name": "la_k_current_vr",
+            "plugin": "linearAlgebra",
+            "description": "Test whether the real vector is at the start of its audio block.",
+            "syntax": ["kout1 la_k_current_vr iarg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_distance_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the distance between two complex vectors.",
+            "syntax": ["kout1 la_k_distance_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "k", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_distance_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the distance between two real vectors.",
+            "syntax": ["kout1 la_k_distance_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "k", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_divide_mc",
+            "plugin": "linearAlgebra",
+            "description": "Divide complex matrix elements.",
+            "syntax": ["imc la_k_divide_mc imc_a, imc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_divide_mr",
+            "plugin": "linearAlgebra",
+            "description": "Divide real matrix elements.",
+            "syntax": ["iout1 la_k_divide_mr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_divide_vc",
+            "plugin": "linearAlgebra",
+            "description": "Divide complex vector elements.",
+            "syntax": ["iout1 la_k_divide_vc karg1, karg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "kk" }]
+        },
+        {
+            "name": "la_k_divide_vr",
+            "plugin": "linearAlgebra",
+            "description": "Divide real vector elements.",
+            "syntax": ["iout1 la_k_divide_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_dot_mc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["imc la_k_dot_mc imc_a, imc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_dot_mc_vc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["ivc la_k_dot_mc_vc imc_a, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_dot_mr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["imr la_k_dot_mr imr_a, imr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_dot_mr_vr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply matrices or a matrix and a vector.",
+            "syntax": ["ivr la_k_dot_mr_vr imr_a, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_dot_vc",
+            "plugin": "linearAlgebra",
+            "description": "Compute the dot product of two complex vectors.",
+            "syntax": ["iout1, iout2 la_k_dot_vc iarg1, iarg2"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_dot_vr",
+            "plugin": "linearAlgebra",
+            "description": "Compute the dot product of two real vectors.",
+            "syntax": ["iout1 la_k_dot_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_f_assign",
+            "plugin": "linearAlgebra",
+            "description": "Copy a vector into a spectral signal.",
+            "syntax": ["fout1 la_k_f_assign [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "f", "inTypes": "p" }]
+        },
+        {
+            "name": "la_k_get_mc",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a complex matrix.",
+            "syntax": ["kvalue_r, kvalue_i la_k_get_mc imc, krow, kcolumn"],
+            "signatures": [{ "outTypes": "kk", "inTypes": "ikk" }]
+        },
+        {
+            "name": "la_k_get_mr",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a real matrix.",
+            "syntax": ["kvalue la_k_get_mr imr, krow, kcolumn"],
+            "signatures": [{ "outTypes": "k", "inTypes": "ikk" }]
+        },
+        {
+            "name": "la_k_get_vc",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a complex vector.",
+            "syntax": ["kvalue_r, kvalue_i la_k_get_vc ivc, krow"],
+            "signatures": [{ "outTypes": "kk", "inTypes": "ik" }]
+        },
+        {
+            "name": "la_k_get_vr",
+            "plugin": "linearAlgebra",
+            "description": "Read an element from a real vector.",
+            "syntax": ["kvalue la_k_get_vr ivr, krow"],
+            "signatures": [{ "outTypes": "k", "inTypes": "ik" }]
+        },
+        {
+            "name": "la_k_invert_mc",
+            "plugin": "linearAlgebra",
+            "description": "Invert a complex matrix and return the determinant.",
+            "syntax": ["iout1, kout2, kout3 la_k_invert_mc iarg1"],
+            "signatures": [{ "outTypes": "ikk", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_invert_mr",
+            "plugin": "linearAlgebra",
+            "description": "Invert a real matrix and return the determinant.",
+            "syntax": ["imr, kcondition la_k_invert_mr imr"],
+            "signatures": [{ "outTypes": "ik", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_lower_solve_mc",
+            "plugin": "linearAlgebra",
+            "description": "Solve a lower triangular system with a complex matrix.",
+            "syntax": ["iout1 la_k_lower_solve_mc iarg1, [karg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iO" }]
+        },
+        {
+            "name": "la_k_lower_solve_mr",
+            "plugin": "linearAlgebra",
+            "description": "Solve a lower triangular system with a real matrix.",
+            "syntax": ["iout1 la_k_lower_solve_mr iarg1, [karg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iO" }]
+        },
+        {
+            "name": "la_k_lu_det_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the determinant of a complex matrix.",
+            "syntax": ["kout1, kout2 la_k_lu_det_mc iarg1"],
+            "signatures": [{ "outTypes": "kk", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_lu_det_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the determinant of a real matrix.",
+            "syntax": ["kout1 la_k_lu_det_mr iarg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_lu_factor_mc",
+            "plugin": "linearAlgebra",
+            "description": "Compute the LU factorization of a complex matrix.",
+            "syntax": ["iout1 la_k_lu_factor_mc iarg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_lu_factor_mr",
+            "plugin": "linearAlgebra",
+            "description": "Compute the LU factorization of a real matrix.",
+            "syntax": ["imr, ivr_pivot, ksize la_k_lu_factor_mr imr"],
+            "signatures": [{ "outTypes": "iik", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_lu_solve_mc",
+            "plugin": "linearAlgebra",
+            "description": "Solve a linear system with a complex matrix using LU factorization.",
+            "syntax": ["ivc_x la_k_lu_solve_mc imc, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_lu_solve_mr",
+            "plugin": "linearAlgebra",
+            "description": "Solve a linear system with a real matrix using LU factorization.",
+            "syntax": ["ivr_x la_k_lu_solve_mr imr, ivr_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_mc_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a complex matrix.",
+            "syntax": ["iout1 la_k_mc_set karg1, karg2, karg3, karg4"],
+            "signatures": [{ "outTypes": "i", "inTypes": "kkkk" }]
+        },
+        {
+            "name": "la_k_mr_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a real matrix.",
+            "syntax": ["iout1 la_k_mr_set karg1, karg2, karg3"],
+            "signatures": [{ "outTypes": "i", "inTypes": "kkk" }]
+        },
+        {
+            "name": "la_k_multiply_mc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply complex matrix elements.",
+            "syntax": ["imc la_k_multiply_mc imc_a, imc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_multiply_mr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply real matrix elements.",
+            "syntax": ["iout1 la_k_multiply_mr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_multiply_vc",
+            "plugin": "linearAlgebra",
+            "description": "Multiply complex vector elements.",
+            "syntax": ["ivc la_k_multiply_vc ivc_a, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_multiply_vr",
+            "plugin": "linearAlgebra",
+            "description": "Multiply real vector elements.",
+            "syntax": ["iout1 la_k_multiply_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_norm_euclid_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a complex matrix.",
+            "syntax": ["kout1 la_k_norm_euclid_mc iarg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_euclid_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a real matrix.",
+            "syntax": ["kout1 la_k_norm_euclid_mr iarg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_euclid_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a complex vector.",
+            "syntax": ["kr la_k_norm_euclid_vc ivc"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_euclid_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the Euclidean norm of a real vector.",
+            "syntax": ["kr la_k_norm_euclid_vr ivr"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_inf_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a complex matrix.",
+            "syntax": ["kr la_k_norm_inf_mc imc"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_inf_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a real matrix.",
+            "syntax": ["kr la_k_norm_inf_mr imr"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_inf_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a complex vector.",
+            "syntax": ["kr la_k_norm_inf_vc ivc"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_inf_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the infinity norm of a real vector.",
+            "syntax": ["kr la_k_norm_inf_vr ivr"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_max_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the maximum norm of a complex matrix.",
+            "syntax": ["kout1 la_k_norm_max_mc iarg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm_max_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the maximum norm of a real matrix.",
+            "syntax": ["kout1 la_k_norm_max_mr iarg1"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm1_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a complex matrix.",
+            "syntax": ["kr la_k_norm1_mc imc"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm1_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a real matrix.",
+            "syntax": ["kr la_k_norm1_mr imr"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm1_vc",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a complex vector.",
+            "syntax": ["kr la_k_norm1_vc ivc"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_norm1_vr",
+            "plugin": "linearAlgebra",
+            "description": "Find the 1-norm of a real vector.",
+            "syntax": ["kr la_k_norm1_vr ivc"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_qr_eigen_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues of a complex matrix using QR iteration.",
+            "syntax": ["ivr_eig_vals la_k_qr_eigen_mc imc, k_tolerance"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ik" }]
+        },
+        {
+            "name": "la_k_qr_eigen_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues of a real matrix using QR iteration.",
+            "syntax": ["ivr_eig_vals la_k_qr_eigen_mr imr, k_tolerance"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ik" }]
+        },
+        {
+            "name": "la_k_qr_factor_mc",
+            "plugin": "linearAlgebra",
+            "description": "Compute the QR factorization of a complex matrix.",
+            "syntax": ["imc_q, imc_r la_k_qr_factor_mc imc"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_qr_factor_mr",
+            "plugin": "linearAlgebra",
+            "description": "Compute the QR factorization of a real matrix.",
+            "syntax": ["imr_q, imr_r la_k_qr_factor_mr imr"],
+            "signatures": [{ "outTypes": "ii", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_qr_sym_eigen_mc",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues and eigenvectors of a symmetric or Hermitian complex matrix.",
+            "syntax": [
+                "ivc_eig_vals, imc_eig_vecs la_k_qr_sym_eigen_mc imc, k_tolerance"
+            ],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ik" }]
+        },
+        {
+            "name": "la_k_qr_sym_eigen_mr",
+            "plugin": "linearAlgebra",
+            "description": "Find eigenvalues and eigenvectors of a symmetric or Hermitian real matrix.",
+            "syntax": [
+                "ivr_eig_vals, imr_eig_vecs la_k_qr_sym_eigen_mr imr, k_tolerance"
+            ],
+            "signatures": [{ "outTypes": "ii", "inTypes": "ik" }]
+        },
+        {
+            "name": "la_k_random_mc",
+            "plugin": "linearAlgebra",
+            "description": "Fill a complex matrix with random values.",
+            "syntax": ["iout1 la_k_random_mc [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_k_random_mr",
+            "plugin": "linearAlgebra",
+            "description": "Fill a real matrix with random values.",
+            "syntax": ["iout1 la_k_random_mr [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_k_random_vc",
+            "plugin": "linearAlgebra",
+            "description": "Fill a complex vector with random values.",
+            "syntax": ["iout1 la_k_random_vc [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_k_random_vr",
+            "plugin": "linearAlgebra",
+            "description": "Fill a real vector with random values.",
+            "syntax": ["iout1 la_k_random_vr [iarg1 = 1]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "p" }]
+        },
+        {
+            "name": "la_k_subtract_mc",
+            "plugin": "linearAlgebra",
+            "description": "Subtract complex matrix elements.",
+            "syntax": ["imc la_k_subtract_mc imc_a, imc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_subtract_mr",
+            "plugin": "linearAlgebra",
+            "description": "Subtract real matrix elements.",
+            "syntax": ["iout1 la_k_subtract_mr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_subtract_vc",
+            "plugin": "linearAlgebra",
+            "description": "Subtract complex vector elements.",
+            "syntax": ["ivc la_k_subtract_vc ivc_a, ivc_b"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_subtract_vr",
+            "plugin": "linearAlgebra",
+            "description": "Subtract real vector elements.",
+            "syntax": ["iout1 la_k_subtract_vr iarg1, iarg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "ii" }]
+        },
+        {
+            "name": "la_k_t_assign",
+            "plugin": "linearAlgebra",
+            "description": "Copy a vector into a function table.",
+            "syntax": ["iout1 la_k_t_assign karg1"],
+            "signatures": [{ "outTypes": "i", "inTypes": "k" }]
+        },
+        {
+            "name": "la_k_trace_mc",
+            "plugin": "linearAlgebra",
+            "description": "Return the trace of a complex matrix.",
+            "syntax": ["kr, ki la_k_trace_mc imc"],
+            "signatures": [{ "outTypes": "kk", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_trace_mr",
+            "plugin": "linearAlgebra",
+            "description": "Return the trace of a real matrix.",
+            "syntax": ["kr la_k_trace_mr imr"],
+            "signatures": [{ "outTypes": "k", "inTypes": "i" }]
+        },
+        {
+            "name": "la_k_upper_solve_mc",
+            "plugin": "linearAlgebra",
+            "description": "Solve an upper triangular system with a complex matrix.",
+            "syntax": ["iout1 la_k_upper_solve_mc iarg1, [karg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iO" }]
+        },
+        {
+            "name": "la_k_upper_solve_mr",
+            "plugin": "linearAlgebra",
+            "description": "Solve an upper triangular system with a real matrix.",
+            "syntax": ["iout1 la_k_upper_solve_mr iarg1, [karg2 = 0]"],
+            "signatures": [{ "outTypes": "i", "inTypes": "iO" }]
+        },
+        {
+            "name": "la_k_vc_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a complex vector.",
+            "syntax": ["iout1 la_k_vc_set karg1, karg2, karg3"],
+            "signatures": [{ "outTypes": "i", "inTypes": "kkk" }]
+        },
+        {
+            "name": "la_k_vr_set",
+            "plugin": "linearAlgebra",
+            "description": "Set an element in a real vector.",
+            "syntax": ["iout1 la_k_vr_set karg1, karg2"],
+            "signatures": [{ "outTypes": "i", "inTypes": "kk" }]
+        },
+        {
+            "name": "STKBandedWG",
+            "plugin": "stk",
+            "description": "STKBandedWG uses banded waveguide techniques to model a variety of sounds.",
+            "syntax": [
+                "asignal STKBandedWG ifrequency, iamplitude, [kpress, kv1[, kmot, kv2[, klfo, kv3[, klfodepth, kv4[, kvel, kv5[, kstrk, kv6[, kinstr, kv7]]]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKBeeThree",
+            "plugin": "stk",
+            "description": "STK Hammond-oid organ-like FM synthesis instrument.",
+            "syntax": [
+                "asignal STKBeeThree ifrequency, iamplitude, [kop4, kv1[, kop3, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKBlowBotl",
+            "plugin": "stk",
+            "description": "STKBlowBotl uses a helmholtz resonator (biquad filter) with a polynomial jet excitation.",
+            "syntax": [
+                "asignal STKBlowBotl ifrequency, iamplitude, [knoise, kv1[, klfo, kv2[, klfodepth, kv3[, kvol, kv4]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKBlowHole",
+            "plugin": "stk",
+            "description": "STK clarinet physical model with one register hole and one tonehole.",
+            "syntax": [
+                "asignal STKBlowHole ifrequency, iamplitude, [kreed, kv1[, knoise, kv2[, khole, kv3[, kreg, kv4[, kbreath, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKBowed",
+            "plugin": "stk",
+            "description": "STKBowed is a bowed string instrument.",
+            "syntax": [
+                "asignal STKBowed ifrequency, iamplitude, [kpress, kv1[, kpos, kv2[, klfo, kv3[, klfodepth, kv4[, kvol, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKBrass",
+            "plugin": "stk",
+            "description": "STKBrass is a simple brass instrument.",
+            "syntax": [
+                "asignal STKBrass ifrequency, iamplitude, [klip, kv1[, kslide, kv2[, klfo, kv3[, klfodepth, kv4[, kvol, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKClarinet",
+            "plugin": "stk",
+            "description": "STKClarinet uses a simple clarinet physical model.",
+            "syntax": [
+                "asignal STKClarinet ifrequency, iamplitude, [kstiff, kv1[, knoise, kv2[, klfo, kv3[, klfodepth, kv4[, kbreath, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKDrummer",
+            "plugin": "stk",
+            "description": "STKDrummer is a drum sampling synthesizer.",
+            "syntax": ["asignal STKDrummer ifrequency, iamplitude"],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKFlute",
+            "plugin": "stk",
+            "description": "STKFlute uses a simple flute physical model.",
+            "syntax": [
+                "asignal STKFlute ifrequency, iamplitude, [kjet, kv1[, knoise, kv2[, klfo, kv3[, klfodepth, kv4[, kbreath, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKFMVoices",
+            "plugin": "stk",
+            "description": "STKFMVoices is a singing FM synthesis instrument.",
+            "syntax": [
+                "asignal STKFMVoices ifrequency, iamplitude, [kvowel, kv1[, kspec, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKHevyMetl",
+            "plugin": "stk",
+            "description": "STKHevyMetl produces metal sounds.",
+            "syntax": [
+                "asignal STKHevyMetl ifrequency, iamplitude, [kmod, kv1[, kcross, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKMandolin",
+            "plugin": "stk",
+            "description": "STKMandolin produces mandolin-like sounds.",
+            "syntax": [
+                "asignal STKMandolin ifrequency, iamplitude, [kbody, kv1[, kpos, kv2[, ksus, kv3[, kdetune, kv4[, kmic, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKModalBar",
+            "plugin": "stk",
+            "description": "STKModalBar is a resonant bar instrument.",
+            "syntax": [
+                "asignal STKModalBar ifrequency, iamplitude, [khard, kv1[, kpos, kv2[, klfo, kv3[, klfodepth, kv4[, kmix, kv5[, kvol, kv6[, kinstr, kv7]]]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKMoog",
+            "plugin": "stk",
+            "description": "STKMoog produces moog-like swept filter sounds.",
+            "syntax": [
+                "asignal STKMoog ifrequency, iamplitude, [kq, kv1[, krate, kv2[, klfo, kv3[, klfodepth, kv4[, kvol, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKPercFlut",
+            "plugin": "stk",
+            "description": "STKPercFlut is a percussive flute FM synthesis instrument.",
+            "syntax": [
+                "asignal STKPercFlut ifrequency, iamplitude, [kmod, kv1[, kcross, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKPlucked",
+            "plugin": "stk",
+            "description": "STKPlucked uses a plucked string physical model.",
+            "syntax": ["asignal STKPlucked ifrequency, iamplitude"],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKResonate",
+            "plugin": "stk",
+            "description": "STKResonate is a noise driven formant filter.",
+            "syntax": [
+                "asignal STKResonate ifrequency, iamplitude, [kfreq, kv1[, kpole, kv2[, knotch, kv3[, kzero, kv4[, kenv, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKRhodey",
+            "plugin": "stk",
+            "description": "STK Fender Rhodes-like electric piano FM synthesis instrument.",
+            "syntax": [
+                "asignal STKRhodey ifrequency, iamplitude, [kmod, kv1[, kcross, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKSaxofony",
+            "plugin": "stk",
+            "description": "STKSaxofony is a faux conical bore reed instrument.",
+            "syntax": [
+                "asignal STKSaxofony ifrequency, iamplitude, [kstiff, kv1[, kapert, kv2[, kblow, kv3[, knoise, kv4[, klfo, kv5[, klfodepth, kv6[, kbreath, kv7]]]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKShakers",
+            "plugin": "stk",
+            "description": "STKShakers is an instrument that simulates environmental sounds or collisions of multiple independent sound producing objects.",
+            "syntax": [
+                "asignal STKShakers ifrequency, iamplitude, [kenerg, kv1[, kdecay, kv2[, kshake, kv3[, knum, kv4[, kres, kv5[, kinstr, kv6]]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKSimple",
+            "plugin": "stk",
+            "description": "STKSimple is a wavetable/noise instrument.",
+            "syntax": [
+                "asignal STKSimple ifrequency, iamplitude, [kpos, kv1[, kcross, kv2[, kenv, kv3[, kgain, kv4]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKSitar",
+            "plugin": "stk",
+            "description": "STKSitar uses a plucked string physical model.",
+            "syntax": ["asignal STKSitar ifrequency, iamplitude"],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKStifKarp",
+            "plugin": "stk",
+            "description": "STKStifKarp is a plucked stiff string instrument.",
+            "syntax": [
+                "asignal STKStifKarp ifrequency, iamplitude, [kpos, kv1[, ksus, kv2[, kstretch, kv3]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKTubeBell",
+            "plugin": "stk",
+            "description": "STKTubeBell is a tubular bell (orchestral chime) FM synthesis instrument.",
+            "syntax": [
+                "asignal STKTubeBell ifrequency, iamplitude, [kmod, kv1[, kcross, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKVoicForm",
+            "plugin": "stk",
+            "description": "STKVoicForm is a four formant synthesis instrument.",
+            "syntax": [
+                "asignal STKVoicForm ifrequency, iamplitude, [kmix, kv1[, ksel, kv2[, klfo, kv3[, klfodepth, kv4[, kloud, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKWhistle",
+            "plugin": "stk",
+            "description": "STKWhistle produces whistle sounds.",
+            "syntax": [
+                "asignal STKWhistle ifrequency, iamplitude, [kmod, kv1[, knoise, kv2[, kfipfreq, kv3[, kfipgain, kv4[, kvol, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        },
+        {
+            "name": "STKWurley",
+            "plugin": "stk",
+            "description": "STKWurley simulates a Wurlitzer electric piano FM synthesis instrument.",
+            "syntax": [
+                "asignal STKWurley ifrequency, iamplitude, [kmod, kv1[, kcross, kv2[, klfo, kv3[, klfodepth, kv4[, kadsr, kv5]]]]]"
+            ],
+            "signatures": [{ "outTypes": "a", "inTypes": "iiJJJJJJJJJJJJJJJJ" }]
+        }
+    ]
+}

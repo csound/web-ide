@@ -38,6 +38,8 @@
         "prebuild": "npm run manual:prepare",
         "prebuild:dev": "npm run manual:prepare",
         "test:manual": "node --test scripts/prepare-manual.test.mjs",
+        "plugins:catalog": "node scripts/plugin-catalog.mjs",
+        "plugins:check": "node scripts/plugin-catalog.mjs --check",
         "checker:build": "node scripts/build-csound-check.mjs"
     },
     "dependencies": {

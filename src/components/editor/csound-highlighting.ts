@@ -12,7 +12,7 @@ import {
     type DecorationSet,
     type ViewUpdate
 } from "@codemirror/view";
-import { analyzeCsoundSemanticLine } from "@kunstmusik/codemirror-lang-csound";
+import { analyzeEditorLine as analyzeCsoundSemanticLine } from "./csound-semantics";
 import { csdScoreSections } from "./csd-score-sections";
 import { udoCatalog } from "./validation/udos";
 

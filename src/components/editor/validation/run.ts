@@ -9,11 +9,24 @@ import {
 import { MAX_SOURCE_BYTES } from "./source";
 import { readDiagnostics } from "./diagnostics";
 import { addUnknownCalls, type UnknownCall } from "./names";
-import { validateSignatures } from "./plugins/signatures";
+import { validateSignatures, type OpcodeSignature } from "./plugins/signatures";
+import { bundledSignatures } from "../../../plugins/catalog";
 import { validateTypes, typeRecords } from "./plugins/types";
 import type { CheckRequest, CheckResult, UdoDeclaration } from "./types";
 
 const encoder = new TextEncoder();
+const signatureRecords = (kind: "B" | "O", signatures: OpcodeSignature[]) =>
+    signatures
+        .map(
+            ({ opname, outypes, intypes }) =>
+                `${kind}\t${opname}\t${outypes}\t${intypes}\n`
+        )
+        .join("");
+// Bundled and project plugins each retain their own count and byte allowance.
+const bundledRecords = signatureRecords(
+    "B",
+    validateSignatures(bundledSignatures)
+);
 
 /** Invalid input can be edited and retried without replacing the worker. */
 export class CheckRequestError extends Error {}
@@ -82,12 +95,8 @@ export async function runCheck(
         const pluginSignatures = validateSignatures(data.plugins ?? []);
         metadata =
             typeRecords(validateTypes(data.pluginTypes ?? [])) +
-            pluginSignatures
-                .map(
-                    ({ opname, outypes, intypes }) =>
-                        `O\t${opname}\t${outypes}\t${intypes}\n`
-                )
-                .join("");
+            bundledRecords +
+            signatureRecords("O", pluginSignatures);
     } catch (error) {
         throw new CheckRequestError("Invalid plugin metadata", {
             cause: error

@@ -12,12 +12,23 @@ import { csoundSynopsis } from "./csound-synopsis";
 import { csdWithScoreLanguages, scoreHighlighting } from "./score-languages";
 import { csdScoreSections, inExternalScore } from "./csd-score-sections";
 import { udoCatalog } from "./validation/udos";
+import { bundledOpcodes, pluginLabel } from "../../plugins/catalog";
 
-const builtInCompletions = csoundOpcodeCatalog.opcodes.map((opcode) => ({
+const pluginCompletions = [...bundledOpcodes.values()].map((opcode) => ({
     label: opcode.name,
     type: "function",
-    detail: opcode.shortDescription
+    detail: `Plugin · ${pluginLabel(opcode.name)}: ${opcode.description}`
 }));
+const builtInCompletions = [
+    ...pluginCompletions,
+    ...csoundOpcodeCatalog.opcodes
+        .filter((opcode) => !bundledOpcodes.has(opcode.name))
+        .map((opcode) => ({
+            label: opcode.name,
+            type: "function",
+            detail: opcode.shortDescription
+        }))
+];
 const completionWord =
     /[\p{L}_][\p{L}\p{N}_]*(?::[\p{L}_][\p{L}\p{N}_]*(?:\[\])*)?/u;
 
@@ -54,6 +65,12 @@ const editorCompletionSource: CompletionSource = (context) => {
         ...result,
         options: [
             ...csoundVariables(context.state, context.pos),
+            ...pluginCompletions.filter(
+                (plugin) =>
+                    !result.options.some(
+                        (option) => option.label === plugin.label
+                    )
+            ),
             ...result.options.map(({ info, ...option }) => ({
                 ...option,
                 detail: typeof info === "string" ? info : undefined
