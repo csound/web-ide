@@ -162,7 +162,8 @@ export function createPlaybackIo(
                 const engine = await whileActive(
                     pending,
                     lifetime.signal,
-                    30000
+                    // Bound shared loading for fallback; allow slow MessageChannel downloads.
+                    shared ? 30000 : undefined
                 );
                 if (!engine)
                     throw new AudioStartupError(

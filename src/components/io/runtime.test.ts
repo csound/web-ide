@@ -117,25 +117,77 @@ it("rejects shared factory failures so the owner can retry a fresh vanilla engin
     expect(TestContext.instances[0].state).toBe("closed");
 });
 
-it("cancels promptly and terminates a factory that resolves after cancellation", async () => {
-    const abort = controller();
-    const io = createPlaybackIo(abort.signal, vi.fn());
+it("lets a slow MessageChannel factory finish loading", async () => {
+    vi.useFakeTimers();
+    const io = createPlaybackIo(controller().signal, vi.fn(), false);
     let resolve!: (value: CsoundObj) => void;
     const create = factory().mockReturnValue(
         new Promise((done) => {
             resolve = done;
         })
     );
+    const settled = vi.fn();
     const pending = io.create(create);
-    await vi.waitFor(() => expect(create).toHaveBeenCalledOnce());
-    abort.abort();
-    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+    void pending.then(settled, settled);
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(create).toHaveBeenCalledOnce();
+    expect(settled).not.toHaveBeenCalled();
+    const engine = {
+        name: "Csound: Audio Worklet, Worker",
+        terminateInstance: vi.fn(async () => {})
+    } as unknown as CsoundObj;
+    resolve(engine);
+    await expect(pending).resolves.toBe(engine);
+    expect(engine.terminateInstance).not.toHaveBeenCalled();
+    await io.dispose();
+    expect(TestContext.instances[0].state).toBe("closed");
+});
+
+it("times out shared loading and terminates an engine that arrives too late", async () => {
+    vi.useFakeTimers();
+    const io = createPlaybackIo(controller().signal, vi.fn());
+    let resolve!: (value: CsoundObj) => void;
+    const create = factory().mockReturnValue(
+        new Promise((done) => {
+            resolve = done;
+        })
+    );
+    const result = expect(io.create(create)).rejects.toBeInstanceOf(
+        SharedAudioStartupError
+    );
+    await vi.advanceTimersByTimeAsync(30000);
+    await result;
     await io.dispose();
     const terminateInstance = vi.fn(async () => {});
     resolve({ terminateInstance } as unknown as CsoundObj);
     await vi.waitFor(() => expect(terminateInstance).toHaveBeenCalledOnce());
     expect(TestContext.instances[0].state).toBe("closed");
 });
+
+it.each([true, false])(
+    "cancels promptly and terminates a factory that resolves after cancellation (shared=%s)",
+    async (shared) => {
+        const abort = controller();
+        const io = createPlaybackIo(abort.signal, vi.fn(), shared);
+        let resolve!: (value: CsoundObj) => void;
+        const create = factory().mockReturnValue(
+            new Promise((done) => {
+                resolve = done;
+            })
+        );
+        const pending = io.create(create);
+        await vi.waitFor(() => expect(create).toHaveBeenCalledOnce());
+        abort.abort();
+        await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+        await io.dispose();
+        const terminateInstance = vi.fn(async () => {});
+        resolve({ terminateInstance } as unknown as CsoundObj);
+        await vi.waitFor(() =>
+            expect(terminateInstance).toHaveBeenCalledOnce()
+        );
+        expect(TestContext.instances[0].state).toBe("closed");
+    }
+);
 
 it("restores the SDK MIDI hook on timeout instead of keeping global overrides", async () => {
     vi.useFakeTimers();
