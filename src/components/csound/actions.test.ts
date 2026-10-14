@@ -1,3 +1,4 @@
+import { plugins } from "@csound/plugins";
 import {
     playProject,
     projectPlayback,
@@ -12,7 +13,6 @@ import { playListItem } from "../profile/actions";
 import * as projectActions from "../projects/actions";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Csound } from "@csound/browser";
-import { plugins } from "@csound/plugins";
 import { store } from "../../store";
 import {
     isCsoundBusy,
@@ -32,6 +32,16 @@ import { nonCloudFiles } from "../file-tree/actions";
 import { storeProjectEditorKeyboardCallbacks } from "../hot-keys/actions";
 import { keyboardCallbacks } from "../hot-keys";
 import { consoleReadline } from "../console/readline";
+import { defaultIoSettings, saveIoSettings } from "../io/settings";
+import { captureInput } from "../io/devices";
+
+vi.mock("../io/devices", async (original) => ({
+    ...(await original<typeof import("../io/devices")>()),
+    captureInput: vi.fn(async () => ({
+        getTracks: () => [],
+        getAudioTracks: () => []
+    }))
+}));
 
 vi.mock("@csound/browser", () => ({ Csound: vi.fn(), libcsound: vi.fn() }));
 
@@ -44,6 +54,24 @@ let options: string[];
 const setConsole = vi.fn();
 
 beforeEach(() => {
+    saveIoSettings({ ...defaultIoSettings });
+    vi.stubGlobal("crossOriginIsolated", true);
+    vi.stubGlobal(
+        "AudioContext",
+        class {
+            state = "running";
+            sampleRate = 48000;
+            baseLatency = 0.01;
+            resume = vi.fn(async () => {});
+            close = vi.fn(async () => {
+                this.state = "closed";
+            });
+        }
+    );
+    Object.defineProperty(navigator, "mediaDevices", {
+        configurable: true,
+        value: { getUserMedia: vi.fn() }
+    });
     clearCompilerDiagnostics("audio-test");
     writes = new Map();
     listeners = new Map();
@@ -96,6 +124,7 @@ beforeEach(() => {
     });
     store.dispatch({ type: "CSOUND.SET_CSOUND_PLAY_STATE", status: "stopped" });
     engine = {
+        name: "Csound: Audio Worklet, Worker",
         fs: {
             mkdir: vi.fn(),
             writeFile: vi.fn(async (name, bytes) => writes.set(name, bytes)),
@@ -135,12 +164,14 @@ beforeEach(() => {
         readlineSubmit: vi.fn(async () => 0),
         off: vi.fn((name) => listeners.delete(name)),
         on: vi.fn((name, callback) => listeners.set(name, callback)),
-        once: vi.fn((name, callback) => listeners.set(name, callback))
+        once: vi.fn((name, callback) => listeners.set(name, callback)),
+        removeAllListeners: vi.fn(() => listeners.clear())
     };
-    vi.mocked(Csound).mockResolvedValue(engine);
+    vi.mocked(Csound).mockReset().mockResolvedValue(engine);
 });
 
 afterEach(async () => {
+    vi.useRealTimers();
     await stopPerformance();
     localStorage.removeItem("sab");
     vi.restoreAllMocks();
@@ -149,6 +180,121 @@ afterEach(async () => {
 });
 
 describe("MIDI worker compatibility", () => {
+    it.each([
+        "isRequestingRtAudioInput",
+        "isRequestingRtMidiInput",
+        "enableAudioInput"
+    ])(
+        "retries failed shared %s once and releases the first engine",
+        async (method) => {
+            const shared = {
+                ...engine,
+                name: "Csound: Audio Worklet, Shared-Array Buffer",
+                isRequestingRtAudioInput: vi.fn(async () =>
+                    method === "enableAudioInput" ? 1 : 0
+                ),
+                [method]: vi.fn(async () => {
+                    throw new Error("Worker disconnected");
+                }),
+                terminateInstance: vi.fn(async () => {})
+            };
+            vi.mocked(Csound).mockResolvedValueOnce(shared);
+            await runPerformance({
+                projectUid: "audio-test",
+                orc: "",
+                setConsole
+            });
+            expect(shared.terminateInstance).toHaveBeenCalledOnce();
+            expect(Csound).toHaveBeenCalledTimes(2);
+            expect(Csound).toHaveBeenLastCalledWith(
+                expect.objectContaining({ useSAB: false })
+            );
+            expect(engine.start).toHaveBeenCalledOnce();
+            expect(store.getState().csound.status).toBe("playing");
+            expect(
+                vi.mocked(Csound).mock.calls[0][0]!.audioContext!.state
+            ).toBe("closed");
+        }
+    );
+
+    it.each([
+        "isRequestingRtAudioInput",
+        "isRequestingRtMidiInput",
+        "enableAudioInput"
+    ])(
+        "leaves loading and retries when shared %s stops responding",
+        async (method) => {
+            vi.useFakeTimers();
+            const shared = {
+                ...engine,
+                name: "Csound: Audio Worklet, Shared-Array Buffer",
+                isRequestingRtAudioInput: vi.fn(async () =>
+                    method === "enableAudioInput" ? 1 : 0
+                ),
+                [method]: vi.fn(() => new Promise(() => {})),
+                terminateInstance: vi.fn(async () => {})
+            };
+            vi.mocked(Csound).mockResolvedValueOnce(shared);
+            const playing = runPerformance({
+                projectUid: "audio-test",
+                orc: "",
+                setConsole
+            });
+            await vi.waitFor(() =>
+                expect(shared[method]).toHaveBeenCalledOnce()
+            );
+            expect(store.getState().csound.status).toBe("loading");
+            await vi.advanceTimersByTimeAsync(12000);
+            await playing;
+            expect(shared.terminateInstance).toHaveBeenCalledOnce();
+            expect(Csound).toHaveBeenCalledTimes(2);
+            expect(Csound).toHaveBeenLastCalledWith(
+                expect.objectContaining({ useSAB: false })
+            );
+            expect(store.getState().csound.status).toBe("playing");
+        }
+    );
+
+    it("retries a rejected shared engine once with a fresh MessageChannel engine", async () => {
+        const shared = {
+            ...engine,
+            name: "Csound: Audio Worklet, Shared-Array Buffer",
+            start: vi.fn(async () => {
+                throw new Error("Shared transfer failed");
+            }),
+            terminateInstance: vi.fn(async () => {})
+        };
+        vi.mocked(Csound).mockResolvedValueOnce(shared);
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        expect(shared.terminateInstance).toHaveBeenCalledOnce();
+        expect(Csound).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({ useWorker: true, useSAB: true })
+        );
+        expect(Csound).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({ useWorker: true, useSAB: false })
+        );
+        expect(engine.start).toHaveBeenCalledOnce();
+        expect(getLiveCsound("audio-test")).toBe(engine);
+        const firstContext = vi.mocked(Csound).mock.calls[0][0]!.audioContext!;
+        expect(firstContext.state).toBe("closed");
+    });
+
+    it("does not loop if both audio backends fail, and tries shared memory on the next run", async () => {
+        vi.mocked(Csound).mockRejectedValue(new Error("Worker blocked"));
+        await expect(
+            runPerformance({ projectUid: "audio-test", orc: "", setConsole })
+        ).rejects.toThrow("Worker blocked");
+        expect(Csound).toHaveBeenCalledTimes(2);
+        expect(isCsoundBusy()).toBe(false);
+        vi.mocked(Csound).mockResolvedValue(engine);
+        await runPerformance({ projectUid: "audio-test", orc: "", setConsole });
+        expect(Csound).toHaveBeenLastCalledWith(
+            expect.objectContaining({ useSAB: true })
+        );
+    });
+
     it.each([false, true])(
         "compiles live MIDI once with the selected backend (SAB=%s)",
         async (useSAB) => {
@@ -162,9 +308,9 @@ describe("MIDI worker compatibility", () => {
             });
             expect(Csound).toHaveBeenCalledExactlyOnceWith({
                 withPlugins: Object.values(plugins).map((url) => new URL(url)),
-                ...(useSAB
-                    ? { useWorker: true }
-                    : { useWorker: false, useSAB: false })
+                audioContext: expect.any(AudioContext),
+                useWorker: true,
+                useSAB
             });
             expect(engine.compileCSD).toHaveBeenCalledOnce();
             expect(engine.terminateInstance).not.toHaveBeenCalled();
@@ -185,7 +331,9 @@ describe("MIDI worker compatibility", () => {
         });
         expect(Csound).toHaveBeenCalledExactlyOnceWith({
             withPlugins: Object.values(plugins).map((url) => new URL(url)),
-            useWorker: true
+            audioContext: expect.any(AudioContext),
+            useWorker: true,
+            useSAB: true
         });
         expect(engine.terminateInstance).not.toHaveBeenCalled();
     });
@@ -215,7 +363,8 @@ describe("iOS audio session lifecycle", () => {
         session = { type: "auto" };
         vi.stubGlobal("navigator", {
             userAgent: "iPhone",
-            audioSession: session
+            audioSession: session,
+            mediaDevices: { getUserMedia: vi.fn() }
         });
     });
 
@@ -242,7 +391,7 @@ describe("iOS audio session lifecycle", () => {
     });
 
     it("restores the session when initialization fails", async () => {
-        vi.mocked(Csound).mockRejectedValueOnce(new Error("WASM failed"));
+        vi.mocked(Csound).mockRejectedValue(new Error("WASM failed"));
         await expect(play()).rejects.toThrow("WASM failed");
         expect(session.type).toBe("auto");
     });
@@ -275,9 +424,11 @@ describe("iOS audio session lifecycle", () => {
         "uses a recording session for microphone input (denied: %s)",
         async (denied) => {
             engine.isRequestingRtAudioInput.mockResolvedValue(1);
-            engine.enableAudioInput.mockImplementationOnce(async () => {
+            const capture = vi.mocked(captureInput).getMockImplementation()!;
+            vi.mocked(captureInput).mockImplementationOnce(async (...args) => {
                 expect(session.type).toBe("play-and-record");
                 if (denied) throw new Error("Permission denied");
+                return capture(...args);
             });
             if (denied)
                 await expect(play()).rejects.toThrow(
@@ -619,7 +770,10 @@ describe("shared Csound performance", () => {
                     withPlugins: Object.values(plugins).map(
                         (url) => new URL(url)
                     ),
-                    useWorker: mode === "render",
+                    ...(mode !== "render"
+                        ? { audioContext: expect.any(AudioContext) }
+                        : {}),
+                    useWorker: true,
                     useSAB: false
                 });
                 expect(storage).not.toHaveBeenCalled();
@@ -712,7 +866,10 @@ describe("shared Csound performance", () => {
     it.each([false, true])(
         "prepares requested microphone input before starting (worker: %s)",
         async (useWorker) => {
-            localStorage.setItem("sab", String(useWorker));
+            saveIoSettings({
+                ...defaultIoSettings,
+                disableSharedArrayBuffers: !useWorker
+            });
             const inputSource = source.replace("-odac", "-odac -iadc");
             store.dispatch({
                 type: "PROJECTS.DOCUMENT_UPDATE_VALUE",
@@ -747,7 +904,9 @@ describe("shared Csound performance", () => {
             }
             expect(Csound).toHaveBeenCalledWith({
                 withPlugins: Object.values(plugins).map((url) => new URL(url)),
-                useWorker
+                audioContext: expect.any(AudioContext),
+                useWorker: true,
+                useSAB: useWorker
             });
             expect(engine.compileCSD).toHaveBeenCalledWith(
                 "scores/piece.csd",
@@ -789,9 +948,10 @@ describe("shared Csound performance", () => {
     );
 
     it("cleans up and reports microphone permission errors before startup", async () => {
+        engine.name = "Csound: Audio Worklet, Shared-Array Buffer";
         engine.isRequestingRtAudioInput.mockResolvedValue(1);
         const denied = new DOMException("Permission denied", "NotAllowedError");
-        engine.enableAudioInput.mockRejectedValue(denied);
+        vi.mocked(captureInput).mockRejectedValueOnce(denied);
         await expect(
             runPerformance({
                 projectUid: "audio-test",
@@ -805,6 +965,8 @@ describe("shared Csound performance", () => {
             cause: denied
         });
         expect(engine.start).not.toHaveBeenCalled();
+        expect(engine.enableAudioInput).not.toHaveBeenCalled();
+        expect(Csound).toHaveBeenCalledOnce();
         expect(engine.terminateInstance).toHaveBeenCalledOnce();
         expect(store.getState().csound.status).toBe("error");
         expect(isCsoundBusy()).toBe(false);
@@ -1135,6 +1297,26 @@ describe("shared Csound performance", () => {
         expect(engine.terminateInstance).toHaveBeenCalledOnce();
     });
 
+    it("terminates a cancelled audio startup without waiting on worker cleanup", async () => {
+        engine.start.mockReturnValue(new Promise(() => {}));
+        engine.cleanup.mockReturnValue(new Promise(() => {}));
+        const playing = runPerformance({
+            projectUid: "audio-test",
+            orc: "",
+            setConsole
+        });
+        const rejected = expect(playing).rejects.toMatchObject({
+            name: "AbortError"
+        });
+        await vi.waitFor(() => expect(engine.start).toHaveBeenCalledOnce());
+        expect(store.getState().csound.status).toBe("loading");
+        await stopPerformance();
+        await rejected;
+        expect(engine.cleanup).not.toHaveBeenCalled();
+        expect(engine.terminateInstance).toHaveBeenCalledOnce();
+        expect(isCsoundBusy()).toBe(false);
+    });
+
     it("stops realtime audio after play has returned", async () => {
         expect(
             await runPerformance({
@@ -1167,6 +1349,7 @@ describe("project playlists", () => {
                     })
             );
             const pending = playProject("audio-test", setConsole);
+            await vi.waitFor(() => expect(resolveFactory).toBeDefined());
             if (phase === "playing") {
                 resolveFactory(engine);
                 await pending;
@@ -1242,6 +1425,7 @@ describe("project playlists", () => {
                     })
             );
             const pending = playProject("audio-test", setConsole);
+            await vi.waitFor(() => expect(resolveFactory).toBeDefined());
             updateAllTargetsLocally(store.dispatch, "Saved", "audio-test", {
                 Saved: {
                     targetName: "Saved",
@@ -1459,6 +1643,7 @@ describe("project playlists", () => {
                 })
         );
         const pending = playProject("audio-test", setConsole);
+        await vi.waitFor(() => expect(resolveFactory).toBeDefined());
         stopProjectPlayback("audio-test");
         resolveFactory(engine);
         await pending;

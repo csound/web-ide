@@ -14,7 +14,7 @@ let lines: string[] = [];
 let analyser: AnalyserNode | undefined;
 let projectUid = "";
 (window as any).starters = {
-    async start(template: ProjectStarterTemplate, useSAB: boolean) {
+    async start(template: ProjectStarterTemplate, useSAB?: boolean) {
         lines = [];
         projectUid = `starter-${template}`;
         store.dispatch({
@@ -73,6 +73,9 @@ let projectUid = "";
         return Math.max(...data.map(Math.abs));
     },
     log: () => lines.join(""),
+    engine: () => getLiveCsound(projectUid)?.name,
+    sampleRate: async () =>
+        (await getLiveCsound(projectUid)?.getAudioContext())?.sampleRate,
     busy: isCsoundBusy,
     async stop() {
         analyser?.disconnect();

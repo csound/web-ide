@@ -1,6 +1,6 @@
+import { plugins } from "@csound/plugins";
 import { AppThunkDispatch, RootState, store } from "@root/store";
 import { Csound, libcsound } from "@csound/browser";
-import { plugins } from "@csound/plugins";
 import { IDocument } from "../projects/types";
 import { nonCloudFiles, addNonCloudFile } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -22,6 +22,12 @@ import { readDiagnostics } from "../editor/validation/diagnostics";
 import { replaceCompilerDiagnostics } from "../editor/validation/messages";
 import { waitForCompilerMessages } from "./compiler-messages";
 import { beginPlaybackAudioSession } from "./audio-session";
+import {
+    AudioStartupError,
+    createPlaybackIo,
+    SharedAudioStartupError
+} from "../io/runtime";
+import { deviceError } from "../io/devices";
 import {
     RenderSettings,
     renderFilename,
@@ -121,7 +127,7 @@ type PerformanceOptions = {
     onEnded?: (reason: "completed" | "stopped" | "error") => void;
     orc?: string;
     mode?: "auto" | "play" | "render";
-    // Embeds must work without cross-origin isolation or stored preferences.
+    // An explicit false disables shared memory, while keeping worker audio.
     useSAB?: boolean;
     renderSettings?: RenderSettings;
     batchToken?: symbol;
@@ -218,6 +224,7 @@ export async function runPerformance({
     signal?.addEventListener("abort", cancel, { once: true });
     let csound: CsoundObj | undefined;
     let audioSession: ReturnType<typeof beginPlaybackAudioSession>;
+    let io: ReturnType<typeof createPlaybackIo> | undefined;
     let messageCount = 0;
     let compilerLog = "";
     let compiling = true;
@@ -225,6 +232,7 @@ export async function runPerformance({
     let finishPromise: Promise<string[]> | undefined;
     let failed = false;
     let forceTermination = false;
+    let audioReady = false;
     let audio: Uint8Array | undefined;
     let disconnectReadline = () => {};
     const stopEngine = async () => {
@@ -364,6 +372,7 @@ export async function runPerformance({
                     failed = true;
                     console.error(error);
                 } finally {
+                    await io?.dispose();
                     audioSession?.release();
                     signal?.removeEventListener("abort", cancel);
                     if (activeRun === run) {
@@ -398,238 +407,316 @@ export async function runPerformance({
     setConsole([""]);
     try {
         // The factory creates/resumes its context before loading WASM. Set the
-        // iOS category first and keep context ownership/cleanup in the engine.
+        // iOS category first; the I/O session owns and closes our context.
         if (!render) audioSession = beginPlaybackAudioSession();
-        csound = (await Csound({
-            withPlugins: Object.values(plugins).map((url) => new URL(url)),
-            useWorker:
-                render || (useSAB ?? localStorage.getItem("sab") === "true"),
-            ...(render || useSAB === false ? { useSAB: false } : {})
-        })) as CsoundObj | undefined;
-        check();
-        if (!csound) throw new Error("Csound failed to start.");
-        csoundInstance = csound;
-        disconnectReadline = consoleReadline.connect(
-            csound,
-            projectUid,
-            (text) => {
-                setConsole((lines) => [...lines, text]);
-            }
-        );
-        controller.signal.addEventListener("abort", disconnectReadline, {
-            once: true
-        });
-        csound.on("message", (message: string) => {
-            messageCount++;
-            if (compiling)
-                compilerLog = (compilerLog + message + "\n").slice(-32000);
-            if (
-                /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
-                    message
-                )
-            )
-                failed = true;
-            setConsole((lines) => [...lines, message + "\n"]);
-        });
-        await syncFs(csound, projectUid, snapshot);
-        check();
-        for (const file of inputFiles) {
-            await csound.fs.writeFile(file.name, file.data);
-            check();
-        }
-        await prepareScorePreprocessors(
-            csound.fs,
-            csdText ?? (csdPath ? document?.currentValue : undefined),
-            controller.signal,
-            Object.values(project.documents).map((doc) =>
-                documentPath(doc, project.documents)
-            )
-        );
-        check();
-        before = await csound.fs.readdir("/");
-        for (const option of overrides) await csound.setOption(option);
-        if (csdPath && document && renderSettings) {
-            await csound.fs.writeFile(
-                csdPath,
-                new TextEncoder().encode(
-                    withPerformanceOptions(document.currentValue, overrides)
-                )
-            );
-        }
-        const compiled =
-            csdText !== undefined
-                ? await compileCSD(
-                      csound,
-                      renderSettings
-                          ? withPerformanceOptions(csdText, overrides)
-                          : csdText,
-                      true
-                  )
-                : csdPath
-                  ? await compileCSD(csound, csdPath)
-                  : await csound.compileOrc(
-                        orc ?? document?.currentValue ?? ""
+        const createCsound: typeof Csound = (options) =>
+            Csound({
+                ...options,
+                withPlugins: Object.values(plugins).map((url) => new URL(url))
+            });
+        let retried = false;
+        for (;;) {
+            try {
+                if (!render)
+                    io = createPlaybackIo(
+                        controller.signal,
+                        (text) =>
+                            setConsole((lines) => [...lines, text + "\n"]),
+                        retried ? false : useSAB
                     );
-        check();
-        if (compiled !== 0) {
-            await waitForCompilerMessages(
-                () => messageCount,
-                controller.signal
-            );
-            check();
-            if (sourcePath && shareDiagnostics) {
-                const diagnostics = readDiagnostics(
-                    compilerLog,
-                    sourcePath,
-                    Object.values(project.documents).map((entry) =>
-                        documentPath(entry, project.documents)
-                    ),
-                    !csdPath
-                );
-                replaceCompilerDiagnostics(
+                csound = render
+                    ? ((await createCsound({
+                          useWorker: true,
+                          useSAB: false
+                      })) as CsoundObj | undefined)
+                    : await io!.create(createCsound);
+                check();
+                if (!csound) throw new Error("Csound failed to start.");
+                csoundInstance = csound;
+                disconnectReadline = consoleReadline.connect(
+                    csound,
                     projectUid,
-                    Object.values(project.documents).map((entry) => {
-                        const path = documentPath(entry, project.documents);
-                        return {
+                    (text) => {
+                        setConsole((lines) => [...lines, text]);
+                    }
+                );
+                controller.signal.addEventListener(
+                    "abort",
+                    disconnectReadline,
+                    {
+                        once: true
+                    }
+                );
+                csound.on("message", (message: string) => {
+                    messageCount++;
+                    if (compiling)
+                        compilerLog = (compilerLog + message + "\n").slice(
+                            -32000
+                        );
+                    if (
+                        /\b[1-9]\d* errors? in performance\b|\bPERF ERROR\b/i.test(
+                            message
+                        )
+                    )
+                        failed = true;
+                    setConsole((lines) => [...lines, message + "\n"]);
+                });
+                await syncFs(csound, projectUid, snapshot);
+                check();
+                for (const file of inputFiles) {
+                    await csound.fs.writeFile(file.name, file.data);
+                    check();
+                }
+                await prepareScorePreprocessors(
+                    csound.fs,
+                    csdText ?? (csdPath ? document?.currentValue : undefined),
+                    controller.signal,
+                    Object.values(project.documents).map((doc) =>
+                        documentPath(doc, project.documents)
+                    )
+                );
+                check();
+                before = await csound.fs.readdir("/");
+                for (const option of overrides) await csound.setOption(option);
+                if (csdPath && document && renderSettings) {
+                    await csound.fs.writeFile(
+                        csdPath,
+                        new TextEncoder().encode(
+                            withPerformanceOptions(
+                                document.currentValue,
+                                overrides
+                            )
+                        )
+                    );
+                }
+                const compiled =
+                    csdText !== undefined
+                        ? await compileCSD(
+                              csound,
+                              renderSettings
+                                  ? withPerformanceOptions(csdText, overrides)
+                                  : csdText,
+                              true
+                          )
+                        : csdPath
+                          ? await compileCSD(csound, csdPath)
+                          : await csound.compileOrc(
+                                orc ?? document?.currentValue ?? ""
+                            );
+                check();
+                if (compiled !== 0) {
+                    await waitForCompilerMessages(
+                        () => messageCount,
+                        controller.signal
+                    );
+                    check();
+                    if (sourcePath && shareDiagnostics) {
+                        const diagnostics = readDiagnostics(
+                            compilerLog,
+                            sourcePath,
+                            Object.values(project.documents).map((entry) =>
+                                documentPath(entry, project.documents)
+                            ),
+                            !csdPath
+                        );
+                        replaceCompilerDiagnostics(
+                            projectUid,
+                            Object.values(project.documents).map((entry) => {
+                                const path = documentPath(
+                                    entry,
+                                    project.documents
+                                );
+                                return {
+                                    documentUid: entry.documentUid,
+                                    text: entry.currentValue,
+                                    diagnostics: diagnostics.filter(
+                                        (item) => item.filename === path
+                                    )
+                                };
+                            }),
+                            document?.documentUid
+                        );
+                    }
+                    throw new Error(
+                        "Csound compilation failed. Read the console for details."
+                    );
+                }
+                compiling = false;
+                if (shareDiagnostics)
+                    replaceCompilerDiagnostics(
+                        projectUid,
+                        Object.values(project.documents).map((entry) => ({
                             documentUid: entry.documentUid,
                             text: entry.currentValue,
-                            diagnostics: diagnostics.filter(
-                                (item) => item.filename === path
-                            )
-                        };
-                    }),
-                    document?.documentUid
-                );
-            }
-            throw new Error(
-                "Csound compilation failed. Read the console for details."
-            );
-        }
-        compiling = false;
-        if (shareDiagnostics)
-            replaceCompilerDiagnostics(
-                projectUid,
-                Object.values(project.documents).map((entry) => ({
-                    documentUid: entry.documentUid,
-                    text: entry.currentValue,
-                    diagnostics: []
-                })),
-                document.documentUid
-            );
-        // CsOptions may override the initial command-line options.
-        for (const option of overrides) await csound.setOption(option);
-        // Live inputs make the browser backend start a realtime thread even
-        // with file output, so it would never send the renderEnded event.
-        if (
-            render &&
-            ((await csound.isRequestingRtAudioInput()) ||
-                (await csound.isRequestingRtMidiInput()))
-        ) {
-            throw new Error(
-                "Offline rendering cannot use live audio or MIDI input. Remove live input options from CsOptions, or use an input file."
-            );
-        }
-        const rendered = render
-            ? new Promise<void>((resolve) =>
-                  csound!.once("renderEnded", resolve)
-              )
-            : undefined;
-        if (!render) {
-            const reportTransport = (status: "paused" | "playing") => {
-                // The SAB backend can repeat contradictory pause/resume notifications.
-                // Keep the latest user command and avoid redrawing the editor for repeats.
+                            diagnostics: []
+                        })),
+                        document.documentUid
+                    );
+                // CsOptions may override the initial command-line options.
+                for (const option of overrides) await csound.setOption(option);
+                // Live inputs make the browser backend start a realtime thread even
+                // with file output, so it would never send the renderEnded event.
                 if (
-                    activeRun === run &&
-                    !controller.signal.aborted &&
-                    (!run.desiredTransport ||
-                        run.desiredTransport === status) &&
-                    store.getState().csound.status !== status
-                )
-                    store.dispatch(setCsoundPlayState(status));
-            };
-            csound.on("realtimePerformancePaused", () =>
-                reportTransport("paused")
-            );
-            csound.on("realtimePerformanceResumed", () =>
-                reportTransport("playing")
-            );
-            csound.once("realtimePerformanceEnded", () => {
-                void finish(true).catch(console.error);
-            });
-        }
-        const aborted = new Promise<never>((_resolve, reject) => {
-            controller.signal.addEventListener(
-                "abort",
-                () =>
-                    reject(
-                        new DOMException(
-                            "The performance was cancelled.",
-                            "AbortError"
+                    render &&
+                    ((await csound.isRequestingRtAudioInput()) ||
+                        (await csound.isRequestingRtMidiInput()))
+                ) {
+                    throw new Error(
+                        "Offline rendering cannot use live audio or MIDI input. Remove live input options from CsOptions, or use an input file."
+                    );
+                }
+                const rendered = render
+                    ? new Promise<void>((resolve) =>
+                          csound!.once("renderEnded", resolve)
+                      )
+                    : undefined;
+                const attempt = csound;
+                let startedAudio = false;
+                let endedDuringStart = false;
+                if (!render) {
+                    const reportTransport = (status: "paused" | "playing") => {
+                        // The SAB backend can repeat contradictory pause/resume notifications.
+                        // Keep the latest user command and avoid redrawing the editor for repeats.
+                        if (
+                            activeRun === run &&
+                            csound === attempt &&
+                            !controller.signal.aborted &&
+                            (!run.desiredTransport ||
+                                run.desiredTransport === status) &&
+                            store.getState().csound.status !== status
                         )
-                    ),
-                { once: true }
-            );
-        });
-        if (
-            !render &&
-            (await Promise.race([csound.isRequestingRtAudioInput(), aborted]))
-        ) {
-            check();
-            try {
-                audioSession?.enableInput();
-                await Promise.race([csound.enableAudioInput(), aborted]);
-            } catch (error) {
+                            store.dispatch(setCsoundPlayState(status));
+                    };
+                    csound.on("realtimePerformancePaused", () =>
+                        reportTransport("paused")
+                    );
+                    csound.on("realtimePerformanceResumed", () =>
+                        reportTransport("playing")
+                    );
+                    csound.once("realtimePerformanceEnded", () => {
+                        if (csound !== attempt) return;
+                        if (startedAudio)
+                            void finish(true).catch(console.error);
+                        else endedDuringStart = true;
+                    });
+                }
+                const aborted = new Promise<never>((_resolve, reject) => {
+                    controller.signal.addEventListener(
+                        "abort",
+                        () =>
+                            reject(
+                                new DOMException(
+                                    "The performance was cancelled.",
+                                    "AbortError"
+                                )
+                            ),
+                        { once: true }
+                    );
+                });
+                if (
+                    !render &&
+                    (await Promise.race([io!.requestsInput(csound), aborted]))
+                ) {
+                    check();
+                    try {
+                        audioSession?.enableInput();
+                        await Promise.race([io!.enableInput(csound), aborted]);
+                    } catch (error) {
+                        check();
+                        if (error instanceof AudioStartupError) throw error;
+                        throw new Error(
+                            `Could not start microphone input. ${deviceError(error)}`,
+                            { cause: error }
+                        );
+                    }
+                }
                 check();
-                throw new Error(
-                    "Could not start microphone input. Check microphone access in your browser and system settings.",
-                    { cause: error }
-                );
+                if (render) store.dispatch(setCsoundPlayState("rendering"));
+                const started = await Promise.race([
+                    render ? csound.start() : io!.start(csound),
+                    aborted
+                ]);
+                check();
+                if (started !== 0)
+                    throw new Error(
+                        "Csound could not start. Read the console for details."
+                    );
+                startedAudio = true;
+                audioReady = true;
+                if (!render) store.dispatch(setCsoundPlayState("playing"));
+                if (!render && endedDuringStart)
+                    void finish(true).catch(console.error);
+                if (!render) {
+                    controller.signal.addEventListener(
+                        "abort",
+                        () => {
+                            void (async () => {
+                                try {
+                                    await stopEngine();
+                                } finally {
+                                    await finish(false);
+                                }
+                            })().catch(console.error);
+                        },
+                        { once: true }
+                    );
+                    return { status: "playing", files: [] };
+                }
+                // @csound/browser drives the render loop in its worker. Calling
+                // performKsmps here would advance the same score twice.
+                await Promise.race([rendered, aborted]);
+                check();
+                if (failed)
+                    throw new Error(
+                        "Csound reported a performance error. Read the console for details."
+                    );
+                const files = await finish(true);
+                if (!files.length && !audio)
+                    throw new Error(
+                        "Csound produced no audio file. Check CsOptions and the console."
+                    );
+                return {
+                    status: "completed",
+                    files,
+                    ...(!collectFiles ? { audio } : {})
+                };
+            } catch (error) {
+                if (
+                    !render &&
+                    !retried &&
+                    !controller.signal.aborted &&
+                    error instanceof SharedAudioStartupError
+                ) {
+                    retried = true;
+                    controller.signal.removeEventListener(
+                        "abort",
+                        disconnectReadline
+                    );
+                    disconnectReadline();
+                    const failedEngine = csound;
+                    csound = undefined;
+                    failedEngine?.removeAllListeners();
+                    await failedEngine
+                        ?.terminateInstance()
+                        .catch(console.error);
+                    await io?.dispose();
+                    failed = false;
+                    messageCount = 0;
+                    compilerLog = "";
+                    compiling = true;
+                    setConsole([
+                        "Shared audio could not start. Retrying with MessageChannel audio.\n"
+                    ]);
+                    continue;
+                }
+                if (error instanceof AudioStartupError) forceTermination = true;
+                throw error;
             }
         }
-        check();
-        store.dispatch(setCsoundPlayState(render ? "rendering" : "playing"));
-        const started = await Promise.race([csound.start(), aborted]);
-        check();
-        if (started !== 0)
-            throw new Error(
-                "Csound could not start. Read the console for details."
-            );
-        if (!render) {
-            controller.signal.addEventListener(
-                "abort",
-                () => {
-                    void (async () => {
-                        try {
-                            await stopEngine();
-                        } finally {
-                            await finish(false);
-                        }
-                    })().catch(console.error);
-                },
-                { once: true }
-            );
-            return { status: "playing", files: [] };
-        }
-        // @csound/browser drives the render loop in its worker. Calling
-        // performKsmps here would advance the same score twice.
-        await Promise.race([rendered, aborted]);
-        check();
-        if (failed)
-            throw new Error(
-                "Csound reported a performance error. Read the console for details."
-            );
-        const files = await finish(true);
-        if (!files.length && !audio)
-            throw new Error(
-                "Csound produced no audio file. Check CsOptions and the console."
-            );
-        return {
-            status: "completed",
-            files,
-            ...(!collectFiles ? { audio } : {})
-        };
     } catch (error) {
         failed = !controller.signal.aborted;
+        // A cancelled startup may leave a worker unable to answer cleanup RPCs.
+        if (!render && !audioReady) forceTermination = true;
         try {
             await stopEngine();
         } catch {

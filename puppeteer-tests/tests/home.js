@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import {
     goto,
     gotoProjectFromHome,
-    waitForProject,
-    dumpDebugInfo
+    dumpDebugInfo,
+    attachPageDebugListeners
 } from "../utils/browser.js";
 import { getSession, closeSession } from "../utils/session.js";
 import { target, targetName, TIMEOUT } from "../utils/config.js";
@@ -54,7 +54,7 @@ describe(`Home [${targetName}]`, () => {
             const slowPage = await page.browser().newPage();
             let delayedApp = false;
             try {
-                // Match the editor suite; narrow layouts keep the file tree in a drawer.
+                attachPageDebugListeners(slowPage);
                 await slowPage.setViewport({ width: 1280, height: 900 });
                 await slowPage.setCacheEnabled(false);
                 await slowPage.evaluateOnNewDocument((editorPath) => {
@@ -72,10 +72,25 @@ describe(`Home [${targetName}]`, () => {
                 }, new URL(target.projectUrl).pathname);
                 await slowPage.setRequestInterception(true);
                 slowPage.on("request", async (request) => {
+                    const url = new URL(request.url());
                     if (
-                        new URL(request.url()).pathname ===
-                        "/src/components/main/main.tsx"
+                        url.pathname ===
+                        "/src/components/projects/project-context.tsx"
                     ) {
+                        // Test the real lazy app and router without a cloud project download.
+                        // The editor suite covers loading the full editor from Firestore.
+                        return request.respond({
+                            status: 200,
+                            contentType: "application/javascript",
+                            body: 'export function ProjectContext() { return "Editor route: " + window.location.pathname; }'
+                        });
+                    }
+                    if (
+                        url.origin !== new URL(target.baseUrl).origin &&
+                        !["blob:", "data:"].includes(url.protocol)
+                    )
+                        return request.abort();
+                    if (url.pathname === "/src/components/main/main.tsx") {
                         delayedApp = true;
                         // Simulate a slow lazy import while #root is already present.
                         await new Promise((resolve) =>
@@ -95,10 +110,23 @@ describe(`Home [${targetName}]`, () => {
                     true,
                     "Expected to delay the lazy app module"
                 );
-                await waitForProject(slowPage).catch(async (error) => {
-                    await dumpDebugInfo(slowPage, "home-editor-navigation");
-                    throw error;
-                });
+                await slowPage
+                    .waitForFunction(
+                        (editorPath) =>
+                            window.location.pathname === editorPath &&
+                            document
+                                .querySelector("#root")
+                                ?.textContent?.includes(
+                                    `Editor route: ${editorPath}`
+                                ) &&
+                            !document.querySelector("main #search-projects"),
+                        { timeout: TIMEOUT.NAVIGATION },
+                        new URL(target.projectUrl).pathname
+                    )
+                    .catch(async (error) => {
+                        await dumpDebugInfo(slowPage, "home-editor-navigation");
+                        throw error;
+                    });
             } finally {
                 await slowPage.close();
             }

@@ -14,7 +14,17 @@ Add `-iadc` to CsOptions along with `-odac` for live output. Read the signal wit
 </CsOptions>
 ```
 
-Set the orchestra's input channel count to suit the piece. Browser and operating-system settings decide which input device the page receives.
+Set the orchestra's input channel count to suit the piece.
+
+## Choose a device
+
+Open **I/O → Audio Input** to choose a microphone or audio interface. **Test input** asks for permission, reveals device names, and shows a level meter. The test does not play the microphone through the speakers. Stop it or close the dialog to release the microphone.
+
+Use all available channels, or select one channel from an interface. A single selected channel reaches Csound as input channel 1. If the browser cannot supply it, playback reports an error instead of choosing another input.
+
+Echo cancellation, noise suppression, and automatic gain sit under **Microphone processing**. They start off to preserve musical signals. Some browsers do not support every setting.
+
+Save your choices, then restart playback to use them. These settings stay in this browser, not in the project.
 
 ## Listen safely
 

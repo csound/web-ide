@@ -26,7 +26,10 @@ store.dispatch({
     projects: [{ projectUid, documents: {} }]
 });
 store.dispatch({ type: "PROJECTS.ACTIVATE_PROJECT", projectUid });
-localStorage.setItem("sab", parameters.has("worker") ? "true" : "false");
+localStorage.setItem(
+    "csound-io-v1",
+    JSON.stringify({ disableSharedArrayBuffers: !parameters.has("worker") })
+);
 
 function Fixture() {
     const [visible, setVisible] = useState(true);
