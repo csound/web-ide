@@ -64,6 +64,7 @@ jobs:
                         project-starters,
                         csd-diagnostics,
                         score-preprocessors,
+                        default-plugins,
                         sdif-tools,
                         lpc-tools,
                         pvx-tools,

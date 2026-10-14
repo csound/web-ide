@@ -12,6 +12,7 @@ import { playListItem } from "../profile/actions";
 import * as projectActions from "../projects/actions";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Csound } from "@csound/browser";
+import { plugins } from "@csound/plugins";
 import { store } from "../../store";
 import {
     isCsoundBusy,
@@ -159,11 +160,12 @@ describe("MIDI worker compatibility", () => {
                 useSAB,
                 setConsole
             });
-            expect(Csound).toHaveBeenCalledExactlyOnceWith(
-                useSAB
+            expect(Csound).toHaveBeenCalledExactlyOnceWith({
+                withPlugins: Object.values(plugins).map((url) => new URL(url)),
+                ...(useSAB
                     ? { useWorker: true }
-                    : { useWorker: false, useSAB: false }
-            );
+                    : { useWorker: false, useSAB: false })
+            });
             expect(engine.compileCSD).toHaveBeenCalledOnce();
             expect(engine.terminateInstance).not.toHaveBeenCalled();
             expect(engine.start).toHaveBeenCalledOnce();
@@ -181,7 +183,10 @@ describe("MIDI worker compatibility", () => {
             useSAB: true,
             setConsole
         });
-        expect(Csound).toHaveBeenCalledExactlyOnceWith({ useWorker: true });
+        expect(Csound).toHaveBeenCalledExactlyOnceWith({
+            withPlugins: Object.values(plugins).map((url) => new URL(url)),
+            useWorker: true
+        });
         expect(engine.terminateInstance).not.toHaveBeenCalled();
     });
 
@@ -611,6 +616,9 @@ describe("shared Csound performance", () => {
                     setConsole
                 });
                 expect(Csound).toHaveBeenCalledWith({
+                    withPlugins: Object.values(plugins).map(
+                        (url) => new URL(url)
+                    ),
                     useWorker: mode === "render",
                     useSAB: false
                 });
@@ -737,7 +745,10 @@ describe("shared Csound performance", () => {
                 allowMicrophone();
                 await playing;
             }
-            expect(Csound).toHaveBeenCalledWith({ useWorker });
+            expect(Csound).toHaveBeenCalledWith({
+                withPlugins: Object.values(plugins).map((url) => new URL(url)),
+                useWorker
+            });
             expect(engine.compileCSD).toHaveBeenCalledWith(
                 "scores/piece.csd",
                 0
