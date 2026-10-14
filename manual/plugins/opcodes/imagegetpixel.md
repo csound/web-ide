@@ -40,7 +40,11 @@ Here is an example of the imagegetpixel opcode. It uses the files [imagegetpixel
 --8<-- "examples/imagegetpixel.csd"
 ```
 
-Here is what the images imageOpcode01.png and imageOpcode02.pngfor the imagegetpixel example look like:
+The source images, imageOpcode01.png and imageOpcode02.png:
+
+![First source image](../images/imageOpcode01small.png)
+
+![Second source image](../images/imageOpcode02small.png)
 
 Here is a musical example of the imagegetpixel opcode. It uses the files [imagegetpixel-musical.csd](../examples/imagegetpixel-musical.csd) and [imageOpcode03.png](../examples/imageOpcode03.png).
 
@@ -50,11 +54,7 @@ Here is a musical example of the imagegetpixel opcode. It uses the files [imageg
 
 This is what the image imageOpcode03.png for the imagegetpixel-musical example looks like:
 
-![](../images/imageOpcode01small.png)
-
-![](../images/imageOpcode02small.png)
-
-![](../examples/imageOpcode03.png)
+![Musical example image](../examples/imageOpcode03.png)
 
 ## See also
 

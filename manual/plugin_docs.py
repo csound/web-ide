@@ -1,7 +1,6 @@
 """Add the Web IDE's retained plugin reference to a temporary manual copy."""
 
 import json
-from pathlib import Path
 import re
 import shutil
 

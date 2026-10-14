@@ -46,40 +46,25 @@ aI3, aV2, aV1 chuap kL, kR0, kC2, kG, kGa, kGb, kE, kC1, iI3, iV2, iV1, ktime_st
 
 The circuit is described by a set of three ordinary differential equations called Chua's equations:
 
-  
-      dI3      R0      1  
-      --- =  - -- I3 - - V2  
-      dt       L       L  
-  
-      dV2    1       G  
-      --- = -- I3 - -- (V2 - V1)  
-      dt    C2      C2  
-  
-      dV1    G              1  
-      --- = -- (V2 - V1) - -- f(V1)  
-      dt    C1             C1  
-    
+``` text
+dI3/dt = -(R0/L) * I3 - V2/L
+dV2/dt = I3/C2 - (G/C2) * (V2 - V1)
+dV1/dt = (G/C1) * (V2 - V1) - f(V1)/C1
+```
 
-where f() is a piecewise discontinuity simulating the active resistor:
+where f() is the piecewise function that models the active resistor:
 
-  
-      f(V1) = Gb V1 + - (Ga - Gb)(\|V1 + E\| - \|V1 - E\|)  
-    
+``` text
+f(V1) = Gb * V1 + 0.5 * (Ga - Gb) * (abs(V1 + E) - abs(V1 - E))
+```
 
 A solution of these equations (I3,V2,V1)(t) starting from an initial state (I3,V2,V1)(0) is called a trajectory of Chua's oscillator. The Csound implementation is a difference equation simulation of Chua's oscillator with Runge-Kutta integration.
 
 > **Note**
 > This algorithm uses internal non linear feedback loops which causes audio result to depend on the orchestra sampling rate. For example, if you develop a project with *sr*=48000Hz and if you want to produce an audio CD from it, you should record a file with *sr*=48000Hz and then downsample the file to 44100Hz using the [src_conv](../utility/src_conv.md) utility.
 
-<div class="warning">
-
-<div class="title">
-
-</div>
-
-Be careful! Some sets of parameters will produce amplitude spikes or positive feedback that could damage your speakers.
-
-</div>
+> **Warning**
+> Some parameter settings produce amplitude spikes or positive feedback that could damage speakers.
 
 ## Examples
 

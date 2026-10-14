@@ -40,17 +40,17 @@ Here is an example of the imagesetpixel opcode. It uses the file [imagesetpixel.
 --8<-- "examples/imagesetpixel.csd"
 ```
 
-This is what the image imageOpcode02.png looks like:
+The source image, imageOpcode02.png:
 
-and these are the new images imageNEW1.png, imageNEW2.png and imageNEW3.png:
+![Source image](../images/imageOpcode02small.png)
 
-![](../images/imageOpcode02small.png)
+The new images, imageNEW1.png, imageNEW2.png, and imageNEW3.png:
 
-![](../images/imageNEW1small.png)
+![New image 1](../images/imageNEW1small.png)
 
-![](../images/imageNEW2small.png)
+![New image 2](../images/imageNEW2small.png)
 
-![](../images/imageNEW3small.png)
+![New image 3](../images/imageNEW3small.png)
 
 ## See also
 
