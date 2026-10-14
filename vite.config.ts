@@ -22,6 +22,8 @@ export default defineConfig({
     // Prebundle their JavaScript in development to avoid a first-use page reload.
     // Production chunks and utility WASM still load only when requested.
     optimizeDeps: {
+        // Keep plugin asset URLs relative to the package, not the prebundle.
+        exclude: ["@csound/plugins"],
         include: [
             // Emotion's JSX source replaces React's runtime in plugin-react's
             // includes, but dependencies still import the React runtime.

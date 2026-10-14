@@ -1,5 +1,6 @@
 import { AppThunkDispatch, RootState, store } from "@root/store";
 import { Csound, libcsound } from "@csound/browser";
+import { plugins } from "@csound/plugins";
 import { IDocument } from "../projects/types";
 import { nonCloudFiles, addNonCloudFile } from "@comp/file-tree/actions";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -400,6 +401,7 @@ export async function runPerformance({
         // iOS category first and keep context ownership/cleanup in the engine.
         if (!render) audioSession = beginPlaybackAudioSession();
         csound = (await Csound({
+            withPlugins: Object.values(plugins).map((url) => new URL(url)),
             useWorker:
                 render || (useSAB ?? localStorage.getItem("sab") === "true"),
             ...(render || useSAB === false ? { useSAB: false } : {})
