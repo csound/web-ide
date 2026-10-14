@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Csound } from "@csound/browser";
 import type { CsoundObj } from "../csound/types";
-import { captureInput, routeOutput } from "./devices";
+import { captureInput, deviceError, routeOutput } from "./devices";
 import {
+    AudioStartupError,
     createPlaybackIo,
     SharedAudioStartupError,
     withDeviceMethod
@@ -167,6 +168,85 @@ it("restores the SDK MIDI hook on timeout instead of keeping global overrides", 
     Reflect.deleteProperty(navigator, "requestMIDIAccess");
 });
 
+const startupCalls = [
+    ["requestsInput", "isRequestingRtAudioInput"],
+    ["start", "isRequestingRtMidiInput"],
+    ["enableInput", "enableAudioInput"],
+    ["start", "start"]
+] as const;
+
+it.each(startupCalls)(
+    "bounds and classifies %s failures from %s for the actual backend",
+    async (operation, method) => {
+        vi.useFakeTimers();
+        for (const shared of [true, false]) {
+            for (const timeout of [true, false]) {
+                const io = createPlaybackIo(controller().signal, vi.fn());
+                const cause = new Error("Worker disconnected");
+                const engine = {
+                    name: shared ? "Shared-Array Buffer" : "Worker",
+                    isRequestingRtAudioInput: vi.fn(async () => 0),
+                    isRequestingRtMidiInput: vi.fn(async () => 0),
+                    enableAudioInput: vi.fn(async () => undefined),
+                    start: vi.fn(async () => 0)
+                };
+                engine[method].mockImplementation(() =>
+                    timeout
+                        ? new Promise<never>(() => {})
+                        : Promise.reject(cause)
+                );
+                const pending = io[operation](engine as unknown as CsoundObj);
+                const result = pending.catch((error) => error);
+                await vi.advanceTimersByTimeAsync(12000);
+                const error = await result;
+                expect(error).toBeInstanceOf(AudioStartupError);
+                expect(error instanceof SharedAudioStartupError).toBe(shared);
+                if (timeout) expect(error.cause.message).toContain("timed out");
+                else expect(error.cause).toBe(cause);
+                expect(engine[method]).toHaveBeenCalledOnce();
+                await io.dispose();
+            }
+        }
+    }
+);
+
+it.each(startupCalls)(
+    "does not turn cancellation of %s (%s) into a backend retry",
+    async (operation, method) => {
+        const abort = controller();
+        const io = createPlaybackIo(abort.signal, vi.fn());
+        const engine = {
+            name: "Shared-Array Buffer",
+            isRequestingRtAudioInput: vi.fn(async () => 0),
+            isRequestingRtMidiInput: vi.fn(async () => 0),
+            enableAudioInput: vi.fn(async () => undefined),
+            start: vi.fn(async () => 0)
+        };
+        engine[method].mockImplementation(() => new Promise<never>(() => {}));
+        const pending = io[operation](engine as unknown as CsoundObj);
+        const result = expect(pending).rejects.toMatchObject({
+            name: "AbortError"
+        });
+        await vi.waitFor(() => expect(engine[method]).toHaveBeenCalledOnce());
+        abort.abort();
+        await result;
+        await io.dispose();
+    }
+);
+
+it("keeps microphone permission failures out of shared-worker retries", async () => {
+    const cause = new DOMException("Blocked", "NotAllowedError");
+    vi.mocked(navigator.mediaDevices.getUserMedia).mockRejectedValue(cause);
+    const io = createPlaybackIo(controller().signal, vi.fn());
+    const engine = {
+        name: "Shared-Array Buffer",
+        enableAudioInput: vi.fn()
+    } as unknown as CsoundObj;
+    await expect(io.enableInput(engine)).rejects.toBe(cause);
+    expect(engine.enableAudioInput).not.toHaveBeenCalled();
+    await io.dispose();
+});
+
 it("requests the exact input and stops a late permission grant after cancellation", async () => {
     let allow!: (stream: MediaStream) => void;
     vi.mocked(navigator.mediaDevices.getUserMedia).mockReturnValue(
@@ -186,7 +266,7 @@ it("requests the exact input and stops a late permission grant after cancellatio
     expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
         audio: {
             deviceId: { exact: "interface" },
-            channelCount: { ideal: 2 },
+            channelCount: { ideal: 32 },
             echoCancellation: false,
             noiseSuppression: true,
             autoGainControl: false
@@ -197,6 +277,47 @@ it("requests the exact input and stops a late permission grant after cancellatio
     await expect(result).rejects.toMatchObject({ name: "AbortError" });
     expect(track.stop).toHaveBeenCalledOnce();
 });
+
+it.each([
+    [1, 2],
+    [6, 6],
+    [32, 32]
+])(
+    "requests enough channels to select input %s",
+    async (inputChannel, requestedChannels) => {
+        const audioTrack = {
+            stop: vi.fn(),
+            getSettings: () => ({ channelCount: 32 })
+        };
+        const multichannel = {
+            getTracks: () => [audioTrack],
+            getAudioTracks: () => [audioTrack]
+        } as unknown as MediaStream;
+        vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValue(
+            multichannel
+        );
+        const abort = controller();
+        await expect(
+            captureInput({ ...defaultIoSettings, inputChannel }, abort.signal)
+        ).resolves.toBe(multichannel);
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
+            audio: expect.objectContaining({
+                channelCount: { ideal: requestedChannels }
+            })
+        });
+        abort.abort();
+        expect(audioTrack.stop).toHaveBeenCalledOnce();
+    }
+);
+
+it.each(["NotFoundError", "OverconstrainedError"])(
+    "uses device-neutral recovery for %s",
+    (name) => {
+        expect(deviceError(new DOMException("Unavailable", name))).toBe(
+            "The selected device or channel is unavailable. Reconnect it or choose another device."
+        );
+    }
+);
 
 it("refuses an unavailable input channel and releases its microphone", async () => {
     await expect(
@@ -222,7 +343,9 @@ it("hands the SDK our stream without a second permission request and restores th
             throw new Error("SDK input failed");
         }
     } as CsoundObj;
-    await expect(io.enableInput(engine)).rejects.toThrow("SDK input failed");
+    await expect(io.enableInput(engine)).rejects.toMatchObject({
+        cause: new Error("SDK input failed")
+    });
     expect(navigator.mediaDevices.getUserMedia).toBe(original);
     expect(original).toHaveBeenCalledOnce();
     await io.dispose();

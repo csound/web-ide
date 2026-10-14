@@ -615,10 +615,7 @@ export async function runPerformance({
                 });
                 if (
                     !render &&
-                    (await Promise.race([
-                        csound.isRequestingRtAudioInput(),
-                        aborted
-                    ]))
+                    (await Promise.race([io!.requestsInput(csound), aborted]))
                 ) {
                     check();
                     try {

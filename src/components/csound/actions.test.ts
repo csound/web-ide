@@ -33,6 +33,7 @@ import { storeProjectEditorKeyboardCallbacks } from "../hot-keys/actions";
 import { keyboardCallbacks } from "../hot-keys";
 import { consoleReadline } from "../console/readline";
 import { defaultIoSettings, saveIoSettings } from "../io/settings";
+import { captureInput } from "../io/devices";
 
 vi.mock("../io/devices", async (original) => ({
     ...(await original<typeof import("../io/devices")>()),
@@ -170,6 +171,7 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
+    vi.useRealTimers();
     await stopPerformance();
     localStorage.removeItem("sab");
     vi.restoreAllMocks();
@@ -178,6 +180,81 @@ afterEach(async () => {
 });
 
 describe("MIDI worker compatibility", () => {
+    it.each([
+        "isRequestingRtAudioInput",
+        "isRequestingRtMidiInput",
+        "enableAudioInput"
+    ])(
+        "retries failed shared %s once and releases the first engine",
+        async (method) => {
+            const shared = {
+                ...engine,
+                name: "Csound: Audio Worklet, Shared-Array Buffer",
+                isRequestingRtAudioInput: vi.fn(async () =>
+                    method === "enableAudioInput" ? 1 : 0
+                ),
+                [method]: vi.fn(async () => {
+                    throw new Error("Worker disconnected");
+                }),
+                terminateInstance: vi.fn(async () => {})
+            };
+            vi.mocked(Csound).mockResolvedValueOnce(shared);
+            await runPerformance({
+                projectUid: "audio-test",
+                orc: "",
+                setConsole
+            });
+            expect(shared.terminateInstance).toHaveBeenCalledOnce();
+            expect(Csound).toHaveBeenCalledTimes(2);
+            expect(Csound).toHaveBeenLastCalledWith(
+                expect.objectContaining({ useSAB: false })
+            );
+            expect(engine.start).toHaveBeenCalledOnce();
+            expect(store.getState().csound.status).toBe("playing");
+            expect(
+                vi.mocked(Csound).mock.calls[0][0]!.audioContext!.state
+            ).toBe("closed");
+        }
+    );
+
+    it.each([
+        "isRequestingRtAudioInput",
+        "isRequestingRtMidiInput",
+        "enableAudioInput"
+    ])(
+        "leaves loading and retries when shared %s stops responding",
+        async (method) => {
+            vi.useFakeTimers();
+            const shared = {
+                ...engine,
+                name: "Csound: Audio Worklet, Shared-Array Buffer",
+                isRequestingRtAudioInput: vi.fn(async () =>
+                    method === "enableAudioInput" ? 1 : 0
+                ),
+                [method]: vi.fn(() => new Promise(() => {})),
+                terminateInstance: vi.fn(async () => {})
+            };
+            vi.mocked(Csound).mockResolvedValueOnce(shared);
+            const playing = runPerformance({
+                projectUid: "audio-test",
+                orc: "",
+                setConsole
+            });
+            await vi.waitFor(() =>
+                expect(shared[method]).toHaveBeenCalledOnce()
+            );
+            expect(store.getState().csound.status).toBe("loading");
+            await vi.advanceTimersByTimeAsync(12000);
+            await playing;
+            expect(shared.terminateInstance).toHaveBeenCalledOnce();
+            expect(Csound).toHaveBeenCalledTimes(2);
+            expect(Csound).toHaveBeenLastCalledWith(
+                expect.objectContaining({ useSAB: false })
+            );
+            expect(store.getState().csound.status).toBe("playing");
+        }
+    );
+
     it("retries a rejected shared engine once with a fresh MessageChannel engine", async () => {
         const shared = {
             ...engine,
@@ -347,9 +424,11 @@ describe("iOS audio session lifecycle", () => {
         "uses a recording session for microphone input (denied: %s)",
         async (denied) => {
             engine.isRequestingRtAudioInput.mockResolvedValue(1);
-            engine.enableAudioInput.mockImplementationOnce(async () => {
+            const capture = vi.mocked(captureInput).getMockImplementation()!;
+            vi.mocked(captureInput).mockImplementationOnce(async (...args) => {
                 expect(session.type).toBe("play-and-record");
                 if (denied) throw new Error("Permission denied");
+                return capture(...args);
             });
             if (denied)
                 await expect(play()).rejects.toThrow(
@@ -869,9 +948,10 @@ describe("shared Csound performance", () => {
     );
 
     it("cleans up and reports microphone permission errors before startup", async () => {
+        engine.name = "Csound: Audio Worklet, Shared-Array Buffer";
         engine.isRequestingRtAudioInput.mockResolvedValue(1);
         const denied = new DOMException("Permission denied", "NotAllowedError");
-        engine.enableAudioInput.mockRejectedValue(denied);
+        vi.mocked(captureInput).mockRejectedValueOnce(denied);
         await expect(
             runPerformance({
                 projectUid: "audio-test",
@@ -885,6 +965,8 @@ describe("shared Csound performance", () => {
             cause: denied
         });
         expect(engine.start).not.toHaveBeenCalled();
+        expect(engine.enableAudioInput).not.toHaveBeenCalled();
+        expect(Csound).toHaveBeenCalledOnce();
         expect(engine.terminateInstance).toHaveBeenCalledOnce();
         expect(store.getState().csound.status).toBe("error");
         expect(isCsoundBusy()).toBe(false);

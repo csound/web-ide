@@ -107,6 +107,25 @@ export function createPlaybackIo(
         if (context && context.state !== "closed")
             await context.close().catch(() => {});
     };
+    // Bound worker RPCs, but leave device permission prompts outside this guard.
+    async function startupCall<T>(engine: CsoundObj, action: () => Promise<T>) {
+        lifetime.signal.throwIfAborted();
+        try {
+            return await whileActive(action(), lifetime.signal, 12000);
+        } catch (cause) {
+            lifetime.signal.throwIfAborted();
+            // The SDK may already have fallen back despite a successful SAB probe.
+            if (shared && /Shared/i.test(engine.name))
+                throw new SharedAudioStartupError(
+                    "Shared audio could not start.",
+                    { cause }
+                );
+            throw new AudioStartupError(
+                "Audio could not start. Read the console for details.",
+                { cause }
+            );
+        }
+    }
     return {
         async create(factory: typeof Csound) {
             lifetime.signal.throwIfAborted();
@@ -161,6 +180,9 @@ export function createPlaybackIo(
                 throw cause;
             }
         },
+        requestsInput(engine: CsoundObj) {
+            return startupCall(engine, () => engine.isRequestingRtAudioInput());
+        },
         async enableInput(engine: CsoundObj) {
             inputStream = await captureInput(settings, lifetime.signal);
             let stream = inputStream;
@@ -198,30 +220,12 @@ export function createPlaybackIo(
                     }
                     return original(constraints);
                 },
-                () =>
-                    whileActive(
-                        engine.enableAudioInput(),
-                        lifetime.signal,
-                        12000
-                    ).catch((cause) => {
-                        if (
-                            cause instanceof AudioStartupError &&
-                            shared &&
-                            /Shared/i.test(engine.name)
-                        )
-                            throw new SharedAudioStartupError(
-                                "Shared audio input did not respond.",
-                                { cause }
-                            );
-                        throw cause;
-                    })
+                () => startupCall(engine, () => engine.enableAudioInput())
             );
         },
         async start(engine: CsoundObj) {
-            const wantsMidi = await whileActive(
-                engine.isRequestingRtMidiInput(),
-                lifetime.signal,
-                12000
+            const wantsMidi = await startupCall(engine, () =>
+                engine.isRequestingRtMidiInput()
             );
             let access: MIDIAccess | undefined;
             if (
@@ -243,38 +247,27 @@ export function createPlaybackIo(
             }
             lifetime.signal.throwIfAborted();
             const start = () =>
-                whileActive(engine.start(), lifetime.signal, 12000);
-            let result: number;
-            try {
-                const original = navigator.requestMIDIAccess?.bind(navigator);
-                result =
-                    wantsMidi && original
-                        ? await withDeviceMethod(
-                              navigator,
-                              "requestMIDIAccess",
-                              (options?: MIDIOptions) =>
-                                  options === undefined
-                                      ? Promise.resolve({ inputs: new Map() })
-                                      : original(options),
-                              start
-                          )
-                        : await start();
-                if (result !== 0)
-                    throw new Error(
-                        "Csound could not start. Read the console for details."
-                    );
-            } catch (cause) {
-                lifetime.signal.throwIfAborted();
-                if (shared && /Shared/i.test(engine.name))
-                    throw new SharedAudioStartupError(
-                        "Shared audio could not start.",
-                        { cause }
-                    );
-                throw new AudioStartupError(
-                    "Audio could not start. Read the console for details.",
-                    { cause }
-                );
-            }
+                startupCall(engine, async () => {
+                    const result = await engine.start();
+                    if (result !== 0)
+                        throw new Error(
+                            "Csound could not start. Read the console for details."
+                        );
+                    return result;
+                });
+            const original = navigator.requestMIDIAccess?.bind(navigator);
+            const result =
+                wantsMidi && original
+                    ? await withDeviceMethod(
+                          navigator,
+                          "requestMIDIAccess",
+                          (options?: MIDIOptions) =>
+                              options === undefined
+                                  ? Promise.resolve({ inputs: new Map() })
+                                  : original(options),
+                          start
+                      )
+                    : await start();
             lifetime.signal.throwIfAborted();
             if (access)
                 disconnectMidi = routeMidi(access, settings, engine, report);

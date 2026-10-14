@@ -17,16 +17,15 @@ export async function audioDevices() {
     return (await navigator.mediaDevices?.enumerateDevices?.()) || [];
 }
 export function deviceError(error: unknown) {
-    const name = error instanceof Error ? error.name : "";
+    const exception = error instanceof Error || error instanceof DOMException;
+    const name = exception ? error.name : "";
     if (name === "NotAllowedError" || name === "SecurityError")
         return "Access was blocked. Allow this device in your browser settings. An embedded player also needs permission from its host page.";
     if (name === "NotFoundError" || name === "OverconstrainedError")
-        return "The selected device or channel is unavailable. Reconnect it or choose another input.";
+        return "The selected device or channel is unavailable. Reconnect it or choose another device.";
     if (name === "NotReadableError")
         return "The device is busy or could not start. Check whether another app is using it.";
-    return error instanceof Error
-        ? error.message
-        : "Could not open this device. Try again.";
+    return exception ? error.message : "Could not open this device. Try again.";
 }
 export async function captureInput(settings: IoSettings, signal: AbortSignal) {
     if (!navigator.mediaDevices?.getUserMedia)
@@ -39,7 +38,8 @@ export async function captureInput(settings: IoSettings, signal: AbortSignal) {
             ...(settings.inputDevice
                 ? { deviceId: { exact: settings.inputDevice } }
                 : {}),
-            channelCount: { ideal: Math.max(2, settings.inputChannel) },
+            // Ideal lets the browser supply fewer channels on smaller devices.
+            channelCount: { ideal: Math.max(2, settings.inputChannel || 32) },
             echoCancellation: settings.echoCancellation,
             noiseSuppression: settings.noiseSuppression,
             autoGainControl: settings.autoGainControl
