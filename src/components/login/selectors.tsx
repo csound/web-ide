@@ -7,7 +7,7 @@ export const selectLoginRequesting = ({ LoginReducer }: RootState): boolean => {
 
 export const selectErrorCode = ({
     LoginReducer
-}: RootState): number | undefined => {
+}: RootState): string | undefined => {
     return LoginReducer.errorCode;
 };
 

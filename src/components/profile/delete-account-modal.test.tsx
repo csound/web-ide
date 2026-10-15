@@ -55,14 +55,15 @@ vi.mock("firebase/auth", () => ({
     reauthenticateWithCredential: mocks.reauthenticate,
     reauthenticateWithPopup: mocks.popupReauthenticate,
     GoogleAuthProvider: vi.fn(),
-    FacebookAuthProvider: vi.fn()
+    FacebookAuthProvider: vi.fn(),
+    GithubAuthProvider: vi.fn()
 }));
 afterEach(() => {
     cleanup();
     vi.resetAllMocks();
 });
 
-it.each(["password", "google.com", "facebook.com"])(
+it.each(["password", "google.com", "facebook.com", "github.com"])(
     "refreshes the token after %s reauthentication before retrying deletion",
     async (providerId) => {
         mocks.providerId = providerId;
@@ -96,8 +97,11 @@ it.each(["password", "google.com", "facebook.com"])(
                 screen.getByRole("button", { name: "Confirm & Delete Account" })
             );
         } else {
-            const provider =
-                providerId === "google.com" ? "Google" : "Facebook";
+            const provider = {
+                "google.com": "Google",
+                "facebook.com": "Facebook",
+                "github.com": "GitHub"
+            }[providerId];
             fireEvent.click(
                 screen.getByRole("button", {
                     name: `Continue with ${provider} & Delete`

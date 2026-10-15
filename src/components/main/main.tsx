@@ -8,7 +8,8 @@ import Snackbar from "@comp/snackbar/snackbar";
 import { subscribeToLoggedInUserProfile } from "@comp/login/subscribers";
 import {
     setRequestingStatus,
-    thirdPartyAuthSuccess
+    thirdPartyAuthSuccess,
+    completeProviderRedirect
 } from "@comp/login/actions";
 import { getAuth } from "firebase/auth";
 import { ConsoleProvider } from "@comp/console/context";
@@ -18,6 +19,10 @@ import { WebMcpProvider } from "@root/webmcp/provider";
 const Main = () => {
     const dispatch = useDispatch();
     const [autoLoginTimeout, setAutoLoginTimeout] = useState(false);
+
+    useEffect(() => {
+        dispatch(completeProviderRedirect());
+    }, [dispatch]);
 
     useEffect(() => {
         let unsubscribeLoggedInUserProfile: (() => void) | undefined;

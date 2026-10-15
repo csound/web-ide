@@ -10,6 +10,8 @@ The main play button runs the selected target. Clicking a source tab only opens 
 
 ## Make it yours
 
+You can sign in with email and password, Google, GitHub, or Facebook. If you already have an account, sign in with your usual method first. Open **Edit profile** on your profile page and choose **Connect GitHub** to add GitHub sign-in to that account and keep your projects together. The connection saves right away.
+
 Sign in, choose a username, and open **My projects** from the header. Create a project there, give it a name, and choose a starter:
 
 - **Single CSD** puts instruments and score in one file. Press Play to hear a short synth phrase.

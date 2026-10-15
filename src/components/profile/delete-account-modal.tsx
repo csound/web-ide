@@ -8,10 +8,15 @@ import {
     signOut,
     EmailAuthProvider,
     reauthenticateWithCredential,
-    reauthenticateWithPopup,
     GoogleAuthProvider,
-    FacebookAuthProvider
+    FacebookAuthProvider,
+    GithubAuthProvider
 } from "firebase/auth";
+import {
+    providerAuthUnavailableMessage,
+    reauthenticateWithAuthProvider,
+    supportsProviderAuth
+} from "@comp/login/auth-providers";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
@@ -38,6 +43,8 @@ export function DeleteAccountModal({ username }: { username: string }) {
     const isEmailProvider = providers.includes("password");
     const isGoogleProvider = providers.includes("google.com");
     const isFacebookProvider = providers.includes("facebook.com");
+    const isGitHubProvider = providers.includes("github.com");
+    const providerAuthSupported = supportsProviderAuth();
 
     const performDelete = async () => {
         if (!user) return;
@@ -77,6 +84,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
     };
 
     const reauthWithPassword = async () => {
+        if (loading) return;
         setError("");
         if (!user) {
             setError("No authenticated user found.");
@@ -90,6 +98,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
             return;
         }
 
+        setLoading(true);
         try {
             const credential = EmailAuthProvider.credential(
                 currentEmail,
@@ -101,24 +110,30 @@ export function DeleteAccountModal({ username }: { username: string }) {
             await performDelete();
         } catch {
             setError("Incorrect password. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
     const reauthWithProvider = async (
-        provider: GoogleAuthProvider | FacebookAuthProvider
+        provider: GoogleAuthProvider | FacebookAuthProvider | GithubAuthProvider
     ) => {
+        if (loading) return;
         setError("");
         if (!user) {
             setError("No authenticated user found.");
             return;
         }
 
+        setLoading(true);
         try {
-            await reauthenticateWithPopup(user, provider);
+            await reauthenticateWithAuthProvider(user, provider);
             await user.getIdToken(true);
             await performDelete();
         } catch {
             setError("Re-authentication failed. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -141,6 +156,15 @@ export function DeleteAccountModal({ username }: { username: string }) {
                     For security, please verify it&apos;s you before deleting
                     your account.
                 </Typography>
+                {!providerAuthSupported &&
+                    (isGoogleProvider ||
+                        isFacebookProvider ||
+                        isGitHubProvider) && (
+                        <Typography variant="body2">
+                            {providerAuthUnavailableMessage} You can delete your
+                            account there after signing in.
+                        </Typography>
+                    )}
                 {isEmailProvider && (
                     <>
                         <TextField
@@ -176,7 +200,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         variant="outlined"
                         color="error"
                         fullWidth
-                        disabled={loading}
+                        disabled={loading || !providerAuthSupported}
                         onClick={() =>
                             reauthWithProvider(new GoogleAuthProvider())
                         }
@@ -190,13 +214,27 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         variant="outlined"
                         color="error"
                         fullWidth
-                        disabled={loading}
+                        disabled={loading || !providerAuthSupported}
                         onClick={() =>
                             reauthWithProvider(new FacebookAuthProvider())
                         }
                         style={{ marginTop: 8 }}
                     >
                         Continue with Facebook &amp; Delete
+                    </Button>
+                )}
+                {isGitHubProvider && (
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        fullWidth
+                        disabled={loading || !providerAuthSupported}
+                        onClick={() =>
+                            reauthWithProvider(new GithubAuthProvider())
+                        }
+                        style={{ marginTop: 8 }}
+                    >
+                        Continue with GitHub &amp; Delete
                     </Button>
                 )}
                 {error && (

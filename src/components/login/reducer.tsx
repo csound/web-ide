@@ -19,7 +19,7 @@ import { assoc, dissoc, pipe } from "ramda";
 
 export interface ILoginReducer {
     authenticated: boolean;
-    errorCode: number | undefined;
+    errorCode: string | undefined;
     errorMessage: string | undefined;
     failed: boolean;
     isLoginDialogOpen: boolean;
@@ -59,7 +59,13 @@ const LoginReducer = (
             };
         }
         case SIGNIN_REQUEST: {
-            return { ...state, requesting: true };
+            return {
+                ...state,
+                requesting: true,
+                failed: false,
+                errorCode: undefined,
+                errorMessage: undefined
+            };
         }
         case SET_REQUESTING_STATUS: {
             return { ...state, requesting: action.status };
@@ -92,7 +98,10 @@ const LoginReducer = (
                 isLoginDialogOpen: false,
                 dialogMode: "login",
                 requesting: false,
-                authenticated: true
+                authenticated: true,
+                failed: false,
+                errorCode: undefined,
+                errorMessage: undefined
             };
         }
         case LOG_OUT: {

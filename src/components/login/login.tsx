@@ -27,6 +27,12 @@ import { validateEmail, isElectron } from "@root/utils";
 import * as SS from "./styles";
 import { assoc, isEmpty, pipe } from "ramda";
 import { LoginDialogMode } from "./types";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import {
+    authProviders,
+    providerAuthUnavailableMessage,
+    supportsProviderAuth
+} from "./auth-providers";
 
 type LoginMode = LoginDialogMode;
 
@@ -48,6 +54,7 @@ const Login = (): React.ReactElement => {
     const requesting = useSelector(selectLoginRequesting);
     const dialogMode = useSelector(selectLoginDialogMode);
     const isCompactDialog = useMediaQuery("(max-width:640px)");
+    const providerAuthSupported = supportsProviderAuth();
     const [localState, setLocalState] = useState({
         email: "",
         newEmail: "",
@@ -92,29 +99,31 @@ const Login = (): React.ReactElement => {
         <>
             <div css={SS.providerDivider}>or continue with</div>
             <div css={SS.providerButtonsContainer}>
-                <Button
-                    onClick={() => dispatch(loginWithProvider("google"))}
-                    color="primary"
-                    variant="outlined"
-                    fullWidth
-                    css={SS.providerButton}
-                >
-                    {isElectron
-                        ? "Continue with Google (redirect)"
-                        : "Continue with Google"}
-                </Button>
-                <Button
-                    onClick={() => dispatch(loginWithProvider("facebook"))}
-                    color="primary"
-                    variant="outlined"
-                    fullWidth
-                    css={SS.providerButton}
-                >
-                    {isElectron
-                        ? "Continue with Facebook (redirect)"
-                        : "Continue with Facebook"}
-                </Button>
+                {authProviders.map(({ name, label }) => (
+                    <Button
+                        key={name}
+                        onClick={() => dispatch(loginWithProvider(name))}
+                        disabled={requesting || !providerAuthSupported}
+                        color="primary"
+                        variant="outlined"
+                        fullWidth
+                        startIcon={
+                            name === "github" ? <GitHubIcon /> : undefined
+                        }
+                        css={SS.providerButton}
+                    >
+                        Continue with {label}
+                        {isElectron && providerAuthSupported
+                            ? " (redirect)"
+                            : ""}
+                    </Button>
+                ))}
             </div>
+            <p css={SS.helperCopy}>
+                {providerAuthSupported
+                    ? "Already have an account? Sign in as usual, then connect GitHub in Edit profile to keep your projects together."
+                    : providerAuthUnavailableMessage}
+            </p>
         </>
     );
 
