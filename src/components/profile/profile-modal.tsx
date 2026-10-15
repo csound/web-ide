@@ -7,6 +7,7 @@ import { closeModal } from "../modal/actions";
 import { TextField, Button, MenuItem } from "@mui/material";
 import { useDispatch } from "@root/store";
 import { isValidUsername } from "./save-profile";
+import { GitHubConnection } from "./github-connection";
 
 interface IProfileModal {
     username: string;
@@ -161,6 +162,7 @@ export const ProfileModal = (properties: IProfileModal): React.ReactElement => {
                     </MenuItem>
                 ))}
             </TextField>
+            <GitHubConnection />
         </ProfileDialog>
     );
 };

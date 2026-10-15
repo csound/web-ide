@@ -21,15 +21,12 @@ import {
 import { closeModal, openSimpleModal } from "../modal/actions";
 import { profiles, usernames } from "../../config/firestore";
 import {
-    FacebookAuthProvider,
-    GoogleAuthProvider,
     User,
     createUserWithEmailAndPassword,
     getAuth,
+    getRedirectResult,
     sendPasswordResetEmail,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    signInWithRedirect
+    signInWithEmailAndPassword
 } from "firebase/auth";
 import { isEmpty } from "lodash";
 import { openSnackbar } from "../snackbar/actions";
@@ -40,6 +37,13 @@ import { isElectron } from "@root/utils";
 import { selectPostAuthFlow } from "./selectors";
 import { isValidUsername, saveProfile } from "../profile/save-profile";
 import { openForkProject } from "../projects/fork-project";
+import {
+    authErrorCode,
+    authErrorMessage,
+    authWasCancelled,
+    signInWithAuthProvider,
+    type ProviderName
+} from "./auth-providers";
 
 type AuthUserPayload = {
     uid: string;
@@ -91,33 +95,55 @@ export const login = (email: string, password: string): AppThunk => {
     };
 };
 
-export const loginWithProvider = (
-    providerName: "google" | "facebook"
-): AppThunk => {
+export const loginWithProvider = (providerName: ProviderName): AppThunk => {
     return async (dispatch) => {
         dispatch({
             type: SIGNIN_REQUEST
         });
 
-        const provider =
-            providerName === "google"
-                ? new GoogleAuthProvider()
-                : new FacebookAuthProvider();
-
         try {
-            if (isElectron) {
-                await signInWithRedirect(getAuth(), provider);
-            } else {
-                await signInWithPopup(getAuth(), provider);
+            await signInWithAuthProvider(providerName, isElectron);
+        } catch (error: unknown) {
+            if (authWasCancelled(error)) {
+                dispatch(setRequestingStatus(false));
+                return;
             }
-        } catch (error: any) {
             dispatch({
                 type: SIGNIN_FAIL,
-                errorCode: error.code,
-                errorMessage: error.message
+                errorCode: authErrorCode(error),
+                errorMessage: authErrorMessage(error, "signin", providerName)
             });
         }
     };
+};
+
+// The auth observer handles successful sign-in. Read the redirect result too
+// so a failed desktop sign-in or link does not disappear on the return trip.
+export const completeProviderRedirect = (): AppThunk => async (dispatch) => {
+    if (!isElectron) return;
+    try {
+        const result = await getRedirectResult(getAuth());
+        if (result?.operationType === "link") {
+            dispatch(openSnackbar("GitHub connected", SnackbarType.Success));
+        }
+    } catch (error: unknown) {
+        if (authWasCancelled(error)) return;
+        if (getAuth().currentUser) {
+            dispatch(
+                openSnackbar(
+                    authErrorMessage(error, "link"),
+                    SnackbarType.Error
+                )
+            );
+        } else {
+            dispatch({
+                type: SIGNIN_FAIL,
+                errorCode: authErrorCode(error),
+                errorMessage: authErrorMessage(error)
+            });
+            dispatch(openLoginDialog());
+        }
+    }
 };
 
 // const profileFinalize = (

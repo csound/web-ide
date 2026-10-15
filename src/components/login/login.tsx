@@ -27,6 +27,8 @@ import { validateEmail, isElectron } from "@root/utils";
 import * as SS from "./styles";
 import { assoc, isEmpty, pipe } from "ramda";
 import { LoginDialogMode } from "./types";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import { authProviders } from "./auth-providers";
 
 type LoginMode = LoginDialogMode;
 
@@ -92,29 +94,28 @@ const Login = (): React.ReactElement => {
         <>
             <div css={SS.providerDivider}>or continue with</div>
             <div css={SS.providerButtonsContainer}>
-                <Button
-                    onClick={() => dispatch(loginWithProvider("google"))}
-                    color="primary"
-                    variant="outlined"
-                    fullWidth
-                    css={SS.providerButton}
-                >
-                    {isElectron
-                        ? "Continue with Google (redirect)"
-                        : "Continue with Google"}
-                </Button>
-                <Button
-                    onClick={() => dispatch(loginWithProvider("facebook"))}
-                    color="primary"
-                    variant="outlined"
-                    fullWidth
-                    css={SS.providerButton}
-                >
-                    {isElectron
-                        ? "Continue with Facebook (redirect)"
-                        : "Continue with Facebook"}
-                </Button>
+                {authProviders.map(({ name, label }) => (
+                    <Button
+                        key={name}
+                        onClick={() => dispatch(loginWithProvider(name))}
+                        disabled={requesting}
+                        color="primary"
+                        variant="outlined"
+                        fullWidth
+                        startIcon={
+                            name === "github" ? <GitHubIcon /> : undefined
+                        }
+                        css={SS.providerButton}
+                    >
+                        Continue with {label}
+                        {isElectron ? " (redirect)" : ""}
+                    </Button>
+                ))}
             </div>
+            <p css={SS.helperCopy}>
+                Already have an account? Sign in as usual, then connect GitHub
+                in Edit profile to keep your projects together.
+            </p>
         </>
     );
 

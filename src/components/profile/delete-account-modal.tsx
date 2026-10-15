@@ -10,7 +10,8 @@ import {
     reauthenticateWithCredential,
     reauthenticateWithPopup,
     GoogleAuthProvider,
-    FacebookAuthProvider
+    FacebookAuthProvider,
+    GithubAuthProvider
 } from "firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { openSnackbar } from "@comp/snackbar/actions";
@@ -38,6 +39,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
     const isEmailProvider = providers.includes("password");
     const isGoogleProvider = providers.includes("google.com");
     const isFacebookProvider = providers.includes("facebook.com");
+    const isGitHubProvider = providers.includes("github.com");
 
     const performDelete = async () => {
         if (!user) return;
@@ -77,6 +79,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
     };
 
     const reauthWithPassword = async () => {
+        if (loading) return;
         setError("");
         if (!user) {
             setError("No authenticated user found.");
@@ -90,6 +93,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
             return;
         }
 
+        setLoading(true);
         try {
             const credential = EmailAuthProvider.credential(
                 currentEmail,
@@ -101,24 +105,30 @@ export function DeleteAccountModal({ username }: { username: string }) {
             await performDelete();
         } catch {
             setError("Incorrect password. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
     const reauthWithProvider = async (
-        provider: GoogleAuthProvider | FacebookAuthProvider
+        provider: GoogleAuthProvider | FacebookAuthProvider | GithubAuthProvider
     ) => {
+        if (loading) return;
         setError("");
         if (!user) {
             setError("No authenticated user found.");
             return;
         }
 
+        setLoading(true);
         try {
             await reauthenticateWithPopup(user, provider);
             await user.getIdToken(true);
             await performDelete();
         } catch {
             setError("Re-authentication failed. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -197,6 +207,20 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         style={{ marginTop: 8 }}
                     >
                         Continue with Facebook &amp; Delete
+                    </Button>
+                )}
+                {isGitHubProvider && (
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        fullWidth
+                        disabled={loading}
+                        onClick={() =>
+                            reauthWithProvider(new GithubAuthProvider())
+                        }
+                        style={{ marginTop: 8 }}
+                    >
+                        Continue with GitHub &amp; Delete
                     </Button>
                 )}
                 {error && (
