@@ -1,15 +1,49 @@
 import {
+    type AuthProvider,
+    type User,
     FacebookAuthProvider,
     GithubAuthProvider,
     GoogleAuthProvider,
     getAuth,
+    getRedirectResult,
     linkWithPopup,
     linkWithRedirect,
+    reauthenticateWithPopup,
     signInWithPopup,
     signInWithRedirect
 } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
 
 export type ProviderName = "google" | "github" | "facebook";
+
+export const providerAuthUnavailableMessage =
+    "Provider sign-in is unavailable in this desktop build. Open ide.csound.com in your browser.";
+
+// Packaged Electron loads file://, even when its renderer has no process object.
+// Neither Firebase popups nor redirects can authenticate from that origin.
+export const supportsProviderAuth = () =>
+    ["http:", "https:"].includes(window.location.protocol);
+
+const requireProviderAuthOrigin = () => {
+    if (!supportsProviderAuth()) {
+        throw new FirebaseError(
+            "auth/operation-not-supported-in-this-environment",
+            providerAuthUnavailableMessage
+        );
+    }
+};
+
+export async function getAuthProviderRedirectResult() {
+    return supportsProviderAuth() ? getRedirectResult(getAuth()) : null;
+}
+
+export async function reauthenticateWithAuthProvider(
+    user: User,
+    provider: AuthProvider
+) {
+    requireProviderAuthOrigin();
+    return reauthenticateWithPopup(user, provider);
+}
 
 export const authProviders: { name: ProviderName; label: string }[] = [
     { name: "google", label: "Google" },
@@ -32,7 +66,11 @@ export function createAuthProvider(name: ProviderName) {
     }
 }
 
-export function signInWithAuthProvider(name: ProviderName, redirect: boolean) {
+export async function signInWithAuthProvider(
+    name: ProviderName,
+    redirect: boolean
+) {
+    requireProviderAuthOrigin();
     const provider = createAuthProvider(name);
     return redirect
         ? signInWithRedirect(getAuth(), provider)
@@ -49,6 +87,7 @@ export async function connectGitHub(redirect: boolean) {
     ) {
         return user;
     }
+    requireProviderAuthOrigin();
     const provider = createAuthProvider("github");
     // Link to the signed-in UID. Signing in here would switch accounts and
     // could leave the user's existing projects on a different account.
@@ -75,6 +114,9 @@ export function authErrorMessage(
     provider?: ProviderName
 ): string {
     switch (authErrorCode(error)) {
+        case "auth/operation-not-supported-in-this-environment": {
+            return providerAuthUnavailableMessage;
+        }
         case "auth/account-exists-with-different-credential": {
             return provider === "github"
                 ? 'This email already has an account. Sign in with your usual method, then choose "Connect GitHub" in Edit profile.'

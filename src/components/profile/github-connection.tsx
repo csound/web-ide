@@ -6,7 +6,9 @@ import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 import {
     authErrorMessage,
     authWasCancelled,
-    connectGitHub
+    connectGitHub,
+    providerAuthUnavailableMessage,
+    supportsProviderAuth
 } from "@comp/login/auth-providers";
 import { isElectron } from "@root/utils";
 
@@ -28,6 +30,7 @@ export function GitHubConnection() {
     const [error, setError] = useState("");
     const pending = useRef(false);
     const mounted = useRef(false);
+    const providerAuthSupported = supportsProviderAuth();
 
     useEffect(() => {
         mounted.current = true;
@@ -84,10 +87,12 @@ export function GitHubConnection() {
             ) : (
                 <>
                     <Typography variant="body2" sx={{ mb: 1.5 }}>
-                        Use GitHub to sign in to this account. Your projects
-                        stay here. Connecting saves right away.
+                        {providerAuthSupported
+                            ? "Use GitHub to sign in to this account. Your projects stay here. Connecting saves right away."
+                            : providerAuthUnavailableMessage +
+                              " Sign in with your usual method, then choose Connect GitHub in Edit profile."}
                     </Typography>
-                    {isElectron && (
+                    {isElectron && providerAuthSupported && (
                         <Typography variant="body2" sx={{ mb: 1.5 }}>
                             Save any profile edits first. Connecting will leave
                             this page and return after sign-in.
@@ -95,7 +100,7 @@ export function GitHubConnection() {
                     )}
                     <Button
                         variant="outlined"
-                        disabled={connecting}
+                        disabled={connecting || !providerAuthSupported}
                         onClick={connect}
                         startIcon={
                             connecting ? (

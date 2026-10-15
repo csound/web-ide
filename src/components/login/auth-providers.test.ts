@@ -4,6 +4,7 @@ import {
     authWasCancelled,
     connectGitHub,
     createAuthProvider,
+    getAuthProviderRedirectResult,
     signInWithAuthProvider
 } from "./auth-providers";
 
@@ -18,7 +19,8 @@ const mocks = vi.hoisted(() => {
         signIn: vi.fn(),
         signInRedirect: vi.fn(),
         link: vi.fn(),
-        linkRedirect: vi.fn()
+        linkRedirect: vi.fn(),
+        redirectResult: vi.fn()
     };
 });
 
@@ -28,7 +30,8 @@ vi.mock("firebase/auth", async (original) => ({
     signInWithPopup: mocks.signIn,
     signInWithRedirect: mocks.signInRedirect,
     linkWithPopup: mocks.link,
-    linkWithRedirect: mocks.linkRedirect
+    linkWithRedirect: mocks.linkRedirect,
+    getRedirectResult: mocks.redirectResult
 }));
 
 beforeEach(() => {
@@ -60,13 +63,20 @@ it.each([
     }
 );
 
-it("keeps the desktop redirect path", async () => {
+it("keeps the redirect path on the HTTP development origin", async () => {
     await signInWithAuthProvider("github", true);
     expect(mocks.signInRedirect).toHaveBeenCalledWith(
         mocks.auth,
         expect.objectContaining({ providerId: "github.com" })
     );
     expect(mocks.signIn).not.toHaveBeenCalled();
+});
+
+it("reads redirect results on a supported web origin", async () => {
+    const result = { operationType: "link", user: mocks.user };
+    mocks.redirectResult.mockResolvedValueOnce(result);
+    expect(await getAuthProviderRedirectResult()).toBe(result);
+    expect(mocks.redirectResult).toHaveBeenCalledWith(mocks.auth);
 });
 
 it.each([false, true])(

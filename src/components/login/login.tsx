@@ -28,7 +28,11 @@ import * as SS from "./styles";
 import { assoc, isEmpty, pipe } from "ramda";
 import { LoginDialogMode } from "./types";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import { authProviders } from "./auth-providers";
+import {
+    authProviders,
+    providerAuthUnavailableMessage,
+    supportsProviderAuth
+} from "./auth-providers";
 
 type LoginMode = LoginDialogMode;
 
@@ -50,6 +54,7 @@ const Login = (): React.ReactElement => {
     const requesting = useSelector(selectLoginRequesting);
     const dialogMode = useSelector(selectLoginDialogMode);
     const isCompactDialog = useMediaQuery("(max-width:640px)");
+    const providerAuthSupported = supportsProviderAuth();
     const [localState, setLocalState] = useState({
         email: "",
         newEmail: "",
@@ -98,7 +103,7 @@ const Login = (): React.ReactElement => {
                     <Button
                         key={name}
                         onClick={() => dispatch(loginWithProvider(name))}
-                        disabled={requesting}
+                        disabled={requesting || !providerAuthSupported}
                         color="primary"
                         variant="outlined"
                         fullWidth
@@ -108,13 +113,16 @@ const Login = (): React.ReactElement => {
                         css={SS.providerButton}
                     >
                         Continue with {label}
-                        {isElectron ? " (redirect)" : ""}
+                        {isElectron && providerAuthSupported
+                            ? " (redirect)"
+                            : ""}
                     </Button>
                 ))}
             </div>
             <p css={SS.helperCopy}>
-                Already have an account? Sign in as usual, then connect GitHub
-                in Edit profile to keep your projects together.
+                {providerAuthSupported
+                    ? "Already have an account? Sign in as usual, then connect GitHub in Edit profile to keep your projects together."
+                    : providerAuthUnavailableMessage}
             </p>
         </>
     );

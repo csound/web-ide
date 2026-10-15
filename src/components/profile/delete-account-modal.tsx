@@ -8,11 +8,15 @@ import {
     signOut,
     EmailAuthProvider,
     reauthenticateWithCredential,
-    reauthenticateWithPopup,
     GoogleAuthProvider,
     FacebookAuthProvider,
     GithubAuthProvider
 } from "firebase/auth";
+import {
+    providerAuthUnavailableMessage,
+    reauthenticateWithAuthProvider,
+    supportsProviderAuth
+} from "@comp/login/auth-providers";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { openSnackbar } from "@comp/snackbar/actions";
 import { SnackbarType } from "@comp/snackbar/types";
@@ -40,6 +44,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
     const isGoogleProvider = providers.includes("google.com");
     const isFacebookProvider = providers.includes("facebook.com");
     const isGitHubProvider = providers.includes("github.com");
+    const providerAuthSupported = supportsProviderAuth();
 
     const performDelete = async () => {
         if (!user) return;
@@ -122,7 +127,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
 
         setLoading(true);
         try {
-            await reauthenticateWithPopup(user, provider);
+            await reauthenticateWithAuthProvider(user, provider);
             await user.getIdToken(true);
             await performDelete();
         } catch {
@@ -151,6 +156,15 @@ export function DeleteAccountModal({ username }: { username: string }) {
                     For security, please verify it&apos;s you before deleting
                     your account.
                 </Typography>
+                {!providerAuthSupported &&
+                    (isGoogleProvider ||
+                        isFacebookProvider ||
+                        isGitHubProvider) && (
+                        <Typography variant="body2">
+                            {providerAuthUnavailableMessage} You can delete your
+                            account there after signing in.
+                        </Typography>
+                    )}
                 {isEmailProvider && (
                     <>
                         <TextField
@@ -186,7 +200,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         variant="outlined"
                         color="error"
                         fullWidth
-                        disabled={loading}
+                        disabled={loading || !providerAuthSupported}
                         onClick={() =>
                             reauthWithProvider(new GoogleAuthProvider())
                         }
@@ -200,7 +214,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         variant="outlined"
                         color="error"
                         fullWidth
-                        disabled={loading}
+                        disabled={loading || !providerAuthSupported}
                         onClick={() =>
                             reauthWithProvider(new FacebookAuthProvider())
                         }
@@ -214,7 +228,7 @@ export function DeleteAccountModal({ username }: { username: string }) {
                         variant="outlined"
                         color="error"
                         fullWidth
-                        disabled={loading}
+                        disabled={loading || !providerAuthSupported}
                         onClick={() =>
                             reauthWithProvider(new GithubAuthProvider())
                         }

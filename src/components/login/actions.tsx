@@ -24,7 +24,6 @@ import {
     User,
     createUserWithEmailAndPassword,
     getAuth,
-    getRedirectResult,
     sendPasswordResetEmail,
     signInWithEmailAndPassword
 } from "firebase/auth";
@@ -41,6 +40,7 @@ import {
     authErrorCode,
     authErrorMessage,
     authWasCancelled,
+    getAuthProviderRedirectResult,
     signInWithAuthProvider,
     type ProviderName
 } from "./auth-providers";
@@ -118,11 +118,12 @@ export const loginWithProvider = (providerName: ProviderName): AppThunk => {
 };
 
 // The auth observer handles successful sign-in. Read the redirect result too
-// so a failed desktop sign-in or link does not disappear on the return trip.
+// so a failed sign-in or link from an HTTP(S) desktop session remains visible.
+// The helper skips file://, which cannot start a browser OAuth flow.
 export const completeProviderRedirect = (): AppThunk => async (dispatch) => {
     if (!isElectron) return;
     try {
-        const result = await getRedirectResult(getAuth());
+        const result = await getAuthProviderRedirectResult();
         if (result?.operationType === "link") {
             dispatch(openSnackbar("GitHub connected", SnackbarType.Success));
         }

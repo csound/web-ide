@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { GitHubConnection } from "./github-connection";
+import * as authProviders from "../login/auth-providers";
 
 const mocks = vi.hoisted(() => {
     const user = { uid: "owner", providerData: [{ providerId: "google.com" }] };
@@ -37,7 +38,22 @@ beforeEach(() => {
     mocks.auth.currentUser = mocks.user;
     mocks.user.providerData = [{ providerId: "google.com" }];
 });
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+});
+
+it("explains the web fallback and disables linking on unsupported origins", () => {
+    vi.spyOn(authProviders, "supportsProviderAuth").mockReturnValue(false);
+    render(<GitHubConnection />);
+    expect(screen.getByRole("button").hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText(/Open ide.csound.com/).textContent).toContain(
+        "Sign in with your usual method"
+    );
+    fireEvent.click(screen.getByRole("button"));
+    expect(mocks.connect).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Connecting will leave/)).toBeNull();
+});
 
 it("shows a connected state for an existing link", () => {
     mocks.user.providerData.push({ providerId: "github.com" });
