@@ -21,7 +21,7 @@ import {
     clearCompilerDiagnostics
 } from "./validation/messages";
 import { editorDiagnostics } from "./validation/ranges";
-import { setDiagnostics } from "@codemirror/lint";
+import { lintKeymap, setDiagnostics } from "@codemirror/lint";
 import { StateEffect } from "@codemirror/state";
 import { projectSources } from "./validation/source";
 import { csoundEditorLanguage } from "./csound-language";
@@ -38,7 +38,11 @@ import {
     drawSelection,
     dropCursor
 } from "@codemirror/view";
-import { autocompletion, closeBrackets } from "@codemirror/autocomplete";
+import {
+    autocompletion,
+    closeBrackets,
+    closeBracketsKeymap
+} from "@codemirror/autocomplete";
 import {
     defaultKeymap,
     history,
@@ -49,6 +53,7 @@ import {
     bracketMatching,
     defaultHighlightStyle,
     foldGutter,
+    foldKeymap,
     indentOnInput,
     syntaxHighlighting
 } from "@codemirror/language";
@@ -59,6 +64,7 @@ import { IDocument, IProject } from "../projects/types";
 import * as projectActions from "../projects/actions";
 import { lookupManualString } from "../project-editor/actions";
 import { editorStyle } from "@styles/code-mirror-painter";
+import { editorSearch } from "./search";
 
 import { useTheme } from "@emotion/react";
 import { codeMirrorTheme } from "@styles/code-mirror-theme";
@@ -297,7 +303,9 @@ const CodeEditor = ({
                     EditorState.allowMultipleSelections.of(true),
                     indentOnInput(),
                     languageCompartment.of(languageExtension),
+                    editorSearch,
                     keymap.of([
+                        ...closeBracketsKeymap,
                         ...defaultKeymap.filter(
                             (keyb) =>
                                 keyb &&
@@ -307,7 +315,9 @@ const CodeEditor = ({
                                     "Ctrl-Enter"
                                 ].includes(keyb.key || "")
                         ),
-                        ...historyKeymap
+                        ...historyKeymap,
+                        ...foldKeymap,
+                        ...lintKeymap
                     ]),
                     evalBlinkExtension,
                     bracketMatching(),

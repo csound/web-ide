@@ -55,6 +55,7 @@ jobs:
                     [
                         home,
                         editor,
+                        editor-find,
                         manual,
                         manual-examples,
                         manual-code,

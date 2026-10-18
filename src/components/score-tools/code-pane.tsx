@@ -16,6 +16,7 @@ import {
 } from "@codemirror/commands";
 import { editorStyle } from "@styles/code-mirror-painter";
 import { codeMirrorTheme } from "@styles/code-mirror-theme";
+import { editorSearch } from "../editor/search";
 
 export function CodePane({
     value,
@@ -47,6 +48,8 @@ export function CodePane({
                     config.current.of([]),
                     lineNumbers(),
                     drawSelection(),
+                    EditorState.allowMultipleSelections.of(true),
+                    editorSearch,
                     keymap.of([
                         ...defaultKeymap,
                         ...historyKeymap,

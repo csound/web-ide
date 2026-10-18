@@ -9,6 +9,42 @@ type ShortcutRow = {
 
 const shortcutRows: ShortcutRow[] = [
     {
+        shortcut: isMac ? "command-f" : "ctrl-f",
+        action: "Find and replace in the focused editor"
+    },
+    {
+        shortcut: isMac ? "command-g / F3" : "ctrl-g / F3",
+        action: "Next match (add Shift for the previous match)"
+    },
+    {
+        shortcut: isMac ? "command-d" : "ctrl-d",
+        action: "Select next occurrence"
+    },
+    {
+        shortcut: isMac ? "command-shift-l" : "ctrl-shift-l",
+        action: "Select all occurrences of the selected text"
+    },
+    {
+        shortcut: isMac ? "command-opt-g" : "ctrl-alt-g",
+        action: "Go to line"
+    },
+    {
+        shortcut: isMac ? "command-opt-[" : "ctrl-shift-[",
+        action: "Fold code at cursor (use ] to unfold)"
+    },
+    {
+        shortcut: "ctrl-alt-[",
+        action: "Fold all code (use ] to unfold all)"
+    },
+    {
+        shortcut: isMac ? "command-shift-m" : "ctrl-shift-m",
+        action: "Open error list"
+    },
+    {
+        shortcut: "F8",
+        action: "Go to next error or warning"
+    },
+    {
         shortcut: isMac ? "ctrl-command-n" : "ctrl-alt-n",
         action: "New file"
     },
