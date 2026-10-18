@@ -25,13 +25,17 @@ target_link_libraries(csound-check PRIVATE ${CMAKE_BINARY_DIR}/checker-core.a ${
 target_link_options(csound-check PRIVATE
   -Wl,--strip-all,--max-memory=67108864)
 
-# Small metadata reader and a test plugin, using the same Csound ABI as the checker.
+# Browser beta41 loads these plugins into shared memory, including in the
+# metadata worker. Include the TLS contract required by its plugin loader.
 foreach(plugin plugin-types plugin-types-fixture)
-  add_executable(${plugin} ${CMAKE_SOURCE_DIR}/ide-check/${plugin}.c)
+  add_executable(${plugin} ${CMAKE_SOURCE_DIR}/ide-check/${plugin}.c
+    ${CMAKE_SOURCE_DIR}/ide-check/plugin-tls.c)
   target_include_directories(${plugin} PRIVATE ${libcsound_public_include_dirs})
-  target_compile_options(${plugin} PRIVATE -fPIC)
+  target_compile_options(${plugin} PRIVATE -fPIC -matomics -mbulk-memory)
   target_link_options(${plugin} PRIVATE -nostdlib -nostartfiles
     -Wl,--shared,--experimental-pic,--no-entry,--import-table,--import-memory,--import-undefined
+    -Wl,--shared-memory,--max-memory=1073741824
+    -Wl,--export=__wasm_init_tls,--export=__tls_size,--export=__tls_align
     -Wl,--export=__wasm_call_ctors,--export=csoundModuleInit,--export=csoundModuleInfo
     -Wl,--export-if-defined=csoundModuleCreate,--strip-all)
 endforeach()

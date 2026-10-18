@@ -3,6 +3,15 @@ import { test } from "node:test";
 import puppeteer from "puppeteer";
 import { BROWSER_SETTINGS, target, targetName } from "../utils/config.js";
 
+// The shared-memory C example also exports runtime and thread diagnostics.
+const cExampleOpcodes = [
+    "mult",
+    "plugin_heap_base",
+    "plugin_local_data_check",
+    "plugin_runtime_check",
+    "plugin_thread_check"
+];
+
 test(
     "plugin object and struct types reach diagnostics and completion through the worker",
     {
@@ -115,7 +124,7 @@ test(
                 await page.evaluate(() =>
                     window.pluginFixture.entries().sort()
                 ),
-                ["hello440", "mult"],
+                ["hello440", ...cExampleOpcodes],
                 JSON.stringify(
                     await page.evaluate(() =>
                         window.pluginFixture.diagnostics()
@@ -189,9 +198,11 @@ test(
             );
             await page.evaluate(() => window.pluginFixture.replacePlugin());
             await page.waitForFunction(
-                () =>
-                    JSON.stringify(window.pluginFixture.entries()) ===
-                    '["mult"]'
+                (expected) =>
+                    JSON.stringify(window.pluginFixture.entries().sort()) ===
+                    JSON.stringify(expected),
+                {},
+                cExampleOpcodes
             );
             await page.waitForFunction(() =>
                 window.pluginFixture
