@@ -62,6 +62,67 @@ export const codeMirrorTheme = (theme: Theme) =>
                 color: theme.textColor
             },
             ".cm-panels-bottom": { borderTop: `1px solid ${theme.line}` },
+            ".cm-panels-top": { borderBottom: `1px solid ${theme.line}` },
+            ".cm-panel.cm-search, .cm-panel.cm-dialog, .cm-panel.cm-panel-lint":
+                {
+                    fontFamily: theme.font.regular,
+                    fontSize: "12px",
+                    lineHeight: "1.6",
+                    whiteSpace: "normal"
+                },
+            ".cm-panel.cm-search": { padding: "6px 32px 6px 10px" },
+            ".cm-search label": {
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                whiteSpace: "nowrap"
+            },
+            ".cm-search input[type=checkbox]": {
+                accentColor: theme.caretColor
+            },
+            ".cm-panel .cm-textfield, .cm-panel .cm-button": {
+                boxSizing: "border-box",
+                maxWidth: "100%",
+                minHeight: "28px",
+                border: `1px solid ${theme.line}`,
+                borderRadius: "4px",
+                font: "inherit",
+                color: theme.textColor,
+                backgroundImage: "none"
+            },
+            ".cm-panel .cm-textfield": {
+                backgroundColor: theme.background,
+                padding: "3px 6px"
+            },
+            ".cm-panel .cm-button": {
+                backgroundColor: theme.buttonBackground,
+                padding: "3px 8px",
+                cursor: "pointer"
+            },
+            ".cm-panel .cm-button:hover": {
+                backgroundColor: theme.buttonBackgroundHover
+            },
+            ".cm-panel input:focus-visible, .cm-panel button:focus-visible": {
+                outline: `1px solid ${theme.caretColor}`,
+                outlineOffset: "1px"
+            },
+            ".cm-panel.cm-search button[name=close]": {
+                top: "6px",
+                right: "4px",
+                width: "24px",
+                height: "28px",
+                color: theme.altTextColor,
+                fontSize: "18px",
+                cursor: "pointer"
+            },
+            ".cm-searchMatch": {
+                backgroundColor: alpha(theme.caretColor, 0.15),
+                outline: `1px solid ${alpha(theme.caretColor, 0.35)}`
+            },
+            ".cm-searchMatch-selected": {
+                backgroundColor: alpha(theme.caretColor, 0.3),
+                outline: `1px solid ${theme.caretColor}`
+            },
             ".cm-csound-synopsis:empty": { display: "none" },
             // Keep the panel container in layout so CodeMirror can measure its
             // scroll margins. display:none gives it a false top position of 0.
