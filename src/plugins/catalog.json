@@ -1,6 +1,6 @@
 {
-    "package": "7.0.0-beta.0",
-    "browser": "7.0.0-beta39",
+    "package": "7.0.0-beta.1",
+    "browser": "7.0.0-beta41",
     "groups": {
         "chua": "Chua",
         "image": "Image",
@@ -8,10 +8,10 @@
         "stk": "STK"
     },
     "binaries": {
-        "chua": "b8069fe268f5a131fa4f7331859a691076888427060686d0166cd06b757f934b",
-        "image": "a9c5d9676040cb227c9b92b7cf9ed4ff9c27584fb6adb6ab5bf7b52c3ee76459",
-        "linearAlgebra": "ac660f9cf9bc1f228ef3259bb1f097a0ce2be43b67ad5fee0714a8edcb67aca9",
-        "stk": "bab14ef7c94795cd237d72861d10f400ac76411334868a9d68649bc85118e36d"
+        "chua": "800804b70c760a0e3d91a78a3e7dde78803bf784a21754ad0c8c79df9da141f5",
+        "image": "73aef13f25651ef3878a082d691b229586a3b4deca95f7f77f68efea36b07fef",
+        "linearAlgebra": "e6a4f2ec1e729233e61f3a2295b7f520360f53348cfb1dd810313eabb98c6da0",
+        "stk": "99a08e3d1dd13fe8169fc75a4b7d2c66118444162bb232ef1ffba438198589c4"
     },
     "opcodes": [
         {

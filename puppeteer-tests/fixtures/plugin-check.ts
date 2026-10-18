@@ -14,8 +14,8 @@ import { requestedPlugins } from "../../src/components/editor/validation/plugins
 import { checkWithPlugins } from "../../src/components/editor/validation/plugins/check";
 import { PluginMetadataCache } from "../../src/components/editor/validation/plugins/cache";
 import { probePlugins } from "../../src/components/editor/validation/plugins/client";
-import cExample from "@csound/wasm-bin/lib/plugin_example.wasm?url";
-import cppExample from "@csound/wasm-bin/lib/plugin_example_cpp.wasm?url";
+import cExample from "@csound/wasm-bin/lib/plugin_example_shared.wasm?url";
+import cppExample from "@csound/wasm-bin/lib/plugin_example_cpp_shared.wasm?url";
 declare const __CSOUND_PLUGIN_TYPES_URL__: string;
 
 let reads = 0;

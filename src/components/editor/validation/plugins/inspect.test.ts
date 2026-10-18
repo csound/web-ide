@@ -15,7 +15,9 @@ const bytes = (name: string) =>
         readFileSync(`node_modules/@csound/wasm-bin/lib/${name}.wasm`)
     );
 it("reads real C and C++ plugin registrations without compiling or performing an orchestra", async () => {
-    expect((await inspectPlugins([bytes("plugin_example")])).opcodes).toEqual(
+    expect(
+        (await inspectPlugins([bytes("plugin_example_shared")])).opcodes
+    ).toEqual(
         expect.arrayContaining([
             { opname: "mult.aa", outypes: "a", intypes: "aa" },
             { opname: "mult.kk", outypes: "k", intypes: "kk" },
@@ -23,7 +25,7 @@ it("reads real C and C++ plugin registrations without compiling or performing an
         ])
     );
     expect(
-        (await inspectPlugins([bytes("plugin_example_cpp")])).opcodes
+        (await inspectPlugins([bytes("plugin_example_cpp_shared")])).opcodes
     ).toEqual([{ opname: "hello440", outypes: "a", intypes: "" }]);
     await expect(inspectPlugins([new Uint8Array([1, 2, 3])])).rejects.toThrow(
         "Invalid"
@@ -38,8 +40,8 @@ it.skipIf(!existsSync(".wasm-build/csound-check.wasm"))(
             readFileSync(".wasm-build/csound-check.wasm")
         );
         const plugins = await inspectPlugins([
-            bytes("plugin_example"),
-            bytes("plugin_example_cpp")
+            bytes("plugin_example_shared"),
+            bytes("plugin_example_cpp_shared")
         ]);
         const run = (text: string, signatures = plugins) =>
             runCheck(module, {
