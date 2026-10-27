@@ -1,6 +1,6 @@
 {
     "package": "7.0.0-beta.1",
-    "browser": "7.0.0-beta41",
+    "browser": "7.0.0",
     "groups": {
         "chua": "Chua",
         "image": "Image",
